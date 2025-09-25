@@ -5,11 +5,50 @@
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "mParticle.h"
+#import "MParticleSwift.h"
+
+@interface EventBuilder : NSObject
+
+- (instancetype)initWithLogger:(MPLog*)logger;
+
+- (MPEvent*)mpEventWithName:(NSString*)name type:(MPEventType)type;
+
+@end
+
+@implementation EventBuilder
+
+MPLog* _logger;
+
+
+- (instancetype)initWithLogger:(MPLog*)logger {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    
+    _logger = logger;
+    return self;
+}
+
+- (MPEvent*)mpEventWithName:(NSString*)name type:(MPEventType)type {
+    if (name.length == 0) {
+        [_logger error:@"'name' is required for MPEvent"];
+        return nil;
+    }
+    
+    if (name.length > LIMIT_ATTR_KEY_LENGTH) {
+        [_logger error:@"The event name is too long."];
+        return nil;
+    }
+    return [[MPEvent alloc] initWithName:name type:type];
+}
+
+@end
 
 @interface MParticle()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-
+- (MPLog*)getLogger;
 @end
 
 NSString *const kMPEventCategoryKey = @"$Category";
@@ -33,13 +72,14 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
         return nil;
     }
     
-    if (!name || name.length == 0) {
-        MPILogError(@"'name' is required for MPEvent")
+    MPLog *logger = MParticle.sharedInstance.getLogger;
+    if (name.length == 0) {
+        [logger error: @"'name' is required for MPEvent"];
         return nil;
     }
     
     if (name.length > LIMIT_ATTR_KEY_LENGTH) {
-        MPILogError(@"The event name is too long.");
+        [logger error: @"The event name is too long."];
         return nil;
     }
     
