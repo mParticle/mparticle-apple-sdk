@@ -1,7 +1,6 @@
 #import "MPEvent.h"
 #import "MPIConstants.h"
 #import "MPSession.h"
-#import "MPILogger.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "mParticle.h"
@@ -154,7 +153,7 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     if (category.length <= LIMIT_ATTR_VALUE_LENGTH) {
         _category = category;
     } else {
-        MPILogError(@"The category length is too long. Discarding category.");
+        [_logger error:@"The category length is too long. Discarding category."];
         _category = nil;
     }
 }
@@ -196,7 +195,7 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
             if (category.length <= LIMIT_ATTR_VALUE_LENGTH) {
                 attributes[kMPEventCategoryKey] = category;
             } else {
-                MPILogError(@"The event category is too long. Discarding category.");
+                [_logger error:@"The event category is too long. Discarding category."];
             }
         }
     }
@@ -222,12 +221,12 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
 
 - (void)setName:(NSString *)name {
     if (name.length == 0) {
-        MPILogError(@"'name' cannot be nil or empty.")
+        [_logger error:@"'name' cannot be nil or empty."];
         return;
     }
     
     if (name.length > LIMIT_ATTR_KEY_LENGTH) {
-        MPILogError(@"The event name is too long.");
+        [_logger error:@"The event name is too long."];
         return;
     }
     
