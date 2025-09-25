@@ -22,7 +22,6 @@ We use GitHub Actions to automate our release process. Follow these steps to cre
 2. **Testing Phase**
    - Runs unit tests for iOS and tvOS platforms
    - Validates CocoaPods spec
-   - Validates Carthage build
    - Validates Swift Package Manager build
    - Updates kits and runs additional tests
 
@@ -35,7 +34,6 @@ We use GitHub Actions to automate our release process. Follow these steps to cre
 4. **Artifact Publishing**
    - Publishes to package managers:
      - Pushes to CocoaPods trunk
-     - Updates Carthage JSON spec
      - Updates Swift Package Manager
    - Creates GitHub release with artifacts
 
@@ -67,7 +65,6 @@ After a successful build through GitHub Actions, verify:
 1. Public repo has a new semantic release tag
 2. New version is available on:
    - [CocoaPods](https://cocoapods.org/pods/mParticle-Apple-SDK)
-   - [Carthage](https://github.com/mParticle/mparticle-apple-sdk/releases)
    - Swift Package Manager
 
 ## Troubleshooting
@@ -77,4 +74,3 @@ If you encounter issues during testing, check:
 - Platform-specific test failures (iOS vs tvOS)
 - GitHub Actions logs for specific error messages
 - CocoaPods trunk status
-- Carthage binary framework validation
