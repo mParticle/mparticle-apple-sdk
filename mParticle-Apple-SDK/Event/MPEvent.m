@@ -193,11 +193,7 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
         }
         
         if (category) {
-            if (category.length <= LIMIT_ATTR_VALUE_LENGTH) {
-                attributes[kMPEventCategoryKey] = category;
-            } else {
-                [_logger error:@"The event category is too long. Discarding category."];
-            }
+            attributes[kMPEventCategoryKey] = category;
         }
     }
     
@@ -221,13 +217,14 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
 }
 
 - (void)setName:(NSString *)name {
+    MPLog *logger = MParticle.sharedInstance.getLogger;
     if (name.length == 0) {
-        [_logger error:@"'name' cannot be nil or empty."];
+        [logger error:@"'name' cannot be nil or empty."];
         return;
     }
     
     if (name.length > LIMIT_ATTR_KEY_LENGTH) {
-        [_logger error:@"The event name is too long."];
+        [logger error:@"The event name is too long."];
         return;
     }
     

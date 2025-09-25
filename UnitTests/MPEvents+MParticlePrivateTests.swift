@@ -176,7 +176,94 @@ class MPEventsMParticlePrivateTests: XCTestCase {
        
         XCTAssertEqual(receivedMessage, "mParticle -> The category length is too long. Discarding category.")
         XCTAssertNil(sut.category)
-   }
+    }
+    
+    func testDictionaryRepresentation_whenDurationInfoCategoryAreNil_numberOfItemsZero() {
+        sut.duration = nil
+        sut.customAttributes = nil
+        sut.category = nil
+        
+        let dict = sut.dictionaryRepresentation
+        
+        XCTAssertNil(dict["attrs"]) // kMPAttributesKey
+    }
+
+    func testDictionaryRepresentation_withMinimalEvent() {
+        let dict = event1.dictionaryRepresentation
+        
+        XCTAssertEqual(dict["n"] as? String, "Event1") // kMPEventNameKey
+        XCTAssertEqual(dict["et"] as? String, "Other") // kMPEventTypeKey
+        XCTAssertNotNil(dict["en"]) // kMPEventCounterKey
+        XCTAssertNotNil(dict["est"])  // kMPEventStartTimestamp
+        XCTAssertEqual(dict["el"] as? Int, 100) // kMPEventLength
+    }
+    
+    func testDictionaryRepresentation_withDurationAndCategoryAndAttributes() {
+        let dict = event1.dictionaryRepresentation
+        let attributes = dict["attrs"] as! [String: Any]
+        
+        XCTAssertEqual(dict["el"] as? Int, 100)
+        XCTAssertEqual(attributes["key"] as? String, "value")
+        XCTAssertEqual(attributes["$Category"] as? String, "Category")
+        XCTAssertEqual(attributes["EventLength"] as? Int, 100)
+    }
+    
+    func testDictionaryRepresentation_withCustomFlags_includesFlags() {
+        event1.addCustomFlag("flagValue", withKey: "flagKey")
+        
+        let dict = event1.dictionaryRepresentation
+        let flags = dict["flags"] as! [String: Any]
+        
+        XCTAssertEqual(flags["flagKey"] as? [String], ["flagValue"])
+    }
+    
+    func testDictionaryRepresentation_setsLengthZeroWhenDurationIsNil() {
+        event1.duration = nil
+        
+        let dict = event1.dictionaryRepresentation
+        
+        XCTAssertEqual(dict["el"] as? Int, 0) // kMPEventLength
+    }
+
+    func testDictionaryRepresentation_usesStartTimeWhenPresent() {
+        let start = Date(timeIntervalSince1970: 0)
+        event1.startTime = start
+        
+        let dict = event1.dictionaryRepresentation
+        let ts = dict["est"] as? Int // kMPEventStartTimestamp
+        
+        // Convert start back to ms for comparison
+        let expected = Int(start.timeIntervalSince1970)
+        XCTAssertEqual(ts, expected)
+    }
+    
+    func testInfoAndSetInfo_mapsToCustomAttributes() {
+        sut.info = ["a": "1"]
+        XCTAssertEqual(sut.info?["a"] as? String, "1")
+        XCTAssertEqual(sut.customAttributes?["a"] as? String, "1")
+    }
+    
+    func testSetName_withEmptyName_discardsAndLogs() {
+        let logger = MParticle.sharedInstance().getLogger()!
+        logger.logLevel = .verbose
+        logger.customLogger = { message in
+            self.receivedMessage = message
+        }
+        
+        sut.name = ""
+        XCTAssertEqual(receivedMessage, "mParticle -> 'name' cannot be nil or empty.")
+    }
+    
+    func testSetName_withTooLongName_discardsAndLogs() {
+        let logger = MParticle.sharedInstance().getLogger()!
+        logger.logLevel = .verbose
+        logger.customLogger = { message in
+            self.receivedMessage = message
+        }
+        
+        sut.name = String(repeating: "N", count: 257)
+        XCTAssertEqual(receivedMessage, "mParticle -> The event name is too long.")
+    }
     
     
     // MARK: - Public category methods
