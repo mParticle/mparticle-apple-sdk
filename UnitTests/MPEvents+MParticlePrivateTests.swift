@@ -146,26 +146,24 @@ class MPEventsMParticlePrivateTests: XCTestCase {
         XCTAssertNotEqual(event1.hash, event2.hash)
     }
     
-    // MARK: - Copying
+    // MARK: - NSCopying
     
-//    func testCopy_createsDeepCopy() {
-//        let event1 = MPEvent(name: "Original", type: .other)!
-//        event1.duration = 123
-//        event1.startTime = Date(timeIntervalSince1970: 1000)
-//        event1.endTime = Date(timeIntervalSince1970: 2000)
-//        event1.category = "Category"
-//        
-//        let event2 = event1.copy() as! MPEvent
-//        
-//        // Values are copied
-//        XCTAssertEqual(event1.name, event2.name)
-//        XCTAssertEqual(event1.duration, event2.duration)
-//        XCTAssertEqual(event1.startTime, event2.startTime)
-//        XCTAssertEqual(event1.endTime, event2.endTime)
-//        XCTAssertEqual(event1.category, event2.category)
-//        
-//        // Objects are not the same instance
-//        XCTAssertFalse(event1 === event2)
-//    }
+    func testCopyWithZone_createsDeepCopy() {
+        event1.addCustomFlag("flagValue", withKey: "flagKey")
+        let event2 = event1.copy() as! MPEvent
+        XCTAssertEqual(event1, event2)
+        
+        // Objects are not the same instance
+        XCTAssertFalse(event1 === event2)
+    }
+    
+    // MARK: - Public accessors
+    
+    
+    
+    
+    // MARK: - Public category methods
+    
+    
     
 }
