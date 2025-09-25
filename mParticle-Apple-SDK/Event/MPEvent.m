@@ -153,7 +153,8 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     if (category.length <= LIMIT_ATTR_VALUE_LENGTH) {
         _category = category;
     } else {
-        [_logger error:@"The category length is too long. Discarding category."];
+        MPLog *logger = MParticle.sharedInstance.getLogger;
+        [logger error:@"The category length is too long. Discarding category."];
         _category = nil;
     }
 }

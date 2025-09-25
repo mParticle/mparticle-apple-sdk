@@ -159,7 +159,24 @@ class MPEventsMParticlePrivateTests: XCTestCase {
     
     // MARK: - Public accessors
     
+    func testSetCategory_withValidCategory_setsCategory() {
+        sut.category = "validCategory"
+        XCTAssertEqual(sut.category, "validCategory")
+    }
     
+    func testSetCategory_withTooLongCategory_discardsAndLogs() {
+        let logger = MParticle.sharedInstance().getLogger()!
+        logger.logLevel = .verbose
+        logger.customLogger = { message in
+           self.receivedMessage = message
+        }
+       
+        let tooLongCategory = String(repeating: "X", count: 4097)
+        sut.category = tooLongCategory
+       
+        XCTAssertEqual(receivedMessage, "mParticle -> The category length is too long. Discarding category.")
+        XCTAssertNil(sut.category)
+   }
     
     
     // MARK: - Public category methods
