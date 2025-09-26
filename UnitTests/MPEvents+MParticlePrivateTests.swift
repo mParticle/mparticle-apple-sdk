@@ -288,7 +288,7 @@ class MPEventsMParticlePrivateTests: XCTestCase {
         XCTAssertEqual(attrs["key"] as? String, "value")
     }
     
-    func testEndTiming_whenStartTimeIsNil() {
+    func testEndTiming_withStartTime_setsEndTimeAndDuration() {
         sut.startTime = Date(timeIntervalSince1970: 0)
         
         sut.endTiming()
@@ -297,7 +297,7 @@ class MPEventsMParticlePrivateTests: XCTestCase {
         XCTAssertNotNil(sut.duration)
     }
     
-    func testEndTiming_withoutStartTime_clearsEndTimeAndDuration() {
+    func testEndTiming_whenStartTimeIsNil_clearsEndTimeAndDuration() {
         sut.startTime = nil
         
         sut.endTiming()
