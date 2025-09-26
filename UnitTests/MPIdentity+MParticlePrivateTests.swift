@@ -5,7 +5,14 @@ import mParticle_Apple_SDK_NoLocation
 import mParticle_Apple_SDK
 #endif
 
-class mParticle_Swift_SDKTests: XCTestCase {
+class MPIdentityMParticlePrivateTests: XCTestCase {
+    var sut: MPIdentity!
+    var mparticle: MParticle!
+    
+    override func setUp() {
+        super.setUp()
+        sut = MPIdentity(rawValue: 0)
+    }
     
     func testNewMPIdentityResponseErrorCodes() {
         XCTAssertNotNil(MPIdentityErrorResponseCode(rawValue: 500))
