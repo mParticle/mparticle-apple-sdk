@@ -278,6 +278,15 @@ class MPEventsMParticlePrivateTests: XCTestCase {
         XCTAssertNil(sut.endTime)
     }
     
+    func testBreadcrumbDictionaryRepresentation_withAttributes() {
+        event1.customAttributes = ["key": "value"]
+        
+        let dict = event1.breadcrumbDictionaryRepresentation()!
+        XCTAssertEqual(dict["l"] as? String, "Event1") // kMPLeaveBreadcrumbsKey
+        XCTAssertLessThanOrEqual(dict["est"] as! Int, Int(Date().timeIntervalSince1970 * 1000)) // kMPEventStartTimestamp
+        let attrs = dict["attrs"] as! [String: Any]
+        XCTAssertEqual(attrs["key"] as? String, "value")
+    }
     
     
 }
