@@ -305,4 +305,45 @@ class MPEventsMParticlePrivateTests: XCTestCase {
         XCTAssertNil(sut.endTime)
         XCTAssertNil(sut.duration)
     }
+    
+    func testScreenDictionaryRepresentation_withNoDuration_setsEventLengthZero() {
+        event1.duration = nil
+        
+        let dict = event1.screenDictionaryRepresentation()!
+        
+        XCTAssertEqual(dict["n"] as? String, "Event1") // kMPEventNameKey
+        XCTAssertLessThanOrEqual(dict["est"] as! Int, Int(Date().timeIntervalSince1970 * 1000)) // kMPEventStartTimestamp
+        XCTAssertEqual(dict["el"] as? Int, 0) // kMPEventLength
+        XCTAssertNil(dict["flags"]) // kMPEventCustomFlags
+        let attrs = dict["attrs"] as! [String: Any]
+        XCTAssertEqual(attrs["key"] as? String, "value")
+    }
+
+    func testScreenDictionaryRepresentation_withDurationAndCustomAttributes_mergesAttributesAndSetsEventLength() {
+        let dict = event1.screenDictionaryRepresentation()!
+        
+        XCTAssertEqual(dict["n"] as? String, "Event1") // kMPEventNameKey
+        XCTAssertLessThanOrEqual(dict["est"] as! Int, Int(Date().timeIntervalSince1970 * 1000)) // kMPEventStartTimestamp
+        XCTAssertEqual(dict["el"] as? Int, 100) // kMPEventLength
+        XCTAssertNil(dict["flags"]) // kMPEventCustomFlags
+        let attrs = dict["attrs"] as! [String: Any]
+        XCTAssertEqual(attrs["EventLength"] as? Int, 100) // kMPAttrsEventLengthKey
+        XCTAssertEqual(attrs["key"] as? String, "value")
+    }
+
+    func testScreenDictionaryRepresentation_withCustomFlags_includesFlags() {
+        event1.addCustomFlag("flagValue", withKey: "flagKey")
+        
+        let dict = event1.screenDictionaryRepresentation()!
+        
+        XCTAssertEqual(dict["n"] as? String, "Event1") // kMPEventNameKey
+        XCTAssertLessThanOrEqual(dict["est"] as! Int, Int(Date().timeIntervalSince1970 * 1000)) // kMPEventStartTimestamp
+        XCTAssertEqual(dict["el"] as? Int, 100) // kMPEventLength
+        let attrs = dict["attrs"] as! [String: Any]
+        XCTAssertEqual(attrs["EventLength"] as? Int, 100) // kMPAttrsEventLengthKey
+        XCTAssertEqual(attrs["key"] as? String, "value")
+        let flags = dict["flags"] as! [String: Any]
+        XCTAssertEqual(flags["flagKey"] as? [String], ["flagValue"])
+    }
+
 }
