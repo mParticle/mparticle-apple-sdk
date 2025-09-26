@@ -6,44 +6,6 @@
 #import "mParticle.h"
 #import "MParticleSwift.h"
 
-@interface EventBuilder : NSObject
-
-- (instancetype)initWithLogger:(MPLog*)logger;
-
-- (MPEvent*)mpEventWithName:(NSString*)name type:(MPEventType)type;
-
-@end
-
-@implementation EventBuilder
-
-MPLog* _logger;
-
-
-- (instancetype)initWithLogger:(MPLog*)logger {
-    self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    _logger = logger;
-    return self;
-}
-
-- (MPEvent*)mpEventWithName:(NSString*)name type:(MPEventType)type {
-    if (name.length == 0) {
-        [_logger error:@"'name' is required for MPEvent"];
-        return nil;
-    }
-    
-    if (name.length > LIMIT_ATTR_KEY_LENGTH) {
-        [_logger error:@"The event name is too long."];
-        return nil;
-    }
-    return [[MPEvent alloc] initWithName:name type:type];
-}
-
-@end
-
 @interface MParticle()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
