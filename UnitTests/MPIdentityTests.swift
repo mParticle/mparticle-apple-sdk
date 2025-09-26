@@ -5,7 +5,7 @@ import mParticle_Apple_SDK_NoLocation
 import mParticle_Apple_SDK
 #endif
 
-class MPIdentityMParticlePrivateTests: XCTestCase {
+class MPIdentityTests: XCTestCase {
     var sut: MPIdentity!
     var mparticle: MParticle!
     

@@ -5,7 +5,7 @@ import mParticle_Apple_SDK_NoLocation
 import mParticle_Apple_SDK
 #endif
 
-class MPEventsMParticlePrivateTests: XCTestCase {
+class MPEventTests: XCTestCase {
     var sut: MPEvent!
     var receivedMessage: String?
     var mparticle: MParticle!
