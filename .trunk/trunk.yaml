@@ -49,6 +49,8 @@ lint:
       paths:
         - Example/Pods
         - Example/Podfile.lock
+        - RNExample/Gemfile.lock
+        - RNExample/Gemfile
 
 actions:
   enabled:
