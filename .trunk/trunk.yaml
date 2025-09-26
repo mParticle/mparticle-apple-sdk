@@ -40,7 +40,6 @@ lint:
     - shellcheck@0.11.0
     - shfmt@3.6.0
     - trufflehog@3.90.8
-    - yamllint@1.37.1
   disabled:
     - yamllint
   ignore:
@@ -48,7 +47,7 @@ lint:
       paths:
         - Example/Pods
         - Example/Podfile.lock
-        
+
 actions:
   enabled:
     - trunk-announce
