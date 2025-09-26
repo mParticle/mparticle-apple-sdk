@@ -41,9 +41,18 @@ lint:
     - shfmt@3.6.0
     - trufflehog@3.90.8
     - yamllint@1.37.1
+  disabled:
+    - yamllint
+  ignore:
+    - linters: [ALL]
+      paths:
+        - Example/Pods
+        - Example/Podfile.lock
+        
 actions:
   enabled:
     - trunk-announce
     - trunk-check-pre-push
+    - trunk-check-pre-push-always
     - trunk-fmt-pre-commit
     - trunk-upgrade-available
