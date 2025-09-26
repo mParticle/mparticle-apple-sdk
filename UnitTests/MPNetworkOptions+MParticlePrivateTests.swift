@@ -1,15 +1,14 @@
 import XCTest
 #if MPARTICLE_LOCATION_DISABLE
-import mParticle_Apple_SDK_NoLocation
+    import mParticle_Apple_SDK_NoLocation
 #else
-import mParticle_Apple_SDK
+    import mParticle_Apple_SDK
 #endif
-
 
 class MPNetworkOptionsMParticlePrivateTests: XCTestCase {
     func testInit() {
         let sut = MPNetworkOptions()
-        
+
         XCTAssertFalse(sut.pinningDisabledInDevelopment)
         XCTAssertFalse(sut.pinningDisabled)
         XCTAssertFalse(sut.overridesConfigSubdirectory)
@@ -17,7 +16,7 @@ class MPNetworkOptionsMParticlePrivateTests: XCTestCase {
         XCTAssertFalse(sut.overridesIdentitySubdirectory)
         XCTAssertFalse(sut.overridesAliasSubdirectory)
         XCTAssertFalse(sut.eventsOnly)
-        
+
         XCTAssertNil(sut.configHost)
         XCTAssertNil(sut.eventsHost)
         XCTAssertNil(sut.eventsTrackingHost)
@@ -27,7 +26,7 @@ class MPNetworkOptionsMParticlePrivateTests: XCTestCase {
         XCTAssertNil(sut.aliasTrackingHost)
         XCTAssertEqual(sut.certificates, [])
     }
-    
+
     func testDescription() {
         let sut = MPNetworkOptions()
         sut.configHost = "configHost"

@@ -7,7 +7,7 @@
 
 import Foundation
 
-@objc public class MPDateFormatter : NSObject {
+@objc public class MPDateFormatter: NSObject {
     private static var dateFormatterRFC3339: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -15,7 +15,7 @@ import Foundation
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
     }()
-    
+
     private static var dateFormatterRFC1123: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US")
@@ -23,7 +23,7 @@ import Foundation
         formatter.dateFormat = "EEE',' dd MMM yyyy HH':'mm':'ss z"
         return formatter
     }()
-    
+
     private static var dateFormatterRFC850: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = dateFormatterRFC1123.locale
@@ -31,20 +31,20 @@ import Foundation
         formatter.dateFormat = "EEEE',' dd'-'MMM'-'yy HH':'mm':'ss z"
         return formatter
     }()
-    
+
     @objc(dateFromString:) public static func date(from dateString: String) -> Date? {
         guard !dateString.isEmpty else {
             return nil
         }
-        
+
         if let date = dateFormatterRFC3339.date(from: dateString) {
             return date
         }
-        
+
         if let date = dateFormatterRFC1123.date(from: dateString) {
             return date
         }
-        
+
         return dateFormatterRFC850.date(from: dateString)
     }
 
@@ -52,7 +52,7 @@ import Foundation
         guard !dateString.isEmpty else {
             return nil
         }
-        
+
         return dateFormatterRFC1123.date(from: dateString)
     }
 
@@ -60,7 +60,7 @@ import Foundation
         guard !dateString.isEmpty else {
             return nil
         }
-        
+
         return dateFormatterRFC3339.date(from: dateString)
     }
 
@@ -72,4 +72,3 @@ import Foundation
         return dateFormatterRFC3339.string(from: date)
     }
 }
-
