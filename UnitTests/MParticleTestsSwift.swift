@@ -1169,5 +1169,12 @@ class MParticleTestsSwift: XCTestCase {
             """
         )
     }
+    
+    func testLeaveBreadcrumbCallback_execStatusFail_noLoggedMessages() {
+        let expectedEvent = MPEvent()
+        mparticle.leaveBreadcrumbCallback(expectedEvent, execStatus: .fail)
+
+        XCTAssertNil(receivedMessage)
+    }
 
 }
