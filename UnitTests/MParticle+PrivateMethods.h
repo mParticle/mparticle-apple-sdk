@@ -42,6 +42,8 @@
 - (NSTimeInterval)uploadInterval;
 - (NSDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId;
 
+- (MPLog*)getLogger;
+
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
