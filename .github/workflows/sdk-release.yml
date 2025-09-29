@@ -22,12 +22,12 @@ jobs:
     runs-on: macOS-15
     needs: confirm-main-branch
     steps:
-      - name: Checkout development branch
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           repository: ${{ github.repository }}
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
-          ref: development
+          ref: main
 
       - name: Create and push release branch
         run: |
@@ -42,8 +42,13 @@ jobs:
       GITHUB_ACCESS_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
       COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
     steps:
-      - name: Checkout
+      - name: Checkout main branch
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          repository: ${{ github.repository }}
+          token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          ref: main
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
@@ -70,14 +75,6 @@ jobs:
         run: |
           git config user.email "developers@mparticle.com"
           git config user.name "mParticle Automation"
-
-      - name: Checkout main branch
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          repository: ${{ github.repository }}
-          token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
-          ref: main
 
       - name: Merge release branch into main branch
         run: |
@@ -173,11 +170,10 @@ jobs:
         run: |
           git pull origin release/${{ github.run_number }}
 
-      - name: Push release commits to main and development branches
+      - name: Push release commits to main branch
         if: ${{ github.event.inputs.dryRun == 'false'}}
         run: |
           git push origin HEAD:main
-          git push origin HEAD:development
 
       - name: Delete release branch
         if: ${{ github.event.inputs.dryRun == 'false' }}
