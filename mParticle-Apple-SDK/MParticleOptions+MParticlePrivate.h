@@ -1,13 +1,13 @@
 @interface MParticleOptions ()
 
-@property (nonatomic, readwrite) BOOL isProxyAppDelegateSet;
-@property (nonatomic, readwrite) BOOL isCollectUserAgentSet;
-@property (nonatomic, readwrite) BOOL isCollectSearchAdsAttributionSet;
-@property (nonatomic, readwrite) BOOL isTrackNotificationsSet;
-@property (nonatomic, readwrite) BOOL isAutomaticSessionTrackingSet;
-@property (nonatomic, readwrite) BOOL isStartKitsAsyncSet;
-@property (nonatomic, readwrite) BOOL isUploadIntervalSet;
-@property (nonatomic, readwrite) BOOL isSessionTimeoutSet;
+@property(nonatomic, readwrite) BOOL isProxyAppDelegateSet;
+@property(nonatomic, readwrite) BOOL isCollectUserAgentSet;
+@property(nonatomic, readwrite) BOOL isCollectSearchAdsAttributionSet;
+@property(nonatomic, readwrite) BOOL isTrackNotificationsSet;
+@property(nonatomic, readwrite) BOOL isAutomaticSessionTrackingSet;
+@property(nonatomic, readwrite) BOOL isStartKitsAsyncSet;
+@property(nonatomic, readwrite) BOOL isUploadIntervalSet;
+@property(nonatomic, readwrite) BOOL isSessionTimeoutSet;
 
 + (id)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
 

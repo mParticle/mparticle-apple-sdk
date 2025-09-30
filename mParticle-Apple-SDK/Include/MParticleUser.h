@@ -3,10 +3,10 @@
 //
 //
 
-#import <Foundation/Foundation.h>
 #import "MPAudience.h"
-#import "MPEnums.h"
 #import "MPConsentState.h"
+#import "MPEnums.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,34 +37,39 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Gets current identities (readonly)
- @returns A dictionary containing the collection of all identities including device identities
+ @returns A dictionary containing the collection of all identities including
+ device identities
  @see MPIdentity
  */
-@property (readonly, strong, nonnull) NSDictionary<NSNumber *, NSString *> *identities;
+@property(readonly, strong, nonnull)
+    NSDictionary<NSNumber *, NSString *> *identities;
 
 /**
  Gets/sets all user attributes.
  @returns A dictionary containing the collection of user attributes.
  */
-@property (readwrite, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;
+@property(readwrite, strong, nonnull)
+    NSDictionary<NSString *, id> *userAttributes;
 
 /**
- Increments the value of a user attribute by the provided amount. If the key does not
- exist among the current user attributes, this method will add the key to the user attributes
- and set the value to the provided amount. If the key already exists and the existing value is not
- a number, the operation will abort.
- 
+ Increments the value of a user attribute by the provided amount. If the key
+ does not exist among the current user attributes, this method will add the key
+ to the user attributes and set the value to the provided amount. If the key
+ already exists and the existing value is not a number, the operation will
+ abort.
+
  Note: this method has been changed to be async, return value will always be @0.
- 
+
  @param key The attribute key
  @param value The increment amount
  @returns The static value @0
  */
-- (nullable NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value;
+- (nullable NSNumber *)incrementUserAttribute:(NSString *)key
+                                      byValue:(NSNumber *)value;
 
 /**
- Sets a single user attribute. The property will be combined with any existing attributes.
- There is a 100 count limit to user attributes.
+ Sets a single user attribute. The property will be combined with any existing
+ attributes. There is a 100 count limit to user attributes.
  @param key The user attribute key
  @param value The user attribute value
  */
@@ -75,11 +80,12 @@ NS_ASSUME_NONNULL_BEGIN
  @param key The user attribute list key
  @param values An array of user attributes
  */
-- (void)setUserAttributeList:(NSString *)key values:(NSArray<NSString *> *)values;
+- (void)setUserAttributeList:(NSString *)key
+                      values:(NSArray<NSString *> *)values;
 
 /**
- Sets a single user tag or attribute.  The property will be combined with any existing attributes.
- There is a 100 count limit to user attributes.
+ Sets a single user tag or attribute.  The property will be combined with any
+ existing attributes. There is a 100 count limit to user attributes.
  @param tag The user tag/attribute
  */
 - (void)setUserTag:(NSString *)tag;
@@ -92,10 +98,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - User Audiences
 /**
- Retrieves user audiences from mParticle's servers and returns the result as an array of MPAudience objects
+ Retrieves user audiences from mParticle's servers and returns the result as an
+ array of MPAudience objects
  @param completionHandler A block to be called when the results are available.
  */
-- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSError * _Nullable error))completionHandler;
+- (void)getUserAudiencesWithCompletionHandler:
+    (void (^)(NSArray<MPAudience *> *currentAudiences,
+              NSError *_Nullable error))completionHandler;
 
 #pragma mark - Consent State
 /**

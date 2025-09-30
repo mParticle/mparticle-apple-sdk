@@ -1,16 +1,15 @@
-#import "MPEnums.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEventInstruction.h"
+#import "MPEnums.h"
 
 typedef NS_ENUM(NSInteger, MPCommerceEventKind) {
-    MPCommerceEventKindUnknown = 0,
-    MPCommerceEventKindProduct = 1,
-    MPCommerceEventKindPromotion,
-    MPCommerceEventKindImpression
+  MPCommerceEventKindUnknown = 0,
+  MPCommerceEventKindProduct = 1,
+  MPCommerceEventKindPromotion,
+  MPCommerceEventKindImpression
 };
 
-
-@interface MPCommerceEvent(Dictionary)
+@interface MPCommerceEvent (Dictionary)
 
 - (instancetype)initWithAction:(MPCommerceEventAction)action;
 - (NSString *)actionNameForAction:(MPCommerceEventAction)action;
@@ -25,9 +24,11 @@ typedef NS_ENUM(NSInteger, MPCommerceEventKind) {
 - (void)resetLatestProducts;
 - (NSMutableDictionary *)beautifiedAttributes;
 - (void)setBeautifiedAttributes:(NSMutableDictionary *)beautifiedAttributes;
-- (void)setImpressions:(NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)impressions;
+- (void)setImpressions:
+    (NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)impressions;
 - (void)setProducts:(NSArray<MPProduct *> *)products;
-- (NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)copyImpressionsMatchingHashedProperties:(NSDictionary *)hashedMap;
+- (NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)
+    copyImpressionsMatchingHashedProperties:(NSDictionary *)hashedMap;
 - (NSDate *)timestamp;
 - (void)setTimestamp:(NSDate *)timestamp;
 

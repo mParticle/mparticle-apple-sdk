@@ -9,8 +9,8 @@
 
 @interface MPAppDelegateProxy : NSProxy <UIApplicationDelegate>
 
-@property (nonatomic, strong) id originalAppDelegate;
-@property (nonatomic, strong) MPSurrogateAppDelegate *surrogateAppDelegate;
+@property(nonatomic, strong) id originalAppDelegate;
+@property(nonatomic, strong) MPSurrogateAppDelegate *surrogateAppDelegate;
 
 - (instancetype)initWithOriginalAppDelegate:(id)originalAppDelegate;
 

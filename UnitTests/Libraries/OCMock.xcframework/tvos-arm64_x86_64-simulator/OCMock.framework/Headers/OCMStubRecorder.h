@@ -39,49 +39,56 @@
 
 @end
 
-
 @interface OCMStubRecorder (Properties)
 
-#define andReturn(aValue) _andReturn(({                                             \
-  __typeof__(aValue) _val = (aValue);                                               \
-  NSValue *_nsval = [NSValue value:&_val withObjCType:@encode(__typeof__(_val))];   \
-  if (OCMIsObjectType(@encode(__typeof(_val)))) {                                   \
-      objc_setAssociatedObject(_nsval, "OCMAssociatedBoxedValue", *(__unsafe_unretained id *) (void *) &_val, OBJC_ASSOCIATION_RETAIN); \
-  }                                                                                 \
-  _nsval;                                                                           \
-}))
-@property (nonatomic, readonly) OCMStubRecorder *(^ _andReturn)(NSValue *);
+#define andReturn(aValue)                                                      \
+  _andReturn(({                                                                \
+    __typeof__(aValue) _val = (aValue);                                        \
+    NSValue *_nsval = [NSValue value:&_val                                     \
+                        withObjCType:@encode(__typeof__(_val))];               \
+    if (OCMIsObjectType(@encode(__typeof(_val)))) {                            \
+      objc_setAssociatedObject(_nsval, "OCMAssociatedBoxedValue",              \
+                               *(__unsafe_unretained id *)(void *)&_val,       \
+                               OBJC_ASSOCIATION_RETAIN);                       \
+    }                                                                          \
+    _nsval;                                                                    \
+  }))
+@property(nonatomic, readonly) OCMStubRecorder * (^_andReturn)(NSValue *);
 
 #define andThrow(anException) _andThrow(anException)
-@property (nonatomic, readonly) OCMStubRecorder *(^ _andThrow)(NSException *);
+@property(nonatomic, readonly) OCMStubRecorder * (^_andThrow)(NSException *);
 
 #define andPost(aNotification) _andPost(aNotification)
-@property (nonatomic, readonly) OCMStubRecorder *(^ _andPost)(NSNotification *);
+@property(nonatomic, readonly) OCMStubRecorder * (^_andPost)(NSNotification *);
 
 #define andCall(anObject, aSelector) _andCall(anObject, aSelector)
-@property (nonatomic, readonly) OCMStubRecorder *(^ _andCall)(id, SEL);
+@property(nonatomic, readonly) OCMStubRecorder * (^_andCall)(id, SEL);
 
 #define andDo(aBlock) _andDo(aBlock)
-@property (nonatomic, readonly) OCMStubRecorder *(^ _andDo)(void (^)(NSInvocation *));
+@property(nonatomic, readonly) OCMStubRecorder * (^_andDo)
+    (void (^)(NSInvocation *));
 
 #define andForwardToRealObject() _andForwardToRealObject()
-@property (nonatomic, readonly) OCMStubRecorder *(^ _andForwardToRealObject)(void);
+@property(nonatomic, readonly) OCMStubRecorder * (^_andForwardToRealObject)
+    (void);
 
 #if !defined(OCM_DISABLE_XCTEST_FEATURES)
 #define andFulfill(anExpectation) _andFulfill(anExpectation)
-@property (nonatomic, readonly) OCMStubRecorder *(^ _andFulfill)(XCTestExpectation *);
+@property(nonatomic, readonly) OCMStubRecorder * (^_andFulfill)
+    (XCTestExpectation *);
 #endif
 
-@property (nonatomic, readonly) OCMStubRecorder *(^ _ignoringNonObjectArgs)(void);
+@property(nonatomic, readonly) OCMStubRecorder * (^_ignoringNonObjectArgs)(void)
+    ;
 
-#define andBreak() _andDo(^(NSInvocation *_invocation)                \
-{                                                                     \
-  __builtin_debugtrap();                                              \
-})                                                                    \
+#define andBreak()                                                             \
+  _andDo(^(NSInvocation * _invocation) {                                       \
+    __builtin_debugtrap();                                                     \
+  })
 
-#define andLog(_format, ...) _andDo(^(NSInvocation *_invocation)      \
-{                                                                     \
-  NSLog(_format, ##__VA_ARGS__);                                      \
-})                                                                    \
+#define andLog(_format, ...)                                                   \
+  _andDo(^(NSInvocation * _invocation) {                                       \
+    NSLog(_format, ##__VA_ARGS__);                                             \
+  })
 
 @end

@@ -1,7 +1,7 @@
-#import <Foundation/Foundation.h>
-#import "MPEvent.h"
 #import "MPCommerceEvent.h"
+#import "MPEvent.h"
 #import "mParticle.h"
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -9,12 +9,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isBlockedUserIdentityType:(MPIdentity)userIdentityType;
 - (BOOL)isBlockedUserAttributeKey:(NSString *)userAttributeKey;
-- (MPEvent * _Nullable)transformEventForEvent:(MPEvent *)event;
-- (MPEvent * _Nullable)transformEventForScreenEvent:(MPEvent *)screenEvent;
+- (MPEvent *_Nullable)transformEventForEvent:(MPEvent *)event;
+- (MPEvent *_Nullable)transformEventForScreenEvent:(MPEvent *)screenEvent;
 
 @end
 
-@interface MPDataPlanFilter: NSObject<MPDataPlanFilterProtocol>
+@interface MPDataPlanFilter : NSObject <MPDataPlanFilterProtocol>
 
 - (NSMutableDictionary<NSString *, NSArray<NSString *> *> *)getPointInfo;
 
@@ -22,7 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (MPBaseEvent *)transformEventForBaseEvent:(MPBaseEvent *)baseEvent;
 - (MPEvent *)transformEventForEvent:(MPEvent *)mpEvent;
-- (MPCommerceEvent *)transformEventForCommerceEvent:(MPCommerceEvent *)commerceEvent;
+- (MPCommerceEvent *)transformEventForCommerceEvent:
+    (MPCommerceEvent *)commerceEvent;
 - (MPEvent *)transformEventForScreenEvent:(MPEvent *)screenEvent;
 - (BOOL)isBlockedUserAttributeKey:(NSString *)userAttributeKey;
 - (BOOL)isBlockedUserIdentityType:(MPIdentity)userIdentityType;

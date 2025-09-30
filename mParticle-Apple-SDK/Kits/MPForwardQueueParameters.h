@@ -2,7 +2,7 @@
 
 @interface MPForwardQueueParameters : NSObject
 
-@property (nonatomic, readonly) NSUInteger count;
+@property(nonatomic, readonly) NSUInteger count;
 
 - (nonnull instancetype)initWithParameters:(nonnull NSArray *)parameters;
 - (void)addParameter:(nullable id)parameter;

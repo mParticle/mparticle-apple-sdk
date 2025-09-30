@@ -1,6 +1,6 @@
 #import "MPTransactionAttributes.h"
 
-@interface MPTransactionAttributes(Dictionary)
+@interface MPTransactionAttributes (Dictionary)
 
 - (NSDictionary *)dictionaryRepresentation;
 - (NSDictionary *)beautifiedDictionaryRepresentation;

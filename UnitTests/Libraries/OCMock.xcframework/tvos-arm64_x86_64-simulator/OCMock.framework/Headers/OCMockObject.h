@@ -23,15 +23,13 @@
 @class OCMInvocationMatcher;
 @class OCMInvocationExpectation;
 
-
-@interface OCMockObject : NSProxy
-{
-    BOOL            isNice;
-    BOOL            expectationOrderMatters;
-    NSMutableArray *stubs;
-    NSMutableArray *expectations;
-    NSMutableArray *exceptions;
-    NSMutableArray *invocations;
+@interface OCMockObject : NSProxy {
+  BOOL isNice;
+  BOOL expectationOrderMatters;
+  NSMutableArray *stubs;
+  NSMutableArray *expectations;
+  NSMutableArray *exceptions;
+  NSMutableArray *invocations;
 }
 
 + (id)mockForClass:(Class)aClass;
@@ -41,7 +39,8 @@
 + (id)niceMockForClass:(Class)aClass;
 + (id)niceMockForProtocol:(Protocol *)aProtocol;
 
-+ (id)observerMock __deprecated_msg("Please use XCTNSNotificationExpectation instead.");
++ (id)observerMock __deprecated_msg(
+    "Please use XCTNSNotificationExpectation instead.");
 
 - (instancetype)init;
 
@@ -55,7 +54,8 @@
 - (id)verifyAtLocation:(OCMLocation *)location;
 
 - (void)verifyWithDelay:(NSTimeInterval)delay;
-- (void)verifyWithDelay:(NSTimeInterval)delay atLocation:(OCMLocation *)location;
+- (void)verifyWithDelay:(NSTimeInterval)delay
+             atLocation:(OCMLocation *)location;
 
 - (void)stopMocking;
 
@@ -70,8 +70,14 @@
 - (BOOL)handleSelector:(SEL)sel;
 
 - (void)verifyInvocation:(OCMInvocationMatcher *)matcher;
-- (void)verifyInvocation:(OCMInvocationMatcher *)matcher atLocation:(OCMLocation *)location;
-- (void)verifyInvocation:(OCMInvocationMatcher *)matcher withQuantifier:(OCMQuantifier *)quantifier atLocation:(OCMLocation *)location;
-- (NSString *)descriptionForVerificationFailureWithMatcher:(OCMInvocationMatcher *)matcher quantifier:(OCMQuantifier *)quantifier invocationCount:(NSUInteger)count;
+- (void)verifyInvocation:(OCMInvocationMatcher *)matcher
+              atLocation:(OCMLocation *)location;
+- (void)verifyInvocation:(OCMInvocationMatcher *)matcher
+          withQuantifier:(OCMQuantifier *)quantifier
+              atLocation:(OCMLocation *)location;
+- (NSString *)
+    descriptionForVerificationFailureWithMatcher:(OCMInvocationMatcher *)matcher
+                                      quantifier:(OCMQuantifier *)quantifier
+                                 invocationCount:(NSUInteger)count;
 
 @end

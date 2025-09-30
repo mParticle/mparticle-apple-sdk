@@ -11,26 +11,31 @@
 @class MPConsentState;
 
 #if TARGET_OS_IOS == 1
-    @class MParticleUserNotification;
+@class MParticleUserNotification;
 #endif
 
 @protocol MPPersistenceControllerProtocol
 - (void)resetDatabaseForWorkspaceSwitching;
 - (void)resetDatabase;
 - (void)saveForwardRecord:(MPForwardRecord *_Nonnull)forwardRecord;
-- (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
-- (void)deleteIntegrationAttributesForIntegrationId:(nonnull NSNumber *)integrationId;
-- (nullable NSDictionary*)fetchIntegrationAttributesForId:(NSNumber *_Nonnull)integrationId;
+- (void)saveIntegrationAttributes:
+    (nonnull MPIntegrationAttributes *)integrationAttributes;
+- (void)deleteIntegrationAttributesForIntegrationId:
+    (nonnull NSNumber *)integrationId;
+- (nullable NSDictionary *)fetchIntegrationAttributesForId:
+    (NSNumber *_Nonnull)integrationId;
 @end
 
-@interface MPPersistenceController_PRIVATE : NSObject<MPPersistenceControllerProtocol>
+@interface MPPersistenceController_PRIVATE
+    : NSObject <MPPersistenceControllerProtocol>
 
-@property (nonatomic, readonly, getter = isDatabaseOpen) BOOL databaseOpen;
+@property(nonatomic, readonly, getter=isDatabaseOpen) BOOL databaseOpen;
 
 + (NSNumber *_Nonnull)mpId;
 + (void)setMpid:(nonnull NSNumber *)mpId;
 + (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
-+ (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;
++ (void)setConsentState:(nullable MPConsentState *)state
+                forMpid:(nonnull NSNumber *)mpid;
 + (NSInteger)maxBytesPerEvent:(nullable NSString *)messageType;
 + (NSInteger)maxBytesPerBatch:(nullable NSString *)messageType;
 - (nullable MPSession *)archiveSession:(nonnull MPSession *)session;
@@ -38,9 +43,11 @@
 - (void)resetDatabase;
 - (void)deleteConsumerInfo;
 - (void)deleteCookie:(nonnull MPCookie *)cookie;
-- (void)deleteForwardRecordsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds;
+- (void)deleteForwardRecordsIds:
+    (nonnull NSArray<NSNumber *> *)forwardRecordsIds;
 - (void)deleteAllIntegrationAttributes;
-- (void)deleteIntegrationAttributesForIntegrationId:(nonnull NSNumber *)integrationId;
+- (void)deleteIntegrationAttributesForIntegrationId:
+    (nonnull NSNumber *)integrationId;
 - (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
 - (void)deleteNetworkPerformanceMessages;
 - (void)deletePreviousSession;
@@ -50,17 +57,22 @@
 - (void)deleteUpload:(nonnull MPUpload *)upload;
 - (void)deleteUploadId:(int64_t)uploadId;
 - (nullable NSArray<MPBreadcrumb *> *)fetchBreadcrumbs;
-- (nullable MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber * _Nonnull)userId;
-- (nullable NSArray<MPCookie *> *)fetchCookiesForUserId:(NSNumber * _Nonnull)userId;
+- (nullable MPConsumerInfo *)fetchConsumerInfoForUserId:
+    (NSNumber *_Nonnull)userId;
+- (nullable NSArray<MPCookie *> *)fetchCookiesForUserId:
+    (NSNumber *_Nonnull)userId;
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords;
 - (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes;
-- (nullable NSDictionary*)fetchIntegrationAttributesForId:(NSNumber * _Nonnull)integrationId;
+- (nullable NSDictionary *)fetchIntegrationAttributesForId:
+    (NSNumber *_Nonnull)integrationId;
 - (nullable NSMutableDictionary *)fetchMessagesForUploading;
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 - (nullable MPSession *)fetchPreviousSession;
-- (nullable MPMessage *)fetchSessionEndMessageInSession:(nonnull MPSession *)session;
+- (nullable MPMessage *)fetchSessionEndMessageInSession:
+    (nonnull MPSession *)session;
 - (nullable NSMutableArray<MPSession *> *)fetchSessions;
-- (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSession:(nonnull MPSession *)session;
+- (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSession:
+    (nonnull MPSession *)session;
 - (nullable NSArray<MPUpload *> *)fetchUploads;
 - (void)moveContentFromMpidZeroToMpid:(nonnull NSNumber *)mpid;
 - (void)purgeMemory;
@@ -68,14 +80,15 @@
 - (void)saveBreadcrumb:(nonnull MPMessage *)message;
 - (void)saveConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)saveForwardRecord:(nonnull MPForwardRecord *)forwardRecord;
-- (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
+- (void)saveIntegrationAttributes:
+    (nonnull MPIntegrationAttributes *)integrationAttributes;
 - (void)saveMessage:(nonnull MPMessage *)message;
 - (void)saveSession:(nonnull MPSession *)session;
 - (void)saveUpload:(nonnull MPUpload *)upload;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)updateSession:(nonnull MPSession *)session;
-- (nonnull NSDictionary<NSString *, NSDictionary *> *)appAndDeviceInfoForSessionId:(nonnull NSNumber *)sessionId;
+- (nonnull NSDictionary<NSString *, NSDictionary *> *)
+    appAndDeviceInfoForSessionId:(nonnull NSNumber *)sessionId;
 - (void)resetDatabaseForWorkspaceSwitching;
 
 @end
-

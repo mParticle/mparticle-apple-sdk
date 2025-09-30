@@ -1,6 +1,6 @@
-#import <Foundation/Foundation.h>
 #import "MPEnums.h"
 #import "MPKitProtocol.h"
+#import <Foundation/Foundation.h>
 
 @class MPBaseEvent;
 @class MPCommerceEvent;
@@ -9,22 +9,29 @@
 @class MPForwardQueueParameters;
 
 typedef NS_ENUM(NSUInteger, MPQueueItemType) {
-    MPQueueItemTypeEvent = 0,
-    MPQueueItemTypeEcommerce,
-    MPQueueItemTypeGeneralPurpose
+  MPQueueItemTypeEvent = 0,
+  MPQueueItemTypeEcommerce,
+  MPQueueItemTypeGeneralPurpose
 };
 
 @interface MPForwardQueueItem : NSObject
 
-@property (nonatomic, strong, readonly, nullable) MPCommerceEvent *commerceEvent;
-@property (nonatomic, strong, readonly, nullable) MPBaseEvent *event;
-@property (nonatomic, readonly) MPMessageType messageType;
-@property (nonatomic, readonly) MPQueueItemType queueItemType;
-@property (nonatomic, readonly, nullable) SEL selector;
-@property (nonatomic, strong, readonly, nullable) MPForwardQueueParameters *queueParameters;
+@property(nonatomic, strong, readonly, nullable) MPCommerceEvent *commerceEvent;
+@property(nonatomic, strong, readonly, nullable) MPBaseEvent *event;
+@property(nonatomic, readonly) MPMessageType messageType;
+@property(nonatomic, readonly) MPQueueItemType queueItemType;
+@property(nonatomic, readonly, nullable) SEL selector;
+@property(nonatomic, strong, readonly, nullable)
+    MPForwardQueueParameters *queueParameters;
 
-- (nullable instancetype)initWithCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
-- (nullable instancetype)initWithSelector:(nonnull SEL)selector event:(nonnull MPBaseEvent *)event messageType:(MPMessageType)messageType;
-- (nullable instancetype)initWithSelector:(nonnull SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType;
+- (nullable instancetype)initWithCommerceEvent:
+    (nonnull MPCommerceEvent *)commerceEvent;
+- (nullable instancetype)initWithSelector:(nonnull SEL)selector
+                                    event:(nonnull MPBaseEvent *)event
+                              messageType:(MPMessageType)messageType;
+- (nullable instancetype)
+    initWithSelector:(nonnull SEL)selector
+          parameters:(nullable MPForwardQueueParameters *)parameters
+         messageType:(MPMessageType)messageType;
 
 @end

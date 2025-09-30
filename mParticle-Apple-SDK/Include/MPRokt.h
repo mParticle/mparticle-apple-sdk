@@ -15,21 +15,23 @@
 @interface MPRoktEventCallback : NSObject
 
 /** Called when the Rokt placement has finished loading */
-@property (nonatomic, copy, nullable) void (^onLoad)(void);
+@property(nonatomic, copy, nullable) void (^onLoad)(void);
 /** Called when the Rokt placement is being unloaded/removed */
-@property (nonatomic, copy, nullable) void (^onUnLoad)(void);
+@property(nonatomic, copy, nullable) void (^onUnLoad)(void);
 /** Called when Rokt reccomends the UI shows a loading indicator */
-@property (nonatomic, copy, nullable) void (^onShouldShowLoadingIndicator)(void);
+@property(nonatomic, copy, nullable) void (^onShouldShowLoadingIndicator)(void);
 /** Called when Rokt reccomends the UI hides its loading indicator */
-@property (nonatomic, copy, nullable) void (^onShouldHideLoadingIndicator)(void);
+@property(nonatomic, copy, nullable) void (^onShouldHideLoadingIndicator)(void);
 /** Called when the embedded view's size changes */
-@property (nonatomic, copy, nullable) void (^onEmbeddedSizeChange)(NSString * _Nonnull, CGFloat);
+@property(nonatomic, copy, nullable) void (^onEmbeddedSizeChange)
+    (NSString *_Nonnull, CGFloat);
 
 @end
 
 /**
  * Custom view class for embedding Rokt widgets in the UI.
- * Inherits from UIView and provides container functionality for Rokt placements.
+ * Inherits from UIView and provides container functionality for Rokt
+ * placements.
  */
 @interface MPRoktEmbeddedView : UIView
 
@@ -37,9 +39,9 @@
 
 // An enum of the possible options for an MPRoktConfig colorMode
 typedef NS_ENUM(NSInteger, MPColorMode) {
-    MPColorModeLight = 0,
-    MPColorModeDark = 1,
-    MPColorModeSystem = 2
+  MPColorModeLight = 0,
+  MPColorModeDark = 1,
+  MPColorModeSystem = 2
 };
 
 /**
@@ -47,11 +49,12 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  */
 @interface MPRoktConfig : NSObject
 /** The max duration for the cache */
-@property (nonatomic, copy, nullable) NSNumber *cacheDuration;
+@property(nonatomic, copy, nullable) NSNumber *cacheDuration;
 /** The attributes you would like tied to the cache */
-@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *cacheAttributes;
+@property(nonatomic, copy, nullable)
+    NSDictionary<NSString *, NSString *> *cacheAttributes;
 /** The color mode you would like Rokt to display in */
-@property (nonatomic) MPColorMode colorMode;
+@property(nonatomic) MPColorMode colorMode;
 
 @end
 
@@ -71,24 +74,31 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  * Simplified version without embedded views or callbacks.
  *
  * @param identifier Unique identifier for the placement
- * @param attributes Optional dictionary of attributes to customize the placement
+ * @param attributes Optional dictionary of attributes to customize the
+ * placement
  */
 - (void)selectPlacements:(NSString *_Nonnull)identifier
-              attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes;
+              attributes:
+                  (NSDictionary<NSString *, NSString *> *_Nullable)attributes;
 
 /**
- * Selects a Rokt placement with full configuration options including embedded views and callbacks.
+ * Selects a Rokt placement with full configuration options including embedded
+ * views and callbacks.
  *
  * @param identifier Unique identifier for the placement
- * @param attributes Optional dictionary of attributes to customize the placement
- * @param embeddedViews Optional dictionary mapping placement names to their embedded views
+ * @param attributes Optional dictionary of attributes to customize the
+ * placement
+ * @param embeddedViews Optional dictionary mapping placement names to their
+ * embedded views
  * @param roktEventCallback Optional callback object to handle widget events
  */
-- (void)selectPlacements:(NSString *_Nonnull)identifier
-              attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-           embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                  config:(MPRoktConfig * _Nullable)config
-               callbacks:(MPRoktEventCallback * _Nullable)roktEventCallback;
+- (void)
+    selectPlacements:(NSString *_Nonnull)identifier
+          attributes:(NSDictionary<NSString *, NSString *> *_Nullable)attributes
+       embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> *_Nullable)
+                         embeddedViews
+              config:(MPRoktConfig *_Nullable)config
+           callbacks:(MPRoktEventCallback *_Nullable)roktEventCallback;
 
 /**
  * Used to report a successful conversion without displaying a placement
@@ -107,7 +117,8 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  * @param identifier The identifier of the placement to subscribe to
  * @param onEvent The block to execute when the event is triggered
  */
-- (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
+- (void)events:(NSString *_Nonnull)identifier
+       onEvent:(void (^_Nullable)(MPRoktEvent *_Nonnull))onEvent;
 
 /**
  * Used to close Rokt overlay placements

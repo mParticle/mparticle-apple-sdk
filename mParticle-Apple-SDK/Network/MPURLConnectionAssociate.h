@@ -4,7 +4,7 @@
 
 @interface MPURLConnectionAssociate : NSObject
 
-@property (nonatomic, strong) id delegate;
-@property (nonatomic, strong) MPNetworkPerformance *networkPerformance;
+@property(nonatomic, strong) id delegate;
+@property(nonatomic, strong) MPNetworkPerformance *networkPerformance;
 
 @end

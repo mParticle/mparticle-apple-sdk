@@ -23,11 +23,13 @@
 
 // if you are looking for any, isNil, etc, they have moved to OCMArg
 
-// try to use [OCMArg checkWith...] instead of the constraintWith... methods below
+// try to use [OCMArg checkWith...] instead of the constraintWith... methods
+// below
 
 + (instancetype)constraintWithSelector:(SEL)aSelector onObject:(id)anObject;
-+ (instancetype)constraintWithSelector:(SEL)aSelector onObject:(id)anObject withValue:(id)aValue;
-
++ (instancetype)constraintWithSelector:(SEL)aSelector
+                              onObject:(id)anObject
+                             withValue:(id)aValue;
 
 @end
 
@@ -40,25 +42,22 @@
 @interface OCMIsNotNilConstraint : OCMConstraint
 @end
 
-@interface OCMIsNotEqualConstraint : OCMConstraint
-{
+@interface OCMIsNotEqualConstraint : OCMConstraint {
 @public
-    id testValue;
+  id testValue;
 }
 
 @end
 
-@interface OCMInvocationConstraint : OCMConstraint
-{
+@interface OCMInvocationConstraint : OCMConstraint {
 @public
-    NSInvocation *invocation;
+  NSInvocation *invocation;
 }
 
 @end
 
-@interface OCMBlockConstraint : OCMConstraint
-{
-    BOOL (^block)(id);
+@interface OCMBlockConstraint : OCMConstraint {
+  BOOL (^block)(id);
 }
 
 - (instancetype)initWithConstraintBlock:(BOOL (^)(id))block;
@@ -66,6 +65,10 @@
 @end
 
 #ifndef OCM_DISABLE_SHORT_SYNTAX
-#define CONSTRAINT(aSelector) [OCMConstraint constraintWithSelector:aSelector onObject:self]
-#define CONSTRAINTV(aSelector, aValue) [OCMConstraint constraintWithSelector:aSelector onObject:self withValue:(aValue)]
+#define CONSTRAINT(aSelector)                                                  \
+  [OCMConstraint constraintWithSelector:aSelector onObject:self]
+#define CONSTRAINTV(aSelector, aValue)                                         \
+  [OCMConstraint constraintWithSelector:aSelector                              \
+                               onObject:self                                   \
+                              withValue:(aValue)]
 #endif

@@ -2,12 +2,14 @@
 
 @class MPURL;
 
-extern NSString * _Nonnull const kMPURLHostEventSubdomain;
-extern NSString * _Nonnull const kMPURLHostIdentitySubdomain;
+extern NSString *_Nonnull const kMPURLHostEventSubdomain;
+extern NSString *_Nonnull const kMPURLHostIdentitySubdomain;
 
-@interface MPNetworkCommunication_PRIVATE(Tests)
+@interface MPNetworkCommunication_PRIVATE (Tests)
 
-- (nonnull NSString *)defaultHostWithSubdomain:(nonnull NSString *)subdomain apiKey:(nonnull NSString *)apiKey enableDirectRouting:(BOOL)enableDirectRouting;
+- (nonnull NSString *)defaultHostWithSubdomain:(nonnull NSString *)subdomain
+                                        apiKey:(nonnull NSString *)apiKey
+                           enableDirectRouting:(BOOL)enableDirectRouting;
 - (nonnull NSString *)defaultEventHost;
 - (nonnull NSString *)defaultIdentityHost;
 

@@ -25,7 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * Note that all purpose keys will be lower-cased and trimmed.
  */
-- (void)addGDPRConsentState:(MPGDPRConsent *)consent purpose:(NSString *)purpose;
+- (void)addGDPRConsentState:(MPGDPRConsent *)consent
+                    purpose:(NSString *)purpose;
 
 /**
  * Remove a single GDPR consent state for this builder.
@@ -39,13 +40,14 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * Note that all purpose keys will be lower-cased and trimmed.
  */
-- (void)setGDPRConsentState:(nullable NSDictionary<NSString *, MPGDPRConsent *> *)consentState;
+- (void)setGDPRConsentState:
+    (nullable NSDictionary<NSString *, MPGDPRConsent *> *)consentState;
 
 #pragma mark CCPA
 
 /**
-* Retrieve the current CCPA consent state for this user.
-*/
+ * Retrieve the current CCPA consent state for this user.
+ */
 - (nullable MPCCPAConsent *)ccpaConsentState;
 
 /**
