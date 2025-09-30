@@ -25,6 +25,7 @@ runtimes:
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
+    - clang-format@18.1.8 # Formats C/C++/Objective-C code for consistent style
     - actionlint@1.7.7 # Validates GitHub Actions workflows for syntax and logic errors
     - git-diff-check # Ensures only allowed changes are staged (enforces diff-based policies)
     - markdownlint@0.45.0 # Checks Markdown files for style consistency and common issues
