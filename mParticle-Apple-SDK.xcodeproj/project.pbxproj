@@ -2473,7 +2473,6 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK-NoLocation.modulemap";
-				SKIP_INSTALL = YES;
 				OTHER_CFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK-NoLocation";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -2507,7 +2506,6 @@
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				MACH_O_TYPE = staticlib;
 				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK-NoLocation.modulemap";
-				SKIP_INSTALL = YES;
 				OTHER_CFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK-NoLocation";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
