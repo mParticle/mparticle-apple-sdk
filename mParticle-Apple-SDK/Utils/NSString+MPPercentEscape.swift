@@ -7,17 +7,17 @@
 
 import Foundation
 
-public extension NSString {
-    @objc func percentEscape() -> String? {
+extension NSString {
+    @objc public func percentEscape() -> String? {
         var allowed = CharacterSet()
         allowed.insert(charactersIn: "; ")
         allowed = allowed.inverted
-        return addingPercentEncoding(withAllowedCharacters: allowed)
+        return self.addingPercentEncoding(withAllowedCharacters: allowed)
     }
 }
 
-public extension String {
-    func percentEscape() -> String? {
+extension String {
+    public func percentEscape() -> String? {
         return (self as NSString).percentEscape()
     }
 }

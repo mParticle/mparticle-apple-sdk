@@ -29,6 +29,6 @@ jobs:
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
-
+        
       - name: Run iOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme ${{ matrix.scheme }} -destination 'platform=${{ matrix.platform }} Simulator,name=${{ matrix.device }},OS=latest' test

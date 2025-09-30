@@ -6,19 +6,18 @@
 //
 
 import Foundation
-
-@objc public class MPLaunchInfo: NSObject {
+@objc public class MPLaunchInfo : NSObject {
     private let annotationKey = UIApplication.OpenURLOptionsKey.annotation
     private let sourceAppKey = UIApplication.OpenURLOptionsKey.sourceApplication
     private var sourceApp: String?
-
+    
     @objc public private(set) var sourceApplication: String?
     @objc public private(set) var annotation: String?
     @objc public private(set) var url: URL
-
-    @objc public required init(URL: URL, sourceApplication: String?, annotation: Any?) {
+    
+    @objc required public init(URL: URL, sourceApplication: String?, annotation: Any?) {
         sourceApp = sourceApplication
-        url = URL
+        self.url = URL
         if let sourceApp = sourceApp {
             let urlString = url.absoluteString
             let appLinksRange = urlString.range(of: "al_applink_data")
@@ -27,29 +26,29 @@ import Foundation
             self.sourceApplication = nil
         }
         self.annotation = MPLaunchInfo.stringifyAnnotation(annotation)
-
+        
         super.init()
     }
-
-    @objc public init(URL: URL, options: [String: Any]?) {
-        url = URL
+    
+    @objc public init(URL: URL, options: [String : Any]?) {
+        self.url = URL
         if let options = options {
-            if let sourceApp = options[sourceAppKey.rawValue] as? String {
+            if let sourceApp = options[self.sourceAppKey.rawValue] as? String {
                 self.sourceApp = sourceApp
             }
-            if let sourceApp = sourceApp {
+            if let sourceApp = self.sourceApp {
                 let urlString = url.absoluteString
                 let appLinksRange = urlString.range(of: "al_applink_data")
-                sourceApplication = appLinksRange?.lowerBound == nil ? sourceApp : String(format: "AppLink(%@)", sourceApp)
+                self.sourceApplication = appLinksRange?.lowerBound == nil ? sourceApp : String(format: "AppLink(%@)", sourceApp)
             } else {
-                sourceApplication = nil
+                self.sourceApplication = nil
             }
-
-            if let annotation = options[annotationKey.rawValue] as? String {
+            
+            if let annotation = options[self.annotationKey.rawValue] as? String {
                 self.annotation = annotation
             }
         }
-
+        
         super.init()
     }
 
@@ -104,18 +103,20 @@ import Foundation
             return nil
         }
     }
-
-    @objc public var options: [String: Any] {
-        var options: [String: Any] = [:]
-
-        if let sourceApplication = sourceApplication {
-            options[sourceAppKey.rawValue] = sourceApplication
+    
+    @objc public var options: [String : Any] {
+        get {
+            var options: [String : Any] = [:]
+            
+            if let sourceApplication = self.sourceApplication {
+                options[self.sourceAppKey.rawValue] = sourceApplication
+            }
+            
+            if let annotation = self.annotation {
+                options[self.annotationKey.rawValue] = annotation
+            }
+            
+            return options
         }
-
-        if let annotation = annotation {
-            options[annotationKey.rawValue] = annotation
-        }
-
-        return options
     }
 }

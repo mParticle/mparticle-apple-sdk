@@ -20,13 +20,13 @@ import Foundation
     }
 
     @objc public class MPRoktShowLoadingIndicator: MPRoktEvent {
-        @objc override public init() {
+        @objc public override init() {
             super.init()
         }
     }
 
     @objc public class MPRoktHideLoadingIndicator: MPRoktEvent {
-        @objc override public init() {
+        @objc public override init() {
             super.init()
         }
     }
@@ -121,10 +121,9 @@ import Foundation
         @objc public let catalogItemId: String
         @objc public let currency: String
         private let _description: String
-        @objc override public var description: String {
+        @objc public override var description: String {
             _description
         }
-
         @objc public let linkedProductId: String?
         @objc public let providerData: String
         @objc public let quantity: NSDecimalNumber?
@@ -132,23 +131,22 @@ import Foundation
         @objc public let unitPrice: NSDecimalNumber?
 
         @objc public init(placementId: String,
-                          name: String?,
-                          cartItemId: String,
-                          catalogItemId: String,
-                          currency: String,
-                          description: String,
-                          linkedProductId: String?,
-                          providerData: String,
-                          quantity: NSDecimalNumber?,
-                          totalPrice: NSDecimalNumber?,
-                          unitPrice: NSDecimalNumber?)
-        {
+             name: String?,
+             cartItemId: String,
+             catalogItemId: String,
+             currency: String,
+             description: String,
+             linkedProductId: String?,
+             providerData: String,
+             quantity: NSDecimalNumber?,
+             totalPrice: NSDecimalNumber?,
+             unitPrice: NSDecimalNumber?) {
             self.placementId = placementId
             self.name = name
             self.cartItemId = cartItemId
             self.catalogItemId = catalogItemId
             self.currency = currency
-            _description = description
+            self._description = description
             self.linkedProductId = linkedProductId
             self.providerData = providerData
             self.quantity = quantity
@@ -158,3 +156,4 @@ import Foundation
         }
     }
 }
+

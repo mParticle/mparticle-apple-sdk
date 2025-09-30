@@ -3,7 +3,7 @@ PREFIXED_VERSION="v$1"
 NOTES="$2"
 
 # Update version number
-#
+# 
 
 # Update constant in codebase
 sed -i '' 's/NSString \*const kMParticleSDKVersion = @".*/NSString *const kMParticleSDKVersion = @"'"$VERSION"'";/' mParticle-Apple-SDK/MPIConstants.m
@@ -13,7 +13,7 @@ sed -i '' 's/let kMParticleSDKVersion = ".*/let kMParticleSDKVersion = "'"$VERSI
 /usr/libexec/PlistBuddy -c "Set CFBundleShortVersionString $VERSION" Framework/Info.plist
 
 # Update Carthage release json file
-jq --indent 3 '. += {'"\"$VERSION\""': "'"https://github.com/mParticle/mparticle-apple-sdk/releases/download/$PREFIXED_VERSION/mParticle_Apple_SDK.framework.zip?alt=https://github.com/mParticle/mparticle-apple-sdk/releases/download/$PREFIXED_VERSION/mParticle_Apple_SDK.xcframework.zip"'"}' mParticle_Apple_SDK.json >tmp.json
+jq --indent 3 '. += {'"\"$VERSION\""': "'"https://github.com/mParticle/mparticle-apple-sdk/releases/download/$PREFIXED_VERSION/mParticle_Apple_SDK.framework.zip?alt=https://github.com/mParticle/mparticle-apple-sdk/releases/download/$PREFIXED_VERSION/mParticle_Apple_SDK.xcframework.zip"'"}' mParticle_Apple_SDK.json > tmp.json
 mv tmp.json mParticle_Apple_SDK.json
 
 # Update CocoaPods podspec file
@@ -63,18 +63,18 @@ echo "Checking for generated artifacts..."
 missing_files=0
 
 for file in mParticle_Apple_SDK.framework.zip mParticle_Apple_SDK_NoLocation.framework.zip mParticle_Apple_SDK.xcframework.zip mParticle_Apple_SDK_NoLocation.xcframework.zip generated-docs.zip; do
-	if [ -f "$file" ]; then
-		echo "✓ $file exists"
-	else
-		echo "⚠ $file is missing"
-		missing_files=$((missing_files + 1))
-	fi
+    if [ -f "$file" ]; then
+        echo "✓ $file exists"
+    else
+        echo "⚠ $file is missing"
+        missing_files=$((missing_files + 1))
+    fi
 done
 
 if [ $missing_files -gt 0 ]; then
-	echo "Warning: $missing_files artifact file(s) are missing, but continuing with release..."
+    echo "Warning: $missing_files artifact file(s) are missing, but continuing with release..."
 else
-	echo "All artifact files generated successfully!"
+    echo "All artifact files generated successfully!"
 fi
 
 # Always succeed to allow the release to continue

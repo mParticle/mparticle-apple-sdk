@@ -7,8 +7,8 @@
 
 import Foundation
 
-public extension NSArray {
-    @objc func caseInsensitiveContainsObject(_ object: String) -> Bool {
+extension NSArray {
+    @objc public func caseInsensitiveContainsObject(_ object: String) -> Bool {
         return contains { item in
             guard let item = item as? String else {
                 return false
@@ -18,8 +18,8 @@ public extension NSArray {
     }
 }
 
-public extension Array {
-    func caseInsensitiveContainsObject(_ object: String) -> Bool {
+extension Array {
+    public func caseInsensitiveContainsObject(_ object: String) -> Bool {
         return (self as NSArray).caseInsensitiveContainsObject(object)
     }
 }

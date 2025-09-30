@@ -9,11 +9,11 @@
 import Foundation
 
 @objc public extension NSNumber {
-    func formatWithNonScientificNotation() -> NSNumber {
-        let minThreshold = 1.0e-5
-        let selfAbsoluteValue = fabs(doubleValue)
+    @objc func formatWithNonScientificNotation() -> NSNumber {
+        let minThreshold = 1.0E-5
+        let selfAbsoluteValue = fabs(self.doubleValue)
         var formattedNumber: NSNumber = 0
-
+        
         if selfAbsoluteValue >= minThreshold {
             let numberFormatter = NumberFormatter()
             numberFormatter.numberStyle = .decimal
@@ -24,7 +24,7 @@ import Foundation
                 formattedNumber = self
             }
         }
-
+        
         return formattedNumber
     }
 }

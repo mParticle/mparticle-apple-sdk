@@ -1,14 +1,17 @@
 import XCTest
 #if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
+import mParticle_Apple_SDK_NoLocation
 #else
-    import mParticle_Apple_SDK
+import mParticle_Apple_SDK
 #endif
 
 class NSString_MPPercentEscapeTests: XCTestCase {
-    override func setUp() {}
 
-    override func tearDown() {}
+    override func setUp() {
+    }
+
+    override func tearDown() {
+    }
 
     func testPercentEscape() {
         let array = ["288160084=2832403&-515079401=2832403&1546594223=2832403&264784951=2832403&4151713=2832403&-1663781220=2832403", "Test;Testing", "Test Testing", "AbCdEF"]

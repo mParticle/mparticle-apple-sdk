@@ -17,7 +17,7 @@ func MPMilliseconds(timestamp: Double) -> Double {
 
 let kMParticleSDKVersion = "8.39.0"
 
-enum MessageKeys {
+struct MessageKeys {
     static let kMPMessagesKey = "msgs"
     static let kMPMessageIdKey = "id"
     static let kMPMessageUserIdKey = "mpid"
@@ -54,7 +54,7 @@ enum MessageKeys {
     static let kMPDataPlanVersionKey = "v"
 }
 
-enum PushNotifications {
+struct PushNotifications {
     static let kMPDeviceTokenKey = "to"
     static let kMPPushStatusKey = "r"
     static let kMPPushMessageTypeKey = "t"
@@ -74,7 +74,7 @@ enum PushNotifications {
     static let kMPPushNotificationCategoryIdentifierKey = "acid"
 }
 
-enum RemoteConfig {
+struct RemoteConfig {
     static let kMPRemoteConfigExceptionHandlingModeKey = "cue"
     static let kMPRemoteConfigExceptionHandlingModeAppDefined = "appdefined"
     static let kMPRemoteConfigExceptionHandlingModeForce = "forcecatch"
@@ -159,13 +159,13 @@ enum RemoteConfig {
     static let kMPRemoteConfigDataPlanningDataPlanVersionValuePromotionAction = "promotion_action"
     static let kMPRemoteConfigDataPlanningDataPlanVersionValueProductImpressions = "product_impressions"
     static let kMPRemoteConfigDataPlanningDataPlanVersionValueCriteria = "criteria"
-    static let kMPRemoteConfigDataPlanningDataPlanVersionValueAction = "action"
+    static let kMPRemoteConfigDataPlanningDataPlanVersionValueAction  = "action"
     static let kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionUnknown = "unknown"
     static let kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionView = "view"
     static let kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionClick = "click"
 }
 
-enum ConsentFiltering {
+struct ConsentFiltering {
     static let kMPConsentKitFilter = "crvf"
     static let kMPConsentKitFilterIncludeOnMatch = "i"
     static let kMPConsentKitFilterItems = "v"
@@ -178,7 +178,7 @@ enum ConsentFiltering {
     static let kMPConsentCCPAPurposeName = "data_sale_opt_out"
 }
 
-enum Notifications {
+struct Notifications {
     static let kMPCrashReportOccurredNotification = Notification.Name("MPCrashReportOccurredNotification")
     static let kMPConfigureExceptionHandlingNotification = Notification.Name("MPConfigureExceptionHandlingNotification")
     static let kMPUserNotificationDictionaryKey = Notification.Name("MPUserNotificationDictionaryKey")
@@ -188,7 +188,7 @@ enum Notifications {
     static let kMPRemoteNotificationOldDeviceTokenKey = Notification.Name("MPRemoteNotificationOldDeviceTokenKey")
 }
 
-enum Device {
+struct Device {
     static let kMPDeviceInformationKey = "di"
     static let kMPDeviceBrandKey = "b"
     static let kMPDeviceProductKey = "p"
@@ -222,7 +222,7 @@ enum Device {
     static let kMPDeviceInvalidVendorId = "00000000-0000-0000-0000-000000000000"
 }
 
-enum Miscellaneous {
+struct Miscellaneous {
     static let kMPFirstSeenUser = "fsu"
     static let kMPLastSeenUser = "lsu"
     static let kMPAppInitialLaunchTimeKey = "ict"
@@ -233,12 +233,13 @@ enum Miscellaneous {
     static let kMPLastIdentifiedDate = "last_date_used"
     static let MPSideloadedKitsCountUserDefaultsKey = "MPSideloadedKitsCountUserDefaultsKey"
     static let kMPLastUploadSettingsUserDefaultsKey = "lastUploadSettings"
-    static let CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0 * 60
-    static let CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60 * 60 * 24.0
+    static let CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0*60
+    static let CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60*60*24.0
     static let kMPDeviceTokenTypeKey = "tot"
     static let kMPATT = "atts"
     static let kMPATTTimestamp = "attt"
     static let kMPDeviceCydiaJailbrokenKey = "cydia"
+
 }
 
 /// User Identities

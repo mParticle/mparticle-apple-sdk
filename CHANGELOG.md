@@ -1,513 +1,596 @@
 # [8.39.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.38.0...v8.39.0) (2025-09-18)
 
+
 ### Bug Fixes
 
-- Update Hashed Email Logic With Unassigned ([#401](https://github.com/mParticle/mparticle-apple-sdk/issues/401)) ([c50b101](https://github.com/mParticle/mparticle-apple-sdk/commit/c50b101de6d7d4f66ea7708fb435607399b61c71))
+* Update Hashed Email Logic With Unassigned ([#401](https://github.com/mParticle/mparticle-apple-sdk/issues/401)) ([c50b101](https://github.com/mParticle/mparticle-apple-sdk/commit/c50b101de6d7d4f66ea7708fb435607399b61c71))
+
 
 ### Features
 
-- SDKE-119 Create protocols for testability ([#402](https://github.com/mParticle/mparticle-apple-sdk/issues/402)) ([12b636e](https://github.com/mParticle/mparticle-apple-sdk/commit/12b636ee1e777c2de323f2f1ed071af64b1f9a20))
-- SDKE-119 Create protocols for testability. Part 2 ([#403](https://github.com/mParticle/mparticle-apple-sdk/issues/403)) ([6401e0c](https://github.com/mParticle/mparticle-apple-sdk/commit/6401e0ce5d90a645b2b5b21d03bb8952d9634477))
-- SDKE-119 Create protocols for testability. Part 3 ([#404](https://github.com/mParticle/mparticle-apple-sdk/issues/404)) ([9032458](https://github.com/mParticle/mparticle-apple-sdk/commit/90324581718d148c757fc8166b23f28bd8be08a3))
-- SDKE-61 Extract and test callback logic. Part 1 ([#395](https://github.com/mParticle/mparticle-apple-sdk/issues/395)) ([c3a7da9](https://github.com/mParticle/mparticle-apple-sdk/commit/c3a7da9aa5020051e18026572f893b50022d3809))
-- SDKE-61 Extract and test callback logic. Part 2 ([#396](https://github.com/mParticle/mparticle-apple-sdk/issues/396)) ([2fb2490](https://github.com/mParticle/mparticle-apple-sdk/commit/2fb2490d0c2b0021d3277ab56b60f46d5b134771))
-- SDKE-61 Extract and test callback logic. Part 3 ([#397](https://github.com/mParticle/mparticle-apple-sdk/issues/397)) ([b6cd236](https://github.com/mParticle/mparticle-apple-sdk/commit/b6cd236a729f96d94b20e60e661c00846131e434))
-- SDKE-61 Extract and test callback logic. Part 4 ([#398](https://github.com/mParticle/mparticle-apple-sdk/issues/398)) ([3cf3c88](https://github.com/mParticle/mparticle-apple-sdk/commit/3cf3c881fed67467854117f2b742e3dac241ad4c))
-- SDKE-62 Refactor MPListenerController for Testability ([#400](https://github.com/mParticle/mparticle-apple-sdk/issues/400)) ([cc843a5](https://github.com/mParticle/mparticle-apple-sdk/commit/cc843a5e87c92a9d5660ec585a0d196df8c70295))
-- SDKE-63-replace-logging-macros-with-swift-helpers ([#405](https://github.com/mParticle/mparticle-apple-sdk/issues/405)) ([0ca4964](https://github.com/mParticle/mparticle-apple-sdk/commit/0ca49647884abef0268666d926d35bc4866e8831))
-- SDKE-64 Improve mParticle.m test coverage in swift ([#406](https://github.com/mParticle/mparticle-apple-sdk/issues/406)) ([d4ef623](https://github.com/mParticle/mparticle-apple-sdk/commit/d4ef62322d4749f716ad0ebf38014b59e87244f3))
-- SDKE-64 Improve mParticle.m test coverage in swift 2 ([#407](https://github.com/mParticle/mparticle-apple-sdk/issues/407)) ([b8d67ec](https://github.com/mParticle/mparticle-apple-sdk/commit/b8d67ec49dd2394a8991df04f76a590ff98d4f24))
-- SDKE-64 Improve mParticle.m test coverage in swift 3 ([#410](https://github.com/mParticle/mparticle-apple-sdk/issues/410)) ([72a111c](https://github.com/mParticle/mparticle-apple-sdk/commit/72a111c0f6d00f6d10cf5724f2164a6a5db07111))
+* SDKE-119 Create protocols for testability ([#402](https://github.com/mParticle/mparticle-apple-sdk/issues/402)) ([12b636e](https://github.com/mParticle/mparticle-apple-sdk/commit/12b636ee1e777c2de323f2f1ed071af64b1f9a20))
+* SDKE-119 Create protocols for testability. Part 2 ([#403](https://github.com/mParticle/mparticle-apple-sdk/issues/403)) ([6401e0c](https://github.com/mParticle/mparticle-apple-sdk/commit/6401e0ce5d90a645b2b5b21d03bb8952d9634477))
+* SDKE-119 Create protocols for testability. Part 3 ([#404](https://github.com/mParticle/mparticle-apple-sdk/issues/404)) ([9032458](https://github.com/mParticle/mparticle-apple-sdk/commit/90324581718d148c757fc8166b23f28bd8be08a3))
+* SDKE-61 Extract and test callback logic. Part 1 ([#395](https://github.com/mParticle/mparticle-apple-sdk/issues/395)) ([c3a7da9](https://github.com/mParticle/mparticle-apple-sdk/commit/c3a7da9aa5020051e18026572f893b50022d3809))
+* SDKE-61 Extract and test callback logic. Part 2 ([#396](https://github.com/mParticle/mparticle-apple-sdk/issues/396)) ([2fb2490](https://github.com/mParticle/mparticle-apple-sdk/commit/2fb2490d0c2b0021d3277ab56b60f46d5b134771))
+* SDKE-61 Extract and test callback logic. Part 3 ([#397](https://github.com/mParticle/mparticle-apple-sdk/issues/397)) ([b6cd236](https://github.com/mParticle/mparticle-apple-sdk/commit/b6cd236a729f96d94b20e60e661c00846131e434))
+* SDKE-61 Extract and test callback logic. Part 4 ([#398](https://github.com/mParticle/mparticle-apple-sdk/issues/398)) ([3cf3c88](https://github.com/mParticle/mparticle-apple-sdk/commit/3cf3c881fed67467854117f2b742e3dac241ad4c))
+* SDKE-62 Refactor MPListenerController for Testability ([#400](https://github.com/mParticle/mparticle-apple-sdk/issues/400)) ([cc843a5](https://github.com/mParticle/mparticle-apple-sdk/commit/cc843a5e87c92a9d5660ec585a0d196df8c70295))
+* SDKE-63-replace-logging-macros-with-swift-helpers ([#405](https://github.com/mParticle/mparticle-apple-sdk/issues/405)) ([0ca4964](https://github.com/mParticle/mparticle-apple-sdk/commit/0ca49647884abef0268666d926d35bc4866e8831))
+* SDKE-64 Improve mParticle.m test coverage in swift ([#406](https://github.com/mParticle/mparticle-apple-sdk/issues/406)) ([d4ef623](https://github.com/mParticle/mparticle-apple-sdk/commit/d4ef62322d4749f716ad0ebf38014b59e87244f3))
+* SDKE-64 Improve mParticle.m test coverage in swift 2 ([#407](https://github.com/mParticle/mparticle-apple-sdk/issues/407)) ([b8d67ec](https://github.com/mParticle/mparticle-apple-sdk/commit/b8d67ec49dd2394a8991df04f76a590ff98d4f24))
+* SDKE-64 Improve mParticle.m test coverage in swift 3 ([#410](https://github.com/mParticle/mparticle-apple-sdk/issues/410)) ([72a111c](https://github.com/mParticle/mparticle-apple-sdk/commit/72a111c0f6d00f6d10cf5724f2164a6a5db07111))
 
 # [8.38.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.37.1...v8.38.0) (2025-08-20)
 
+
 ### Features
 
-- Decouple MParticle.m for Swift Migration ([#393](https://github.com/mParticle/mparticle-apple-sdk/issues/393)) ([23f5434](https://github.com/mParticle/mparticle-apple-sdk/commit/23f543485132ee4c280d18060a9688629f458b59))
-- Map Selected Identity to Emailsha256 ([#391](https://github.com/mParticle/mparticle-apple-sdk/issues/391)) ([a14544b](https://github.com/mParticle/mparticle-apple-sdk/commit/a14544b0a711b0fb4df9d76a0cdc914b1a63c265))
+* Decouple MParticle.m for Swift Migration ([#393](https://github.com/mParticle/mparticle-apple-sdk/issues/393)) ([23f5434](https://github.com/mParticle/mparticle-apple-sdk/commit/23f543485132ee4c280d18060a9688629f458b59))
+* Map Selected Identity to Emailsha256 ([#391](https://github.com/mParticle/mparticle-apple-sdk/issues/391)) ([a14544b](https://github.com/mParticle/mparticle-apple-sdk/commit/a14544b0a711b0fb4df9d76a0cdc914b1a63c265))
 
 ## [8.37.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.37.0...v8.37.1) (2025-08-08)
 
+
 ### Bug Fixes
 
-- Prevent Swift Name Spacing for Encodable Objects ([#385](https://github.com/mParticle/mparticle-apple-sdk/issues/385)) ([b83480e](https://github.com/mParticle/mparticle-apple-sdk/commit/b83480ea3721a9970fd3713c83701776df8a3386))
+* Prevent Swift Name Spacing for Encodable Objects ([#385](https://github.com/mParticle/mparticle-apple-sdk/issues/385)) ([b83480e](https://github.com/mParticle/mparticle-apple-sdk/commit/b83480ea3721a9970fd3713c83701776df8a3386))
 
 # [8.37.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.36.0...v8.37.0) (2025-08-04)
 
+
 ### Bug Fixes
 
-- Make documentation generation non-blocking for releases ([1dc0c66](https://github.com/mParticle/mparticle-apple-sdk/commit/1dc0c666df8e55ca04f621bd2c09c76e84fd487d))
+* Make documentation generation non-blocking for releases ([1dc0c66](https://github.com/mParticle/mparticle-apple-sdk/commit/1dc0c666df8e55ca04f621bd2c09c76e84fd487d))
+
 
 ### Features
 
-- Handle Hashed Email for Rokt ([#383](https://github.com/mParticle/mparticle-apple-sdk/issues/383)) ([3b9e072](https://github.com/mParticle/mparticle-apple-sdk/commit/3b9e0727fcfd9843928ec6a2e6396d9ead1af8e7))
-- Update Hashed Email for Rokt ([#384](https://github.com/mParticle/mparticle-apple-sdk/issues/384)) ([475e5d4](https://github.com/mParticle/mparticle-apple-sdk/commit/475e5d442471e2b287e98c6effb3d14fbc6e5ed0))
+* Handle Hashed Email for Rokt ([#383](https://github.com/mParticle/mparticle-apple-sdk/issues/383)) ([3b9e072](https://github.com/mParticle/mparticle-apple-sdk/commit/3b9e0727fcfd9843928ec6a2e6396d9ead1af8e7))
+* Update Hashed Email for Rokt ([#384](https://github.com/mParticle/mparticle-apple-sdk/issues/384)) ([475e5d4](https://github.com/mParticle/mparticle-apple-sdk/commit/475e5d442471e2b287e98c6effb3d14fbc6e5ed0))
 
 # [8.36.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.35.0...v8.36.0) (2025-07-25)
 
+
 ### Bug Fixes
 
-- Prevent Apple Caused xCode crash on Launch ([#372](https://github.com/mParticle/mparticle-apple-sdk/issues/372)) ([4c5b001](https://github.com/mParticle/mparticle-apple-sdk/commit/4c5b001cc6b8aed2831e1f7938d655a98a75a94e))
-- Update Bundle ID for No Location ([#381](https://github.com/mParticle/mparticle-apple-sdk/issues/381)) ([4474537](https://github.com/mParticle/mparticle-apple-sdk/commit/44745374c2e4601532115f500b73be741af4490a))
+* Prevent Apple Caused xCode crash on Launch ([#372](https://github.com/mParticle/mparticle-apple-sdk/issues/372)) ([4c5b001](https://github.com/mParticle/mparticle-apple-sdk/commit/4c5b001cc6b8aed2831e1f7938d655a98a75a94e))
+* Update Bundle ID for No Location ([#381](https://github.com/mParticle/mparticle-apple-sdk/issues/381)) ([4474537](https://github.com/mParticle/mparticle-apple-sdk/commit/44745374c2e4601532115f500b73be741af4490a))
+
 
 ### Features
 
-- Create Rokt.close method ([#373](https://github.com/mParticle/mparticle-apple-sdk/issues/373)) ([cdc45bb](https://github.com/mParticle/mparticle-apple-sdk/commit/cdc45bb8b7d031902b446d5e9f480e08df0309bd))
+* Create Rokt.close method ([#373](https://github.com/mParticle/mparticle-apple-sdk/issues/373)) ([cdc45bb](https://github.com/mParticle/mparticle-apple-sdk/commit/cdc45bb8b7d031902b446d5e9f480e08df0309bd))
 
 # [8.35.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.34.1...v8.35.0) (2025-06-20)
 
+
 ### Features
 
-- SQDSDKS-7421 - Add MPRoktEvent class ([#369](https://github.com/mParticle/mparticle-apple-sdk/issues/369)) ([4a23378](https://github.com/mParticle/mparticle-apple-sdk/commit/4a23378339f36cb9be06d1d8b8f5e176d9c5be4a))
+* SQDSDKS-7421 - Add MPRoktEvent class ([#369](https://github.com/mParticle/mparticle-apple-sdk/issues/369)) ([4a23378](https://github.com/mParticle/mparticle-apple-sdk/commit/4a23378339f36cb9be06d1d8b8f5e176d9c5be4a))
 
 ## [8.34.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.34.0...v8.34.1) (2025-06-17)
 
+
 ### Bug Fixes
 
-- Make selectPlacement Use The Message Queue ([#366](https://github.com/mParticle/mparticle-apple-sdk/issues/366)) ([ce1a284](https://github.com/mParticle/mparticle-apple-sdk/commit/ce1a284c7522e81c095308ec99a1bcd23602340e))
+* Make selectPlacement Use The Message Queue ([#366](https://github.com/mParticle/mparticle-apple-sdk/issues/366)) ([ce1a284](https://github.com/mParticle/mparticle-apple-sdk/commit/ce1a284c7522e81c095308ec99a1bcd23602340e))
 
 # [8.34.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.33.0...v8.34.0) (2025-06-13)
 
+
 ### Features
 
-- Support setWrapperSDK for Kits ([#364](https://github.com/mParticle/mparticle-apple-sdk/issues/364)) ([dcaad47](https://github.com/mParticle/mparticle-apple-sdk/commit/dcaad47152bc284ed5fc4227b74e384ae9fc8482))
+* Support setWrapperSDK for Kits ([#364](https://github.com/mParticle/mparticle-apple-sdk/issues/364)) ([dcaad47](https://github.com/mParticle/mparticle-apple-sdk/commit/dcaad47152bc284ed5fc4227b74e384ae9fc8482))
 
 # [8.33.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.32.0...v8.33.0) (2025-06-12)
 
+
 ### Features
 
-- Multiple select placements calls made ([#361](https://github.com/mParticle/mparticle-apple-sdk/issues/361)) ([f8d3ff8](https://github.com/mParticle/mparticle-apple-sdk/commit/f8d3ff865d5606a4c6c198511cfa21c5a04a87b7))
+* Multiple select placements calls made ([#361](https://github.com/mParticle/mparticle-apple-sdk/issues/361)) ([f8d3ff8](https://github.com/mParticle/mparticle-apple-sdk/commit/f8d3ff865d5606a4c6c198511cfa21c5a04a87b7))
 
 # [8.32.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.2...v8.32.0) (2025-06-10)
 
+
 ### Features
 
-- Add MPRoktConfig Support ([#357](https://github.com/mParticle/mparticle-apple-sdk/issues/357)) ([abe04ea](https://github.com/mParticle/mparticle-apple-sdk/commit/abe04ea33dee15a080743f5e464300d76df6606f))
+* Add MPRoktConfig Support ([#357](https://github.com/mParticle/mparticle-apple-sdk/issues/357)) ([abe04ea](https://github.com/mParticle/mparticle-apple-sdk/commit/abe04ea33dee15a080743f5e464300d76df6606f))
 
 ## [8.31.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.1...v8.31.2) (2025-06-06)
 
+
 ### Bug Fixes
 
-- Remove alreadySynchedUserIdentities ([#354](https://github.com/mParticle/mparticle-apple-sdk/issues/354)) ([3c9f235](https://github.com/mParticle/mparticle-apple-sdk/commit/3c9f235a2435f9b634aaf3b099f70bc155f40762))
+* Remove alreadySynchedUserIdentities ([#354](https://github.com/mParticle/mparticle-apple-sdk/issues/354)) ([3c9f235](https://github.com/mParticle/mparticle-apple-sdk/commit/3c9f235a2435f9b634aaf3b099f70bc155f40762))
 
 ## [8.31.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.0...v8.31.1) (2025-06-03)
 
+
 ### Bug Fixes
 
-- Prevent Issue When NSUserActivity webpageURL is nil ([#356](https://github.com/mParticle/mparticle-apple-sdk/issues/356)) ([4305afa](https://github.com/mParticle/mparticle-apple-sdk/commit/4305afa622b3d9249de19fa1613052b53e0efa9d))
+* Prevent Issue When NSUserActivity webpageURL is nil ([#356](https://github.com/mParticle/mparticle-apple-sdk/issues/356)) ([4305afa](https://github.com/mParticle/mparticle-apple-sdk/commit/4305afa622b3d9249de19fa1613052b53e0efa9d))
 
 # [8.31.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.3...v8.31.0) (2025-05-21)
 
+
 ### Bug Fixes
 
-- MPAppNotificationHandler webpageURL issue ([#353](https://github.com/mParticle/mparticle-apple-sdk/issues/353)) ([bebb504](https://github.com/mParticle/mparticle-apple-sdk/commit/bebb50446b73e16b3910e81457e470cd7ec2fa3a))
+* MPAppNotificationHandler webpageURL issue ([#353](https://github.com/mParticle/mparticle-apple-sdk/issues/353)) ([bebb504](https://github.com/mParticle/mparticle-apple-sdk/commit/bebb50446b73e16b3910e81457e470cd7ec2fa3a))
+
 
 ### Features
 
-- Identify if Provided Email in Rokt SelectPlacements ([#351](https://github.com/mParticle/mparticle-apple-sdk/issues/351)) ([a0422bc](https://github.com/mParticle/mparticle-apple-sdk/commit/a0422bc37a64feba040cbe93737efd5c1fd7ed28))
+* Identify if Provided Email in Rokt SelectPlacements ([#351](https://github.com/mParticle/mparticle-apple-sdk/issues/351)) ([a0422bc](https://github.com/mParticle/mparticle-apple-sdk/commit/a0422bc37a64feba040cbe93737efd5c1fd7ed28))
 
 ## [8.30.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.2...v8.30.3) (2025-05-02)
 
+
 ### Bug Fixes
 
-- Assign correct IDFV instead of random UUID ([#350](https://github.com/mParticle/mparticle-apple-sdk/issues/350)) ([c18b063](https://github.com/mParticle/mparticle-apple-sdk/commit/c18b0639b494ebcd73a154d97b6430be8dc6c6a8))
+* Assign correct IDFV instead of random UUID ([#350](https://github.com/mParticle/mparticle-apple-sdk/issues/350)) ([c18b063](https://github.com/mParticle/mparticle-apple-sdk/commit/c18b0639b494ebcd73a154d97b6430be8dc6c6a8))
 
 ## [8.30.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.1...v8.30.2) (2025-04-29)
 
+
 ### Bug Fixes
 
-- Implement MPRoktEventCallback on Core ([#348](https://github.com/mParticle/mparticle-apple-sdk/issues/348)) ([d5fd11d](https://github.com/mParticle/mparticle-apple-sdk/commit/d5fd11d4de32082e20fc7a76436c444f66126b6f))
+* Implement MPRoktEventCallback on Core ([#348](https://github.com/mParticle/mparticle-apple-sdk/issues/348)) ([d5fd11d](https://github.com/mParticle/mparticle-apple-sdk/commit/d5fd11d4de32082e20fc7a76436c444f66126b6f))
 
 ## [8.30.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.0...v8.30.1) (2025-04-24)
 
+
 ### Bug Fixes
 
-- Update placementAttributes to placementAttributesMapping ([#349](https://github.com/mParticle/mparticle-apple-sdk/issues/349)) ([13ec6a2](https://github.com/mParticle/mparticle-apple-sdk/commit/13ec6a2a9758f41d865c6db22d7eba82e37f1584))
+* Update placementAttributes to placementAttributesMapping ([#349](https://github.com/mParticle/mparticle-apple-sdk/issues/349)) ([13ec6a2](https://github.com/mParticle/mparticle-apple-sdk/commit/13ec6a2a9758f41d865c6db22d7eba82e37f1584))
 
 # [8.30.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.29.0...v8.30.0) (2025-04-24)
 
+
 ### Features
 
-- Add disabledKits option to MParticleOptions ([#347](https://github.com/mParticle/mparticle-apple-sdk/issues/347)) ([f708431](https://github.com/mParticle/mparticle-apple-sdk/commit/f7084317345fc9fdf08b8142bdfa4a5220b0ac8a))
-- Add MPRoktEmbeddedView Class ([#345](https://github.com/mParticle/mparticle-apple-sdk/issues/345)) ([f4fb946](https://github.com/mParticle/mparticle-apple-sdk/commit/f4fb946dec2cc2ac190a3f62493f807df2c05cbb))
-- Add user attribute mapping ([#343](https://github.com/mParticle/mparticle-apple-sdk/issues/343)) ([50ce934](https://github.com/mParticle/mparticle-apple-sdk/commit/50ce934e88f9b30dc0889ef7475a4cb34210acc0))
-- Automatically include sandbox in MPRokt Attributes ([#344](https://github.com/mParticle/mparticle-apple-sdk/issues/344)) ([bdf4280](https://github.com/mParticle/mparticle-apple-sdk/commit/bdf4280cf326f40ce89f9f9ec12840525317add7))
+* Add disabledKits option to MParticleOptions ([#347](https://github.com/mParticle/mparticle-apple-sdk/issues/347)) ([f708431](https://github.com/mParticle/mparticle-apple-sdk/commit/f7084317345fc9fdf08b8142bdfa4a5220b0ac8a))
+* Add MPRoktEmbeddedView Class ([#345](https://github.com/mParticle/mparticle-apple-sdk/issues/345)) ([f4fb946](https://github.com/mParticle/mparticle-apple-sdk/commit/f4fb946dec2cc2ac190a3f62493f807df2c05cbb))
+* Add user attribute mapping ([#343](https://github.com/mParticle/mparticle-apple-sdk/issues/343)) ([50ce934](https://github.com/mParticle/mparticle-apple-sdk/commit/50ce934e88f9b30dc0889ef7475a4cb34210acc0))
+* Automatically include sandbox in MPRokt Attributes ([#344](https://github.com/mParticle/mparticle-apple-sdk/issues/344)) ([bdf4280](https://github.com/mParticle/mparticle-apple-sdk/commit/bdf4280cf326f40ce89f9f9ec12840525317add7))
 
 # [8.29.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.28.1...v8.29.0) (2025-04-02)
 
+
 ### Features
 
-- Add Rokt First Party Kit Support ([#339](https://github.com/mParticle/mparticle-apple-sdk/issues/339)) ([9bb2e2d](https://github.com/mParticle/mparticle-apple-sdk/commit/9bb2e2de0d9280c25a076298c7c22c571a055e8f))
+* Add Rokt First Party Kit Support ([#339](https://github.com/mParticle/mparticle-apple-sdk/issues/339)) ([9bb2e2d](https://github.com/mParticle/mparticle-apple-sdk/commit/9bb2e2de0d9280c25a076298c7c22c571a055e8f))
 
 ## [8.28.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.28.0...v8.28.1) (2025-03-25)
 
+
 ### Bug Fixes
 
-- Ensure UserDefaults has valid instance of Identity ([#340](https://github.com/mParticle/mparticle-apple-sdk/issues/340)) ([57be42c](https://github.com/mParticle/mparticle-apple-sdk/commit/57be42cb66fc35b5efa11121299d059658d651e8))
+* Ensure UserDefaults has valid instance of Identity ([#340](https://github.com/mParticle/mparticle-apple-sdk/issues/340)) ([57be42c](https://github.com/mParticle/mparticle-apple-sdk/commit/57be42cb66fc35b5efa11121299d059658d651e8))
 
 # [8.28.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.5...v8.28.0) (2025-03-19)
 
+
 ### Bug Fixes
 
-- Issue when setting Identity Attributes to nil ([#336](https://github.com/mParticle/mparticle-apple-sdk/issues/336)) ([9a48cdd](https://github.com/mParticle/mparticle-apple-sdk/commit/9a48cdd8af281236dd527691778b030fbabffaa4))
+* Issue when setting Identity Attributes to nil ([#336](https://github.com/mParticle/mparticle-apple-sdk/issues/336)) ([9a48cdd](https://github.com/mParticle/mparticle-apple-sdk/commit/9a48cdd8af281236dd527691778b030fbabffaa4))
+
 
 ### Features
 
-- implement audience logic ([#330](https://github.com/mParticle/mparticle-apple-sdk/issues/330)) ([3b9ad82](https://github.com/mParticle/mparticle-apple-sdk/commit/3b9ad82702193a8db45b5fb2e2d19c5efb24cfdb))
+* implement audience logic ([#330](https://github.com/mParticle/mparticle-apple-sdk/issues/330)) ([3b9ad82](https://github.com/mParticle/mparticle-apple-sdk/commit/3b9ad82702193a8db45b5fb2e2d19c5efb24cfdb))
 
 ## [8.27.5](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.4...v8.27.5) (2025-03-06)
 
+
 ### Bug Fixes
 
-- Address firstInstall Edge Case ([#312](https://github.com/mParticle/mparticle-apple-sdk/issues/312)) ([04f6155](https://github.com/mParticle/mparticle-apple-sdk/commit/04f615571344bf10a85e98cd007daaaf53bd881b))
-- forward original event names to UI for kits with mapped events ([#301](https://github.com/mParticle/mparticle-apple-sdk/issues/301)) ([db286bc](https://github.com/mParticle/mparticle-apple-sdk/commit/db286bc1a1c0fe07aa957ff6fe53b044cb11798f))
+* Address firstInstall Edge Case ([#312](https://github.com/mParticle/mparticle-apple-sdk/issues/312)) ([04f6155](https://github.com/mParticle/mparticle-apple-sdk/commit/04f615571344bf10a85e98cd007daaaf53bd881b))
+* forward original event names to UI for kits with mapped events ([#301](https://github.com/mParticle/mparticle-apple-sdk/issues/301)) ([db286bc](https://github.com/mParticle/mparticle-apple-sdk/commit/db286bc1a1c0fe07aa957ff6fe53b044cb11798f))
 
 ## [8.27.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.3...v8.27.4) (2024-11-04)
 
+
 ### Bug Fixes
 
-- Initialize Kits in Background Thread ([#308](https://github.com/mParticle/mparticle-apple-sdk/issues/308)) ([38d3ea7](https://github.com/mParticle/mparticle-apple-sdk/commit/38d3ea7408c7e6535a4f459ecade8881ef5c85e3))
+* Initialize Kits in Background Thread ([#308](https://github.com/mParticle/mparticle-apple-sdk/issues/308)) ([38d3ea7](https://github.com/mParticle/mparticle-apple-sdk/commit/38d3ea7408c7e6535a4f459ecade8881ef5c85e3))
 
 ## [8.27.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.2...v8.27.3) (2024-10-22)
 
+
 ### Bug Fixes
 
-- Fix set opt out for kits ([#300](https://github.com/mParticle/mparticle-apple-sdk/issues/300)) ([74f71d8](https://github.com/mParticle/mparticle-apple-sdk/commit/74f71d8202debdc7de13394b0f24683b39618b77))
-- Return type of MPGDPRConsent copy method ([7966fd0](https://github.com/mParticle/mparticle-apple-sdk/commit/7966fd02f18b3338e1f07bb619bf72501a27b2db))
+* Fix set opt out for kits ([#300](https://github.com/mParticle/mparticle-apple-sdk/issues/300)) ([74f71d8](https://github.com/mParticle/mparticle-apple-sdk/commit/74f71d8202debdc7de13394b0f24683b39618b77))
+* Return type of MPGDPRConsent copy method ([7966fd0](https://github.com/mParticle/mparticle-apple-sdk/commit/7966fd02f18b3338e1f07bb619bf72501a27b2db))
 
 ## [8.27.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.1...v8.27.2) (2024-10-10)
 
+
 ### Bug Fixes
 
-- Potential crash in MPStateMachine when entering foreground ([#299](https://github.com/mParticle/mparticle-apple-sdk/issues/299)) ([50ba03b](https://github.com/mParticle/mparticle-apple-sdk/commit/50ba03bb97e7f5c1a8a4213f359a00b73bf90f2a))
+* Potential crash in MPStateMachine when entering foreground ([#299](https://github.com/mParticle/mparticle-apple-sdk/issues/299)) ([50ba03b](https://github.com/mParticle/mparticle-apple-sdk/commit/50ba03bb97e7f5c1a8a4213f359a00b73bf90f2a))
 
 ## [8.27.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.0...v8.27.1) (2024-09-17)
 
+
 ### Bug Fixes
 
-- Prevent Repeated Sessions on active Background ([#290](https://github.com/mParticle/mparticle-apple-sdk/issues/290)) ([9ead27d](https://github.com/mParticle/mparticle-apple-sdk/commit/9ead27d25cf2f31cbb97f7b26216524b48afdcae))
+* Prevent Repeated Sessions on active Background ([#290](https://github.com/mParticle/mparticle-apple-sdk/issues/290)) ([9ead27d](https://github.com/mParticle/mparticle-apple-sdk/commit/9ead27d25cf2f31cbb97f7b26216524b48afdcae))
 
 # [8.27.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.26.0...v8.27.0) (2024-09-04)
 
+
 ### Bug Fixes
 
-- Properly attribute events when workspace switches on new launch ([#288](https://github.com/mParticle/mparticle-apple-sdk/issues/288)) ([407749a](https://github.com/mParticle/mparticle-apple-sdk/commit/407749abcb047c97b804592fcc3c5c553792d2f8))
+* Properly attribute events when workspace switches on new launch ([#288](https://github.com/mParticle/mparticle-apple-sdk/issues/288)) ([407749a](https://github.com/mParticle/mparticle-apple-sdk/commit/407749abcb047c97b804592fcc3c5c553792d2f8))
+
 
 ### Features
 
-- Workspace switching improvements ([#287](https://github.com/mParticle/mparticle-apple-sdk/issues/287)) ([0c8da18](https://github.com/mParticle/mparticle-apple-sdk/commit/0c8da18dd1faa701186abd6f45820fc6c54fa71f))
+* Workspace switching improvements ([#287](https://github.com/mParticle/mparticle-apple-sdk/issues/287)) ([0c8da18](https://github.com/mParticle/mparticle-apple-sdk/commit/0c8da18dd1faa701186abd6f45820fc6c54fa71f))
 
 # [8.26.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.25.1...v8.26.0) (2024-08-16)
 
+
 ### Features
 
-- Cert Pinning Update ([#286](https://github.com/mParticle/mparticle-apple-sdk/issues/286)) ([15cf961](https://github.com/mParticle/mparticle-apple-sdk/commit/15cf961cc9b9d4f31b68df3a0d58e8b5c478e5c0))
+* Cert Pinning Update ([#286](https://github.com/mParticle/mparticle-apple-sdk/issues/286)) ([15cf961](https://github.com/mParticle/mparticle-apple-sdk/commit/15cf961cc9b9d4f31b68df3a0d58e8b5c478e5c0))
 
 ## [8.25.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.25.0...v8.25.1) (2024-07-29)
 
+
 ### Bug Fixes
 
-- Rename internal Swift.h header to avoid Expo conflicts ([#283](https://github.com/mParticle/mparticle-apple-sdk/issues/283)) ([36c6be4](https://github.com/mParticle/mparticle-apple-sdk/commit/36c6be4c015d0e4775267dd866d123589f221447))
+* Rename internal Swift.h header to avoid Expo conflicts ([#283](https://github.com/mParticle/mparticle-apple-sdk/issues/283)) ([36c6be4](https://github.com/mParticle/mparticle-apple-sdk/commit/36c6be4c015d0e4775267dd866d123589f221447))
 
 # [8.25.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.3...v8.25.0) (2024-06-25)
 
+
 ### Features
 
-- Add Option to Disable Certificate Pinning ([#282](https://github.com/mParticle/mparticle-apple-sdk/issues/282)) ([3a42719](https://github.com/mParticle/mparticle-apple-sdk/commit/3a42719784330cdc56f3e831c24f90ca8a4c2901))
+* Add Option to Disable Certificate Pinning ([#282](https://github.com/mParticle/mparticle-apple-sdk/issues/282)) ([3a42719](https://github.com/mParticle/mparticle-apple-sdk/commit/3a42719784330cdc56f3e831c24f90ca8a4c2901))
 
 ## [8.24.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.2...v8.24.3) (2024-06-10)
 
+
 ### Bug Fixes
 
-- Remove deprecated iAd framework ([#279](https://github.com/mParticle/mparticle-apple-sdk/issues/279)) ([31b283c](https://github.com/mParticle/mparticle-apple-sdk/commit/31b283c4e78a57d72dae195ad16491a510d3a13b))
+* Remove deprecated iAd framework ([#279](https://github.com/mParticle/mparticle-apple-sdk/issues/279)) ([31b283c](https://github.com/mParticle/mparticle-apple-sdk/commit/31b283c4e78a57d72dae195ad16491a510d3a13b))
 
 ## [8.24.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.1...v8.24.2) (2024-06-10)
 
+
 ### Bug Fixes
 
-- Record PushRegistration Correctly in UI ([#280](https://github.com/mParticle/mparticle-apple-sdk/issues/280)) ([2d124ec](https://github.com/mParticle/mparticle-apple-sdk/commit/2d124ec089aa8625b8acb1c3360349903c4a6af4))
+* Record PushRegistration Correctly in UI ([#280](https://github.com/mParticle/mparticle-apple-sdk/issues/280)) ([2d124ec](https://github.com/mParticle/mparticle-apple-sdk/commit/2d124ec089aa8625b8acb1c3360349903c4a6af4))
 
 ## [8.24.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.0...v8.24.1) (2024-05-15)
 
+
 ### Bug Fixes
 
-- Remove unnecessary badge number functionality ([#277](https://github.com/mParticle/mparticle-apple-sdk/issues/277)) ([266612f](https://github.com/mParticle/mparticle-apple-sdk/commit/266612fc86991a44c90dc97a09ca699dcd30a34f))
+* Remove unnecessary badge number functionality ([#277](https://github.com/mParticle/mparticle-apple-sdk/issues/277)) ([266612f](https://github.com/mParticle/mparticle-apple-sdk/commit/266612fc86991a44c90dc97a09ca699dcd30a34f))
 
 # [8.24.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.23.1...v8.24.0) (2024-05-01)
 
+
 ### Bug Fixes
 
-- Allow Alias When Start and End Time Not Set ([#275](https://github.com/mParticle/mparticle-apple-sdk/issues/275)) ([241ecd4](https://github.com/mParticle/mparticle-apple-sdk/commit/241ecd4fef6c732f885100844c9ff8a24ffbe842))
+* Allow Alias When Start and End Time Not Set ([#275](https://github.com/mParticle/mparticle-apple-sdk/issues/275)) ([241ecd4](https://github.com/mParticle/mparticle-apple-sdk/commit/241ecd4fef6c732f885100844c9ff8a24ffbe842))
+
 
 ### Features
 
-- Add Tracking Support for Custom Domains ([#274](https://github.com/mParticle/mparticle-apple-sdk/issues/274)) ([1584dae](https://github.com/mParticle/mparticle-apple-sdk/commit/1584daed11afabc94f9d6c1e08c1d718e088caee))
+* Add Tracking Support for Custom Domains ([#274](https://github.com/mParticle/mparticle-apple-sdk/issues/274)) ([1584dae](https://github.com/mParticle/mparticle-apple-sdk/commit/1584daed11afabc94f9d6c1e08c1d718e088caee))
 
 ## [8.23.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.23.0...v8.23.1) (2024-04-30)
 
+
 ### Bug Fixes
 
-- Forwarding ATT status to kits ([#276](https://github.com/mParticle/mparticle-apple-sdk/issues/276)) ([9fd95f7](https://github.com/mParticle/mparticle-apple-sdk/commit/9fd95f72a7a88bc1e1ae30d33d261098cd5bc1ee))
+* Forwarding ATT status to kits ([#276](https://github.com/mParticle/mparticle-apple-sdk/issues/276)) ([9fd95f7](https://github.com/mParticle/mparticle-apple-sdk/commit/9fd95f72a7a88bc1e1ae30d33d261098cd5bc1ee))
 
 # [8.23.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.22.0...v8.23.0) (2024-04-24)
 
+
 ### Features
 
-- Add max persistence age override option ([#273](https://github.com/mParticle/mparticle-apple-sdk/issues/273)) ([241e773](https://github.com/mParticle/mparticle-apple-sdk/commit/241e7734f6b26f617afb1a4aa51af37355f05de9))
+* Add max persistence age override option ([#273](https://github.com/mParticle/mparticle-apple-sdk/issues/273)) ([241e773](https://github.com/mParticle/mparticle-apple-sdk/commit/241e7734f6b26f617afb1a4aa51af37355f05de9))
 
 # [8.22.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.21.1...v8.22.0) (2024-04-19)
 
+
 ### Features
 
-- Update mParticle-Apple-SDK.podspec for privacy manifest ([#271](https://github.com/mParticle/mparticle-apple-sdk/issues/271)) ([f4a4750](https://github.com/mParticle/mparticle-apple-sdk/commit/f4a4750a1a06766c3f35ef5d8a16c0b0ca4a1e40))
+* Update mParticle-Apple-SDK.podspec for privacy manifest ([#271](https://github.com/mParticle/mparticle-apple-sdk/issues/271)) ([f4a4750](https://github.com/mParticle/mparticle-apple-sdk/commit/f4a4750a1a06766c3f35ef5d8a16c0b0ca4a1e40))
 
 ## [8.21.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.21.0...v8.21.1) (2024-04-17)
 
+
 ### Bug Fixes
 
-- Type hinting MPIdentityApiRequest.identities ([#270](https://github.com/mParticle/mparticle-apple-sdk/issues/270)) ([f56879f](https://github.com/mParticle/mparticle-apple-sdk/commit/f56879f77be87d46f9d44514983c6663451862d0))
+* Type hinting MPIdentityApiRequest.identities ([#270](https://github.com/mParticle/mparticle-apple-sdk/issues/270)) ([f56879f](https://github.com/mParticle/mparticle-apple-sdk/commit/f56879f77be87d46f9d44514983c6663451862d0))
 
 # [8.21.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.20.0...v8.21.0) (2024-03-19)
 
+
 ### Bug Fixes
 
-- Correct threading around user notification log ([#261](https://github.com/mParticle/mparticle-apple-sdk/issues/261)) ([456160b](https://github.com/mParticle/mparticle-apple-sdk/commit/456160b845c656cc3359425375edb88b7070eac0))
-- Refactor MPUploadBuilder to attempt to eliminate rare crash in withLocation: method ([#262](https://github.com/mParticle/mparticle-apple-sdk/issues/262)) ([60cd0c8](https://github.com/mParticle/mparticle-apple-sdk/commit/60cd0c801e4b9da6a5a1c86efd230797391801ab))
+* Correct threading around user notification log ([#261](https://github.com/mParticle/mparticle-apple-sdk/issues/261)) ([456160b](https://github.com/mParticle/mparticle-apple-sdk/commit/456160b845c656cc3359425375edb88b7070eac0))
+* Refactor MPUploadBuilder to attempt to eliminate rare crash in withLocation: method ([#262](https://github.com/mParticle/mparticle-apple-sdk/issues/262)) ([60cd0c8](https://github.com/mParticle/mparticle-apple-sdk/commit/60cd0c801e4b9da6a5a1c86efd230797391801ab))
+
 
 ### Features
 
-- Improve mParticle reset methods ([#263](https://github.com/mParticle/mparticle-apple-sdk/issues/263)) ([cde71a2](https://github.com/mParticle/mparticle-apple-sdk/commit/cde71a273318a64a7a76279dc5e67c6405fcf0e5))
+* Improve mParticle reset methods ([#263](https://github.com/mParticle/mparticle-apple-sdk/issues/263)) ([cde71a2](https://github.com/mParticle/mparticle-apple-sdk/commit/cde71a273318a64a7a76279dc5e67c6405fcf0e5))
 
 # [8.20.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.19.0...v8.20.0) (2024-03-05)
 
+
 ### Features
 
-- Switch workspaces without restarting app ([#258](https://github.com/mParticle/mparticle-apple-sdk/issues/258)) ([8f0a027](https://github.com/mParticle/mparticle-apple-sdk/commit/8f0a0276a3008b3a848630d125cc41a60addaef9))
+* Switch workspaces without restarting app ([#258](https://github.com/mParticle/mparticle-apple-sdk/issues/258)) ([8f0a027](https://github.com/mParticle/mparticle-apple-sdk/commit/8f0a0276a3008b3a848630d125cc41a60addaef9))
 
 # [8.19.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.18.0...v8.19.0) (2024-02-23)
 
+
 ### Features
 
-- Add Privacy Manifest and Tracking Domain Logic ([#249](https://github.com/mParticle/mparticle-apple-sdk/issues/249)) ([d88acde](https://github.com/mParticle/mparticle-apple-sdk/commit/d88acdee70daa690374f2359fbc3efed7e46744d)), closes [#248](https://github.com/mParticle/mparticle-apple-sdk/issues/248)
-- Add privacy manifest to build artifacts ([#255](https://github.com/mParticle/mparticle-apple-sdk/issues/255)) ([aaeb8e4](https://github.com/mParticle/mparticle-apple-sdk/commit/aaeb8e44ab0aea152ad8704093543289801e7490))
+* Add Privacy Manifest and Tracking Domain Logic ([#249](https://github.com/mParticle/mparticle-apple-sdk/issues/249)) ([d88acde](https://github.com/mParticle/mparticle-apple-sdk/commit/d88acdee70daa690374f2359fbc3efed7e46744d)), closes [#248](https://github.com/mParticle/mparticle-apple-sdk/issues/248)
+* Add privacy manifest to build artifacts ([#255](https://github.com/mParticle/mparticle-apple-sdk/issues/255)) ([aaeb8e4](https://github.com/mParticle/mparticle-apple-sdk/commit/aaeb8e44ab0aea152ad8704093543289801e7490))
 
 # [8.18.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.17.0...v8.18.0) (2024-01-16)
 
+
 ### Bug Fixes
 
-- Rare arithmetic overflow crash in MPIHasher ([#246](https://github.com/mParticle/mparticle-apple-sdk/issues/246)) ([65fad25](https://github.com/mParticle/mparticle-apple-sdk/commit/65fad255cb454e7f90c2c44c49890c709239fced))
+* Rare arithmetic overflow crash in MPIHasher ([#246](https://github.com/mParticle/mparticle-apple-sdk/issues/246)) ([65fad25](https://github.com/mParticle/mparticle-apple-sdk/commit/65fad255cb454e7f90c2c44c49890c709239fced))
+
 
 ### Features
 
-- Identity API response caching ([#244](https://github.com/mParticle/mparticle-apple-sdk/issues/244)) ([9eaa0ea](https://github.com/mParticle/mparticle-apple-sdk/commit/9eaa0ea535b61bfb8d50ff447c0cc4fa505239da))
+* Identity API response caching ([#244](https://github.com/mParticle/mparticle-apple-sdk/issues/244)) ([9eaa0ea](https://github.com/mParticle/mparticle-apple-sdk/commit/9eaa0ea535b61bfb8d50ff447c0cc4fa505239da))
 
 # [8.17.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.16.0...v8.17.0) (2023-11-30)
 
+
 ### Bug Fixes
 
-- CFNetwork upload warning setting body twice ([#240](https://github.com/mParticle/mparticle-apple-sdk/issues/240)) ([0a177f9](https://github.com/mParticle/mparticle-apple-sdk/commit/0a177f960e1b3874e1a7e6709364f2504335ba5f))
+* CFNetwork upload warning setting body twice ([#240](https://github.com/mParticle/mparticle-apple-sdk/issues/240)) ([0a177f9](https://github.com/mParticle/mparticle-apple-sdk/commit/0a177f960e1b3874e1a7e6709364f2504335ba5f))
+
 
 ### Features
 
-- 5343 Refactor Kit Filter Hash Functions ([#228](https://github.com/mParticle/mparticle-apple-sdk/issues/228)) ([5c26a9e](https://github.com/mParticle/mparticle-apple-sdk/commit/5c26a9efb4e86b8cc31b9908dc1967a75a07e3db))
-- Begin Implementation MPSideloadedKit Filtering Methods ([#231](https://github.com/mParticle/mparticle-apple-sdk/issues/231)) ([ad543fb](https://github.com/mParticle/mparticle-apple-sdk/commit/ad543fb4875700a8ad6a1b23ad318b17aa6c4533))
-- Finish Implementation of MPSideLoadedKits ([#239](https://github.com/mParticle/mparticle-apple-sdk/issues/239)) ([96e62f5](https://github.com/mParticle/mparticle-apple-sdk/commit/96e62f5763b524dcf6ddfde6037278053fd4707d))
-- Improve background batch uploading and session management ([#238](https://github.com/mParticle/mparticle-apple-sdk/issues/238)) ([dc6a9cb](https://github.com/mParticle/mparticle-apple-sdk/commit/dc6a9cb670144ebffb9cac4c28384fb75ab4e68e))
+* 5343 Refactor Kit Filter Hash Functions ([#228](https://github.com/mParticle/mparticle-apple-sdk/issues/228)) ([5c26a9e](https://github.com/mParticle/mparticle-apple-sdk/commit/5c26a9efb4e86b8cc31b9908dc1967a75a07e3db))
+* Begin Implementation MPSideloadedKit Filtering Methods ([#231](https://github.com/mParticle/mparticle-apple-sdk/issues/231)) ([ad543fb](https://github.com/mParticle/mparticle-apple-sdk/commit/ad543fb4875700a8ad6a1b23ad318b17aa6c4533))
+* Finish Implementation of MPSideLoadedKits ([#239](https://github.com/mParticle/mparticle-apple-sdk/issues/239)) ([96e62f5](https://github.com/mParticle/mparticle-apple-sdk/commit/96e62f5763b524dcf6ddfde6037278053fd4707d))
+* Improve background batch uploading and session management ([#238](https://github.com/mParticle/mparticle-apple-sdk/issues/238)) ([dc6a9cb](https://github.com/mParticle/mparticle-apple-sdk/commit/dc6a9cb670144ebffb9cac4c28384fb75ab4e68e))
 
 # [8.16.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.15.1...v8.16.0) (2023-10-11)
 
+
 ### Features
 
-- Direct routing to correct pod ([#223](https://github.com/mParticle/mparticle-apple-sdk/issues/223)) ([#229](https://github.com/mParticle/mparticle-apple-sdk/issues/229)) ([#230](https://github.com/mParticle/mparticle-apple-sdk/issues/230)) ([14168f9](https://github.com/mParticle/mparticle-apple-sdk/commit/14168f9167f15f8b850b93ea1004273cf927bd0e))
+* Direct routing to correct pod ([#223](https://github.com/mParticle/mparticle-apple-sdk/issues/223)) ([#229](https://github.com/mParticle/mparticle-apple-sdk/issues/229)) ([#230](https://github.com/mParticle/mparticle-apple-sdk/issues/230)) ([14168f9](https://github.com/mParticle/mparticle-apple-sdk/commit/14168f9167f15f8b850b93ea1004273cf927bd0e))
 
 ## [8.15.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.15.0...v8.15.1) (2023-10-04)
 
+
 ### Bug Fixes
 
-- Push Registration events to show forwarded for kits ([#208](https://github.com/mParticle/mparticle-apple-sdk/issues/208)) ([705e568](https://github.com/mParticle/mparticle-apple-sdk/commit/705e568f68484ab0f41430832f9ed66c42a72395))
+* Push Registration events to show forwarded for kits ([#208](https://github.com/mParticle/mparticle-apple-sdk/issues/208)) ([705e568](https://github.com/mParticle/mparticle-apple-sdk/commit/705e568f68484ab0f41430832f9ed66c42a72395))
 
 # [8.15.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.2...v8.15.0) (2023-09-07)
 
+
 ### Features
 
-- Remove Disk Space API Usage ([#221](https://github.com/mParticle/mparticle-apple-sdk/issues/221)) ([8bdf935](https://github.com/mParticle/mparticle-apple-sdk/commit/8bdf9351ff53847f54192e7d5182ea77b5ceb0c8))
+* Remove Disk Space API Usage ([#221](https://github.com/mParticle/mparticle-apple-sdk/issues/221)) ([8bdf935](https://github.com/mParticle/mparticle-apple-sdk/commit/8bdf9351ff53847f54192e7d5182ea77b5ceb0c8))
 
 ## [8.14.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.1...v8.14.2) (2023-07-31)
 
+
 ### Bug Fixes
 
-- Update imports for react native compatibility ([#212](https://github.com/mParticle/mparticle-apple-sdk/issues/212)) ([c22e2f1](https://github.com/mParticle/mparticle-apple-sdk/commit/c22e2f12d87ae826697bffdbbbfa176e69219afa))
+* Update imports for react native compatibility ([#212](https://github.com/mParticle/mparticle-apple-sdk/issues/212)) ([c22e2f1](https://github.com/mParticle/mparticle-apple-sdk/commit/c22e2f12d87ae826697bffdbbbfa176e69219afa))
 
 ## [8.14.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.0...v8.14.1) (2023-07-06)
 
+
 ### Bug Fixes
 
-- crash in userIdentitiesForUserId with multiple invalid identity types ([#205](https://github.com/mParticle/mparticle-apple-sdk/issues/205)) ([9d88bcc](https://github.com/mParticle/mparticle-apple-sdk/commit/9d88bcc89cd0cb2cd8b1c58e0544c3204fe31457))
+* crash in userIdentitiesForUserId with multiple invalid identity types ([#205](https://github.com/mParticle/mparticle-apple-sdk/issues/205)) ([9d88bcc](https://github.com/mParticle/mparticle-apple-sdk/commit/9d88bcc89cd0cb2cd8b1c58e0544c3204fe31457))
 
 # [8.14.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.13.0...v8.14.0) (2023-06-27)
 
+
 ### Bug Fixes
 
-- Prevent Unplanned User Identities ([#190](https://github.com/mParticle/mparticle-apple-sdk/issues/190)) ([f870b20](https://github.com/mParticle/mparticle-apple-sdk/commit/f870b2075ba587827a3fc0e4b0e0602f869ea83d))
+* Prevent Unplanned User Identities ([#190](https://github.com/mParticle/mparticle-apple-sdk/issues/190)) ([f870b20](https://github.com/mParticle/mparticle-apple-sdk/commit/f870b2075ba587827a3fc0e4b0e0602f869ea83d))
+
 
 ### Features
 
-- Add Sideloaded Kit Filtering Support to API ([#202](https://github.com/mParticle/mparticle-apple-sdk/issues/202)) ([6f0339c](https://github.com/mParticle/mparticle-apple-sdk/commit/6f0339cceb1afd25732e9538d0039a6935dd7e7b))
-- Add Sideloaded Kit flag to Batches ([#200](https://github.com/mParticle/mparticle-apple-sdk/issues/200)) ([6756d8a](https://github.com/mParticle/mparticle-apple-sdk/commit/6756d8a8dd3be806b556a026a725bbfc9c13f87e))
-- Upload build artifacts to S3 for SPM ([#199](https://github.com/mParticle/mparticle-apple-sdk/issues/199)) ([923838a](https://github.com/mParticle/mparticle-apple-sdk/commit/923838a4abbaced4da2ae1e868f2babb26366c6d))
+* Add Sideloaded Kit Filtering Support to API ([#202](https://github.com/mParticle/mparticle-apple-sdk/issues/202)) ([6f0339c](https://github.com/mParticle/mparticle-apple-sdk/commit/6f0339cceb1afd25732e9538d0039a6935dd7e7b))
+* Add Sideloaded Kit flag to Batches ([#200](https://github.com/mParticle/mparticle-apple-sdk/issues/200)) ([6756d8a](https://github.com/mParticle/mparticle-apple-sdk/commit/6756d8a8dd3be806b556a026a725bbfc9c13f87e))
+* Upload build artifacts to S3 for SPM ([#199](https://github.com/mParticle/mparticle-apple-sdk/issues/199)) ([923838a](https://github.com/mParticle/mparticle-apple-sdk/commit/923838a4abbaced4da2ae1e868f2babb26366c6d))
 
 # [8.13.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.12.0...v8.13.0) (2023-04-24)
 
+
 ### Features
 
-- Port first Obj-C file to Swift ([#186](https://github.com/mParticle/mparticle-apple-sdk/issues/186)) ([18b1e1c](https://github.com/mParticle/mparticle-apple-sdk/commit/18b1e1cb027c2624387aa7056196d2fe28e8d034))
-- Use Apple Search Ads for Attribution ([#187](https://github.com/mParticle/mparticle-apple-sdk/issues/187)) ([e2bb3bc](https://github.com/mParticle/mparticle-apple-sdk/commit/e2bb3bcf14b1fc30a6323848b4576246cecb8261))
-- Use SPM binary targets and update release scripts ([#188](https://github.com/mParticle/mparticle-apple-sdk/issues/188)) ([e482df0](https://github.com/mParticle/mparticle-apple-sdk/commit/e482df0c9496d47e73276655afd72a4f483b2d66))
+* Port first Obj-C file to Swift ([#186](https://github.com/mParticle/mparticle-apple-sdk/issues/186)) ([18b1e1c](https://github.com/mParticle/mparticle-apple-sdk/commit/18b1e1cb027c2624387aa7056196d2fe28e8d034))
+* Use Apple Search Ads for Attribution ([#187](https://github.com/mParticle/mparticle-apple-sdk/issues/187)) ([e2bb3bc](https://github.com/mParticle/mparticle-apple-sdk/commit/e2bb3bcf14b1fc30a6323848b4576246cecb8261))
+* Use SPM binary targets and update release scripts ([#188](https://github.com/mParticle/mparticle-apple-sdk/issues/188)) ([e482df0](https://github.com/mParticle/mparticle-apple-sdk/commit/e482df0c9496d47e73276655afd72a4f483b2d66))
 
 # [8.12.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.2...v8.12.0) (2023-03-14)
 
+
 ### Bug Fixes
 
-- Limit Currency Values to 2 Decimal Points ([#183](https://github.com/mParticle/mparticle-apple-sdk/issues/183)) ([de70c03](https://github.com/mParticle/mparticle-apple-sdk/commit/de70c03fb6127795f0190ee3c4307bbe2f63dedc))
+* Limit Currency Values to 2 Decimal Points ([#183](https://github.com/mParticle/mparticle-apple-sdk/issues/183)) ([de70c03](https://github.com/mParticle/mparticle-apple-sdk/commit/de70c03fb6127795f0190ee3c4307bbe2f63dedc))
+
 
 ### Features
 
-- Custom local kit loading aka kit sideloading ([#185](https://github.com/mParticle/mparticle-apple-sdk/issues/185)) ([a279cb0](https://github.com/mParticle/mparticle-apple-sdk/commit/a279cb0389242b1823a953bd2b4911c51e76c1b4))
+* Custom local kit loading aka kit sideloading ([#185](https://github.com/mParticle/mparticle-apple-sdk/issues/185)) ([a279cb0](https://github.com/mParticle/mparticle-apple-sdk/commit/a279cb0389242b1823a953bd2b4911c51e76c1b4))
 
 ## [8.11.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.1...v8.11.2) (2023-02-10)
 
+
 ### Bug Fixes
 
-- Add missing MPIdentityErrorResponseCode values ([#181](https://github.com/mParticle/mparticle-apple-sdk/issues/181)) ([7afd66a](https://github.com/mParticle/mparticle-apple-sdk/commit/7afd66a13033407a83dac0c206ab4ec622e9fdf5))
-- Add missing no location target for SPM ([#182](https://github.com/mParticle/mparticle-apple-sdk/issues/182)) ([d265e8a](https://github.com/mParticle/mparticle-apple-sdk/commit/d265e8addb1798480202779df2af093d250fa3cd))
+* Add missing MPIdentityErrorResponseCode values ([#181](https://github.com/mParticle/mparticle-apple-sdk/issues/181)) ([7afd66a](https://github.com/mParticle/mparticle-apple-sdk/commit/7afd66a13033407a83dac0c206ab4ec622e9fdf5))
+* Add missing no location target for SPM ([#182](https://github.com/mParticle/mparticle-apple-sdk/issues/182)) ([d265e8a](https://github.com/mParticle/mparticle-apple-sdk/commit/d265e8addb1798480202779df2af093d250fa3cd))
 
 ## [8.11.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.0...v8.11.1) (2023-02-07)
 
+
 ### Bug Fixes
 
-- Disable All Location Code with Flag ([#180](https://github.com/mParticle/mparticle-apple-sdk/issues/180)) ([3c28771](https://github.com/mParticle/mparticle-apple-sdk/commit/3c28771451c38777f8ac8d6e90c4c1511f013e56))
+* Disable All Location Code with Flag ([#180](https://github.com/mParticle/mparticle-apple-sdk/issues/180)) ([3c28771](https://github.com/mParticle/mparticle-apple-sdk/commit/3c28771451c38777f8ac8d6e90c4c1511f013e56))
 
 # [8.11.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.10.0...v8.11.0) (2023-01-23)
 
+
 ### Bug Fixes
 
-- Identify API call using CNAME domain ([#179](https://github.com/mParticle/mparticle-apple-sdk/issues/179)) ([0aae9af](https://github.com/mParticle/mparticle-apple-sdk/commit/0aae9af3ca49b21d9f50197114a26820105e4ec9))
+* Identify API call using CNAME domain ([#179](https://github.com/mParticle/mparticle-apple-sdk/issues/179)) ([0aae9af](https://github.com/mParticle/mparticle-apple-sdk/commit/0aae9af3ca49b21d9f50197114a26820105e4ec9))
+
 
 ### Features
 
-- Block writes on invalid API key based on Identity/Config responses ([#176](https://github.com/mParticle/mparticle-apple-sdk/issues/176)) ([d116872](https://github.com/mParticle/mparticle-apple-sdk/commit/d1168722da6363d5a6c41fe0fa26d27b816b98e9))
+* Block writes on invalid API key based on Identity/Config responses ([#176](https://github.com/mParticle/mparticle-apple-sdk/issues/176)) ([d116872](https://github.com/mParticle/mparticle-apple-sdk/commit/d1168722da6363d5a6c41fe0fa26d27b816b98e9))
 
 # [8.10.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.9.2...v8.10.0) (2023-01-10)
 
+
 ### Features
 
-- Add wrapper sdk info setter ([#174](https://github.com/mParticle/mparticle-apple-sdk/issues/174)) ([c2ca247](https://github.com/mParticle/mparticle-apple-sdk/commit/c2ca2476ea96c9636b6684e6a3a57df44d37a0a1))
-- Allow uploadInterval to be set manually ([#175](https://github.com/mParticle/mparticle-apple-sdk/issues/175)) ([8d2c5cf](https://github.com/mParticle/mparticle-apple-sdk/commit/8d2c5cfdf701dfcec4494535714e9d3b8faaedf3))
+* Add wrapper sdk info setter ([#174](https://github.com/mParticle/mparticle-apple-sdk/issues/174)) ([c2ca247](https://github.com/mParticle/mparticle-apple-sdk/commit/c2ca2476ea96c9636b6684e6a3a57df44d37a0a1))
+* Allow uploadInterval to be set manually ([#175](https://github.com/mParticle/mparticle-apple-sdk/issues/175)) ([8d2c5cf](https://github.com/mParticle/mparticle-apple-sdk/commit/8d2c5cfdf701dfcec4494535714e9d3b8faaedf3))
 
 ## [8.9.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.9.1...v8.9.2) (2022-12-06)
 
+
 ### Bug Fixes
 
-- Roll back min deployment target to iOS/tvOS 9 ([#172](https://github.com/mParticle/mparticle-apple-sdk/issues/172)) ([dd32132](https://github.com/mParticle/mparticle-apple-sdk/commit/dd321329c7b460a3d92873ea8292dcba60fbb84b))
+* Roll back min deployment target to iOS/tvOS 9 ([#172](https://github.com/mParticle/mparticle-apple-sdk/issues/172)) ([dd32132](https://github.com/mParticle/mparticle-apple-sdk/commit/dd321329c7b460a3d92873ea8292dcba60fbb84b))
 
 # [8.9.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.8.1...v8.9.0) (2022-11-30)
 
+
 ### Bug Fixes
 
-- Add class checks to initialize methods ([#165](https://github.com/mParticle/mparticle-apple-sdk/issues/165)) ([065df46](https://github.com/mParticle/mparticle-apple-sdk/commit/065df46394ccc21f1fbd2ed23d0d0c33b910f307))
-- Add Hash Methods where isEqual called ([#167](https://github.com/mParticle/mparticle-apple-sdk/issues/167)) ([7302e0d](https://github.com/mParticle/mparticle-apple-sdk/commit/7302e0dd79012e120c90e0ce78a84ffac7b781d5))
-- Allow null event attributes ([#163](https://github.com/mParticle/mparticle-apple-sdk/issues/163)) ([5fd25c6](https://github.com/mParticle/mparticle-apple-sdk/commit/5fd25c6ecd1e291452728748399d722d9d1e61f0))
-- Move dyld register callback to initialize ([#170](https://github.com/mParticle/mparticle-apple-sdk/issues/170)) ([49d3660](https://github.com/mParticle/mparticle-apple-sdk/commit/49d36609e0873b3957846a9153eab936da684098))
-- Remove unnecessary calls to removeObserver ([#168](https://github.com/mParticle/mparticle-apple-sdk/issues/168)) ([a288ba4](https://github.com/mParticle/mparticle-apple-sdk/commit/a288ba469da18690381d0a098c1a2734031b7cc6))
-- Remove Unnecessary Synchronize in Dealloc ([#169](https://github.com/mParticle/mparticle-apple-sdk/issues/169)) ([624891b](https://github.com/mParticle/mparticle-apple-sdk/commit/624891bc5771a1a92f24ef88b669eb06a2acf1c2))
+* Add class checks to initialize methods ([#165](https://github.com/mParticle/mparticle-apple-sdk/issues/165)) ([065df46](https://github.com/mParticle/mparticle-apple-sdk/commit/065df46394ccc21f1fbd2ed23d0d0c33b910f307))
+* Add Hash Methods where isEqual called ([#167](https://github.com/mParticle/mparticle-apple-sdk/issues/167)) ([7302e0d](https://github.com/mParticle/mparticle-apple-sdk/commit/7302e0dd79012e120c90e0ce78a84ffac7b781d5))
+* Allow null event attributes ([#163](https://github.com/mParticle/mparticle-apple-sdk/issues/163)) ([5fd25c6](https://github.com/mParticle/mparticle-apple-sdk/commit/5fd25c6ecd1e291452728748399d722d9d1e61f0))
+* Move dyld register callback to initialize ([#170](https://github.com/mParticle/mparticle-apple-sdk/issues/170)) ([49d3660](https://github.com/mParticle/mparticle-apple-sdk/commit/49d36609e0873b3957846a9153eab936da684098))
+* Remove unnecessary calls to removeObserver ([#168](https://github.com/mParticle/mparticle-apple-sdk/issues/168)) ([a288ba4](https://github.com/mParticle/mparticle-apple-sdk/commit/a288ba469da18690381d0a098c1a2734031b7cc6))
+* Remove Unnecessary Synchronize in Dealloc ([#169](https://github.com/mParticle/mparticle-apple-sdk/issues/169)) ([624891b](https://github.com/mParticle/mparticle-apple-sdk/commit/624891bc5771a1a92f24ef88b669eb06a2acf1c2))
+
 
 ### Features
 
-- match android type support for custom attributes ([#157](https://github.com/mParticle/mparticle-apple-sdk/issues/157)) ([c9a34cd](https://github.com/mParticle/mparticle-apple-sdk/commit/c9a34cd2aab955cf81994a59ebcaa6958f9370d7))
-- Remove depreciate MPSegment code ([#171](https://github.com/mParticle/mparticle-apple-sdk/issues/171)) ([1c04262](https://github.com/mParticle/mparticle-apple-sdk/commit/1c04262a6144bd292d364873ca1701b0a3793136))
-- Update Sample App for iOS 16 ([#158](https://github.com/mParticle/mparticle-apple-sdk/issues/158)) ([fed8131](https://github.com/mParticle/mparticle-apple-sdk/commit/fed81319e196a43f83fc284e022f94713d32cd82))
+* match android type support for custom attributes ([#157](https://github.com/mParticle/mparticle-apple-sdk/issues/157)) ([c9a34cd](https://github.com/mParticle/mparticle-apple-sdk/commit/c9a34cd2aab955cf81994a59ebcaa6958f9370d7))
+* Remove depreciate MPSegment code ([#171](https://github.com/mParticle/mparticle-apple-sdk/issues/171)) ([1c04262](https://github.com/mParticle/mparticle-apple-sdk/commit/1c04262a6144bd292d364873ca1701b0a3793136))
+* Update Sample App for iOS 16 ([#158](https://github.com/mParticle/mparticle-apple-sdk/issues/158)) ([fed8131](https://github.com/mParticle/mparticle-apple-sdk/commit/fed81319e196a43f83fc284e022f94713d32cd82))
 
 ## [8.8.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.8.0...v8.8.1) (2022-07-15)
 
+
 ### Bug Fixes
 
-- Add filtering check to legacy code path ([#155](https://github.com/mParticle/mparticle-apple-sdk/issues/155)) ([0212944](https://github.com/mParticle/mparticle-apple-sdk/commit/0212944ef6f3ed1849b269fcd355abdac5a4930b))
-- remove undefined hasher behavior ([#152](https://github.com/mParticle/mparticle-apple-sdk/issues/152)) ([a82b928](https://github.com/mParticle/mparticle-apple-sdk/commit/a82b9285c2844ac32638c6692fc651184b6fea81))
+* Add filtering check to legacy code path ([#155](https://github.com/mParticle/mparticle-apple-sdk/issues/155)) ([0212944](https://github.com/mParticle/mparticle-apple-sdk/commit/0212944ef6f3ed1849b269fcd355abdac5a4930b))
+* remove undefined hasher behavior ([#152](https://github.com/mParticle/mparticle-apple-sdk/issues/152)) ([a82b928](https://github.com/mParticle/mparticle-apple-sdk/commit/a82b9285c2844ac32638c6692fc651184b6fea81))
 
 # [8.8.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.7.0...v8.8.0) (2022-05-17)
 
+
 ### Bug Fixes
 
-- Fix Dereferenced Garbage Pointer ([#148](https://github.com/mParticle/mparticle-apple-sdk/issues/148)) ([d2c58e1](https://github.com/mParticle/mparticle-apple-sdk/commit/d2c58e10559bc38999dca82a2910f478d2250142))
-- property memory annotations ([#146](https://github.com/mParticle/mparticle-apple-sdk/issues/146)) ([c95ddf6](https://github.com/mParticle/mparticle-apple-sdk/commit/c95ddf6da15a6e8ba381a717ec0a5b18c24e749c))
-- update active kits header ([#147](https://github.com/mParticle/mparticle-apple-sdk/issues/147)) ([d196723](https://github.com/mParticle/mparticle-apple-sdk/commit/d1967233a2cf9542f5a3c8e7c9fabd854acf4189))
+* Fix Dereferenced Garbage Pointer ([#148](https://github.com/mParticle/mparticle-apple-sdk/issues/148)) ([d2c58e1](https://github.com/mParticle/mparticle-apple-sdk/commit/d2c58e10559bc38999dca82a2910f478d2250142))
+* property memory annotations ([#146](https://github.com/mParticle/mparticle-apple-sdk/issues/146)) ([c95ddf6](https://github.com/mParticle/mparticle-apple-sdk/commit/c95ddf6da15a6e8ba381a717ec0a5b18c24e749c))
+* update active kits header ([#147](https://github.com/mParticle/mparticle-apple-sdk/issues/147)) ([d196723](https://github.com/mParticle/mparticle-apple-sdk/commit/d1967233a2cf9542f5a3c8e7c9fabd854acf4189))
+
 
 ### Features
 
-- add conformsToProtocol forwarding to MPAppDelegateProxy ([#144](https://github.com/mParticle/mparticle-apple-sdk/issues/144)) ([40e517a](https://github.com/mParticle/mparticle-apple-sdk/commit/40e517aa0bff4ecd2368c095a1c7d35b5745ffd1))
-- add support for client side rules ([#151](https://github.com/mParticle/mparticle-apple-sdk/issues/151)) ([6a93096](https://github.com/mParticle/mparticle-apple-sdk/commit/6a93096d285546be9eda62c24bea72d2853033b0))
+* add conformsToProtocol forwarding to MPAppDelegateProxy ([#144](https://github.com/mParticle/mparticle-apple-sdk/issues/144)) ([40e517a](https://github.com/mParticle/mparticle-apple-sdk/commit/40e517aa0bff4ecd2368c095a1c7d35b5745ffd1))
+* add support for client side rules ([#151](https://github.com/mParticle/mparticle-apple-sdk/issues/151)) ([6a93096](https://github.com/mParticle/mparticle-apple-sdk/commit/6a93096d285546be9eda62c24bea72d2853033b0))
 
 # [8.7.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.6.0...v8.7.0) (2022-01-31)
 
+
 ### Bug Fixes
 
-- custom mapping to transaction attributes not to be null-ed for ecom events ([#141](https://github.com/mParticle/mparticle-apple-sdk/issues/141)) ([19ca3b0](https://github.com/mParticle/mparticle-apple-sdk/commit/19ca3b09e907f343bfe14869df2e2f0a9fb4ef92))
+* custom mapping to transaction attributes not to be null-ed for ecom events ([#141](https://github.com/mParticle/mparticle-apple-sdk/issues/141)) ([19ca3b0](https://github.com/mParticle/mparticle-apple-sdk/commit/19ca3b09e907f343bfe14869df2e2f0a9fb4ef92))
+
 
 ### Features
 
-- Add configMaxAgeSeconds to MParticleOptions ([cbf9464](https://github.com/mParticle/mparticle-apple-sdk/commit/cbf94640739f76513c910b96fe3fbf00428e5c3c))
-- add custom logger ([62e830d](https://github.com/mParticle/mparticle-apple-sdk/commit/62e830d6306750cad44c97c3c8d448517c5e0482))
-- add MPKitInstance enum value for GA4 kit ([a81c871](https://github.com/mParticle/mparticle-apple-sdk/commit/a81c87157817f382d5c2e5df23cb3e633191653e))
+* Add configMaxAgeSeconds to MParticleOptions ([cbf9464](https://github.com/mParticle/mparticle-apple-sdk/commit/cbf94640739f76513c910b96fe3fbf00428e5c3c))
+* add custom logger ([62e830d](https://github.com/mParticle/mparticle-apple-sdk/commit/62e830d6306750cad44c97c3c8d448517c5e0482))
+* add MPKitInstance enum value for GA4 kit ([a81c871](https://github.com/mParticle/mparticle-apple-sdk/commit/a81c87157817f382d5c2e5df23cb3e633191653e))
 
 # [8.6.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.4...v8.6.0) (2022-01-13)
 
+
 ### Bug Fixes
 
-- remove infinite values from message data ([#138](https://github.com/mParticle/mparticle-apple-sdk/issues/138)) ([3ea7370](https://github.com/mParticle/mparticle-apple-sdk/commit/3ea7370c1bc42c09e59fb027f7c0e36dd8878d88))
-- update reusable workflow urls ([0d1dc43](https://github.com/mParticle/mparticle-apple-sdk/commit/0d1dc431e4668e5a103fe70054f3c29f89d96f85))
+* remove infinite values from message data ([#138](https://github.com/mParticle/mparticle-apple-sdk/issues/138)) ([3ea7370](https://github.com/mParticle/mparticle-apple-sdk/commit/3ea7370c1bc42c09e59fb027f7c0e36dd8878d88))
+* update reusable workflow urls ([0d1dc43](https://github.com/mParticle/mparticle-apple-sdk/commit/0d1dc431e4668e5a103fe70054f3c29f89d96f85))
+
 
 ### Features
 
-- add upload bypass support to logscreenevent ([#137](https://github.com/mParticle/mparticle-apple-sdk/issues/137)) ([1bfd098](https://github.com/mParticle/mparticle-apple-sdk/commit/1bfd09862360f626f4041c3d12bd11ed9667d541))
+* add upload bypass support to logscreenevent ([#137](https://github.com/mParticle/mparticle-apple-sdk/issues/137)) ([1bfd098](https://github.com/mParticle/mparticle-apple-sdk/commit/1bfd09862360f626f4041c3d12bd11ed9667d541))
 
 ## [8.5.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.3...v8.5.4) (2021-10-04)
 
+
 ### Bug Fixes
 
-- Expose session start time ([#134](https://github.com/mParticle/mparticle-apple-sdk/issues/134)) ([8a3437f](https://github.com/mParticle/mparticle-apple-sdk/commit/8a3437ff0f34b8cf99faf45768c3157a54804379))
-- Prevent Infinite Values in Message Data ([#39](https://github.com/mParticle/mparticle-apple-sdk/issues/39)) ([d19d785](https://github.com/mParticle/mparticle-apple-sdk/commit/d19d785916b6169b90454b897c5037f5423cfa9e))
+* Expose session start time ([#134](https://github.com/mParticle/mparticle-apple-sdk/issues/134)) ([8a3437f](https://github.com/mParticle/mparticle-apple-sdk/commit/8a3437ff0f34b8cf99faf45768c3157a54804379))
+* Prevent Infinite Values in Message Data ([#39](https://github.com/mParticle/mparticle-apple-sdk/issues/39)) ([d19d785](https://github.com/mParticle/mparticle-apple-sdk/commit/d19d785916b6169b90454b897c5037f5423cfa9e))
 
 ## [8.5.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.2...v8.5.3) (2021-09-20)
 
+
 ### Bug Fixes
 
-- Calling -[MParticle reset] doesn't clean up our app delegate proxy ([d7932da](https://github.com/mParticle/mparticle-apple-sdk/commit/d7932da84ae428485628e55d001b5336a3780ef7))
-- Mapped screen events forwarding to kits ([86e7c75](https://github.com/mParticle/mparticle-apple-sdk/commit/86e7c75e38db7bc4375ca899dac7c058ebb4825d))
+* Calling -[MParticle reset] doesn't clean up our app delegate proxy ([d7932da](https://github.com/mParticle/mparticle-apple-sdk/commit/d7932da84ae428485628e55d001b5336a3780ef7))
+* Mapped screen events forwarding to kits ([86e7c75](https://github.com/mParticle/mparticle-apple-sdk/commit/86e7c75e38db7bc4375ca899dac7c058ebb4825d))
 
 ## [8.5.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.1...v8.5.2) (2021-09-10)
 
+
 ### Bug Fixes
 
-- Revert commit e91a9a3 Update Conversion for Number Value in NSDictionary helper class ([a2280fe](https://github.com/mParticle/mparticle-apple-sdk/commit/a2280fefe187a16f1834310b1001023f078a2d16))
+* Revert commit e91a9a3 Update Conversion for Number Value in NSDictionary helper class ([a2280fe](https://github.com/mParticle/mparticle-apple-sdk/commit/a2280fefe187a16f1834310b1001023f078a2d16))
 
 ## [8.5.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.0...v8.5.1) (2021-09-09)
 
+
 ### Bug Fixes
 
-- Gracefully Handle Invalid Message Data ([b618e5b](https://github.com/mParticle/mparticle-apple-sdk/commit/b618e5ba9e29805c9d1e3b0378604a0a4bb0471a))
-- Preserve attributes when mapping commerce events ([0ff8414](https://github.com/mParticle/mparticle-apple-sdk/commit/0ff84147dc31e8c4ba64123acd5f0d99d21503c8))
-- Remove duplicate key in dictionary literal ([b1ecb17](https://github.com/mParticle/mparticle-apple-sdk/commit/b1ecb172f2204959f3dfd1153bc360d6c01a4dae))
+* Gracefully Handle Invalid Message Data ([b618e5b](https://github.com/mParticle/mparticle-apple-sdk/commit/b618e5ba9e29805c9d1e3b0378604a0a4bb0471a))
+* Preserve attributes when mapping commerce events ([0ff8414](https://github.com/mParticle/mparticle-apple-sdk/commit/0ff84147dc31e8c4ba64123acd5f0d99d21503c8))
+* Remove duplicate key in dictionary literal ([b1ecb17](https://github.com/mParticle/mparticle-apple-sdk/commit/b1ecb172f2204959f3dfd1153bc360d6c01a4dae))
 
 # [8.5.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.4.0...v8.5.0) (2021-07-29)
 
+
 ### Bug Fixes
 
-- Ensure accurate app/device info after restart (match Android SDK behavior) ([e1fdc94](https://github.com/mParticle/mparticle-apple-sdk/commit/e1fdc94784667fd30e7fee0f54234934d0bd8cd4))
-- Transaction attributes revenue logic differs from Android ([c274e42](https://github.com/mParticle/mparticle-apple-sdk/commit/c274e42171b09ddf55d800020c7434054202ac82))
+* Ensure accurate app/device info after restart (match Android SDK behavior) ([e1fdc94](https://github.com/mParticle/mparticle-apple-sdk/commit/e1fdc94784667fd30e7fee0f54234934d0bd8cd4))
+* Transaction attributes revenue logic differs from Android ([c274e42](https://github.com/mParticle/mparticle-apple-sdk/commit/c274e42171b09ddf55d800020c7434054202ac82))
+
 
 ### Features
 
-- Event upload bypass option ([e58ae23](https://github.com/mParticle/mparticle-apple-sdk/commit/e58ae230acdcfb7a6fee16424e7fd9b85ab157f7))
+* Event upload bypass option ([e58ae23](https://github.com/mParticle/mparticle-apple-sdk/commit/e58ae230acdcfb7a6fee16424e7fd9b85ab157f7))
 
 # mParticle Apple SDK CHANGELOG
 
@@ -571,7 +654,7 @@ This release includes a number of bugfixes:
 ## 8.1.1
 
 - Fix Other6 Identity Login Issue
-  This resolves an issue where identity login requests that included certain MPIdentities were always returning a 400 response.
+This resolves an issue where identity login requests that included certain MPIdentities were always returning a 400 response.
 
 ## 8.1.0
 
@@ -620,18 +703,18 @@ Important behavioral and API changes:
 - Introduction of the `MPIdentity` enum, allowing for both device and user identities to be supplied to the identity API
 - Kits have been updated to use the latest iOS 14 betas of their respective SDKs:
 
-  | Partner SDK | Apple SDK v7 | Apple SDK v8 |
-  | ----------- | ------------ | ------------ |
-  | Airship     | ~> 12.0      | ~> 14.0.0    |
-  | AppsFlyer   | ~> 5.0       | ~> 6.0       |
-  | Apptentive  | ~> 5.2       | ~> 5.3       |
-  | Apptimize   | ~> 3.0       | ~> 3.2       |
-  | Branch      | ~> 0.31.2    | ~> 0.35      |
-  | Braze       | ~> 3.20      | ~> 3.27      |
-  | Crittercism | '5.6.7'      | ~> 5.0       |
-  | Leanplum    | ~> 2.6       | ~> 3.0       |
-  | Localytics  | ~> 5.2       | ~> 6.0       |
-  | Primer      | '3.2.3'      | ~> 3.6       |
+    | Partner SDK | Apple SDK v7 | Apple SDK v8 |
+    |-------------|--------------|--------------|
+    | Airship     | ~> 12.0      | ~> 14.0.0    |
+    | AppsFlyer   | ~> 5.0       | ~> 6.0       |
+    | Apptentive  | ~> 5.2       | ~> 5.3       |
+    | Apptimize   | ~> 3.0       | ~> 3.2       |
+    | Branch      | ~> 0.31.2    | ~> 0.35      |
+    | Braze       | ~> 3.20      | ~> 3.27      |
+    | Crittercism | '5.6.7'      | ~> 5.0       |
+    | Leanplum    | ~> 2.6       | ~> 3.0       |
+    | Localytics  | ~> 5.2       | ~> 6.0       |
+    | Primer      | '3.2.3'      | ~> 3.6       |
 
 - The above are using wildcard dependencies, see here for how to interpret these: https://guides.cocoapods.org/using/the-podfile.html#specifying-pod-versions
 - If you don't see a kit listed here, it was probably already using a wildcard dependency. It has been released as is, as version 8.0.1, and will automatically pull in the latest version of the partner's SDK.
@@ -887,7 +970,6 @@ Also included is a change to allow user agent collection in iOS extensions.
 ### Core
 
 #### User Agent Collection
-
 - This release restores support for automatic collection of browser user agent by the SDK.
 
 - This release also deprecates the Cart API. The Cart API was originally designed to maintain and hold on to product objects to be appended automatically to Commerce events. Over time we have found it to be better practice for the hosting app to maintain shopping cart state rather than the mParticle SDK. In place of the Cart API, please include all of the applicable product objects with each Commerce event.
@@ -935,13 +1017,10 @@ For more details, see the Media SDK repository: https://github.com/mParticle/mpa
 ## 7.11.0
 
 ## iOS 13 Official Support
-
 ### Push Registration
-
-If you are collecting push registration tokens and using them for server-side integrations, this is a _critical update_. If you are only registering for push via kits (such as Braze), you can use iOS Braze kit 7.10.7 or later with iOS 13.
+If you are collecting push registration tokens and using them for server-side integrations, this is a *critical update*. If you are only registering for push via kits (such as Braze), you can use iOS Braze kit 7.10.7 or later with iOS 13.
 
 ### UIWebView and User Agent Collection
-
 Support for UIWebView has been removed. User agent collection has been disabled in this release. You may manually supply the user agent to the MParticleOptions object on SDK initialization if required.
 
 ## 7.10.5
@@ -1125,9 +1204,10 @@ This release helps make our AppDelegate proxy mechanism more transparent by allo
 ## Core
 
 - Add new and updated existing integration attribute APIs
-  - Allow integration attributes to be set for any ID (not just known kit IDs)
-  - Add a public query API for specific integration attributes by ID
-  - Rename the private usages and APIs from kitCode to integrationId
+
+    - Allow integration attributes to be set for any ID (not just known kit IDs)
+    - Add a public query API for specific integration attributes by ID
+    - Rename the private usages and APIs from kitCode to integrationId
 
 - Fix a potential hang that could occur if Apple Search Ads timed out
 
@@ -1251,7 +1331,6 @@ You can now control which kits are enabled and disabled based on a user's "logge
 ## Kit Updates
 
 ### Kochava
-
 - Ensure log level from config is always respected, not overridden by environment
 - Don't set Kochava delegate unless retrieveAttribution setting is turned on
 - Remove use of undocumented isNewUser flag
@@ -1369,7 +1448,7 @@ This release updates the SDK to handle several changes present in the latest bet
 
 ## 7.4.2
 
-- This releases addresses several synchronization issues with internal SDK properties that could lead to crashes.
+- This releases addresses several synchronization issues with internal SDK properties that could lead to crashes.  
 
 ## 7.4.1
 
@@ -1390,7 +1469,7 @@ This release updates the SDK to handle several changes present in the latest bet
 
 ## 7.3.11
 
-- This release ensures that kits are always started on the main thread rather than the SDK's internal serial queue. Kits will still not be started sychronously when calling `MParticle.start`, but they will be initialized on the main thread on a later run-loop.
+- This release ensures that kits are always started on the main thread rather than the SDK's internal serial queue. Kits will still not be started sychronously when calling `MParticle.start`, but they will be initialized on the main thread on a later run-loop. 
 
 ## 7.3.10
 
@@ -1437,7 +1516,7 @@ The SDK can now dynamically enable and disable kits based on the current user's 
 - This release fixes potential SQLite crashes caused by multi-threaded SQLite access caused by the SDK's significant time-change listener.
 - This release addresses a potential crash or error log caused by kits that implement the attribution API and return a nil attribution result.
 
-## 7.3.4
+## 7.3.4 
 
 - This is a **critical** bug fix release. Prior to this, the SDK would upload duplicate kit forwarding statistics. These statistic do not impact forwarding - but they populate the mParticle Event Forwarding dashboard. This change is crucial for proper reporting as well as reducing the amount of SDK SQL storage and upload payload size.
 
@@ -1478,8 +1557,7 @@ Here are a few important notes about this release:
 
 ## 7.2.0
 
-This is a _high priority_ update for all users of SDK v7. This update:
-
+This is a *high priority* update for all users of SDK v7. This update:
 - Ensures database migrations from v6 to v7 occur on a background thread.
 - Reduces the amount of data that is migrated.
 - Simplifies batch upload creation and session deletion logic to ensure the SDK's database is fully cleared when appropriate.
@@ -1552,14 +1630,14 @@ This release fixes a bug where the SDK could trigger a call to config before sta
 
 Version 7.1.0 is the first non-beta release of the new mParticle IDSync framework. It contains many new features as well as breaking changes:
 
-- New Identity APIs allowing custom IDSync "strategies" per customer.
+- New Identity APIs allowing custom IDSync "strategies" per customer. 
 - Included in the new APIs is a `MParticleUser` object, as well as the new APIs for `login`, `logout`, `modify`, and more! [You can read more about the new Identity APIs here](https://docs.mparticle.com/developers/sdk/ios/identity).
 - `MParticleOptions` object for explicit SDK configuration.
 - New "Attribution" API, which replaces the former "deferred deeplink" API.
 
 ## Migrating from SDK v6
 
-Prior to upgrading to version 7, your mParticle org **must** be provisioned with an Identity Strategy. Please contact the mParticle Customer Success team at support@mparticle.com.
+Prior to upgrading to version 7, your mParticle org **must** be provisioned with an Identity Strategy. Please contact the mParticle Customer Success team at support@mparticle.com. 
 
 The new SDK contains multiple breaking API changes. To learn how to migrate your existing code, please [reference the iOS migration guide](https://docs.mparticle.com/developers/sdk/ios/getting-started#upgrade-to-version-7-of-the-sdk).
 
@@ -1582,36 +1660,36 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 
 ## 7.0.8
 
-- [NEW] Introduce new deeplinking API
+* [NEW] Introduce new deeplinking API
 
 ## 7.0.7
 
-- [FIX] Allow concurrent internal modify requests
+* [FIX] Allow concurrent internal modify requests
 
 ## 7.0.6
 
-- [FIX] Ensure Identifying flag is flipped on API timeout
+* [FIX] Ensure Identifying flag is flipped on API timeout
 
 ## 7.0.5
 
-- [FIX] Fixes and enhancements to Identity API error callbacks
+* [FIX] Fixes and enhancements to Identity API error callbacks
 
 ## 7.0.4
 
-- [FIX] Remove MPUtils.h/m
+* [FIX] Remove MPUtils.h/m
 
 ## 7.0.3
 
-- [FIX] Ensure the correct mpid is used in batches
-- [FIX] Fix device application stamp
+* [FIX] Ensure the correct mpid is used in batches
+* [FIX] Fix device application stamp
 
 ## 7.0.2
 
-- [FIX] Propagate Identity API errors to original caller
+* [FIX] Propagate Identity API errors to original caller
 
 ## 7.0.0
 
-- [NEW] New identity APIs
+* [NEW] New identity APIs
 
 ## 6.15.12
 
@@ -1714,348 +1792,347 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 
 ## 6.14.5
 
-- [FIX] Fixes for Xcode 9 / iOS 11 and main thread checker
-- [NEW] Remove category on NSUserDefaults
+* [FIX] Fixes for Xcode 9 / iOS 11 and main thread checker
+* [NEW] Remove category on NSUserDefaults
 
 ## 6.14.4
 
-- [FIX] Ensure all server-side configuration settings are reloaded on every app-launch
+* [FIX] Ensure all server-side configuration settings are reloaded on every app-launch
 
 ## 6.14.3
 
-- [FIX] Revert main thread error fix
+* [FIX] Revert main thread error fix
 
 ## 6.14.2
 
-- [FIX] Fix main thread error
-- [FIX] Fix clang pragma
-- [FIX] Remove check for notification hash
+* [FIX] Fix main thread error
+* [FIX] Fix clang pragma
+* [FIX] Remove check for notification hash
 
 ## 6.14.1
 
-- [FIX] Retry and increase timeout for search ads
+* [FIX] Retry and increase timeout for search ads
 
 ## 6.14.0
 
-- [NEW] Add support for Skyhook
-- [NEW] Add support for Iterable
+* [NEW] Add support for Skyhook
+* [NEW] Add support for Iterable
 
 ## 6.13.3
 
-- [FIX] Capture user agent in start, never in background
+* [FIX] Capture user agent in start, never in background
 
 ## 6.13.2
 
-- [FIX] Fix clang static analyzer warnings
+* [FIX] Fix clang static analyzer warnings
 
 ## 6.13.1
 
-- [FIX] Support for [Radar](https://www.onradar.com) as a kit
-- [FIX] Support for forcing SDK Environment on start-up
+* [FIX] Support for [Radar](https://www.onradar.com) as a kit
+* [FIX] Support for forcing SDK Environment on start-up
 
 ## 6.13.0
 
-- [NEW] Handle eCommerce events from embedded js sdk
-- [NEW] Optimize user identity and user attribute change messages
-- [NEW] Sync user attributes and identities only once per kit
+* [NEW] Handle eCommerce events from embedded js sdk
+* [NEW] Optimize user identity and user attribute change messages
+* [NEW] Sync user attributes and identities only once per kit
 
 ## 6.12.6
 
-- [FIX] Force refresh the config cache when a kit configuration is absent
+* [FIX] Force refresh the config cache when a kit configuration is absent
 
 ## 6.12.5
 
-- [NEW] Use mutable copy of string when setting a user attribute key
+* [NEW] Use mutable copy of string when setting a user attribute key
 
 ## 6.12.4
 
-- [NEW] Include latitude and longitude in session start events
-- [NEW] Allow for environment override even for prod apps
-- [FIX] Reporting of commerce events when originated from a custom mapping
+* [NEW] Include latitude and longitude in session start events
+* [NEW] Allow for environment override even for prod apps
+* [FIX] Reporting of commerce events when originated from a custom mapping
 
 ## 6.12.3
 
-- [FIX] Execute projection when the commerce event has no mapped attributes
+* [FIX] Execute projection when the commerce event has no mapped attributes
 
 ## 6.12.2
 
-- [NEW] Remove eTag when app version or build changes
-- [FIX] Enumeration to generate upload batches is done non-concurrently
+* [NEW] Remove eTag when app version or build changes
+* [FIX] Enumeration to generate upload batches is done non-concurrently
 
 ## 6.12.1
 
-- [FIX] A try/catch block added to serialization of MPMessage. Moreover, further conditions were added to assure the values being handled by the MPUploadBuilder are valid
+* [FIX] A try/catch block added to serialization of MPMessage. Moreover, further conditions were added to assure the values being handled by the MPUploadBuilder are valid
 
 ## 6.12.0
 
-- [NEW] Support for [Radar](https://www.onradar.com) as a kit
-- [NEW] Retrieve kit instance asynchronously with a block. Use `- (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;` to retrieve a kit instance. The block will be called immediately if the kit is already initialized, or will be called asynchronously as soon as the kit becomes initialized
-- [NEW] Lighter SDK. New Year, new resolution, the core SDK has gone on a diet. Stay tuned, more to come
-- [FIX] Fix location getter and nullability notation
+* [NEW] Support for [Radar](https://www.onradar.com) as a kit
+* [NEW] Retrieve kit instance asynchronously with a block. Use `- (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;` to retrieve a kit instance. The block will be called immediately if the kit is already initialized, or will be called asynchronously as soon as the kit becomes initialized
+* [NEW] Lighter SDK. New Year, new resolution, the core SDK has gone on a diet. Stay tuned, more to come
+* [FIX] Fix location getter and nullability notation
 
 ## 6.11.2
 
-- [NEW] Set location without the need to call `beginLocationTracking`
-- [FIX] Upload data immediately on first application launch
+* [NEW] Set location without the need to call `beginLocationTracking`
+* [FIX] Upload data immediately on first application launch
 
 ## 6.11.1
 
-- [NEW] Queue launch parameters. The app notification handler now takes advantage of the forwarding queue mechanism. If kits have not been initialized yet (config not received from server), the data will be held in a queue and once the configuration has been received and kits initialized, the queued items are replayed to kits
+* [NEW] Queue launch parameters. The app notification handler now takes advantage of the forwarding queue mechanism. If kits have not been initialized yet (config not received from server), the data will be held in a queue and once the configuration has been received and kits initialized, the queued items are replayed to kits
 
 ## 6.11.0
 
-- [NEW] Support for [Reveal Mobile](http://www.revealmobile.com/) as a kit
-- [NEW] Wrap the capture of the user-agent in a try/catch
-- [FIX] Adjust CommerceEvent property serialization: currency, screen name, and non-interactive are now located at the root of serialized CommerceEvent messages
-- [FIX] Simplify session management when app becomes active
+* [NEW] Support for [Reveal Mobile](http://www.revealmobile.com/) as a kit
+* [NEW] Wrap the capture of the user-agent in a try/catch
+* [FIX] Adjust CommerceEvent property serialization: currency, screen name, and non-interactive are now located at the root of serialized CommerceEvent messages
+* [FIX] Simplify session management when app becomes active
 
 ## 6.10.5
 
-- [FIX] Increment user attribute when not set previously
-- [FIX] Runtime iOS 10 verification of push notifications
+* [FIX] Increment user attribute when not set previously
+* [FIX] Runtime iOS 10 verification of push notifications
 
 ## 6.10.4
 
-- [FIX] Fix potential race condition beginning sessions
-- [FIX] End background task when batches are finished
+* [FIX] Fix potential race condition beginning sessions
+* [FIX] End background task when batches are finished
 
 ## 6.10.3
 
-- [FIX] Fix crash when an app is being force quit.
+* [FIX] Fix crash when an app is being force quit.
 
 ## 6.10.2
 
-- [FIX] Remove the use of generics from the `checkForDeferredDeepLinkWithCompletionHandler:` method. The received parameter signature is now `NSDictionary`, previously it was `NSDictionary<NSString *, NSString *>`
+* [FIX] Remove the use of generics from the `checkForDeferredDeepLinkWithCompletionHandler:` method. The received parameter signature is now `NSDictionary`, previously it was `NSDictionary<NSString *, NSString *>`
 
 ## 6.10.0
 
-- [NEW] Collect attribute details from search ads
-- [FIX] Compare custom mapping keys in a case insensitive manner
-- [FIX] Convert event attributes to <string, string> prior to matching custom mappings
-- [FIX] Generate the upload batch when the app is terminated by the user or OS. This way app version and build will always be correctly attributed to app events
+* [NEW] Collect attribute details from search ads
+* [FIX] Compare custom mapping keys in a case insensitive manner
+* [FIX] Convert event attributes to <string, string> prior to matching custom mappings
+* [FIX] Generate the upload batch when the app is terminated by the user or OS. This way app version and build will always be correctly attributed to app events
 
 ## 6.9.0
 
-- [NEW] Support for [Apptimize](https://apptimize.com) as a kit
-- [NEW] Collect whether Daylight Savings Time is enabled
-- [NEW] Add notification for when the SDK has finished initializing. Add a flag property indicating whether the SDK has been initialized (KVO compatible)
+* [NEW] Support for [Apptimize](https://apptimize.com) as a kit
+* [NEW] Collect whether Daylight Savings Time is enabled
+* [NEW] Add notification for when the SDK has finished initializing. Add a flag property indicating whether the SDK has been initialized (KVO compatible)
 
 ## 6.8.0
 
-- [NEW] Support for [Leanplum](https://www.leanplum.com) as a kit
-- [NEW] When a user identity changes a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user identities were set/present at the moment an app event is logged
+* [NEW] Support for [Leanplum](https://www.leanplum.com) as a kit
+* [NEW] When a user identity changes a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user identities were set/present at the moment an app event is logged
 
 > You will need for this SDK update:
->
-> - Xcode 8 or later
-> - CocoaPods 1.1.0.rc.2 or later
+> * Xcode 8 or later
+> * CocoaPods 1.1.0.rc.2 or later
 
 ## 6.7.2
 
-- [FIX] When a user attribute changes (new, update, or delete) a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user attributes were set/present at the moment an app event is logged
+* [FIX] When a user attribute changes (new, update, or delete) a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user attributes were set/present at the moment an app event is logged
 
 ## 6.7.1
 
-- [FIX] Timing of logged events: Events (both app events and commerce events) now have a timestamp property, which gets populated automatically by the SDK, when an event is logged prior to the SDK being fully initialized. If set, this property will override the timestamp of messages when they are about to be persisted
+* [FIX] Timing of logged events: Events (both app events and commerce events) now have a timestamp property, which gets populated automatically by the SDK, when an event is logged prior to the SDK being fully initialized. If set, this property will override the timestamp of messages when they are about to be persisted
 
 ## 6.7.0
 
-- [NEW] Custom mappings now support more advanced matching schemes
-- [NEW] Support for [Urban Airship](https://www.urbanairship.com) as a kit
+* [NEW] Custom mappings now support more advanced matching schemes
+* [NEW] Support for [Urban Airship](https://www.urbanairship.com) as a kit
 
 ## 6.6.1
 
-- [FIX] A newly introduced class was missing from the tvOS Xcode target
+* [FIX] A newly introduced class was missing from the tvOS Xcode target
 
 ## 6.6.0
 
-- [NEW] Kits can now pass integration attributes back to the core SDK
+* [NEW] Kits can now pass integration attributes back to the core SDK
 
 ## 6.5.0
 
-- [NEW] Support for [Primer](https://goprimer.com) as a kit
+* [NEW] Support for [Primer](https://goprimer.com) as a kit
 
 ## 6.4.0
 
-- [NEW] Support for [Apptentive](http://www.apptentive.com) as a kit
-- [NEW] MParticleConfig.plist option to opt in/out of automatic silent notification registration. See [mParticle Docs](http://docs.mparticle.com/#apple) for details
+* [NEW] Support for [Apptentive](http://www.apptentive.com) as a kit
+* [NEW] MParticleConfig.plist option to opt in/out of automatic silent notification registration. See [mParticle Docs](http://docs.mparticle.com/#apple) for details
 
 ## 6.3.0
 
-- [NEW] Add the customerId user identity as an event attribute when forwarding to AppsFlyer
-- [NEW] Add new methods to the kit protocol to forward user notification related info to kits
-- [NEW] Config optional flag to send the session history batch (reducing the amount of data sent over to mParticle)
-- [NEW] Opt-in to always try to collect the IDFA
-- [NEW] Add continueUserActivity to the public SDK API (Pull Request submitted by twobitlabs)
-- [FIX] Guarantee that launch options in AST messages to contain only string parameters
+* [NEW] Add the customerId user identity as an event attribute when forwarding to AppsFlyer
+* [NEW] Add new methods to the kit protocol to forward user notification related info to kits
+* [NEW] Config optional flag to send the session history batch (reducing the amount of data sent over to mParticle)
+* [NEW] Opt-in to always try to collect the IDFA
+* [NEW] Add continueUserActivity to the public SDK API (Pull Request submitted by twobitlabs)
+* [FIX] Guarantee that launch options in AST messages to contain only string parameters
 
 ## 6.2.0
 
-- [NEW] Support for [Button](https://www.usebutton.com) as a kit
-- [FIX] Server configuration override of crash report initialization is restored
+* [NEW] Support for [Button](https://www.usebutton.com) as a kit
+* [FIX] Server configuration override of crash report initialization is restored
 
 ## 6.1.0
 
-- [NEW] User attributes can now take arrays as values. The array of values is associated with a user attribute key. The list of all user attributes can be retrieved using the new `userAttributes` property
+* [NEW] User attributes can now take arrays as values. The array of values is associated with a user attribute key. The list of all user attributes can be retrieved using the new `userAttributes` property
 
 ## 6.0.7
 
-- [FIX] Filter transaction attributes in commerce events
-- [FIX] Expand the scope of MPAppDelegateProxy to handle protocol conformance and class hierarchy matching
-- [FIX] Fix static analysis flags
-- [FIX] Add clang pragmas to remove warnings
+* [FIX] Filter transaction attributes in commerce events
+* [FIX] Expand the scope of MPAppDelegateProxy to handle protocol conformance and class hierarchy matching
+* [FIX] Fix static analysis flags
+* [FIX] Add clang pragmas to remove warnings
 
 ## 6.0.6
 
-- [FIX] Using a string constant (iOS 9 or above) or a string literal (iOS 8 or below) to log a deep-linking event
+* [FIX] Using a string constant (iOS 9 or above) or a string literal (iOS 8 or below) to log a deep-linking event
 
 ## 6.0.5
 
-- [FIX] Add additional checks for iOS 9 symbols
+* [FIX] Add additional checks for iOS 9 symbols
 
 ## 6.0.4
 
-- [FIX] More consistent handling of kit initialization and sampling
+* [FIX] More consistent handling of kit initialization and sampling
 
 ## 6.0.3
 
-- [FIX] Expose some files for use by kits
-- [FIX] Add nil check and prevent modifying while enumerating
+* [FIX] Expose some files for use by kits
+* [FIX] Add nil check and prevent modifying while enumerating
 
 ## 6.0.2
 
-- [FIX] Set the kits initialized flag only if persisted kits have been initialized
+* [FIX] Set the kits initialized flag only if persisted kits have been initialized
 
 ## 6.0.1
 
-- [FIX] Correct a condition determining whether variables were valid
+* [FIX] Correct a condition determining whether variables were valid
 
 ## 6.0.0
 
-- [NEW] We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
-- [NEW] A queue was added to hold events to be forwarded to kits until the first configuration is received from the server and kits are initialized
-- [NEW] Added support for Carthage
-- [NEW] Maximum user attribute value length has been extended to 4096 characters
-- [FIX] Restored unit tests for each of the platforms
+* [NEW] We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
+* [NEW] A queue was added to hold events to be forwarded to kits until the first configuration is received from the server and kits are initialized
+* [NEW] Added support for Carthage
+* [NEW] Maximum user attribute value length has been extended to 4096 characters
+* [FIX] Restored unit tests for each of the platforms
 
 ## 5.5.2
 
-- [NEW] Stripping `$` from event attributes when forwarding to Appboy
-- [FIX] Updated the `podspec` to include paths and flags required to build kits
+* [NEW] Stripping `$` from event attributes when forwarding to Appboy
+* [FIX] Updated the `podspec` to include paths and flags required to build kits
 
 ## 5.5.1
 
-- [NEW] Added Branch Metrics support for received push notifications
-- [NEW] Renamed the `MPLogLevel` enum to `MPILogLevel`. The renamed values are: `MPILogLevelNone`, `MPILogLevelError`, `MPILogLevelWarning`, `MPILogLevelDebug`, and `MPILogLevelVerbose`
+* [NEW] Added Branch Metrics support for received push notifications
+* [NEW] Renamed the `MPLogLevel` enum to `MPILogLevel`. The renamed values are: `MPILogLevelNone`, `MPILogLevelError`, `MPILogLevelWarning`, `MPILogLevelDebug`, and `MPILogLevelVerbose`
 
 ## 5.5.0
 
-- [NEW] Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
-- [NEW] Updated Kahuna kit
-- [NEW] Conforming to the RFC 6585 HTTP status code 429, `Retry-After` response header
+* [NEW] Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
+* [NEW] Updated Kahuna kit
+* [NEW] Conforming to the RFC 6585 HTTP status code 429, `Retry-After` response header
 
 ## 5.4.2
 
-- [NEW] Validating the data type in event custom flags. Making sure that the array of flags is an array and that it only contains string items in it
-- [FIX] Do not forward push information to Kahuna if the app was launched as a result of a user tapping on a push notification, since their SDK is already capturing the contents of the notification. There is no impact on data forwarding/counting/reporting, this just prevents a Kahuna delegate method from being called twice
+* [NEW] Validating the data type in event custom flags. Making sure that the array of flags is an array and that it only contains string items in it
+* [FIX] Do not forward push information to Kahuna if the app was launched as a result of a user tapping on a push notification, since their SDK is already capturing the contents of the notification. There is no impact on data forwarding/counting/reporting, this just prevents a Kahuna delegate method from being called twice
 
 ## 5.4.1
 
-- [NEW] Expanded the Branch Metrics kit to handle `openURL` and `continueUserActivity`
-- [NEW] Custom mapping between mParticle and Appboy user attributes
-- [FIX] Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
-- [FIX] Fixed the representation of custom attributes in commerce event product impressions
-- [FIX] Fixed the predicate filtering active kits
-- [FIX] Fixed the formatting of event attributes in `logError`
-- [FIX] Correct the expected data type for configuring custom dimensions in Localytics
+* [NEW] Expanded the Branch Metrics kit to handle `openURL` and `continueUserActivity`
+* [NEW] Custom mapping between mParticle and Appboy user attributes
+* [FIX] Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
+* [FIX] Fixed the representation of custom attributes in commerce event product impressions
+* [FIX] Fixed the predicate filtering active kits
+* [FIX] Fixed the formatting of event attributes in `logError`
+* [FIX] Correct the expected data type for configuring custom dimensions in Localytics
 
 ## 5.4.0
 
-- Support for [Tune](https://www.tune.com/) as a kit
-- Verifying whether obtained 3rd party custom module values are a supported data type
+* Support for [Tune](https://www.tune.com/) as a kit
+* Verifying whether obtained 3rd party custom module values are a supported data type
 
 ## 5.3.2
 
-- Updated the nullability notation for handleActionWithIdentifier
-- Deferring the execution of the code in the ApplicationDidFinishLaunching to the next run-loop as a workaround to a bug in the Sqlite implementation
+* Updated the nullability notation for handleActionWithIdentifier
+* Deferring the execution of the code in the ApplicationDidFinishLaunching to the next run-loop as a workaround to a bug in the Sqlite implementation
 
 ## 5.3.1
 
-- Determining whether to forward an app delegate call to the old deep-linking method
-- Forwarding event attributes as user attributes to Appboy
+* Determining whether to forward an app delegate call to the old deep-linking method
+* Forwarding event attributes as user attributes to Appboy
 
 ## 5.3.0
 
-- Support for [AppsFlyer](https://www.appsflyer.com) as a kit
-- Implementation of filter by event attribute value
-- Preventing session history batch being sent when data is ramped
+* Support for [AppsFlyer](https://www.appsflyer.com) as a kit
+* Implementation of filter by event attribute value
+* Preventing session history batch being sent when data is ramped
 
 ## 5.2.3
 
-- Indirect instantiation of Kochava to allow it to work in the mParticle SDK with dynamically linked frameworks, `use_frameworks!`, bitcode, and static libraries
+* Indirect instantiation of Kochava to allow it to work in the mParticle SDK with dynamically linked frameworks, `use_frameworks!`, bitcode, and static libraries
 
 ## 5.2.2
 
-- Updated the podspec and README to allow for the utilization of `use_frameworks!` and the mParticle SDK
-- Fixed an overloaded start method that was overriding the running environment parameter
+* Updated the podspec and README to allow for the utilization of `use_frameworks!` and the mParticle SDK
+* Fixed an overloaded start method that was overriding the running environment parameter
 
 ## 5.2.1
 
-- Fixing the location of the Wootric subspec
+* Fixing the location of the Wootric subspec
 
 ## 5.2.0
 
-- Support for [Wootric](https://www.wootric.com) as a kit
-- Broadcast of the session start notification may incur a delay if the SDK is being started
-- Renamed MPConstants to MPIConstants
+* Support for [Wootric](https://www.wootric.com) as a kit
+* Broadcast of the session start notification may incur a delay if the SDK is being started
+* Renamed MPConstants to MPIConstants
 
 ## 5.1.6
 
-- Verifying the boundaries of eCommerce currency values to avoid numbers represented using scientific notation
-- Early detection of kit configuration change when migrating from SDK 4.x to 5.x
-- Reporting the app key in the request header
+* Verifying the boundaries of eCommerce currency values to avoid numbers represented using scientific notation
+* Early detection of kit configuration change when migrating from SDK 4.x to 5.x
+* Reporting the app key in the request header
 
 ## 5.1.5
 
-- Replaced NSTimer with dispatch_source_t with positive results minimizing the use of energy
-- Refactored class files adding the MP prefix
+* Replaced NSTimer with dispatch_source_t with positive results minimizing the use of energy
+* Refactored class files adding the MP prefix
 
 ## 5.1.4
 
-- Adopted Lightweight Generics
-- Fixed a bug reporting active kits
-- Enforcing the data type of eCommerce numeric values
+* Adopted Lightweight Generics
+* Fixed a bug reporting active kits
+* Enforcing the data type of eCommerce numeric values
 
 ## 5.1.3
 
-- Adopted the Objective-C Nullability syntax
-- Serializing kit configurations rather than kit instances
-- Defined default subspecs
-- New and updated unit tests
+* Adopted the Objective-C Nullability syntax
+* Serializing kit configurations rather than kit instances
+* Defined default subspecs
+* New and updated unit tests
 
 ## 5.1.2
 
-- Using asynchronous validation for authenticity of certificates
+* Using asynchronous validation for authenticity of certificates
 
 ## 5.1.1
 
-- Each commerce event action is dealt with in an action-by-action basis for Kahuna
-- Fixed a bug expanding and forwarding events to kits with no support to eCommerce events
+* Each commerce event action is dealt with in an action-by-action basis for Kahuna
+* Fixed a bug expanding and forwarding events to kits with no support to eCommerce events
 
 ## 5.1.0
 
-- Support for [Crittercism](http://www.crittercism.com) as a kit
-- Crash reporter has been implemented as an optional subspec
-- Validating the authenticity of network requests by alternative means to avoid errors raised by 3rd party SDKs mutating and proxying mParticle's original object performing the request
-- Removed legacy semaphores from network connections
-- Fixed a bug referencing commerce event names
+* Support for [Crittercism](http://www.crittercism.com) as a kit
+* Crash reporter has been implemented as an optional subspec
+* Validating the authenticity of network requests by alternative means to avoid errors raised by 3rd party SDKs mutating and proxying mParticle's original object performing the request
+* Removed legacy semaphores from network connections
+* Fixed a bug referencing commerce event names
 
 ## 5.0.2
 
-- Fixed a bug about events with no attributes not being forwarded to kits
+* Fixed a bug about events with no attributes not being forwarded to kits
 
 ## 5.0.1
 
-- Migrated Unit Tests from SDK version 4.x to 5.x
-- Added support to the new iOS 9 application:openURL:options: app delegate method
-- Fixed a bug migrating data when the database structure changes
+* Migrated Unit Tests from SDK version 4.x to 5.x
+* Added support to the new iOS 9 application:openURL:options: app delegate method
+* Fixed a bug migrating data when the database structure changes

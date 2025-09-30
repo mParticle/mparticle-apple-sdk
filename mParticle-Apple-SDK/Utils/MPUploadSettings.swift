@@ -25,27 +25,27 @@ public class MPUploadSettings: NSObject, NSCopying, NSSecureCoding {
     @objc public var aliasTrackingHost: String?
     @objc public var overridesAliasSubdirectory: Bool = false
     @objc public var eventsOnly: Bool = false
-
-    @objc override public init() {
-        apiKey = ""
-        secret = ""
+    
+    @objc public override init() {
+        self.apiKey = ""
+        self.secret = ""
         super.init()
     }
-
-    public func copy(with _: NSZone? = nil) -> Any {
-        return MPUploadSettings(apiKey: apiKey,
-                                secret: secret,
-                                eventsHost: eventsHost,
-                                eventsTrackingHost: eventsTrackingHost,
-                                overridesEventsSubdirectory: overridesEventsSubdirectory,
-                                aliasHost: aliasHost,
-                                aliasTrackingHost: aliasTrackingHost,
-                                overridesAliasSubdirectory: overridesAliasSubdirectory,
-                                eventsOnly: eventsOnly)
+    
+    public func copy(with zone: NSZone? = nil) -> Any {
+        return MPUploadSettings(apiKey: self.apiKey,
+                                secret: self.secret,
+                                eventsHost: self.eventsHost,
+                                eventsTrackingHost: self.eventsTrackingHost,
+                                overridesEventsSubdirectory: self.overridesEventsSubdirectory,
+                                aliasHost: self.aliasHost,
+                                aliasTrackingHost: self.aliasTrackingHost,
+                                overridesAliasSubdirectory: self.overridesAliasSubdirectory,
+                                eventsOnly: self.eventsOnly)
     }
-
+    
     public static var supportsSecureCoding: Bool = true
-
+    
     public func encode(with coder: NSCoder) {
         coder.encode(apiKey, forKey: kApiKey)
         coder.encode(secret, forKey: kSecret)
@@ -57,23 +57,24 @@ public class MPUploadSettings: NSObject, NSCopying, NSSecureCoding {
         coder.encode(overridesAliasSubdirectory, forKey: kOverridesAliasSubdirectory)
         coder.encode(eventsOnly, forKey: kEventsOnly)
     }
-
+    
     @objc public required init?(coder: NSCoder) {
-        apiKey = coder.decodeObject(forKey: kApiKey) as? String ?? ""
-        secret = coder.decodeObject(forKey: kSecret) as? String ?? ""
-        eventsHost = coder.decodeObject(forKey: kEventsHost) as? String
-        eventsTrackingHost = coder.decodeObject(forKey: kEventsTrackingHost) as? String
-        overridesEventsSubdirectory = coder.decodeBool(forKey: kOverridesEventsSubdirectory)
-        aliasHost = coder.decodeObject(forKey: kAliasHost) as? String
-        aliasTrackingHost = coder.decodeObject(forKey: kAliasTrackingHost) as? String
-        overridesAliasSubdirectory = coder.decodeBool(forKey: kOverridesAliasSubdirectory)
-        eventsOnly = coder.decodeBool(forKey: kEventsOnly)
+        self.apiKey = coder.decodeObject(forKey: kApiKey) as? String ?? ""
+        self.secret = coder.decodeObject(forKey: kSecret) as? String ?? ""
+        self.eventsHost = coder.decodeObject(forKey: kEventsHost) as? String
+        self.eventsTrackingHost = coder.decodeObject(forKey: kEventsTrackingHost) as? String
+        self.overridesEventsSubdirectory = coder.decodeBool(forKey: kOverridesEventsSubdirectory)
+        self.aliasHost = coder.decodeObject(forKey: kAliasHost) as? String
+        self.aliasTrackingHost = coder.decodeObject(forKey: kAliasTrackingHost) as? String
+        self.overridesAliasSubdirectory = coder.decodeBool(forKey: kOverridesAliasSubdirectory)
+        self.eventsOnly = coder.decodeBool(forKey: kEventsOnly)
+        
     }
-
+    
     @objc public class func currentUploadSettings(stateMachine: MPStateMachineProtocol, networkOptions: MPNetworkOptions) -> MPUploadSettings {
         return MPUploadSettings(apiKey: stateMachine.apiKey, secret: stateMachine.secret, networkOptions: networkOptions)
     }
-
+    
     @objc public init(apiKey: String, secret: String, eventsHost: String? = nil, eventsTrackingHost: String? = nil, overridesEventsSubdirectory: Bool = false, aliasHost: String? = nil, aliasTrackingHost: String? = nil, overridesAliasSubdirectory: Bool = false, eventsOnly: Bool = false) {
         self.apiKey = apiKey
         self.secret = secret
@@ -84,21 +85,21 @@ public class MPUploadSettings: NSObject, NSCopying, NSSecureCoding {
         self.aliasTrackingHost = aliasTrackingHost
         self.overridesAliasSubdirectory = overridesAliasSubdirectory
         self.eventsOnly = eventsOnly
-
+        
         super.init()
     }
 
     @objc public init(apiKey: String, secret: String, networkOptions: MPNetworkOptions) {
         self.apiKey = apiKey
         self.secret = secret
-        eventsHost = networkOptions.eventsHost
-        eventsTrackingHost = networkOptions.eventsTrackingHost
-        overridesEventsSubdirectory = networkOptions.overridesEventsSubdirectory
-        aliasHost = networkOptions.aliasHost
-        aliasTrackingHost = networkOptions.aliasTrackingHost
-        overridesAliasSubdirectory = networkOptions.overridesAliasSubdirectory
-        eventsOnly = networkOptions.eventsOnly
-
+        self.eventsHost = networkOptions.eventsHost
+        self.eventsTrackingHost = networkOptions.eventsTrackingHost
+        self.overridesEventsSubdirectory = networkOptions.overridesEventsSubdirectory
+        self.aliasHost = networkOptions.aliasHost
+        self.aliasTrackingHost = networkOptions.aliasTrackingHost
+        self.overridesAliasSubdirectory = networkOptions.overridesAliasSubdirectory
+        self.eventsOnly = networkOptions.eventsOnly
+        
         super.init()
     }
 }

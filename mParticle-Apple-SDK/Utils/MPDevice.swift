@@ -6,35 +6,35 @@
 //
 
 import Foundation
-import MachO
 import QuartzCore
+import MachO
 
 #if os(iOS) && !MPARTICLE_LOCATION_DISABLE
-    import CoreTelephony
+import CoreTelephony
 #endif
 
 @objc(MPDevice)
-public class MPDevice: NSObject, NSCopying {
+public class MPDevice : NSObject, NSCopying {
     private var stateMachine: MPStateMachine_PRIVATE
     private var userDefaults: MPUserDefaults
     private var identity: MPIdentityApi
-
-    @objc public required init(stateMachine: MPStateMachine_PRIVATE, userDefaults: MPUserDefaults, identity: MPIdentityApi) {
+    
+    @objc required public init(stateMachine: MPStateMachine_PRIVATE, userDefaults: MPUserDefaults, identity: MPIdentityApi) {
         self.stateMachine = stateMachine
         self.userDefaults = userDefaults
         self.identity = identity
         super.init()
     }
-
-    @objc public func copy(with _: NSZone? = nil) -> Any {
-        let copyObject = MPDevice(stateMachine: stateMachine, userDefaults: userDefaults, identity: identity)
-
-        copyObject.advertiserId = advertiserId
-        copyObject.architecture = architecture
-        copyObject.model = model
-        copyObject.vendorId = vendorId
-        copyObject.screenSize = screenSize
-
+    
+    @objc public func copy(with zone: NSZone? = nil) -> Any {
+        let copyObject = MPDevice(stateMachine: self.stateMachine, userDefaults: self.userDefaults, identity: self.identity)
+        
+        copyObject.advertiserId = self.advertiserId
+        copyObject.architecture = self.architecture
+        copyObject.model = self.model
+        copyObject.vendorId = self.vendorId
+        copyObject.screenSize = self.screenSize
+        
         return copyObject
     }
 
@@ -66,24 +66,29 @@ public class MPDevice: NSObject, NSCopying {
                 return arch
             } else {
                 guard let archRaw = NXGetLocalArchInfo().pointee.name else {
-                    return "unknown"
-                }
+                        return "unknown"
+                    }
                 return String(cString: archRaw)
             }
         }
     }
 
     @objc public var brand: String {
-        return UIDevice.current.model
+        get {
+            return UIDevice.current.model
+        }
     }
-
-    #if os(iOS) && !MPARTICLE_LOCATION_DISABLE
-        @objc public var carrier: String? {
+    
+#if os(iOS) && !MPARTICLE_LOCATION_DISABLE
+    @objc public var carrier: String? {
+        get {
             // Deprecated and no longer provided by Apple https://developer.apple.com/documentation/coretelephony/cttelephonynetworkinfo/subscribercellularprovider
             return nil
         }
-
-        @objc public var radioAccessTechnology: String {
+    }
+    
+    @objc public var radioAccessTechnology: String {
+        get {
             if let radioAccessTechnology = CTTelephonyNetworkInfo().currentRadioAccessTechnology {
                 if let range = radioAccessTechnology.range(of: "CTRadioAccessTechnology") {
                     if !range.isEmpty {
@@ -93,36 +98,45 @@ public class MPDevice: NSObject, NSCopying {
             }
             return "None"
         }
-    #endif
+    }
+#endif
 
     @objc public var country: String? {
-        return Locale.current.regionCode
+        get {
+            return Locale.current.regionCode
+        }
     }
 
     private var _deviceIdentifier: String?
     @objc public var deviceIdentifier: String {
-        if _deviceIdentifier == nil {
-            if let deviceID = userDefaults[Device.kMPDeviceIdentifierKey] as? String {
-                _deviceIdentifier = deviceID
-            } else {
-                _deviceIdentifier = UUID().uuidString
-                userDefaults[Device.kMPDeviceIdentifierKey] = _deviceIdentifier
+        get {
+            if _deviceIdentifier == nil {
+                if let deviceID = userDefaults[Device.kMPDeviceIdentifierKey] as? String {
+                    _deviceIdentifier = deviceID
+                } else {
+                    _deviceIdentifier = UUID().uuidString
+                    userDefaults[Device.kMPDeviceIdentifierKey] = _deviceIdentifier
+                }
             }
+            return _deviceIdentifier ?? ""
         }
-        return _deviceIdentifier ?? ""
     }
 
     @objc public var language: String? {
-        // Extra logic added to strip out the country code to stay consistent with earlier iOS releases
-        guard let subString = Locale.preferredLanguages[0].split(separator: "-").first else {
-            return nil
+        get {
+            // Extra logic added to strip out the country code to stay consistent with earlier iOS releases
+            guard let subString = Locale.preferredLanguages[0].split(separator: "-").first else {
+                return nil
+            }
+            
+            return String(subString)
         }
-
-        return String(subString)
     }
 
     @objc public var manufacturer: String {
-        return "Apple"
+        get {
+            return "Apple"
+        }
     }
 
     private var _model: String?
@@ -134,11 +148,11 @@ public class MPDevice: NSObject, NSCopying {
             if _model == nil {
                 var size = 0
                 sysctlbyname("hw.machine", nil, &size, nil, 0)
-                var model = [CChar](repeating: 0, count: size)
+                var model = [CChar](repeating: 0,  count: size)
                 sysctlbyname("hw.machine", &model, &size, nil, 0)
                 _model = String(cString: model)
             }
-
+            
             if let model = _model {
                 return model
             } else {
@@ -148,37 +162,50 @@ public class MPDevice: NSObject, NSCopying {
     }
 
     @objc open var name: String {
-        return UIDevice.current.name
+        get {
+            return UIDevice.current.name
+        }
     }
 
     @objc open var platform: String {
-        switch UIDevice.current.userInterfaceIdiom {
-        case .phone, .pad:
-            return "iOS"
-        case .tv:
-            return "tvOS"
-        default:
-            return "unknown"
+        get {
+            switch UIDevice.current.userInterfaceIdiom {
+            case .phone, .pad:
+                return "iOS"
+            case .tv:
+                return "tvOS"
+            default:
+                return "unknown"
+                
+            }
         }
     }
 
     @objc public var product: String? {
-        return UIDevice.current.model
+        get {
+            return UIDevice.current.model
+        }
     }
 
     @objc public var operatingSystem: String {
-        return UIDevice.current.systemVersion
+        get {
+            return UIDevice.current.systemVersion
+        }
     }
 
     @objc public var timezoneOffset: String {
-        let seconds = TimeZone.current.secondsFromGMT()
-        let hours = seconds / 3600
-
-        return String(format: "%+i", hours)
+        get {
+            let seconds = TimeZone.current.secondsFromGMT()
+            let hours = seconds/3600
+            
+            return String(format: "%+i", hours)
+        }
     }
 
     @objc public var timezoneDescription: String {
-        return Calendar.current.timeZone.identifier
+        get {
+            return Calendar.current.timeZone.identifier
+        }
     }
 
     private var _vendorId: String?
@@ -200,11 +227,13 @@ public class MPDevice: NSObject, NSCopying {
     }
 
     @objc public var buildId: String? {
-        var size = 0
-        sysctlbyname("kern.osversion", nil, &size, nil, 0)
-        var build = [CChar](repeating: 0, count: size)
-        sysctlbyname("kern.osversion", &build, &size, nil, 0)
-        return String(cString: build)
+        get {
+            var size = 0
+            sysctlbyname("kern.osversion", nil, &size, nil, 0)
+            var build = [CChar](repeating: 0,  count: size)
+            sysctlbyname("kern.osversion", &build, &size, nil, 0)
+            return String(cString: build)
+        }
     }
 
     private var _screenSize: CGSize?
@@ -226,146 +255,150 @@ public class MPDevice: NSObject, NSCopying {
     }
 
     @objc public var isDaylightSavingTime: Bool {
-        let isDaylightSavingTime = TimeZone.current.isDaylightSavingTime()
-        return isDaylightSavingTime
+        get {
+            let isDaylightSavingTime = TimeZone.current.isDaylightSavingTime()
+            return isDaylightSavingTime
+        }
     }
 
     @objc public var isTablet: Bool {
-        let isTablet = UI_USER_INTERFACE_IDIOM() == .pad
-        return isTablet
+        get {
+            let isTablet = UI_USER_INTERFACE_IDIOM() == .pad
+            return isTablet
+        }
     }
 
-    @objc public class func jailbrokenInfo() -> [AnyHashable: Any] {
+    @objc public class func jailbrokenInfo() -> [AnyHashable : Any] {
         var jailbroken = false
-
-        #if targetEnvironment(simulator)
+        
+#if targetEnvironment(simulator)
         // Simulator
-        #else
-            let fileManager = FileManager.default
-            var signerIdentityKey: String?
-            let bundleInfoDictionary = Bundle.main.infoDictionary
-            var key: String?
-
-            if var infoEnumerator = bundleInfoDictionary?.keys.makeIterator() {
-                while key != nil {
-                    key = infoEnumerator.next()
-                    if let signerId = key?.copy() as? String, signerId.lowercased() == Device.kMPDeviceSignerIdentityString {
-                        signerIdentityKey = signerId
-                        break
-                    }
+#else
+        let fileManager = FileManager.default
+        var signerIdentityKey: String?
+        let bundleInfoDictionary = Bundle.main.infoDictionary
+        var key: String?
+        
+        if var infoEnumerator = bundleInfoDictionary?.keys.makeIterator() {
+            while (key != nil) {
+                key = infoEnumerator.next()
+                if let signerId = key?.copy() as? String, (signerId.lowercased() == Device.kMPDeviceSignerIdentityString) {
+                    signerIdentityKey = signerId
+                    break
                 }
             }
-
-            jailbroken = signerIdentityKey != nil
-
+        }
+        
+        jailbroken = signerIdentityKey != nil
+        
+        if (!jailbroken) {
+            let filePaths = ["/usr/sbin/sshd",
+                             "/Library/MobileSubstrate/MobileSubstrate.dylib",
+                             "/bin/bash",
+                             "/usr/libexec/sftp-server",
+                             "/Applications/Cydia.app",
+                             "/Applications/blackra1n.app",
+                             "/Applications/FakeCarrier.app",
+                             "/Applications/Icy.app",
+                             "/Applications/IntelliScreen.app",
+                             "/Applications/MxTube.app",
+                             "/Applications/RockApp.app",
+                             "/Applications/SBSettings.app",
+                             "/Applications/WinterBoard.app",
+                             "/Library/MobileSubstrate/DynamicLibraries/LiveClock.plist",
+                             "/Library/MobileSubstrate/DynamicLibraries/Veency.plist",
+                             "/private/var/lib/apt",
+                             "/private/var/lib/cydia",
+                             "/private/var/mobile/Library/SBSettings/Themes",
+                             "/private/var/stash",
+                             "/private/var/tmp/cydia.log",
+                             "/System/Library/LaunchDaemons/com.ikey.bbot.plist",
+                             "/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"]
+            
+            for filePath in filePaths {
+                jailbroken = fileManager.fileExists(atPath: filePath)
+                
+                if jailbroken {
+                    break
+                }
+            }
+            
             if !jailbroken {
-                let filePaths = ["/usr/sbin/sshd",
-                                 "/Library/MobileSubstrate/MobileSubstrate.dylib",
-                                 "/bin/bash",
-                                 "/usr/libexec/sftp-server",
-                                 "/Applications/Cydia.app",
-                                 "/Applications/blackra1n.app",
-                                 "/Applications/FakeCarrier.app",
-                                 "/Applications/Icy.app",
-                                 "/Applications/IntelliScreen.app",
-                                 "/Applications/MxTube.app",
-                                 "/Applications/RockApp.app",
-                                 "/Applications/SBSettings.app",
-                                 "/Applications/WinterBoard.app",
-                                 "/Library/MobileSubstrate/DynamicLibraries/LiveClock.plist",
-                                 "/Library/MobileSubstrate/DynamicLibraries/Veency.plist",
-                                 "/private/var/lib/apt",
-                                 "/private/var/lib/cydia",
-                                 "/private/var/mobile/Library/SBSettings/Themes",
-                                 "/private/var/stash",
-                                 "/private/var/tmp/cydia.log",
-                                 "/System/Library/LaunchDaemons/com.ikey.bbot.plist",
-                                 "/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"]
-
-                for filePath in filePaths {
-                    jailbroken = fileManager.fileExists(atPath: filePath)
-
-                    if jailbroken {
-                        break
-                    }
+                // Valid test only if running as root on a jailbroken device
+                let jailbrokenTestData = "Jailbroken filesystem test.".data(using: .utf8)
+                let filePath = "/private/mpjailbrokentest.txt"
+                do {
+                    try jailbrokenTestData?.write(to: URL(fileURLWithPath: filePath), options: [])
+                } catch {
+                    MPLog.warning("Device is not jailbroken, failed to write test file: \(error)")
                 }
+                jailbroken = fileManager.fileExists(atPath: filePath)
 
-                if !jailbroken {
-                    // Valid test only if running as root on a jailbroken device
-                    let jailbrokenTestData = "Jailbroken filesystem test.".data(using: .utf8)
-                    let filePath = "/private/mpjailbrokentest.txt"
+                if jailbroken {
                     do {
-                        try jailbrokenTestData?.write(to: URL(fileURLWithPath: filePath), options: [])
+                        try FileManager.default.removeItem(atPath: filePath)
                     } catch {
-                        MPLog.warning("Device is not jailbroken, failed to write test file: \(error)")
-                    }
-                    jailbroken = fileManager.fileExists(atPath: filePath)
-
-                    if jailbroken {
-                        do {
-                            try FileManager.default.removeItem(atPath: filePath)
-                        } catch {
-                            MPLog.error("Device is jailbroken and test file still exists, failed to remove test file: \(error)")
-                        }
+                        MPLog.error("Device is jailbroken and test file still exists, failed to remove test file: \(error)")
                     }
                 }
             }
-        #endif
-        return [Miscellaneous.kMPDeviceCydiaJailbrokenKey: NSNumber(value: jailbroken)]
+        }
+#endif
+        return [Miscellaneous.kMPDeviceCydiaJailbrokenKey:NSNumber(value: jailbroken)]
     }
-
-    @objc public func dictionaryRepresentation() -> [AnyHashable: Any] {
-        var deviceDictionary: [AnyHashable: Any] = [Device.kMPDeviceBrandKey: model,
-                                                    Device.kMPDeviceNameKey: name,
-                                                    Device.kMPDeviceProductKey: model,
-                                                    Device.kMPDeviceOSKey: operatingSystem,
-                                                    Device.kMPDeviceModelKey: model,
-                                                    Device.kMPDeviceArchitectureKey: architecture,
-                                                    Device.kMPScreenWidthKey: String(format: Device.kMPDeviceFloatingPointFormat, screenSize.width),
-                                                    Device.kMPScreenHeightKey: String(format: Device.kMPDeviceFloatingPointFormat, screenSize.height),
-                                                    Device.kMPDevicePlatformKey: platform,
-                                                    Device.kMPDeviceManufacturerKey: manufacturer,
-                                                    Device.kMPTimezoneOffsetKey: timezoneOffset,
-                                                    Device.kMPTimezoneDescriptionKey: timezoneDescription,
-                                                    Device.kMPDeviceJailbrokenKey: MPDevice.jailbrokenInfo(),
-                                                    Device.kMPDeviceIsTabletKey: NSNumber(value: isTablet),
-                                                    Device.kMPDeviceIsDaylightSavingTime: NSNumber(value: isDaylightSavingTime),
-                                                    Device.kMPDeviceLimitAdTrackingKey: NSNumber(value: false)]
-
-        if let language = language {
+    
+    @objc public func dictionaryRepresentation() -> [AnyHashable : Any] {
+        var deviceDictionary: [AnyHashable : Any] = [Device.kMPDeviceBrandKey:self.model,
+                                                     Device.kMPDeviceNameKey:self.name,
+                                                     Device.kMPDeviceProductKey:self.model,
+                                                     Device.kMPDeviceOSKey:self.operatingSystem,
+                                                     Device.kMPDeviceModelKey:self.model,
+                                                     Device.kMPDeviceArchitectureKey:self.architecture,
+                                                     Device.kMPScreenWidthKey:String(format: Device.kMPDeviceFloatingPointFormat, self.screenSize.width),
+                                                     Device.kMPScreenHeightKey:String(format: Device.kMPDeviceFloatingPointFormat, self.screenSize.height),
+                                                     Device.kMPDevicePlatformKey:self.platform,
+                                                     Device.kMPDeviceManufacturerKey:self.manufacturer,
+                                                     Device.kMPTimezoneOffsetKey:self.timezoneOffset,
+                                                     Device.kMPTimezoneDescriptionKey:self.timezoneDescription,
+                                                     Device.kMPDeviceJailbrokenKey:MPDevice.jailbrokenInfo(),
+                                                     Device.kMPDeviceIsTabletKey:NSNumber(value: self.isTablet),
+                                                     Device.kMPDeviceIsDaylightSavingTime:NSNumber(value: self.isDaylightSavingTime),
+                                                     Device.kMPDeviceLimitAdTrackingKey:NSNumber(value: false)]
+        
+        if let language = self.language {
             deviceDictionary[Device.kMPDeviceLocaleLanguageKey] = language
         }
-
-        if let country = country {
+        
+        if let country = self.country {
             deviceDictionary[Device.kMPDeviceLocaleCountryKey] = country
         }
-
-        if let advertiserId = advertiserId {
+        
+        if let advertiserId = self.advertiserId {
             deviceDictionary[Device.kMPDeviceAdvertiserIdKey] = advertiserId
         }
-
-        if let vendorId = vendorId {
+        
+        if let vendorId = self.vendorId {
             deviceDictionary[Device.kMPDeviceAppVendorIdKey] = vendorId
         }
-
-        if let buildId = buildId {
+        
+        if let buildId = self.buildId {
             deviceDictionary[Device.kMPDeviceBuildIdKey] = buildId
         }
-
-        #if os(iOS) && !MPARTICLE_LOCATION_DISABLE
-            deviceDictionary[Device.kMPDeviceRadioKey] = radioAccessTechnology
-
-            if let pushNotificationToken = MPNotificationController_PRIVATE.deviceToken() {
-                if let tokenString = MPUserDefaults.stringFromDeviceToken(pushNotificationToken) {
-                    deviceDictionary[PushNotifications.kMPDeviceTokenKey] = tokenString
-                }
+        
+#if os(iOS) && !MPARTICLE_LOCATION_DISABLE
+        deviceDictionary[Device.kMPDeviceRadioKey] = self.radioAccessTechnology
+        
+        if let pushNotificationToken = MPNotificationController_PRIVATE.deviceToken() {
+            if let tokenString = MPUserDefaults.stringFromDeviceToken(pushNotificationToken) {
+                deviceDictionary[PushNotifications.kMPDeviceTokenKey] = tokenString
             }
-        #endif
-
+        }
+#endif
+        
         if let noDeviceToken = stateMachine.deviceTokenType?.isEmpty, !noDeviceToken {
             deviceDictionary[Miscellaneous.kMPDeviceTokenTypeKey] = stateMachine.deviceTokenType
         }
-
+        
         if let authStatus = stateMachine.attAuthorizationStatus {
             switch authStatus.intValue {
             case MPATTAuthorizationStatusSwift.notDetermined.rawValue:
@@ -380,32 +413,31 @@ public class MPDevice: NSObject, NSCopying {
                 break
             }
         }
-
+        
         if let authTimestamp = stateMachine.attAuthorizationTimestamp {
             deviceDictionary[Miscellaneous.kMPATTTimestamp] = authTimestamp
         }
-
+        
         return deviceDictionary
     }
 
-    @objc public func dictionaryRepresentation(withMpid mpid: NSNumber?) -> [AnyHashable: Any] {
-        var deviceDictionary: [AnyHashable: Any] = dictionaryRepresentation()
-
+    @objc public func dictionaryRepresentation(withMpid mpid: NSNumber?) -> [AnyHashable : Any] {
+        var deviceDictionary: [AnyHashable : Any] = self.dictionaryRepresentation()
+        
         if let mpid = mpid {
-            if let userIdentities = identity.getUser(mpid)?.identities {
+            if let userIdentities = self.identity.getUser(mpid)?.identities {
                 if let advertiserId = userIdentities[MPIdentity.iosAdvertiserId.rawValue as NSNumber],
                    let currentStatus = stateMachine.attAuthorizationStatus,
-                   currentStatus.intValue == MPATTAuthorizationStatusSwift.authorized.rawValue
-                {
+                   currentStatus.intValue == MPATTAuthorizationStatusSwift.authorized.rawValue {
                     deviceDictionary[Device.kMPDeviceAdvertiserIdKey] = advertiserId
                 }
-
+                
                 if let vendorId = userIdentities[MPIdentity.iosVendorId.rawValue as NSNumber] {
                     deviceDictionary[Device.kMPDeviceAppVendorIdKey] = vendorId
                 }
             }
         }
-
+        
         return deviceDictionary
     }
 }

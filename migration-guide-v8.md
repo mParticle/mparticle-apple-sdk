@@ -11,7 +11,7 @@ The mParticle platform has been adapting to these changes and we've made several
 - mParticle released Apple SDK 8.2.0 in February 2021, in anticipation of the iOS 14.5 release. Version 8.2.0 exposes a new API to collect the device's App Tracking Transparency authorization status
 - mParticle is continually releasing updates for both server-side integrations and client-side kit integrations, as the respective partner APIs and SDKs adapt
 
-## Preparing for iOS 14
+## Preparing for iOS 14 
 
 Under these new privacy guidelines each app must ensure that all user data processing obeys user consent elections and ultimately protects them from breaching App Store Review guidelines.
 
@@ -37,8 +37,9 @@ The mParticle Apple SDK automatically collects the publisher-sandboxed IDFV, but
 - mParticle has introduced a new `att_authorization_status` field to [our data model](https://docs.mparticle.com/developers/server/json-reference/), which surfaces the same values as Apple's [`ATTrackingManagerAuthorizationStatus` enumeration](https://developer.apple.com/documentation/apptrackingtransparency/attrackingmanagerauthorizationstatus)
 - mParticle has also introduced an optional `att_timestamp_unixtime_ms` field representing the time when the user responded to the ATT prompt or their status was otherwise updated
 - The Apple SDK lets you set these two fields, and the `MPATTAuthorizationStatus` enumeration maps directly to Apple’s `ATTrackingManagerAuthorizationStatus` enumeration.
-- All customers implementing the Apple SDK or sending iOS data server-to-server are encouraged to begin collecting and sending the status field.
+- All customers implementing the Apple SDK or sending iOS data server-to-server are encouraged to begin collecting and sending the status field. 
 - **At a future date, this field will become required when providing mParticle with an IDFA**
+
 
 ### Collecting ATT Status with Apple SDK 8.2.0+
 
@@ -49,7 +50,7 @@ There are two locations where you should provide the ATT status:
 #### 1. On SDK Initialization
 
 ```swift
-let options = MParticleOptions(key: "REPLACE WITH APP KEY", secret: "REPLACE WITH APP SECRET")
+let options = MParticleOptions(key: "REPLACE WITH APP KEY", secret: "REPLACE WITH APP SECRET")     
 options.attStatus = NSNumber.init(value: ATTrackingManager.trackingAuthorizationStatus.rawValue)
 MParticle.sharedInstance().start(with: options)
 ```
@@ -66,7 +67,7 @@ ATTrackingManager.requestTrackingAuthorization { status in
     switch status {
     case .authorized:
         MParticle.sharedInstance().setATTStatus((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
-
+    
         // Now that we are authorized we can get the IDFA, supply to mParticle Identity API as needed
         var identityRequest = MPIdentityApiRequest.withEmptyUser()
         identityRequest.setIdentity(ASIdentifierManager.shared().advertisingIdentifier.uuidString, identityType: MPIdentity.iosAdvertiserId)
@@ -121,15 +122,14 @@ MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:cu
 [[[MParticle sharedInstance] identity] modify:identityRequest completion:identityCallback];
 ```
 
-_Note_: Starting in 2021, to collect the IDFA with Apple SDK 8 you will need to [follow Apple's guidelines](https://developer.apple.com/documentation/apptrackingtransparency) to implement the AppTrackingTransparancy framework. If the user consents to tracking, providing the IDFA proceeds as already described. If they do not or the AppTrackingTransparancy framework is not implemented, ASIdentifierManager's `advertisingIdentifier` API will return a nil, all-zero IDFA.
+*Note*: Starting in 2021, to collect the IDFA with Apple SDK 8 you will need to [follow Apple's guidelines](https://developer.apple.com/documentation/apptrackingtransparency) to implement the AppTrackingTransparancy framework. If the user consents to tracking, providing the IDFA proceeds as already described. If they do not or the AppTrackingTransparancy framework is not implemented, ASIdentifierManager's `advertisingIdentifier` API will return a nil, all-zero IDFA.
 
 #### Common IDFA Use-cases
 
 The following are some common use-cases and best practices:
-
-1. If you are looking to collect IDFA, you should _always_ provide it to the mParticle SDK when creating an identity request
+1. If you are looking to collect IDFA, you should *always* provide it to the mParticle SDK when creating an identity request
 2. On first launch of your app, the mParticle SDK will make an initial identify request. If the user has never consented to IDFA collection, IDFA will be unavailable to you, and as such you will not be able to provide it on your initial identity request. If and when the IDFA is made available to your app, you should perform an `identify` request or a `modify` request, supplying all known IDs of the current user as well as the newly known IDFA.
-3. When a user logs out of your application, be sure to provide IDFA to the identity `logout` API - it will _NOT_ automatically be passed from one user to the next. You must provide it for _every identity request_.
+3. When a user logs out of your application, be sure to provide IDFA to the identity `logout` API - it will *NOT* automatically be passed from one user to the next. You must provide it for *every identity request*.
 
 [See the example application](https://github.com/mParticle/mparticle-apple-sdk/tree/master/Example) in the Apple SDK repository for a full implementation of the AppTrackingTransparency framework.
 
@@ -137,7 +137,7 @@ The following are some common use-cases and best practices:
 
 ## App Clips
 
-Apple SDK 8 is compatible with App Clips. The SDK is designed to be light-weight and has few dependencies on outside frameworks, and as such functions without issue within the limited capacity of an App Clip. [See Apple's guidelines here](https://developer.apple.com/documentation/app_clips/developing_a_great_app_clip) for the frameworks and identifers available in an App Clip.
+Apple SDK 8 is compatible with App Clips. The SDK is designed to be light-weight and has few dependencies on outside frameworks, and as such functions without issue within the limited capacity of an App Clip. [See Apple's guidelines here](https://developer.apple.com/documentation/app_clips/developing_a_great_app_clip) for the frameworks and identifers available in an App Clip. 
 
 **Notably, IDFV is not available in an App Clip, so you cannot rely on this identifier for App Clip data collected via mParticle.**
 
@@ -156,7 +156,7 @@ The mParticle Apple SDK's API is unchanged, but you can now provide this reduced
 
 ## Kit Dependencies
 
-Historically mParticle has centrally managed and released most kits. This allowed us to rapidly improve the APIs exposed to kits, while also providing app developers with a consistent experience. Specifically, with SDK version 7 and earlier, the mParticle engineering team would release _matching_ versions of all kits. So for example, your Podfile (or Cartfile) should have looked something like this, with _all versions matching_:
+Historically mParticle has centrally managed and released most kits. This allowed us to rapidly improve the APIs exposed to kits, while also providing app developers with a consistent experience. Specifically, with SDK version 7 and earlier, the mParticle engineering team would release *matching* versions of all kits. So for example, your Podfile (or Cartfile) should have looked something like this, with *all versions matching*:
 
 ```ruby
 pod 'mParticle-Apple-SDK', '7.16.2'
@@ -176,4 +176,4 @@ pod 'mParticle-Appboy', '~> 8.0'
 pod 'mParticle-BranchMetrics','~> 8.0'
 ```
 
-The above Podfile may eventually resolve to different versions of each kit. However, mParticle has committed to making _no breaking API changes to kit APIs prior to the next major version, 9.0_. This means that it's always in your best interest to update to the latest versions of all kits as well as the Core SDK, and you do not need to worry about matching versions across your kit dependencies.
+The above Podfile may eventually resolve to different versions of each kit. However, mParticle has committed to making *no breaking API changes to kit APIs prior to the next major version, 9.0*. This means that it's always in your best interest to update to the latest versions of all kits as well as the Core SDK, and you do not need to worry about matching versions across your kit dependencies.

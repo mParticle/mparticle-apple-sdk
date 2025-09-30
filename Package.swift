@@ -10,16 +10,14 @@ let mParticle_Apple_SDK_NoLocation_Checksum = "7016efe3e47b2b2915dd8164f37dad34d
 
 let package = Package(
     name: "mParticle-Apple-SDK",
-    platforms: [.iOS(.v9), .tvOS(.v9)],
+    platforms: [ .iOS(.v9), .tvOS(.v9) ],
     products: [
         .library(
             name: "mParticle-Apple-SDK",
-            targets: ["mParticle_Apple_SDK"]
-        ),
+            targets: ["mParticle_Apple_SDK"]),
         .library(
             name: "mParticle-Apple-SDK-NoLocation",
-            targets: ["mParticle_Apple_SDK_NoLocation"]
-        ),
+            targets: ["mParticle_Apple_SDK_NoLocation"]),
     ],
     dependencies: [
     ],
