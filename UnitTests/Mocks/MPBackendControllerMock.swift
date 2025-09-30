@@ -118,8 +118,11 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         logEventEventParam = event
         logEventCompletionHandler = completionHandler
     }
+    
+    var eventWithNameEventNameParam: String?
 
     func event(withName eventName: String) -> MPEvent? {
+        eventWithNameEventNameParam = eventName
         guard let set = eventSet else { return nil }
         for case let evt as MPEvent in set {
             if evt.name == eventName { return evt }
