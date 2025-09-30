@@ -37,14 +37,22 @@ public protocol MPUserDefaultsProtocol {
     private var backendController: MPBackendController_PRIVATE?
     private var identity: MPIdentityApi?
 
-    public required init(stateMachine: MPStateMachineProtocol, backendController: MPBackendControllerProtocol, identity: MPIdentityApi) {
+    public required init(
+        stateMachine: MPStateMachineProtocol,
+        backendController: MPBackendControllerProtocol,
+        identity: MPIdentityApi
+    ) {
         self.stateMachine = stateMachine as? MPStateMachine_PRIVATE
         self.backendController = backendController as? MPBackendController_PRIVATE
         self.identity = identity
         super.init()
     }
 
-    @objc public class func standardUserDefaults(stateMachine: MPStateMachineProtocol, backendController: MPBackendControllerProtocol, identity: MPIdentityApi) -> MPUserDefaults {
+    @objc public class func standardUserDefaults(
+        stateMachine: MPStateMachineProtocol,
+        backendController: MPBackendControllerProtocol,
+        identity: MPIdentityApi
+    ) -> MPUserDefaults {
         if userDefaults == nil {
             userDefaults = self.init(stateMachine: stateMachine, backendController: backendController, identity: identity)
         }
@@ -123,7 +131,10 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public func migrateFirstLastSeenUsers() {
-        let globalFirstSeenDateMs = mpObject(forKey: Miscellaneous.kMPAppInitialLaunchTimeKey, userId: MPPersistenceController_PRIVATE.mpId())
+        let globalFirstSeenDateMs = mpObject(
+            forKey: Miscellaneous.kMPAppInitialLaunchTimeKey,
+            userId: MPPersistenceController_PRIVATE.mpId()
+        )
         let globalLastSeenDateMs = NSNumber(value: Date().timeIntervalSince1970 * 1000)
         let users: [MParticleUser] = identity?.getAllUsers() ?? []
         for user in users {
@@ -133,7 +144,10 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public func setSharedGroupIdentifier(_ groupIdentifier: String?) {
-        let storedGroupID = mpObject(forKey: kMPUserIdentitySharedGroupIdentifier, userId: MPPersistenceController_PRIVATE.mpId()) as? String
+        let storedGroupID = mpObject(
+            forKey: kMPUserIdentitySharedGroupIdentifier,
+            userId: MPPersistenceController_PRIVATE.mpId()
+        ) as? String
 
         if storedGroupID == groupIdentifier {
         } else if let groupIdentifier = groupIdentifier, !groupIdentifier.isEmpty {
@@ -196,7 +210,13 @@ public protocol MPUserDefaultsProtocol {
         return getConfiguration()?[RemoteConfig.kMPRemoteConfigKitsKey] as? [Any]
     }
 
-    @objc public func setConfiguration(_ responseConfiguration: [AnyHashable: Any], eTag: String, requestTimestamp: TimeInterval, currentAge: TimeInterval, maxAge: NSNumber?) {
+    @objc public func setConfiguration(
+        _ responseConfiguration: [AnyHashable: Any],
+        eTag: String,
+        requestTimestamp: TimeInterval,
+        currentAge: TimeInterval,
+        maxAge: NSNumber?
+    ) {
         let configurationData = NSKeyedArchiver.archivedData(withRootObject: responseConfiguration)
         let userID = identity?.currentUser?.userId ?? 0
 
@@ -285,7 +305,10 @@ public protocol MPUserDefaultsProtocol {
     @objc public func isConfigurationExpired() -> Bool {
         var isConfigurationExpired = true
 
-        let configProvisioned = mpObject(forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: MPPersistenceController_PRIVATE.mpId()) as? NSNumber
+        let configProvisioned = mpObject(
+            forKey: Miscellaneous.kMPConfigProvisionedTimestampKey,
+            userId: MPPersistenceController_PRIVATE.mpId()
+        ) as? NSNumber
         let maxAge = mpObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: MPPersistenceController_PRIVATE.mpId())
 
         if let configProvisioned = configProvisioned {
@@ -338,7 +361,8 @@ public protocol MPUserDefaultsProtocol {
 
             if let configProvisioned = configProvisioned, let maxAgeSeconds = maxAgeSeconds, maxAgeSeconds.doubleValue > 0 {
                 let intervalConfigProvisioned: TimeInterval = configProvisioned.doubleValue
-                shouldConfigurationBeDeleted = (Date().timeIntervalSince1970 - intervalConfigProvisioned) > maxAgeSeconds.doubleValue
+                shouldConfigurationBeDeleted = (Date().timeIntervalSince1970 - intervalConfigProvisioned) > maxAgeSeconds
+                    .doubleValue
             }
 
             if shouldConfigurationBeDeleted {
@@ -349,15 +373,20 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public class func stringFromDeviceToken(_ deviceToken: Data) -> String? {
-        if deviceToken.count == 0 { return nil }
+        if deviceToken.isEmpty { return nil }
 
         return deviceToken.map { String(format: "%02x", $0) }.joined()
     }
 
     @objc public class func restore() -> MPResponseConfig? {
         if let userDefaults = userDefaults {
-            if let configuration = userDefaults.getConfiguration(), let stateMachine = userDefaults.stateMachine, let backendController = userDefaults.backendController {
-                let responseConfig = MPResponseConfig(configuration: configuration, stateMachine: stateMachine, backendController: backendController)
+            if let configuration = userDefaults.getConfiguration(), let stateMachine = userDefaults.stateMachine,
+               let backendController = userDefaults.backendController {
+                let responseConfig = MPResponseConfig(
+                    configuration: configuration,
+                    stateMachine: stateMachine,
+                    backendController: backendController
+                )
 
                 return responseConfig
             }

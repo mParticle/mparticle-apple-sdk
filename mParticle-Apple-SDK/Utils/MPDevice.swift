@@ -172,7 +172,7 @@ public class MPDevice: NSObject, NSCopying {
 
     @objc public var timezoneOffset: String {
         let seconds = TimeZone.current.secondsFromGMT()
-        let hours = seconds / 3600
+        let hours = seconds/3600
 
         return String(format: "%+i", hours)
     }
@@ -188,7 +188,8 @@ public class MPDevice: NSObject, NSCopying {
         }
         get {
             if _vendorId == nil {
-                if let vendor = userDefaults[Device.kMPDeviceAppVendorIdKey] as? String, vendor != Device.kMPDeviceInvalidVendorId {
+                if let vendor = userDefaults[Device.kMPDeviceAppVendorIdKey] as? String,
+                   vendor != Device.kMPDeviceInvalidVendorId {
                     _vendorId = vendor
                 } else {
                     _vendorId = UIDevice.current.identifierForVendor?.uuidString
@@ -292,10 +293,10 @@ public class MPDevice: NSObject, NSCopying {
 
                 if !jailbroken {
                     // Valid test only if running as root on a jailbroken device
-                    let jailbrokenTestData = "Jailbroken filesystem test.".data(using: .utf8)
+                    let jailbrokenTestData = Data("Jailbroken filesystem test.".utf8)
                     let filePath = "/private/mpjailbrokentest.txt"
                     do {
-                        try jailbrokenTestData?.write(to: URL(fileURLWithPath: filePath), options: [])
+                        try jailbrokenTestData.write(to: URL(fileURLWithPath: filePath), options: [])
                     } catch {
                         MPLog.warning("Device is not jailbroken, failed to write test file: \(error)")
                     }
@@ -321,8 +322,14 @@ public class MPDevice: NSObject, NSCopying {
                                                     Device.kMPDeviceOSKey: operatingSystem,
                                                     Device.kMPDeviceModelKey: model,
                                                     Device.kMPDeviceArchitectureKey: architecture,
-                                                    Device.kMPScreenWidthKey: String(format: Device.kMPDeviceFloatingPointFormat, screenSize.width),
-                                                    Device.kMPScreenHeightKey: String(format: Device.kMPDeviceFloatingPointFormat, screenSize.height),
+                                                    Device.kMPScreenWidthKey: String(
+                                                        format: Device.kMPDeviceFloatingPointFormat,
+                                                        screenSize.width
+                                                    ),
+                                                    Device.kMPScreenHeightKey: String(
+                                                        format: Device.kMPDeviceFloatingPointFormat,
+                                                        screenSize.height
+                                                    ),
                                                     Device.kMPDevicePlatformKey: platform,
                                                     Device.kMPDeviceManufacturerKey: manufacturer,
                                                     Device.kMPTimezoneOffsetKey: timezoneOffset,
@@ -395,8 +402,7 @@ public class MPDevice: NSObject, NSCopying {
             if let userIdentities = identity.getUser(mpid)?.identities {
                 if let advertiserId = userIdentities[MPIdentity.iosAdvertiserId.rawValue as NSNumber],
                    let currentStatus = stateMachine.attAuthorizationStatus,
-                   currentStatus.intValue == MPATTAuthorizationStatusSwift.authorized.rawValue
-                {
+                   currentStatus.intValue == MPATTAuthorizationStatusSwift.authorized.rawValue {
                     deviceDictionary[Device.kMPDeviceAdvertiserIdKey] = advertiserId
                 }
 

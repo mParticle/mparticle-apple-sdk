@@ -121,8 +121,7 @@ import Foundation
         if let jsonImpressions = json["ProductImpressions"] as? [[AnyHashable: Any]] {
             for jsonImpression in jsonImpressions {
                 if let listName = jsonImpression["ProductImpressionList"] as? String,
-                   let jsonProducts = jsonImpression["ProductList"] as? [[AnyHashable: Any]]
-                {
+                   let jsonProducts = jsonImpression["ProductList"] as? [[AnyHashable: Any]] {
                     for jsonObject in jsonProducts {
                         let product = MPConvertJS_PRIVATE.product(jsonObject)
                         commerceEvent.addImpression(product, listName: listName)
@@ -259,8 +258,7 @@ import Foundation
         for identityDictionary in userIdentities {
             if let identity = identityDictionary["Identity"] as? String,
                let identityTypeNumber = identityDictionary["Type"] as? NSNumber,
-               let identityType = MPIdentity(rawValue: identityTypeNumber.uintValue)
-            {
+               let identityType = MPIdentity(rawValue: identityTypeNumber.uintValue) {
                 request.setIdentity(identity, identityType: identityType)
             } else {
                 return nil
@@ -269,8 +267,7 @@ import Foundation
 
         if let identity = json?["Identity"] as? String,
            let identityTypeNumber = json?["Type"] as? NSNumber,
-           let identityType = MPIdentity(rawValue: identityTypeNumber.uintValue)
-        {
+           let identityType = MPIdentity(rawValue: identityTypeNumber.uintValue) {
             request.setIdentity(identity, identityType: identityType)
         }
 

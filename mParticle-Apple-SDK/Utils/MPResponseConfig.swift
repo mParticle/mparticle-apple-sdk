@@ -12,17 +12,31 @@ import Foundation
     private var stateMachine: MPStateMachine_PRIVATE
     private var backendController: MPBackendController_PRIVATE
 
-    @objc public convenience init?(configuration: [AnyHashable: Any], stateMachine: MPStateMachine_PRIVATE, backendController: MPBackendController_PRIVATE) {
-        self.init(configuration: configuration, dataReceivedFromServer: true, stateMachine: stateMachine, backendController: backendController)
+    @objc public convenience init?(
+        configuration: [AnyHashable: Any],
+        stateMachine: MPStateMachine_PRIVATE,
+        backendController: MPBackendController_PRIVATE
+    ) {
+        self.init(
+            configuration: configuration,
+            dataReceivedFromServer: true,
+            stateMachine: stateMachine,
+            backendController: backendController
+        )
     }
 
-    @objc public init?(configuration: [AnyHashable: Any], dataReceivedFromServer: Bool, stateMachine: MPStateMachine_PRIVATE, backendController: MPBackendController_PRIVATE) {
+    @objc public init?(
+        configuration: [AnyHashable: Any],
+        dataReceivedFromServer: Bool,
+        stateMachine: MPStateMachine_PRIVATE,
+        backendController: MPBackendController_PRIVATE
+    ) {
         self.configuration = configuration
         self.stateMachine = stateMachine
         self.backendController = backendController
         super.init()
 
-        if self.configuration == nil || self.configuration?.count == 0 {
+        if self.configuration == nil || self.configuration?.isEmpty == true {
             return nil
         }
         setUp(dataReceivedFromServer: dataReceivedFromServer)
@@ -36,14 +50,17 @@ import Foundation
                 if let configKitDictionary = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[String: Any]] {
                     for kitDictionary in configKitDictionary {
                         let consentKitFilter = kitDictionary[ConsentFiltering.kMPConsentKitFilter] as? [String: Any]
-                        hasConsentFilters = consentKitFilter != nil && consentKitFilter!.count > 0
+                        hasConsentFilters = consentKitFilter != nil && !consentKitFilter!.isEmpty
                         var hasRegulationOrPurposeFilters = false
 
-                        if let hashes = kitDictionary[RemoteConfig.kMPRemoteConfigKitHashesKey] as? [String: Any], hashes.count > 0 {
-                            if let regulationFilters = hashes[ConsentFiltering.kMPConsentRegulationFilters] as? [String: Any], regulationFilters.count > 0 {
+                        if let hashes = kitDictionary[RemoteConfig.kMPRemoteConfigKitHashesKey] as? [String: Any],
+                           !hashes.isEmpty {
+                            if let regulationFilters = hashes[ConsentFiltering.kMPConsentRegulationFilters] as? [String: Any],
+                               !regulationFilters.isEmpty {
                                 hasRegulationOrPurposeFilters = true
                             }
-                            if let purposeFilters = hashes[ConsentFiltering.kMPConsentPurposeFilters] as? [String: Any], purposeFilters.count > 0 {
+                            if let purposeFilters = hashes[ConsentFiltering.kMPConsentPurposeFilters] as? [String: Any],
+                               !purposeFilters.isEmpty {
                                 hasRegulationOrPurposeFilters = true
                             }
                         }
@@ -62,14 +79,17 @@ import Foundation
                 let shouldDefer = hasConsentFilters && !hasInitialIdentity
                 if !shouldDefer {
                     DispatchQueue.main.async {
-                        MParticle.sharedInstance().kitContainer_PRIVATE.configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]])
+                        MParticle.sharedInstance().kitContainer_PRIVATE
+                            .configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]])
                     }
                 } else {
-                    MParticle.sharedInstance().deferredKitConfiguration_PRIVATE = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]]
+                    MParticle.sharedInstance()
+                        .deferredKitConfiguration_PRIVATE = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]]
                 }
             }
 
-            stateMachine.configureCustomModules(config[RemoteConfig.kMPRemoteConfigCustomModuleSettingsKey] as? [[AnyHashable: Any]])
+            stateMachine
+                .configureCustomModules(config[RemoteConfig.kMPRemoteConfigCustomModuleSettingsKey] as? [[AnyHashable: Any]])
             stateMachine.configureRampPercentage(config[RemoteConfig.kMPRemoteConfigRampKey] as? NSNumber)
             stateMachine.configureTriggers(config[RemoteConfig.kMPRemoteConfigTriggerKey] as? [AnyHashable: Any])
             stateMachine.configureAliasMaxWindow(config[RemoteConfig.kMPRemoteConfigAliasMaxWindow] as? NSNumber)
@@ -120,8 +140,14 @@ import Foundation
 
                 #if !MPARTICLE_LOCATION_DISABLE
                     if locationMode == RemoteConfig.kMPRemoteConfigForceTrue {
-                        if let accuracy = locationDictionary[RemoteConfig.kMPRemoteConfigLocationAccuracyKey] as? NSNumber, let minimumDistance = locationDictionary[RemoteConfig.kMPRemoteConfigLocationMinimumDistanceKey] as? NSNumber {
-                            MParticle.sharedInstance().beginLocationTracking(accuracy.doubleValue, minDistance: minimumDistance.doubleValue, authorizationRequest: MPLocationAuthorizationRequest.always)
+                        if let accuracy = locationDictionary[RemoteConfig.kMPRemoteConfigLocationAccuracyKey] as? NSNumber,
+                           let minimumDistance =
+                           locationDictionary[RemoteConfig.kMPRemoteConfigLocationMinimumDistanceKey] as? NSNumber {
+                            MParticle.sharedInstance().beginLocationTracking(
+                                accuracy.doubleValue,
+                                minDistance: minimumDistance.doubleValue,
+                                authorizationRequest: MPLocationAuthorizationRequest.always
+                            )
                         }
                     } else if locationMode == RemoteConfig.kMPRemoteConfigForceFalse {
                         MParticle.sharedInstance().endLocationTracking()
@@ -131,7 +157,8 @@ import Foundation
         }
 
         @objc public func configurePushNotifications(_ pushNotificationDictionary: [AnyHashable: Any]) {
-            if let pushNotificationMode = pushNotificationDictionary[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] as? String {
+            if let pushNotificationMode =
+                pushNotificationDictionary[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] as? String {
                 stateMachine.pushNotificationMode = pushNotificationMode
                 if !MPStateMachine_PRIVATE.isAppExtension() {
                     let app = MPApplication_PRIVATE.sharedUIApplication()

@@ -48,7 +48,17 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var startConsentStateParam: MPConsentState?
     var startCompletionHandler: (() -> Void)?
 
-    func start(withKey apiKey: String, secret: String, networkOptions: MPNetworkOptions?, firstRun: Bool, installationType: MPInstallationType, proxyAppDelegate: Bool, startKitsAsync: Bool, consentState: MPConsentState?, completionHandler: @escaping () -> Void) {
+    func start(
+        withKey apiKey: String,
+        secret: String,
+        networkOptions: MPNetworkOptions?,
+        firstRun: Bool,
+        installationType: MPInstallationType,
+        proxyAppDelegate: Bool,
+        startKitsAsync: Bool,
+        consentState: MPConsentState?,
+        completionHandler: @escaping () -> Void
+    ) {
         startCalled = true
         startApiKeyParam = apiKey
         startSecretParam = secret
@@ -148,7 +158,8 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var logCommerceEventParam: MPCommerceEvent?
     var logCommerceEventCompletionHandler: ((MPCommerceEvent, MPExecStatus) -> Void)?
 
-    func logCommerceEvent(_ commerceEvent: MPCommerceEvent, completionHandler: @escaping (MPCommerceEvent, MPExecStatus) -> Void) {
+    func logCommerceEvent(_ commerceEvent: MPCommerceEvent,
+                          completionHandler: @escaping (MPCommerceEvent, MPExecStatus) -> Void) {
         logCommerceEventCalled = true
         logCommerceEventParam = commerceEvent
         logCommerceEventCompletionHandler = completionHandler
@@ -160,7 +171,10 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var logNetworkPerformanceParam: MPNetworkPerformance?
     var logNetworkPerformanceCompletionHandler: ((MPNetworkPerformance, MPExecStatus) -> Void)?
 
-    func logNetworkPerformanceMeasurement(_ networkPerformance: MPNetworkPerformance, completionHandler: ((MPNetworkPerformance, MPExecStatus) -> Void)? = nil) {
+    func logNetworkPerformanceMeasurement(
+        _ networkPerformance: MPNetworkPerformance,
+        completionHandler: ((MPNetworkPerformance, MPExecStatus) -> Void)? = nil
+    ) {
         logNetworkPerformanceCalled = true
         logNetworkPerformanceParam = networkPerformance
         logNetworkPerformanceCompletionHandler = completionHandler
@@ -199,7 +213,13 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var logErrorEventInfoParam: [AnyHashable: Any]?
     var logErrorCompletionHandler: ((String?, MPExecStatus) -> Void)?
 
-    func logError(_ message: String?, exception: NSException?, topmostContext: Any?, eventInfo: [AnyHashable: Any]?, completionHandler: @escaping (String?, MPExecStatus) -> Void) {
+    func logError(
+        _ message: String?,
+        exception: NSException?,
+        topmostContext: Any?,
+        eventInfo: [AnyHashable: Any]?,
+        completionHandler: @escaping (String?, MPExecStatus) -> Void
+    ) {
         logErrorCalled = true
         logErrorMessageParam = message
         logErrorExceptionParam = exception
@@ -214,7 +234,12 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var logCrashPlReportParam: String?
     var logCrashCompletionHandler: ((String?, MPExecStatus) -> Void)?
 
-    func logCrash(_ message: String?, stackTrace: String?, plCrashReport: String, completionHandler: @escaping (String?, MPExecStatus) -> Void) {
+    func logCrash(
+        _ message: String?,
+        stackTrace: String?,
+        plCrashReport: String,
+        completionHandler: @escaping (String?, MPExecStatus) -> Void
+    ) {
         logCrashCalled = true
         logCrashMessageParam = message
         logCrashStackTraceParam = stackTrace
@@ -301,7 +326,11 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
             var beginLocationTrackingAuthParam: MPLocationAuthorizationRequest?
             var beginLocationTrackingReturnValue: MPExecStatus = .success
 
-            func beginLocationTracking(withAccuracy accuracy: CLLocationAccuracy, distanceFilter distance: CLLocationDistance, authorizationRequest: MPLocationAuthorizationRequest) -> MPExecStatus {
+            func beginLocationTracking(
+                withAccuracy accuracy: CLLocationAccuracy,
+                distanceFilter distance: CLLocationDistance,
+                authorizationRequest: MPLocationAuthorizationRequest
+            ) -> MPExecStatus {
                 beginLocationTrackingCalled = true
                 beginLocationTrackingAccuracyParam = accuracy
                 beginLocationTrackingDistanceParam = distance

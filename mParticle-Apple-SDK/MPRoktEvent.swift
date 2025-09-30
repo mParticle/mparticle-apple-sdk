@@ -141,8 +141,7 @@ import Foundation
                           providerData: String,
                           quantity: NSDecimalNumber?,
                           totalPrice: NSDecimalNumber?,
-                          unitPrice: NSDecimalNumber?)
-        {
+                          unitPrice: NSDecimalNumber?) {
             self.placementId = placementId
             self.name = name
             self.cartItemId = cartItemId

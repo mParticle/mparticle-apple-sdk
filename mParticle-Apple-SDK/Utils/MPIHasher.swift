@@ -50,7 +50,7 @@ import Foundation
     }
 
     @objc public class func eventType(forHash hashString: String) -> MPEventType {
-        for i in 1 ... MPEventType.impression.rawValue {
+        for i in 1...MPEventType.impression.rawValue {
             if let eventType = MPEventType(rawValue: i), hashString == hashEventType(eventType) {
                 return eventType
             }
@@ -68,7 +68,12 @@ import Foundation
         return hashString(stringToBeHashed)
     }
 
-    @objc public class func hashEventAttributeKey(_ eventType: MPEventType, eventName: String, customAttributeName: String, isLogScreen: Bool) -> String {
+    @objc public class func hashEventAttributeKey(
+        _ eventType: MPEventType,
+        eventName: String,
+        customAttributeName: String,
+        isLogScreen: Bool
+    ) -> String {
         let stringToBeHashed: String
         if isLogScreen {
             stringToBeHashed = "0\(eventName)\(customAttributeName)"

@@ -48,7 +48,11 @@ import UIKit
             return Self._locationManager
         }
 
-        @objc public init?(accuracy: CLLocationAccuracy, distanceFilter: CLLocationDistance, authorizationRequest: MPLocationAuthorizationRequest) {
+        @objc public init?(
+            accuracy: CLLocationAccuracy,
+            distanceFilter: CLLocationDistance,
+            authorizationRequest: MPLocationAuthorizationRequest
+        ) {
             let authorizationStatus = CLLocationManager.authorizationStatus()
             guard authorizationStatus != .restricted, authorizationStatus != .denied else {
                 return nil
@@ -70,7 +74,8 @@ import UIKit
                     let keys = Bundle.main.infoDictionary?.keys
                     if let keys = keys, authorizationRequest == .always, keys.contains("NSLocationAlwaysUsageDescription") {
                         locationManager.requestAlwaysAuthorization()
-                    } else if let keys = keys, authorizationRequest == .whenInUse, keys.contains("NSLocationWhenInUseUsageDescription") {
+                    } else if let keys = keys, authorizationRequest == .whenInUse,
+                              keys.contains("NSLocationWhenInUseUsageDescription") {
                         locationManager.requestWhenInUseAuthorization()
                     } else {
                         locationManager.startUpdatingLocation()

@@ -474,7 +474,8 @@ class MParticleTestsSwift: XCTestCase {
 
         func testLogNotificationOpenedWithUserInfoAndActionIdentifierListenerControllerCalled() {
             mparticle.logNotificationOpened(userInfo: [:], andActionIdentifier: "identifier")
-            XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logNotificationOpenedWithUserInfo:andActionIdentifier:")
+            XCTAssertEqual(listenerController.onAPICalledApiName?.description,
+                           "logNotificationOpenedWithUserInfo:andActionIdentifier:")
             XCTAssertEqual(listenerController.onAPICalledParameter1 as? [String: String], [:])
         }
 
@@ -508,7 +509,8 @@ class MParticleTestsSwift: XCTestCase {
 
             func testBeginLocationTrackingListenerControllerCalled() {
                 mparticle.beginLocationTracking(CLLocationAccuracy.nan, minDistance: CLLocationDistance.nan)
-                XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginLocationTracking:minDistance:authorizationRequest:")
+                XCTAssertEqual(listenerController.onAPICalledApiName?.description,
+                               "beginLocationTracking:minDistance:authorizationRequest:")
                 XCTAssertNotNil(listenerController.onAPICalledParameter1)
                 XCTAssertNotNil(listenerController.onAPICalledParameter2)
             }
@@ -522,7 +524,8 @@ class MParticleTestsSwift: XCTestCase {
     func testNetworkPermissionListenerControllerCalled() {
         mparticle.logNetworkPerformance("", httpMethod: "", startTime: 0.0, duration: 1.0, bytesSent: 100, bytesReceived: 200)
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:")
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description,
+                       "logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:")
         XCTAssertNotNil(listenerController.onAPICalledParameter1)
     }
 
@@ -755,7 +758,8 @@ class MParticleTestsSwift: XCTestCase {
 
         #if os(iOS)
             #if !MPARTICLE_LOCATION_DISABLE
-                XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginLocationTracking:minDistance:authorizationRequest:")
+                XCTAssertEqual(listenerController.onAPICalledApiName?.description,
+                               "beginLocationTracking:minDistance:authorizationRequest:")
             #endif
         #endif
     }
@@ -1130,8 +1134,7 @@ class MParticleTestsSwift: XCTestCase {
               Type: Other
               Duration: 0
             }
-            """
-        )
+            """)
     }
     
     func testLeaveBreadcrumbCallback_withDataFilterSet_andDataFilterReturnNil() {
@@ -1149,8 +1152,7 @@ class MParticleTestsSwift: XCTestCase {
               Type: Other
               Duration: 0
             }
-            """
-        )
+            """)
     }
     
     func testLeaveBreadcrumbCallback_execStatusFail_noLoggedMessages() {
@@ -1169,33 +1171,33 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReceiveCorrectName() {
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
         XCTAssertEqual(backendController.eventWithNameEventNameParam, "expectedEvent")
     }
     
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReturnsNilEvent_newEventCreated() {
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, "expectedEvent")
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .other)
         XCTAssertNotNil(backendController.leaveBreadcrumbEventParam?.timestamp)
-        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String : String], ["key" : "value"])
+        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String: String], ["key": "value"])
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
 
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReturnsEvent_eventModified() {
         let event = MPEvent(name: "expectedEvent", type: .navigation)
         backendController.eventSet?.add(event as Any)
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, "expectedEvent")
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .navigation)
         XCTAssertNotNil(backendController.leaveBreadcrumbEventParam?.timestamp)
-        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String : String], ["key" : "value"])
+        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String: String], ["key": "value"])
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
     
     func testLeaveBreadcrumb_eventNamePassed_CallbackCallsCallbackFunction() {
         let event = MPEvent(name: "expectedEvent", type: .navigation)
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
         backendController.leaveBreadcrumbCompletionHandler?(event!, .success)
         XCTAssertEqual(receivedMessage, """
             mParticle -> Left breadcrumb: Event:{
@@ -1203,7 +1205,6 @@ class MParticleTestsSwift: XCTestCase {
               Type: Navigation
               Duration: 0
             }
-            """
-        )
+            """)
     }
 }

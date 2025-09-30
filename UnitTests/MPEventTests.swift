@@ -55,7 +55,6 @@ class MPEventTests: XCTestCase {
         XCTAssertNil(sut.endTime)
         XCTAssertNil(sut.startTime)
         
-        
         // MPBaseEvent properties
         XCTAssertNotNil(sut.timestamp)
         XCTAssertEqual(sut.messageType, .event)
@@ -194,7 +193,7 @@ class MPEventTests: XCTestCase {
         XCTAssertEqual(dict["n"] as? String, "Event1") // kMPEventNameKey
         XCTAssertEqual(dict["et"] as? String, "Other") // kMPEventTypeKey
         XCTAssertNotNil(dict["en"]) // kMPEventCounterKey
-        XCTAssertNotNil(dict["est"])  // kMPEventStartTimestamp
+        XCTAssertNotNil(dict["est"]) // kMPEventStartTimestamp
         XCTAssertEqual(dict["el"] as? Int, 100) // kMPEventLength
     }
     
@@ -264,7 +263,6 @@ class MPEventTests: XCTestCase {
         sut.name = String(repeating: "N", count: 257)
         XCTAssertEqual(receivedMessage, "mParticle -> The event name is too long.")
     }
-    
     
     // MARK: - Public category methods
     

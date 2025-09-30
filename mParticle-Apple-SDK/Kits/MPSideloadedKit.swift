@@ -49,11 +49,21 @@ import Foundation
     }
 
     @objc public func addEventAttributeFilter(eventType: MPEventType, eventName: String, customAttributeKey: String) {
-        eventAttributeFilters[MPIHasher.hashEventAttributeKey(eventType, eventName: eventName, customAttributeName: customAttributeKey, isLogScreen: false)] = 0
+        eventAttributeFilters[MPIHasher.hashEventAttributeKey(
+            eventType,
+            eventName: eventName,
+            customAttributeName: customAttributeKey,
+            isLogScreen: false
+        )] = 0
     }
 
     @objc public func addScreenAttributeFilter(screenName: String, customAttributeKey: String) {
-        eventAttributeFilters[MPIHasher.hashEventAttributeKey(MPEventType.click, eventName: screenName, customAttributeName: customAttributeKey, isLogScreen: true)] = 0
+        eventAttributeFilters[MPIHasher.hashEventAttributeKey(
+            MPEventType.click,
+            eventName: screenName,
+            customAttributeName: customAttributeKey,
+            isLogScreen: true
+        )] = 0
     }
 
     @objc public func addUserIdentityFilter(userIdentity: MPUserIdentity) {

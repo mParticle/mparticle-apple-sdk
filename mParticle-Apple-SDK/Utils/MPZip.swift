@@ -22,7 +22,16 @@ import zlib
             stream.next_in = UnsafeMutablePointer<Bytef>(mutating: inputBaseAddress)
             stream.avail_in = uInt(truncatingIfNeeded: dataCount)
 
-            guard deflateInit2_(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.stride)) == Z_OK else {
+            guard deflateInit2_(
+                &stream,
+                Z_DEFAULT_COMPRESSION,
+                Z_DEFLATED,
+                15 + 16,
+                8,
+                Z_DEFAULT_STRATEGY,
+                ZLIB_VERSION,
+                Int32(MemoryLayout<z_stream>.stride)
+            ) == Z_OK else {
                 failed = true
                 return
             }

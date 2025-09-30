@@ -70,11 +70,14 @@ public class MPUploadSettings: NSObject, NSCopying, NSSecureCoding {
         eventsOnly = coder.decodeBool(forKey: kEventsOnly)
     }
 
-    @objc public class func currentUploadSettings(stateMachine: MPStateMachineProtocol, networkOptions: MPNetworkOptions) -> MPUploadSettings {
+    @objc public class func currentUploadSettings(stateMachine: MPStateMachineProtocol,
+                                                  networkOptions: MPNetworkOptions) -> MPUploadSettings {
         return MPUploadSettings(apiKey: stateMachine.apiKey, secret: stateMachine.secret, networkOptions: networkOptions)
     }
 
-    @objc public init(apiKey: String, secret: String, eventsHost: String? = nil, eventsTrackingHost: String? = nil, overridesEventsSubdirectory: Bool = false, aliasHost: String? = nil, aliasTrackingHost: String? = nil, overridesAliasSubdirectory: Bool = false, eventsOnly: Bool = false) {
+    @objc public init(apiKey: String, secret: String, eventsHost: String? = nil, eventsTrackingHost: String? = nil,
+                      overridesEventsSubdirectory: Bool = false, aliasHost: String? = nil, aliasTrackingHost: String? = nil,
+                      overridesAliasSubdirectory: Bool = false, eventsOnly: Bool = false) {
         self.apiKey = apiKey
         self.secret = secret
         self.eventsHost = eventsHost

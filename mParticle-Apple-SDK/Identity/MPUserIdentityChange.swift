@@ -32,8 +32,7 @@
                 if let idTypeInt = ui[MessageKeys.kMPUserIdentityTypeKey] as? UInt,
                    let idType = MPUserIdentity(rawValue: idTypeInt),
                    let idValue = ui[MessageKeys.kMPUserIdentityIdKey] as? String,
-                   idType == newUserIdentity?.type && idValue == newUserIdentity?.value
-                {
+                   idType == newUserIdentity?.type && idValue == newUserIdentity?.value {
                     changed = false
                     break
                 }
@@ -41,7 +40,12 @@
         }
     }
 
-    @objc public convenience init(newUserIdentity: MPUserIdentityInstance_PRIVATE?, oldUserIdentity: MPUserIdentityInstance_PRIVATE?, timestamp: Date?, userIdentities: [[String: Any]]?) {
+    @objc public convenience init(
+        newUserIdentity: MPUserIdentityInstance_PRIVATE?,
+        oldUserIdentity: MPUserIdentityInstance_PRIVATE?,
+        timestamp: Date?,
+        userIdentities: [[String: Any]]?
+    ) {
         self.init(newUserIdentity: newUserIdentity, userIdentities: userIdentities)
         self.oldUserIdentity = oldUserIdentity
         self.timestamp = timestamp

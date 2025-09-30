@@ -28,7 +28,7 @@
         let type = MPUserIdentity(rawValue: typeInt) ?? .other
         let value = userIdentityDictionary[MessageKeys.kMPUserIdentityIdKey] as? String
         let firstSetMillis = userIdentityDictionary[MessageKeys.kMPDateUserIdentityWasFirstSet] as? Double ?? 0.0
-        let dateFirstSet = Date(timeIntervalSince1970: firstSetMillis / 1000.0)
+        let dateFirstSet = Date(timeIntervalSince1970: firstSetMillis/1000.0)
         let isFirstSet = userIdentityDictionary[MessageKeys.kMPIsFirstTimeUserIdentityHasBeenSet] as? Bool ?? false
         self.init(type: type, value: value, dateFirstSet: dateFirstSet, isFirstTimeSet: isFirstSet)
     }
@@ -40,7 +40,8 @@
         identityDictionary[MessageKeys.kMPIsFirstTimeUserIdentityHasBeenSet] = isFirstTimeSet
 
         if let dateFirstSet = dateFirstSet {
-            identityDictionary[MessageKeys.kMPDateUserIdentityWasFirstSet] = MPMilliseconds(timestamp: dateFirstSet.timeIntervalSince1970)
+            identityDictionary[MessageKeys.kMPDateUserIdentityWasFirstSet] = MPMilliseconds(timestamp: dateFirstSet
+                .timeIntervalSince1970)
         }
 
         if let value = value {
