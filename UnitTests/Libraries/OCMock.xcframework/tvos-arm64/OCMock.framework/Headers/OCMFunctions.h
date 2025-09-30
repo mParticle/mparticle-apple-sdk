@@ -16,11 +16,13 @@
 
 #import <Foundation/Foundation.h>
 
+
 #if defined(__cplusplus)
 #define OCMOCK_EXTERN extern "C"
 #else
 #define OCMOCK_EXTERN extern
 #endif
+
 
 OCMOCK_EXTERN BOOL OCMIsObjectType(const char *objCType);
 OCMOCK_EXTERN BOOL OCMIsSubclassOfMockClass(Class cls);

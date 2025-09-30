@@ -1,6 +1,6 @@
 #import "MPNotificationController.h"
 
-@interface MPNotificationController_PRIVATE (Tests)
+@interface MPNotificationController_PRIVATE(Tests)
 
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification;

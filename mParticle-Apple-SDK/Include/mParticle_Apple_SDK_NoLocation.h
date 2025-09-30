@@ -8,11 +8,10 @@
 #ifndef mParticle_Apple_SDK_NoLocation_h
 #define mParticle_Apple_SDK_NoLocation_h
 
-#if defined(__has_include) &&                                                  \
-    __has_include(<mParticle_Apple_SDK_NoLocation/mParticle.h>)
-#import <mParticle_Apple_SDK_NoLocation/mParticle.h>
+#if defined(__has_include) && __has_include(<mParticle_Apple_SDK_NoLocation/mParticle.h>)
+    #import <mParticle_Apple_SDK_NoLocation/mParticle.h>
 #else
-#import "mParticle.h"
+    #import "mParticle.h"
 #endif
 
 #endif /* mParticle_Apple_SDK_NoLocation_h */

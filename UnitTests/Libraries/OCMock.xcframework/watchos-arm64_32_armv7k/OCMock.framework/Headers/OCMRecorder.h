@@ -19,11 +19,13 @@
 @class OCMockObject;
 @class OCMInvocationMatcher;
 
-@interface OCMRecorder : NSProxy {
-  OCMockObject *mockObject;
-  OCMInvocationMatcher *invocationMatcher;
-  BOOL didRecordInvocation;
-  BOOL shouldReturnMockFromInit;
+
+@interface OCMRecorder : NSProxy
+{
+    OCMockObject         *mockObject;
+    OCMInvocationMatcher *invocationMatcher;
+    BOOL                  didRecordInvocation;
+    BOOL                  shouldReturnMockFromInit;
 }
 
 - (instancetype)init;

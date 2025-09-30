@@ -13,7 +13,7 @@ class MParticleTestsSwift: XCTestCase {
     var executor: ExecutorMock!
     var backendController: MPBackendControllerMock!
     var state: MPStateMachineMock!
-
+    
     func customLogger(_ message: String) {
         receivedMessage = message
     }
@@ -27,16 +27,16 @@ class MParticleTestsSwift: XCTestCase {
         listenerController = MPListenerControllerMock()
         listenerController.onAPICalledExpectation = XCTestExpectation()
         mparticle.listenerController = listenerController
-
+        
         kitContainer = MPKitContainerMock()
         mparticle.setKitContainer(kitContainer)
-
+        
         executor = ExecutorMock()
         mparticle.setExecutor(executor)
-
+        
         backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
-
+        
         state = MPStateMachineMock()
         mparticle.stateMachine = state
     }
@@ -162,9 +162,9 @@ class MParticleTestsSwift: XCTestCase {
         options.identifyRequest = MPIdentityApiRequest(user: user!)
 
         let userDefaults = MPUserDefaultsMock()
-
+        
         mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults as MPUserDefaultsProtocol)
-
+        
         XCTAssertTrue(mparticle.initialized)
         XCTAssertNil(mparticle.settingsProvider.configSettings)
 
@@ -378,7 +378,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logScreenEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
     }
-
+    
     func testLogErrorListenerControllerCalled() {
         mparticle.logError("message", eventInfo: [:])
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
@@ -590,10 +590,10 @@ class MParticleTestsSwift: XCTestCase {
 
     func testResetForSwitchingWorkspaces() {
         let expectation = XCTestExpectation()
-
+        
         let persistenceController = MPPersistenceControllerMock()
         mparticle.persistenceController = persistenceController
-
+        
         mparticle.reset {
             expectation.fulfill()
         }
@@ -778,7 +778,7 @@ class MParticleTestsSwift: XCTestCase {
 
     func testLogEventWithFilterReturningNil_blocksEvent() {
         let event = MPBaseEvent(eventType: .other)!
-
+        
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForBaseEventReturnValue = nil
         mparticle.dataPlanFilter = dataPlanFilter
@@ -810,11 +810,11 @@ class MParticleTestsSwift: XCTestCase {
     func testLogBaseEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let event = MPBaseEvent(eventType: .other)!
         let transformedEvent = MPBaseEvent(eventType: .addToCart)!
-
+        
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForBaseEventReturnValue = transformedEvent
         mparticle.dataPlanFilter = dataPlanFilter
-
+        
         mparticle.logEvent(event)
 
         // Verify listener was called
@@ -852,7 +852,7 @@ class MParticleTestsSwift: XCTestCase {
 
     func testLogCustomEventWithFilterReturningNil_blocksEvent() {
         let event = MPEvent(name: "blocked", type: .other)!
-
+        
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = nil
         mparticle.dataPlanFilter = dataPlanFilter
@@ -885,11 +885,11 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCustomEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let event = MPEvent(name: "original", type: .other)!
         let transformedEvent = MPEvent(name: "transformed", type: .other)!
-
+        
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = transformedEvent
         mparticle.dataPlanFilter = dataPlanFilter
-
+        
         mparticle.logCustomEvent(event)
 
         // Verify event timing ended
@@ -924,7 +924,7 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCommerceEvent_assignsTimestampWhenNil() {
         let commerceEvent = MPCommerceEvent(action: .purchase)!
         commerceEvent.setTimestamp(nil)
-
+        
         mparticle.logCommerceEvent(commerceEvent)
 
         XCTAssertNotNil(commerceEvent.timestamp)
@@ -970,11 +970,11 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let commerceEvent = MPCommerceEvent(eventType: .other)!
         let transformedCommerceEvent = MPCommerceEvent(eventType: .viewDetail)!
-
+        
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForCommerceEventReturnValue = transformedCommerceEvent
         mparticle.dataPlanFilter = dataPlanFilter
-
+        
         mparticle.logCommerceEvent(commerceEvent)
 
         // Verify event timestamp added
@@ -1107,57 +1107,59 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
         XCTAssertNil(kitContainer.forwardSDKCallEventParam)
     }
-
+    
     // MARK: Error, Exception, and Crash Handling
-
+    
     func testLeaveBreadcrumbCallback_withDataFilterNotSet_forwardsTransformedEvent() {
         XCTAssertNil(mparticle.dataPlanFilter)
-
+        
         mparticle.leaveBreadcrumbCallback(MPEvent(), execStatus: .success)
-
+        
         // Verify executor usage
         XCTAssertTrue(executor.executeOnMainAsync)
-
+        
         // Verify kit container forwarded transformed event
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "leaveBreadcrumb:")
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .breadcrumb)
         XCTAssertNotNil(kitContainer.forwardSDKCallEventParam)
-
+        
         XCTAssertEqual(receivedMessage, """
-        mParticle -> Left breadcrumb: Event:{
-          Name: <<Event With No Name>>
-          Type: Other
-          Duration: 0
-        }
-        """)
+            mParticle -> Left breadcrumb: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
     }
-
+    
     func testLeaveBreadcrumbCallback_withDataFilterSet_andDataFilterReturnNil() {
         let dataPlanFilter = MPDataPlanFilterMock()
         mparticle.dataPlanFilter = dataPlanFilter
         let expectedEvent = MPEvent()
         mparticle.leaveBreadcrumbCallback(expectedEvent, execStatus: .success)
-
+        
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
 
         XCTAssertEqual(receivedMessage, """
-        mParticle -> Blocked breadcrumb event from kits: Event:{
-          Name: <<Event With No Name>>
-          Type: Other
-          Duration: 0
-        }
-        """)
+            mParticle -> Blocked breadcrumb event from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
     }
-
+    
     func testLeaveBreadcrumbCallback_execStatusFail_noLoggedMessages() {
         let expectedEvent = MPEvent()
         mparticle.leaveBreadcrumbCallback(expectedEvent, execStatus: .fail)
 
         XCTAssertNil(receivedMessage)
     }
-
+    
     func testLeaveBreadcrumbListenerControllerCalled() {
         mparticle.leaveBreadcrumb("expectedEvent", eventInfo: [:])
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
@@ -1165,42 +1167,43 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "expectedEvent")
         XCTAssertEqual(listenerController.onAPICalledParameter2 as? [String: String], [:])
     }
-
+    
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReceiveCorrectName() {
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
         XCTAssertEqual(backendController.eventWithNameEventNameParam, "expectedEvent")
     }
-
+    
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReturnsNilEvent_newEventCreated() {
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, "expectedEvent")
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .other)
         XCTAssertNotNil(backendController.leaveBreadcrumbEventParam?.timestamp)
-        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String: String], ["key": "value"])
+        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String : String], ["key" : "value"])
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
 
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReturnsEvent_eventModified() {
         let event = MPEvent(name: "expectedEvent", type: .navigation)
         backendController.eventSet?.add(event as Any)
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, "expectedEvent")
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .navigation)
         XCTAssertNotNil(backendController.leaveBreadcrumbEventParam?.timestamp)
-        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String: String], ["key": "value"])
+        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String : String], ["key" : "value"])
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
-
+    
     func testLeaveBreadcrumb_eventNamePassed_CallbackCallsCallbackFunction() {
         let event = MPEvent(name: "expectedEvent", type: .navigation)
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
         backendController.leaveBreadcrumbCompletionHandler?(event!, .success)
         XCTAssertEqual(receivedMessage, """
-        mParticle -> Left breadcrumb: Event:{
-          Name: expectedEvent
-          Type: Navigation
-          Duration: 0
-        }
-        """)
+            mParticle -> Left breadcrumb: Event:{
+              Name: expectedEvent
+              Type: Navigation
+              Duration: 0
+            }
+            """
+        )
     }
 }

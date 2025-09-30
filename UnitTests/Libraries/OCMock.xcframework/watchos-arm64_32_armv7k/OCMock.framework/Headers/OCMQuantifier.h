@@ -16,8 +16,9 @@
 
 #import <Foundation/Foundation.h>
 
-@interface OCMQuantifier : NSObject {
-  NSUInteger expectedCount;
+@interface OCMQuantifier : NSObject
+{
+    NSUInteger expectedCount;
 }
 
 + (instancetype)never;
@@ -31,14 +32,15 @@
 
 @end
 
-#define OCMNever() ([OCMQuantifier never])
-#define OCMTimes(n) ([OCMQuantifier exactly:(n)])
-#define OCMAtLeast(n) ([OCMQuantifier atLeast:(n)])
-#define OCMAtMost(n) ([OCMQuantifier atMost:(n)])
+
+#define OCMNever()      ([OCMQuantifier never])
+#define OCMTimes(n)     ([OCMQuantifier exactly:(n)])
+#define OCMAtLeast(n)   ([OCMQuantifier atLeast:(n)])
+#define OCMAtMost(n)    ([OCMQuantifier atMost:(n)])
 
 #ifndef OCM_DISABLE_SHORT_QSYNTAX
-#define never() OCMNever()
-#define times(n) OCMTimes(n)
-#define atLeast(n) OCMAtLeast(n)
-#define atMost(n) OCMAtMost(n)
+#define never()         OCMNever()
+#define times(n)        OCMTimes(n)
+#define atLeast(n)      OCMAtLeast(n)
+#define atMost(n)       OCMAtMost(n)
 #endif

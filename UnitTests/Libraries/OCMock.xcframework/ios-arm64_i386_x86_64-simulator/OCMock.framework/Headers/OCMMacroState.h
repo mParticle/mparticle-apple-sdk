@@ -22,9 +22,11 @@
 @class OCMStubRecorder;
 @class OCMockObject;
 
-@interface OCMMacroState : NSObject {
-  id recorder;
-  BOOL invocationDidThrow;
+
+@interface OCMMacroState : NSObject
+{
+    id   recorder;
+    BOOL invocationDidThrow;
 }
 
 + (void)beginStubMacro;
@@ -37,8 +39,7 @@
 + (OCMStubRecorder *)endRejectMacro;
 
 + (void)beginVerifyMacroAtLocation:(OCMLocation *)aLocation;
-+ (void)beginVerifyMacroAtLocation:(OCMLocation *)aLocation
-                    withQuantifier:(OCMQuantifier *)quantifier;
++ (void)beginVerifyMacroAtLocation:(OCMLocation *)aLocation withQuantifier:(OCMQuantifier *)quantifier;
 + (void)endVerifyMacro;
 
 + (OCMMacroState *)globalState;

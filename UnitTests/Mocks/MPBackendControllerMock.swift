@@ -118,7 +118,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         logEventEventParam = event
         logEventCompletionHandler = completionHandler
     }
-
+    
     var eventWithNameEventNameParam: String?
 
     func event(withName eventName: String) -> MPEvent? {

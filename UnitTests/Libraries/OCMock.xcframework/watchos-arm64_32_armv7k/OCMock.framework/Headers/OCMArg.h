@@ -49,8 +49,5 @@
 
 #define OCMOCK_ANY [OCMArg any]
 
-#define OCMOCK_VALUE(variable)                                                 \
-  ({                                                                           \
-    __typeof__(variable) __v = (variable);                                     \
-    [NSValue value:&__v withObjCType:@encode(__typeof__(__v))];                \
-  })
+#define OCMOCK_VALUE(variable) \
+    ({ __typeof__(variable) __v = (variable); [NSValue value:&__v withObjCType:@encode(__typeof__(__v))]; })

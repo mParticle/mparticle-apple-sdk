@@ -1,22 +1,21 @@
 #import "MPDataModelAbstract.h"
-#import "MPDataModelProtocol.h"
 #import "MPIConstants.h"
+#import "MPDataModelProtocol.h"
 
 @class MPSession;
 
-@interface MPMessage
-    : MPDataModelAbstract <NSCopying, NSSecureCoding, MPDataModelProtocol>
+@interface MPMessage : MPDataModelAbstract <NSCopying, NSSecureCoding, MPDataModelProtocol>
 
-@property(nonatomic, strong, readonly, nonnull) NSString *messageType;
-@property(nonatomic, strong, readonly, nonnull) NSData *messageData;
-@property(nonatomic) NSTimeInterval timestamp;
-@property(nonatomic) int64_t messageId;
-@property(nonatomic, strong, nullable) NSNumber *sessionId;
-@property(nonatomic, strong, nonnull) NSNumber *userId;
-@property(nonatomic, strong, nullable) NSString *dataPlanId;
-@property(nonatomic, strong, nullable) NSNumber *dataPlanVersion;
-@property(nonatomic) MPUploadStatus uploadStatus;
-@property(nonatomic) BOOL shouldUploadEvent;
+@property (nonatomic, strong, readonly, nonnull) NSString *messageType;
+@property (nonatomic, strong, readonly, nonnull) NSData *messageData;
+@property (nonatomic) NSTimeInterval timestamp;
+@property (nonatomic) int64_t messageId;
+@property (nonatomic, strong, nullable) NSNumber *sessionId;
+@property (nonatomic, strong, nonnull) NSNumber *userId;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
+@property (nonatomic) MPUploadStatus uploadStatus;
+@property (nonatomic) BOOL shouldUploadEvent;
 
 - (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId
                                 messageId:(int64_t)messageId
@@ -28,6 +27,8 @@
                                    userId:(nonnull NSNumber *)userId
                                dataPlanId:(nullable NSString *)dataPlanId
                           dataPlanVersion:(nullable NSNumber *)dataPlanVersion;
+
+
 
 - (nonnull instancetype)initWithSession:(nullable MPSession *)session
                             messageType:(nonnull NSString *)messageType
@@ -42,8 +43,7 @@
 - (void)truncateMessageDataProperty:(nonnull NSString *)property
                            toLength:(NSInteger)length;
 
-+ (void)fixInvalidKeysInDictionary:
-            (nonnull NSMutableDictionary *)messageDictionary
-                       messageInfo:(nonnull NSDictionary *)messageInfo;
++ (void)fixInvalidKeysInDictionary:(nonnull NSMutableDictionary*)messageDictionary
+                       messageInfo:(nonnull NSDictionary*) messageInfo;
 
 @end

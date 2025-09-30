@@ -1,97 +1,82 @@
-#import "MPEnums.h"
 #import <Foundation/Foundation.h>
+#import "MPEnums.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MPBaseEvent : NSObject <NSCopying>
 
-- (NSString *)print;
+- (NSString *) print;
 
 /**
- The timestamp when the event was created. Is non null but can be set by the
- client
+ The timestamp when the event was created. Is non null but can be set by the client
  */
-@property(nonatomic, strong) NSDate *timestamp;
+@property (nonatomic, strong) NSDate *timestamp;
 
 /**
- An enum value that indicates the type of event to be logged. If logging a
- screen event, this property will be overridden to MPEventTypeNavigation. In all
- other cases the SDK will honor the type assigned to this property.
+ An enum value that indicates the type of event to be logged. If logging a screen event, this
+ property will be overridden to MPEventTypeNavigation. In all other cases the SDK will honor the type
+ assigned to this property.
  @see MPEventType
  */
-@property(nonatomic) MPEventType type;
+@property (nonatomic) MPEventType type;
 
 /**
  An enum value that indicates the type of message to be sent
  assigned to this property.
  @see MPMessageType
  */
-@property(nonatomic) MPMessageType messageType;
+@property (nonatomic) MPMessageType messageType;
 
 /**
- A dictionary containing further information about the event. The number of
- entries is limited to 100 key value pairs. Keys must be strings (up to 255
- characters) and values can be strings (up to 4096 characters), numbers,
- booleans, or dates
+ A dictionary containing further information about the event. The number of entries is
+ limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values
+ can be strings (up to 4096 characters), numbers, booleans, or dates
  */
-@property(nonatomic, strong, nullable)
-    NSDictionary<NSString *, id> *customAttributes;
+@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *customAttributes;
 
 /**
- Custom flags are a collection of attributes used to trigger functionality in
- specific integrations. By default, most integrations will ignore custom flags.
- Reference the documentation for your integrations to see if they make use of
- custom flags.
+ Custom flags are a collection of attributes used to trigger functionality in specific integrations. By default, most integrations will ignore custom flags. Reference the documentation for your integrations to see if they make use of custom flags.
  */
-@property(nonatomic, strong, readonly, nullable)
-    NSMutableDictionary<NSString *, __kindof NSArray<NSString *> *>
-        *customFlags;
+@property (nonatomic, strong, readonly, nullable) NSMutableDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlags;
 
 /**
- Whether the SDK should automatically begin a session if one does not already
- exist (defaults to YES). This should typically be set to NO if the app is
- launched from a background notification.
+ Whether the SDK should automatically begin a session if one does not already exist (defaults to YES).
+ This should typically be set to NO if the app is launched from a background notification.
  */
-@property(nonatomic) BOOL shouldBeginSession;
+@property (nonatomic) BOOL shouldBeginSession;
 
 /**
- Whether this event should be uploaded to mParticle when logged or only passed
- to kits (defaults to YES).
+ Whether this event should be uploaded to mParticle when logged or only passed to kits (defaults to YES).
  */
-@property(nonatomic) BOOL shouldUploadEvent;
+@property (nonatomic) BOOL shouldUploadEvent;
 
 /**
  A Dictionary representation of this instance for uploading the event
  Must be overridden by a subclass
  */
-@property(nonatomic, readonly)
-    NSDictionary<NSString *, id> *dictionaryRepresentation;
+@property (nonatomic, readonly) NSDictionary<NSString *, id> *dictionaryRepresentation;
 
 /**
  Initializes an instance of MPBaseEvent
- MPBaseEvent is an abstract parent class so you should always instantiate one of
- its children rather than the parent.
+ MPBaseEvent is an abstract parent class so you should always instantiate one of its children rather than the parent.
  @param type An enum value that indicates the type of event to be logged.
  @returns An instance of MPBaseEvent or nil, if it could not be initialized.
  */
-- (nullable instancetype)initWithEventType:(MPEventType)type
-    __attribute__((objc_designated_initializer));
+- (nullable instancetype)initWithEventType:(MPEventType)type __attribute__((objc_designated_initializer));
 
 /**
  Adds a custom flag associated with a key to the event.
  @param customFlag A string attribute
  @param key The key associated with the custom flag.
  */
-- (void)addCustomFlag:(nonnull NSString *)customFlag
-              withKey:(nonnull NSString *)key;
+- (void)addCustomFlag:(nonnull NSString *)customFlag withKey:(nonnull NSString *)key;
 
 /**
  Adds an array of custom flags associated with a key to the event.
  @param customFlags An array of string attributes
  @param key The key associated with the custom flags.
  */
-- (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags
-               withKey:(nonnull NSString *)key;
+- (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags withKey:(nonnull NSString *)key;
 
 - (NSString *)typeName;
 

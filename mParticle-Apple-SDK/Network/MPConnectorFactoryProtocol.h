@@ -3,7 +3,7 @@
 
 #import "MPConnectorProtocol.h"
 @protocol MPConnectorFactoryProtocol
-- (NSObject<MPConnectorProtocol> *_Nonnull)createConnector;
+- (NSObject<MPConnectorProtocol> * _Nonnull)createConnector;
 @end
 
 #endif /* MPConnectorFactoryProtocol_h */
