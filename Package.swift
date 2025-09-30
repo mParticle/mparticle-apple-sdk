@@ -2,11 +2,11 @@
 
 import PackageDescription
 
-let mParticle_Apple_SDK_URL = "https://static.mparticle.com/sdk/ios/v8.39.0/mParticle_Apple_SDK.xcframework.zip"
-let mParticle_Apple_SDK_Checksum = "8c6e6fb1891d844486a6be0c671875ec03a0b8457b3cef26bc4f7e3e4b866143"
+let mParticle_Apple_SDK_URL = "https://github.com/mParticle/mparticle-apple-sdk/raw/test/spm-static-linking/mParticle_Apple_SDK.xcframework.zip"
+let mParticle_Apple_SDK_Checksum = "913a8bf184b071d271a9a1db2cb375287fdcbb2dd2a747fb9b8ef2c39064f946"
 
-let mParticle_Apple_SDK_NoLocation_URL = "https://static.mparticle.com/sdk/ios/v8.39.0/mParticle_Apple_SDK_NoLocation.xcframework.zip"
-let mParticle_Apple_SDK_NoLocation_Checksum = "7016efe3e47b2b2915dd8164f37dad34d1e3a5234e9ee9ecbd1ea4fd7903909e"
+let mParticle_Apple_SDK_NoLocation_URL = "https://github.com/mParticle/mparticle-apple-sdk/raw/test/spm-static-linking/mParticle_Apple_SDK_NoLocation.xcframework.zip"
+let mParticle_Apple_SDK_NoLocation_Checksum = "15b3231ed3b531bd5beac5c993f30a2bbc4f61725458a81680844543e38ed457"
 
 let package = Package(
     name: "mParticle-Apple-SDK",
@@ -19,8 +19,6 @@ let package = Package(
             name: "mParticle-Apple-SDK-NoLocation",
             targets: ["mParticle_Apple_SDK_NoLocation"]),
     ],
-    dependencies: [
-    ],
     targets: [
         .binaryTarget(
             name: "mParticle_Apple_SDK",
@@ -31,6 +29,6 @@ let package = Package(
             name: "mParticle_Apple_SDK_NoLocation",
             url: mParticle_Apple_SDK_NoLocation_URL,
             checksum: mParticle_Apple_SDK_NoLocation_Checksum
-        ),
+        )
     ]
 )
