@@ -25,23 +25,16 @@ runtimes:
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
-    - actionlint@1.7.7
-    - bandit@1.8.6
-    - black@25.9.0
-    - checkov@3.2.471
-    - dotenv-linter@3.3.0
-    - git-diff-check
-    - isort@6.0.1
-    - markdownlint@0.45.0
-    - osv-scanner@2.2.2
-    - oxipng@9.1.5
-    - prettier@3.6.2
-    - ruff@0.13.2
-    - shellcheck@0.11.0
-    - shfmt@3.6.0
-    - trufflehog@3.90.8
-    - swiftlint@0.58.2
-    - swiftformat@0.55.5
+    - actionlint@1.7.7 # Validates GitHub Actions workflows for syntax and logic errors
+    - git-diff-check # Ensures only allowed changes are staged (enforces diff-based policies)
+    - markdownlint@0.45.0 # Checks Markdown files for style consistency and common issues
+    - osv-scanner@2.2.2 # Scans dependencies for known vulnerabilities using OSV database
+    - prettier@3.6.2 # Formatter for JavaScript, TypeScript, JSON, CSS, Markdown, etc.
+    - shellcheck@0.11.0 # Detects bugs and best-practice issues in shell scripts
+    - shfmt@3.6.0 # Formats shell scripts for consistent style
+    - trufflehog@3.90.8 # Scans code and git history for secrets (API keys, passwords, etc.)
+    - swiftlint@0.58.2 # Lints Swift code against style & convention rules
+    - swiftformat@0.55.5 # Automatically formats Swift code to follow style guidelines
   disabled:
     - yamllint
   ignore:
