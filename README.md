@@ -2,6 +2,8 @@
 
 # mParticle Apple SDK
 
+A single SDK to collect analytics data and send it to 100+ marketing, analytics, and data platforms. Simplify your data integration with a single API.
+
 This is the mParticle Apple SDK for iOS and tvOS.
 
 At mParticle our mission is straightforward: make it really easy for apps and app services to connect and allow you to take ownership of your 1st party data.
@@ -231,6 +233,10 @@ In order to run either the iOS or tvOS examples, first install the mParticle App
 Just by initializing the SDK you'll be set up to track user installs, engagement, and much more. Check out our doc site to learn how to add specific event tracking to your app.
 
 - [SDK Documentation](http://docs.mparticle.com/#mobile-sdk-guide)
+
+## Contributing
+
+We welcome contributions! If you're interested in contributing to the mParticle Apple SDK, please read our [Contributing Guidelines](CONTRIBUTING.md).
 
 ## Support
 

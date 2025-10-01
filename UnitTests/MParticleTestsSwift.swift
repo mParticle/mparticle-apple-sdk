@@ -308,7 +308,7 @@ class MParticleTestsSwift: XCTestCase {
         }
 
         """)
-    }
+\    }
     
     func testLogNetworkPerformanceCallbackSuccess() {
         mparticle.logNetworkPerformanceCallback(.success)
@@ -814,11 +814,10 @@ class MParticleTestsSwift: XCTestCase {
     func testLogBaseEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let event = MPBaseEvent(eventType: .other)!
         let transformedEvent = MPBaseEvent(eventType: .addToCart)!
-        
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForBaseEventReturnValue = transformedEvent
         mparticle.dataPlanFilter = dataPlanFilter
-        
+     
         mparticle.logEvent(event)
 
         // Verify listener was called
@@ -831,15 +830,15 @@ class MParticleTestsSwift: XCTestCase {
         let completion = backendController.logBaseEventCompletionHandler!
         XCTAssertNotNil(completion)
         completion(event, .success)
-
+        
         // Verify executor usage
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(executor.executeOnMainAsync)
-
+        
         // Verify filter transformed event
         XCTAssertTrue(dataPlanFilter.transformEventForBaseEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventForBaseEventParam === event)
-
+        
         // Verify kit container forwarded transformed event
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBaseEvent:")
@@ -969,6 +968,172 @@ class MParticleTestsSwift: XCTestCase {
         
         // Logger should record the blocked event message
         XCTAssertEqual(receivedMessage, "mParticle -> Blocked commerce event from kits: \(commerceEvent)")
+    }
+
+
+    func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
+        let commerceEvent = MPCommerceEvent(eventType: .other)!
+        let transformedCommerceEvent = MPCommerceEvent(eventType: .viewDetail)!
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventForCommerceEventReturnValue = transformedCommerceEvent
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        
+        mparticle.logCommerceEvent(commerceEvent)
+        
+        // Verify event timestamp added
+        XCTAssertNotNil(commerceEvent.timestamp)
+        
+        // Verify listener was called
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === commerceEvent)
+        
+        // Verify backend was called
+        XCTAssertTrue(backendController.logCommerceEventCalled)
+        XCTAssertTrue(backendController.logCommerceEventParam === commerceEvent)
+        let completion = backendController.logCommerceEventCompletionHandler!
+        XCTAssertNotNil(completion)
+        completion(commerceEvent, .success)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        
+        // Verify filter transformed event
+        XCTAssertTrue(dataPlanFilter.transformEventForCommerceEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventForCommerceEventParam === commerceEvent)
+        
+        // Verify kit container forwarded transformed event
+        XCTAssertTrue(kitContainer.forwardCommerceEventCallCalled)
+        XCTAssertTrue(kitContainer.forwardCommerceEventCallCommerceEventParam === transformedCommerceEvent)
+    }
+    
+    // MARK: - logLTVIncrease
+    
+    func testLogLTVIncrease_withNameAndInfo_createsEventAndCallsBackend() {
+        let amount = 42.0
+        let name = "name"
+        let info: [String: Any] = ["source": "in_app", "currency": "USD"]
+
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+
+        mparticle.logLTVIncrease(amount, eventName: name, eventInfo: info)
+        
+        // Assert event was passed through
+        let loggedEvent = backendController.logEventEventParam!
+        XCTAssertNotNil(loggedEvent)
+        XCTAssertEqual(loggedEvent.name, name)
+        XCTAssertEqual(loggedEvent.type, .transaction)
+
+        // Custom attributes should include amount and method name
+        let attrs = loggedEvent.customAttributes!
+        XCTAssertEqual(attrs["$Amount"] as? Double, amount)
+        XCTAssertEqual(attrs["$MethodName"] as? String, "LogLTVIncrease")
+
+        // Check that the eventInfo entries were added
+        XCTAssertEqual(attrs["source"] as? String, "in_app")
+        XCTAssertEqual(attrs["currency"] as? String, "USD")
+        XCTAssertEqual(attrs.count, 4)
+        
+        // Listener controller should be notified
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logLTVIncrease:eventName:eventInfo:")
+        
+        // Backend completion handler should be stored
+        XCTAssertTrue(backendController.logEventCalled)
+        let completion = backendController.logEventCompletionHandler!
+        XCTAssertNotNil(completion)
+        completion(loggedEvent, .success)
+    }
+    
+    func testLogLTVIncrease_withoutEventInfo_defaultsToNilInfo() {
+        let amount = 12.5
+        let name = "name"
+
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+
+        mparticle.logLTVIncrease(amount, eventName: name)
+
+        // Assert event was passed through
+        let loggedEvent = backendController.logEventEventParam!
+        XCTAssertNotNil(loggedEvent)
+        XCTAssertEqual(loggedEvent.name, name)
+        XCTAssertEqual(loggedEvent.type, .transaction)
+
+        // Custom attributes should only be amount and method name
+        let attrs = loggedEvent.customAttributes!
+        XCTAssertEqual(attrs["$Amount"] as? Double, amount)
+        XCTAssertEqual(attrs["$MethodName"] as? String, "LogLTVIncrease")
+        XCTAssertEqual(attrs.count, 2)
+
+        // Listener controller should be notified
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logLTVIncrease:eventName:eventInfo:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Double, amount)
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, name)
+        XCTAssertNil(listenerController.onAPICalledParameter3)
+
+        // Backend completion handler should be stored
+        XCTAssertTrue(backendController.logEventCalled)
+        let completion = backendController.logEventCompletionHandler!
+        XCTAssertNotNil(completion)
+        completion(loggedEvent, .success)
+    }
+    
+    func testLogLTVIncreaseCallback_withSuccessExecStatus_noDataPlanFilter_forwardsEvent() {
+        let event = MPEvent(name: "ltv", type: .transaction)!
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventReturnValue = nil
+        mparticle.dataPlanFilter = dataPlanFilter
+
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+
+        mparticle.logLTVIncreaseCallback(event, execStatus: .success)
+        
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
+
+        XCTAssertEqual(receivedMessage, "mParticle -> Blocked LTV increase event from kits: \(event)")
+    }
+    
+    func testLogLTVIncreaseCallback_withSuccessExecStatus_filterReturnsTransformedEvent_forwardsTransformedEvent() {
+        let event = MPEvent(name: "ltv", type: .transaction)!
+        let transformedEvent = MPEvent(name: "transformed-ltv", type: .other)!
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventReturnValue = transformedEvent
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+
+        mparticle.logLTVIncreaseCallback(event, execStatus: .success)
+        
+        // Verify filter transformed event
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMainAsync)
+        
+        // Verify kit container forwarded transformed event
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logLTVIncrease:event:")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
+        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
     }
 
     func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
