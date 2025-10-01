@@ -10,6 +10,3 @@ jobs:
   pr-title-check:
     name: "Check PR for semantic title"
     uses: mParticle/mparticle-workflows/.github/workflows/pr-title-check.yml@stable
-  pr-branch-target-gitflow:
-    name: "Check PR for semantic target branch"
-    uses: mParticle/mparticle-workflows/.github/workflows/pr-branch-target-gitflow.yml@stable
