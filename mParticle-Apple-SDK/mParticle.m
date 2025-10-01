@@ -104,6 +104,10 @@ MPLog* logger;
     }
 }
 
+- (MPLog*)getLogger {
+    return logger;
+}
+
 + (dispatch_queue_t)messageQueue {
     return executor.messageQueue;
 }

@@ -1,8 +1,8 @@
 import XCTest
 #if MPARTICLE_LOCATION_DISABLE
-import mParticle_Apple_SDK_NoLocation
+    import mParticle_Apple_SDK_NoLocation
 #else
-import mParticle_Apple_SDK
+    import mParticle_Apple_SDK
 #endif
 
 class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
@@ -12,6 +12,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var session: MPSession?
 
     // MARK: - Opt-out
+
     var setOptOutCalled = false
     var setOptOutOptOutStatusParam: Bool?
     var setOptOutCompletionHandler: ((Bool, MPExecStatus) -> Void)?
@@ -23,6 +24,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - User attributes
+
     var userAttributesCalled = false
     var userAttributesUserIdParam: NSNumber?
     var userAttributesReturnValue: NSMutableDictionary = [:]
@@ -34,6 +36,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Start
+
     var startCalled = false
     var startApiKeyParam: String?
     var startSecretParam: String?
@@ -45,7 +48,17 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var startConsentStateParam: MPConsentState?
     var startCompletionHandler: (() -> Void)?
 
-    func start(withKey apiKey: String, secret: String, networkOptions: MPNetworkOptions?, firstRun: Bool, installationType: MPInstallationType, proxyAppDelegate: Bool, startKitsAsync: Bool, consentState: MPConsentState?, completionHandler: @escaping () -> Void) {
+    func start(
+        withKey apiKey: String,
+        secret: String,
+        networkOptions: MPNetworkOptions?,
+        firstRun: Bool,
+        installationType: MPInstallationType,
+        proxyAppDelegate: Bool,
+        startKitsAsync: Bool,
+        consentState: MPConsentState?,
+        completionHandler: @escaping () -> Void
+    ) {
         startCalled = true
         startApiKeyParam = apiKey
         startSecretParam = secret
@@ -59,6 +72,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Prepare batches
+
     var prepareBatchesCalled = false
     var prepareBatchesUploadSettingsParam: MPUploadSettings?
 
@@ -68,6 +82,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Temp session
+
     var tempSessionCalled = false
     var tempSessionReturnValue: MParticleSession?
 
@@ -77,6 +92,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - App delegate proxying
+
     var unproxyOriginalAppDelegateCalled = false
 
     func unproxyOriginalAppDelegate() {
@@ -84,6 +100,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Session lifecycle
+
     var endSessionCalled = false
 
     func endSession() {
@@ -101,6 +118,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Events
+
     var logEventCalled = false
     var logEventEventParam: MPEvent?
     var logEventCompletionHandler: ((MPEvent, MPExecStatus) -> Void)?
@@ -110,8 +128,11 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         logEventEventParam = event
         logEventCompletionHandler = completionHandler
     }
+    
+    var eventWithNameEventNameParam: String?
 
     func event(withName eventName: String) -> MPEvent? {
+        eventWithNameEventNameParam = eventName
         guard let set = eventSet else { return nil }
         for case let evt as MPEvent in set {
             if evt.name == eventName { return evt }
@@ -120,6 +141,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Base events
+
     var logBaseEventCalled = false
     var logBaseEventEventParam: MPBaseEvent?
     var logBaseEventCompletionHandler: ((MPBaseEvent, MPExecStatus) -> Void)?
@@ -131,28 +153,35 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Commerce events
+
     var logCommerceEventCalled = false
     var logCommerceEventParam: MPCommerceEvent?
     var logCommerceEventCompletionHandler: ((MPCommerceEvent, MPExecStatus) -> Void)?
 
-    func logCommerceEvent(_ commerceEvent: MPCommerceEvent, completionHandler: @escaping (MPCommerceEvent, MPExecStatus) -> Void) {
+    func logCommerceEvent(_ commerceEvent: MPCommerceEvent,
+                          completionHandler: @escaping (MPCommerceEvent, MPExecStatus) -> Void) {
         logCommerceEventCalled = true
         logCommerceEventParam = commerceEvent
         logCommerceEventCompletionHandler = completionHandler
     }
 
     // MARK: - Network perf
+
     var logNetworkPerformanceCalled = false
     var logNetworkPerformanceParam: MPNetworkPerformance?
     var logNetworkPerformanceCompletionHandler: ((MPNetworkPerformance, MPExecStatus) -> Void)?
 
-    func logNetworkPerformanceMeasurement(_ networkPerformance: MPNetworkPerformance, completionHandler: ((MPNetworkPerformance, MPExecStatus) -> Void)? = nil) {
+    func logNetworkPerformanceMeasurement(
+        _ networkPerformance: MPNetworkPerformance,
+        completionHandler: ((MPNetworkPerformance, MPExecStatus) -> Void)? = nil
+    ) {
         logNetworkPerformanceCalled = true
         logNetworkPerformanceParam = networkPerformance
         logNetworkPerformanceCompletionHandler = completionHandler
     }
 
     // MARK: - Screen
+
     var logScreenCalled = false
     var logScreenEventParam: MPEvent?
     var logScreenCompletionHandler: ((MPEvent, MPExecStatus) -> Void)?
@@ -164,6 +193,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Breadcrumbs
+
     var leaveBreadcrumbCalled = false
     var leaveBreadcrumbEventParam: MPEvent?
     var leaveBreadcrumbCompletionHandler: ((MPEvent, MPExecStatus) -> Void)?
@@ -175,14 +205,21 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Errors & Crashes
+
     var logErrorCalled = false
     var logErrorMessageParam: String?
     var logErrorExceptionParam: NSException?
     var logErrorTopmostContextParam: Any?
-    var logErrorEventInfoParam: [AnyHashable : Any]?
+    var logErrorEventInfoParam: [AnyHashable: Any]?
     var logErrorCompletionHandler: ((String?, MPExecStatus) -> Void)?
 
-    func logError(_ message: String?, exception: NSException?, topmostContext: Any?, eventInfo: [AnyHashable : Any]?, completionHandler: @escaping (String?, MPExecStatus) -> Void) {
+    func logError(
+        _ message: String?,
+        exception: NSException?,
+        topmostContext: Any?,
+        eventInfo: [AnyHashable: Any]?,
+        completionHandler: @escaping (String?, MPExecStatus) -> Void
+    ) {
         logErrorCalled = true
         logErrorMessageParam = message
         logErrorExceptionParam = exception
@@ -197,7 +234,12 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var logCrashPlReportParam: String?
     var logCrashCompletionHandler: ((String?, MPExecStatus) -> Void)?
 
-    func logCrash(_ message: String?, stackTrace: String?, plCrashReport: String, completionHandler: @escaping (String?, MPExecStatus) -> Void) {
+    func logCrash(
+        _ message: String?,
+        stackTrace: String?,
+        plCrashReport: String,
+        completionHandler: @escaping (String?, MPExecStatus) -> Void
+    ) {
         logCrashCalled = true
         logCrashMessageParam = message
         logCrashStackTraceParam = stackTrace
@@ -206,13 +248,14 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Session attributes
+
     var sessionAttributesStore: [String: Any] = [:]
     var setSessionAttributeCalled = false
     var setSessionAttributeKeyParam: String?
     var setSessionAttributeValueParam: Any?
     var setSessionAttributeReturnValue = MPExecStatus.success
 
-    func setSessionAttribute(_ session: MPSession, key: String, value: Any) -> MPExecStatus {
+    func setSessionAttribute(_: MPSession, key: String, value: Any) -> MPExecStatus {
         setSessionAttributeCalled = true
         setSessionAttributeKeyParam = key
         setSessionAttributeValueParam = value
@@ -225,7 +268,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var incrementSessionAttributeByValueParam: NSNumber?
     var incrementSessionAttributeReturnValue: NSNumber?
 
-    func incrementSessionAttribute(_ session: MPSession, key: String, byValue value: NSNumber) -> NSNumber? {
+    func incrementSessionAttribute(_: MPSession, key: String, byValue value: NSNumber) -> NSNumber? {
         incrementSessionAttributeCalled = true
         incrementSessionAttributeKeyParam = key
         incrementSessionAttributeByValueParam = value
@@ -234,6 +277,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Session mgmt
+
     var createTempSessionCalled = false
 
     func createTempSession() {
@@ -260,6 +304,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     // MARK: - Upload & Kits
+
     var waitForKitsAndUploadCalled = false
     var waitForKitsAndUploadCompletionHandler: (() -> Void)?
     var waitForKitsAndUploadReturnValue: MPExecStatus = .success
@@ -269,38 +314,47 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         waitForKitsAndUploadCompletionHandler = completionHandler
         return waitForKitsAndUploadReturnValue
     }
-#if os(iOS)
-#if !MPARTICLE_LOCATION_DISABLE
-    // MARK: - Location
-    var beginLocationTrackingCalled = false
-    var beginLocationTrackingAccuracyParam: CLLocationAccuracy?
-    var beginLocationTrackingDistanceParam: CLLocationDistance?
-    var beginLocationTrackingAuthParam: MPLocationAuthorizationRequest?
-    var beginLocationTrackingReturnValue: MPExecStatus = .success
 
-    func beginLocationTracking(withAccuracy accuracy: CLLocationAccuracy, distanceFilter distance: CLLocationDistance, authorizationRequest: MPLocationAuthorizationRequest) -> MPExecStatus {
-        beginLocationTrackingCalled = true
-        beginLocationTrackingAccuracyParam = accuracy
-        beginLocationTrackingDistanceParam = distance
-        beginLocationTrackingAuthParam = authorizationRequest
-        return beginLocationTrackingReturnValue
-    }
+    #if os(iOS)
+        #if !MPARTICLE_LOCATION_DISABLE
 
-    var endLocationTrackingCalled = false
-    var endLocationTrackingReturnValue: MPExecStatus = .success
+            // MARK: - Location
 
-    func endLocationTracking() -> MPExecStatus {
-        endLocationTrackingCalled = true
-        return endLocationTrackingReturnValue
-    }
-#endif
-    // MARK: - Notifications
-    var logUserNotificationCalled = false
-    var logUserNotificationParam: MParticleUserNotification?
+            var beginLocationTrackingCalled = false
+            var beginLocationTrackingAccuracyParam: CLLocationAccuracy?
+            var beginLocationTrackingDistanceParam: CLLocationDistance?
+            var beginLocationTrackingAuthParam: MPLocationAuthorizationRequest?
+            var beginLocationTrackingReturnValue: MPExecStatus = .success
 
-    func logUserNotification(_ userNotification: MParticleUserNotification) {
-        logUserNotificationCalled = true
-        logUserNotificationParam = userNotification
-    }
-#endif
+            func beginLocationTracking(
+                withAccuracy accuracy: CLLocationAccuracy,
+                distanceFilter distance: CLLocationDistance,
+                authorizationRequest: MPLocationAuthorizationRequest
+            ) -> MPExecStatus {
+                beginLocationTrackingCalled = true
+                beginLocationTrackingAccuracyParam = accuracy
+                beginLocationTrackingDistanceParam = distance
+                beginLocationTrackingAuthParam = authorizationRequest
+                return beginLocationTrackingReturnValue
+            }
+
+            var endLocationTrackingCalled = false
+            var endLocationTrackingReturnValue: MPExecStatus = .success
+
+            func endLocationTracking() -> MPExecStatus {
+                endLocationTrackingCalled = true
+                return endLocationTrackingReturnValue
+            }
+        #endif
+
+        // MARK: - Notifications
+
+        var logUserNotificationCalled = false
+        var logUserNotificationParam: MParticleUserNotification?
+
+        func logUserNotification(_ userNotification: MParticleUserNotification) {
+            logUserNotificationCalled = true
+            logUserNotificationParam = userNotification
+        }
+    #endif
 }

@@ -21,8 +21,7 @@ import Foundation
     case removeFromWishlist = 10
 }
 
-@objc final public class MPConvertJS_PRIVATE: NSObject {
-    
+@objc public final class MPConvertJS_PRIVATE: NSObject {
     @objc public static func commerceEventAction(_ json: NSNumber) -> MPCommerceEventAction {
         switch json.uintValue {
         case MPJSCommerceEventAction.addToCart.rawValue:
@@ -50,24 +49,24 @@ import Foundation
             return .addToCart
         }
     }
-    
-    @objc public static func commerceEvent(_ json: [AnyHashable : Any]) -> MPCommerceEvent? {
+
+    @objc public static func commerceEvent(_ json: [AnyHashable: Any]) -> MPCommerceEvent? {
         guard json["ProductAction"] == nil || json["ProductAction"] is [String: Any] else {
             MPLog.error("Unexpected commerce event data received from webview")
             return nil
         }
-        
+
         let productAction = json["ProductAction"] as? [String: Any]
         let isProductAction = productAction?["ProductActionType"] != nil
         let isPromotion = json["PromotionAction"] != nil
         let isImpression = json["ProductImpressions"] != nil
         let isValid = isProductAction || isPromotion || isImpression
-        
+
         if !isValid {
             MPLog.error("Invalid commerce event dictionary received from webview: %@", json)
             return nil
         }
-        
+
         let commerceEvent: MPCommerceEvent
         if isProductAction {
             guard let productActionType = productAction?["ProductActionType"] as? NSNumber else {
@@ -82,8 +81,8 @@ import Foundation
         } else {
             commerceEvent = MPCommerceEvent(impressionName: nil, product: nil)
         }
-        
-        if let eventAttributes = json["EventAttributes"] as? [String : Any] {
+
+        if let eventAttributes = json["EventAttributes"] as? [String: Any] {
             commerceEvent.customAttributes = eventAttributes
         }
         if let checkoutOptions = json["CheckoutOptions"] as? String {
@@ -104,7 +103,7 @@ import Foundation
         if let checkoutStep = json["CheckoutStep"] as? NSNumber {
             commerceEvent.checkoutStep = checkoutStep.intValue
         }
-        if let customFlags = json["CustomFlags"] as? [String : Any] {
+        if let customFlags = json["CustomFlags"] as? [String: Any] {
             for key in customFlags.keys {
                 if let valueArray = customFlags[key] as? [String] {
                     commerceEvent.addCustomFlags(valueArray, withKey: key)
@@ -114,15 +113,15 @@ import Foundation
             }
         }
 
-        if let jsonProducts = productAction?["ProductList"] as? [[AnyHashable : Any]] {
+        if let jsonProducts = productAction?["ProductList"] as? [[AnyHashable: Any]] {
             let products = jsonProducts.map { Self.product($0) }
             commerceEvent.addProducts(products)
         }
 
-        if let jsonImpressions = json["ProductImpressions"] as? [[AnyHashable : Any]] {
+        if let jsonImpressions = json["ProductImpressions"] as? [[AnyHashable: Any]] {
             for jsonImpression in jsonImpressions {
                 if let listName = jsonImpression["ProductImpressionList"] as? String,
-                   let jsonProducts = jsonImpression["ProductList"] as? [[AnyHashable : Any]] {
+                   let jsonProducts = jsonImpression["ProductList"] as? [[AnyHashable: Any]] {
                     for jsonObject in jsonProducts {
                         let product = MPConvertJS_PRIVATE.product(jsonObject)
                         commerceEvent.addImpression(product, listName: listName)
@@ -130,24 +129,24 @@ import Foundation
                 }
             }
         }
-        
+
         return commerceEvent
     }
-    
-    @objc public static func promotionContainer(_ json: [AnyHashable : Any]) -> MPPromotionContainer? {
+
+    @objc public static func promotionContainer(_ json: [AnyHashable: Any]) -> MPPromotionContainer? {
         guard let promotionDictionary = (json["PromotionAction"] as? [String: Any]) else {
             MPLog.error("Unexpected promotion container action data received from webview")
             return nil
         }
-        
+
         guard let promotionActionTypeNumber = (promotionDictionary["PromotionActionType"] as? NSNumber) else {
             MPLog.error("Unexpected promotion container action type data received from webview")
             return nil
         }
-        
+
         let promotionAction = promotionActionTypeNumber.intValue == 1 ? MPPromotionAction.view : MPPromotionAction.click
         let promotionContainer = MPPromotionContainer(action: promotionAction, promotion: nil)
-        if let jsonPromotions = promotionDictionary["PromotionList"] as? [[AnyHashable : Any]] {
+        if let jsonPromotions = promotionDictionary["PromotionList"] as? [[AnyHashable: Any]] {
             for jsonObject in jsonPromotions {
                 promotionContainer.addPromotion(MPConvertJS_PRIVATE.promotion(jsonObject))
             }
@@ -156,10 +155,10 @@ import Foundation
             return nil
         }
 
-        return promotionContainer;
+        return promotionContainer
     }
-    
-    @objc public static func promotion(_ json: [AnyHashable : Any]) -> MPPromotion {
+
+    @objc public static func promotion(_ json: [AnyHashable: Any]) -> MPPromotion {
         let promotion = MPPromotion()
 
         if let creative = json["Creative"] as? String {
@@ -174,13 +173,13 @@ import Foundation
         if let id = json["Id"] as? String {
             promotion.promotionId = id
         }
-        
-        return promotion;
+
+        return promotion
     }
-    
-    @objc public static func transactionAttributes(_ json: [AnyHashable : Any] = [:]) -> MPTransactionAttributes! {
+
+    @objc public static func transactionAttributes(_ json: [AnyHashable: Any] = [:]) -> MPTransactionAttributes! {
         let transactionAttributes = MPTransactionAttributes()
-        
+
         if let affiliation = json["Affiliation"] as? String {
             transactionAttributes.affiliation = affiliation
         }
@@ -199,13 +198,13 @@ import Foundation
         if let transactionId = json["TransactionId"] as? String {
             transactionAttributes.transactionId = transactionId
         }
-        
-        return transactionAttributes;
+
+        return transactionAttributes
     }
-    
-    @objc public static func product(_ json: [AnyHashable : Any]) -> MPProduct {
+
+    @objc public static func product(_ json: [AnyHashable: Any]) -> MPProduct {
         let product = MPProduct()
-        
+
         if let brand = json["Brand"] as? String {
             product.brand = brand
         }
@@ -235,27 +234,27 @@ import Foundation
         if let quantity = json["Quantity"] as? NSNumber {
             product.quantity = quantity
         }
-        if let jsonAttributes = json["Attributes"] as? [String : String] {
+        if let jsonAttributes = json["Attributes"] as? [String: String] {
             for (key, value) in jsonAttributes {
                 product.setValue(value, forKey: key)
             }
         }
 
-        return product;
+        return product
     }
-    
+
     @objc private static func identityFromNumber(_ identityTypeNumber: NSNumber) -> MPIdentity {
         return MPIdentity(rawValue: identityTypeNumber.uintValue) ?? .other
     }
-    
-    @objc public static func identityApiRequest(_ json: [AnyHashable : Any]?) -> MPIdentityApiRequest? {
+
+    @objc public static func identityApiRequest(_ json: [AnyHashable: Any]?) -> MPIdentityApiRequest? {
         let request = MPIdentityApiRequest.withEmptyUser()
-        
-        guard let userIdentities = json?["UserIdentities"] as? [[AnyHashable : Any]] else {
+
+        guard let userIdentities = json?["UserIdentities"] as? [[AnyHashable: Any]] else {
             MPLog.error("Unexpected user identity data received from webview")
             return nil
         }
-        
+
         for identityDictionary in userIdentities {
             if let identity = identityDictionary["Identity"] as? String,
                let identityTypeNumber = identityDictionary["Type"] as? NSNumber,
@@ -271,7 +270,7 @@ import Foundation
            let identityType = MPIdentity(rawValue: identityTypeNumber.uintValue) {
             request.setIdentity(identity, identityType: identityType)
         }
-        
+
         return request
     }
 }

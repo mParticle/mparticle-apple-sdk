@@ -1,15 +1,15 @@
 #import "MPEvent.h"
 #import "MPIConstants.h"
 #import "MPSession.h"
-#import "MPILogger.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "mParticle.h"
+#import "MParticleSwift.h"
 
 @interface MParticle()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-
+- (MPLog*)getLogger;
 @end
 
 NSString *const kMPEventCategoryKey = @"$Category";
@@ -33,13 +33,14 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
         return nil;
     }
     
-    if (!name || name.length == 0) {
-        MPILogError(@"'name' is required for MPEvent")
+    MPLog *logger = MParticle.sharedInstance.getLogger;
+    if (name.length == 0) {
+        [logger error: @"'name' is required for MPEvent"];
         return nil;
     }
     
     if (name.length > LIMIT_ATTR_KEY_LENGTH) {
-        MPILogError(@"The event name is too long.");
+        [logger error: @"The event name is too long."];
         return nil;
     }
     
@@ -114,7 +115,8 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     if (category.length <= LIMIT_ATTR_VALUE_LENGTH) {
         _category = category;
     } else {
-        MPILogError(@"The category length is too long. Discarding category.");
+        MPLog *logger = MParticle.sharedInstance.getLogger;
+        [logger error:@"The category length is too long. Discarding category."];
         _category = nil;
     }
 }
@@ -153,11 +155,7 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
         }
         
         if (category) {
-            if (category.length <= LIMIT_ATTR_VALUE_LENGTH) {
-                attributes[kMPEventCategoryKey] = category;
-            } else {
-                MPILogError(@"The event category is too long. Discarding category.");
-            }
+            attributes[kMPEventCategoryKey] = category;
         }
     }
     
@@ -181,13 +179,14 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
 }
 
 - (void)setName:(NSString *)name {
+    MPLog *logger = MParticle.sharedInstance.getLogger;
     if (name.length == 0) {
-        MPILogError(@"'name' cannot be nil or empty.")
+        [logger error:@"'name' cannot be nil or empty."];
         return;
     }
     
     if (name.length > LIMIT_ATTR_KEY_LENGTH) {
-        MPILogError(@"The event name is too long.");
+        [logger error:@"The event name is too long."];
         return;
     }
     
