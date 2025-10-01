@@ -17,13 +17,13 @@ jobs:
     runs-on: macOS-15
     steps:
       - name: "Checkout Cross Platform Tests"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: "true"
           repository: mParticle/crossplatform-sdk-tests
           fetch-depth: 1
       - name: "Checkout iOS SDK"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.head_ref }}
           path: .sdks/apple
