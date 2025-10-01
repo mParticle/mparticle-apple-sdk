@@ -1,5 +1,3 @@
 import UIKit
 
-class Dummy: NSObject {
-
-}
+class Dummy: NSObject {}

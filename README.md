@@ -16,9 +16,9 @@ read the [docs](https://docs.mparticle.com/developers/sdk/ios/) or contact us at
 
 This document will help you:
 
-* Install the mParticle SDK using [CocoaPods](https://cocoapods.org/?q=mparticle) or [Carthage](https://github.com/Carthage/Carthage)
-* Add any desired [kits](#currently-supported-kits)
-* Initialize the mParticle SDK
+- Install the mParticle SDK using [CocoaPods](https://cocoapods.org/?q=mparticle) or [Carthage](https://github.com/Carthage/Carthage)
+- Add any desired [kits](#currently-supported-kits)
+- Initialize the mParticle SDK
 
 ## Get the SDK
 
@@ -31,7 +31,7 @@ To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guide
 ```ruby
 target '<Your Target>' do
     pod 'mParticle-Apple-SDK', '~> 8'
-    
+
     # If you'd like to use a version of the SDK that doesn't include any location tracking nor links the CoreLocation framework, use this subspec:
     # pod 'mParticle-Apple-SDK/mParticleNoLocation', '~> 8'
 end
@@ -90,51 +90,50 @@ Enter the repository URL `https://github.com/mParticle/mparticle-apple-sdk` in t
 
 Then choose either the "Package Product" called `mParticle-Apple-SDK`, or if you'd like to use a version of the SDK that doesn't include any location tracking nor links the CoreLocation framework choose `mParticle-Apple-SDK-NoLocation`.
 
-**IMPORTANT:** If you choose the `mParticle-Apple-SDK-NoLocation` package product, you will need to import the SDK using `import mParticle_Apple_SDK_NoLocation` instead of `import mParticle_Apple_SDK` as shown in the rest of the documentation and this README. 
+**IMPORTANT:** If you choose the `mParticle-Apple-SDK-NoLocation` package product, you will need to import the SDK using `import mParticle_Apple_SDK_NoLocation` instead of `import mParticle_Apple_SDK` as shown in the rest of the documentation and this README.
 
 #### Currently Supported Kits
 
 Several integrations require additional client-side add-on libraries called "kits." Some kits embed other SDKs, others just contain a bit of additional functionality. Kits are designed to feel just like server-side integrations; you enable, disable, filter, sample, and otherwise tweak kits completely from the mParticle platform UI. The Core SDK will detect kits at runtime, but you need to add them as dependencies to your app.
 
-Kit | CocoaPods | Carthage | Swift Package Manager |
-----|:---------:|:-------:|:-------:|
-[Adjust](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust)                                            | ✓  | ✓  | ✓  
-[Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                                            | ✓  | ✓  | ✓  
-[Adobe](https://github.com/mparticle-integrations/mparticle-apple-integration-adobe)                                              | ✓  | ✓  | ✓   
-[AppsFlyer](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer)                                      | ✓  | ✓  | ✓  
-[Appsee](https://github.com/mparticle-integrations/mparticle-apple-integration-appsee)                                            | ✓  |    |    
-[Apptentive](https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive)                                    | ✓  | ✓  | ✓   
-[Apptimize](https://github.com/mparticle-integrations/mparticle-apple-integration-apptimize)                                      | ✓  | ✓  | ✓   
-[Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)                                    | ✓  |    |    
-[Blueshift](https://github.com/blueshift-labs/mparticle-apple-integration-blueshift)                                              | ✓  | ✓  |    
-[Branch Metrics](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics)                             | ✓  | ✓  | ✓   
-[Button](https://github.com/mparticle-integrations/mparticle-apple-integration-button)                                            | ✓  | ✓  | ✓  
-[CleverTap](https://github.com/mparticle-integrations/mparticle-apple-integration-clevertap)                                      | ✓  | ✓  | ✓  
-[comScore](https://github.com/mparticle-integrations/mparticle-apple-integration-comscore)                                        | ✓  |    | ✓  
-[Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)                                            | ✓  |    |    
-[Foresee](https://github.com/mparticle-integrations/mparticle-apple-integration-foresee)                                          | ✓  |    | ✓  
-[Google Analytics for Firebase](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase)  | ✓  | ✓  | ✓  
-[Google Analytics 4 for Firebase](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-ga4)                                        | ✓  | ✓  | ✓  
-[Instabot](https://github.com/mparticle-integrations/mparticle-apple-integration-instabot)                                        | ✓  |    |    
-[Iterable](https://github.com/mparticle-integrations/mparticle-apple-integration-iterable)                                        | ✓  | ✓  | ✓  
-[Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)                                          |    |    | ✓  
-[Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)                                        | ✓  | ✓  | ✓  
-[Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)                                    | ✓  | ✓  | ✓  
-[Optimizely](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely)                                    | ✓  | ✓  | ✓  
-[OneTrust](https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust)                                        | ✓  | ✓  | ✓  
-[Pilgrim](https://github.com/mparticle-integrations/mparticle-apple-integration-pilgrim)                                          | ✓  | ✓  |    
-[Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                                            | ✓  | ✓  |    
-[Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                                              | ✓  | ✓  | ✓  
-[Responsys](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys)                                      | ✓  |    |    
-[Reveal Mobile](https://github.com/mparticle-integrations/mparticle-apple-integration-revealmobile)                               | ✓  |    |    
-[Singular](https://github.com/mparticle-integrations/mparticle-apple-integration-singular)                                        | ✓  |    | ✓  
-[Skyhook](https://github.com/mparticle-integrations/mparticle-apple-integration-skyhook)                                          | ✓  |    |    
-[Taplytics](https://github.com/mparticle-integrations/mparticle-apple-integration-taplytics)                                      | ✓  |    | ✓  
-[Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)                                                | ✓  | ✓  |    
-[Urban Airship](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship)                               | ✓  |    | ✓  
-[UserLeap](https://github.com/UserLeap/userleap-mparticle-ios-kit)                                                                | ✓  | ✓  |    
-[Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)                                          | ✓  |    |    
-
+| Kit                                                                                                                                    | CocoaPods | Carthage | Swift Package Manager |
+| -------------------------------------------------------------------------------------------------------------------------------------- | :-------: | :------: | :-------------------: |
+| [Adjust](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust)                                                 |     ✓     |    ✓     |           ✓           |
+| [Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                                                 |     ✓     |    ✓     |           ✓           |
+| [Adobe](https://github.com/mparticle-integrations/mparticle-apple-integration-adobe)                                                   |     ✓     |    ✓     |           ✓           |
+| [AppsFlyer](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer)                                           |     ✓     |    ✓     |           ✓           |
+| [Appsee](https://github.com/mparticle-integrations/mparticle-apple-integration-appsee)                                                 |     ✓     |          |
+| [Apptentive](https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive)                                         |     ✓     |    ✓     |           ✓           |
+| [Apptimize](https://github.com/mparticle-integrations/mparticle-apple-integration-apptimize)                                           |     ✓     |    ✓     |           ✓           |
+| [Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)                                         |     ✓     |          |
+| [Blueshift](https://github.com/blueshift-labs/mparticle-apple-integration-blueshift)                                                   |     ✓     |    ✓     |
+| [Branch Metrics](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics)                                  |     ✓     |    ✓     |           ✓           |
+| [Button](https://github.com/mparticle-integrations/mparticle-apple-integration-button)                                                 |     ✓     |    ✓     |           ✓           |
+| [CleverTap](https://github.com/mparticle-integrations/mparticle-apple-integration-clevertap)                                           |     ✓     |    ✓     |           ✓           |
+| [comScore](https://github.com/mparticle-integrations/mparticle-apple-integration-comscore)                                             |     ✓     |          |           ✓           |
+| [Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)                                                 |     ✓     |          |
+| [Foresee](https://github.com/mparticle-integrations/mparticle-apple-integration-foresee)                                               |     ✓     |          |           ✓           |
+| [Google Analytics for Firebase](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase)       |     ✓     |    ✓     |           ✓           |
+| [Google Analytics 4 for Firebase](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-ga4) |     ✓     |    ✓     |           ✓           |
+| [Instabot](https://github.com/mparticle-integrations/mparticle-apple-integration-instabot)                                             |     ✓     |          |
+| [Iterable](https://github.com/mparticle-integrations/mparticle-apple-integration-iterable)                                             |     ✓     |    ✓     |           ✓           |
+| [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)                                               |           |          |           ✓           |
+| [Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)                                             |     ✓     |    ✓     |           ✓           |
+| [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)                                         |     ✓     |    ✓     |           ✓           |
+| [Optimizely](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely)                                         |     ✓     |    ✓     |           ✓           |
+| [OneTrust](https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust)                                             |     ✓     |    ✓     |           ✓           |
+| [Pilgrim](https://github.com/mparticle-integrations/mparticle-apple-integration-pilgrim)                                               |     ✓     |    ✓     |
+| [Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                                                 |     ✓     |    ✓     |
+| [Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                                                   |     ✓     |    ✓     |           ✓           |
+| [Responsys](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys)                                           |     ✓     |          |
+| [Reveal Mobile](https://github.com/mparticle-integrations/mparticle-apple-integration-revealmobile)                                    |     ✓     |          |
+| [Singular](https://github.com/mparticle-integrations/mparticle-apple-integration-singular)                                             |     ✓     |          |           ✓           |
+| [Skyhook](https://github.com/mparticle-integrations/mparticle-apple-integration-skyhook)                                               |     ✓     |          |
+| [Taplytics](https://github.com/mparticle-integrations/mparticle-apple-integration-taplytics)                                           |     ✓     |          |           ✓           |
+| [Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)                                                     |     ✓     |    ✓     |
+| [Urban Airship](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship)                                    |     ✓     |          |           ✓           |
+| [UserLeap](https://github.com/UserLeap/userleap-mparticle-ios-kit)                                                                     |     ✓     |    ✓     |
+| [Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)                                               |     ✓     |          |
 
 ## Initialize the SDK
 
@@ -148,10 +147,10 @@ The mParticle SDK is initialized by calling the `startWithOptions` method within
 import mParticle_Apple_SDK
 
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        
+
        // Override point for customization after application launch.
         let mParticleOptions = MParticleOptions(key: "<<<App Key Here>>>", secret: "<<<App Secret Here>>>")
-        
+
        //Please see the Identity page for more information on building this object
         let request = MPIdentityApiRequest()
         request.email = "email@example.com"
@@ -159,10 +158,10 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
         mParticleOptions.onIdentifyComplete = { (apiResult, error) in
             NSLog("Identify complete. userId = %@ error = %@", apiResult?.user.userId.stringValue ?? "Null User ID", error?.localizedDescription ?? "No Error Available")
         }
-        
+
        //Start the SDK
         MParticle.sharedInstance().start(with: mParticleOptions)
-        
+
        return true
 }
 ```
@@ -194,7 +193,7 @@ Next, you'll need to start the SDK:
 
     MParticleOptions *mParticleOptions = [MParticleOptions optionsWithKey:@"REPLACE ME"
                                                                    secret:@"REPLACE ME"];
-    
+
     //Please see the Identity page for more information on building this object
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
     request.email = @"email@example.com";
@@ -202,15 +201,14 @@ Next, you'll need to start the SDK:
     mParticleOptions.onIdentifyComplete = ^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
         NSLog(@"Identify complete. userId = %@ error = %@", apiResult.user.userId, error);
     };
-    
+
     [[MParticle sharedInstance] startWithOptions:mParticleOptions];
-    
+
     return YES;
 }
 ```
 
 Please see [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
-
 
 ## Example Project with Sample Code
 
@@ -228,13 +226,11 @@ In order to run either the iOS or tvOS examples, first install the mParticle App
 2. Run `pod install`
 3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run.
 
-
 ## Read More
 
 Just by initializing the SDK you'll be set up to track user installs, engagement, and much more. Check out our doc site to learn how to add specific event tracking to your app.
 
-* [SDK Documentation](http://docs.mparticle.com/#mobile-sdk-guide)
-
+- [SDK Documentation](http://docs.mparticle.com/#mobile-sdk-guide)
 
 ## Support
 

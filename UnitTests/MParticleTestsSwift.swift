@@ -1,8 +1,8 @@
 import XCTest
 #if MPARTICLE_LOCATION_DISABLE
-import mParticle_Apple_SDK_NoLocation
+    import mParticle_Apple_SDK_NoLocation
 #else
-import mParticle_Apple_SDK
+    import mParticle_Apple_SDK
 #endif
 
 class MParticleTestsSwift: XCTestCase {
@@ -17,10 +17,10 @@ class MParticleTestsSwift: XCTestCase {
     func customLogger(_ message: String) {
         receivedMessage = message
     }
-    
+
     override func setUp() {
         super.setUp()
-        
+
         mparticle = MParticle()
         mparticle.logLevel = .verbose
         mparticle.customLogger = customLogger
@@ -40,23 +40,23 @@ class MParticleTestsSwift: XCTestCase {
         state = MPStateMachineMock()
         mparticle.stateMachine = state
     }
-    
+
     override func tearDown() {
         super.tearDown()
         receivedMessage = nil
         mparticle.dataPlanFilter = nil
     }
-    
+
     func testSetOptOutCompletionSuccess() {
         mparticle.setOptOutCompletion(.success, optOut: true)
         XCTAssertEqual(receivedMessage, "mParticle -> Set Opt Out: 1")
     }
-    
+
     func testSetOptOutCompletionFailure() {
         mparticle.setOptOutCompletion(.fail, optOut: true)
         XCTAssertEqual(receivedMessage, "mParticle -> Set Opt Out Failed: 1")
     }
-    
+
     func testSetOptOutOptOutValueIsDifferentItShouldBeChangedAndDeliveredToBackendController() {
         XCTAssertFalse(state.optOut)
         mparticle.optOut = true
@@ -66,44 +66,44 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNotNil(backendController.setOptOutCompletionHandler)
         backendController.setOptOutCompletionHandler?(true, .success)
     }
-    
+
     func testIdentifyNoDispatchCallbackNoErrorDefferedKitAvailable() {
-        mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]();
+        mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]()
         let expectedApiResult = MPIdentityApiResult()
         let options = MParticleOptions()
         let expectation = XCTestExpectation()
         options.onIdentifyComplete = { apiResult, error in
             XCTAssertTrue(expectedApiResult === apiResult)
             XCTAssertNil(error)
-            
+
             expectation.fulfill()
         }
         mparticle.identifyNoDispatchCallback(expectedApiResult, error: nil, options: options)
-        
+
         wait(for: [expectation], timeout: 1.0)
         XCTAssertNil(receivedMessage)
         XCTAssertNil(mparticle.deferredKitConfiguration_PRIVATE)
     }
-    
+
     func testIdentifyNoDispatchCallbackWithErrorDefferedKitAvailable() {
-        mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]();
+        mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]()
         let expectedApiResult = MPIdentityApiResult()
         let expectedError = NSError(domain: "", code: 0)
         let options = MParticleOptions()
         let expectation = XCTestExpectation()
-        options.onIdentifyComplete = { apiResult, error in
+        options.onIdentifyComplete = { apiResult, _ in
             XCTAssertTrue(expectedApiResult === apiResult)
             XCTAssertTrue(expectedError == expectedError)
-            
+
             expectation.fulfill()
         }
         mparticle.identifyNoDispatchCallback(expectedApiResult, error: expectedError, options: options)
-        
+
         wait(for: [expectation], timeout: 0.1)
         XCTAssertEqual(receivedMessage, "mParticle -> Identify request failed with error: Error Domain= Code=0 \"(null)\"")
         XCTAssertNil(mparticle.deferredKitConfiguration_PRIVATE)
     }
-    
+
     func testConfigureDefaultConfigurationExistOptionParametersAreNotSet() {
         let options = MParticleOptions()
         mparticle.backendController = MPBackendController_PRIVATE()
@@ -114,7 +114,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(mparticle.collectUserAgent, true)
         XCTAssertEqual(mparticle.trackNotifications, true)
     }
-    
+
     func testConfigureWhenDefaultConfigurationExists() {
         let settingsProvider = SettingsProviderMock()
         let settings: NSMutableDictionary = [
@@ -125,37 +125,37 @@ class MParticleTestsSwift: XCTestCase {
             "track_notifications": false,
             "enable_location_tracking": true,
             "location_tracking_accuracy": 100.0,
-            "location_tracking_distance_filter": 10.0
+            "location_tracking_distance_filter": 10.0,
         ]
         settingsProvider.configSettings = settings
         mparticle.settingsProvider = settingsProvider
         mparticle.backendController = MPBackendController_PRIVATE()
         let options = MParticleOptions()
         mparticle.configure(with: options)
-        
+
         XCTAssertEqual(mparticle.backendController.sessionTimeout, 2.0)
         XCTAssertEqual(mparticle.backendController.uploadInterval, 3.0)
         XCTAssertEqual(mparticle.customUserAgent, "custom_user_agent")
         XCTAssertEqual(mparticle.collectUserAgent, false)
         XCTAssertEqual(mparticle.trackNotifications, false)
     }
-    
+
     func testStartWithKeyCallbackFirstRun() {
         let options = MParticleOptions()
         let userDefaults = MPUserDefaultsMock()
         XCTAssertFalse(mparticle.initialized)
-        
+
         mparticle.start(withKeyCallback: true, options: options, userDefaults: userDefaults)
-        
+
         XCTAssertTrue(mparticle.initialized)
         XCTAssertNil(mparticle.settingsProvider.configSettings)
-        
+
         XCTAssertNotNil(userDefaults.setMPObjectValueParam)
         XCTAssertEqual(userDefaults.setMPObjectKeyParam, "firstrun")
         XCTAssertEqual(userDefaults.setMPObjectUserIdParam, 0)
         XCTAssertTrue(userDefaults.synchronizeCalled)
     }
-    
+
     func testStartWithKeyCallbackNotFirstRunWithIdentityRequest() {
         let options = MParticleOptions()
         let user = mparticle.identity.currentUser
@@ -171,129 +171,122 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertFalse(userDefaults.setMPObjectCalled)
         XCTAssertFalse(userDefaults.synchronizeCalled)
     }
-    
+
     func testBeginTimedEventCompletionHandlerDataFilterNotSet() {
         XCTAssertNil(mparticle.dataPlanFilter)
-        
+
         mparticle.beginTimedEventCompletionHandler(MPEvent(), execStatus: .success)
         XCTAssertEqual(receivedMessage, """
-            mParticle -> Began timed event: Event:{
-              Name: <<Event With No Name>>
-              Type: Other
-              Duration: 0
-            }
-            """
-        )
+        mParticle -> Began timed event: Event:{
+          Name: <<Event With No Name>>
+          Type: Other
+          Duration: 0
+        }
+        """)
     }
-    
+
     func testBeginTimedEventCompletionHandlerDataFilterSetDataFilterReturnNil() {
         let dataPlanFilter = MPDataPlanFilterMock()
         mparticle.dataPlanFilter = dataPlanFilter
         let expectedEvent = MPEvent()
-        
+
         mparticle.beginTimedEventCompletionHandler(expectedEvent, execStatus: .success)
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
         XCTAssertEqual(receivedMessage, """
-            mParticle -> Blocked timed event begin from kits: Event:{
-              Name: <<Event With No Name>>
-              Type: Other\n  Duration: 0
-            }
-            """
-        )
+        mParticle -> Blocked timed event begin from kits: Event:{
+          Name: <<Event With No Name>>
+          Type: Other\n  Duration: 0
+        }
+        """)
     }
-       
+
     func testLogEventCallbackDataFilterNotSet() {
         XCTAssertNil(mparticle.dataPlanFilter)
         mparticle.logEventCallback(MPEvent(), execStatus: .success)
-        
+
         XCTAssertNil(receivedMessage)
     }
-    
+
     func testLogEventCallbackDataFilterSetDataFilterReturnNil() {
         let dataPlanFilter = MPDataPlanFilterMock()
         mparticle.dataPlanFilter = dataPlanFilter
         let expectedEvent = MPEvent()
         mparticle.logEventCallback(expectedEvent, execStatus: .success)
-        
+
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
 
         XCTAssertEqual(receivedMessage, """
-            mParticle -> Blocked timed event end from kits: Event:{
-              Name: <<Event With No Name>>
-              Type: Other
-              Duration: 0
-            }
-            """
-        )
+        mParticle -> Blocked timed event end from kits: Event:{
+          Name: <<Event With No Name>>
+          Type: Other
+          Duration: 0
+        }
+        """)
     }
 
     func testLogScreenCallbackDataFilterNotSet() {
         XCTAssertNil(mparticle.dataPlanFilter)
         mparticle.logScreenCallback(MPEvent(), execStatus: .success)
-        
+
         XCTAssertEqual(receivedMessage, """
-            mParticle -> Logged screen event: Event:{
-              Name: <<Event With No Name>>
-              Type: Other
-              Duration: 0
-            }
-            """
-        )
+        mParticle -> Logged screen event: Event:{
+          Name: <<Event With No Name>>
+          Type: Other
+          Duration: 0
+        }
+        """)
     }
-    
+
     func testLogScreenCallbackDataFilterSetDataFilterReturnNil() {
         let dataPlanFilter = MPDataPlanFilterMock()
         mparticle.dataPlanFilter = dataPlanFilter
         let expectedEvent = MPEvent()
         mparticle.logScreenCallback(expectedEvent, execStatus: .success)
-        
+
         XCTAssertTrue(dataPlanFilter.transformEventForScreenEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventForScreenEventScreenEventParam === expectedEvent)
 
         XCTAssertEqual(receivedMessage, """
-            mParticle -> Blocked screen event from kits: Event:{
-              Name: <<Event With No Name>>
-              Type: Other
-              Duration: 0
-            }
-            """
-        )
+        mParticle -> Blocked screen event from kits: Event:{
+          Name: <<Event With No Name>>
+          Type: Other
+          Duration: 0
+        }
+        """)
     }
 
     func testLogErrorCallbackSuccess() {
         mparticle.logErrorCallback([:], execStatus: .success, message: "error")
-        
+
         XCTAssertEqual(receivedMessage, """
-            mParticle -> Logged error with message: error
-            """
-        )
+        mParticle -> Logged error with message: error
+        """)
     }
-    
+
     func testLogErrorCallbackFail() {
         mparticle.logErrorCallback([:], execStatus: .fail, message: "error")
-        
+
         XCTAssertNil(receivedMessage)
     }
 
     func testLogExceptionCallbackSuccess() {
         let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
         mparticle.logExceptionCallback(exception, execStatus: .success, message: "exception", topmostContext: nil)
-        
+
         XCTAssertEqual(receivedMessage, """
-            mParticle -> Logged exception name: exception, reason: Test, topmost context: (null)
-            """
-        )
+        mParticle -> Logged exception name: exception, reason: Test, topmost context: (null)
+        """)
     }
-    
+
     func testLogExceptionCallbackFail() {
         let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
         mparticle.logExceptionCallback(exception, execStatus: .fail, message: "exception", topmostContext: nil)
-        
+
         XCTAssertNil(receivedMessage)
     }
-    
+
     func testLogCrashCallbackSuccess() {
         mparticle.logCrashCallback(.success, message: "Message")
         XCTAssertEqual(receivedMessage, "mParticle -> Logged crash with message: Message")
@@ -302,47 +295,46 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCommerceEventCallbackSuccess() {
         let commerceEvent = MPCommerceEvent()
         mparticle.logCommerceEventCallback(commerceEvent, execStatus: .success)
-        
+
         XCTAssertNil(receivedMessage)
     }
-    
+
     func testLogCommerceEventCallbackFail() {
         let commerceEvent = MPCommerceEvent()
         mparticle.logCommerceEventCallback(commerceEvent, execStatus: .fail)
-        
+
         XCTAssertEqual(receivedMessage, """
-            mParticle -> Failed to log commerce event: MPCommerceEvent {
-            }
-            
-            """
-        )
+        mParticle -> Failed to log commerce event: MPCommerceEvent {
+        }
+
+        """)
     }
     
     func testLogNetworkPerformanceCallbackSuccess() {
         mparticle.logNetworkPerformanceCallback(.success)
-        
+
         XCTAssertEqual(receivedMessage, "mParticle -> Logged network performance measurement")
     }
-    
+
     func testLogNetworkPerformanceCallbackFail() {
         mparticle.logNetworkPerformanceCallback(.fail)
-        
+
         XCTAssertNil(receivedMessage)
     }
-    
+
     func testSetSharedInstance() {
         MParticle.setSharedInstance(mparticle)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setSharedInstance:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === mparticle)
     }
-    
+
     func testStartWithOptionsListenerControllerCalled() {
         let options = MParticleOptions(key: "key", secret: "secret")
         mparticle.start(with: options)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "startWithOptions:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === options)
     }
-    
+
     func testBeginTimedEventDependenciesReceiveCorrectParametersAndHandlerExecutedWithoutErrors() {
         let expectedEvent = MPEvent()
         mparticle.beginTimedEvent(expectedEvent)
@@ -354,7 +346,7 @@ class MParticleTestsSwift: XCTestCase {
         backendController.beginTimedEventCompletionHandler?(expectedEvent, .success)
         XCTAssertNotNil(receivedMessage)
     }
-    
+
     func testEndTimedEventListenerControllerCalled() {
         let expectedEvent = MPEvent()
         mparticle.endTimedEvent(expectedEvent)
@@ -362,7 +354,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
     }
-    
+
     func testLogEventWithBaseEventListenerControllerCalled() {
         let expectedEvent = MPBaseEvent()
         mparticle.logEvent(expectedEvent)
@@ -370,7 +362,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
     }
-    
+
     func testLogCustomEventListenerControllerCalled() {
         let expectedEvent = MPEvent()
         mparticle.logEvent(expectedEvent)
@@ -378,7 +370,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
     }
-    
+
     func testLogScreenEventListenerControllerCalled() {
         let expectedEvent = MPEvent()
         mparticle.logScreenEvent(expectedEvent)
@@ -401,14 +393,14 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logException:topmostContext:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedException)
     }
-    
+
     func testLogCrashListenerControllerCalled() {
         mparticle.logCrash("message", stackTrace: "stackTrace", plCrashReport: "report")
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCrash:stackTrace:plCrashReport:")
         XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "message")
     }
-    
+
     func testLogCommerceEventListenerControllerCalled() {
         let expectedEvent = MPCommerceEvent()
         mparticle.logCommerceEvent(expectedEvent)
@@ -416,7 +408,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
     }
-    
+
     func testSetIntegrationAttributesListenerControllerCalled() {
         mparticle.setIntegrationAttributes(["test": "test"], forKit: NSNumber(value: 1))
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
@@ -437,7 +429,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "onKitsInitialized:")
         XCTAssertNotNil(listenerController.onAPICalledParameter1)
     }
-    
+
     func testExecuteKitsInitializedBlocks() {
         mparticle.executeKitsInitializedBlocks()
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "executeKitsInitializedBlocks")
@@ -461,75 +453,79 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "kitInstance:completionHandler:")
         XCTAssertEqual(listenerController.onAPICalledParameter1 as? Int, 1)
     }
-#if os(iOS)
-    func testBackgroundLocationTrackingListenerControllerCalled() {
-        mparticle.backgroundLocationTracking = true
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setBackgroundLocationTracking:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Bool, true)
-        
-        _ = mparticle.backgroundLocationTracking
-        XCTAssertEqual(listenerController.onAPICalledApiNames[1].description, "backgroundLocationTracking")
-    }
-    
-    func testWebviewBridgeValueWithCustomerBridgeNameListenerControllerCalled() {
-        let expectedWebView = WKWebView()
-        mparticle.initializeWKWebView(expectedWebView, bridgeName: "name")
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "initializeWKWebView:bridgeName:")
-        XCTAssertNotNil(listenerController.onAPICalledParameter1)
-        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "name")
-    }
-    
-    func testLogNotificationOpenedWithUserInfoAndActionIdentifierListenerControllerCalled() {
-        mparticle.logNotificationOpened(userInfo: [:], andActionIdentifier: "identifier")
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logNotificationOpenedWithUserInfo:andActionIdentifier:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? [String:String], [:])
-    }
-    
-    func testUserContentControllerDidReceiveScriptMessageListenerControllerCalled() {
-        mparticle.userContentController(WKUserContentController(), didReceive: WKScriptMessage())
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "userContentController:didReceiveScriptMessage:")
-        XCTAssertNotNil(listenerController.onAPICalledParameter1)
-        XCTAssertNotNil(listenerController.onAPICalledParameter2)
-    }
-    
-    func testHandleWebviewCommandListenerControllerCalled() {
-        mparticle.handleWebviewCommand("command", dictionary: [:])
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "handleWebviewCommand:dictionary:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "command")
-        XCTAssertEqual(listenerController.onAPICalledParameter2 as? [String:String], [:])
-    }
-    
-#if !MPARTICLE_LOCATION_DISABLE
-    func testLocationListenerControllerCalled() {
-        _ = mparticle.location
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "location")
-    }
-    
-    func testSetLocationListenerControllerCalled() {
-        let expectedLocation = CLLocation(latitude: 1, longitude: 2)
-        mparticle.location = expectedLocation
-        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setLocation:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? CLLocation, expectedLocation)
-    }
 
-    func testBeginLocationTrackingListenerControllerCalled() {
-        mparticle.beginLocationTracking(CLLocationAccuracy.nan, minDistance: CLLocationDistance.nan)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginLocationTracking:minDistance:authorizationRequest:")
-        XCTAssertNotNil(listenerController.onAPICalledParameter1)
-        XCTAssertNotNil(listenerController.onAPICalledParameter2)
-    }
+    #if os(iOS)
+        func testBackgroundLocationTrackingListenerControllerCalled() {
+            mparticle.backgroundLocationTracking = true
+            XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setBackgroundLocationTracking:")
+            XCTAssertEqual(listenerController.onAPICalledParameter1 as? Bool, true)
 
-    func testEndLocationTrackingListenerControllerCalled() {
-        mparticle.endLocationTracking()
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endLocationTracking")
-    }
-#endif
-#endif
+            _ = mparticle.backgroundLocationTracking
+            XCTAssertEqual(listenerController.onAPICalledApiNames[1].description, "backgroundLocationTracking")
+        }
+
+        func testWebviewBridgeValueWithCustomerBridgeNameListenerControllerCalled() {
+            let expectedWebView = WKWebView()
+            mparticle.initializeWKWebView(expectedWebView, bridgeName: "name")
+            XCTAssertEqual(listenerController.onAPICalledApiName?.description, "initializeWKWebView:bridgeName:")
+            XCTAssertNotNil(listenerController.onAPICalledParameter1)
+            XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "name")
+        }
+
+        func testLogNotificationOpenedWithUserInfoAndActionIdentifierListenerControllerCalled() {
+            mparticle.logNotificationOpened(userInfo: [:], andActionIdentifier: "identifier")
+            XCTAssertEqual(listenerController.onAPICalledApiName?.description,
+                           "logNotificationOpenedWithUserInfo:andActionIdentifier:")
+            XCTAssertEqual(listenerController.onAPICalledParameter1 as? [String: String], [:])
+        }
+
+        func testUserContentControllerDidReceiveScriptMessageListenerControllerCalled() {
+            mparticle.userContentController(WKUserContentController(), didReceive: WKScriptMessage())
+            XCTAssertEqual(listenerController.onAPICalledApiName?.description, "userContentController:didReceiveScriptMessage:")
+            XCTAssertNotNil(listenerController.onAPICalledParameter1)
+            XCTAssertNotNil(listenerController.onAPICalledParameter2)
+        }
+
+        func testHandleWebviewCommandListenerControllerCalled() {
+            mparticle.handleWebviewCommand("command", dictionary: [:])
+            XCTAssertEqual(listenerController.onAPICalledApiName?.description, "handleWebviewCommand:dictionary:")
+            XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "command")
+            XCTAssertEqual(listenerController.onAPICalledParameter2 as? [String: String], [:])
+        }
+
+        #if !MPARTICLE_LOCATION_DISABLE
+            func testLocationListenerControllerCalled() {
+                _ = mparticle.location
+                XCTAssertEqual(listenerController.onAPICalledApiName?.description, "location")
+            }
+
+            func testSetLocationListenerControllerCalled() {
+                let expectedLocation = CLLocation(latitude: 1, longitude: 2)
+                mparticle.location = expectedLocation
+                wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+                XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setLocation:")
+                XCTAssertEqual(listenerController.onAPICalledParameter1 as? CLLocation, expectedLocation)
+            }
+
+            func testBeginLocationTrackingListenerControllerCalled() {
+                mparticle.beginLocationTracking(CLLocationAccuracy.nan, minDistance: CLLocationDistance.nan)
+                XCTAssertEqual(listenerController.onAPICalledApiName?.description,
+                               "beginLocationTracking:minDistance:authorizationRequest:")
+                XCTAssertNotNil(listenerController.onAPICalledParameter1)
+                XCTAssertNotNil(listenerController.onAPICalledParameter2)
+            }
+
+            func testEndLocationTrackingListenerControllerCalled() {
+                mparticle.endLocationTracking()
+                XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endLocationTracking")
+            }
+        #endif
+    #endif
     func testNetworkPermissionListenerControllerCalled() {
         mparticle.logNetworkPerformance("", httpMethod: "", startTime: 0.0, duration: 1.0, bytesSent: 100, bytesReceived: 200)
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:")
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description,
+                       "logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:")
         XCTAssertNotNil(listenerController.onAPICalledParameter1)
     }
 
@@ -566,13 +562,13 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "webviewBridgeValueWithCustomerBridgeName:")
         XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "value")
     }
-    
+
     func testSessionDidBegin() {
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
         mparticle.sessionDidBegin(MPSession())
-        
+
         wait(for: [kitContainer.forwardSDKCallExpectation!], timeout: 1.0)
-        
+
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "beginSession")
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .sessionStart)
@@ -580,13 +576,13 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
-    
+
     func testSessionDidEnd() {
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
         mparticle.sessionDidEnd(MPSession())
-        
+
         wait(for: [kitContainer.forwardSDKCallExpectation!], timeout: 1.0)
-        
+
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "endSession")
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .sessionEnd)
@@ -594,7 +590,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
-    
+
     func testResetForSwitchingWorkspaces() {
         let expectation = XCTestExpectation()
         
@@ -606,27 +602,27 @@ class MParticleTestsSwift: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 1.0)
-        
+
         XCTAssertTrue(kitContainer.flushSerializedKitsCalled)
         XCTAssertTrue(kitContainer.removeAllSideloadedKitsCalled)
         XCTAssertEqual(persistenceController.resetDatabaseCalled, true)
         XCTAssertTrue(backendController.unproxyOriginalAppDelegateCalled)
     }
-    
+
     func testBeginSessionTempSessionAvailableSessionTempSessionShouldNotBeCreated() {
         backendController.session = nil
         backendController.tempSessionReturnValue = MParticleSession()
         mparticle.beginSession()
         XCTAssertFalse(backendController.createTempSessionCalled)
     }
-    
+
     func testBeginSessionSessionAvailableSessionTempSessionShouldNotBeCreated() {
         backendController.session = MPSession()
         backendController.tempSessionReturnValue = nil
         mparticle.beginSession()
         XCTAssertFalse(backendController.createTempSessionCalled)
     }
-    
+
     func testBeginSessionSessionUnavailable() {
         backendController.session = nil
         backendController.tempSessionReturnValue = nil
@@ -637,14 +633,14 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(backendController.beginSessionIsManualParam, true)
         XCTAssertNotNil(backendController.beginSessionDateParam)
     }
-    
+
     func testEndSessionNoSession() {
         backendController.session = nil
         mparticle.endSession()
         XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
         XCTAssertFalse(backendController.endSessionWithIsManualCalled)
     }
-    
+
     func testEndSessionWithSession() {
         backendController.session = MPSession()
         mparticle.endSession()
@@ -652,7 +648,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertTrue(backendController.endSessionWithIsManualCalled)
         XCTAssertEqual(backendController.endSessionIsManualParam, true)
     }
-    
+
     func testForwardLogInstall() {
         mparticle.forwardLogInstall()
         XCTAssertEqual(executor.executeOnMainAsync, true)
@@ -663,7 +659,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
-    
+
     func testForwardLogUpdate() {
         mparticle.forwardLogUpdate()
         XCTAssertEqual(executor.executeOnMainAsync, true)
@@ -674,44 +670,44 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
-    
+
     func testIndentityReturnsTheSameObject() {
         let identity = mparticle.identity
         XCTAssertTrue(identity === mparticle.identity)
     }
-    
+
     func testRoktReturnsTheSameObject() {
         let rokt = mparticle.rokt
         XCTAssertTrue(rokt === mparticle.rokt)
     }
-    
+
     func testSessionTimeoutReturnsValueFromBackendController() {
         mparticle.backendController.sessionTimeout = 100
         XCTAssertEqual(mparticle.sessionTimeout, 100)
     }
-    
+
     func testUniqueIdentifierRwturnedFromStateMachine() {
         let stateMachine = MPStateMachineMock()
         stateMachine.consumerInfo.uniqueIdentifier = "test"
         mparticle.stateMachine = stateMachine
         XCTAssertEqual(mparticle.uniqueIdentifier, "test")
     }
-    
+
     func testSetUploadIntervalChangeValueInBackendControllerWhenIntervalGreaterThenOne() {
         mparticle.setUploadInterval(3)
         XCTAssertEqual(backendController.uploadInterval, 3)
     }
-    
+
     func testSetUploadIntervalNotChangeValueInBackendControllerWhenIntervalLessThenOne() {
         mparticle.setUploadInterval(0.1)
         XCTAssertEqual(backendController.uploadInterval, 0.0)
     }
-    
+
     func testUploadIntervalGetFromBackendController() {
         backendController.uploadInterval = 100
         XCTAssertEqual(mparticle.uploadInterval, 100)
     }
-    
+
     func testUserAttributesForUserIdRequestDataFromBackendController() {
         backendController.userAttributesReturnValue = ["key": "value"]
         let dictionary = mparticle.userAttributes(forUserId: 1)
@@ -719,7 +715,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertTrue(backendController.userAttributesCalled)
         XCTAssertEqual(backendController.userAttributesUserIdParam, 1)
     }
-    
+
     func testConfigureWithOptionsNoSettings() {
         let settingsProvider = SettingsProviderMock()
         mparticle.settingsProvider = settingsProvider
@@ -729,13 +725,13 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(mparticle.customUserAgent)
         XCTAssertTrue(mparticle.collectUserAgent)
         XCTAssertTrue(mparticle.trackNotifications)
-#if os(iOS)
-#if !MPARTICLE_LOCATION_DISABLE
-        XCTAssertNil(listenerController.onAPICalledApiName)
-#endif
-#endif
+        #if os(iOS)
+            #if !MPARTICLE_LOCATION_DISABLE
+                XCTAssertNil(listenerController.onAPICalledApiName)
+            #endif
+        #endif
     }
-    
+
     func testConfigureWithOptionsWithSettingsAndOptionNotSet() {
         let settingsProvider = SettingsProviderMock()
         mparticle.settingsProvider = settingsProvider
@@ -745,7 +741,7 @@ class MParticleTestsSwift: XCTestCase {
             "custom_user_agent": "agent",
             "collect_user_agent": false,
             "track_notifications": false,
-            "enable_location_tracking": true
+            "enable_location_tracking": true,
         ]
         let options = MParticleOptions()
         options.isSessionTimeoutSet = false
@@ -759,60 +755,62 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(mparticle.customUserAgent, "agent")
         XCTAssertFalse(mparticle.collectUserAgent)
         XCTAssertFalse(mparticle.trackNotifications)
-        
-#if os(iOS)
-#if !MPARTICLE_LOCATION_DISABLE
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginLocationTracking:minDistance:authorizationRequest:")
-#endif
-#endif
+
+        #if os(iOS)
+            #if !MPARTICLE_LOCATION_DISABLE
+                XCTAssertEqual(listenerController.onAPICalledApiName?.description,
+                               "beginLocationTracking:minDistance:authorizationRequest:")
+            #endif
+        #endif
     }
-    
+
     // MARK: - logEvent
+
     func testLogEventCalledLogCustomEvent() {
         let event = MPEvent(name: "test", type: .other)!
         mparticle.logEvent(event)
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
     }
-    
+
     func testLogEventCalledLogCommerceEvent() {
         let commerceEvent = MPCommerceEvent(action: .purchase)!
         mparticle.logEvent(commerceEvent)
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
     }
-    
+
     func testLogEventWithFilterReturningNil_blocksEvent() {
         let event = MPBaseEvent(eventType: .other)!
         
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForBaseEventReturnValue = nil
         mparticle.dataPlanFilter = dataPlanFilter
-        
+
         mparticle.logEvent(event)
-        
+
         // Verify listener was called
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
-        
+
         // Verify backend was called
         XCTAssertTrue(backendController.logBaseEventCalled)
         XCTAssertTrue(backendController.logBaseEventEventParam === event)
         let completion = backendController.logBaseEventCompletionHandler!
         XCTAssertNotNil(completion)
         completion(event, .success)
-        
+
         // Verify executor usage
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        
+
         // Verify filter transform event
         XCTAssertTrue(dataPlanFilter.transformEventForBaseEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventForBaseEventParam === event)
-        
+
         // Logger should record the blocked event message
         XCTAssertEqual(receivedMessage, "mParticle -> Blocked base event from kits: \(event)")
     }
-    
+
     func testLogBaseEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let event = MPBaseEvent(eventType: .other)!
         let transformedEvent = MPBaseEvent(eventType: .addToCart)!
@@ -822,69 +820,68 @@ class MParticleTestsSwift: XCTestCase {
         mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logEvent(event)
-        
+
         // Verify listener was called
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
-        
+
         // Verify backend was called
         XCTAssertTrue(backendController.logBaseEventCalled)
         XCTAssertTrue(backendController.logBaseEventEventParam === event)
         let completion = backendController.logBaseEventCompletionHandler!
         XCTAssertNotNil(completion)
         completion(event, .success)
-        
+
         // Verify executor usage
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(executor.executeOnMainAsync)
-        
+
         // Verify filter transformed event
         XCTAssertTrue(dataPlanFilter.transformEventForBaseEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventForBaseEventParam === event)
-        
+
         // Verify kit container forwarded transformed event
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBaseEvent:")
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
         XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedEvent)
     }
-    
-    
+
     // MARK: - logCustomEvent
-    
+
     func testLogCustomEventWithNilEvent_logsError() {
         mparticle.logCustomEvent(nil)
         XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil event!")
     }
-    
+
     func testLogCustomEventWithFilterReturningNil_blocksEvent() {
         let event = MPEvent(name: "blocked", type: .other)!
         
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = nil
         mparticle.dataPlanFilter = dataPlanFilter
-        
+
         mparticle.logCustomEvent(event)
-        
+
         // Verify event timing ended
         XCTAssertNil(event.endTime)
-        
+
         // Verify listener was called
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
-        
+
         // Verify backend was called
         XCTAssertTrue(backendController.logEventCalled)
         XCTAssertTrue(backendController.logEventEventParam === event)
         XCTAssertNotNil(backendController.logEventCompletionHandler)
-        
+
         // Verify executor usage
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        
+
         // Verify filter transform event
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
-        
+
         // Logger should record the blocked event message
         XCTAssertEqual(receivedMessage, "mParticle -> Blocked custom event from kits: \(event)")
     }
@@ -898,27 +895,27 @@ class MParticleTestsSwift: XCTestCase {
         mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logCustomEvent(event)
-        
+
         // Verify event timing ended
         XCTAssertNil(event.endTime)
-        
+
         // Verify listener was called
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
-        
+
         // Verify backend was called
         XCTAssertTrue(backendController.logEventCalled)
         XCTAssertTrue(backendController.logEventEventParam === event)
         XCTAssertNotNil(backendController.logEventCompletionHandler)
-        
+
         // Verify executor usage
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(executor.executeOnMainAsync)
-        
+
         // Verify filter transformed event
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
-        
+
         // Verify kit container forwarded transformed event
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logEvent:")
@@ -940,7 +937,6 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
     }
 
-    
     func testLogCommerceEventWithFilterReturningNil_blocksEvent() {
         let commerceEvent = MPCommerceEvent(eventType: .other)!
         
@@ -974,7 +970,6 @@ class MParticleTestsSwift: XCTestCase {
         // Logger should record the blocked event message
         XCTAssertEqual(receivedMessage, "mParticle -> Blocked commerce event from kits: \(commerceEvent)")
     }
-
 
     func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let commerceEvent = MPCommerceEvent(eventType: .other)!
@@ -1046,7 +1041,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNotNil(completion)
         completion(loggedEvent, .success)
     }
-    
+
     func testLogLTVIncrease_withoutEventInfo_defaultsToNilInfo() {
         let amount = 12.5
         let name = "name"
@@ -1077,39 +1072,39 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNotNil(completion)
         completion(loggedEvent, .success)
     }
-    
+
     func testLogLTVIncreaseCallback_withSuccessExecStatus_noDataPlanFilter_forwardsEvent() {
         let event = MPEvent(name: "ltv", type: .transaction)!
-        
+
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = nil
         mparticle.dataPlanFilter = dataPlanFilter
 
         mparticle.logLTVIncreaseCallback(event, execStatus: .success)
-        
+
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
 
         XCTAssertEqual(receivedMessage, "mParticle -> Blocked LTV increase event from kits: \(event)")
     }
-    
+
     func testLogLTVIncreaseCallback_withSuccessExecStatus_filterReturnsTransformedEvent_forwardsTransformedEvent() {
         let event = MPEvent(name: "ltv", type: .transaction)!
         let transformedEvent = MPEvent(name: "transformed-ltv", type: .other)!
-        
+
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = transformedEvent
         mparticle.dataPlanFilter = dataPlanFilter
 
         mparticle.logLTVIncreaseCallback(event, execStatus: .success)
-        
+
         // Verify filter transformed event
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
-        
+
         // Verify executor usage
         XCTAssertTrue(executor.executeOnMainAsync)
-        
+
         // Verify kit container forwarded transformed event
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logLTVIncrease:event:")
@@ -1139,8 +1134,7 @@ class MParticleTestsSwift: XCTestCase {
               Type: Other
               Duration: 0
             }
-            """
-        )
+            """)
     }
     
     func testLeaveBreadcrumbCallback_withDataFilterSet_andDataFilterReturnNil() {
@@ -1158,8 +1152,7 @@ class MParticleTestsSwift: XCTestCase {
               Type: Other
               Duration: 0
             }
-            """
-        )
+            """)
     }
     
     func testLeaveBreadcrumbCallback_execStatusFail_noLoggedMessages() {
@@ -1178,33 +1171,33 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReceiveCorrectName() {
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
         XCTAssertEqual(backendController.eventWithNameEventNameParam, "expectedEvent")
     }
     
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReturnsNilEvent_newEventCreated() {
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, "expectedEvent")
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .other)
         XCTAssertNotNil(backendController.leaveBreadcrumbEventParam?.timestamp)
-        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String : String], ["key" : "value"])
+        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String: String], ["key": "value"])
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
 
     func testLeaveBreadcrumb_eventNamePassed_backendControllerReturnsEvent_eventModified() {
         let event = MPEvent(name: "expectedEvent", type: .navigation)
         backendController.eventSet?.add(event as Any)
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, "expectedEvent")
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .navigation)
         XCTAssertNotNil(backendController.leaveBreadcrumbEventParam?.timestamp)
-        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String : String], ["key" : "value"])
+        XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.customAttributes as! [String: String], ["key": "value"])
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
     
     func testLeaveBreadcrumb_eventNamePassed_CallbackCallsCallbackFunction() {
         let event = MPEvent(name: "expectedEvent", type: .navigation)
-        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key" : "value"])
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: ["key": "value"])
         backendController.leaveBreadcrumbCompletionHandler?(event!, .success)
         XCTAssertEqual(receivedMessage, """
             mParticle -> Left breadcrumb: Event:{
@@ -1212,7 +1205,6 @@ class MParticleTestsSwift: XCTestCase {
               Type: Navigation
               Duration: 0
             }
-            """
-        )
+            """)
     }
 }

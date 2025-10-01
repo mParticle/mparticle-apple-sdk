@@ -7,33 +7,32 @@
 
 import Foundation
 
-@objc public class MPIHasher : NSObject {
-
+@objc public class MPIHasher: NSObject {
     @objc public class func hashFNV1a(_ data: Data) -> Int64 {
-        var rampHash: UInt64 = 0xcbf29ce484222325
-        
+        var rampHash: UInt64 = 0xCBF2_9CE4_8422_2325
+
         for byte in data {
-            rampHash = (rampHash ^ UInt64(byte)) &* 0x100000001B3
+            rampHash = (rampHash ^ UInt64(byte)) &* 0x100_0000_01B3
         }
         return Int64(bitPattern: rampHash)
     }
 
     @objc public class func hashString(_ stringToHash: String) -> String {
         if stringToHash.isEmpty {
-            return "";
+            return ""
         }
-        
+
         let lowercaseStringToHash = stringToHash.lowercased()
         guard let dataToHash = lowercaseStringToHash.data(using: .utf8) else {
             MPLog.warning("Hash String Failed. Could not encode string as data")
             return ""
         }
-       
+
         var hash: Int32 = 0
         for byte in dataToHash {
-            hash = ((hash << 5) &- hash) &+ Int32(byte);
+            hash = ((hash << 5) &- hash) &+ Int32(byte)
         }
-        
+
         return String(hash)
     }
 
@@ -69,7 +68,12 @@ import Foundation
         return hashString(stringToBeHashed)
     }
 
-    @objc public class func hashEventAttributeKey(_ eventType: MPEventType, eventName: String, customAttributeName: String, isLogScreen: Bool) -> String {
+    @objc public class func hashEventAttributeKey(
+        _ eventType: MPEventType,
+        eventName: String,
+        customAttributeName: String,
+        isLogScreen: Bool
+    ) -> String {
         let stringToBeHashed: String
         if isLogScreen {
             stringToBeHashed = "0\(eventName)\(customAttributeName)"
