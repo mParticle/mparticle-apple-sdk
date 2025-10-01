@@ -104,6 +104,10 @@ MPLog* logger;
     }
 }
 
+- (MPLog*)getLogger {
+    return logger;
+}
+
 + (dispatch_queue_t)messageQueue {
     return executor.messageQueue;
 }
@@ -799,9 +803,7 @@ MPLog* logger;
 }
 
 - (void)logEvent:(MPBaseEvent *)event {
-    if (event == nil) {
-        [logger error:@"Cannot log nil event!"];
-    } else if ([event isKindOfClass:[MPEvent class]]) {
+    if ([event isKindOfClass:[MPEvent class]]) {
         [self logCustomEvent:(MPEvent *)event];
     } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
 #pragma clang diagnostic push
@@ -1188,10 +1190,6 @@ MPLog* logger;
 }
 
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
-    if (commerceEvent == nil) {
-        [logger error:@"Cannot log nil commerce event!"];
-        return;
-    }
     if (!commerceEvent.timestamp) {
         commerceEvent.timestamp = [NSDate date];
     }
@@ -1246,10 +1244,6 @@ MPLog* logger;
     
     if (eventInfo) {
         [eventDictionary addEntriesFromDictionary:eventInfo];
-    }
-    
-    if (!eventName) {
-        eventName = @"Increase LTV";
     }
     
     MPEvent *event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
