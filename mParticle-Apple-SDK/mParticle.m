@@ -1273,13 +1273,15 @@ MPLog* logger;
 
 #pragma mark Integration attributes
 - (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)integrationId {
+    NSDictionary *attributesCopy = [attributes copy];
     __block MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
 
     MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     
     if (integrationAttributes) {
         [executor executeOnMessage: ^{
-            [self.listenerController onAPICalled:_cmd parameter1:attributes parameter2:integrationId];
+            
+            [self.listenerController onAPICalled:_cmd parameter1:attributesCopy parameter2:integrationId];
             
             [[MParticle sharedInstance].persistenceController saveIntegrationAttributes:integrationAttributes];
         }];

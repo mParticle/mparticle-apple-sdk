@@ -29,7 +29,7 @@
     self = [super init];
     if (self) {
         _integrationId = integrationId;
-        _attributes = attributes;
+        _attributes = [attributes copy];
     }
 
     return self;
