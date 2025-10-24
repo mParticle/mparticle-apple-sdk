@@ -50,5 +50,6 @@
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
+@property (nonatomic, strong, nullable) id<MPNotificationControllerProtocol> notificationController;
 @property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
 @end
