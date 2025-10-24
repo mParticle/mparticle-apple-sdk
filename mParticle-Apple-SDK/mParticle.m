@@ -18,6 +18,7 @@
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"
 #import "Executor.h"
+#import "AppEnvironmentProvider.h"
 
 static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
@@ -68,9 +69,8 @@ static NSString *const kMPStateKey = @"state";
 
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
-
+@property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
 @end
-
 
 @implementation MPDataPlanOptions
 @end
@@ -152,6 +152,7 @@ MPLog* logger;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
+    _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
     
     return self;
@@ -606,7 +607,7 @@ MPLog* logger;
 #pragma mark Application notifications
 #if TARGET_OS_IOS == 1
 - (NSData *)pushNotificationToken {
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
+    if (![self.appEnvironmentProvider isAppExtension]) {
         return [MPNotificationController_PRIVATE deviceToken];
     } else {
         return nil;
@@ -614,7 +615,7 @@ MPLog* logger;
 }
 
 - (void)setPushNotificationToken:(NSData *)pushNotificationToken {
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
+    if (![self.appEnvironmentProvider isAppExtension]) {
         [MPNotificationController_PRIVATE setDeviceToken:pushNotificationToken];
     }
 }
@@ -624,7 +625,7 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
+    if (![self.appEnvironmentProvider isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler didReceiveRemoteNotification:userInfo];
     }
 }
@@ -634,7 +635,7 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
+    if (![self.appEnvironmentProvider isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     }
 }
@@ -644,7 +645,7 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
+    if (![self.appEnvironmentProvider isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     }
 }
@@ -654,7 +655,7 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
+    if (![self.appEnvironmentProvider isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
     }
 }
@@ -664,7 +665,7 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
+    if (![self.appEnvironmentProvider isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
 }
