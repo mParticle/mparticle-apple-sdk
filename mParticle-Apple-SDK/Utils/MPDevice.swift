@@ -362,7 +362,8 @@ public class MPDevice: NSObject, NSCopying {
         #if os(iOS) && !MPARTICLE_LOCATION_DISABLE
             deviceDictionary[Device.kMPDeviceRadioKey] = radioAccessTechnology
 
-            if let pushNotificationToken = MPNotificationController_PRIVATE.deviceToken() {
+            let notificationController = MPNotificationController_PRIVATE()
+            if let pushNotificationToken = notificationController.deviceToken() {
                 if let tokenString = MPUserDefaults.stringFromDeviceToken(pushNotificationToken) {
                     deviceDictionary[PushNotifications.kMPDeviceTokenKey] = tokenString
                 }

@@ -608,7 +608,8 @@ MPLog* logger;
 #if TARGET_OS_IOS == 1
 - (NSData *)pushNotificationToken {
     if (![self.appEnvironmentProvider isAppExtension]) {
-        return [MPNotificationController_PRIVATE deviceToken];
+        MPNotificationController_PRIVATE* notificationController = [[MPNotificationController_PRIVATE alloc] init];
+        return [notificationController deviceToken];
     } else {
         return nil;
     }
@@ -616,7 +617,8 @@ MPLog* logger;
 
 - (void)setPushNotificationToken:(NSData *)pushNotificationToken {
     if (![self.appEnvironmentProvider isAppExtension]) {
-        [MPNotificationController_PRIVATE setDeviceToken:pushNotificationToken];
+        MPNotificationController_PRIVATE* notificationController = [[MPNotificationController_PRIVATE alloc] init];
+        [notificationController setDeviceToken:pushNotificationToken];
     }
 }
 
