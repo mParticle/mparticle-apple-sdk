@@ -70,6 +70,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
+@property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
 @end
 
 @implementation MPDataPlanOptions
@@ -153,6 +154,7 @@ MPLog* logger;
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
+    _notificationController = [[MPNotificationController_PRIVATE alloc] init];
     logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
     
     return self;
@@ -608,8 +610,7 @@ MPLog* logger;
 #if TARGET_OS_IOS == 1
 - (NSData *)pushNotificationToken {
     if (![self.appEnvironmentProvider isAppExtension]) {
-        MPNotificationController_PRIVATE* notificationController = [[MPNotificationController_PRIVATE alloc] init];
-        return [notificationController deviceToken];
+        return [self.notificationController deviceToken];
     } else {
         return nil;
     }
@@ -617,8 +618,7 @@ MPLog* logger;
 
 - (void)setPushNotificationToken:(NSData *)pushNotificationToken {
     if (![self.appEnvironmentProvider isAppExtension]) {
-        MPNotificationController_PRIVATE* notificationController = [[MPNotificationController_PRIVATE alloc] init];
-        [notificationController setDeviceToken:pushNotificationToken];
+        [self.notificationController setDeviceToken:pushNotificationToken];
     }
 }
 
