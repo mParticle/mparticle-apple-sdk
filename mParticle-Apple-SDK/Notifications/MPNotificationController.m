@@ -30,7 +30,7 @@ static NSData *deviceToken = nil;
     return self;
 }
 
-#pragma mark Instance methods
+#pragma mark Public static methods
 - (NSData *)deviceToken {
 #ifndef MP_UNIT_TESTING
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
@@ -82,19 +82,6 @@ static NSData *deviceToken = nil;
         [userDefaults synchronize];
 #endif
     });
-}
-
-#pragma mark Deprecated static methods
-+ (NSData *)deviceToken {
-    // Deprecated: Delegates to instance method
-    MPNotificationController_PRIVATE *controller = [[MPNotificationController_PRIVATE alloc] init];
-    return [controller deviceToken];
-}
-
-+ (void)setDeviceToken:(NSData *)devToken {
-    // Deprecated: Delegates to instance method
-    MPNotificationController_PRIVATE *controller = [[MPNotificationController_PRIVATE alloc] init];
-    [controller setDeviceToken:devToken];
 }
 
 #endif

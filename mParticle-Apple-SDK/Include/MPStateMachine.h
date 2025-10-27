@@ -79,7 +79,7 @@
 + (nullable NSString *)provisioningProfileString;
 + (BOOL)runningInBackground;
 + (void)setRunningInBackground:(BOOL)background;
-+ (BOOL)isAppExtension; //DEPRECATED_MSG_ATTRIBUTE("Use the instance method defined in the AppEnvironmentProvider instead.");
++ (BOOL)isAppExtension;
 - (void)configureCustomModules:(nullable NSArray<NSDictionary *> *)customModuleSettings;
 - (void)configureRampPercentage:(nullable NSNumber *)rampPercentage;
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;
