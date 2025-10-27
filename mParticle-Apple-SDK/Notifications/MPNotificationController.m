@@ -31,7 +31,7 @@ static NSData *deviceToken = nil;
 }
 
 #pragma mark Public static methods
-- (NSData *)deviceToken {
++ (NSData *)deviceToken {
 #ifndef MP_UNIT_TESTING
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     deviceToken = userDefaults[kMPDeviceTokenKey];
@@ -40,6 +40,51 @@ static NSData *deviceToken = nil;
 #endif
     
     return deviceToken;
+}
+
+- (NSData *)deviceToken {
+    return [[self class] deviceToken];
+}
+
++ (void)setDeviceToken:(NSData *)devToken {
+    if ([MPNotificationController_PRIVATE deviceToken] && [[MPNotificationController_PRIVATE deviceToken] isEqualToData:devToken]) {
+        return;
+    }
+    NSData *newDeviceToken = [devToken copy];
+    NSData *oldDeviceToken = [deviceToken copy];
+    
+    deviceToken = devToken;
+
+    dispatch_async([MParticle messageQueue], ^{
+        NSMutableDictionary *deviceTokenDictionary = [[NSMutableDictionary alloc] initWithCapacity:2];
+        NSString *newTokenString = nil;
+        NSString *oldTokenString = nil;
+        if (newDeviceToken) {
+            deviceTokenDictionary[kMPRemoteNotificationDeviceTokenKey] = newDeviceToken;
+            newTokenString = [MPUserDefaults stringFromDeviceToken:newDeviceToken];
+        }
+        
+        if (oldDeviceToken) {
+            deviceTokenDictionary[kMPRemoteNotificationOldDeviceTokenKey] = oldDeviceToken;
+            oldTokenString = [MPUserDefaults stringFromDeviceToken:oldDeviceToken];
+        }
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationDeviceTokenNotification
+                                                            object:nil
+                                                          userInfo:deviceTokenDictionary];
+        
+        if (oldTokenString && newTokenString) {
+            [[MParticle sharedInstance].backendController.networkCommunication modifyDeviceID:@"push_token"
+                                                                                        value:newTokenString
+                                                                                     oldValue:oldTokenString];
+        }
+        
+#ifndef MP_UNIT_TESTING
+        MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+        userDefaults[kMPDeviceTokenKey] = deviceToken;
+        [userDefaults synchronize];
+#endif
+    });
 }
 
 - (void)setDeviceToken:(NSData *)devToken {
