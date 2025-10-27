@@ -70,7 +70,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
-@property (nonatomic, strong, nullable) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
+@property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
 @end
 
 @implementation MPDataPlanOptions
