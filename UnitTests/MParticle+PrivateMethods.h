@@ -2,6 +2,7 @@
 #import "MParticleSwift.h"
 #import "MPDataPlanFilter.h"
 #import "MPListenerController.h"
+#import "AppEnvironmentProvider.h"
 
 @interface MParticle (Tests)
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut;
@@ -51,5 +52,5 @@
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
 @property (nonatomic, strong, nullable) id<MPNotificationControllerProtocol> notificationController;
-@property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
+@property (nonatomic, strong, nullable) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
 @end
