@@ -55,8 +55,7 @@
     }
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        MPNotificationController_PRIVATE *notificationController = [[MPNotificationController_PRIVATE alloc] init];
-        [notificationController setDeviceToken:nil];
+        [MPNotificationController_PRIVATE setDeviceToken:nil];
     }
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
@@ -90,8 +89,7 @@
     }
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        MPNotificationController_PRIVATE *notificationController = [[MPNotificationController_PRIVATE alloc] init];
-        [notificationController setDeviceToken:deviceToken];
+        [MPNotificationController_PRIVATE setDeviceToken:deviceToken];
     }
 
     SEL deviceTokenSelector = @selector(setDeviceToken:);

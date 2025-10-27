@@ -1959,7 +1959,7 @@ static BOOL skipNextUpload = NO;
                                               kMPPushMessageTypeKey:userNotification.type}
                                             mutableCopy];
         
-        NSString *tokenString = [MPUserDefaults stringFromDeviceToken:[self.notificationController deviceToken]];
+        NSString *tokenString = [MPUserDefaults stringFromDeviceToken:[MPNotificationController_PRIVATE deviceToken]];
         if (tokenString) {
             messageInfo[kMPDeviceTokenKey] = tokenString;
         }
