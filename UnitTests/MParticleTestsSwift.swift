@@ -1370,4 +1370,43 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertTrue(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithDeviceTokenCalled)
         XCTAssertEqual(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithDeviceTokenParam, token)
     }
+
+    func testHandleActionWithIdentifierForRemoteNotification_doesNothing_whenAppExtension() {
+        appEnvironmentProvier.isAppExtensionReturnValue = true
+
+        let identifier = "testAction"
+        let userInfo = ["key": "value"]
+
+        mparticle.handleAction(withIdentifier: identifier, forRemoteNotification: userInfo)
+
+        XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
+        XCTAssertFalse(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationCalled)
+    }
+
+    func testHandleActionWithIdentifierForRemoteNotification_doesNothing_whenProxiedDelegateExists() {
+        appEnvironmentProvier.isAppExtensionReturnValue = false
+
+        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
+
+        let identifier = "testAction"
+        let userInfo = ["key": "value"]
+
+        mparticle.handleAction(withIdentifier: identifier, forRemoteNotification: userInfo)
+
+        XCTAssertFalse(appEnvironmentProvier.isAppExtensionCalled)
+        XCTAssertFalse(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationCalled)
+    }
+    
+    func testHandleActionWithIdentifierForRemoteNotification_callsHandler_whenNotAppExtension_andNoProxiedDelegate() {
+        appEnvironmentProvier.isAppExtensionReturnValue = false
+
+        let identifier = "testAction"
+        let userInfo = ["key": "value"]
+        
+        mparticle.handleAction(withIdentifier: identifier, forRemoteNotification: userInfo)
+        
+        XCTAssertTrue(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationCalled)
+        XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationIdentifierParam, identifier)
+        XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationUserInfoParam?["key"] as? String, "value")
+    }
 }

@@ -34,12 +34,26 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         didFailToRegisterForRemoteNotificationsWithDeviceTokenParam = deviceToken
     }
     
+    var handleActionWithIdentifierForRemoteNotificationCalled = false
+    var handleActionWithIdentifierForRemoteNotificationIdentifierParam: String?
+    var handleActionWithIdentifierForRemoteNotificationUserInfoParam: [AnyHashable : Any]?
+    
     func handleAction(withIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable : Any]?) {
-        
+        handleActionWithIdentifierForRemoteNotificationCalled = true
+        handleActionWithIdentifierForRemoteNotificationIdentifierParam = identifier
+        handleActionWithIdentifierForRemoteNotificationUserInfoParam = userInfo
     }
     
+    var handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled = false
+    var handleActionWithIdentifierForRemoteNotificationWithResponseInfoIdentifierParam: String?
+    var handleActionWithIdentifierForRemoteNotificationWithResponseInfoUserInfoParam: [AnyHashable : Any]?
+    var handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam: [AnyHashable : Any]?
+    
     func handleAction(withIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable : Any]?, withResponseInfo responseInfo: [AnyHashable : Any]?) {
-        
+        handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled = true
+        handleActionWithIdentifierForRemoteNotificationWithResponseInfoIdentifierParam = identifier
+        handleActionWithIdentifierForRemoteNotificationWithResponseInfoUserInfoParam = userInfo
+        handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam = responseInfo
     }
     
     @available(iOS 10.0, *)
