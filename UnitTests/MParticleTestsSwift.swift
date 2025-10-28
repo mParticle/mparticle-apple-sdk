@@ -1241,4 +1241,25 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(token)
         XCTAssertFalse(notificationController.deviceTokenCalled)
     }
+    
+    func testSetPushNotificationToken_setsToken_whenNotAppExtension() {
+        appEnvironmentProvier.isAppExtensionReturnValue = false
+        
+        let token = "abcd1234".data(using: .utf8)!
+        
+        mparticle.pushNotificationToken = token
+        
+        XCTAssertTrue(notificationController.setDeviceTokenCalled)
+        XCTAssertEqual(notificationController.setDeviceTokenParam, token)
+    }
+    
+    func testSetPushNotificationToken_doesNothing_whenAppExtension() {
+        let token = "abcd1234".data(using: .utf8)!
+        
+        appEnvironmentProvier.isAppExtensionReturnValue = true
+        
+        mparticle.pushNotificationToken = token
+        
+        XCTAssertFalse(notificationController.setDeviceTokenCalled)
+    }
 }
