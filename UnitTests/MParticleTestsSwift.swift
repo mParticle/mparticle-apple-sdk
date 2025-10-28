@@ -1293,4 +1293,34 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertTrue(appNotificationHandler.didReceiveRemoteNotificationCalled)
         XCTAssertEqual(appNotificationHandler.didReceiveRemoteNotificationParam?["key"] as? String, "value")
     }
+    
+    func testDidFailToRegisterForRemoteNotifications_doesNothing_whenAppExtension() {
+        appEnvironmentProvier.isAppExtensionReturnValue = true
+
+        let error = NSError(domain: "test", code: 1)
+        mparticle.didFailToRegisterForRemoteNotificationsWithError(error)
+
+        XCTAssertFalse(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithErrorCalled)
+    }
+
+    func testDidFailToRegisterForRemoteNotifications_doesNothing_whenProxiedDelegateSet() {
+        appEnvironmentProvier.isAppExtensionReturnValue = false
+
+        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
+
+        let error = NSError(domain: "test", code: 1)
+        mparticle.didFailToRegisterForRemoteNotificationsWithError(error)
+
+        XCTAssertFalse(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithErrorCalled)
+    }
+    
+    func testDidFailToRegisterForRemoteNotifications_forwardsToHandler_whenNotAppExtension_andNoProxiedDelegate() {
+        appEnvironmentProvier.isAppExtensionReturnValue = false
+
+        let error = NSError(domain: "test", code: 1)
+        mparticle.didFailToRegisterForRemoteNotificationsWithError(error)
+
+        XCTAssertTrue(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithErrorCalled)
+        XCTAssertEqual(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithErrorParam as NSError?, error)
+    }
 }
