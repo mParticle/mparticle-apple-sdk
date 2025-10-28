@@ -628,7 +628,7 @@ MPLog* logger;
     }
     
     if (![self.appEnvironmentProvider isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler didReceiveRemoteNotification:userInfo];
+        [self.appNotificationHandler didReceiveRemoteNotification:userInfo];
     }
 }
 
@@ -638,7 +638,7 @@ MPLog* logger;
     }
     
     if (![self.appEnvironmentProvider isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
+        [self.appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     }
 }
 
@@ -648,7 +648,7 @@ MPLog* logger;
     }
     
     if (![self.appEnvironmentProvider isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+        [self.appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     }
 }
 
@@ -658,7 +658,7 @@ MPLog* logger;
     }
     
     if (![self.appEnvironmentProvider isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
+        [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
     }
 }
 
@@ -668,7 +668,7 @@ MPLog* logger;
     }
     
     if (![self.appEnvironmentProvider isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
+        [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
 }
 #endif
@@ -678,7 +678,7 @@ MPLog* logger;
         return;
     }
     
-    [[MParticle sharedInstance].appNotificationHandler openURL:url sourceApplication:sourceApplication annotation:annotation];
+    [self.appNotificationHandler openURL:url sourceApplication:sourceApplication annotation:annotation];
 }
 
 - (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
@@ -686,7 +686,7 @@ MPLog* logger;
         return;
     }
     
-    [[MParticle sharedInstance].appNotificationHandler openURL:url options:options];
+    [self.appNotificationHandler openURL:url options:options];
 }
 
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler {
@@ -694,7 +694,7 @@ MPLog* logger;
         return NO;
     }
 
-    return [[MParticle sharedInstance].appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
+    return [self.appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
 - (void)reset:(void (^)(void))completion {
@@ -1585,14 +1585,14 @@ MPLog* logger;
     if (!notification.request.content.userInfo) {
         return;
     }
-    [[MParticle sharedInstance].appNotificationHandler userNotificationCenter:center willPresentNotification:notification];
+    [self.appNotificationHandler userNotificationCenter:center willPresentNotification:notification];
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
     if (!response.notification.request.content.userInfo) {
         return;
     }
-    [[MParticle sharedInstance].appNotificationHandler userNotificationCenter:center didReceiveNotificationResponse:response];
+    [self.appNotificationHandler userNotificationCenter:center didReceiveNotificationResponse:response];
 }
 #endif
 
