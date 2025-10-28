@@ -433,7 +433,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             NSString *hashString = @(hash).stringValue;
             BOOL consented = item.consented;
             
-            MPConsentState *state = [MParticle sharedInstance].identity.currentUser.consentState;
+            MPConsentStateSwift *state = [MParticle sharedInstance].identity.currentUser.consentState;
             
             if (state != nil) {
                 NSDictionary<NSString *, MPGDPRConsent *> *gdprConsentState = [state.gdprConsentState copy];
@@ -1025,7 +1025,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     return kitFilter;
 }
 
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentState *)state {
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentStateSwift *)state {
     if (!state) {
         return nil;
     }
@@ -1047,8 +1047,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
                 return kitFilter;
             } else {
-                MPConsentState *filteredState = [[MPConsentState alloc] init];
-                [filteredState setCCPAConsentState:ccpaConsentState];
+                MPConsentStateSwift *filteredState = [[MPConsentStateSwift alloc] init];
+                [filteredState setCcpaConsentState:ccpaConsentState];
                 
                 kitFilter = [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
                 return kitFilter;
@@ -1082,8 +1082,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 }
                 
                 if (filteredGDPRState.count > 0) {
-                    MPConsentState *filteredState = [[MPConsentState alloc] init];
-                    [filteredState setGDPRConsentState:filteredGDPRState];
+                    MPConsentStateSwift *filteredState = [[MPConsentStateSwift alloc] init];
+                    [filteredState setGdprConsentState:filteredGDPRState];
                     
                     kitFilter = [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
                 }
@@ -2478,7 +2478,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
 }
 
-- (void)forwardSDKCall:(SEL)selector consentState:(MPConsentState *)state kitHandler:(void (^)(id<MPKitProtocol> kit, MPConsentState *filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler {
+- (void)forwardSDKCall:(SEL)selector consentState:(MPConsentStateSwift *)state kitHandler:(void (^)(id<MPKitProtocol> kit, MPConsentStateSwift *filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler {
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {

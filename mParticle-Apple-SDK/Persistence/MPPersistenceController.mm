@@ -136,14 +136,14 @@ const int MaxBreadcrumbs = 50;
     [userDefaults synchronize];
 }
 
-+ (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid {
++ (nullable MPConsentStateSwift *)consentStateForMpid:(nonnull NSNumber *)mpid {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSString *string = [userDefaults mpObjectForKey:kMPConsentStateKey userId:mpid];
     if (!string) {
         return nil;
     }
     
-    MPConsentState *state = [MPConsentSerialization consentStateFromString:string];
+    MPConsentStateSwift *state = [MPConsentSerialization consentStateFromString:string];
     if (!state) {
         return nil;
     }
@@ -151,7 +151,7 @@ const int MaxBreadcrumbs = 50;
     return state;
 }
 
-+ (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid {
++ (void)setConsentState:(nullable MPConsentStateSwift *)state forMpid:(nonnull NSNumber *)mpid {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (!state) {
         [userDefaults removeMPObjectForKey:kMPConsentStateKey userId:mpid];

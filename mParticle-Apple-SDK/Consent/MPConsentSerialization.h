@@ -2,14 +2,15 @@
 
 @class MPConsentState;
 @class MPConsentKitFilter;
+@class MPConsentStateSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MPConsentSerialization : NSObject
 
-+ (nullable NSDictionary *)serverDictionaryFromConsentState:(MPConsentState *)state;
-+ (nullable NSString *)stringFromConsentState:(MPConsentState *)state;
-+ (nullable MPConsentState *)consentStateFromString:(NSString *)string;
++ (nullable NSDictionary *)serverDictionaryFromConsentState:(MPConsentStateSwift *)state;
++ (nullable NSString *)stringFromConsentState:(MPConsentStateSwift *)state;
++ (nullable MPConsentStateSwift *)consentStateFromString:(NSString *)string;
 + (nullable MPConsentKitFilter *)filterFromDictionary:(NSDictionary *)configDictionary;
 
 @end

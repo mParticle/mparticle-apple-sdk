@@ -19,6 +19,8 @@
 		351779502E706BF8004BF05E /* ExecutorMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3517794C2E706BE4004BF05E /* ExecutorMock.swift */; };
 		351B4A8F2EB10AA900848801 /* MPAudience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4A8E2EB10AA300848801 /* MPAudience.swift */; };
 		351B4A902EB10AA900848801 /* MPAudience.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4A8E2EB10AA300848801 /* MPAudience.swift */; };
+		351B4A982EB116DA00848801 /* MPConsentStateSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4A972EB116D300848801 /* MPConsentStateSwift.swift */; };
+		351B4A992EB116DA00848801 /* MPConsentStateSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4A972EB116D300848801 /* MPConsentStateSwift.swift */; };
 		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEA2E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
@@ -201,7 +203,6 @@
 		53A79BBD29CDFB2000E7489F /* MPBackendController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF429CDFB1F00E7489F /* MPBackendController.m */; };
 		53A79BBF29CDFB2000E7489F /* MPConsentSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF729CDFB1F00E7489F /* MPConsentSerialization.m */; };
 		53A79BC029CDFB2000E7489F /* MPConsentKitFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF829CDFB1F00E7489F /* MPConsentKitFilter.m */; };
-		53A79BC129CDFB2000E7489F /* MPConsentState.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF929CDFB1F00E7489F /* MPConsentState.m */; };
 		53A79BC229CDFB2000E7489F /* MPConsentSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AFA29CDFB1F00E7489F /* MPConsentSerialization.h */; };
 		53A79BC429CDFB2000E7489F /* MPConsentKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AFC29CDFB1F00E7489F /* MPConsentKitFilter.h */; };
 		53A79BC529CDFB2000E7489F /* MParticleReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AFF29CDFB1F00E7489F /* MParticleReachability.m */; };
@@ -288,7 +289,6 @@
 		53A79C5F29CDFB4800E7489F /* MPEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3D29CDFB4800E7489F /* MPEnums.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79C6029CDFB4800E7489F /* MPKitExecStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3E29CDFB4800E7489F /* MPKitExecStatus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79C6129CDFB4800E7489F /* MPCommerceEvent+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3F29CDFB4800E7489F /* MPCommerceEvent+Dictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		53A79C6229CDFB4800E7489F /* MPConsentState.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4029CDFB4800E7489F /* MPConsentState.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79C6329CDFB4800E7489F /* MPKitRegister.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4129CDFB4800E7489F /* MPKitRegister.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79C6429CDFB4800E7489F /* MPProduct+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4229CDFB4800E7489F /* MPProduct+Dictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79C6529CDFB4800E7489F /* MPProduct.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4329CDFB4800E7489F /* MPProduct.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -378,7 +378,6 @@
 		53A79D1B29CE23F700E7489F /* MPEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2329CDFB4800E7489F /* MPEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D1C29CE23F700E7489F /* MPListenerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2A29CDFB4800E7489F /* MPListenerProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D1E29CE23F700E7489F /* MPAliasResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3729CDFB4800E7489F /* MPAliasResponse.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		53A79D1F29CE23F700E7489F /* MPConsentState.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4029CDFB4800E7489F /* MPConsentState.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D2029CE23F700E7489F /* MParticleUser.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3429CDFB4800E7489F /* MParticleUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D2129CE23F700E7489F /* NSDictionary+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3329CDFB4800E7489F /* NSDictionary+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D2229CE23F700E7489F /* MPCommerceEventInstruction.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2F29CDFB4800E7489F /* MPCommerceEventInstruction.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -446,7 +445,6 @@
 		53A79D7529CE23F700E7489F /* MPAttributeProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5A29CDFB1F00E7489F /* MPAttributeProjection.m */; };
 		53A79D7629CE23F700E7489F /* MPConsumerInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AC429CDFB1E00E7489F /* MPConsumerInfo.m */; };
 		53A79D7729CE23F700E7489F /* MPKitConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4F29CDFB1F00E7489F /* MPKitConfiguration.mm */; };
-		53A79D7829CE23F700E7489F /* MPConsentState.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF929CDFB1F00E7489F /* MPConsentState.m */; };
 		53A79D7929CE23F700E7489F /* MPBracket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1E29CDFB1F00E7489F /* MPBracket.cpp */; };
 		53A79D7A29CE23F700E7489F /* MParticleUserNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AC729CDFB1E00E7489F /* MParticleUserNotification.m */; };
 		53A79D7B29CE23F700E7489F /* MPIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B6429CDFB1F00E7489F /* MPIConstants.m */; };
@@ -581,6 +579,7 @@
 		351308402E6B28F5002A3AD6 /* Executor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Executor.m; sourceTree = "<group>"; };
 		3517794C2E706BE4004BF05E /* ExecutorMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExecutorMock.swift; sourceTree = "<group>"; };
 		351B4A8E2EB10AA300848801 /* MPAudience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPAudience.swift; sourceTree = "<group>"; };
+		351B4A972EB116D300848801 /* MPConsentStateSwift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConsentStateSwift.swift; sourceTree = "<group>"; };
 		35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPNetworkOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
@@ -670,7 +669,6 @@
 		53A79AF429CDFB1F00E7489F /* MPBackendController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBackendController.m; sourceTree = "<group>"; };
 		53A79AF729CDFB1F00E7489F /* MPConsentSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsentSerialization.m; sourceTree = "<group>"; };
 		53A79AF829CDFB1F00E7489F /* MPConsentKitFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsentKitFilter.m; sourceTree = "<group>"; };
-		53A79AF929CDFB1F00E7489F /* MPConsentState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsentState.m; sourceTree = "<group>"; };
 		53A79AFA29CDFB1F00E7489F /* MPConsentSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConsentSerialization.h; sourceTree = "<group>"; };
 		53A79AFC29CDFB1F00E7489F /* MPConsentKitFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConsentKitFilter.h; sourceTree = "<group>"; };
 		53A79AFF29CDFB1F00E7489F /* MParticleReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleReachability.m; sourceTree = "<group>"; };
@@ -758,7 +756,6 @@
 		53A79C3D29CDFB4800E7489F /* MPEnums.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEnums.h; sourceTree = "<group>"; };
 		53A79C3E29CDFB4800E7489F /* MPKitExecStatus.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitExecStatus.h; sourceTree = "<group>"; };
 		53A79C3F29CDFB4800E7489F /* MPCommerceEvent+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPCommerceEvent+Dictionary.h"; sourceTree = "<group>"; };
-		53A79C4029CDFB4800E7489F /* MPConsentState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConsentState.h; sourceTree = "<group>"; };
 		53A79C4129CDFB4800E7489F /* MPKitRegister.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitRegister.h; sourceTree = "<group>"; };
 		53A79C4229CDFB4800E7489F /* MPProduct+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPProduct+Dictionary.h"; sourceTree = "<group>"; };
 		53A79C4329CDFB4800E7489F /* MPProduct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPProduct.h; sourceTree = "<group>"; };
@@ -1079,11 +1076,11 @@
 		53A79AF529CDFB1F00E7489F /* Consent */ = {
 			isa = PBXGroup;
 			children = (
+				351B4A972EB116D300848801 /* MPConsentStateSwift.swift */,
 				53A79AF729CDFB1F00E7489F /* MPConsentSerialization.m */,
 				D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */,
 				D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */,
 				53A79AF829CDFB1F00E7489F /* MPConsentKitFilter.m */,
-				53A79AF929CDFB1F00E7489F /* MPConsentState.m */,
 				53A79AFA29CDFB1F00E7489F /* MPConsentSerialization.h */,
 				53A79AFC29CDFB1F00E7489F /* MPConsentKitFilter.h */,
 			);
@@ -1266,7 +1263,6 @@
 				53A79C3D29CDFB4800E7489F /* MPEnums.h */,
 				53A79C3E29CDFB4800E7489F /* MPKitExecStatus.h */,
 				53A79C3F29CDFB4800E7489F /* MPCommerceEvent+Dictionary.h */,
-				53A79C4029CDFB4800E7489F /* MPConsentState.h */,
 				53A79C4129CDFB4800E7489F /* MPKitRegister.h */,
 				53A79C4229CDFB4800E7489F /* MPProduct+Dictionary.h */,
 				53A79C4329CDFB4800E7489F /* MPProduct.h */,
@@ -1431,7 +1427,6 @@
 				53A79C4529CDFB4800E7489F /* MPEvent.h in Headers */,
 				53A79C4C29CDFB4800E7489F /* MPListenerProtocol.h in Headers */,
 				53A79C5929CDFB4800E7489F /* MPAliasResponse.h in Headers */,
-				53A79C6229CDFB4800E7489F /* MPConsentState.h in Headers */,
 				53A79C5629CDFB4800E7489F /* MParticleUser.h in Headers */,
 				53A79C5529CDFB4800E7489F /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				53A79C5129CDFB4800E7489F /* MPCommerceEventInstruction.h in Headers */,
@@ -1526,7 +1521,6 @@
 				53A79D1B29CE23F700E7489F /* MPEvent.h in Headers */,
 				53A79D1C29CE23F700E7489F /* MPListenerProtocol.h in Headers */,
 				53A79D1E29CE23F700E7489F /* MPAliasResponse.h in Headers */,
-				53A79D1F29CE23F700E7489F /* MPConsentState.h in Headers */,
 				53A79D2029CE23F700E7489F /* MParticleUser.h in Headers */,
 				53A79D2129CE23F700E7489F /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				53A79D2229CE23F700E7489F /* MPCommerceEventInstruction.h in Headers */,
@@ -1878,7 +1872,6 @@
 				53A79C0D29CDFB2100E7489F /* MPKitConfiguration.mm in Sources */,
 				351B4A8F2EB10AA900848801 /* MPAudience.swift in Sources */,
 				D3CEDACB2CB027E1001B32DF /* MPConvertJS.swift in Sources */,
-				53A79BC129CDFB2000E7489F /* MPConsentState.m in Sources */,
 				53A79BE329CDFB2000E7489F /* MPBracket.cpp in Sources */,
 				531BCF362B28A23400F5C573 /* MPIdentityCaching.m in Sources */,
 				53A79B9129CDFB2000E7489F /* MParticleUserNotification.m in Sources */,
@@ -1913,6 +1906,7 @@
 				53A79C0929CDFB2100E7489F /* MPDataPlanFilter.m in Sources */,
 				53B33E8A2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */,
 				53A79B9629CDFB2000E7489F /* MPSession.m in Sources */,
+				351B4A982EB116DA00848801 /* MPConsentStateSwift.swift in Sources */,
 				53A79B9729CDFB2000E7489F /* MPIntegrationAttributes.m in Sources */,
 				D3CEDAC82CA2F214001B32DF /* MPLogger.swift in Sources */,
 				53A79B6A29CDFB2000E7489F /* MPAliasRequest.m in Sources */,
@@ -2070,7 +2064,6 @@
 				D3961CD72CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */,
 				53A79D7629CE23F700E7489F /* MPConsumerInfo.m in Sources */,
 				53A79D7729CE23F700E7489F /* MPKitConfiguration.mm in Sources */,
-				53A79D7829CE23F700E7489F /* MPConsentState.m in Sources */,
 				351B4A902EB10AA900848801 /* MPAudience.swift in Sources */,
 				D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */,
 				53A79D7929CE23F700E7489F /* MPBracket.cpp in Sources */,
@@ -2108,6 +2101,7 @@
 				53A79D9729CE23F700E7489F /* MPNetworkPerformance.m in Sources */,
 				53A79D9929CE23F700E7489F /* MPDataPlanFilter.m in Sources */,
 				53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */,
+				351B4A992EB116DA00848801 /* MPConsentStateSwift.swift in Sources */,
 				53A79D9A29CE23F700E7489F /* MPSession.m in Sources */,
 				53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */,
 				D3CEDAC92CA2F214001B32DF /* MPLogger.swift in Sources */,

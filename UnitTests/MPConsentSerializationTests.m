@@ -1,7 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
-#import "MPConsentState.h"
 #import "MPConsentKitFilter.h"
 #import "MPBaseTestCase.h"
 #import "MParticleSwift.h"
@@ -21,14 +20,14 @@ static NSTimeInterval epsilon = 0.05;
 @implementation MPConsentSerializationTests
 
 - (void)testServerDictionaryGDPR {
-    MPConsentState *consentState = nil;
+    MPConsentStateSwift *consentState = nil;
     NSDictionary *dictionary = nil;
     
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 0);
     
-    consentState = [[MPConsentState alloc] init];
+    consentState = [[MPConsentStateSwift alloc] init];
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 0);
@@ -42,7 +41,7 @@ static NSTimeInterval epsilon = 0.05;
     gdprConsent.location = @"foo-location-1";
     gdprConsent.hardwareId = @"foo-hardware-id-1";
     
-    [consentState addGDPRConsentState:gdprConsent purpose:@"test purpose 1"];
+    [consentState addGDPRConsentStateWithConsent:gdprConsent purpose:@"test purpose 1"];
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
@@ -65,14 +64,14 @@ static NSTimeInterval epsilon = 0.05;
 }
 
 - (void)testToStringGDPR {
-    MPConsentState *consentState = nil;
+    MPConsentStateSwift *consentState = nil;
     NSString *string = nil;
     NSDictionary *dictionary = nil;
     
     string = [MPConsentSerialization stringFromConsentState:consentState];
     XCTAssertNil(string);
     
-    consentState = [[MPConsentState alloc] init];
+    consentState = [[MPConsentStateSwift alloc] init];
     string = [MPConsentSerialization stringFromConsentState:consentState];
     XCTAssertNil(string);
     
@@ -85,7 +84,7 @@ static NSTimeInterval epsilon = 0.05;
     gdprConsent.location = @"foo-location-1";
     gdprConsent.hardwareId = @"foo-hardware-id-1";
     
-    [consentState addGDPRConsentState:gdprConsent purpose:@"test purpose 1"];
+    [consentState addGDPRConsentStateWithConsent:gdprConsent purpose:@"test purpose 1"];
     string = [MPConsentSerialization stringFromConsentState:consentState];
     XCTAssertNotNil(string);
     
@@ -113,7 +112,7 @@ static NSTimeInterval epsilon = 0.05;
 
 - (void)testFromStringGDPR {
     NSString *string = @"{\"gdpr\":{\"test purpose 1\":{\"document\":\"foo-document-1\",\"consented\":true,\"timestamp\":1524176880.888195,\"hardware_id\":\"foo-hardware-id-1\",\"location\":\"foo-location-1\"}}}";
-    MPConsentState *state = [MPConsentSerialization consentStateFromString:string];
+    MPConsentStateSwift *state = [MPConsentSerialization consentStateFromString:string];
     NSDictionary<NSString *, MPGDPRConsent *> *gdprStateDictionary = [state gdprConsentState];
     XCTAssertEqual(gdprStateDictionary.count, 1);
     MPGDPRConsent *gdprState = gdprStateDictionary[@"test purpose 1"];
@@ -126,14 +125,14 @@ static NSTimeInterval epsilon = 0.05;
 }
 
 - (void)testServerDictionaryCCPA {
-    MPConsentState *consentState = nil;
+    MPConsentStateSwift *consentState = nil;
     NSDictionary *dictionary = nil;
     
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 0);
     
-    consentState = [[MPConsentState alloc] init];
+    consentState = [[MPConsentStateSwift alloc] init];
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 0);
@@ -147,7 +146,7 @@ static NSTimeInterval epsilon = 0.05;
     ccpaConsent.location = @"foo-location-1";
     ccpaConsent.hardwareId = @"foo-hardware-id-1";
     
-    [consentState setCCPAConsentState:ccpaConsent];
+    [consentState setCcpaConsentState:ccpaConsent];
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
@@ -170,14 +169,14 @@ static NSTimeInterval epsilon = 0.05;
 }
 
 - (void)testToStringCCPA {
-    MPConsentState *consentState = nil;
+    MPConsentStateSwift *consentState = nil;
     NSString *string = nil;
     NSDictionary *dictionary = nil;
     
     string = [MPConsentSerialization stringFromConsentState:consentState];
     XCTAssertNil(string);
     
-    consentState = [[MPConsentState alloc] init];
+    consentState = [[MPConsentStateSwift alloc] init];
     string = [MPConsentSerialization stringFromConsentState:consentState];
     XCTAssertNil(string);
     
@@ -190,7 +189,7 @@ static NSTimeInterval epsilon = 0.05;
     ccpaConsent.location = @"foo-location-1";
     ccpaConsent.hardwareId = @"foo-hardware-id-1";
     
-    [consentState setCCPAConsentState:ccpaConsent];
+    [consentState setCcpaConsentState:ccpaConsent];
     string = [MPConsentSerialization stringFromConsentState:consentState];
     XCTAssertNotNil(string);
     
@@ -218,7 +217,7 @@ static NSTimeInterval epsilon = 0.05;
 
 - (void)testFromStringCCPA {
     NSString *string = @"{\"ccpa\":{\"data_sale_opt_out\":{\"document\":\"foo-document-1\",\"consented\":true,\"timestamp\":1524176880.888195,\"hardware_id\":\"foo-hardware-id-1\",\"location\":\"foo-location-1\"}}}";
-    MPConsentState *state = [MPConsentSerialization consentStateFromString:string];
+    MPConsentStateSwift *state = [MPConsentSerialization consentStateFromString:string];
     MPCCPAConsent *ccpaState = [state ccpaConsentState];
     XCTAssertNotNil(ccpaState);
     XCTAssertTrue(ccpaState.consented);

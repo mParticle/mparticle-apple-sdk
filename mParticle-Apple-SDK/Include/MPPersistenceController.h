@@ -8,7 +8,7 @@
 @class MPForwardRecord;
 @class MPBreadcrumb;
 @class MPIntegrationAttributes;
-@class MPConsentState;
+@class MPConsentStateSwift;
 
 #if TARGET_OS_IOS == 1
     @class MParticleUserNotification;
@@ -29,8 +29,8 @@
 
 + (NSNumber *_Nonnull)mpId;
 + (void)setMpid:(nonnull NSNumber *)mpId;
-+ (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
-+ (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;
++ (nullable MPConsentStateSwift *)consentStateForMpid:(nonnull NSNumber *)mpid;
++ (void)setConsentState:(nullable MPConsentStateSwift *)state forMpid:(nonnull NSNumber *)mpid;
 + (NSInteger)maxBytesPerEvent:(nullable NSString *)messageType;
 + (NSInteger)maxBytesPerBatch:(nullable NSString *)messageType;
 - (nullable MPSession *)archiveSession:(nonnull MPSession *)session;

@@ -15,7 +15,7 @@
 @class MPBaseEvent;
 @class MPEvent;
 @class MPCommerceEvent;
-@class MPConsentState;
+@class MPConsentStateSwift;
 @class MParticleSession;
 @class MPUploadSettings;
 @class MPNetworkOptions;
@@ -59,7 +59,7 @@ extern const NSInteger kInvalidKey;
 @protocol MPBackendControllerProtocol
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
 - (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
-- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *_Nullable)consentState completionHandler:(dispatch_block_t _Nonnull)completionHandler;
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentStateSwift *_Nullable)consentState completionHandler:(dispatch_block_t _Nonnull)completionHandler;
 - (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings;
 - (MParticleSession* _Nullable)tempSession;
 - (void)unproxyOriginalAppDelegate;
@@ -138,7 +138,7 @@ extern const NSInteger kInvalidKey;
 - (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values timestamp:(nonnull NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler;
 - (void)removeUserAttribute:(nonnull NSString *)key timestamp:(nonnull NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nullable key, id _Nullable value, MPExecStatus execStatus))completionHandler;
 - (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType timestamp:(nonnull NSDate *)timestamp completionHandler:(void (^ _Nonnull)(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler;
-- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *_Nullable)consentState completionHandler:(dispatch_block_t _Nonnull)completionHandler;
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentStateSwift *_Nullable)consentState completionHandler:(dispatch_block_t _Nonnull)completionHandler;
 - (void)unproxyOriginalAppDelegate;
 - (void)saveMessage:(nonnull MPMessage *)message updateSession:(BOOL)updateSession;
 - (void)skipNextUpload;

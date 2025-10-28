@@ -2474,7 +2474,7 @@
     
     filter.shouldIncludeOnMatch = YES;
     
-    MPConsentState *state = [[MPConsentState alloc] init];
+    MPConsentStateSwift *state = [[MPConsentStateSwift alloc] init];
     
     NSMutableDictionary<NSString *,MPGDPRConsent *> *gdprState = [NSMutableDictionary dictionary];
     
@@ -2491,7 +2491,7 @@
     
     gdprState[@"Processing"] = gdprConsent;
     
-    [state setGDPRConsentState:[gdprState copy]];
+    [state setGdprConsentState:[gdprState copy]];
     
     [MPPersistenceController_PRIVATE setConsentState:state forMpid:[MPPersistenceController_PRIVATE mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
@@ -2518,7 +2518,7 @@
     
     filter.filterItems = [filterItems copy];
     
-    MPConsentState *state = [[MPConsentState alloc] init];
+    MPConsentStateSwift *state = [[MPConsentStateSwift alloc] init];
         
     MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
     
@@ -2531,7 +2531,7 @@
     ccpaConsent.location = @"foo-location-1";
     ccpaConsent.hardwareId = @"foo-hardware-id-1";
         
-    [state setCCPAConsentState: [ccpaConsent copy]];
+    [state setCcpaConsentState: [ccpaConsent copy]];
     
     [MPPersistenceController_PRIVATE setConsentState:state forMpid:[MPPersistenceController_PRIVATE mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;

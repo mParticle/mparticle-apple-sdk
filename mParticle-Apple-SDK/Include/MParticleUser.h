@@ -5,9 +5,9 @@
 
 #import <Foundation/Foundation.h>
 #import "MPEnums.h"
-#import "MPConsentState.h"
 
 @class MPAudience;
+@class MPConsentStateSwift;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -103,12 +103,12 @@ NS_ASSUME_NONNULL_BEGIN
  Sets the user's current consent state.
  @param state A consent state object
  */
-- (void)setConsentState:(MPConsentState *)state;
+- (void)setConsentState:(MPConsentStateSwift *)state;
 /**
  Gets the users consent state.
  @returns The user's current consent state object
  */
-- (nullable MPConsentState *)consentState;
+- (nullable MPConsentStateSwift *)consentState;
 
 @end
 

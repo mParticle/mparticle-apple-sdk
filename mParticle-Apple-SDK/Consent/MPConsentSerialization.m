@@ -1,5 +1,4 @@
 #import "MPConsentSerialization.h"
-#import "MPConsentState.h"
 #import "MPILogger.h"
 #import "MPIConstants.h"
 #import "MPConsentKitFilter.h"
@@ -10,7 +9,7 @@
 
 #pragma mark public methods
 
-+ (nullable NSDictionary *)serverDictionaryFromConsentState:(MPConsentState *)state {
++ (nullable NSDictionary *)serverDictionaryFromConsentState:(MPConsentStateSwift *)state {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     NSDictionary<NSString *, MPGDPRConsent *> *gdprStateDictionary = [state gdprConsentState];
     MPCCPAConsent *ccpaState = [state ccpaConsentState];
@@ -88,7 +87,7 @@
     return dictionary;
 }
 
-+ (nullable NSString *)stringFromConsentState:(MPConsentState *)state {
++ (nullable NSString *)stringFromConsentState:(MPConsentStateSwift *)state {
     if (!state) {
         return nil;
     }
@@ -180,8 +179,8 @@
     return string;
 }
 
-+ (nullable MPConsentState *)consentStateFromString:(NSString *)string {
-    MPConsentState *state = nil;
++ (nullable MPConsentStateSwift *)MPConsentStateSwiftconsentStateFromString:(NSString *)string {
+    MPConsentStateSwift *state = nil;
     NSDictionary *dictionary = [self dictionaryFromString:string];
     if (!dictionary) {
         MPILogError(@"Failed to create consent state from string=%@", string);
@@ -194,7 +193,7 @@
         return nil;
     }
     
-    state = [[MPConsentState alloc] init];
+    state = [[MPConsentStateSwift alloc] init];
     
     if (gdprDictionary) {
         for (NSString *purpose in gdprDictionary) {
@@ -224,7 +223,7 @@
                 gdprState.hardwareId = gdprConsentDictionary[kMPConsentStateHardwareIdKey];
             }
             
-            [state addGDPRConsentState:gdprState purpose:purpose];
+            [state addGDPRConsentStateWithConsent:gdprState purpose:purpose];
         }
     }
     
@@ -255,7 +254,7 @@
             ccpaState.hardwareId = ccpaConsentDictionary[kMPConsentStateHardwareIdKey];
         }
         
-        [state setCCPAConsentState:ccpaState];
+        [state setCcpaConsentState:ccpaState];
     }
     
     return state;

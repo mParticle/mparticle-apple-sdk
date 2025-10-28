@@ -1,10 +1,9 @@
 #import <XCTest/XCTest.h>
-#import "MPConsentState.h"
 #import "MPBaseTestCase.h"
 #import "MParticleSwift.h"
 
 @interface MPConsentStateTests : MPBaseTestCase {
-    MPConsentState *_globalState;
+    MPConsentStateSwift *_globalState;
     MPGDPRConsent *_state;
     MPCCPAConsent *_ccpaState;
 }
@@ -15,7 +14,7 @@
 
 - (void)setUp {
     [super setUp];
-    _globalState = [[MPConsentState alloc] init];
+    _globalState = [[MPConsentStateSwift alloc] init];
     _state = [[MPGDPRConsent alloc] init];
     _ccpaState = [[MPCCPAConsent alloc] init];
 }
@@ -33,7 +32,7 @@
 }
 
 - (void)testAddAndRetrieveState {
-    [_globalState addGDPRConsentState:_state purpose:@"test purpose"];
+    [_globalState addGDPRConsentStateWithConsent:_state purpose:@"test purpose"];
     NSDictionary<NSString *, MPGDPRConsent *> *stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 1);
@@ -42,7 +41,7 @@
 }
 
 - (void)testDeleteState {
-    [_globalState addGDPRConsentState:_state purpose:@"test purpose"];
+    [_globalState addGDPRConsentStateWithConsent:_state purpose:@"test purpose"];
     [_globalState removeGDPRConsentStateWithPurpose:@"test purpose"];
     NSDictionary<NSString *, MPGDPRConsent *> *stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
@@ -57,14 +56,14 @@
     
     MPGDPRConsent *state = nil;
     
-    [_globalState addGDPRConsentState:state purpose:@"test purpose"];
+    [_globalState addGDPRConsentStateWithConsent:state purpose:@"test purpose"];
     stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 0);
     
     state = (MPGDPRConsent *)[NSNull null];
     
-    [_globalState addGDPRConsentState:state purpose:@"test purpose"];
+    [_globalState addGDPRConsentStateWithConsent:state purpose:@"test purpose"];
     stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 0);
@@ -77,26 +76,26 @@
     XCTAssertEqual(stateDictionary.count, 0);
     
     NSString *purpose = nil;
-    [_globalState addGDPRConsentState:_state purpose:purpose];
+    [_globalState addGDPRConsentStateWithConsent:_state purpose:purpose];
     stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 0);
     
     purpose = @"";
-    [_globalState addGDPRConsentState:_state purpose:purpose];
+    [_globalState addGDPRConsentStateWithConsent:_state purpose:purpose];
     stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 0);
     
     purpose = (NSString *)[NSNull null];
-    [_globalState addGDPRConsentState:_state purpose:purpose];
+    [_globalState addGDPRConsentStateWithConsent:_state purpose:purpose];
     stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 0);
 }
 
 - (void)testPurposeCanonicalization {
-    [_globalState addGDPRConsentState:_state purpose:@"  TeSt pUrpose     "];
+    [_globalState addGDPRConsentStateWithConsent:_state purpose:@"  TeSt pUrpose     "];
     NSDictionary<NSString *, MPGDPRConsent *> *stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 1);
@@ -106,12 +105,12 @@
 
 - (void)testGetSetCCPAState {
     XCTAssertNil([_globalState ccpaConsentState]);
-    [_globalState setCCPAConsentState:_ccpaState];
+    [_globalState setCcpaConsentState:_ccpaState];
     XCTAssertNotNil([_globalState ccpaConsentState]);
 }
 
 - (void)testRemoveCCPAState {
-    [_globalState setCCPAConsentState:_ccpaState];
+    [_globalState setCcpaConsentState:_ccpaState];
     XCTAssertNotNil([_globalState ccpaConsentState]);
     [_globalState removeCCPAConsentState];
     XCTAssertNil([_globalState ccpaConsentState]);
