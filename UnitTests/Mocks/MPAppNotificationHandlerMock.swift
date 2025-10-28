@@ -10,6 +10,14 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         
     }
     
+    var didReceiveRemoteNotificationCalled = false
+    var didReceiveRemoteNotificationParam: [AnyHashable: Any]?
+
+    func didReceiveRemoteNotification(_ userInfo: [AnyHashable : Any]) {
+        didReceiveRemoteNotificationCalled = true
+        didReceiveRemoteNotificationParam = userInfo
+    }
+    
     var didFailToRegisterForRemoteNotificationsWithErrorCalled = false
     var didFailToRegisterForRemoteNotificationsWithErrorParam: Error?
     
@@ -18,8 +26,12 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         didFailToRegisterForRemoteNotificationsWithErrorParam = error
     }
     
+    var didFailToRegisterForRemoteNotificationsWithDeviceTokenCalled = false
+    var didFailToRegisterForRemoteNotificationsWithDeviceTokenParam: Data?
+    
     func didRegisterForRemoteNotifications(withDeviceToken deviceToken: Data) {
-        
+        didFailToRegisterForRemoteNotificationsWithDeviceTokenCalled = true
+        didFailToRegisterForRemoteNotificationsWithDeviceTokenParam = deviceToken
     }
     
     func handleAction(withIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable : Any]?) {
@@ -50,13 +62,5 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
     
     func open(_ url: URL, sourceApplication: String?, annotation: Any?) {
         
-    }
-    
-    var didReceiveRemoteNotificationCalled = false
-    var didReceiveRemoteNotificationParam: [AnyHashable: Any]?
-
-    func didReceiveRemoteNotification(_ userInfo: [AnyHashable : Any]) {
-        didReceiveRemoteNotificationCalled = true
-        didReceiveRemoteNotificationParam = userInfo
     }
 }
