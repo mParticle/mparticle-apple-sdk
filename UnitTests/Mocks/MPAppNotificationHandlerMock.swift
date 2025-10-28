@@ -7,6 +7,7 @@ import XCTest
 
 class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
     
+#if os(iOS)
     var didReceiveRemoteNotificationCalled = false
     var didReceiveRemoteNotificationParam: [AnyHashable: Any]?
 
@@ -53,6 +54,22 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam = responseInfo
     }
     
+    func didUpdate(_ userActivity: NSUserActivity) {
+        
+    }
+    
+    @available(iOS 10.0, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) {
+        
+    }
+    
+    @available(iOS 10.0, *)
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) {
+        
+    }
+    
+#endif
+    
     var openURLWithSourceApplicationAndAnnotationCalled = false
     var openURLWithSourceApplicationAndAnnotationURLParam: URL?
     var openURLWithSourceApplicationAndAnnotationSourceApplicationParam: String?
@@ -85,19 +102,5 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         continueUserActivityUserActivityParam = userActivity
         continueUserActivityRestorationHandlerParam = restorationHandler
         return continueUserActivityReturnValue
-    }
-    
-    @available(iOS 10.0, *)
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) {
-        
-    }
-    
-    @available(iOS 10.0, *)
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) {
-        
-    }
-    
-    func didUpdate(_ userActivity: NSUserActivity) {
-        
     }
 }
