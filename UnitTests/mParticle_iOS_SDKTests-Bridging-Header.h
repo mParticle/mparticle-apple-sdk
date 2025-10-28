@@ -18,3 +18,4 @@
 #import "MPKitConfiguration.h"
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"
+#import "AppEnvironmentProvider.h"
