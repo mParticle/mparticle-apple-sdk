@@ -54,7 +54,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
-@property (nonatomic, strong) MPAppNotificationHandler *appNotificationHandler;
+@property (nonatomic, strong) id<MPAppNotificationHandlerProtocol> appNotificationHandler;
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
