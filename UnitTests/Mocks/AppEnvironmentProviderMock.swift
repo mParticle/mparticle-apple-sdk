@@ -8,10 +8,8 @@ import XCTest
 class AppEnvironmentProviderMock: AppEnvironmentProviderProtocol {
     var isAppExtensionCalled = false
     var isAppExtensionReturnValue = false
-    var isAppExtensionCalledTwice = false
     
     func isAppExtension() -> Bool {
-        if isAppExtensionCalled { isAppExtensionCalledTwice = true }
         isAppExtensionCalled = true
         return isAppExtensionReturnValue
     }
