@@ -428,9 +428,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     if (kitFilter) {
         NSArray<MPConsentKitFilterItem *> *itemsArray = kitFilter.filterItems;
         for (MPConsentKitFilterItem *item in itemsArray) {
-            int hash = item.javascriptHash;
+            NSNumber* hash = item.javascriptHash;
             
-            NSString *hashString = @(hash).stringValue;
+            NSString *hashString = hash.stringValue;
             BOOL consented = item.consented;
             
             MPConsentStateSwift *state = [MParticle sharedInstance].identity.currentUser.consentState;

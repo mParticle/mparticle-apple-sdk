@@ -2457,8 +2457,8 @@
     filter.shouldIncludeOnMatch = YES;
     
     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
-    item.consented = YES;
-    item.javascriptHash = -1729075708;
+    item.consented = @YES;
+    item.javascriptHash = @-1729075708;
     
     NSMutableArray<MPConsentKitFilterItem *> *filterItems = [NSMutableArray array];
     [filterItems addObject:item];
@@ -2510,8 +2510,8 @@
     filter.shouldIncludeOnMatch = YES;
     
     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
-    item.consented = YES;
-    item.javascriptHash = -575335347;
+    item.consented = @YES;
+    item.javascriptHash = @-575335347;
     
     NSMutableArray<MPConsentKitFilterItem *> *filterItems = [NSMutableArray array];
     [filterItems addObject:item];

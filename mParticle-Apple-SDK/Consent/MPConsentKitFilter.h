@@ -2,12 +2,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPConsentKitFilterItem : NSObject
-
-@property (nonatomic) BOOL consented;
-@property (nonatomic) int javascriptHash;
-
-@end
+@class MPConsentKitFilterItem;
 
 @interface MPConsentKitFilter : NSObject
 

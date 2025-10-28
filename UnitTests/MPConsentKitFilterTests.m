@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "MPConsentKitFilter.h"
 #import "MPBaseTestCase.h"
+#import "MParticleSwift.h"
 
 @interface MPConsentKitFilterTests : MPBaseTestCase
 

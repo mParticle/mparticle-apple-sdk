@@ -179,7 +179,7 @@
     return string;
 }
 
-+ (nullable MPConsentStateSwift *)MPConsentStateSwiftconsentStateFromString:(NSString *)string {
++ (nullable MPConsentStateSwift *)consentStateFromString:(NSString *)string {
     MPConsentStateSwift *state = nil;
     NSDictionary *dictionary = [self dictionaryFromString:string];
     if (!dictionary) {
@@ -353,11 +353,11 @@
                     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
                     
                     if (itemDictionary[kMPConsentKitFilterItemConsented] && [itemDictionary[kMPConsentKitFilterItemConsented] isKindOfClass:[NSNumber class]]) {
-                        item.consented = ((NSNumber *)itemDictionary[kMPConsentKitFilterItemConsented]).boolValue;
+                        item.consented = (NSNumber *)itemDictionary[kMPConsentKitFilterItemConsented];
                     }
                     
                     if (itemDictionary[kMPConsentKitFilterItemHash]  && [itemDictionary[kMPConsentKitFilterItemHash] isKindOfClass:[NSNumber class]]) {
-                        item.javascriptHash = ((NSNumber *)itemDictionary[kMPConsentKitFilterItemHash]).intValue;
+                        item.javascriptHash = (NSNumber *)itemDictionary[kMPConsentKitFilterItemHash];
                     }
                     
                     [items addObject:item];

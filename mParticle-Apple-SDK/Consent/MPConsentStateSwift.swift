@@ -49,7 +49,7 @@ public class MPConsentStateSwift: NSObject {
             return
         }
         
-        guard _gdprConsentState.count > 100 else {
+        guard _gdprConsentState.count <= 100 else {
             return
         }
         

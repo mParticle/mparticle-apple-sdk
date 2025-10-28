@@ -53,20 +53,6 @@
     stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 0);
-    
-    MPGDPRConsent *state = nil;
-    
-    [_globalState addGDPRConsentStateWithConsent:state purpose:@"test purpose"];
-    stateDictionary = [_globalState gdprConsentState];
-    XCTAssertNotNil(stateDictionary);
-    XCTAssertEqual(stateDictionary.count, 0);
-    
-    state = (MPGDPRConsent *)[NSNull null];
-    
-    [_globalState addGDPRConsentStateWithConsent:state purpose:@"test purpose"];
-    stateDictionary = [_globalState gdprConsentState];
-    XCTAssertNotNil(stateDictionary);
-    XCTAssertEqual(stateDictionary.count, 0);
 }
 
 - (void)testInvalidPurposes {
@@ -75,19 +61,7 @@
     XCTAssertNotNil(stateDictionary);
     XCTAssertEqual(stateDictionary.count, 0);
     
-    NSString *purpose = nil;
-    [_globalState addGDPRConsentStateWithConsent:_state purpose:purpose];
-    stateDictionary = [_globalState gdprConsentState];
-    XCTAssertNotNil(stateDictionary);
-    XCTAssertEqual(stateDictionary.count, 0);
-    
-    purpose = @"";
-    [_globalState addGDPRConsentStateWithConsent:_state purpose:purpose];
-    stateDictionary = [_globalState gdprConsentState];
-    XCTAssertNotNil(stateDictionary);
-    XCTAssertEqual(stateDictionary.count, 0);
-    
-    purpose = (NSString *)[NSNull null];
+    NSString *purpose = @"";
     [_globalState addGDPRConsentStateWithConsent:_state purpose:purpose];
     stateDictionary = [_globalState gdprConsentState];
     XCTAssertNotNil(stateDictionary);

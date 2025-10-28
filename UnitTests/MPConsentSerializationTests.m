@@ -240,8 +240,8 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(secondItem);
     XCTAssertTrue(firstItem.consented);
     XCTAssertTrue(secondItem.consented);
-    XCTAssertEqual(firstItem.javascriptHash, 48278946);
-    XCTAssertEqual(secondItem.javascriptHash, 1556641);
+    XCTAssertEqual(firstItem.javascriptHash, @48278946);
+    XCTAssertEqual(secondItem.javascriptHash, @1556641);
 }
 
 @end
