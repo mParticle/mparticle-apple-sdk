@@ -13,6 +13,8 @@ class MParticleTestsSwift: XCTestCase {
     var executor: ExecutorMock!
     var backendController: MPBackendControllerMock!
     var state: MPStateMachineMock!
+    var notificationController: MPNotificationControllerMock!
+    var appEnvironmentProvier: AppEnvironmentProviderMock!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -39,6 +41,12 @@ class MParticleTestsSwift: XCTestCase {
         
         state = MPStateMachineMock()
         mparticle.stateMachine = state
+        
+        notificationController = MPNotificationControllerMock()
+        mparticle.notificationController = notificationController
+        
+        appEnvironmentProvier = AppEnvironmentProviderMock()
+        mparticle.appEnvironmentProvider = appEnvironmentProvier
     }
 
     override func tearDown() {
@@ -1206,5 +1214,31 @@ class MParticleTestsSwift: XCTestCase {
               Duration: 0
             }
             """)
+    }
+    
+    // MARK: - Application Notification Tests
+
+    func testPushNotificationToken_returnsDeviceToken_whenNotAppExtension() {
+        let expectedToken = "abcd1234".data(using: .utf8)!
+        notificationController.deviceTokenReturnValue = expectedToken
+        
+        appEnvironmentProvier.isAppExtensionReturnValue = false
+        
+        let token = mparticle.pushNotificationToken
+        
+        XCTAssertEqual(token, expectedToken)
+        XCTAssertTrue(notificationController.deviceTokenCalled)
+        XCTAssertFalse(appEnvironmentProvier.isAppExtensionCalled)
+    }
+    
+    func testPushNotificationToken_returnsNil_whenAppExtension() {
+        notificationController.deviceTokenReturnValue = "abcd1234".data(using: .utf8)!
+
+        appEnvironmentProvier.isAppExtensionReturnValue = true
+        
+        let token = mparticle.pushNotificationToken
+        
+        XCTAssertNil(token)
+        XCTAssertFalse(notificationController.deviceTokenCalled)
     }
 }
