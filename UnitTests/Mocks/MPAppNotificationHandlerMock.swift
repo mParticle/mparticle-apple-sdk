@@ -6,9 +6,6 @@ import XCTest
 #endif
 
 class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
-    func didUpdate(_ userActivity: NSUserActivity) {
-        
-    }
     
     var didReceiveRemoteNotificationCalled = false
     var didReceiveRemoteNotificationParam: [AnyHashable: Any]?
@@ -78,6 +75,18 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         openURLWithOptionsOptionsParam = options
     }
     
+    var continueUserActivityCalled = false
+    var continueUserActivityUserActivityParam: NSUserActivity?
+    var continueUserActivityRestorationHandlerParam: (([UIUserActivityRestoring]?) -> Void)?
+    var continueUserActivityReturnValue: Bool = false
+    
+    func `continue`(_ userActivity: NSUserActivity, restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void) -> Bool {
+        continueUserActivityCalled = true
+        continueUserActivityUserActivityParam = userActivity
+        continueUserActivityRestorationHandlerParam = restorationHandler
+        return continueUserActivityReturnValue
+    }
+    
     @available(iOS 10.0, *)
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) {
         
@@ -88,7 +97,7 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         
     }
     
-    func `continue`(_ userActivity: NSUserActivity, restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void) -> Bool {
-        return false
+    func didUpdate(_ userActivity: NSUserActivity) {
+        
     }
 }

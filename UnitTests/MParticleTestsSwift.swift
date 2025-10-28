@@ -1510,4 +1510,27 @@ class MParticleTestsSwift: XCTestCase {
         
         XCTAssertFalse(appNotificationHandler.openURLWithOptionsCalled)
     }
+    
+    func testContinueUserActivity_returnsFalseAndDoesNotCallHandler_whenProxiedDelegateExists() {
+        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
+
+        let activity = NSUserActivity(activityType: "com.example.test")
+        
+        let result = mparticle.continue(activity) { _ in }
+
+        XCTAssertFalse(result)
+        XCTAssertFalse(appNotificationHandler.continueUserActivityCalled)
+    }
+
+    func testContinueUserActivity_returnsFalse_whenHandlerReturnsFalse() {
+        let activity = NSUserActivity(activityType: "com.example.test")
+        appNotificationHandler.continueUserActivityReturnValue = false
+
+        let result = mparticle.continue(activity) { _ in }
+        
+        XCTAssertTrue(appNotificationHandler.continueUserActivityCalled)
+        XCTAssertNotNil(appNotificationHandler.continueUserActivityRestorationHandlerParam)
+        XCTAssertEqual(appNotificationHandler.continueUserActivityUserActivityParam, activity)
+        XCTAssertFalse(result)
+    }
 }
