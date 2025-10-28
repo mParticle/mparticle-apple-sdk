@@ -1221,7 +1221,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     // MARK: - Application Notification Tests
-    
+#if os(iOS)
     func testPushNotificationToken_returnsDeviceToken_whenNotAppExtension() {
         let expectedToken = "abcd1234".data(using: .utf8)!
         notificationController.deviceTokenReturnValue = expectedToken
@@ -1444,9 +1444,70 @@ class MParticleTestsSwift: XCTestCase {
         let responseInfo = ["responseKey": "responseValue"]
         mparticle.handleAction(withIdentifier: identifier, forRemoteNotification: userInfo, withResponseInfo: responseInfo)
         
+        XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertTrue(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled)
         XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoIdentifierParam, identifier)
         XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoUserInfoParam?["key"] as? String, "value")
         XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam?["responseKey"] as? String, "responseValue")
+    }
+#endif
+    
+    func testOpenURLSourceApplication_doesNothing_whenProxiedDelegateExists() {
+        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
+
+        let url = URL(string: "https://example.com")!
+        let sourceApp = "com.example.app"
+        let annotation = "annotation"
+        mparticle.open(url, sourceApplication: sourceApp, annotation: annotation)
+        
+        XCTAssertFalse(appNotificationHandler.openURLWithSourceApplicationAndAnnotationCalled)
+    }
+    
+    func testOpenURLSourceApplication_callsHandler_whenNoProxiedDelegate() {
+        let url = URL(string: "https://example.com")!
+        let sourceApp = "com.example.app"
+        let annotation = "annotation"
+
+        mparticle.open(url, sourceApplication: sourceApp, annotation: annotation)
+
+        XCTAssertTrue(appNotificationHandler.openURLWithSourceApplicationAndAnnotationCalled)
+        XCTAssertEqual(appNotificationHandler.openURLWithSourceApplicationAndAnnotationURLParam, url)
+        XCTAssertEqual(appNotificationHandler.openURLWithSourceApplicationAndAnnotationSourceApplicationParam, sourceApp)
+        XCTAssertEqual(appNotificationHandler.openURLWithSourceApplicationAndAnnotationAnnotationParam as! String, annotation)
+    }
+    
+    func testOpenURLOptions_callsHandler_whenNoProxiedDelegate_andIOSVersion9OrHigher() {
+        let url = URL(string: "https://example.com/path")!
+        let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": "com.example.app"]
+        
+        mparticle.open(url, options: options)
+        
+        XCTAssertTrue(appNotificationHandler.openURLWithOptionsCalled)
+        XCTAssertEqual(appNotificationHandler.openURLWithOptionsURLParam, url)
+        XCTAssertEqual(appNotificationHandler.openURLWithOptionsOptionsParam?["UIApplicationOpenURLOptionsSourceApplicationKey"] as? String, "com.example.app")
+    }
+    
+    func testOpenURLOptions_doesNothing_whenProxiedDelegateExists() {
+        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
+
+        let url = URL(string: "https://example.com")!
+        let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": "com.example.app"]
+        mparticle.open(url, options: options)
+
+        XCTAssertFalse(appNotificationHandler.openURLWithOptionsCalled)
+    }
+
+    func testOpenURLOptions_doesNothing_whenSystemVersionBelow9() {
+        let currentDevice = UIDevice.current
+        let origSelector = NSSelectorFromString("systemVersion")
+        let mockedVersion: @convention(block) () -> String = { "8.4" }
+        let imp = imp_implementationWithBlock(mockedVersion)
+        class_replaceMethod(object_getClass(currentDevice), origSelector, imp, "@@:")
+        
+        let url = URL(string: "https://example.com")!
+        let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": "com.example.app"]
+        mparticle.open(url, options: options)
+        
+        XCTAssertFalse(appNotificationHandler.openURLWithOptionsCalled)
     }
 }

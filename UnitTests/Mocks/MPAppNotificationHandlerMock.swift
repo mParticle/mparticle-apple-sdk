@@ -56,6 +56,28 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam = responseInfo
     }
     
+    var openURLWithSourceApplicationAndAnnotationCalled = false
+    var openURLWithSourceApplicationAndAnnotationURLParam: URL?
+    var openURLWithSourceApplicationAndAnnotationSourceApplicationParam: String?
+    var openURLWithSourceApplicationAndAnnotationAnnotationParam: Any?
+    
+    func open(_ url: URL, sourceApplication: String?, annotation: Any?) {
+        openURLWithSourceApplicationAndAnnotationCalled = true
+        openURLWithSourceApplicationAndAnnotationURLParam = url
+        openURLWithSourceApplicationAndAnnotationSourceApplicationParam = sourceApplication
+        openURLWithSourceApplicationAndAnnotationAnnotationParam = annotation
+    }
+    
+    var openURLWithOptionsCalled = false
+    var openURLWithOptionsURLParam: URL?
+    var openURLWithOptionsOptionsParam: [String : Any]?
+    
+    func open(_ url: URL, options: [String : Any]?) {
+        openURLWithOptionsCalled = true
+        openURLWithOptionsURLParam = url
+        openURLWithOptionsOptionsParam = options
+    }
+    
     @available(iOS 10.0, *)
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) {
         
@@ -68,13 +90,5 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
     
     func `continue`(_ userActivity: NSUserActivity, restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void) -> Bool {
         return false
-    }
-    
-    func open(_ url: URL, options: [String : Any]? = nil) {
-        
-    }
-    
-    func open(_ url: URL, sourceApplication: String?, annotation: Any?) {
-        
     }
 }
