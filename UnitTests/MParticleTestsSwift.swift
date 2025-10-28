@@ -1237,7 +1237,7 @@ class MParticleTestsSwift: XCTestCase {
     
     func testPushNotificationToken_returnsNil_whenAppExtension() {
         notificationController.deviceTokenReturnValue = "abcd1234".data(using: .utf8)!
-
+        
         appEnvironmentProvier.isAppExtensionReturnValue = true
         
         let token = mparticle.pushNotificationToken
@@ -1553,5 +1553,32 @@ class MParticleTestsSwift: XCTestCase {
         mparticle.pushNotificationToken = token
         
         XCTAssertFalse(notificationController.setDeviceTokenCalled)
+    }
+    
+    func testDidReceiveRemoteNotification_doesNothing_whenProxiedAppDelegateExists() {
+        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
+        
+        mparticle.didReceiveRemoteNotification([:])
+
+        XCTAssertFalse(appNotificationHandler.didReceiveRemoteNotificationCalled)
+    }
+    
+    func testDidReceiveRemoteNotification_doesNothing_whenAppExtension() {
+        appEnvironmentProvier.isAppExtensionReturnValue = true
+        
+        mparticle.didReceiveRemoteNotification(["key": "value"])
+        
+        XCTAssertFalse(appNotificationHandler.didReceiveRemoteNotificationCalled)
+    }
+    
+    
+    
+    func testDidReceiveRemoteNotification_forwardsToHandler_whenNotAppExtension_andNoProxiedDelegate() {
+        appEnvironmentProvier.isAppExtensionReturnValue = false
+        
+        mparticle.didReceiveRemoteNotification(["key": "value"])
+        
+        XCTAssertTrue(appNotificationHandler.didReceiveRemoteNotificationCalled)
+        XCTAssertEqual(appNotificationHandler.didReceiveRemoteNotificationParam?["key"] as? String, "value")
     }
 }
