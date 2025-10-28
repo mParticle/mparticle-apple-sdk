@@ -8,6 +8,7 @@
 @class MPIdentityHTTPSuccessResponse;
 @class MPIdentityHTTPBaseSuccessResponse;
 @class MPIdentityHTTPModifySuccessResponse;
+@class MPAudience;
 @protocol MPConnectorProtocol;
 @protocol MPConnectorFactoryProtocol;
 

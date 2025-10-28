@@ -4,9 +4,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MPAudience.h"
 #import "MPEnums.h"
 #import "MPConsentState.h"
+
+@class MPAudience;
 
 NS_ASSUME_NONNULL_BEGIN
 

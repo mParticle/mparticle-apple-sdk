@@ -3,7 +3,6 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPUpload.h"
-#import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPMessageBuilder.h"
 #import "MPIntegrationAttributes.h"

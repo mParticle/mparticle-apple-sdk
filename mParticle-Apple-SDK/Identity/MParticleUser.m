@@ -5,7 +5,6 @@
 #import "MParticleUser.h"
 #import "MPILogger.h"
 #import "mParticle.h"
-#import "MPAudience.h"
 #import "MPPersistenceController.h"
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
