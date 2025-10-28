@@ -506,6 +506,10 @@
 		53E20DC82CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */; };
 		53FDD1BD2AE871AF003D5FA1 /* MPIHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */; };
 		53FDD1BE2AE871AF003D5FA1 /* MPIHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */; };
+		727801DE2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727801DD2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift */; };
+		727801DF2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727801DD2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift */; };
+		727801E12EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727801E02EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift */; };
+		727801E22EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727801E02EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift */; };
 		729721762EAC2AD60045E55C /* AppEnvironmentProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */; };
 		729721772EAC2AD60045E55C /* AppEnvironmentProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */; };
 		729721792EAC2B750045E55C /* AppEnvironmentProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 729721782EAC2B750045E55C /* AppEnvironmentProvider.m */; };
@@ -847,6 +851,8 @@
 		53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSideloadedKit.swift; sourceTree = "<group>"; };
 		53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitiveTests.swift"; sourceTree = "<group>"; };
 		53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIHasher.swift; sourceTree = "<group>"; };
+		727801DD2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPNotificationControllerMock.swift; sourceTree = "<group>"; };
+		727801E02EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentProviderMock.swift; sourceTree = "<group>"; };
 		729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppEnvironmentProvider.h; sourceTree = "<group>"; };
 		729721782EAC2B750045E55C /* AppEnvironmentProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppEnvironmentProvider.m; sourceTree = "<group>"; };
 		72D356522E8460020012A0C2 /* MPEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPEventTests.swift; sourceTree = "<group>"; };
@@ -925,6 +931,8 @@
 				356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */,
 				359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */,
 				356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */,
+				727801DD2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift */,
+				727801E02EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -1823,6 +1831,7 @@
 				534CD27F29CE2CE1008452B3 /* NSNumber+MPFormatterTests.m in Sources */,
 				351779502E706BF8004BF05E /* ExecutorMock.swift in Sources */,
 				72D356542E84601A0012A0C2 /* MPEventTests.swift in Sources */,
+				727801E12EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift in Sources */,
 				351308202E6729DA002A3AD6 /* MPKitContainerMock.swift in Sources */,
 				534CD28029CE2CE1008452B3 /* MPResponseEventsTest.m in Sources */,
 				534CD28129CE2CE1008452B3 /* MPConsentStateTests.m in Sources */,
@@ -1855,6 +1864,7 @@
 				359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */,
 				7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */,
 				534CD29729CE2CE1008452B3 /* MPURLRequestBuilderTests.m in Sources */,
+				727801DE2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift in Sources */,
 				534CD29829CE2CE1008452B3 /* MPForwardQueueItemTests.m in Sources */,
 				534CD29929CE2CE1008452B3 /* MPDateFormatterTests.m in Sources */,
 				534CD29A29CE2CE1008452B3 /* MPResponseConfigTests.m in Sources */,
@@ -2019,6 +2029,7 @@
 				3517794F2E706BF8004BF05E /* ExecutorMock.swift in Sources */,
 				72D356532E84601A0012A0C2 /* MPEventTests.swift in Sources */,
 				3513081F2E6729DA002A3AD6 /* MPKitContainerMock.swift in Sources */,
+				727801E22EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift in Sources */,
 				53A79CEE29CE019F00E7489F /* NSNumber+MPFormatterTests.m in Sources */,
 				53A79CD929CE019F00E7489F /* MPResponseEventsTest.m in Sources */,
 				35329FF62E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */,
@@ -2051,6 +2062,7 @@
 				359BB0072E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */,
 				7E15B2072D94617900C1FF3E /* MPRoktTests.m in Sources */,
 				53A79CDD29CE019F00E7489F /* MPURLRequestBuilderTests.m in Sources */,
+				727801DF2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift in Sources */,
 				53A79CDE29CE019F00E7489F /* MPForwardQueueItemTests.m in Sources */,
 				53A79CDF29CE019F00E7489F /* MPDateFormatterTests.m in Sources */,
 				53A79CD729CE019F00E7489F /* MPResponseConfigTests.m in Sources */,
