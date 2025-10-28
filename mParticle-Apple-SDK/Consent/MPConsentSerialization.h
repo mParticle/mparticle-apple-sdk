@@ -1,6 +1,5 @@
 #import <Foundation/Foundation.h>
 
-@class MPConsentState;
 @class MPConsentKitFilter;
 @class MPConsentStateSwift;
 

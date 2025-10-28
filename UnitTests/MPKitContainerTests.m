@@ -22,7 +22,6 @@
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
 #import "MPForwardQueueParameters.h"
-#import "MPConsentKitFilter.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"
@@ -2454,7 +2453,7 @@
 - (void)testIsDisabledByConsentKitFilterGPDR {
     MPConsentKitFilter *filter = [[MPConsentKitFilter alloc] init];
     
-    filter.shouldIncludeOnMatch = YES;
+    filter.shouldIncludeOnMatch = @YES;
     
     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
     item.consented = @YES;
@@ -2468,11 +2467,11 @@
     BOOL isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
     
-    filter.shouldIncludeOnMatch = NO;
+    filter.shouldIncludeOnMatch = @NO;
     isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
-    filter.shouldIncludeOnMatch = YES;
+    filter.shouldIncludeOnMatch = @YES;
     
     MPConsentStateSwift *state = [[MPConsentStateSwift alloc] init];
     
@@ -2480,7 +2479,7 @@
     
     MPGDPRConsent *gdprConsent = [[MPGDPRConsent alloc] init];
     
-    gdprConsent.consented = YES;
+    gdprConsent.consented = @YES;
     gdprConsent.document = @"foo-document-1";
     
     NSDate *date = [NSDate date];
@@ -2507,7 +2506,7 @@
 - (void)testIsDisabledByConsentKitFilterCCPA {
     MPConsentKitFilter *filter = [[MPConsentKitFilter alloc] init];
     
-    filter.shouldIncludeOnMatch = YES;
+    filter.shouldIncludeOnMatch = @YES;
     
     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
     item.consented = @YES;
@@ -2539,7 +2538,7 @@
     BOOL isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
-    filter.shouldIncludeOnMatch = NO;
+    filter.shouldIncludeOnMatch = @NO;
     isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
 }

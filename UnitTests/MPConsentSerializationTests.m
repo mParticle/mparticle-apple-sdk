@@ -1,7 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
-#import "MPConsentKitFilter.h"
 #import "MPBaseTestCase.h"
 #import "MParticleSwift.h"
 

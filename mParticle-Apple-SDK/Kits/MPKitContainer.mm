@@ -26,7 +26,6 @@
 #import "MPIntegrationAttributes.h"
 #import "MPKitAPI.h"
 #import "mParticle.h"
-#import "MPConsentKitFilter.h"
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
 #import <objc/message.h>
@@ -428,10 +427,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     if (kitFilter) {
         NSArray<MPConsentKitFilterItem *> *itemsArray = kitFilter.filterItems;
         for (MPConsentKitFilterItem *item in itemsArray) {
-            NSNumber* hash = item.javascriptHash;
+            NSString* hashString = item.javascriptHash.stringValue;
             
-            NSString *hashString = hash.stringValue;
-            BOOL consented = item.consented;
+            BOOL consented = item.consented.boolValue;
             
             MPConsentStateSwift *state = [MParticle sharedInstance].identity.currentUser.consentState;
             
@@ -468,7 +466,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
     
     BOOL shouldInclude;
-    if (kitFilter.shouldIncludeOnMatch) {
+    if (kitFilter.shouldIncludeOnMatch.boolValue) {
         shouldInclude = isMatch;
     } else {
         shouldInclude = !isMatch;

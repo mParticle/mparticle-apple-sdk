@@ -495,7 +495,7 @@ MPLog* logger;
     self.logLevel = options.logLevel;
     self.customLogger = options.customLogger;
     
-    MPConsentState *consentState = self.options.consentState;
+    MPConsentStateSwift *consentState = self.options.consentState;
     
     [userDefaults setSharedGroupIdentifier:self.options.sharedGroupID];
 

@@ -461,7 +461,7 @@
 
 #pragma mark - Consent State
 
-- (void)setConsentState:(MPConsentState *)state {
+- (void)setConsentState:(MPConsentStateSwift *)state {
     
     [MPPersistenceController_PRIVATE setConsentState:state forMpid:self.userId];
     
@@ -473,7 +473,7 @@
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setConsentState:) consentState:state kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setConsentState:) consentState:state kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentStateSwift * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
             MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
             if (!status.success) {
                 MPILogError(@"Failed to set consent state for kit=%@", status.integrationId);
@@ -482,7 +482,7 @@
     });
 }
 
-- (nullable MPConsentState *)consentState {
+- (nullable MPConsentStateSwift *)consentState {
     return [MPPersistenceController_PRIVATE consentStateForMpid:self.userId];
 }
 

@@ -1,7 +1,6 @@
 #import "MPConsentSerialization.h"
 #import "MPILogger.h"
 #import "MPIConstants.h"
-#import "MPConsentKitFilter.h"
 #import "mParticle.h"
 #import "MParticleSwift.h"
 
@@ -339,7 +338,7 @@
         filter = [[MPConsentKitFilter alloc] init];
         
         if (configDictionary[kMPConsentKitFilterIncludeOnMatch]  && [configDictionary[kMPConsentKitFilterIncludeOnMatch] isKindOfClass:[NSNumber class]]) {
-            filter.shouldIncludeOnMatch = ((NSNumber *)configDictionary[kMPConsentKitFilterIncludeOnMatch]).boolValue;
+            filter.shouldIncludeOnMatch = (NSNumber *)configDictionary[kMPConsentKitFilterIncludeOnMatch];
         }
         
         NSDictionary *itemsArray = configDictionary[kMPConsentKitFilterItems];

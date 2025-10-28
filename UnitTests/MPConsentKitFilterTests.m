@@ -1,5 +1,4 @@
 #import <XCTest/XCTest.h>
-#import "MPConsentKitFilter.h"
 #import "MPBaseTestCase.h"
 #import "MParticleSwift.h"
 
@@ -15,11 +14,11 @@
     XCTAssertFalse(filter.shouldIncludeOnMatch);
     XCTAssertNil(filter.filterItems);
     
-    filter.shouldIncludeOnMatch = YES;
-    XCTAssertTrue(filter.shouldIncludeOnMatch);
+    filter.shouldIncludeOnMatch = @YES;
+    XCTAssertTrue(filter.shouldIncludeOnMatch.boolValue);
     
-    filter.shouldIncludeOnMatch = NO;
-    XCTAssertFalse(filter.shouldIncludeOnMatch);
+    filter.shouldIncludeOnMatch = @NO;
+    XCTAssertFalse(filter.shouldIncludeOnMatch.boolValue);
     
     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
     
