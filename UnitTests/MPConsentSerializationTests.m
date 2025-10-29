@@ -211,7 +211,7 @@ static NSTimeInterval epsilon = 0.05;
 
 - (void)testFilterFromDictionary {
     NSDictionary *configDictionary = @{@"i":@YES, @"v":@[@{@"c":@YES,@"h":@48278946},@{@"c":@YES,@"h":@1556641}]};
-    MPConsentKitFilter *filter = [MPConsentSerialization filterFromDictionary:configDictionary];
+    MPConsentKitFilter *filter = [MPConsentSerializationNew filterFromDictionary:configDictionary];
     XCTAssertTrue(filter.shouldIncludeOnMatch);
     NSArray<MPConsentKitFilterItem *> *filterItems = filter.filterItems;
     XCTAssertEqual(filterItems.count, 2);

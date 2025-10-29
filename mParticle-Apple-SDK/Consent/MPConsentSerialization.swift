@@ -206,4 +206,33 @@ public class MPConsentSerializationNew: NSObject {
         
         return MPConsentSerializationNew.stringFromDictionary(dictionary)
     }
+    
+    static func filterFromDictionary(_ configDictionary: [String: Any]) -> MPConsentKitFilter {
+        var filter = MPConsentKitFilter()
+        
+        filter.shouldIncludeOnMatch = configDictionary[kMPConsentKitFilterIncludeOnMatch] as? NSNumber
+        
+        if let itemsArray = configDictionary[kMPConsentKitFilterItems] as? NSArray {
+            var items = [MPConsentKitFilterItem]();
+            
+            for itemDictionary in itemsArray {
+                if let itemDictionary = itemDictionary as? [String: Any] {
+                    items.append(MPConsentKitFilterItem(itemDictionary))
+                }
+            }
+            
+            filter.filterItems = items
+            
+        }
+        
+        return filter;
+    }
+}
+
+extension MPConsentKitFilterItem {
+    convenience init(_ dictionary: [String: Any]) {
+        self.init()
+        consented = dictionary[MPConsentSerializationNew.kMPConsentKitFilterItemConsented] as? NSNumber
+        javascriptHash = dictionary[MPConsentSerializationNew.kMPConsentKitFilterItemHash] as? NSNumber
+    }
 }

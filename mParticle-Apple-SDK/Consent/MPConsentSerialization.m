@@ -92,48 +92,4 @@
 #pragma mark private helpers
 
 
-+ (MPConsentKitFilter *)filterFromDictionary:(NSDictionary *)configDictionary {
-    
-    MPConsentKitFilter *filter = nil;
-    
-    if (configDictionary && [configDictionary isKindOfClass:[NSDictionary class]]) {
-        
-        filter = [[MPConsentKitFilter alloc] init];
-        
-        if (configDictionary[MPConsentSerializationNew.kMPConsentKitFilterIncludeOnMatch]  && [configDictionary[MPConsentSerializationNew.kMPConsentKitFilterIncludeOnMatch] isKindOfClass:[NSNumber class]]) {
-            filter.shouldIncludeOnMatch = (NSNumber *)configDictionary[MPConsentSerializationNew.kMPConsentKitFilterIncludeOnMatch];
-        }
-        
-        NSDictionary *itemsArray = configDictionary[MPConsentSerializationNew.kMPConsentKitFilterItems];
-        if (itemsArray && [itemsArray isKindOfClass:[NSArray class]]) {
-            NSMutableArray *items = [NSMutableArray array];
-            
-            for (NSDictionary *itemDictionary in itemsArray) {
-                
-                if ([itemDictionary isKindOfClass:[NSDictionary class]]) {
-                    
-                    MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
-                    
-                    if (itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemConsented] && [itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemConsented] isKindOfClass:[NSNumber class]]) {
-                        item.consented = (NSNumber *)itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemConsented];
-                    }
-                    
-                    if (itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemHash]  && [itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemHash] isKindOfClass:[NSNumber class]]) {
-                        item.javascriptHash = (NSNumber *)itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemHash];
-                    }
-                    
-                    [items addObject:item];
-                    
-                }
-                
-            }
-            
-            filter.filterItems = [items copy];
-            
-        }
-    }
-    
-    return filter;
-}
-
 @end

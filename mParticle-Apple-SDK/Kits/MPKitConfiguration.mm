@@ -77,7 +77,7 @@
     
     // Consent kit filter
     if (configurationDictionary[MPConsentSerializationNew.kMPConsentKitFilter]) {
-        _consentKitFilter = [MPConsentSerialization filterFromDictionary:configurationDictionary[MPConsentSerializationNew.kMPConsentKitFilter]];
+        _consentKitFilter = [MPConsentSerializationNew filterFromDictionary:configurationDictionary[MPConsentSerializationNew.kMPConsentKitFilter]];
     }
     
     // Kit instance
