@@ -38,4 +38,24 @@ public class MPConsentSerializationNew: NSObject {
             return nil
         }
     }
+    
+    static func dictionaryFromString(_ string: String) -> [String: Any]? {
+        guard let data = string.data(using: .utf8), !data.isEmpty else {
+            print("Unable to create Data from UTF-8 string=\(string)")
+            return nil
+        }
+        
+        do {
+            let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+            guard let dictionary = jsonObject as? [String: Any] else {
+                print("Unable to create Dictionary (got \(type(of: jsonObject)) instead) when trying to deserialize JSON data=\(data)")
+                return nil
+            }
+            return dictionary
+        } catch {
+            print("Caught exception while creating dictionary from data: \(data)")
+            return nil
+        }
+    }
+
 }

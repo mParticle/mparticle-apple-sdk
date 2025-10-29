@@ -180,7 +180,7 @@
 
 + (nullable MPConsentStateSwift *)consentStateFromString:(NSString *)string {
     MPConsentStateSwift *state = nil;
-    NSDictionary *dictionary = [self dictionaryFromString:string];
+    NSDictionary *dictionary = [MPConsentSerializationNew dictionaryFromString:string];
     if (!dictionary) {
         MPILogError(@"Failed to create consent state from string=%@", string);
         return nil;
@@ -261,47 +261,6 @@
 
 #pragma mark private helpers
 
-+ (nullable NSDictionary *)dictionaryFromString:(NSString *)string {
-    const char *rawString = string.UTF8String;
-    NSUInteger length = string.length;
-    if (rawString == NULL || length == 0) {
-        MPILogError(@"Empty or invalid UTF-8 C string when trying to convert string=%@", string);
-        return nil;
-    }
-    
-    NSData *data = [NSData dataWithBytes:rawString length:length];
-    if (!data) {
-        MPILogError(@"Unable to create NSData with UTF-8 rawString=%s length=%@", rawString, @(length));
-        return nil;
-    }
-    
-    NSError *error = nil;
-    id jsonObject = nil;
-    @try {
-        jsonObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-    } @catch(NSException *e) {
-        MPILogError(@"Caught exception while creating dictionary from data: %@", data);
-        return nil;
-    }
-    
-    if (error) {
-        MPILogError(@"Creating JSON object failed with error=%@ when trying to deserialize data=%@", error, data);
-        return nil;
-    }
-    
-    if (!jsonObject) {
-        MPILogError(@"Unable to create JSON object from data=%@", data);
-        return nil;
-    }
-    
-    if (![jsonObject isKindOfClass:[NSDictionary class]]) {
-        MPILogError(@"Unable to create NSDictionary (got %@ instead) when trying to deserialize JSON data=%@", [jsonObject class], data);
-        return nil;
-    }
-    
-    NSDictionary *dictionary = (NSDictionary *)jsonObject;
-    return dictionary;
-}
 
 + (MPConsentKitFilter *)filterFromDictionary:(NSDictionary *)configDictionary {
     
