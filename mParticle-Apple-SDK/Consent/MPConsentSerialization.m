@@ -100,11 +100,11 @@
         
         filter = [[MPConsentKitFilter alloc] init];
         
-        if (configDictionary[kMPConsentKitFilterIncludeOnMatch]  && [configDictionary[kMPConsentKitFilterIncludeOnMatch] isKindOfClass:[NSNumber class]]) {
-            filter.shouldIncludeOnMatch = (NSNumber *)configDictionary[kMPConsentKitFilterIncludeOnMatch];
+        if (configDictionary[MPConsentSerializationNew.kMPConsentKitFilterIncludeOnMatch]  && [configDictionary[MPConsentSerializationNew.kMPConsentKitFilterIncludeOnMatch] isKindOfClass:[NSNumber class]]) {
+            filter.shouldIncludeOnMatch = (NSNumber *)configDictionary[MPConsentSerializationNew.kMPConsentKitFilterIncludeOnMatch];
         }
         
-        NSDictionary *itemsArray = configDictionary[kMPConsentKitFilterItems];
+        NSDictionary *itemsArray = configDictionary[MPConsentSerializationNew.kMPConsentKitFilterItems];
         if (itemsArray && [itemsArray isKindOfClass:[NSArray class]]) {
             NSMutableArray *items = [NSMutableArray array];
             
@@ -114,12 +114,12 @@
                     
                     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
                     
-                    if (itemDictionary[kMPConsentKitFilterItemConsented] && [itemDictionary[kMPConsentKitFilterItemConsented] isKindOfClass:[NSNumber class]]) {
-                        item.consented = (NSNumber *)itemDictionary[kMPConsentKitFilterItemConsented];
+                    if (itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemConsented] && [itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemConsented] isKindOfClass:[NSNumber class]]) {
+                        item.consented = (NSNumber *)itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemConsented];
                     }
                     
-                    if (itemDictionary[kMPConsentKitFilterItemHash]  && [itemDictionary[kMPConsentKitFilterItemHash] isKindOfClass:[NSNumber class]]) {
-                        item.javascriptHash = (NSNumber *)itemDictionary[kMPConsentKitFilterItemHash];
+                    if (itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemHash]  && [itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemHash] isKindOfClass:[NSNumber class]]) {
+                        item.javascriptHash = (NSNumber *)itemDictionary[MPConsentSerializationNew.kMPConsentKitFilterItemHash];
                     }
                     
                     [items addObject:item];

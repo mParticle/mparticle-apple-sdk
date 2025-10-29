@@ -76,8 +76,8 @@
     [self configureProjections:configurationDictionary[@"pr"]];
     
     // Consent kit filter
-    if (configurationDictionary[kMPConsentKitFilter]) {
-        _consentKitFilter = [MPConsentSerialization filterFromDictionary:configurationDictionary[kMPConsentKitFilter]];
+    if (configurationDictionary[MPConsentSerializationNew.kMPConsentKitFilter]) {
+        _consentKitFilter = [MPConsentSerialization filterFromDictionary:configurationDictionary[MPConsentSerializationNew.kMPConsentKitFilter]];
     }
     
     // Kit instance
@@ -178,8 +178,8 @@
     _addEventAttributeList = _filters[@"eaa"];
     _removeEventAttributeList = _filters[@"ear"];
     _singleItemEventAttributeList = _filters[@"eas"];
-    _consentRegulationFilters = _filters[kMPConsentRegulationFilters];
-    _consentPurposeFilters = _filters[kMPConsentPurposeFilters];
+    _consentRegulationFilters = _filters[MPConsentSerializationNew.kMPConsentRegulationFilters];
+    _consentPurposeFilters = _filters[MPConsentSerializationNew.kMPConsentPurposeFilters];
 }
 
 #pragma mark Public methods

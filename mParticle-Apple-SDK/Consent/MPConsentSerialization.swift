@@ -29,6 +29,18 @@ public class MPConsentSerializationNew: NSObject {
     static let kMPConsentStateLocationKey = "location"
     static let kMPConsentStateHardwareIdKey = "hardware_id"
     
+    // Consent filtering
+    static let kMPConsentKitFilter = "crvf"
+    static let kMPConsentKitFilterIncludeOnMatch = "i"
+    static let kMPConsentKitFilterItems = "v"
+    static let kMPConsentKitFilterItemConsented = "c"
+    static let kMPConsentKitFilterItemHash = "h"
+    static let kMPConsentRegulationFilters = "reg"
+    static let kMPConsentPurposeFilters = "pur"
+    static let kMPConsentGDPRRegulationType = "1"
+    static let kMPConsentCCPARegulationType = "2"
+    static let kMPConsentCCPAPurposeName = "data_sale_opt_out"
+    
     static func stringFromDictionary(_ dictionary: [String: Any]) -> String? {
         do {
             let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])

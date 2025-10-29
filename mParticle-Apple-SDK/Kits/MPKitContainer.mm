@@ -441,7 +441,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     MPGDPRConsent *gdprConsent = gdprConsentState[purpose];
                     BOOL userConsented = gdprConsent.consented;
                     
-                    NSString *purposeHash = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
+                    NSString *purposeHash = [MPIHasher hashConsentPurpose:MPConsentSerializationNew.kMPConsentGDPRRegulationType purpose:purpose];
                     
                     if (consented == userConsented && [purposeHash isEqual:hashString]) {
                         isMatch = YES;
@@ -452,7 +452,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
                 
                 if (ccpaConsentState != nil) {
-                    NSString *purposeHash = [MPIHasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
+                    NSString *purposeHash = [MPIHasher hashConsentPurpose:MPConsentSerializationNew.kMPConsentCCPARegulationType purpose:MPConsentSerializationNew.kMPConsentCCPAPurposeName];
                     
                     if (consented == ccpaConsentState.consented && [purposeHash isEqual:hashString]) {
                         isMatch = YES;
@@ -1039,7 +1039,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSDictionary<NSString *, MPGDPRConsent *> *gdprState = state.gdprConsentState;
                 
         if (ccpaConsentState != nil) {
-            NSString *regulationHash = [MPIHasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
+            NSString *regulationHash = [MPIHasher hashConsentPurpose:MPConsentSerializationNew.kMPConsentCCPARegulationType purpose:MPConsentSerializationNew.kMPConsentCCPAPurposeName];
             
             if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
                 kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
@@ -1054,7 +1054,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         }
         
         if (gdprState) {
-            NSString *regulationHash = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
+            NSString *regulationHash = [MPIHasher hashConsentPurpose:MPConsentSerializationNew.kMPConsentGDPRRegulationType purpose:@""];
             
             if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
                 kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
@@ -1069,7 +1069,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 NSMutableDictionary<NSString *, MPGDPRConsent *> *filteredGDPRState = [NSMutableDictionary dictionary];
                 
                 for (NSString *purpose in gdprState) {
-                    NSString *purposeHash = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
+                    NSString *purposeHash = [MPIHasher hashConsentPurpose:MPConsentSerializationNew.kMPConsentGDPRRegulationType purpose:purpose];
                     
                     BOOL shouldFilterPurpose = kitConfiguration.consentPurposeFilters[purposeHash] && [kitConfiguration.consentPurposeFilters[purposeHash] isEqual:@0];
                     

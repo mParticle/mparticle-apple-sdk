@@ -65,18 +65,6 @@ NSString *const kMPDataPlanVersionKey = @"v";
 // Consent
 NSString *const kMPConsentState = @"con";
 
-// Consent filtering
-NSString *const kMPConsentKitFilter = @"crvf";
-NSString *const kMPConsentKitFilterIncludeOnMatch = @"i";
-NSString *const kMPConsentKitFilterItems = @"v";
-NSString *const kMPConsentKitFilterItemConsented = @"c";
-NSString *const kMPConsentKitFilterItemHash = @"h";
-NSString *const kMPConsentRegulationFilters = @"reg";
-NSString *const kMPConsentPurposeFilters = @"pur";
-NSString *const kMPConsentGDPRRegulationType = @"1";
-NSString *const kMPConsentCCPARegulationType = @"2";
-NSString *const kMPConsentCCPAPurposeName = @"data_sale_opt_out";
-
 // Push Notifications
 NSString *const kMPDeviceTokenKey = @"to";
 NSString *const kMPPushStatusKey = @"r";
