@@ -19,15 +19,10 @@ static NSTimeInterval epsilon = 0.05;
 @implementation MPConsentSerializationTests
 
 - (void)testServerDictionaryGDPR {
-    MPConsentStateSwift *consentState = nil;
     NSDictionary *dictionary = nil;
     
-    dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
-    XCTAssertNotNil(dictionary);
-    XCTAssertEqual(dictionary.count, 0);
-    
-    consentState = [[MPConsentStateSwift alloc] init];
-    dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
+    MPConsentStateSwift* consentState = [[MPConsentStateSwift alloc] init];
+    dictionary = [MPConsentSerializationNew serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 0);
     
@@ -41,7 +36,7 @@ static NSTimeInterval epsilon = 0.05;
     gdprConsent.hardwareId = @"foo-hardware-id-1";
     
     [consentState addGDPRConsentStateWithConsent:gdprConsent purpose:@"test purpose 1"];
-    dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
+    dictionary = [MPConsentSerializationNew serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
@@ -87,7 +82,7 @@ static NSTimeInterval epsilon = 0.05;
     string = [MPConsentSerialization stringFromConsentState:consentState];
     XCTAssertNotNil(string);
     
-    dictionary = [MPConsentSerialization dictionaryFromString:string];
+    dictionary = [MPConsentSerializationNew dictionaryFromString:string];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
@@ -124,15 +119,10 @@ static NSTimeInterval epsilon = 0.05;
 }
 
 - (void)testServerDictionaryCCPA {
-    MPConsentStateSwift *consentState = nil;
     NSDictionary *dictionary = nil;
     
-    dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
-    XCTAssertNotNil(dictionary);
-    XCTAssertEqual(dictionary.count, 0);
-    
-    consentState = [[MPConsentStateSwift alloc] init];
-    dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
+    MPConsentStateSwift* consentState = [[MPConsentStateSwift alloc] init];
+    dictionary = [MPConsentSerializationNew serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 0);
     
@@ -146,7 +136,7 @@ static NSTimeInterval epsilon = 0.05;
     ccpaConsent.hardwareId = @"foo-hardware-id-1";
     
     [consentState setCcpaConsentState:ccpaConsent];
-    dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
+    dictionary = [MPConsentSerializationNew serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
@@ -192,7 +182,7 @@ static NSTimeInterval epsilon = 0.05;
     string = [MPConsentSerialization stringFromConsentState:consentState];
     XCTAssertNotNil(string);
     
-    dictionary = [MPConsentSerialization dictionaryFromString:string];
+    dictionary = [MPConsentSerializationNew dictionaryFromString:string];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     

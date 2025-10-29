@@ -222,7 +222,7 @@
     
     MPConsentStateSwift *consentState = [MPPersistenceController_PRIVATE consentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
     if (consentState) {
-        NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
+        NSDictionary *consentStateDictionary = [MPConsentSerializationNew serverDictionaryFromConsentState:consentState];
         if (consentStateDictionary) {
             _uploadDictionary[kMPConsentState] = consentStateDictionary;
         }
