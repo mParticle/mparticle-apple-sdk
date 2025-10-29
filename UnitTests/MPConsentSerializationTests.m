@@ -1,16 +1,9 @@
 #import <XCTest/XCTest.h>
 #import "MPIConstants.h"
-#import "MPConsentSerialization.h"
 #import "MPBaseTestCase.h"
 #import "MParticleSwift.h"
 
 static NSTimeInterval epsilon = 0.05;
-
-@interface MPConsentSerialization ()
-
-+ (nullable NSDictionary *)dictionaryFromString:(NSString *)string;
-
-@end
 
 @interface MPConsentSerializationTests : MPBaseTestCase
 
@@ -102,7 +95,7 @@ static NSTimeInterval epsilon = 0.05;
 
 - (void)testFromStringGDPR {
     NSString *string = @"{\"gdpr\":{\"test purpose 1\":{\"document\":\"foo-document-1\",\"consented\":true,\"timestamp\":1524176880.888195,\"hardware_id\":\"foo-hardware-id-1\",\"location\":\"foo-location-1\"}}}";
-    MPConsentStateSwift *state = [MPConsentSerialization consentStateFromString:string];
+    MPConsentStateSwift *state = [MPConsentSerializationNew consentStateFromString:string];
     NSDictionary<NSString *, MPGDPRConsent *> *gdprStateDictionary = [state gdprConsentState];
     XCTAssertEqual(gdprStateDictionary.count, 1);
     MPGDPRConsent *gdprState = gdprStateDictionary[@"test purpose 1"];
@@ -198,7 +191,7 @@ static NSTimeInterval epsilon = 0.05;
 
 - (void)testFromStringCCPA {
     NSString *string = @"{\"ccpa\":{\"data_sale_opt_out\":{\"document\":\"foo-document-1\",\"consented\":true,\"timestamp\":1524176880.888195,\"hardware_id\":\"foo-hardware-id-1\",\"location\":\"foo-location-1\"}}}";
-    MPConsentStateSwift *state = [MPConsentSerialization consentStateFromString:string];
+    MPConsentStateSwift *state = [MPConsentSerializationNew consentStateFromString:string];
     MPCCPAConsent *ccpaState = [state ccpaConsentState];
     XCTAssertNotNil(ccpaState);
     XCTAssertTrue(ccpaState.consented);

@@ -2,7 +2,6 @@
 #import "MPIConstants.h"
 #import "MPEventProjection.h"
 #import "MPILogger.h"
-#import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPEnums.h"
 #import "MParticleSwift.h"

@@ -10,7 +10,6 @@
 #import "MPApplication.h"
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"
-#import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPILogger.h"
 #import "MParticleSwift.h"

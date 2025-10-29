@@ -13,7 +13,6 @@
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPIConstants.h"
-#import "MPConsentSerialization.h"
 #import <sqlite3.h>
 #import "MPListenerProtocol.h"
 #import "MPKitFilter.h"
@@ -143,7 +142,7 @@ const int MaxBreadcrumbs = 50;
         return nil;
     }
     
-    MPConsentStateSwift *state = [MPConsentSerialization consentStateFromString:string];
+    MPConsentStateSwift *state = [MPConsentSerializationNew consentStateFromString:string];
     if (!state) {
         return nil;
     }
