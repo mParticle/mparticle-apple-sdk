@@ -112,28 +112,6 @@ extern NSString * _Nonnull const kMPDataPlanVersionKey;
 // Consent
 extern NSString * _Nonnull const kMPConsentState;
 
-// GDPR Consent
-extern NSString * _Nonnull const kMPConsentStateGDPR;
-
-// CCPA Consent
-extern NSString * _Nonnull const kMPConsentStateCCPA;
-extern NSString * _Nonnull const kMPConsentStateCCPAPurpose;
-
-extern NSString * _Nonnull const kMPConsentStateConsented;
-extern NSString * _Nonnull const kMPConsentStateDocument;
-extern NSString * _Nonnull const kMPConsentStateTimestamp;
-extern NSString * _Nonnull const kMPConsentStateLocation;
-extern NSString * _Nonnull const kMPConsentStateHardwareId;
-
-// Consent serialization
-extern NSString * _Nonnull const kMPConsentStateKey;
-extern NSString * _Nonnull const kMPConsentStateGDPRKey;
-extern NSString * _Nonnull const kMPConsentStateConsentedKey;
-extern NSString * _Nonnull const kMPConsentStateDocumentKey;
-extern NSString * _Nonnull const kMPConsentStateTimestampKey;
-extern NSString * _Nonnull const kMPConsentStateLocationKey;
-extern NSString * _Nonnull const kMPConsentStateHardwareIdKey;
-
 // Consent filtering
 extern NSString * _Nonnull const kMPConsentKitFilter;
 extern NSString * _Nonnull const kMPConsentKitFilterIncludeOnMatch;

@@ -25,6 +25,8 @@
 		351B4AA82EB1476600848801 /* MPConsentKitFilterItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4AA62EB1476500848801 /* MPConsentKitFilterItem.swift */; };
 		351B4AAB2EB14A9100848801 /* MPConsentKitFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4AAA2EB14A8C00848801 /* MPConsentKitFilter.swift */; };
 		351B4AAC2EB14A9100848801 /* MPConsentKitFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4AAA2EB14A8C00848801 /* MPConsentKitFilter.swift */; };
+		351B4AB12EB2302800848801 /* MPConsentSerialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4AB02EB2302700848801 /* MPConsentSerialization.swift */; };
+		351B4AB22EB2302800848801 /* MPConsentSerialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B4AB02EB2302700848801 /* MPConsentSerialization.swift */; };
 		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEA2E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
@@ -582,6 +584,7 @@
 		351B4A972EB116D300848801 /* MPConsentStateSwift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConsentStateSwift.swift; sourceTree = "<group>"; };
 		351B4AA62EB1476500848801 /* MPConsentKitFilterItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConsentKitFilterItem.swift; sourceTree = "<group>"; };
 		351B4AAA2EB14A8C00848801 /* MPConsentKitFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConsentKitFilter.swift; sourceTree = "<group>"; };
+		351B4AB02EB2302700848801 /* MPConsentSerialization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConsentSerialization.swift; sourceTree = "<group>"; };
 		35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPNetworkOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
@@ -1076,6 +1079,7 @@
 		53A79AF529CDFB1F00E7489F /* Consent */ = {
 			isa = PBXGroup;
 			children = (
+				351B4AB02EB2302700848801 /* MPConsentSerialization.swift */,
 				351B4AAA2EB14A8C00848801 /* MPConsentKitFilter.swift */,
 				351B4AA62EB1476500848801 /* MPConsentKitFilterItem.swift */,
 				351B4A972EB116D300848801 /* MPConsentStateSwift.swift */,
@@ -1936,6 +1940,7 @@
 				53A79C0529CDFB2100E7489F /* MPTransactionAttributes.m in Sources */,
 				53A79C0429CDFB2100E7489F /* MPCommerceEventInstruction.m in Sources */,
 				53A79B9029CDFB2000E7489F /* MPDataModelAbstract.m in Sources */,
+				351B4AB22EB2302800848801 /* MPConsentSerialization.swift in Sources */,
 				53FDD1BD2AE871AF003D5FA1 /* MPIHasher.swift in Sources */,
 				D3DE316B2D5261FC00CC537F /* MPDevice.swift in Sources */,
 				53A79BBD29CDFB2000E7489F /* MPBackendController.m in Sources */,
@@ -2132,6 +2137,7 @@
 				53A79DAF29CE23F700E7489F /* MPURLConnectionAssociate.m in Sources */,
 				53A79DB129CE23F700E7489F /* MPTransactionAttributes.m in Sources */,
 				53A79DB329CE23F700E7489F /* MPCommerceEventInstruction.m in Sources */,
+				351B4AB12EB2302800848801 /* MPConsentSerialization.swift in Sources */,
 				53A79DB429CE23F700E7489F /* MPDataModelAbstract.m in Sources */,
 				D3DE316C2D5261FC00CC537F /* MPDevice.swift in Sources */,
 				53FDD1BE2AE871AF003D5FA1 /* MPIHasher.swift in Sources */,

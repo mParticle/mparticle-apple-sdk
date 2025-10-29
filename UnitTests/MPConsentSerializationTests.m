@@ -45,7 +45,7 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
-    NSDictionary *gdprDictionary = dictionary[kMPConsentStateGDPR];
+    NSDictionary *gdprDictionary = dictionary[MPConsentSerializationNew.kMPConsentStateGDPR];
     XCTAssertNotNil(gdprDictionary);
     XCTAssertEqual(gdprDictionary.count, 1);
     
@@ -53,12 +53,12 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(gdprStateDictionary);
     XCTAssertEqual(gdprStateDictionary.count, 5);
     
-    XCTAssertEqualObjects(gdprStateDictionary[kMPConsentStateConsented], @YES);
-    XCTAssertEqualObjects(gdprStateDictionary[kMPConsentStateDocument], @"foo-document-1");
-    XCTAssertEqualObjects(gdprStateDictionary[kMPConsentStateLocation], @"foo-location-1");
-    XCTAssertEqualObjects(gdprStateDictionary[kMPConsentStateHardwareId], @"foo-hardware-id-1");
-    XCTAssertNotNil(gdprStateDictionary[kMPConsentStateTimestamp]);
-    double interval = ((NSNumber *)gdprStateDictionary[kMPConsentStateTimestamp]).doubleValue/1000;
+    XCTAssertEqualObjects(gdprStateDictionary[MPConsentSerializationNew.kMPConsentStateConsented], @YES);
+    XCTAssertEqualObjects(gdprStateDictionary[MPConsentSerializationNew.kMPConsentStateDocument], @"foo-document-1");
+    XCTAssertEqualObjects(gdprStateDictionary[MPConsentSerializationNew.kMPConsentStateLocation], @"foo-location-1");
+    XCTAssertEqualObjects(gdprStateDictionary[MPConsentSerializationNew.kMPConsentStateHardwareId], @"foo-hardware-id-1");
+    XCTAssertNotNil(gdprStateDictionary[MPConsentSerializationNew.kMPConsentStateTimestamp]);
+    double interval = ((NSNumber *)gdprStateDictionary[MPConsentSerializationNew.kMPConsentStateTimestamp]).doubleValue/1000;
     XCTAssertLessThan([NSDate dateWithTimeIntervalSince1970:interval].timeIntervalSinceNow, epsilon);
 }
 
@@ -150,20 +150,20 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
-    NSDictionary *ccpaDictionary = dictionary[kMPConsentStateCCPA];
+    NSDictionary *ccpaDictionary = dictionary[MPConsentSerializationNew.kMPConsentStateCCPA];
     XCTAssertNotNil(ccpaDictionary);
     XCTAssertEqual(ccpaDictionary.count, 1);
     
-    NSDictionary *ccpaStateDictionary = ccpaDictionary[kMPConsentStateCCPAPurpose];
+    NSDictionary *ccpaStateDictionary = ccpaDictionary[MPConsentSerializationNew.kMPConsentStateCCPAPurpose];
     XCTAssertNotNil(ccpaStateDictionary);
     XCTAssertEqual(ccpaStateDictionary.count, 5);
     
-    XCTAssertEqualObjects(ccpaStateDictionary[kMPConsentStateConsented], @YES);
-    XCTAssertEqualObjects(ccpaStateDictionary[kMPConsentStateDocument], @"foo-document-1");
-    XCTAssertEqualObjects(ccpaStateDictionary[kMPConsentStateLocation], @"foo-location-1");
-    XCTAssertEqualObjects(ccpaStateDictionary[kMPConsentStateHardwareId], @"foo-hardware-id-1");
-    XCTAssertNotNil(ccpaStateDictionary[kMPConsentStateTimestamp]);
-    double interval = ((NSNumber *)ccpaStateDictionary[kMPConsentStateTimestamp]).doubleValue/1000;
+    XCTAssertEqualObjects(ccpaStateDictionary[MPConsentSerializationNew.kMPConsentStateConsented], @YES);
+    XCTAssertEqualObjects(ccpaStateDictionary[MPConsentSerializationNew.kMPConsentStateDocument], @"foo-document-1");
+    XCTAssertEqualObjects(ccpaStateDictionary[MPConsentSerializationNew.kMPConsentStateLocation], @"foo-location-1");
+    XCTAssertEqualObjects(ccpaStateDictionary[MPConsentSerializationNew.kMPConsentStateHardwareId], @"foo-hardware-id-1");
+    XCTAssertNotNil(ccpaStateDictionary[MPConsentSerializationNew.kMPConsentStateTimestamp]);
+    double interval = ((NSNumber *)ccpaStateDictionary[MPConsentSerializationNew.kMPConsentStateTimestamp]).doubleValue/1000;
     XCTAssertLessThan([NSDate dateWithTimeIntervalSince1970:interval].timeIntervalSinceNow, epsilon);
 }
 
@@ -196,11 +196,11 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
-    NSDictionary *ccpaDictionary = dictionary[kMPConsentStateCCPA];
+    NSDictionary *ccpaDictionary = dictionary[MPConsentSerializationNew.kMPConsentStateCCPA];
     XCTAssertNotNil(ccpaDictionary);
     XCTAssertEqual(ccpaDictionary.count, 1);
     
-    NSDictionary *ccpaStateDictionary = ccpaDictionary[kMPConsentStateCCPAPurpose];
+    NSDictionary *ccpaStateDictionary = ccpaDictionary[MPConsentSerializationNew.kMPConsentStateCCPAPurpose];
     XCTAssertNotNil(ccpaStateDictionary);
     XCTAssertEqual(ccpaStateDictionary.count, 5);
     

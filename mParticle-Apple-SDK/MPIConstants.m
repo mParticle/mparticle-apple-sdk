@@ -65,28 +65,6 @@ NSString *const kMPDataPlanVersionKey = @"v";
 // Consent
 NSString *const kMPConsentState = @"con";
 
-// GDPR Consent
-NSString *const kMPConsentStateGDPR = @"gdpr";
-
-// CCPA Consent
-NSString *const kMPConsentStateCCPA = @"ccpa";
-NSString *const kMPConsentStateCCPAPurpose = @"data_sale_opt_out";
-
-NSString *const kMPConsentStateConsented = @"c";
-NSString *const kMPConsentStateDocument = @"d";
-NSString *const kMPConsentStateTimestamp = @"ts";
-NSString *const kMPConsentStateLocation = @"l";
-NSString *const kMPConsentStateHardwareId = @"h";
-
-// Consent serialization
-NSString *const kMPConsentStateKey = @"consent_state";
-NSString *const kMPConsentStateGDPRKey = @"gdpr";
-NSString *const kMPConsentStateConsentedKey = @"consented";
-NSString *const kMPConsentStateDocumentKey = @"document";
-NSString *const kMPConsentStateTimestampKey = @"timestamp";
-NSString *const kMPConsentStateLocationKey = @"location";
-NSString *const kMPConsentStateHardwareIdKey = @"hardware_id";
-
 // Consent filtering
 NSString *const kMPConsentKitFilter = @"crvf";
 NSString *const kMPConsentKitFilterIncludeOnMatch = @"i";
