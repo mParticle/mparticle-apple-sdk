@@ -58,15 +58,11 @@ static NSTimeInterval epsilon = 0.05;
 }
 
 - (void)testToStringGDPR {
-    MPConsentStateSwift *consentState = nil;
     NSString *string = nil;
     NSDictionary *dictionary = nil;
     
-    string = [MPConsentSerialization stringFromConsentState:consentState];
-    XCTAssertNil(string);
-    
-    consentState = [[MPConsentStateSwift alloc] init];
-    string = [MPConsentSerialization stringFromConsentState:consentState];
+    MPConsentStateSwift *consentState = [[MPConsentStateSwift alloc] init];
+    string = [MPConsentSerializationNew stringFromConsentState:consentState];
     XCTAssertNil(string);
     
     NSDate *date = [NSDate date];
@@ -79,7 +75,7 @@ static NSTimeInterval epsilon = 0.05;
     gdprConsent.hardwareId = @"foo-hardware-id-1";
     
     [consentState addGDPRConsentStateWithConsent:gdprConsent purpose:@"test purpose 1"];
-    string = [MPConsentSerialization stringFromConsentState:consentState];
+    string = [MPConsentSerializationNew stringFromConsentState:consentState];
     XCTAssertNotNil(string);
     
     dictionary = [MPConsentSerializationNew dictionaryFromString:string];
@@ -158,15 +154,11 @@ static NSTimeInterval epsilon = 0.05;
 }
 
 - (void)testToStringCCPA {
-    MPConsentStateSwift *consentState = nil;
     NSString *string = nil;
     NSDictionary *dictionary = nil;
     
-    string = [MPConsentSerialization stringFromConsentState:consentState];
-    XCTAssertNil(string);
-    
-    consentState = [[MPConsentStateSwift alloc] init];
-    string = [MPConsentSerialization stringFromConsentState:consentState];
+    MPConsentStateSwift* consentState = [[MPConsentStateSwift alloc] init];
+    string = [MPConsentSerializationNew stringFromConsentState:consentState];
     XCTAssertNil(string);
     
     NSDate *date = [NSDate date];
@@ -179,7 +171,7 @@ static NSTimeInterval epsilon = 0.05;
     ccpaConsent.hardwareId = @"foo-hardware-id-1";
     
     [consentState setCcpaConsentState:ccpaConsent];
-    string = [MPConsentSerialization stringFromConsentState:consentState];
+    string = [MPConsentSerializationNew stringFromConsentState:consentState];
     XCTAssertNotNil(string);
     
     dictionary = [MPConsentSerializationNew dictionaryFromString:string];

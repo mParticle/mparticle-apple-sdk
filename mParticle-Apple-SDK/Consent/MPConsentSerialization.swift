@@ -123,4 +123,75 @@ public class MPConsentSerializationNew: NSObject {
         
         return dictionary;
     }
+    
+    static func stringFromConsentState(_ state: MPConsentStateSwift) -> String? {
+        
+        var dictionary = [String: Any]()
+        var ccpaState = state.ccpaConsentState
+        
+        var gdprStateDictionary = state.gdprConsentState
+        if gdprStateDictionary.count == 0 && ccpaState == nil {
+            return nil;
+        }
+        
+        var gdprDictionary = [String: Any]()
+        for (purpose, gdprConsent) in gdprStateDictionary {
+            var gdprConsentDictionary = [String: Any]()
+            
+            gdprConsentDictionary[kMPConsentStateConsentedKey] = gdprConsent.consented
+            
+            if let document = gdprConsent.document {
+                gdprConsentDictionary[kMPConsentStateDocumentKey] = document;
+            }
+            
+            gdprConsentDictionary[kMPConsentStateTimestampKey] = gdprConsent.timestamp.timeIntervalSince1970 * 1000;
+            
+            if let location = gdprConsent.location {
+                gdprConsentDictionary[kMPConsentStateLocationKey] = location;
+            }
+            
+            if let hardwareId = gdprConsent.hardwareId {
+                gdprConsentDictionary[kMPConsentStateHardwareIdKey] = hardwareId;
+            }
+            
+            gdprDictionary[purpose] = gdprConsentDictionary
+        }
+        
+        if !gdprDictionary.isEmpty {
+            dictionary[kMPConsentStateGDPRKey] = gdprDictionary;
+        }
+        
+        var ccpaDictionary = [String: Any]()
+        var ccpaConsentDictionary = [String: Any]()
+        if let ccpaState {
+            ccpaConsentDictionary[kMPConsentStateConsentedKey] = ccpaState.consented
+            
+            if let document = ccpaState.document {
+                ccpaConsentDictionary[kMPConsentStateDocumentKey] = document;
+            }
+            
+            ccpaConsentDictionary[kMPConsentStateTimestampKey] = ccpaState.timestamp.timeIntervalSince1970 * 1000
+            
+            if let location = ccpaState.location {
+                ccpaConsentDictionary[kMPConsentStateLocationKey] = location;
+            }
+            
+            if let hardwareId = ccpaState.hardwareId {
+                ccpaConsentDictionary[kMPConsentStateHardwareIdKey] = hardwareId;
+            }
+        }
+        if !ccpaConsentDictionary.isEmpty {
+            ccpaDictionary[kMPConsentStateCCPAPurpose] = ccpaConsentDictionary;
+        }
+        
+        if !ccpaDictionary.isEmpty {
+            dictionary[kMPConsentStateCCPA] = ccpaDictionary;
+        }
+        
+        if (dictionary.count == 0) {
+            return nil;
+        }
+        
+        return MPConsentSerializationNew.stringFromDictionary(dictionary)
+    }
 }

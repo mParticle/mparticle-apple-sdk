@@ -159,7 +159,7 @@ const int MaxBreadcrumbs = 50;
         return;
     }
     
-    NSString *string = [MPConsentSerialization stringFromConsentState:state];
+    NSString *string = [MPConsentSerializationNew stringFromConsentState:state];
     if (!string) {
         return;
     }
