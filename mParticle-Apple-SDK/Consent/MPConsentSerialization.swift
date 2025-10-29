@@ -72,8 +72,8 @@ public class MPConsentSerializationNew: NSObject {
 
     static func serverDictionaryFromConsentState(_ state: MPConsentStateSwift) -> [String: Any]? {
         var dictionary = [String: Any]()
-        var gdprStateDictionary = state.gdprConsentState
-        var ccpaState = state.ccpaConsentState
+        let gdprStateDictionary = state.gdprConsentState
+        let ccpaState = state.ccpaConsentState
         if (gdprStateDictionary.count == 0 && ccpaState == nil) {
             return dictionary;
         }
@@ -139,9 +139,9 @@ public class MPConsentSerializationNew: NSObject {
     static func stringFromConsentState(_ state: MPConsentStateSwift) -> String? {
         
         var dictionary = [String: Any]()
-        var ccpaState = state.ccpaConsentState
+        let ccpaState = state.ccpaConsentState
         
-        var gdprStateDictionary = state.gdprConsentState
+        let gdprStateDictionary = state.gdprConsentState
         if gdprStateDictionary.count == 0 && ccpaState == nil {
             return nil;
         }
@@ -149,7 +149,6 @@ public class MPConsentSerializationNew: NSObject {
         var gdprDictionary = [String: Any]()
         for (purpose, gdprConsent) in gdprStateDictionary {
             var gdprConsentDictionary = [String: Any]()
-            
             gdprConsentDictionary[kMPConsentStateConsentedKey] = gdprConsent.consented
             
             if let document = gdprConsent.document {
@@ -174,26 +173,11 @@ public class MPConsentSerializationNew: NSObject {
         }
         
         var ccpaDictionary = [String: Any]()
-        var ccpaConsentDictionary = [String: Any]()
         if let ccpaState {
-            ccpaConsentDictionary[kMPConsentStateConsentedKey] = ccpaState.consented
-            
-            if let document = ccpaState.document {
-                ccpaConsentDictionary[kMPConsentStateDocumentKey] = document;
+            let ccpaConsentDictionary = ccpaState.toDictionary()
+            if !ccpaConsentDictionary.isEmpty {
+                ccpaDictionary[kMPConsentStateCCPAPurpose] = ccpaConsentDictionary;
             }
-            
-            ccpaConsentDictionary[kMPConsentStateTimestampKey] = ccpaState.timestamp.timeIntervalSince1970 * 1000
-            
-            if let location = ccpaState.location {
-                ccpaConsentDictionary[kMPConsentStateLocationKey] = location;
-            }
-            
-            if let hardwareId = ccpaState.hardwareId {
-                ccpaConsentDictionary[kMPConsentStateHardwareIdKey] = hardwareId;
-            }
-        }
-        if !ccpaConsentDictionary.isEmpty {
-            ccpaDictionary[kMPConsentStateCCPAPurpose] = ccpaConsentDictionary;
         }
         
         if !ccpaDictionary.isEmpty {
@@ -208,7 +192,7 @@ public class MPConsentSerializationNew: NSObject {
     }
     
     static func filterFromDictionary(_ configDictionary: [String: Any]) -> MPConsentKitFilter {
-        var filter = MPConsentKitFilter()
+        let filter = MPConsentKitFilter()
         
         filter.shouldIncludeOnMatch = configDictionary[kMPConsentKitFilterIncludeOnMatch] as? NSNumber
         
@@ -233,52 +217,22 @@ public class MPConsentSerializationNew: NSObject {
             return nil;
         }
         
-        var gdprDictionary = dictionary[kMPConsentStateGDPRKey] as? [String: [String: Any]]
-        var ccpaDictionary = dictionary[kMPConsentStateCCPA] as? [String: [String: Any]]
+        let gdprDictionary = dictionary[kMPConsentStateGDPRKey] as? [String: [String: Any]]
+        let ccpaDictionary = dictionary[kMPConsentStateCCPA] as? [String: [String: Any]]
         if gdprDictionary == nil && ccpaDictionary == nil {
             return nil;
         }
         
-        var state = MPConsentStateSwift()
+        let state = MPConsentStateSwift()
         
         if let gdprDictionary {
             for (purpose, gdprConsentDictionary) in gdprDictionary {
-                var gdprState = MPGDPRConsent()
-                
-                if let consented = gdprConsentDictionary[kMPConsentStateConsentedKey] as? NSNumber {
-                    gdprState.consented = consented.boolValue
-                }
-                
-                gdprState.document = gdprConsentDictionary[MPConsentSerializationNew.kMPConsentStateDocumentKey] as? String
-                
-                if let timestamp = gdprConsentDictionary[kMPConsentStateTimestampKey] as? NSNumber {
-                    gdprState.timestamp = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
-                }
-                
-                gdprState.location = gdprConsentDictionary[kMPConsentStateLocationKey] as? String
-                
-                gdprState.hardwareId = gdprConsentDictionary[kMPConsentStateHardwareIdKey] as? String
-                state.addGDPRConsentState(consent: gdprState, purpose: purpose)
+                state.addGDPRConsentState(consent: MPGDPRConsent(gdprConsentDictionary), purpose: purpose)
             }
         }
         
-        if let ccpaDictionary, let ccpaConsentDictionary = ccpaDictionary[MPConsentSerializationNew.kMPConsentStateCCPAPurpose] {
-            var ccpaState = MPCCPAConsent()
-            
-            if let consented = ccpaConsentDictionary[kMPConsentStateConsentedKey] as? NSNumber {
-                ccpaState.consented = consented.boolValue
-            }
-            
-            ccpaState.document = ccpaConsentDictionary[MPConsentSerializationNew.kMPConsentStateDocumentKey] as? String
-            
-            if let timestamp = ccpaConsentDictionary[kMPConsentStateTimestampKey] as? NSNumber {
-                ccpaState.timestamp = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
-            }
-            
-            ccpaState.location = ccpaConsentDictionary[kMPConsentStateLocationKey] as? String
-            ccpaState.hardwareId = ccpaConsentDictionary[kMPConsentStateHardwareIdKey] as? String
-            
-            state.ccpaConsentState = ccpaState
+        if let ccpaConsentDictionary = ccpaDictionary?[kMPConsentStateCCPAPurpose] {
+            state.ccpaConsentState = MPCCPAConsent(ccpaConsentDictionary)
         }
         
         return state;
@@ -290,5 +244,62 @@ extension MPConsentKitFilterItem {
         self.init()
         consented = dictionary[MPConsentSerializationNew.kMPConsentKitFilterItemConsented] as? NSNumber
         javascriptHash = dictionary[MPConsentSerializationNew.kMPConsentKitFilterItemHash] as? NSNumber
+    }
+}
+
+extension MPGDPRConsent {
+    convenience init(_ dictionary: [String: Any]) {
+        self.init()
+        if let consented = dictionary[MPConsentSerializationNew.kMPConsentStateConsentedKey] as? NSNumber {
+            self.consented = consented.boolValue
+        }
+        
+        document = dictionary[MPConsentSerializationNew.kMPConsentStateDocumentKey] as? String
+        
+        if let timestamp = dictionary[MPConsentSerializationNew.kMPConsentStateTimestampKey] as? NSNumber {
+            self.timestamp = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
+        }
+        
+        location = dictionary[MPConsentSerializationNew.kMPConsentStateLocationKey] as? String
+        
+        hardwareId = dictionary[MPConsentSerializationNew.kMPConsentStateHardwareIdKey] as? String
+    }
+}
+
+extension MPCCPAConsent {
+    convenience init(_ dictionary: [String: Any]) {
+        self.init()
+        if let consented = dictionary[MPConsentSerializationNew.kMPConsentStateConsentedKey] as? NSNumber {
+            self.consented = consented.boolValue
+        }
+        
+        document = dictionary[MPConsentSerializationNew.kMPConsentStateDocumentKey] as? String
+        
+        if let timestamp = dictionary[MPConsentSerializationNew.kMPConsentStateTimestampKey] as? NSNumber {
+            self.timestamp = Date(timeIntervalSince1970: timestamp.doubleValue / 1000)
+        }
+        
+        location = dictionary[MPConsentSerializationNew.kMPConsentStateLocationKey] as? String
+        hardwareId = dictionary[MPConsentSerializationNew.kMPConsentStateHardwareIdKey] as? String
+    }
+    
+    func toDictionary() -> [String: Any] {
+        var dictionary = [String: Any]()
+        dictionary[MPConsentSerializationNew.kMPConsentStateConsentedKey] = consented
+        
+        if let document {
+            dictionary[MPConsentSerializationNew.kMPConsentStateDocumentKey] = document;
+        }
+        
+        dictionary[MPConsentSerializationNew.kMPConsentStateTimestampKey] = timestamp.timeIntervalSince1970 * 1000
+        
+        if let location {
+            dictionary[MPConsentSerializationNew.kMPConsentStateLocationKey] = location;
+        }
+        
+        if let hardwareId {
+            dictionary[MPConsentSerializationNew.kMPConsentStateHardwareIdKey] = hardwareId;
+        }
+        return dictionary
     }
 }
