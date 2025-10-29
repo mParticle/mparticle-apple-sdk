@@ -170,7 +170,7 @@
         return nil;
     }
     
-    NSString *string = [self stringFromDictionary:dictionary];
+    NSString *string = [MPConsentSerializationNew stringFromDictionary:dictionary];
     if (!string) {
         MPILogError(@"Failed to create string from consent dictionary=%@", dictionary);
         return nil;
@@ -301,32 +301,6 @@
     
     NSDictionary *dictionary = (NSDictionary *)jsonObject;
     return dictionary;
-}
-
-+ (nullable NSString *)stringFromDictionary:(NSDictionary *)dictionary {
-    NSError *error = nil;
-    NSData *data = nil;
-    @try {
-        data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-    } @catch(NSException *e) {
-        MPILogError(@"Caught exception while creating data from dictionary: %@", dictionary);
-        return nil;
-    }
-
-    if (error) {
-        MPILogError(@"NSJSONSerialization returned an error=%@ when trying to serialize dictionary=%@", error, dictionary);
-        return nil;
-    }
-    if (!data) {
-        MPILogError(@"Unable to create NSData with dictionary=%@", dictionary);
-        return nil;
-    }
-    NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    if (!string) {
-        MPILogError(@"Unable to create UTF-8 string from JSON data=%@ dictionary=%@", data, dictionary);
-        return nil;
-    }
-    return string;
 }
 
 + (MPConsentKitFilter *)filterFromDictionary:(NSDictionary *)configDictionary {

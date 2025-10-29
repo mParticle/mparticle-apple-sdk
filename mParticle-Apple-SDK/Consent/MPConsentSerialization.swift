@@ -28,4 +28,14 @@ public class MPConsentSerializationNew: NSObject {
     static let kMPConsentStateTimestampKey = "timestamp"
     static let kMPConsentStateLocationKey = "location"
     static let kMPConsentStateHardwareIdKey = "hardware_id"
+    
+    static func stringFromDictionary(_ dictionary: [String: Any]) -> String? {
+        do {
+            let data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
+            return String(data: data, encoding: .utf8)
+        } catch {
+            print("Caught exception while creating data from dictionary: \(dictionary)")
+            return nil
+        }
+    }
 }
