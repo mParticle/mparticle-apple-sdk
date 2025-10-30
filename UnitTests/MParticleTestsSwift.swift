@@ -5,6 +5,17 @@ import XCTest
     import mParticle_Apple_SDK
 #endif
 
+enum LogKitBatchData {
+    static let invalidJSON = #"{"invalid": "json""#
+    static let singleEvent = #"{"events":[{"id":1}]}"#
+    static let multiEvent = #"{"events":[{"id":1},{"id":2}]}"#
+    static let parsedSingleEvent: [String: Any] = [
+        "events": [
+            ["id": 1]
+        ]
+    ]
+}
+
 class MParticleTestsSwift: XCTestCase {
     var receivedMessage: String?
     var mparticle: MParticle!
@@ -16,6 +27,8 @@ class MParticleTestsSwift: XCTestCase {
     var notificationController: MPNotificationControllerMock!
     var appEnvironmentProvier: AppEnvironmentProviderMock!
     var appNotificationHandler: MPAppNotificationHandlerMock!
+    var persistenceController: MPPersistenceControllerMock!
+    var kit: MPKitMock!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -51,6 +64,11 @@ class MParticleTestsSwift: XCTestCase {
         
         appNotificationHandler = MPAppNotificationHandlerMock()
         mparticle.appNotificationHandler = appNotificationHandler
+        
+        persistenceController = MPPersistenceControllerMock()
+        mparticle.persistenceController = persistenceController
+        
+        kit = MPKitMock()
     }
 
     override func tearDown() {
@@ -606,9 +624,6 @@ class MParticleTestsSwift: XCTestCase {
     func testResetForSwitchingWorkspaces() {
         let expectation = XCTestExpectation()
         
-        let persistenceController = MPPersistenceControllerMock()
-        mparticle.persistenceController = persistenceController
-        
         mparticle.reset {
             expectation.fulfill()
         }
@@ -933,6 +948,114 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logEvent:")
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .event)
         XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedEvent)
+    }
+    
+    // MARK: - logKitBatch
+    
+    func testLogKitBatch_withNilBatch_doesNotExecuteOrForward() {
+        mparticle.logKitBatch(nil)
+
+        XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil batch!")
+        XCTAssertFalse(executor.executeOnMessageQueueAsync)
+        XCTAssertFalse(kitContainer.hasKitBatchingKitsCalled)
+        XCTAssertFalse(executor.executeOnMainAsync)
+        XCTAssertFalse(kitContainer.forwardSDKCallCalled)
+        XCTAssertFalse(persistenceController.saveCalled)
+    }
+    
+    func testLogKitBatch_noBatchingKits_andKitsInitialized_doesNothing() {
+        kitContainer.kitsInitialized = true
+        kitContainer.hasKitBatchingKitsReturnValue = false
+
+        mparticle.logKitBatch(LogKitBatchData.singleEvent)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertFalse(executor.executeOnMainAsync)
+        XCTAssertFalse(kitContainer.forwardSDKCallCalled)
+        XCTAssertFalse(persistenceController.saveCalled)
+    }
+
+    func testLogKitBatch_kitsNotInitialized_defersWorkUntilInitialization() {
+        kitContainer.kitsInitialized = false
+        kitContainer.hasKitBatchingKitsReturnValue = true
+
+        mparticle.logKitBatch(LogKitBatchData.singleEvent)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        
+        // Should queue deferred block, not execute immediately
+        XCTAssertFalse(executor.executeOnMainAsync)
+        XCTAssertFalse(kitContainer.forwardSDKCallCalled)
+        XCTAssertFalse(persistenceController.saveCalled)
+
+        // Simulate kits becoming initialized
+        kitContainer.kitsInitialized = true
+        mparticle.executeKitsInitializedBlocks()
+
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "executeKitsInitializedBlocks")
+        XCTAssertTrue(executor.executeOnMainAsync)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBatch:")
+        XCTAssertEqual(kitContainer.forwardSDKCallBatchParam?.count, 1)
+        XCTAssertNotNil(kitContainer.forwardSDKCallKitHandlerParam)
+    }
+
+    func testLogKitBatch_withBatchingKits_forwardsParsedBatch_andPersistsForwardRecords() {
+        kitContainer.kitsInitialized = true
+        kitContainer.hasKitBatchingKitsReturnValue = true
+
+        mparticle.logKitBatch(LogKitBatchData.multiEvent)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(executor.executeOnMainAsync)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBatch:")
+        XCTAssertEqual(kitContainer.forwardSDKCallBatchParam?.count, 1)
+        XCTAssertNotNil(kitContainer.forwardSDKCallKitHandlerParam)
+    }
+    
+    func testLogKitBatch_invokesKitHandler_andPersistsForwardRecords() {
+        kitContainer.kitsInitialized = true
+        kitContainer.hasKitBatchingKitsReturnValue = true
+
+        let forwardRecord = MPForwardRecord()
+        kit.logBatchReturnValue = [forwardRecord]
+
+        mparticle.logKitBatch(LogKitBatchData.singleEvent)
+
+        guard let kitHandler = kitContainer.forwardSDKCallKitHandlerParam else {
+            XCTFail("Expected kitHandler closure to be captured")
+            return
+        }
+
+        // Simulate invoking the handler
+        let config = MPKitConfiguration()
+        kitHandler(kit, LogKitBatchData.parsedSingleEvent, config)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(executor.executeOnMainAsync)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBatch:")
+        XCTAssertEqual(kitContainer.forwardSDKCallBatchParam?.count, 1)
+        XCTAssertTrue(kit.logBatchCalled)
+        XCTAssertEqual(kit.logBatchParam?["events"] as? [[String: Int]], [["id": 1]])
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(persistenceController.saveCalled)
+        XCTAssertTrue(persistenceController.saveForwardRecordParam === forwardRecord)
+    }
+
+    func testLogKitBatch_invalidJSON_stillForwardsWithNilBatch() {
+        kitContainer.kitsInitialized = true
+        kitContainer.hasKitBatchingKitsReturnValue = true
+
+        mparticle.logKitBatch(LogKitBatchData.invalidJSON)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(executor.executeOnMainAsync)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBatch:")
+        XCTAssertEqual(kitContainer.forwardSDKCallBatchParam?.count, 0)
+        XCTAssertNotNil(kitContainer.forwardSDKCallKitHandlerParam)
     }
     
     // MARK: - logCommerceEvent
