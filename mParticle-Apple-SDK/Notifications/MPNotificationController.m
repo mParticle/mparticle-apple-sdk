@@ -5,11 +5,6 @@
 #import "MPNetworkCommunication.h"
 #import "MParticleSwift.h"
 
-@interface MPNotificationController_PRIVATE() {
-}
-
-@end
-
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
@@ -36,7 +31,7 @@ static NSData *deviceToken = nil;
 }
 
 #pragma mark Public static methods
-+ (NSData *)deviceToken {
+- (NSData *)deviceToken {
 #ifndef MP_UNIT_TESTING
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     deviceToken = userDefaults[kMPDeviceTokenKey];
@@ -47,8 +42,8 @@ static NSData *deviceToken = nil;
     return deviceToken;
 }
 
-+ (void)setDeviceToken:(NSData *)devToken {
-    if ([MPNotificationController_PRIVATE deviceToken] && [[MPNotificationController_PRIVATE deviceToken] isEqualToData:devToken]) {
+- (void)setDeviceToken:(NSData *)devToken {
+    if ([deviceToken isEqualToData:devToken]) {
         return;
     }
     

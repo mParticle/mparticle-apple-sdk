@@ -2,6 +2,8 @@
 #import "MParticleSwift.h"
 #import "MPDataPlanFilter.h"
 #import "MPListenerController.h"
+#import "AppEnvironmentProvider.h"
+#import "MPAppNotificationHandler.h"
 
 @interface MParticle (Tests)
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut;
@@ -45,10 +47,13 @@
 - (MPLog*)getLogger;
 
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
+@property (nonatomic, strong) id<MPAppNotificationHandlerProtocol> appNotificationHandler;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
+@property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
+@property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
+@property (nonatomic, readonly) BOOL proxiedAppDelegate;
 @end
-    

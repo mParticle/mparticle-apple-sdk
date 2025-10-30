@@ -18,6 +18,7 @@
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"
 #import "Executor.h"
+#import "AppEnvironmentProvider.h"
 
 static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
@@ -53,7 +54,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
-@property (nonatomic, strong) MPAppNotificationHandler *appNotificationHandler;
+@property (nonatomic, strong) id<MPAppNotificationHandlerProtocol> appNotificationHandler;
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
@@ -68,9 +69,9 @@ static NSString *const kMPStateKey = @"state";
 
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
-
+@property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
+@property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
 @end
-
 
 @implementation MPDataPlanOptions
 @end
@@ -152,6 +153,8 @@ MPLog* logger;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
+    _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
+    _notificationController = [[MPNotificationController_PRIVATE alloc] init];
     logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
     
     return self;
@@ -606,16 +609,16 @@ MPLog* logger;
 #pragma mark Application notifications
 #if TARGET_OS_IOS == 1
 - (NSData *)pushNotificationToken {
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        return [MPNotificationController_PRIVATE deviceToken];
+    if (![self.appEnvironmentProvider isAppExtension]) {
+        return [self.notificationController deviceToken];
     } else {
         return nil;
     }
 }
 
 - (void)setPushNotificationToken:(NSData *)pushNotificationToken {
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        [MPNotificationController_PRIVATE setDeviceToken:pushNotificationToken];
+    if (![self.appEnvironmentProvider isAppExtension]) {
+        [self.notificationController setDeviceToken:pushNotificationToken];
     }
 }
 
@@ -624,8 +627,8 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler didReceiveRemoteNotification:userInfo];
+    if (![self.appEnvironmentProvider isAppExtension]) {
+        [self.appNotificationHandler didReceiveRemoteNotification:userInfo];
     }
 }
 
@@ -634,8 +637,8 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
+    if (![self.appEnvironmentProvider isAppExtension]) {
+        [self.appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     }
 }
 
@@ -644,8 +647,8 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+    if (![self.appEnvironmentProvider isAppExtension]) {
+        [self.appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     }
 }
 
@@ -654,8 +657,8 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
+    if (![self.appEnvironmentProvider isAppExtension]) {
+        [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
     }
 }
 
@@ -664,8 +667,8 @@ MPLog* logger;
         return;
     }
     
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
+    if (![self.appEnvironmentProvider isAppExtension]) {
+        [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
 }
 #endif
@@ -675,7 +678,7 @@ MPLog* logger;
         return;
     }
     
-    [[MParticle sharedInstance].appNotificationHandler openURL:url sourceApplication:sourceApplication annotation:annotation];
+    [self.appNotificationHandler openURL:url sourceApplication:sourceApplication annotation:annotation];
 }
 
 - (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
@@ -683,7 +686,7 @@ MPLog* logger;
         return;
     }
     
-    [[MParticle sharedInstance].appNotificationHandler openURL:url options:options];
+    [self.appNotificationHandler openURL:url options:options];
 }
 
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler {
@@ -691,7 +694,7 @@ MPLog* logger;
         return NO;
     }
 
-    return [[MParticle sharedInstance].appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
+    return [self.appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
 - (void)reset:(void (^)(void))completion {
@@ -1582,14 +1585,14 @@ MPLog* logger;
     if (!notification.request.content.userInfo) {
         return;
     }
-    [[MParticle sharedInstance].appNotificationHandler userNotificationCenter:center willPresentNotification:notification];
+    [self.appNotificationHandler userNotificationCenter:center willPresentNotification:notification];
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
     if (!response.notification.request.content.userInfo) {
         return;
     }
-    [[MParticle sharedInstance].appNotificationHandler userNotificationCenter:center didReceiveNotificationResponse:response];
+    [self.appNotificationHandler userNotificationCenter:center didReceiveNotificationResponse:response];
 }
 #endif
 
