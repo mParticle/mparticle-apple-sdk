@@ -5,6 +5,17 @@ import XCTest
     import mParticle_Apple_SDK
 #endif
 
+enum LogKitBatchData {
+    static let invalidJSON = #"{"invalid": "json""#
+    static let singleEvent = #"{"events":[{"id":1}]}"#
+    static let multiEvent = #"{"events":[{"id":1},{"id":2}]}"#
+    static let parsedSingleEvent: [String: Any] = [
+        "events": [
+            ["id": 1]
+        ]
+    ]
+}
+
 class MParticleTestsSwift: XCTestCase {
     var receivedMessage: String?
     var mparticle: MParticle!
