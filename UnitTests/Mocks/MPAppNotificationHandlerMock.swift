@@ -16,14 +16,6 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
         didReceiveRemoteNotificationParam = userInfo
     }
     
-    var didReceiveRemoteNotificationCalled = false
-    var didReceiveRemoteNotificationParam: [AnyHashable: Any]?
-
-    func didReceiveRemoteNotification(_ userInfo: [AnyHashable : Any]) {
-        didReceiveRemoteNotificationCalled = true
-        didReceiveRemoteNotificationParam = userInfo
-    }
-    
     var didFailToRegisterForRemoteNotificationsWithErrorCalled = false
     var didFailToRegisterForRemoteNotificationsWithErrorParam: Error?
     
