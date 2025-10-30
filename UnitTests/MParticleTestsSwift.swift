@@ -27,6 +27,8 @@ class MParticleTestsSwift: XCTestCase {
     var notificationController: MPNotificationControllerMock!
     var appEnvironmentProvier: AppEnvironmentProviderMock!
     var appNotificationHandler: MPAppNotificationHandlerMock!
+    var persistenceController: MPPersistenceControllerMock!
+    var kit: MPKitMock!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -62,6 +64,11 @@ class MParticleTestsSwift: XCTestCase {
         
         appNotificationHandler = MPAppNotificationHandlerMock()
         mparticle.appNotificationHandler = appNotificationHandler
+        
+        persistenceController = MPPersistenceControllerMock()
+        mparticle.persistenceController = persistenceController
+        
+        kit = MPKitMock()
     }
 
     override func tearDown() {
@@ -616,9 +623,6 @@ class MParticleTestsSwift: XCTestCase {
     
     func testResetForSwitchingWorkspaces() {
         let expectation = XCTestExpectation()
-        
-        let persistenceController = MPPersistenceControllerMock()
-        mparticle.persistenceController = persistenceController
         
         mparticle.reset {
             expectation.fulfill()
