@@ -24,7 +24,6 @@ class MPKitMock: NSObject, MPKitProtocol {
     var logBatchCalled: Bool = false
     var logBatchParam: [AnyHashable: Any]?
     var logBatchReturnValue: [MPForwardRecord] = []
-
     
     func logBatch(_ batch: [AnyHashable : Any]) -> [MPForwardRecord] {
         logBatchCalled = true
