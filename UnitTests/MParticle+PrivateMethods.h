@@ -16,6 +16,7 @@
 - (void)logEventCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logEvent:(MPBaseEvent *)event;
 - (void)logCustomEvent:(MPEvent *)event;
+- (void)logKitBatch:(NSString *)batch;
 - (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logErrorCallback:(NSDictionary<NSString *,id> * _Nullable)eventInfo execStatus:(MPExecStatus)execStatus message:(NSString *)message;
