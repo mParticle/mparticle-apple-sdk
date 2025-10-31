@@ -18,18 +18,18 @@ class MPPersistenceControllerMock: MPPersistenceControllerProtocol {
         resetDatabaseCalled = true
     }
 
-    var saveCelled = false
+    var saveCalled = false
     var saveForwardRecordParam: MPForwardRecord?
 
     func save(_ forwardRecord: MPForwardRecord) {
-        saveCelled = true
+        saveCalled = true
         saveForwardRecordParam = forwardRecord
     }
 
     var saveIntegrationAttributesParam: MPIntegrationAttributes?
 
     func save(_ integrationAttributes: MPIntegrationAttributes) {
-        saveCelled = true
+        saveCalled = true
         saveIntegrationAttributesParam = integrationAttributes
     }
 
