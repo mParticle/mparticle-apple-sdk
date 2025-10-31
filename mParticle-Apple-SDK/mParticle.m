@@ -953,10 +953,6 @@ MPLog* logger;
 }
 
 - (void)logScreenEvent:(MPEvent *)event {
-    if (event == nil) {
-        [logger error:@"Cannot log nil screen event!"];
-        return;
-    }
     if (!event.timestamp) {
         event.timestamp = [NSDate date];
     }
