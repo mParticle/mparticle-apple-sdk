@@ -952,6 +952,70 @@ class MParticleTestsSwift: XCTestCase {
     
     // MARK: - logScreen
     
+    func testLogScreenEvent_dataPlanFilterReturnsNil_blocksEvent() {
+        let event = MPEvent(name: "Home", type: .navigation)!
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.logScreenEvent(event)
+        
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logScreenEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        XCTAssertTrue(backendController.logScreenCalled)
+        XCTAssertTrue(backendController.logScreenEventParam === event)
+        XCTAssertNotNil(backendController.logScreenCompletionHandler)
+        
+        backendController.logScreenCompletionHandler?(event, .success)
+        
+        XCTAssertEqual(receivedMessage, """
+        mParticle -> Blocked screen event from kits: Event:{
+          Name: Home
+          Type: Navigation
+          Duration: 0
+        }
+        """)
+    }
+    
+    func testLogScreenEvent_tracesFullExecutionFlow() {
+        let event = MPEvent(name: "Home", type: .navigation)!
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventForScreenEventReturnValue = event
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.logScreenEvent(event)
+        
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logScreenEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        XCTAssertTrue(backendController.logScreenCalled)
+        XCTAssertTrue(backendController.logScreenEventParam === event)
+        XCTAssertNotNil(backendController.logScreenCompletionHandler)
+        
+        backendController.logScreenCompletionHandler?(event, .success)
+        
+        XCTAssertEqual(receivedMessage, """
+        mParticle -> Logged screen event: Event:{
+          Name: Home
+          Type: Navigation
+          Duration: 0
+        }
+        """)
+        XCTAssertTrue(dataPlanFilter.transformEventForScreenEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventForScreenEventScreenEventParam === event)
+        XCTAssertTrue(executor.executeOnMainAsync)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logScreen:")
+        XCTAssertTrue(kitContainer.forwardSDKCallEventParam === event)
+        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .screenView)
+        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
+    }
+    
     func testLogScreenWrapper_withNilScreenName_logsErrorAndReturns() {
         mparticle.logScreen("", eventInfo: ["foo": "bar"])
         
@@ -1045,8 +1109,6 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .screenView)
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
-    
-    
     
     // MARK: - logKitBatch
     
