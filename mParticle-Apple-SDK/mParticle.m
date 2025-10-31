@@ -953,10 +953,6 @@ MPLog* logger;
 }
 
 - (void)logScreenEvent:(MPEvent *)event {
-    if (!event.timestamp) {
-        event.timestamp = [NSDate date];
-    }
-    
     [executor executeOnMessage: ^{
         [self.listenerController onAPICalled:_cmd parameter1:event];
 
