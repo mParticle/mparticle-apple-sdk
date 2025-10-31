@@ -17,6 +17,9 @@
 - (void)logEvent:(MPBaseEvent *)event;
 - (void)logCustomEvent:(MPEvent *)event;
 - (void)logKitBatch:(NSString *)batch;
+- (void)logScreenEvent:(MPEvent *)event;
+- (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo;
+- (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo shouldUploadEvent:(BOOL)shouldUploadEvent;
 - (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logErrorCallback:(NSDictionary<NSString *,id> * _Nullable)eventInfo execStatus:(MPExecStatus)execStatus message:(NSString *)message;

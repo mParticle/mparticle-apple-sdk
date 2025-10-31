@@ -953,14 +953,6 @@ MPLog* logger;
 }
 
 - (void)logScreenEvent:(MPEvent *)event {
-    if (event == nil) {
-        [logger error:@"Cannot log nil screen event!"];
-        return;
-    }
-    if (!event.timestamp) {
-        event.timestamp = [NSDate date];
-    }
-    
     [executor executeOnMessage: ^{
         [self.listenerController onAPICalled:_cmd parameter1:event];
 
@@ -976,7 +968,7 @@ MPLog* logger;
 }
 
 - (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo shouldUploadEvent:(BOOL)shouldUploadEvent {
-    if (!screenName) {
+    if (screenName.length == 0) {
         [logger error:@"Screen name is required."];
         return;
     }
