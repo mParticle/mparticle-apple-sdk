@@ -1,6 +1,5 @@
 #import "MPKitFilter.h"
 #import "MPEvent.h"
-#import "MPConsentState.h"
 
 @implementation MPKitFilter
 
@@ -63,7 +62,7 @@
     return self;
 }
 
-- (nonnull instancetype)initWithConsentState:(nonnull MPConsentState *)state shouldFilter:(BOOL)shouldFilter {
+- (nonnull instancetype)initWithConsentState:(nonnull MPConsentStateSwift *)state shouldFilter:(BOOL)shouldFilter {
     self = [super init];
     if (!self) {
         return nil;

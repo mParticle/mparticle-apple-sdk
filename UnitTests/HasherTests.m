@@ -336,13 +336,13 @@
 }
 
 - (void)testHashConsentPurpose {
-    NSString *hashTestString = [MPIHasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
+    NSString *hashTestString = [MPIHasher hashConsentPurpose:MPConsentSerializationNew.kMPConsentCCPARegulationType purpose:MPConsentSerializationNew.kMPConsentCCPAPurposeName];
     XCTAssertEqualObjects(hashTestString, @"-575335347", @"Should have been equal.");
     
-    hashTestString = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
+    hashTestString = [MPIHasher hashConsentPurpose:MPConsentSerializationNew.kMPConsentGDPRRegulationType purpose:@""];
     XCTAssertEqualObjects(hashTestString, @"49", @"Should have been equal.");
     
-    hashTestString = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"purpose1"];
+    hashTestString = [MPIHasher hashConsentPurpose:MPConsentSerializationNew.kMPConsentGDPRRegulationType purpose:@"purpose1"];
     XCTAssertEqualObjects(hashTestString, @"-910367228", @"Should have been equal.");
 }
 

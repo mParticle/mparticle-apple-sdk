@@ -45,7 +45,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var startInstallationTypeParam: MPInstallationType?
     var startProxyAppDelegateParam: Bool?
     var startStartKitsAsyncParam: Bool?
-    var startConsentStateParam: MPConsentState?
+    var startConsentStateParam: MPConsentStateSwift?
     var startCompletionHandler: (() -> Void)?
 
     func start(
@@ -56,7 +56,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         installationType: MPInstallationType,
         proxyAppDelegate: Bool,
         startKitsAsync: Bool,
-        consentState: MPConsentState?,
+        consentState: MPConsentStateSwift?,
         completionHandler: @escaping () -> Void
     ) {
         startCalled = true

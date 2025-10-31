@@ -8,7 +8,6 @@
 #import "MPNetworkPerformance.h"
 #import "MPBreadcrumb.h"
 #import "MPUpload.h"
-#import "MPAudience.h"
 #import "MPApplication.h"
 #import "MPCustomModule.h"
 #import "MPMessageBuilder.h"
@@ -1477,7 +1476,7 @@ static BOOL skipNextUpload = NO;
     return MPExecStatusSuccess;
 }
 
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentStateSwift *)consentState completionHandler:(dispatch_block_t)completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:apiKey parameter2:secret parameter3:@(firstRun) parameter4:consentState];
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
@@ -1486,7 +1485,7 @@ static BOOL skipNextUpload = NO;
         }
     }
     
-    MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
+    MPConsentStateSwift *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
     if (consentState != nil && storedConsentState == nil) {
         [MPPersistenceController_PRIVATE setConsentState:consentState forMpid:[MPPersistenceController_PRIVATE mpId]];
     }

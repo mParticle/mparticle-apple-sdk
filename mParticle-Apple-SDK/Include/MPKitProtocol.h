@@ -17,7 +17,7 @@
 @class MPEvent;
 @class MPKitExecStatus;
 @class MPKitAPI;
-@class MPConsentState;
+@class MPConsentStateSwift;
 @class FilteredMParticleUser;
 @class FilteredMPIdentityApiRequest;
 @class MPRoktEmbeddedView;
@@ -106,7 +106,7 @@
 - (nonnull MPKitExecStatus *)onModifyComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request;
 
 #pragma mark Consent state
-- (nonnull MPKitExecStatus *)setConsentState:(nullable MPConsentState *)state;
+- (nonnull MPKitExecStatus *)setConsentState:(nullable MPConsentStateSwift *)state;
 
 #pragma mark e-Commerce
 - (nonnull MPKitExecStatus *)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent __attribute__ ((deprecated));

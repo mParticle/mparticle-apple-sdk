@@ -13,7 +13,6 @@
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPIConstants.h"
-#import "MPConsentSerialization.h"
 #import <sqlite3.h>
 #import "MPListenerProtocol.h"
 #import "MPKitFilter.h"
@@ -136,14 +135,14 @@ const int MaxBreadcrumbs = 50;
     [userDefaults synchronize];
 }
 
-+ (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid {
++ (nullable MPConsentStateSwift *)consentStateForMpid:(nonnull NSNumber *)mpid {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    NSString *string = [userDefaults mpObjectForKey:kMPConsentStateKey userId:mpid];
+    NSString *string = [userDefaults mpObjectForKey:MPConsentSerializationNew.kMPConsentStateKey userId:mpid];
     if (!string) {
         return nil;
     }
     
-    MPConsentState *state = [MPConsentSerialization consentStateFromString:string];
+    MPConsentStateSwift *state = [MPConsentSerializationNew consentStateFromString:string];
     if (!state) {
         return nil;
     }
@@ -151,19 +150,19 @@ const int MaxBreadcrumbs = 50;
     return state;
 }
 
-+ (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid {
++ (void)setConsentState:(nullable MPConsentStateSwift *)state forMpid:(nonnull NSNumber *)mpid {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (!state) {
-        [userDefaults removeMPObjectForKey:kMPConsentStateKey userId:mpid];
+        [userDefaults removeMPObjectForKey:MPConsentSerializationNew.kMPConsentStateKey userId:mpid];
         [userDefaults synchronize];
         return;
     }
     
-    NSString *string = [MPConsentSerialization stringFromConsentState:state];
+    NSString *string = [MPConsentSerializationNew stringFromConsentState:state];
     if (!string) {
         return;
     }
-    [userDefaults setMPObject:string forKey:kMPConsentStateKey userId:mpid];
+    [userDefaults setMPObject:string forKey:MPConsentSerializationNew.kMPConsentStateKey userId:mpid];
     [userDefaults synchronize];
 }
 
