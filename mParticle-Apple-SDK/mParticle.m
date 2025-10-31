@@ -976,7 +976,7 @@ MPLog* logger;
 }
 
 - (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo shouldUploadEvent:(BOOL)shouldUploadEvent {
-    if (!screenName) {
+    if (screenName.length == 0) {
         [logger error:@"Screen name is required."];
         return;
     }
