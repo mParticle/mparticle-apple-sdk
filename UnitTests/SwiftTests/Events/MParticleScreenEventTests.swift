@@ -144,5 +144,4 @@ final class MParticleScreenEventTests: MParticleTestBase {
         assertReceivedMessage("Blocked screen event from kits", event: event)
         
     }
-    
 }

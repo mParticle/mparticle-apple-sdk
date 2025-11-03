@@ -78,7 +78,4 @@ final class MParticleBreadcrumbTests: MParticleTestBase {
         assertReceivedMessage("Left breadcrumb", event: event)
         
     }
-    
-    
-    
 }
