@@ -14,7 +14,7 @@ import ObjectiveC.runtime
 #endif
 
 #if os(iOS)
-final class MParticlePlatform_URLAndUserActivityTests: MParticleTestBase {
+final class MParticleUserActivityTests: MParticleTestBase {
     
     func testContinueUserActivity_returnsFalseAndDoesNotCallHandler_whenProxiedDelegateExists() {
         mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")

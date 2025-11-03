@@ -13,7 +13,7 @@ import XCTest
 #endif
 
 #if os(iOS)
-final class MParticlePlatform_PushTokenTests: MParticleTestBase {
+final class MParticlePushNotificationTokenTests: MParticleTestBase {
     
     func testPushNotificationToken_returnsDeviceToken_whenNotAppExtension() {
         notificationController.deviceTokenReturnValue = token

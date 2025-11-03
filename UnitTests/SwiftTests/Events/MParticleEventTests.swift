@@ -1,5 +1,5 @@
 //
-//  MParticleBaseEventTests.swift
+//  MParticleEventTests.swift
 //  mParticle-Apple-SDK
 //
 //  Created by Nick Dimitrakas on 11/3/25.
@@ -12,7 +12,7 @@ import XCTest
     import mParticle_Apple_SDK
 #endif
 
-final class MParticleBaseEventTests: MParticleTestBase {
+final class MParticleEventTests: MParticleTestBase {
     
     func testLogEventCalledLogCustomEvent() {
         mparticle.logEvent(event)
@@ -101,4 +101,3 @@ final class MParticleBaseEventTests: MParticleTestBase {
         assertReceivedMessage("Blocked timed event end from kits", event: event)
     }
 }
-

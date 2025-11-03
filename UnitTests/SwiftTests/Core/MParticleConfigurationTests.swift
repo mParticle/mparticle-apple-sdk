@@ -14,6 +14,33 @@ import XCTest
 
 final class MParticleConfigurationTests: MParticleTestBase {
     
+    func testStartWithKeyCallbackFirstRun() {
+        XCTAssertFalse(mparticle.initialized)
+        
+        mparticle.start(withKeyCallback: true, options: options, userDefaults: userDefaults)
+        
+        XCTAssertTrue(mparticle.initialized)
+        XCTAssertNil(mparticle.settingsProvider.configSettings)
+        
+        XCTAssertNotNil(userDefaults.setMPObjectValueParam)
+        XCTAssertEqual(userDefaults.setMPObjectKeyParam, "firstrun")
+        XCTAssertEqual(userDefaults.setMPObjectUserIdParam, 0)
+        XCTAssertTrue(userDefaults.synchronizeCalled)
+    }
+    
+    func testStartWithKeyCallbackNotFirstRunWithIdentityRequest() {
+        let user = mparticle.identity.currentUser
+        options.identifyRequest = MPIdentityApiRequest(user: user!)
+        
+        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults as MPUserDefaultsProtocol)
+        
+        XCTAssertTrue(mparticle.initialized)
+        XCTAssertNil(mparticle.settingsProvider.configSettings)
+        
+        XCTAssertFalse(userDefaults.setMPObjectCalled)
+        XCTAssertFalse(userDefaults.synchronizeCalled)
+    }
+    
     func testConfigureDefaultConfigurationExistOptionParametersAreNotSet() {
         mparticle.backendController = MPBackendController_PRIVATE()
         mparticle.configure(with: options)
@@ -88,5 +115,20 @@ final class MParticleConfigurationTests: MParticleTestBase {
                        "beginLocationTracking:minDistance:authorizationRequest:")
 #endif
 #endif
+    }
+    
+    func testResetForSwitchingWorkspaces() {
+        let expectation = XCTestExpectation()
+        
+        mparticle.reset {
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 1.0)
+        
+        XCTAssertTrue(kitContainer.flushSerializedKitsCalled)
+        XCTAssertTrue(kitContainer.removeAllSideloadedKitsCalled)
+        XCTAssertEqual(persistenceController.resetDatabaseCalled, true)
+        XCTAssertTrue(backendController.unproxyOriginalAppDelegateCalled)
     }
 }
