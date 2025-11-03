@@ -28,4 +28,15 @@ final class MParticleTimedEventTests: MParticleTestBase {
         XCTAssertEqual(dataPlanFilter.transformEventEventParam, event)
         assertReceivedMessage("Blocked timed event begin from kits", event: event)
     }
+    
+    func testBeginTimedEventDependenciesReceiveCorrectParametersAndHandlerExecutedWithoutErrors() {
+        mparticle.beginTimedEvent(event)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginTimedEvent:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1, event)
+        XCTAssertTrue(backendController.beginTimedEventCalled)
+        XCTAssertEqual(backendController.beginTimedEventEventParam, event)
+        XCTAssertNotNil(backendController.beginTimedEventCompletionHandler)
+        backendController.beginTimedEventCompletionHandler?(event, .success)
+        XCTAssertNotNil(receivedMessage)
+    }
 }

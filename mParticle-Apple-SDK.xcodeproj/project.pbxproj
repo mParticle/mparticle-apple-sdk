@@ -520,8 +520,8 @@
 		7231B82A2EB95B04001565E5 /* MParticleRuntimeValuesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8282EB95B04001565E5 /* MParticleRuntimeValuesTests.swift */; };
 		7231B82C2EB95D75001565E5 /* MParticleCustomEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B82B2EB95D75001565E5 /* MParticleCustomEventTests.swift */; };
 		7231B82D2EB95D75001565E5 /* MParticleCustomEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B82B2EB95D75001565E5 /* MParticleCustomEventTests.swift */; };
-		7231B82F2EB95D96001565E5 /* MParticleBaseEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B82E2EB95D96001565E5 /* MParticleBaseEventTests.swift */; };
-		7231B8302EB95D96001565E5 /* MParticleBaseEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B82E2EB95D96001565E5 /* MParticleBaseEventTests.swift */; };
+		7231B82F2EB95D96001565E5 /* MParticleEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B82E2EB95D96001565E5 /* MParticleEventTests.swift */; };
+		7231B8302EB95D96001565E5 /* MParticleEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B82E2EB95D96001565E5 /* MParticleEventTests.swift */; };
 		7231B8322EB95EDD001565E5 /* MParticleScreenEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8312EB95EDD001565E5 /* MParticleScreenEventTests.swift */; };
 		7231B8332EB95EDD001565E5 /* MParticleScreenEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8312EB95EDD001565E5 /* MParticleScreenEventTests.swift */; };
 		7231B8352EB95F9F001565E5 /* MParticleBreadcrumbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8342EB95F9F001565E5 /* MParticleBreadcrumbTests.swift */; };
@@ -544,6 +544,8 @@
 		7231B8562EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8542EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift */; };
 		7231B8582EB96598001565E5 /* MParticleRemoteNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */; };
 		7231B8592EB96598001565E5 /* MParticleRemoteNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */; };
+		7231B85D2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B85C2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift */; };
+		7231B85E2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B85C2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift */; };
 		727801DE2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727801DD2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift */; };
 		727801DF2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727801DD2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift */; };
 		727801E12EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727801E02EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift */; };
@@ -898,7 +900,7 @@
 		7231B8252EB95991001565E5 /* MParticleSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleSessionTests.swift; sourceTree = "<group>"; };
 		7231B8282EB95B04001565E5 /* MParticleRuntimeValuesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleRuntimeValuesTests.swift; sourceTree = "<group>"; };
 		7231B82B2EB95D75001565E5 /* MParticleCustomEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleCustomEventTests.swift; sourceTree = "<group>"; };
-		7231B82E2EB95D96001565E5 /* MParticleBaseEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleBaseEventTests.swift; sourceTree = "<group>"; };
+		7231B82E2EB95D96001565E5 /* MParticleEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleEventTests.swift; sourceTree = "<group>"; };
 		7231B8312EB95EDD001565E5 /* MParticleScreenEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleScreenEventTests.swift; sourceTree = "<group>"; };
 		7231B8342EB95F9F001565E5 /* MParticleBreadcrumbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleBreadcrumbTests.swift; sourceTree = "<group>"; };
 		7231B8382EB960C8001565E5 /* MParticleTimedEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleTimedEventTests.swift; sourceTree = "<group>"; };
@@ -910,6 +912,7 @@
 		7231B8512EB964A1001565E5 /* MParticleOpenURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleOpenURLTests.swift; sourceTree = "<group>"; };
 		7231B8542EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticlePushNotificationTokenTests.swift; sourceTree = "<group>"; };
 		7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleRemoteNotificationTests.swift; sourceTree = "<group>"; };
+		7231B85C2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleBackendControllerDelegateTests.swift; sourceTree = "<group>"; };
 		727801DD2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPNotificationControllerMock.swift; sourceTree = "<group>"; };
 		727801E02EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentProviderMock.swift; sourceTree = "<group>"; };
 		727801E32EB1131B00BDAD98 /* MPAppNotificationHandlerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPAppNotificationHandlerMock.swift; sourceTree = "<group>"; };
@@ -1520,7 +1523,7 @@
 			isa = PBXGroup;
 			children = (
 				7231B82B2EB95D75001565E5 /* MParticleCustomEventTests.swift */,
-				7231B82E2EB95D96001565E5 /* MParticleBaseEventTests.swift */,
+				7231B82E2EB95D96001565E5 /* MParticleEventTests.swift */,
 				7231B8312EB95EDD001565E5 /* MParticleScreenEventTests.swift */,
 				7231B8382EB960C8001565E5 /* MParticleTimedEventTests.swift */,
 				7231B8442EB9630E001565E5 /* MParticleCommerceEventTests.swift */,
@@ -1543,6 +1546,7 @@
 			isa = PBXGroup;
 			children = (
 				7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */,
+				7231B85C2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift */,
 			);
 			path = Infra;
 			sourceTree = "<group>";
@@ -1994,6 +1998,7 @@
 				534CD28429CE2CE1008452B3 /* MPCustomModuleTests.m in Sources */,
 				727801E42EB1131B00BDAD98 /* MPAppNotificationHandlerMock.swift in Sources */,
 				7231B83A2EB960C8001565E5 /* MParticleTimedEventTests.swift in Sources */,
+				7231B85E2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift in Sources */,
 				534CD28629CE2CE1008452B3 /* MPKitActivityTests.m in Sources */,
 				7231B83F2EB9627D001565E5 /* MParticleErrorTests.swift in Sources */,
 				534CD28729CE2CE1008452B3 /* MPKitTestClassSideloaded.m in Sources */,
@@ -2004,7 +2009,7 @@
 				534CD28A29CE2CE1008452B3 /* MPStateMachineTests.m in Sources */,
 				534CD28B29CE2CE1008452B3 /* MPCCPAConsentTests.m in Sources */,
 				534CD28C29CE2CE1008452B3 /* MPUserDefaultsTests.m in Sources */,
-				7231B82F2EB95D96001565E5 /* MParticleBaseEventTests.swift in Sources */,
+				7231B82F2EB95D96001565E5 /* MParticleEventTests.swift in Sources */,
 				534CD28D29CE2CE1008452B3 /* MPUploadBuilderTests.m in Sources */,
 				356D4A5F2E5CAB0000CB69FE /* MPListenerControllerMock.swift in Sources */,
 				534CD28E29CE2CE1008452B3 /* MPBaseTestCase.m in Sources */,
@@ -2212,6 +2217,7 @@
 				53A79CED29CE019F00E7489F /* MPCustomModuleTests.m in Sources */,
 				727801E52EB1131B00BDAD98 /* MPAppNotificationHandlerMock.swift in Sources */,
 				7231B8392EB960C8001565E5 /* MParticleTimedEventTests.swift in Sources */,
+				7231B85D2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift in Sources */,
 				53A79CCE29CE019F00E7489F /* MPKitActivityTests.m in Sources */,
 				7231B8402EB9627D001565E5 /* MParticleErrorTests.swift in Sources */,
 				53A79CBA29CE019F00E7489F /* MPKitTestClassSideloaded.m in Sources */,
@@ -2222,7 +2228,7 @@
 				53A79CDB29CE019F00E7489F /* MPStateMachineTests.m in Sources */,
 				53A79CD629CE019F00E7489F /* MPCCPAConsentTests.m in Sources */,
 				53A79CE129CE019F00E7489F /* MPUserDefaultsTests.m in Sources */,
-				7231B8302EB95D96001565E5 /* MParticleBaseEventTests.swift in Sources */,
+				7231B8302EB95D96001565E5 /* MParticleEventTests.swift in Sources */,
 				356D4A602E5CAB0000CB69FE /* MPListenerControllerMock.swift in Sources */,
 				53A79CCD29CE019F00E7489F /* MPUploadBuilderTests.m in Sources */,
 				35329FED2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */,

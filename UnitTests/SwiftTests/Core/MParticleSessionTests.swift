@@ -16,33 +16,6 @@ import XCTest
 
 final class MParticleSessionTests: MParticleTestBase {
     
-    func testStartWithKeyCallbackFirstRun() {
-        XCTAssertFalse(mparticle.initialized)
-        
-        mparticle.start(withKeyCallback: true, options: options, userDefaults: userDefaults)
-        
-        XCTAssertTrue(mparticle.initialized)
-        XCTAssertNil(mparticle.settingsProvider.configSettings)
-        
-        XCTAssertNotNil(userDefaults.setMPObjectValueParam)
-        XCTAssertEqual(userDefaults.setMPObjectKeyParam, "firstrun")
-        XCTAssertEqual(userDefaults.setMPObjectUserIdParam, 0)
-        XCTAssertTrue(userDefaults.synchronizeCalled)
-    }
-    
-    func testStartWithKeyCallbackNotFirstRunWithIdentityRequest() {
-        let user = mparticle.identity.currentUser
-        options.identifyRequest = MPIdentityApiRequest(user: user!)
-        
-        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults as MPUserDefaultsProtocol)
-        
-        XCTAssertTrue(mparticle.initialized)
-        XCTAssertNil(mparticle.settingsProvider.configSettings)
-        
-        XCTAssertFalse(userDefaults.setMPObjectCalled)
-        XCTAssertFalse(userDefaults.synchronizeCalled)
-    }
-    
     func testBeginSessionTempSessionAvailableSessionTempSessionShouldNotBeCreated() {
         backendController.session = nil
         backendController.tempSessionReturnValue = MParticleSession()
@@ -109,53 +82,5 @@ final class MParticleSessionTests: MParticleTestBase {
         XCTAssertNil(kitContainer.forwardSDKCallEventParam)
         XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
-    }
-    
-    func testResetForSwitchingWorkspaces() {
-        let expectation = XCTestExpectation()
-        
-        mparticle.reset {
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 1.0)
-        
-        XCTAssertTrue(kitContainer.flushSerializedKitsCalled)
-        XCTAssertTrue(kitContainer.removeAllSideloadedKitsCalled)
-        XCTAssertEqual(persistenceController.resetDatabaseCalled, true)
-        XCTAssertTrue(backendController.unproxyOriginalAppDelegateCalled)
-    }
-    
-    func testForwardLogInstall() {
-        mparticle.forwardLogInstall()
-        XCTAssertEqual(executor.executeOnMainAsync, true)
-        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
-        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "forwardLogInstall")
-        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
-        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
-        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
-        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
-    }
-    
-    func testForwardLogUpdate() {
-        mparticle.forwardLogUpdate()
-        XCTAssertEqual(executor.executeOnMainAsync, true)
-        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
-        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "forwardLogUpdate")
-        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
-        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
-        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
-        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
-    }
-    
-    func testBeginTimedEventDependenciesReceiveCorrectParametersAndHandlerExecutedWithoutErrors() {
-        mparticle.beginTimedEvent(event)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginTimedEvent:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1, event)
-        XCTAssertTrue(backendController.beginTimedEventCalled)
-        XCTAssertEqual(backendController.beginTimedEventEventParam, event)
-        XCTAssertNotNil(backendController.beginTimedEventCompletionHandler)
-        backendController.beginTimedEventCompletionHandler?(event, .success)
-        XCTAssertNotNil(receivedMessage)
     }
 }
