@@ -1115,7 +1115,8 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBatch:")
         XCTAssertEqual(kitContainer.forwardSDKCallBatchParam?.count, 1)
         XCTAssertTrue(kit.logBatchCalled)
-        XCTAssertEqual(kit.logBatchParam?["events"] as? [[String: Int]], [["id": 1]])
+        XCTAssertEqual(kit.logBatchParam?["events"] as? [[String: Int]],
+                       LogKitBatchData.parsedSingleEvent.values.first as? [[String : Int]])
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(persistenceController.saveCalled)
         XCTAssertTrue(persistenceController.saveForwardRecordParam === forwardRecord)
@@ -1662,8 +1663,6 @@ class MParticleTestsSwift: XCTestCase {
 // MARK: - Helpers
 
 extension MParticleTestsSwift {
-    /// Asserts that the received log message matches an expected pattern.
-    /// Automatically prefixes "mParticle ->" and appends event info if provided.
     func assertReceivedMessage<T: MPBaseEvent>(
         _ expectedSuffix: String,
         event: T? = nil,
