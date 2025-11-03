@@ -1314,6 +1314,7 @@
 		53A79C6729CE019E00E7489F /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				7231B8102EB946C1001565E5 /* ObjCTests */,
 				356D4A572E58B01100CB69FE /* Mocks */,
 				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
 				359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */,
@@ -1330,7 +1331,37 @@
 				53A79C7129CE019E00E7489F /* mParticle_iOS_SDKTests-Bridging-Header.h */,
 				53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */,
 				D3961CE32CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift */,
-				53A79C6829CE019E00E7489F /* MPPersistenceControllerTests.mm */,
+			);
+			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		53A79C8729CE019F00E7489F /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				53A79C8829CE019F00E7489F /* OCMock.xcframework */,
+			);
+			path = Libraries;
+			sourceTree = "<group>";
+		};
+		53A79C9729CE019F00E7489F /* JSON */ = {
+			isa = PBXGroup;
+			children = (
+				53A79C9829CE019F00E7489F /* sample_dataplan2.json */,
+			);
+			path = JSON;
+			sourceTree = "<group>";
+		};
+		53A79CFA29CE046800E7489F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				53A79CFB29CE046800E7489F /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7231B8102EB946C1001565E5 /* ObjCTests */ = {
+			isa = PBXGroup;
+			children = (
 				53A79C6929CE019E00E7489F /* MParticleWebViewTests.m */,
 				53A79C6A29CE019E00E7489F /* MPKitAppsFlyerTest.h */,
 				53A79C6B29CE019E00E7489F /* MPKitTestClassSideloaded.m */,
@@ -1398,33 +1429,10 @@
 				53A79CB629CE019F00E7489F /* MPKitRegisterTests.m */,
 				53A79CB729CE019F00E7489F /* HasherTests.m */,
 				7E15B2052D94617900C1FF3E /* MPRoktTests.m */,
+				53A79C6829CE019E00E7489F /* MPPersistenceControllerTests.mm */,
 				531BCF392B28A83E00F5C573 /* MPIdentityCachingTests.m */,
 			);
-			path = UnitTests;
-			sourceTree = "<group>";
-		};
-		53A79C8729CE019F00E7489F /* Libraries */ = {
-			isa = PBXGroup;
-			children = (
-				53A79C8829CE019F00E7489F /* OCMock.xcframework */,
-			);
-			path = Libraries;
-			sourceTree = "<group>";
-		};
-		53A79C9729CE019F00E7489F /* JSON */ = {
-			isa = PBXGroup;
-			children = (
-				53A79C9829CE019F00E7489F /* sample_dataplan2.json */,
-			);
-			path = JSON;
-			sourceTree = "<group>";
-		};
-		53A79CFA29CE046800E7489F /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				53A79CFB29CE046800E7489F /* libsqlite3.tbd */,
-			);
-			name = Frameworks;
+			path = ObjCTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
