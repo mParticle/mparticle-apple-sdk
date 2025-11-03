@@ -41,6 +41,7 @@ class MParticleTestsSwift: XCTestCase {
     let token = "abcd1234".data(using: .utf8)!
     
     let error = NSError(domain: "test", code: 1)
+    let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
     
     let url = URL(string: "https://example.com")!
     
@@ -181,7 +182,7 @@ class MParticleTestsSwift: XCTestCase {
         mparticle.identifyNoDispatchCallback(expectedApiResult, error: error, options: options)
         
         wait(for: [expectation], timeout: 0.1)
-        assertReceivedMessage("Identify request failed with error: Error Domain=test Code=1 \"(null)\"")
+        assertReceivedMessage("Identify request failed with error: \(error)")
         XCTAssertNil(mparticle.deferredKitConfiguration_PRIVATE)
     }
     
@@ -308,14 +309,12 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogExceptionCallbackSuccess() {
-        let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
         mparticle.logExceptionCallback(exception, execStatus: .success, message: "exception", topmostContext: nil)
         
         assertReceivedMessage("Logged exception name: exception, reason: Test, topmost context: (null)")
     }
     
     func testLogExceptionCallbackFail() {
-        let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
         mparticle.logExceptionCallback(exception, execStatus: .fail, message: "exception", topmostContext: nil)
         
         XCTAssertNil(receivedMessage)
@@ -410,11 +409,10 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogExceptionListenerControllerCalled() {
-        let expectedException = NSException(name: NSExceptionName("test"), reason: "test")
-        mparticle.logException(expectedException, topmostContext: nil)
+        mparticle.logException(exception, topmostContext: nil)
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logException:topmostContext:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedException)
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === exception)
     }
     
     func testLogCrashListenerControllerCalled() {
