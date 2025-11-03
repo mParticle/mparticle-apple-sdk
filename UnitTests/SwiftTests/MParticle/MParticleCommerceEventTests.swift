@@ -12,6 +12,7 @@ import XCTest
     import mParticle_Apple_SDK
 #endif
 
+@available(*, deprecated, message: "Used only for testing deprecated APIs")
 final class MParticleCommerceEventTests: MParticleTestBase {
     
     func testLogCommerceEvent_assignsTimestampWhenNil() {
