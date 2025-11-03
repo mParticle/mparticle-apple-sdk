@@ -1314,23 +1314,14 @@
 		53A79C6729CE019E00E7489F /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				7231B8112EB947F0001565E5 /* SwiftTests */,
 				7231B8102EB946C1001565E5 /* ObjCTests */,
 				356D4A572E58B01100CB69FE /* Mocks */,
-				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
 				359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */,
-				359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */,
-				35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */,
-				35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */,
-				35E3FCD12E549AED00DB5B18 /* MParticleSession+MParticlePrivateTests.swift */,
-				35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */,
-				72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */,
-				72D356522E8460020012A0C2 /* MPEventTests.swift */,
 				53A79C8729CE019F00E7489F /* Libraries */,
 				53A79C9729CE019F00E7489F /* JSON */,
 				53A79CB429CE019F00E7489F /* Info.plist */,
 				53A79C7129CE019E00E7489F /* mParticle_iOS_SDKTests-Bridging-Header.h */,
-				53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */,
-				D3961CE32CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1433,6 +1424,23 @@
 				531BCF392B28A83E00F5C573 /* MPIdentityCachingTests.m */,
 			);
 			path = ObjCTests;
+			sourceTree = "<group>";
+		};
+		7231B8112EB947F0001565E5 /* SwiftTests */ = {
+			isa = PBXGroup;
+			children = (
+				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
+				359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */,
+				35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */,
+				35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */,
+				35E3FCD12E549AED00DB5B18 /* MParticleSession+MParticlePrivateTests.swift */,
+				35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */,
+				72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */,
+				72D356522E8460020012A0C2 /* MPEventTests.swift */,
+				53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */,
+				D3961CE32CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift */,
+			);
+			path = SwiftTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
