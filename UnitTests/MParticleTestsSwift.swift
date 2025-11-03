@@ -45,35 +45,12 @@ class MParticleTestsSwift: XCTestCase {
     
     let url = URL(string: "https://example.com")!
     
-    lazy var event: MPEvent = {
-        let event = MPEvent(name: testName, type: .other)!
-        event.customAttributes = keyValueDict
-        return event
-    }()
-    
-    lazy var transformedEvent: MPEvent = {
-        let event = MPEvent(name: testName, type: .addToCart)!
-        event.customAttributes = keyValueDict
-        return event
-    }()
-    
-    lazy var baseEvent: MPBaseEvent = {
-        return MPBaseEvent(eventType: .other)!
-    }()
-    
-    lazy var transformedBaseEvent: MPBaseEvent = {
-        return MPBaseEvent(eventType: .addToCart)!
-    }()
-    
-    lazy var commerceEvent: MPCommerceEvent = {
-        let event = MPCommerceEvent(action: .addToCart)!
-        return event
-    }()
-    
-    lazy var transformedCommerceEvent: MPCommerceEvent = {
-        let event = MPCommerceEvent(action: .addToCart)!
-        return event
-    }()
+    var event: MPEvent!
+    var transformedEvent: MPEvent!
+    var baseEvent: MPBaseEvent!
+    var transformedBaseEvent: MPBaseEvent!
+    var commerceEvent: MPCommerceEvent!
+    var transformedCommerceEvent: MPCommerceEvent!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -124,6 +101,18 @@ class MParticleTestsSwift: XCTestCase {
         userDefaults = MPUserDefaultsMock()
         
         kit = MPKitMock()
+        
+        event = MPEvent(name: testName, type: .other)!
+        event.customAttributes = keyValueDict
+        
+        transformedEvent = MPEvent(name: testName, type: .addToCart)!
+        event.customAttributes = keyValueDict
+        
+        baseEvent = MPBaseEvent(eventType: .other)!
+        transformedBaseEvent = MPBaseEvent(eventType: .addToCart)!
+        
+        commerceEvent = MPCommerceEvent(action: .addToCart)!
+        transformedCommerceEvent = MPCommerceEvent(action: .removeFromCart)!
     }
 
     override func tearDown() {
