@@ -14,7 +14,7 @@ import XCTest
 
 final class MParticleScreenEventTests: MParticleTestBase {
     
-    func testLogScreenEvent_dataPlanFilterReturnsNil_blocksEvent() {
+    func test_logScreenEvent_blocksEvent_whenFilterReturnsNil() {
         mparticle.logScreenEvent(event)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
@@ -30,7 +30,7 @@ final class MParticleScreenEventTests: MParticleTestBase {
         assertReceivedMessage("Blocked screen event from kits", event: event)
     }
     
-    func testLogScreenEvent_tracesFullExecutionFlow() {
+    func test_logScreenEvent_executesFullFlow_whenFilterReturnsEvent() {
         dataPlanFilter.transformEventForScreenEventReturnValue = event
         
         mparticle.logScreenEvent(event)
@@ -57,7 +57,7 @@ final class MParticleScreenEventTests: MParticleTestBase {
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
     
-    func testLogScreenWrapper_withNilScreenName_logsErrorAndReturns() {
+    func test_logScreen_logsError_andReturns_whenScreenNameIsEmpty() {
         mparticle.logScreen("", eventInfo: event.customAttributes)
         
         assertReceivedMessage("Screen name is required.")
@@ -67,7 +67,7 @@ final class MParticleScreenEventTests: MParticleTestBase {
         XCTAssertFalse(backendController.logScreenCalled)
     }
     
-    func testLogScreenWrapper_callsLogScreen() {
+    func test_logScreen_callsLogScreenEvent_whenEventExists() {
         backendController.eventWithNameReturnValue = event
         dataPlanFilter.transformEventForScreenEventReturnValue = event
         
@@ -95,7 +95,7 @@ final class MParticleScreenEventTests: MParticleTestBase {
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
     
-    func testLogScreen_withNoExistingEvent_createsNewEventOfTypeNavigation() {
+    func test_logScreen_createsNavigationEvent_whenNoExistingEventFound() {
         backendController.eventWithNameReturnValue = nil
         let mockMPNavEvent = MPEvent(name: testName, type: .navigation)!
         mockMPNavEvent.customAttributes = keyValueDict
@@ -127,7 +127,7 @@ final class MParticleScreenEventTests: MParticleTestBase {
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
     
-    func testLogScreenCallbackDataFilterNotSet() {
+    func test_logScreenCallback_logsMessage_whenDataFilterIsNil() {
         mparticle.dataPlanFilter = nil
         XCTAssertNil(mparticle.dataPlanFilter)
         mparticle.logScreenCallback(event, execStatus: .success)
@@ -135,7 +135,7 @@ final class MParticleScreenEventTests: MParticleTestBase {
         assertReceivedMessage("Logged screen event", event: event)
     }
     
-    func testLogScreenCallbackDataFilterSetDataFilterReturnNil() {
+    func test_logScreenCallback_blocksEvent_whenFilterReturnsNil() {
         mparticle.logScreenCallback(event, execStatus: .success)
         
         XCTAssertTrue(dataPlanFilter.transformEventForScreenEventCalled)

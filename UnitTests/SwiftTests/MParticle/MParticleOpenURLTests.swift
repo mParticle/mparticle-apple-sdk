@@ -17,7 +17,7 @@ import ObjectiveC.runtime
 #if os(iOS)
 final class MParticleOpenURLTests: MParticleTestBase {
     
-    func testOpenURLSourceApplication_doesNothing_whenProxiedDelegateExists() {
+    func test_openURLWithSourceApplication_doesNotCallHandler_whenProxiedDelegateExists() {
         mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
 
         let url = URL(string: "https://example.com")!
@@ -28,7 +28,7 @@ final class MParticleOpenURLTests: MParticleTestBase {
         XCTAssertFalse(appNotificationHandler.openURLWithSourceApplicationAndAnnotationCalled)
     }
     
-    func testOpenURLSourceApplication_callsHandler_whenNoProxiedDelegate() {
+    func test_openURLWithSourceApplication_callsHandler_whenNoProxiedDelegate() {
         let sourceApp = "com.example.app"
         let annotation = "annotation"
 
@@ -40,7 +40,7 @@ final class MParticleOpenURLTests: MParticleTestBase {
         XCTAssertEqual(appNotificationHandler.openURLWithSourceApplicationAndAnnotationAnnotationParam as! String, annotation)
     }
     
-    func testOpenURLOptions_callsHandler_whenNoProxiedDelegate_andIOSVersion9OrHigher() {
+    func test_openURLOptions_callsHandler_whenNoProxiedDelegate_andSystemVersion9OrHigher() {
         let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": "com.example.app"]
         
         mparticle.open(url, options: options)
@@ -50,7 +50,7 @@ final class MParticleOpenURLTests: MParticleTestBase {
         XCTAssertEqual(appNotificationHandler.openURLWithOptionsOptionsParam?["UIApplicationOpenURLOptionsSourceApplicationKey"] as? String, "com.example.app")
     }
     
-    func testOpenURLOptions_doesNothing_whenProxiedDelegateExists() {
+    func test_openURLOptions_doesNotCallHandler_whenProxiedDelegateExists() {
         mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
         
         let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": "com.example.app"]
@@ -59,7 +59,7 @@ final class MParticleOpenURLTests: MParticleTestBase {
         XCTAssertFalse(appNotificationHandler.openURLWithOptionsCalled)
     }
 
-    func testOpenURLOptions_doesNothing_whenSystemVersionBelow9() {
+    func test_openURLOptions_doesNotCallHandler_whenSystemVersionBelow9() {
         let currentDevice = UIDevice.current
         let origSelector = NSSelectorFromString("systemVersion")
         let mockedVersion: @convention(block) () -> String = { "8.4" }

@@ -14,7 +14,7 @@ import XCTest
 
 final class MParticleTimedEventTests: MParticleTestBase {
     
-    func testBeginTimedEventCompletionHandlerDataFilterNotSet() {
+    func test_beginTimedEventCompletionHandler_logsMessage_whenDataFilterIsNil() {
         mparticle.dataPlanFilter = nil
         XCTAssertNil(mparticle.dataPlanFilter)
         
@@ -22,14 +22,14 @@ final class MParticleTimedEventTests: MParticleTestBase {
         assertReceivedMessage("Began timed event", event: event)
     }
     
-    func testBeginTimedEventCompletionHandlerDataFilterSetDataFilterReturnNil() {
+    func test_beginTimedEventCompletionHandler_blocksEvent_whenFilterReturnsNil() {
         mparticle.beginTimedEventCompletionHandler(event, execStatus: .success)
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertEqual(dataPlanFilter.transformEventEventParam, event)
         assertReceivedMessage("Blocked timed event begin from kits", event: event)
     }
     
-    func testBeginTimedEventDependenciesReceiveCorrectParametersAndHandlerExecutedWithoutErrors() {
+    func test_beginTimedEvent_invokesDependencies_andExecutesCompletionHandler() {
         mparticle.beginTimedEvent(event)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginTimedEvent:")
         XCTAssertEqual(listenerController.onAPICalledParameter1, event)

@@ -16,7 +16,7 @@ import XCTest
 
 final class MParticleIdentityTests: MParticleTestBase {
     
-    func testIdentifyNoDispatchCallbackNoErrorDefferedKitAvailable() {
+    func test_identifyNoDispatchCallback_clearsDeferredKit_whenNoError() {
         mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]()
         let expectedApiResult = MPIdentityApiResult()
         let expectation = XCTestExpectation()
@@ -33,7 +33,7 @@ final class MParticleIdentityTests: MParticleTestBase {
         XCTAssertNil(mparticle.deferredKitConfiguration_PRIVATE)
     }
     
-    func testIdentifyNoDispatchCallbackWithErrorDefferedKitAvailable() {
+    func test_identifyNoDispatchCallback_logsError_andClearsDeferredKit_whenErrorPresent() {
         mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]()
         let expectedApiResult = MPIdentityApiResult()
         let expectation = XCTestExpectation()

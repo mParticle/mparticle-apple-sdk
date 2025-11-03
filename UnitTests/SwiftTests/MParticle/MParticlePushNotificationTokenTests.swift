@@ -15,7 +15,7 @@ import XCTest
 #if os(iOS)
 final class MParticlePushNotificationTokenTests: MParticleTestBase {
     
-    func testPushNotificationToken_returnsDeviceToken_whenNotAppExtension() {
+    func test_pushNotificationToken_returnsDeviceToken_whenNotAppExtension() {
         notificationController.deviceTokenReturnValue = token
         
         appEnvironmentProvier.isAppExtensionReturnValue = false
@@ -27,7 +27,7 @@ final class MParticlePushNotificationTokenTests: MParticleTestBase {
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
     }
     
-    func testPushNotificationToken_returnsNil_whenAppExtension() {
+    func test_pushNotificationToken_returnsNil_whenAppExtension() {
         notificationController.deviceTokenReturnValue = token
 
         appEnvironmentProvier.isAppExtensionReturnValue = true
@@ -39,7 +39,7 @@ final class MParticlePushNotificationTokenTests: MParticleTestBase {
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
     }
     
-    func testSetPushNotificationToken_setsToken_whenNotAppExtension() {
+    func test_setPushNotificationToken_updatesController_whenNotAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = false
         
         mparticle.pushNotificationToken = token
@@ -49,7 +49,7 @@ final class MParticlePushNotificationTokenTests: MParticleTestBase {
         XCTAssertEqual(notificationController.setDeviceTokenParam, token)
     }
     
-    func testSetPushNotificationToken_doesNothing_whenAppExtension() {
+    func test_setPushNotificationToken_doesNothing_whenAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = true
         
         mparticle.pushNotificationToken = token

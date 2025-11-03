@@ -15,7 +15,7 @@ import XCTest
 @available(*, deprecated, message: "Used only for testing deprecated APIs")
 final class MParticleCommerceEventTests: MParticleTestBase {
     
-    func testLogCommerceEvent_assignsTimestampWhenNil() {
+    func test_logCommerceEvent_assignsTimestampIfMissing() {
         commerceEvent.setTimestamp(nil)
         
         mparticle.logCommerceEvent(commerceEvent)
@@ -26,7 +26,7 @@ final class MParticleCommerceEventTests: MParticleTestBase {
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
     }
     
-    func testLogCommerceEventWithFilterReturningNil_blocksEvent() {
+    func test_logCommerceEvent_blocksEvent_whenFilterReturnsNil() {
         dataPlanFilter.transformEventForCommerceEventParam = nil
         
         mparticle.logCommerceEvent(commerceEvent)
@@ -56,7 +56,7 @@ final class MParticleCommerceEventTests: MParticleTestBase {
         assertReceivedMessage("Blocked commerce event from kits", event: commerceEvent)
     }
     
-    func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
+    func test_logCommerceEvent_forwardsTransformedEvent_whenFilterReturnsEvent() {
         dataPlanFilter.transformEventForCommerceEventReturnValue = transformedCommerceEvent
         
         mparticle.logCommerceEvent(commerceEvent)
@@ -87,13 +87,13 @@ final class MParticleCommerceEventTests: MParticleTestBase {
         XCTAssertTrue(kitContainer.forwardCommerceEventCallCommerceEventParam === transformedCommerceEvent)
     }
     
-    func testLogCommerceEventCallbackSuccess() {
+    func test_logCommerceEventCallback_doesNotLogMessage_onSuccess() {
         mparticle.logCommerceEventCallback(commerceEvent, execStatus: .success)
         
         XCTAssertNil(receivedMessage)
     }
     
-    func testLogCommerceEventCallbackFail() {
+    func test_logCommerceEventCallback_logsError_onFailure() {
         mparticle.logCommerceEventCallback(commerceEvent, execStatus: .fail)
         
         assertReceivedMessage("Failed to log commerce event", event: commerceEvent)

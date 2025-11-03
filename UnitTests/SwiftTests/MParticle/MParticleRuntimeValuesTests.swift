@@ -14,58 +14,58 @@ import XCTest
 
 final class MParticleRuntimeValuesTests: MParticleTestBase {
     
-    func testSetSharedInstance() {
+    func test_setSharedInstance_notifiesListener() {
         MParticle.setSharedInstance(mparticle)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setSharedInstance:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === mparticle)
     }
     
-    func testSetOptOutCompletionSuccess() {
+    func test_setOptOutCompletion_logsMessage_onSuccess() {
         mparticle.setOptOutCompletion(.success, optOut: true)
         assertReceivedMessage("Set Opt Out: 1")
     }
     
-    func testSetOptOutCompletionFailure() {
+    func test_setOptOutCompletion_logsError_onFailure() {
         mparticle.setOptOutCompletion(.fail, optOut: true)
         assertReceivedMessage("Set Opt Out Failed: 1")
     }
     
-    func testIndentityReturnsTheSameObject() {
+    func test_identity_returnsSameInstance() {
         let identity = mparticle.identity
         XCTAssertTrue(identity === mparticle.identity)
     }
     
-    func testRoktReturnsTheSameObject() {
+    func test_rokt_returnsSameInstance() {
         let rokt = mparticle.rokt
         XCTAssertTrue(rokt === mparticle.rokt)
     }
     
-    func testSessionTimeoutReturnsValueFromBackendController() {
+    func test_sessionTimeout_returnsValue_fromBackendController() {
         mparticle.backendController.sessionTimeout = 100
         XCTAssertEqual(mparticle.sessionTimeout, 100)
     }
     
-    func testUniqueIdentifierRwturnedFromStateMachine() {
+    func test_uniqueIdentifier_returnsValue_fromStateMachine() {
         state.consumerInfo.uniqueIdentifier = "test"
         XCTAssertEqual(mparticle.uniqueIdentifier, "test")
     }
     
-    func testSetUploadIntervalChangeValueInBackendControllerWhenIntervalGreaterThenOne() {
+    func test_setUploadInterval_updatesBackend_whenValueGreaterThanOne() {
         mparticle.setUploadInterval(3)
         XCTAssertEqual(backendController.uploadInterval, 3)
     }
     
-    func testSetUploadIntervalNotChangeValueInBackendControllerWhenIntervalLessThenOne() {
+    func test_setUploadInterval_doesNotUpdateBackend_whenValueLessThanOne() {
         mparticle.setUploadInterval(0.1)
         XCTAssertEqual(backendController.uploadInterval, 0.0)
     }
     
-    func testUploadIntervalGetFromBackendController() {
+    func test_uploadInterval_returnsValue_fromBackendController() {
         backendController.uploadInterval = 100
         XCTAssertEqual(mparticle.uploadInterval, 100)
     }
     
-    func testUserAttributesForUserIdRequestDataFromBackendController() {
+    func test_userAttributes_fetchesFromBackend_forUserId() {
         backendController.userAttributesReturnValue = ["key": "value"]
         let dictionary = mparticle.userAttributes(forUserId: 1)
         XCTAssertEqual(dictionary?["key"] as? String, "value")
@@ -73,9 +73,11 @@ final class MParticleRuntimeValuesTests: MParticleTestBase {
         XCTAssertEqual(backendController.userAttributesUserIdParam, 1)
     }
     
-    func testSetOptOutOptOutValueIsDifferentItShouldBeChangedAndDeliveredToBackendController() {
+    func test_optOut_updatesState_andNotifiesBackend() {
         XCTAssertFalse(state.optOut)
+        
         mparticle.optOut = true
+        
         XCTAssertTrue(state.optOut)
         XCTAssertTrue(backendController.setOptOutCalled)
         XCTAssertEqual(backendController.setOptOutOptOutStatusParam, true)
