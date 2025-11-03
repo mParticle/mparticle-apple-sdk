@@ -31,6 +31,7 @@ class MParticleTestsSwift: XCTestCase {
     var settingsProvider: SettingsProviderMock!
     var options: MParticleOptions!
     var userDefaults: MPUserDefaultsMock!
+    var dataPlanFilter: MPDataPlanFilterMock!
     var kit: MPKitMock!
     
     let testName: String = "test"
@@ -113,6 +114,9 @@ class MParticleTestsSwift: XCTestCase {
         
         settingsProvider = SettingsProviderMock()
         mparticle.settingsProvider = settingsProvider
+        
+        dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
         
         options = MParticleOptions()
         
@@ -242,6 +246,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testBeginTimedEventCompletionHandlerDataFilterNotSet() {
+        mparticle.dataPlanFilter = nil
         XCTAssertNil(mparticle.dataPlanFilter)
         
         mparticle.beginTimedEventCompletionHandler(event, execStatus: .success)
@@ -258,9 +263,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testBeginTimedEventCompletionHandlerDataFilterSetDataFilterReturnNil() {
-        let dataPlanFilter = MPDataPlanFilterMock()
-        mparticle.dataPlanFilter = dataPlanFilter
-        
         mparticle.beginTimedEventCompletionHandler(event, execStatus: .success)
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertEqual(dataPlanFilter.transformEventEventParam, event)
@@ -277,6 +279,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogEventCallbackDataFilterNotSet() {
+        mparticle.dataPlanFilter = nil
         XCTAssertNil(mparticle.dataPlanFilter)
         mparticle.logEventCallback(event, execStatus: .success)
         
@@ -284,8 +287,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogEventCallbackDataFilterSetDataFilterReturnNil() {
-        let dataPlanFilter = MPDataPlanFilterMock()
-        mparticle.dataPlanFilter = dataPlanFilter
         mparticle.logEventCallback(event, execStatus: .success)
         
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
@@ -304,6 +305,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogScreenCallbackDataFilterNotSet() {
+        mparticle.dataPlanFilter = nil
         XCTAssertNil(mparticle.dataPlanFilter)
         mparticle.logScreenCallback(event, execStatus: .success)
         
@@ -320,8 +322,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogScreenCallbackDataFilterSetDataFilterReturnNil() {
-        let dataPlanFilter = MPDataPlanFilterMock()
-        mparticle.dataPlanFilter = dataPlanFilter
         mparticle.logScreenCallback(event, execStatus: .success)
         
         XCTAssertTrue(dataPlanFilter.transformEventForScreenEventCalled)
@@ -847,9 +847,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogEventWithFilterReturningNil_blocksEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForBaseEventReturnValue = nil
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logEvent(baseEvent)
         
@@ -876,9 +874,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogBaseEventWithFilterReturningEvent_forwardsTransformedEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForBaseEventReturnValue = transformedBaseEvent
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logEvent(baseEvent)
         
@@ -916,9 +912,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogCustomEventWithFilterReturningNil_blocksEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = nil
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logCustomEvent(event)
         
@@ -946,9 +940,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogCustomEventWithFilterReturningEvent_forwardsTransformedEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = transformedEvent
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logCustomEvent(event)
         
@@ -982,9 +974,6 @@ class MParticleTestsSwift: XCTestCase {
     // MARK: - logScreen
     
     func testLogScreenEvent_dataPlanFilterReturnsNil_blocksEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
-        mparticle.dataPlanFilter = dataPlanFilter
-        
         mparticle.logScreenEvent(event)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
@@ -1010,9 +999,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogScreenEvent_tracesFullExecutionFlow() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForScreenEventReturnValue = event
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logScreenEvent(event)
         
@@ -1059,10 +1046,7 @@ class MParticleTestsSwift: XCTestCase {
     
     func testLogScreenWrapper_callsLogScreen() {
         backendController.eventWithNameReturnValue = event
-        
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForScreenEventReturnValue = event
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logScreen(event.name, eventInfo: event.customAttributes)
         
@@ -1103,9 +1087,7 @@ class MParticleTestsSwift: XCTestCase {
         mockMPNavEvent.customAttributes = keyValueDict
         mockMPNavEvent.shouldUploadEvent = true
         
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForScreenEventReturnValue = mockMPNavEvent
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logScreen(testName, eventInfo: keyValueDict, shouldUploadEvent: true)
         
@@ -1262,9 +1244,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogCommerceEventWithFilterReturningNil_blocksEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForCommerceEventParam = nil
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logCommerceEvent(commerceEvent)
         
@@ -1294,9 +1274,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForCommerceEventReturnValue = transformedCommerceEvent
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logCommerceEvent(commerceEvent)
         
@@ -1393,9 +1371,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogLTVIncreaseCallback_withSuccessExecStatus_noDataPlanFilter_forwardsEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = nil
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logLTVIncreaseCallback(event, execStatus: .success)
         
@@ -1406,9 +1382,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLogLTVIncreaseCallback_withSuccessExecStatus_filterReturnsTransformedEvent_forwardsTransformedEvent() {
-        let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = transformedEvent
-        mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.logLTVIncreaseCallback(event, execStatus: .success)
         
@@ -1429,6 +1403,7 @@ class MParticleTestsSwift: XCTestCase {
     // MARK: Error, Exception, and Crash Handling
     
     func testLeaveBreadcrumbCallback_withDataFilterNotSet_forwardsTransformedEvent() {
+        mparticle.dataPlanFilter = nil
         XCTAssertNil(mparticle.dataPlanFilter)
         
         mparticle.leaveBreadcrumbCallback(event, execStatus: .success)
@@ -1455,8 +1430,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLeaveBreadcrumbCallback_withDataFilterSet_andDataFilterReturnNil() {
-        let dataPlanFilter = MPDataPlanFilterMock()
-        mparticle.dataPlanFilter = dataPlanFilter
         mparticle.leaveBreadcrumbCallback(event, execStatus: .success)
         
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
@@ -1513,6 +1486,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testLeaveBreadcrumb_eventNamePassed_CallbackCallsCallbackFunction() {
+        mparticle.dataPlanFilter = nil
         mparticle.leaveBreadcrumb(event.name, eventInfo: event.customAttributes)
         backendController.leaveBreadcrumbCompletionHandler?(event, .success)
         XCTAssertEqual(receivedMessage, """
