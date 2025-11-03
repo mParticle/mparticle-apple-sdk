@@ -1461,6 +1461,8 @@
 			isa = PBXGroup;
 			children = (
 				53A79C8829CE019F00E7489F /* OCMock.xcframework */,
+				7231B85B2EB969E1001565E5 /* Diagnostics */,
+				7231B85A2EB969C2001565E5 /* LTV */,
 				7231B8472EB96373001565E5 /* Infra */,
 				7231B8372EB9607C001565E5 /* Platform */,
 				7231B8152EB94A67001565E5 /* Shared */,
@@ -1521,10 +1523,7 @@
 				7231B82B2EB95D75001565E5 /* MParticleCustomEventTests.swift */,
 				7231B82E2EB95D96001565E5 /* MParticleBaseEventTests.swift */,
 				7231B8312EB95EDD001565E5 /* MParticleScreenEventTests.swift */,
-				7231B8342EB95F9F001565E5 /* MParticleBreadcrumbTests.swift */,
 				7231B8382EB960C8001565E5 /* MParticleTimedEventTests.swift */,
-				7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */,
-				7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */,
 				7231B8442EB9630E001565E5 /* MParticleCommerceEventTests.swift */,
 			);
 			path = Events;
@@ -1547,6 +1546,23 @@
 				7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */,
 			);
 			path = Infra;
+			sourceTree = "<group>";
+		};
+		7231B85A2EB969C2001565E5 /* LTV */ = {
+			isa = PBXGroup;
+			children = (
+				7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */,
+			);
+			path = LTV;
+			sourceTree = "<group>";
+		};
+		7231B85B2EB969E1001565E5 /* Diagnostics */ = {
+			isa = PBXGroup;
+			children = (
+				7231B8342EB95F9F001565E5 /* MParticleBreadcrumbTests.swift */,
+				7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */,
+			);
+			path = Diagnostics;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

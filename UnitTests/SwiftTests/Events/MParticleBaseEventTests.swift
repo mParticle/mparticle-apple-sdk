@@ -100,7 +100,5 @@ final class MParticleBaseEventTests: MParticleTestBase {
         
         assertReceivedMessage("Blocked timed event end from kits", event: event)
     }
-    
-    
 }
 

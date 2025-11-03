@@ -158,5 +158,4 @@ final class MParticleSessionTests: MParticleTestBase {
         backendController.beginTimedEventCompletionHandler?(event, .success)
         XCTAssertNotNil(receivedMessage)
     }
-    
 }

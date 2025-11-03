@@ -78,8 +78,4 @@ final class MParticleCustomEventTests: MParticleTestBase {
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .event)
         XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedEvent)
     }
-    
-    
-    
-    
 }

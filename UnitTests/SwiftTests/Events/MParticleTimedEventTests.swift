@@ -28,5 +28,4 @@ final class MParticleTimedEventTests: MParticleTestBase {
         XCTAssertEqual(dataPlanFilter.transformEventEventParam, event)
         assertReceivedMessage("Blocked timed event begin from kits", event: event)
     }
-    
 }
