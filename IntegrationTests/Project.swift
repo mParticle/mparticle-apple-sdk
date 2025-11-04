@@ -5,11 +5,11 @@ let project = Project(
     targets: [
         .target(
             name: "IntegrationTests",
-            destinations: .macOS,
-            product: .commandLineTool,
+            destinations: .iOS,
+            product: .app,
             bundleId: "dev.tuist.IntegrationTests",
             buildableFolders: [
-                "IntegrationTests/Sources"
+                "Sources"
             ],
             dependencies: []
         )
