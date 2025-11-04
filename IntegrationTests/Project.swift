@@ -11,7 +11,9 @@ let project = Project(
             buildableFolders: [
                 "Sources"
             ],
-            dependencies: []
+            dependencies: [
+                .external(name: "mParticle-Apple-SDK")
+            ]
         )
     ]
 )
