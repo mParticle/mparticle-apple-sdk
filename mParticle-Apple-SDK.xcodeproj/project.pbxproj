@@ -1486,6 +1486,7 @@
 		7231B8112EB947F0001565E5 /* SwiftTests */ = {
 			isa = PBXGroup;
 			children = (
+				72ACF6452EBA71A300F8EE5B /* MParticle */,
 				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
 				35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */,
 				35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */,
@@ -1499,73 +1500,31 @@
 			path = SwiftTests;
 			sourceTree = "<group>";
 		};
-		7231B8152EB94A67001565E5 /* Shared */ = {
+		72ACF6452EBA71A300F8EE5B /* MParticle */ = {
 			isa = PBXGroup;
 			children = (
+				7231B8342EB95F9F001565E5 /* MParticleBreadcrumbTests.swift */,
+				7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */,
+				7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */,
+				7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */,
+				7231B85C2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift */,
+				7231B84E2EB96455001565E5 /* MParticleUserActivityTests.swift */,
+				7231B8512EB964A1001565E5 /* MParticleOpenURLTests.swift */,
+				7231B8542EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift */,
+				7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */,
 				7231B8192EB94DCD001565E5 /* MParticleTestBase.swift */,
 				7231B8222EB95940001565E5 /* LogKitBatchData.swift */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		7231B8162EB94A6C001565E5 /* Core */ = {
-			isa = PBXGroup;
-			children = (
 				7231B81C2EB94EAA001565E5 /* MParticleConfigurationTests.swift */,
 				7231B81F2EB958DB001565E5 /* MParticleIdentityTests.swift */,
 				7231B8252EB95991001565E5 /* MParticleSessionTests.swift */,
 				7231B8282EB95B04001565E5 /* MParticleRuntimeValuesTests.swift */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
-		7231B8172EB94A71001565E5 /* Events */ = {
-			isa = PBXGroup;
-			children = (
 				7231B82B2EB95D75001565E5 /* MParticleCustomEventTests.swift */,
 				7231B82E2EB95D96001565E5 /* MParticleEventTests.swift */,
 				7231B8312EB95EDD001565E5 /* MParticleScreenEventTests.swift */,
 				7231B8382EB960C8001565E5 /* MParticleTimedEventTests.swift */,
 				7231B8442EB9630E001565E5 /* MParticleCommerceEventTests.swift */,
 			);
-			path = Events;
-			sourceTree = "<group>";
-		};
-		7231B8372EB9607C001565E5 /* Platform */ = {
-			isa = PBXGroup;
-			children = (
-				7231B84E2EB96455001565E5 /* MParticleUserActivityTests.swift */,
-				7231B8512EB964A1001565E5 /* MParticleOpenURLTests.swift */,
-				7231B8542EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift */,
-				7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */,
-			);
-			path = Platform;
-			sourceTree = "<group>";
-		};
-		7231B8472EB96373001565E5 /* Infra */ = {
-			isa = PBXGroup;
-			children = (
-				7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */,
-				7231B85C2EB96D88001565E5 /* MParticleBackendControllerDelegateTests.swift */,
-			);
-			path = Infra;
-			sourceTree = "<group>";
-		};
-		7231B85A2EB969C2001565E5 /* LTV */ = {
-			isa = PBXGroup;
-			children = (
-				7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */,
-			);
-			path = LTV;
-			sourceTree = "<group>";
-		};
-		7231B85B2EB969E1001565E5 /* Diagnostics */ = {
-			isa = PBXGroup;
-			children = (
-				7231B8342EB95F9F001565E5 /* MParticleBreadcrumbTests.swift */,
-				7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */,
-			);
-			path = Diagnostics;
+			path = MParticle;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
