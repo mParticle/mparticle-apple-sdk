@@ -14,7 +14,7 @@ import XCTest
 
 final class MParticleBreadcrumbTests: MParticleTestBase {
     
-    func testLeaveBreadcrumbCallback_withDataFilterNotSet_forwardsTransformedEvent() {
+    func test_leaveBreadcrumbCallback_forwardsEvent_whenDataFilterIsNil() {
         mparticle.dataPlanFilter = nil
         XCTAssertNil(mparticle.dataPlanFilter)
         
@@ -32,7 +32,7 @@ final class MParticleBreadcrumbTests: MParticleTestBase {
         assertReceivedMessage("Left breadcrumb", event: event)
     }
     
-    func testLeaveBreadcrumbCallback_withDataFilterSet_andDataFilterReturnNil() {
+    func test_leaveBreadcrumbCallback_blocksEvent_whenFilterReturnsNil() {
         mparticle.leaveBreadcrumbCallback(event, execStatus: .success)
         
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
@@ -41,18 +41,18 @@ final class MParticleBreadcrumbTests: MParticleTestBase {
         assertReceivedMessage("Blocked breadcrumb event from kits", event: event)
     }
     
-    func testLeaveBreadcrumbCallback_execStatusFail_noLoggedMessages() {
+    func test_leaveBreadcrumbCallback_doesNotLog_whenExecStatusFail() {
         mparticle.leaveBreadcrumbCallback(event, execStatus: .fail)
         
         XCTAssertNil(receivedMessage)
     }
     
-    func testLeaveBreadcrumb_eventNamePassed_backendControllerReceiveCorrectName() {
+    func test_leaveBreadcrumb_passesEventName_toBackendController() {
         mparticle.leaveBreadcrumb(event.name, eventInfo: event.customAttributes)
         XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
     }
     
-    func testLeaveBreadcrumb_eventNamePassed_backendControllerReturnsNilEvent_newEventCreated() {
+    func test_leaveBreadcrumb_createsNewEvent_whenNoExistingEventFound() {
         mparticle.leaveBreadcrumb(event.name, eventInfo: event.customAttributes)
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, event.name)
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .other)
@@ -61,7 +61,7 @@ final class MParticleBreadcrumbTests: MParticleTestBase {
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
     
-    func testLeaveBreadcrumb_eventNamePassed_backendControllerReturnsEvent_eventModified() {
+    func test_leaveBreadcrumb_updatesExistingEvent_whenEventAlreadyExists() {
         backendController.eventSet?.add(event as Any)
         mparticle.leaveBreadcrumb(event.name, eventInfo: event.customAttributes)
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, event.name)
@@ -71,7 +71,7 @@ final class MParticleBreadcrumbTests: MParticleTestBase {
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
     
-    func testLeaveBreadcrumb_eventNamePassed_CallbackCallsCallbackFunction() {
+    func test_leaveBreadcrumb_invokesCallback_andLogsMessage() {
         mparticle.dataPlanFilter = nil
         mparticle.leaveBreadcrumb(event.name, eventInfo: event.customAttributes)
         backendController.leaveBreadcrumbCompletionHandler?(event, .success)

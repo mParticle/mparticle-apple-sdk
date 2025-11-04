@@ -14,12 +14,12 @@ import XCTest
 
 final class MParticleCustomEventTests: MParticleTestBase {
     
-    func testLogCustomEventWithNilEvent_logsError() {
+    func test_logCustomEvent_logsError_whenEventIsNil() {
         mparticle.logCustomEvent(nil)
         assertReceivedMessage("Cannot log nil event!")
     }
     
-    func testLogCustomEventWithFilterReturningNil_blocksEvent() {
+    func test_logCustomEvent_blocksEvent_whenFilterReturnsNil() {
         dataPlanFilter.transformEventReturnValue = nil
         
         mparticle.logCustomEvent(event)
@@ -47,7 +47,7 @@ final class MParticleCustomEventTests: MParticleTestBase {
         assertReceivedMessage("Blocked custom event from kits", event: event)
     }
     
-    func testLogCustomEventWithFilterReturningEvent_forwardsTransformedEvent() {
+    func test_logCustomEvent_forwardsTransformedEvent_whenFilterReturnsEvent() {
         dataPlanFilter.transformEventReturnValue = transformedEvent
         
         mparticle.logCustomEvent(event)

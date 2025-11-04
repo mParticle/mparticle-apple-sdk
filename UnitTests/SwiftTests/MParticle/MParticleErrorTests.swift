@@ -14,42 +14,42 @@ import XCTest
 
 final class MParticleErrorTests: MParticleTestBase {
     
-    func testLogErrorCallbackSuccess() {
+    func test_logErrorCallback_logsMessage_whenSuccess() {
         mparticle.logErrorCallback([:], execStatus: .success, message: "error")
         
         assertReceivedMessage("Logged error with message: error")
     }
     
-    func testLogErrorCallbackFail() {
+    func test_logErrorCallback_doesNotLog_whenFail() {
         mparticle.logErrorCallback([:], execStatus: .fail, message: "error")
         
         XCTAssertNil(receivedMessage)
     }
     
-    func testLogExceptionCallbackSuccess() {
+    func test_logExceptionCallback_logsDetails_whenSuccess() {
         mparticle.logExceptionCallback(exception, execStatus: .success, message: "exception", topmostContext: nil)
         
         assertReceivedMessage("Logged exception name: exception, reason: Test, topmost context: (null)")
     }
     
-    func testLogExceptionCallbackFail() {
+    func test_logExceptionCallback_doesNotLog_whenFail() {
         mparticle.logExceptionCallback(exception, execStatus: .fail, message: "exception", topmostContext: nil)
         
         XCTAssertNil(receivedMessage)
     }
     
-    func testLogCrashCallbackSuccess() {
+    func test_logCrashCallback_logsMessage_whenSuccess() {
         mparticle.logCrashCallback(.success, message: "Message")
         assertReceivedMessage("Logged crash with message: Message")
     }
     
-    func testLogNetworkPerformanceCallbackSuccess() {
+    func test_logNetworkPerformanceCallback_logsMessage_whenSuccess() {
         mparticle.logNetworkPerformanceCallback(.success)
         
         assertReceivedMessage("Logged network performance measurement")
     }
     
-    func testLogNetworkPerformanceCallbackFail() {
+    func test_logNetworkPerformanceCallback_doesNotLog_whenFail() {
         mparticle.logNetworkPerformanceCallback(.fail)
         
         XCTAssertNil(receivedMessage)

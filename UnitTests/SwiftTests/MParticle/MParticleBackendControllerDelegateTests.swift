@@ -14,7 +14,7 @@ import XCTest
 
 final class MParticleBackendControllerDelegateTests: MParticleTestBase {
     
-    func testForwardLogInstall() {
+    func test_forwardLogInstall_forwardsCall_onMainQueue() {
         mparticle.forwardLogInstall()
         XCTAssertEqual(executor.executeOnMainAsync, true)
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
@@ -25,7 +25,7 @@ final class MParticleBackendControllerDelegateTests: MParticleTestBase {
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
     
-    func testForwardLogUpdate() {
+    func test_forwardLogUpdate_forwardsCall_onMainQueue() {
         mparticle.forwardLogUpdate()
         XCTAssertEqual(executor.executeOnMainAsync, true)
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)

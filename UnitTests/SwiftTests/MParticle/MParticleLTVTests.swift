@@ -14,7 +14,7 @@ import XCTest
 
 final class MParticleLTVTests: MParticleTestBase {
     
-    func testLogLTVIncrease_withNameAndInfo_createsEventAndCallsBackend() {
+    func test_logLTVIncrease_createsTransactionEvent_andCallsBackend_whenEventInfoProvided() {
         let amount = 42.0
         let name = "name"
         let info: [String: Any] = ["source": "in_app", "currency": "USD"]
@@ -47,7 +47,7 @@ final class MParticleLTVTests: MParticleTestBase {
         completion(loggedEvent, .success)
     }
     
-    func testLogLTVIncrease_withoutEventInfo_defaultsToNilInfo() {
+    func test_logLTVIncrease_createsTransactionEvent_withDefaultAttributes_whenEventInfoNil() {
         let amount = 12.5
         let name = "name"
         
@@ -78,7 +78,7 @@ final class MParticleLTVTests: MParticleTestBase {
         completion(loggedEvent, .success)
     }
     
-    func testLogLTVIncreaseCallback_withSuccessExecStatus_noDataPlanFilter_forwardsEvent() {
+    func test_logLTVIncreaseCallback_blocksEvent_whenFilterReturnsNil() {
         dataPlanFilter.transformEventReturnValue = nil
         
         mparticle.logLTVIncreaseCallback(event, execStatus: .success)
@@ -89,7 +89,7 @@ final class MParticleLTVTests: MParticleTestBase {
         assertReceivedMessage("Blocked LTV increase event from kits", event: event)
     }
     
-    func testLogLTVIncreaseCallback_withSuccessExecStatus_filterReturnsTransformedEvent_forwardsTransformedEvent() {
+    func test_logLTVIncreaseCallback_forwardsTransformedEvent_whenFilterReturnsEvent() {
         dataPlanFilter.transformEventReturnValue = transformedEvent
         
         mparticle.logLTVIncreaseCallback(event, execStatus: .success)

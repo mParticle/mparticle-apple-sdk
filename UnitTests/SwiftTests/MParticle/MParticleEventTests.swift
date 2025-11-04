@@ -14,19 +14,19 @@ import XCTest
 
 final class MParticleEventTests: MParticleTestBase {
     
-    func testLogEventCalledLogCustomEvent() {
+    func test_logEvent_callsLogCustomEvent() {
         mparticle.logEvent(event)
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
     }
     
-    func testLogEventCalledLogCommerceEvent() {
+    func test_logEvent_callsLogCommerceEvent() {
         mparticle.logEvent(commerceEvent)
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
     }
     
-    func testLogEventWithFilterReturningNil_blocksEvent() {
+    func test_logEvent_blocksEvent_whenFilterReturnsNil() {
         dataPlanFilter.transformEventForBaseEventReturnValue = nil
         
         mparticle.logEvent(baseEvent)
@@ -53,7 +53,7 @@ final class MParticleEventTests: MParticleTestBase {
         assertReceivedMessage("Blocked base event from kits", event: baseEvent)
     }
     
-    func testLogBaseEventWithFilterReturningEvent_forwardsTransformedEvent() {
+    func test_logEvent_forwardsTransformedEvent_whenFilterReturnsEvent() {
         dataPlanFilter.transformEventForBaseEventReturnValue = transformedBaseEvent
         
         mparticle.logEvent(baseEvent)
@@ -84,7 +84,7 @@ final class MParticleEventTests: MParticleTestBase {
         XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedBaseEvent)
     }
     
-    func testLogEventCallbackDataFilterNotSet() {
+    func test_logEventCallback_doesNotLogMessage_whenDataFilterIsNil() {
         mparticle.dataPlanFilter = nil
         XCTAssertNil(mparticle.dataPlanFilter)
         mparticle.logEventCallback(event, execStatus: .success)
@@ -92,7 +92,7 @@ final class MParticleEventTests: MParticleTestBase {
         XCTAssertNil(receivedMessage)
     }
     
-    func testLogEventCallbackDataFilterSetDataFilterReturnNil() {
+    func test_logEventCallback_blocksEvent_whenFilterReturnsNil() {
         mparticle.logEventCallback(event, execStatus: .success)
         
         XCTAssertTrue(dataPlanFilter.transformEventCalled)

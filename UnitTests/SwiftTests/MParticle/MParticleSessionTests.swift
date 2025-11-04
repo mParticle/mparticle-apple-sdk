@@ -16,21 +16,21 @@ import XCTest
 
 final class MParticleSessionTests: MParticleTestBase {
     
-    func testBeginSessionTempSessionAvailableSessionTempSessionShouldNotBeCreated() {
+    func test_beginSession_doesNotCreateTempSession_whenTempSessionExists() {
         backendController.session = nil
         backendController.tempSessionReturnValue = MParticleSession()
         mparticle.beginSession()
         XCTAssertFalse(backendController.createTempSessionCalled)
     }
     
-    func testBeginSessionSessionAvailableSessionTempSessionShouldNotBeCreated() {
+    func test_beginSession_doesNotCreateTempSession_whenSessionExists() {
         backendController.session = MPSession()
         backendController.tempSessionReturnValue = nil
         mparticle.beginSession()
         XCTAssertFalse(backendController.createTempSessionCalled)
     }
     
-    func testBeginSessionSessionUnavailable() {
+    func test_beginSession_createsAndBeginsSession_whenNoSessionExists() {
         backendController.session = nil
         backendController.tempSessionReturnValue = nil
         mparticle.beginSession()
@@ -41,14 +41,14 @@ final class MParticleSessionTests: MParticleTestBase {
         XCTAssertNotNil(backendController.beginSessionDateParam)
     }
     
-    func testEndSessionNoSession() {
+    func test_endSession_doesNothing_whenNoActiveSession() {
         backendController.session = nil
         mparticle.endSession()
         XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
         XCTAssertFalse(backendController.endSessionWithIsManualCalled)
     }
     
-    func testEndSessionWithSession() {
+    func test_endSession_endsActiveSession_whenSessionExists() {
         backendController.session = MPSession()
         mparticle.endSession()
         XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
@@ -56,7 +56,7 @@ final class MParticleSessionTests: MParticleTestBase {
         XCTAssertEqual(backendController.endSessionIsManualParam, true)
     }
     
-    func testSessionDidBegin() {
+    func test_sessionDidBegin_forwardsCall_toKitContainer() {
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
         mparticle.sessionDidBegin(MPSession())
         
@@ -70,7 +70,7 @@ final class MParticleSessionTests: MParticleTestBase {
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
     
-    func testSessionDidEnd() {
+    func test_sessionDidEnd_forwardsCall_toKitContainer() {
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
         mparticle.sessionDidEnd(MPSession())
         

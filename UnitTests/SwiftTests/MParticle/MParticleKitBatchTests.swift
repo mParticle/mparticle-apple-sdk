@@ -14,7 +14,7 @@ import XCTest
 
 final class MParticleKitBatchTests: MParticleTestBase {
     
-    func testLogKitBatch_withNilBatch_doesNotExecuteOrForward() {
+    func test_logKitBatch_doesNotExecute_whenBatchIsNil() {
         mparticle.logKitBatch(nil)
 
         assertReceivedMessage("Cannot log nil batch!")
@@ -25,7 +25,7 @@ final class MParticleKitBatchTests: MParticleTestBase {
         XCTAssertFalse(persistenceController.saveCalled)
     }
     
-    func testLogKitBatch_noBatchingKits_andKitsInitialized_doesNothing() {
+    func test_logKitBatch_doesNothing_whenNoBatchingKits_andKitsInitialized() {
         kitContainer.kitsInitialized = true
         kitContainer.hasKitBatchingKitsReturnValue = false
 
@@ -37,7 +37,7 @@ final class MParticleKitBatchTests: MParticleTestBase {
         XCTAssertFalse(persistenceController.saveCalled)
     }
 
-    func testLogKitBatch_kitsNotInitialized_defersWorkUntilInitialization() {
+    func test_logKitBatch_defersExecution_untilKitsInitialized() {
         kitContainer.kitsInitialized = false
         kitContainer.hasKitBatchingKitsReturnValue = true
 
@@ -62,7 +62,7 @@ final class MParticleKitBatchTests: MParticleTestBase {
         XCTAssertNotNil(kitContainer.forwardSDKCallKitHandlerParam)
     }
 
-    func testLogKitBatch_withBatchingKits_forwardsParsedBatch_andPersistsForwardRecords() {
+    func test_logKitBatch_forwardsParsedBatch_andPersistsRecords_whenBatchingKitsAvailable() {
         kitContainer.kitsInitialized = true
         kitContainer.hasKitBatchingKitsReturnValue = true
 
@@ -76,7 +76,7 @@ final class MParticleKitBatchTests: MParticleTestBase {
         XCTAssertNotNil(kitContainer.forwardSDKCallKitHandlerParam)
     }
     
-    func testLogKitBatch_invokesKitHandler_andPersistsForwardRecords() {
+    func test_logKitBatch_executesKitHandler_andPersistsForwardRecords() {
         kitContainer.kitsInitialized = true
         kitContainer.hasKitBatchingKitsReturnValue = true
 
@@ -107,7 +107,7 @@ final class MParticleKitBatchTests: MParticleTestBase {
         XCTAssertTrue(persistenceController.saveForwardRecordParam === forwardRecord)
     }
 
-    func testLogKitBatch_invalidJSON_stillForwardsWithNilBatch() {
+    func test_logKitBatch_forwardsWithNilBatch_whenJSONInvalid() {
         kitContainer.kitsInitialized = true
         kitContainer.hasKitBatchingKitsReturnValue = true
 

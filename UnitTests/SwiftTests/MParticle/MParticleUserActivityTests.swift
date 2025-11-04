@@ -16,7 +16,7 @@ import ObjectiveC.runtime
 #if os(iOS)
 final class MParticleUserActivityTests: MParticleTestBase {
     
-    func testContinueUserActivity_returnsFalseAndDoesNotCallHandler_whenProxiedDelegateExists() {
+    func test_continueUserActivity_returnsFalse_andDoesNotCallHandler_whenProxiedDelegateExists() {
         mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
 
         let activity = NSUserActivity(activityType: "com.example.test")
@@ -27,7 +27,7 @@ final class MParticleUserActivityTests: MParticleTestBase {
         XCTAssertFalse(appNotificationHandler.continueUserActivityCalled)
     }
 
-    func testContinueUserActivity_returnsFalse_whenHandlerReturnsFalse() {
+    func test_continueUserActivity_returnsFalse_whenHandlerReturnsFalse() {
         let activity = NSUserActivity(activityType: "com.example.test")
         appNotificationHandler.continueUserActivityReturnValue = false
 

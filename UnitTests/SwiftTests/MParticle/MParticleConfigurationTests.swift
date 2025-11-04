@@ -14,7 +14,7 @@ import XCTest
 
 final class MParticleConfigurationTests: MParticleTestBase {
     
-    func testStartWithKeyCallbackFirstRun() {
+    func test_start_initializesAndSetsFirstRunValues_whenFirstRun() {
         XCTAssertFalse(mparticle.initialized)
         
         mparticle.start(withKeyCallback: true, options: options, userDefaults: userDefaults)
@@ -28,7 +28,7 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertTrue(userDefaults.synchronizeCalled)
     }
     
-    func testStartWithKeyCallbackNotFirstRunWithIdentityRequest() {
+    func test_start_initializesWithoutUpdatingUserDefaults_whenNotFirstRun() {
         let user = mparticle.identity.currentUser
         options.identifyRequest = MPIdentityApiRequest(user: user!)
         
@@ -41,7 +41,7 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertFalse(userDefaults.synchronizeCalled)
     }
     
-    func testConfigureDefaultConfigurationExistOptionParametersAreNotSet() {
+    func test_configure_usesDefaultValues_whenNoSettingsExist() {
         mparticle.backendController = MPBackendController_PRIVATE()
         mparticle.configure(with: options)
         XCTAssertEqual(mparticle.backendController.sessionTimeout, 0.0)
@@ -51,7 +51,7 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertEqual(mparticle.trackNotifications, true)
     }
     
-    func testConfigureWhenDefaultConfigurationExists() {
+    func test_configure_appliesSettings_whenConfigSettingsExist() {
         let settings: NSMutableDictionary = [
             "session_timeout": NSNumber(value: 2.0),
             "upload_interval": NSNumber(value: 3.0),
@@ -74,7 +74,7 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertEqual(mparticle.trackNotifications, false)
     }
     
-    func testConfigureWithOptionsNoSettings() {
+    func test_configure_usesFallbackValues_whenOptionsAndSettingsAreEmpty() {
         mparticle.configure(with: .init())
         XCTAssertEqual(backendController.sessionTimeout, 0.0)
         XCTAssertEqual(backendController.uploadInterval, 0.0)
@@ -88,7 +88,7 @@ final class MParticleConfigurationTests: MParticleTestBase {
 #endif
     }
     
-    func testConfigureWithOptionsWithSettingsAndOptionNotSet() {
+    func test_configure_appliesStoredSettings_whenOptionsNotSet() {
         settingsProvider.configSettings = [
             "session_timeout": 100,
             "upload_interval": 50,
@@ -117,7 +117,7 @@ final class MParticleConfigurationTests: MParticleTestBase {
 #endif
     }
     
-    func testResetForSwitchingWorkspaces() {
+    func test_reset_clearsState_andFlushesKits() {
         let expectation = XCTestExpectation()
         
         mparticle.reset {
