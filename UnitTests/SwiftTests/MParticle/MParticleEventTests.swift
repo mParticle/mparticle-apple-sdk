@@ -100,4 +100,24 @@ final class MParticleEventTests: MParticleTestBase {
         
         assertReceivedMessage("Blocked timed event end from kits", event: event)
     }
+    
+    func test_eventWithName_returnsEvent_whenBackendProvidesEvent() {
+        backendController.eventWithNameReturnValue = event
+        
+        let result = mparticle.event(withName: event.name)
+        
+        XCTAssertTrue(backendController.eventWithNameCalled)
+        XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
+        XCTAssertTrue(result === event)
+    }
+    
+    func test_eventWithName_returnsNil_whenBackendReturnsNil() {
+        backendController.eventWithNameReturnValue = nil
+        
+        let result = mparticle.event(withName: event.name)
+        
+        XCTAssertTrue(backendController.eventWithNameCalled)
+        XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
+        XCTAssertNil(result)
+    }
 }

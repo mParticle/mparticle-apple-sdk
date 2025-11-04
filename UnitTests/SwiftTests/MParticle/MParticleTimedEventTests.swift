@@ -148,5 +148,4 @@ final class MParticleTimedEventTests: MParticleTestBase {
 
         XCTAssertNil(receivedMessage)
     }
-
 }
