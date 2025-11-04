@@ -179,39 +179,20 @@ final class MParticleEventTests: MParticleTestBase {
         
         mparticle.logEvent(event.name, eventType: event.type, eventInfo: event.customAttributes)
         
-        verifyLogEventFlow(expectedEvent: event)
-    }
-}
-
-extension MParticleEventTests {
-    private func verifyLogEventFlow(
-        expectedEvent: MPEvent,
-        file: StaticString = #file,
-        line: UInt = #line
-    ) {
-        XCTAssertTrue(backendController.eventWithNameCalled, file: file, line: line)
-        XCTAssertEqual(backendController.eventWithNameEventNameParam, expectedEvent.name, file: file, line: line)
+        XCTAssertTrue(backendController.eventWithNameCalled)
+        XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
         
-        XCTAssertTrue(executor.executeOnMessageQueueAsync, file: file, line: line)
-        XCTAssertTrue(listenerController.onAPICalledCalled, file: file, line: line)
-
-        guard let captured = (listenerController.onAPICalledParameter1 as? MPBaseEvent) as? MPEvent else {
-            XCTFail("Expected MPEvent from listenerController", file: file, line: line)
-            return
-        }
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(listenerController.onAPICalledCalled)
+        let expectedEvent: MPEvent = (listenerController.onAPICalledParameter1 as? MPBaseEvent)! as! MPEvent
+        XCTAssertEqual(expectedEvent.name, event.name)
+        XCTAssertEqual(expectedEvent.type, event.type)
+        XCTAssertEqual(expectedEvent.customAttributes as! [String:String], event.customAttributes as! [String : String])
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === expectedEvent)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
         
-        XCTAssertEqual(captured.name, expectedEvent.name, file: file, line: line)
-        XCTAssertEqual(captured.type, expectedEvent.type, file: file, line: line)
-        XCTAssertEqual(captured.customAttributes as! [String:String], expectedEvent.customAttributes as! [String:String], file: file, line: line)
-        
-        XCTAssertTrue(backendController.logEventCalled, file: file, line: line)
-        XCTAssertTrue(backendController.logEventEventParam === captured, file: file, line: line)
-        XCTAssertNotNil(backendController.logEventCompletionHandler, file: file, line: line)
-        
-        XCTAssertTrue(dataPlanFilter.transformEventCalled, file: file, line: line)
-        XCTAssertTrue(dataPlanFilter.transformEventEventParam === captured, file: file, line: line)
-        
-        assertReceivedMessage("Blocked custom event from kits", event: captured)
-    }
-
+        assertReceivedMessage("Blocked custom event from kits", event: expectedEvent) }
 }
