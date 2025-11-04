@@ -22,7 +22,6 @@
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
 #import "MPForwardQueueParameters.h"
-#import "MPConsentKitFilter.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"
@@ -2454,11 +2453,11 @@
 - (void)testIsDisabledByConsentKitFilterGPDR {
     MPConsentKitFilter *filter = [[MPConsentKitFilter alloc] init];
     
-    filter.shouldIncludeOnMatch = YES;
+    filter.shouldIncludeOnMatch = @YES;
     
     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
-    item.consented = YES;
-    item.javascriptHash = -1729075708;
+    item.consented = @YES;
+    item.javascriptHash = @-1729075708;
     
     NSMutableArray<MPConsentKitFilterItem *> *filterItems = [NSMutableArray array];
     [filterItems addObject:item];
@@ -2468,19 +2467,19 @@
     BOOL isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
     
-    filter.shouldIncludeOnMatch = NO;
+    filter.shouldIncludeOnMatch = @NO;
     isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
-    filter.shouldIncludeOnMatch = YES;
+    filter.shouldIncludeOnMatch = @YES;
     
-    MPConsentState *state = [[MPConsentState alloc] init];
+    MPConsentStateSwift *state = [[MPConsentStateSwift alloc] init];
     
     NSMutableDictionary<NSString *,MPGDPRConsent *> *gdprState = [NSMutableDictionary dictionary];
     
     MPGDPRConsent *gdprConsent = [[MPGDPRConsent alloc] init];
     
-    gdprConsent.consented = YES;
+    gdprConsent.consented = @YES;
     gdprConsent.document = @"foo-document-1";
     
     NSDate *date = [NSDate date];
@@ -2491,7 +2490,7 @@
     
     gdprState[@"Processing"] = gdprConsent;
     
-    [state setGDPRConsentState:[gdprState copy]];
+    [state setGdprConsentState:[gdprState copy]];
     
     [MPPersistenceController_PRIVATE setConsentState:state forMpid:[MPPersistenceController_PRIVATE mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
@@ -2507,18 +2506,18 @@
 - (void)testIsDisabledByConsentKitFilterCCPA {
     MPConsentKitFilter *filter = [[MPConsentKitFilter alloc] init];
     
-    filter.shouldIncludeOnMatch = YES;
+    filter.shouldIncludeOnMatch = @YES;
     
     MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
-    item.consented = YES;
-    item.javascriptHash = -575335347;
+    item.consented = @YES;
+    item.javascriptHash = @-575335347;
     
     NSMutableArray<MPConsentKitFilterItem *> *filterItems = [NSMutableArray array];
     [filterItems addObject:item];
     
     filter.filterItems = [filterItems copy];
     
-    MPConsentState *state = [[MPConsentState alloc] init];
+    MPConsentStateSwift *state = [[MPConsentStateSwift alloc] init];
         
     MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
     
@@ -2531,7 +2530,7 @@
     ccpaConsent.location = @"foo-location-1";
     ccpaConsent.hardwareId = @"foo-hardware-id-1";
         
-    [state setCCPAConsentState: [ccpaConsent copy]];
+    [state setCcpaConsentState: [ccpaConsent copy]];
     
     [MPPersistenceController_PRIVATE setConsentState:state forMpid:[MPPersistenceController_PRIVATE mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
@@ -2539,7 +2538,7 @@
     BOOL isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
-    filter.shouldIncludeOnMatch = NO;
+    filter.shouldIncludeOnMatch = @NO;
     isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
 }

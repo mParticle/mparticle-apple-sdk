@@ -15,7 +15,6 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPIdentityApi.h"
 #import "MPKitAPI.h"
-#import "MPConsentState.h"
 #import "MPListenerController.h"
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
@@ -355,7 +354,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  
  Allows you to record one or more consent purposes and whether or not the user agreed to each one.
  */
-@property (nonatomic, strong, nullable) MPConsentState *consentState;
+@property (nonatomic, strong, nullable) MPConsentStateSwift *consentState;
 
 /**
  Data Plan ID.

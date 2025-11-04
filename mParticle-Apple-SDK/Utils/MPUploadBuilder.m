@@ -10,8 +10,6 @@
 #import "MPApplication.h"
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"
-#import "MPConsentState.h"
-#import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPILogger.h"
 #import "MParticleSwift.h"
@@ -221,9 +219,9 @@
         _uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
     }
     
-    MPConsentState *consentState = [MPPersistenceController_PRIVATE consentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
+    MPConsentStateSwift *consentState = [MPPersistenceController_PRIVATE consentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
     if (consentState) {
-        NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
+        NSDictionary *consentStateDictionary = [MPConsentSerializationNew serverDictionaryFromConsentState:consentState];
         if (consentStateDictionary) {
             _uploadDictionary[kMPConsentState] = consentStateDictionary;
         }

@@ -334,14 +334,14 @@
     ccpaConsent.location = @"17 Cherry Tree Lane";
     ccpaConsent.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
     
-    MPConsentState *newConsentState = [[MPConsentState alloc] init];
-    [newConsentState setCCPAConsentState:ccpaConsent];
-    [newConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
+    MPConsentStateSwift *newConsentState = [[MPConsentStateSwift alloc] init];
+    [newConsentState setCcpaConsentState:ccpaConsent];
+    [newConsentState setGdprConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
 
     options.consentState = newConsentState;
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
+        MPConsentStateSwift *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
         XCTAssert(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
@@ -356,9 +356,9 @@
     ccpaConsent.location = @"17 Cherry Tree Lane";
     ccpaConsent.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
     
-    MPConsentState *storedConsentState = [[MPConsentState alloc] init];
-    [storedConsentState setCCPAConsentState:ccpaConsent];
-    [storedConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
+    MPConsentStateSwift *storedConsentState = [[MPConsentStateSwift alloc] init];
+    [storedConsentState setCcpaConsentState:ccpaConsent];
+    [storedConsentState setGdprConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
     [MPPersistenceController_PRIVATE setConsentState:storedConsentState forMpid:[MPPersistenceController_PRIVATE mpId]];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
@@ -372,14 +372,14 @@
     newCCPAState.location = @"17 Cherry Tree Lane";
     newCCPAState.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
     
-    MPConsentState *newConsentState = [[MPConsentState alloc] init];
-    [newConsentState setCCPAConsentState:newCCPAState];
-    [newConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
+    MPConsentStateSwift *newConsentState = [[MPConsentStateSwift alloc] init];
+    [newConsentState setCcpaConsentState:newCCPAState];
+    [newConsentState setGdprConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
 
     options.consentState = newConsentState;
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
+        MPConsentStateSwift *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
         XCTAssertFalse(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });

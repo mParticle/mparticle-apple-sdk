@@ -5,7 +5,6 @@
 #import "MPConnector.h"
 #import "MPUpload.h"
 #import "MPApplication.h"
-#import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPURLRequestBuilder.h"
 #import "MParticleReachability.h"
@@ -604,14 +603,14 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         }
         
         if (success) {
-            audiencesList = audiencesDictionary[kMPAudienceMembershipKey];
+            audiencesList = audiencesDictionary[MPAudience.kMPAudienceMembershipKey];
         }
         
         if (audiencesList.count > 0) {
             currentAudiences = [[NSMutableArray alloc] init];
             
             for (NSDictionary *audienceDictionary in audiencesList) {
-                MPAudience *audience = [[MPAudience alloc] initWithAudienceId:audienceDictionary[kMPAudienceIdKey]];
+                MPAudience *audience = [[MPAudience alloc] initWithAudienceId:audienceDictionary[MPAudience.kMPAudienceIdKey]];
                 [currentAudiences addObject:audience];
             }
             
