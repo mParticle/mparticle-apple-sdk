@@ -1314,23 +1314,45 @@
 		53A79C6729CE019E00E7489F /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				7231B8112EB947F0001565E5 /* SwiftTests */,
+				7231B8102EB946C1001565E5 /* ObjCTests */,
 				356D4A572E58B01100CB69FE /* Mocks */,
-				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
 				359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */,
-				359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */,
-				35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */,
-				35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */,
-				35E3FCD12E549AED00DB5B18 /* MParticleSession+MParticlePrivateTests.swift */,
-				35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */,
-				72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */,
-				72D356522E8460020012A0C2 /* MPEventTests.swift */,
 				53A79C8729CE019F00E7489F /* Libraries */,
 				53A79C9729CE019F00E7489F /* JSON */,
 				53A79CB429CE019F00E7489F /* Info.plist */,
 				53A79C7129CE019E00E7489F /* mParticle_iOS_SDKTests-Bridging-Header.h */,
-				53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */,
-				D3961CE32CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift */,
-				53A79C6829CE019E00E7489F /* MPPersistenceControllerTests.mm */,
+			);
+			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		53A79C8729CE019F00E7489F /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				53A79C8829CE019F00E7489F /* OCMock.xcframework */,
+			);
+			path = Libraries;
+			sourceTree = "<group>";
+		};
+		53A79C9729CE019F00E7489F /* JSON */ = {
+			isa = PBXGroup;
+			children = (
+				53A79C9829CE019F00E7489F /* sample_dataplan2.json */,
+			);
+			path = JSON;
+			sourceTree = "<group>";
+		};
+		53A79CFA29CE046800E7489F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				53A79CFB29CE046800E7489F /* libsqlite3.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7231B8102EB946C1001565E5 /* ObjCTests */ = {
+			isa = PBXGroup;
+			children = (
 				53A79C6929CE019E00E7489F /* MParticleWebViewTests.m */,
 				53A79C6A29CE019E00E7489F /* MPKitAppsFlyerTest.h */,
 				53A79C6B29CE019E00E7489F /* MPKitTestClassSideloaded.m */,
@@ -1398,33 +1420,27 @@
 				53A79CB629CE019F00E7489F /* MPKitRegisterTests.m */,
 				53A79CB729CE019F00E7489F /* HasherTests.m */,
 				7E15B2052D94617900C1FF3E /* MPRoktTests.m */,
+				53A79C6829CE019E00E7489F /* MPPersistenceControllerTests.mm */,
 				531BCF392B28A83E00F5C573 /* MPIdentityCachingTests.m */,
 			);
-			path = UnitTests;
+			path = ObjCTests;
 			sourceTree = "<group>";
 		};
-		53A79C8729CE019F00E7489F /* Libraries */ = {
+		7231B8112EB947F0001565E5 /* SwiftTests */ = {
 			isa = PBXGroup;
 			children = (
-				53A79C8829CE019F00E7489F /* OCMock.xcframework */,
+				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
+				359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */,
+				35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */,
+				35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */,
+				35E3FCD12E549AED00DB5B18 /* MParticleSession+MParticlePrivateTests.swift */,
+				35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */,
+				72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */,
+				72D356522E8460020012A0C2 /* MPEventTests.swift */,
+				53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */,
+				D3961CE32CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift */,
 			);
-			path = Libraries;
-			sourceTree = "<group>";
-		};
-		53A79C9729CE019F00E7489F /* JSON */ = {
-			isa = PBXGroup;
-			children = (
-				53A79C9829CE019F00E7489F /* sample_dataplan2.json */,
-			);
-			path = JSON;
-			sourceTree = "<group>";
-		};
-		53A79CFA29CE046800E7489F /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				53A79CFB29CE046800E7489F /* libsqlite3.tbd */,
-			);
-			name = Frameworks;
+			path = SwiftTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
