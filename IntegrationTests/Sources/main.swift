@@ -14,18 +14,15 @@ var options = MParticleOptions(
     secret: "4g66BN4w-1XNO1BkIXf2sVKlhkO_ADGtHQLxsr1ouoBCt1xUegQvGN39pm6u8zi8"
 )
 
-
-
-
 var identityRequest = MPIdentityApiRequest.withEmptyUser()
 identityRequest.email = "foo@example.com";
 identityRequest.customerId = "123456";
 options.identifyRequest = identityRequest;
 
 options.onIdentifyComplete = { apiResult, error in
-    if let apiResult {
-        apiResult.user.setUserAttribute("example attribute key", value: "example attribute value")
-    }
+//    if let apiResult {
+//        apiResult.user.setUserAttribute("example attribute key", value: "example attribute value")
+//    }
 }
 options.logLevel = .verbose
 
