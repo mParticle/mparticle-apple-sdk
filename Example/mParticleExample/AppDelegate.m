@@ -13,8 +13,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     //initialize mParticle
-    MParticleOptions *options = [MParticleOptions optionsWithKey:@"REPLACE_WITH_APP_KEY"
-                                                          secret:@"REPLACE_WITH_APP_SECRET"];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"us1-e5145d11865db44eb24cd5a9f194d654"
+                                                          secret:@"4g66BN4w-1XNO1BkIXf2sVKlhkO_ADGtHQLxsr1ouoBCt1xUegQvGN39pm6u8zi8"];
     MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithEmptyUser];
     identityRequest.email = @"foo@example.com";
     identityRequest.customerId = @"123456";
@@ -29,17 +29,18 @@
     };
     options.logLevel = MPILogLevelVerbose;
     
-//    MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
-//    networkOptions.configHost = @"config2-origin-qa1.qa.corp.mparticle.com";
-//    networkOptions.eventsHost = @"nativesdks-qa1.qa.corp.mparticle.com";
-//    networkOptions.identityHost = @"identity-qa1.qa.corp.mparticle.com";
-//    networkOptions.pinningDisabled = true;
-//    
-//    options.networkOptions = networkOptions;
+    MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
+    networkOptions.configHost = @"127.0.0.1"; // config2.mparticle.com
+    networkOptions.eventsHost = @"127.0.0.1"; // nativesdks.mparticle.com
+    networkOptions.identityHost = @"127.0.0.1"; // identity.mparticle.com
+    networkOptions.pinningDisabled = true;
+//
+    
+    options.networkOptions = networkOptions;
 
     [[MParticle sharedInstance] startWithOptions:options];
     
-    // An example on how to request IDFA tracking. This does not need to be be done in the App Delegate.
+    // An example on h  ow to request IDFA tracking. This does not need to be be done in the App Delegate.
     // Remember to set your NSUserTrackingUsageDescription per https://developer.apple.com/documentation/apptrackingtransparency
     if (@available(iOS 14, *)) {
         [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
