@@ -39,4 +39,114 @@ final class MParticleTimedEventTests: MParticleTestBase {
         backendController.beginTimedEventCompletionHandler?(event, .success)
         XCTAssertNotNil(receivedMessage)
     }
+    
+    func test_endTimedEvent_invokesDependencies_andExecutesCompletionHandler() {
+        dataPlanFilter.transformEventReturnValue = transformedEvent
+
+        mparticle.endTimedEvent(event)
+
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+
+        XCTAssertNil(event.duration)
+        XCTAssertNil(event.endTime)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+
+        backendController.logEventCompletionHandler?(event, .success)
+
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
+        XCTAssertTrue(executor.executeOnMainAsync)
+
+        XCTAssertEqual(kitContainer.forwardSDKCalls.count, 2)
+
+        let expectedSelectors = ["endTimedEvent:", "logEvent:"]
+        let actualSelectors = kitContainer.forwardSDKCalls.map { $0.selector.description }
+        XCTAssertEqual(actualSelectors, expectedSelectors)
+
+        for call in kitContainer.forwardSDKCalls {
+            XCTAssertTrue(call.event === transformedEvent)
+            XCTAssertNil(call.parameters)
+            XCTAssertEqual(call.messageType, .event)
+            XCTAssertNil(call.userInfo)
+        }
+
+        XCTAssertNil(receivedMessage)
+    }
+    
+    func test_endTimedEvent_blocksEvent_whenTransformEventReturnsNil() {
+        dataPlanFilter.transformEventReturnValue = nil
+        
+        mparticle.endTimedEvent(event)
+
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        
+        XCTAssertNil(event.duration)
+        XCTAssertNil(event.endTime)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+
+        backendController.logEventCompletionHandler?(event, .success)
+
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
+
+        XCTAssertFalse(executor.executeOnMainAsync)
+        XCTAssertFalse(kitContainer.forwardSDKCallCalled)
+        XCTAssertTrue(kitContainer.forwardSDKCalls.isEmpty)
+
+        assertReceivedMessage("Blocked timed event end from kits", event: event)
+    }
+    
+    func test_endTimedEvent_forwardsOriginalEvent_whenDataPlanFilterIsNil() {
+        dataPlanFilter = nil
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.endTimedEvent(event)
+
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        
+        XCTAssertNil(event.duration)
+        XCTAssertNil(event.endTime)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+
+        backendController.logEventCompletionHandler?(event, .success)
+
+        XCTAssertTrue(executor.executeOnMainAsync)
+
+        XCTAssertEqual(kitContainer.forwardSDKCalls.count, 2)
+
+        let expectedSelectors = ["endTimedEvent:", "logEvent:"]
+        let actualSelectors = kitContainer.forwardSDKCalls.map { $0.selector.description }
+        XCTAssertEqual(actualSelectors, expectedSelectors)
+
+        for call in kitContainer.forwardSDKCalls {
+            XCTAssertTrue(call.event === event)
+            XCTAssertNil(call.parameters)
+            XCTAssertEqual(call.messageType, .event)
+            XCTAssertNil(call.userInfo)
+        }
+
+        XCTAssertNil(receivedMessage)
+    }
+
 }

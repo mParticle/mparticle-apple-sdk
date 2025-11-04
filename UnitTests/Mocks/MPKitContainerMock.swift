@@ -17,6 +17,16 @@ class MPKitContainerMock: MPKitContainerProtocol {
         forwardCommerceEventCallCalled = true
         forwardCommerceEventCallCommerceEventParam = commerceEvent
     }
+    
+    struct ForwardCall {
+        let selector: Selector
+        let event: MPBaseEvent?
+        let parameters: MPForwardQueueParameters?
+        let messageType: MPMessageType
+        let userInfo: [AnyHashable: Any]?
+    }
+    
+    private(set) var forwardSDKCalls: [ForwardCall] = []
 
     var forwardSDKCallCalled = false
     var forwardSDKCallSelectorParam: Selector?
@@ -41,6 +51,14 @@ class MPKitContainerMock: MPKitContainerProtocol {
         forwardSDKCallMessageTypeParam = messageType
         forwardSDKCallUserInfoParam = userInfo
         forwardSDKCallExpectation?.fulfill()
+        
+        forwardSDKCalls.append(
+            ForwardCall(selector: selector,
+                        event: event,
+                        parameters: parameters,
+                        messageType: messageType,
+                        userInfo: userInfo)
+        )
     }
 
     var forwardSDKCallBatchParam: [AnyHashable: Any]?
