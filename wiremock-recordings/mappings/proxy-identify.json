@@ -1,0 +1,9 @@
+{
+  "priority": 1,
+  "request": {
+    "urlPathPattern": "/v1/identify"
+  },
+  "response": {
+    "proxyBaseUrl": "https://identity.mparticle.com"
+  }
+}

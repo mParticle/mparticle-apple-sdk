@@ -20,9 +20,9 @@ identityRequest.customerId = "123456";
 options.identifyRequest = identityRequest;
 
 options.onIdentifyComplete = { apiResult, error in
-//    if let apiResult {
-//        apiResult.user.setUserAttribute("example attribute key", value: "example attribute value")
-//    }
+    if let apiResult {
+        apiResult.user.setUserAttribute("example attribute key", value: "example attribute value")
+    }
 }
 options.logLevel = .verbose
 
