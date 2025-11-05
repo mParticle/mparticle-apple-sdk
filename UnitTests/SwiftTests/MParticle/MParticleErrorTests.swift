@@ -67,9 +67,7 @@ final class MParticleErrorTests: MParticleTestBase {
         mparticle.logError(errorMessage)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertTrue(listenerController.onAPICalledCalled)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logError:eventInfo:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, errorMessage)
+        listenerController.assertCalled(#selector(mparticle.logError(_:eventInfo:)))
         
         XCTAssertTrue(backendController.logErrorCalled)
         XCTAssertNil(backendController.logErrorExceptionParam)
@@ -90,9 +88,7 @@ final class MParticleErrorTests: MParticleTestBase {
         mparticle.logError(errorMessage, eventInfo: keyValueDict)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertTrue(listenerController.onAPICalledCalled)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logError:eventInfo:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, errorMessage)
+        listenerController.assertCalled(#selector(mparticle.logError(_:eventInfo:)))
         
         XCTAssertTrue(backendController.logErrorCalled)
         XCTAssertNil(backendController.logErrorExceptionParam)
