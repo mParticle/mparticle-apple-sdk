@@ -7,7 +7,7 @@ let project = Project(
             name: "IntegrationTests",
             destinations: .iOS,
             product: .app,
-            bundleId: "dev.tuist.IntegrationTests",
+            bundleId: "com.mparticle.IntegrationTests",
             buildableFolders: [
                 "Sources"
             ],
