@@ -84,19 +84,47 @@ final class MParticleEventTests: MParticleTestBase {
         XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedBaseEvent)
     }
     
-    func test_logEventCallback_doesNotLogMessage_whenDataFilterIsNil() {
-        mparticle.dataPlanFilter = nil
-        XCTAssertNil(mparticle.dataPlanFilter)
-        mparticle.logEventCallback(event, execStatus: .success)
+    func test_logEventCallback_doesNothing_whenExecStatusIsFail() {
+        mparticle.logEventCallback(event, execStatus: .fail)
+        
+        XCTAssertFalse(dataPlanFilter.transformEventCalled)
+        XCTAssertFalse(executor.executeOnMainAsync)
+        XCTAssertFalse(kitContainer.forwardSDKCallCalled)
         
         XCTAssertNil(receivedMessage)
     }
     
+    func test_logEventCallback_invokesKitContainer_whenDataPlanFilterIsNil() {
+        dataPlanFilter = nil
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.logEventCallback(event, execStatus: .success)
+        
+        XCTAssertTrue(executor.executeOnMainAsync)
+
+        XCTAssertEqual(kitContainer.forwardSDKCalls.count, 2)
+        let expectedSelectors = ["endTimedEvent:", "logEvent:"]
+        let actualSelectors = kitContainer.forwardSDKCalls.map { $0.selector.description }
+        XCTAssertEqual(actualSelectors, expectedSelectors)
+
+        for call in kitContainer.forwardSDKCalls {
+            XCTAssertTrue(call.event === event)
+            XCTAssertNil(call.parameters)
+            XCTAssertEqual(call.messageType, .event)
+            XCTAssertNil(call.userInfo)
+        }
+    }
+    
     func test_logEventCallback_blocksEvent_whenFilterReturnsNil() {
+        dataPlanFilter.transformEventReturnValue = nil
+        
         mparticle.logEventCallback(event, execStatus: .success)
         
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertEqual(dataPlanFilter.transformEventEventParam, event)
+        
+        XCTAssertFalse(executor.executeOnMainAsync)
+        XCTAssertFalse(kitContainer.forwardSDKCallCalled)
         
         assertReceivedMessage("Blocked timed event end from kits", event: event)
     }
