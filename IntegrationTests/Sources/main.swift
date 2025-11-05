@@ -35,5 +35,4 @@ networkOptions.pinningDisabled = true;
 options.networkOptions = networkOptions;
 MParticle.sharedInstance().start(with: options)
 
-
-RunLoop.main.run()
+sleep(10)
