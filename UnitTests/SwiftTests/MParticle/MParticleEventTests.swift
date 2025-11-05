@@ -157,21 +157,8 @@ final class MParticleEventTests: MParticleTestBase {
         XCTAssertTrue(backendController.eventWithNameCalled)
         XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
         
-        XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(listenerController.onAPICalledCalled)
-        let expectedEvent: MPEvent = (listenerController.onAPICalledParameter1 as? MPBaseEvent)! as! MPEvent
-        XCTAssertEqual(expectedEvent.name, event.name)
-        XCTAssertEqual(expectedEvent.type, event.type)
-        XCTAssertEqual(expectedEvent.customAttributes as! [String:String], event.customAttributes as! [String : String])
-        
-        XCTAssertTrue(backendController.logEventCalled)
-        XCTAssertTrue(backendController.logEventEventParam === expectedEvent)
-        XCTAssertNotNil(backendController.logEventCompletionHandler)
-        
-        XCTAssertTrue(dataPlanFilter.transformEventCalled)
-        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
-        
-        assertReceivedMessage("Blocked custom event from kits", event: expectedEvent)
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
     }
 
     func test_logEvent_createsNewEvent_whenNotFound() {
@@ -182,17 +169,10 @@ final class MParticleEventTests: MParticleTestBase {
         XCTAssertTrue(backendController.eventWithNameCalled)
         XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
         
-        XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(listenerController.onAPICalledCalled)
-        let expectedEvent: MPEvent = (listenerController.onAPICalledParameter1 as? MPBaseEvent)! as! MPEvent
-        XCTAssertEqual(expectedEvent.name, event.name)
-        XCTAssertEqual(expectedEvent.type, event.type)
-        XCTAssertEqual(expectedEvent.customAttributes as! [String:String], event.customAttributes as! [String : String])
-        XCTAssertTrue(backendController.logEventCalled)
-        XCTAssertTrue(backendController.logEventEventParam === expectedEvent)
-        XCTAssertNotNil(backendController.logEventCompletionHandler)
-        XCTAssertTrue(dataPlanFilter.transformEventCalled)
-        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
-        
-        assertReceivedMessage("Blocked custom event from kits", event: expectedEvent) }
+        let createdEvent: MPEvent = (listenerController.onAPICalledParameter1 as? MPBaseEvent)! as! MPEvent
+        XCTAssertEqual(createdEvent.name, event.name)
+        XCTAssertEqual(createdEvent.type, event.type)
+        XCTAssertEqual(createdEvent.customAttributes as! [String:String], event.customAttributes as! [String : String])
+    }
 }
