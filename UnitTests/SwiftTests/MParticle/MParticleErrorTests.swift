@@ -14,14 +14,16 @@ import XCTest
 
 final class MParticleErrorTests: MParticleTestBase {
     
+    var errorMessage = "error"
+    
     func test_logErrorCallback_logsMessage_whenSuccess() {
-        mparticle.logErrorCallback([:], execStatus: .success, message: "error")
+        mparticle.logErrorCallback([:], execStatus: .success, message: errorMessage)
         
-        assertReceivedMessage("Logged error with message: error")
+        assertReceivedMessage("Logged error with message: \(errorMessage)")
     }
     
     func test_logErrorCallback_doesNotLog_whenFail() {
-        mparticle.logErrorCallback([:], execStatus: .fail, message: "error")
+        mparticle.logErrorCallback([:], execStatus: .fail, message: errorMessage)
         
         XCTAssertNil(receivedMessage)
     }
@@ -39,8 +41,8 @@ final class MParticleErrorTests: MParticleTestBase {
     }
     
     func test_logCrashCallback_logsMessage_whenSuccess() {
-        mparticle.logCrashCallback(.success, message: "Message")
-        assertReceivedMessage("Logged crash with message: Message")
+        mparticle.logCrashCallback(.success, message: errorMessage)
+        assertReceivedMessage("Logged crash with message: \(errorMessage)")
     }
     
     func test_logNetworkPerformanceCallback_logsMessage_whenSuccess() {
@@ -53,5 +55,45 @@ final class MParticleErrorTests: MParticleTestBase {
         mparticle.logNetworkPerformanceCallback(.fail)
         
         XCTAssertNil(receivedMessage)
+    }
+    
+    func test_logError_withoutEventInfo_invokesBackendWithNil() {
+        mparticle.logError(errorMessage)
+        
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(listenerController.onAPICalledCalled)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logError:eventInfo:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 as! String == errorMessage)
+        
+        XCTAssertTrue(backendController.logErrorCalled)
+        XCTAssertNil(backendController.logErrorExceptionParam)
+        XCTAssertNil(backendController.logErrorTopmostContextParam)
+        XCTAssertNil(backendController.logErrorEventInfoParam)
+        backendController.logErrorCompletionHandler?(errorMessage, .success)
+        
+        assertReceivedMessage("Logged error with message: \(errorMessage)")
+    }
+    
+    func test_logError_withNilMessage_logsRequirementMessage() {
+        errorMessage = ""
+        mparticle.logError(errorMessage, eventInfo: keyValueDict)
+        assertReceivedMessage("'message' is required for logError:eventInfo:")
+    }
+    
+    func test_logError_withMessage_invokesBackend() {
+        mparticle.logError(errorMessage, eventInfo: keyValueDict)
+        
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(listenerController.onAPICalledCalled)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logError:eventInfo:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 as! String == errorMessage)
+        
+        XCTAssertTrue(backendController.logErrorCalled)
+        XCTAssertNil(backendController.logErrorExceptionParam)
+        XCTAssertNil(backendController.logErrorTopmostContextParam)
+        XCTAssertTrue(backendController.logErrorEventInfoParam as! [String : String] == keyValueDict)
+        backendController.logErrorCompletionHandler?(errorMessage, .success)
+        
+        assertReceivedMessage("Logged error with message: \(errorMessage)")
     }
 }

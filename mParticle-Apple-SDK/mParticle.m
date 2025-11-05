@@ -1091,7 +1091,7 @@ MPLog* logger;
 }
 
 - (void)logError:(NSString *)message eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
-    if (!message) {
+    if ([message isEqual: @""]) {
         NSString *message = [NSString stringWithFormat:@"'message' is required for %@", NSStringFromSelector(_cmd)];
         [logger error:message];
         return;
