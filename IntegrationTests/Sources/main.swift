@@ -33,6 +33,11 @@ networkOptions.identityHost = "127.0.0.1"; // identity.mparticle.com
 networkOptions.pinningDisabled = true;
 
 options.networkOptions = networkOptions;
-MParticle.sharedInstance().start(with: options)
+let mparticle = MParticle.sharedInstance()
+mparticle.start(with: options)
+
+sleep(1)
+
+mparticle.logEvent("Simple Event Name", eventType: .other, eventInfo: ["SimpleKey": "SimpleValue"])
 
 sleep(10)

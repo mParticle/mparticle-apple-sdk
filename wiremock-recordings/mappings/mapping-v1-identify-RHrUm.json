@@ -1,0 +1,35 @@
+{
+  "id" : "412faa99-da9a-3a2a-84f0-c05e3057d796",
+  "request" : {
+    "url" : "/v1/identify",
+    "method" : "POST",
+    "bodyPatterns" : [ {
+      "equalToJson" : "{\"client_sdk\":{\"platform\":\"ios\",\"sdk_version\":\"8.40.0\",\"sdk_vendor\":\"mparticle\"},\"environment\":\"development\",\"request_timestamp_ms\":1762457821120,\"request_id\":\"1F7C5D84-CDF2-4E68-9E4E-3D320ED84AF0\",\"known_identities\":{\"email\":\"foo@example.com\",\"customerid\":\"123456\",\"ios_idfv\":\"EE48E7EC-1EB3-468C-BAAC-2CC7DBFBDB34\",\"device_application_stamp\":\"24E78BF4-257D-440C-9C75-3B793CD41971\"}}",
+      "ignoreArrayOrder" : true,
+      "ignoreExtraElements" : true
+    } ]
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-v1-identify-RHrUm.json",
+    "headers" : {
+      "X-Cache" : "MISS",
+      "X-MP-Trace-Id" : "690cf8ddafe953c59086638eb093dfd5",
+      "Server" : "Kestrel",
+      "X-Origin-Name" : "4PrgpUXX9K0sNAH1JImfyI--F_us1_origin",
+      "X-Fastly-Trace-Id" : "932181549",
+      "X-MP-Max-Age" : "86400",
+      "Date" : "Thu, 06 Nov 2025 19:37:01 GMT",
+      "X-Timer" : "S1762457821.273823,VS0,VE53",
+      "Via" : "1.1 varnish",
+      "Accept-Ranges" : "bytes",
+      "Strict-Transport-Security" : "max-age=900",
+      "Access-Control-Expose-Headers" : "X-MP-Max-Age",
+      "X-Served-By" : "cache-ewr-kewr1740068-EWR",
+      "Vary" : "Accept-Encoding",
+      "X-Cache-Hits" : "0",
+      "Content-Type" : "application/json; charset=utf-8"
+    }
+  },
+  "uuid" : "412faa99-da9a-3a2a-84f0-c05e3057d796"
+}

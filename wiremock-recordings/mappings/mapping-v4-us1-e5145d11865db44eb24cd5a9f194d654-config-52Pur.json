@@ -1,0 +1,27 @@
+{
+  "id" : "a7d323f1-a729-39c6-86cd-4035c71f7d05",
+  "request" : {
+    "url" : "/v4/us1-e5145d11865db44eb24cd5a9f194d654/config?av=1.0&sv=8.40.0",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 200,
+    "bodyFileName" : "body-v4-us1-e5145d11865db44eb24cd5a9f194d654-config-52Pur.json",
+    "headers" : {
+      "X-Cache" : "MISS, MISS",
+      "Server" : "Kestrel",
+      "X-Origin-Name" : "fastlyshield--shield_ssl_cache_iad_kcgs7200041_IAD",
+      "Date" : "Thu, 06 Nov 2025 19:37:01 GMT",
+      "X-Timer" : "S1762457821.099061,VS0,VE12",
+      "Via" : "1.1 varnish, 1.1 varnish",
+      "Accept-Ranges" : "bytes",
+      "ETag" : "030e3afc0471a01f606c7bbe1d8427ad",
+      "X-Served-By" : "cache-iad-kcgs7200041-IAD, cache-ewr-kewr1740036-EWR",
+      "Vary" : "Accept-Encoding",
+      "X-Cache-Hits" : "0, 0",
+      "Age" : "0",
+      "Content-Type" : "application/json"
+    }
+  },
+  "uuid" : "a7d323f1-a729-39c6-86cd-4035c71f7d05"
+}
