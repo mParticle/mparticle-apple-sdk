@@ -148,4 +148,31 @@ final class MParticleEventTests: MParticleTestBase {
         XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
         XCTAssertNil(result)
     }
+    
+    func test_logEvent_usesExistingEvent_andUpdatesTypeAndAttributes() {
+        backendController.eventWithNameReturnValue = event
+        
+        mparticle.logEvent(event.name, eventType: event.type, eventInfo: event.customAttributes)
+        
+        XCTAssertTrue(backendController.eventWithNameCalled)
+        XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
+        
+        XCTAssertTrue(listenerController.onAPICalledCalled)
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+    }
+
+    func test_logEvent_createsNewEvent_whenNotFound() {
+        backendController.eventWithNameReturnValue = nil
+        
+        mparticle.logEvent(event.name, eventType: event.type, eventInfo: event.customAttributes)
+        
+        XCTAssertTrue(backendController.eventWithNameCalled)
+        XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
+        
+        XCTAssertTrue(listenerController.onAPICalledCalled)
+        let createdEvent: MPEvent = (listenerController.onAPICalledParameter1 as? MPBaseEvent)! as! MPEvent
+        XCTAssertEqual(createdEvent.name, event.name)
+        XCTAssertEqual(createdEvent.type, event.type)
+        XCTAssertEqual(createdEvent.customAttributes as! [String:String], event.customAttributes as! [String : String])
+    }
 }
