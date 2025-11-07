@@ -39,4 +39,65 @@ final class MParticleTimedEventTests: MParticleTestBase {
         backendController.beginTimedEventCompletionHandler?(event, .success)
         XCTAssertNotNil(receivedMessage)
     }
+    
+    func test_endTimedEvent_invokesDependencies_andExecutesCompletionHandler() {
+        dataPlanFilter.transformEventReturnValue = transformedEvent
+
+        mparticle.endTimedEvent(event)
+
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+
+        XCTAssertNil(event.duration)
+        XCTAssertNil(event.endTime)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+        backendController.logEventCompletionHandler?(event, .success)
+    }
+    
+    func test_endTimedEvent_blocksEvent_whenTransformEventReturnsNil() {
+        dataPlanFilter.transformEventReturnValue = nil
+        
+        mparticle.endTimedEvent(event)
+
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        
+        XCTAssertNil(event.duration)
+        XCTAssertNil(event.endTime)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+        backendController.logEventCompletionHandler?(event, .success)
+    }
+    
+    func test_endTimedEvent_forwardsOriginalEvent_whenDataPlanFilterIsNil() {
+        dataPlanFilter = nil
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.endTimedEvent(event)
+
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        
+        XCTAssertNil(event.duration)
+        XCTAssertNil(event.endTime)
+
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+        backendController.logEventCompletionHandler?(event, .success)
+    }
 }
