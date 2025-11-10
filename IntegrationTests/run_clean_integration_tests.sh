@@ -9,6 +9,56 @@ DEVICE_NAME="iPhone 16"                # Simulator
 CONFIGURATION="Debug"
 DERIVED_DATA="$HOME/Library/Developer/Xcode/DerivedData"
 WIREMOCK_URL="https://localhost:443"   # Your local WireMock endpoint
+TEMP_ARTIFACTS_DIR="$(pwd)/temp_artifacts"
+
+# === 🏗️ Building SDK xcframework ===
+echo "🏗️  Building mParticle SDK xcframework from source..."
+cd ..
+
+# Clean previous builds
+rm -rf archives mParticle_Apple_SDK.xcframework
+
+# Build xcframework for iOS and iOS Simulator only (faster than full build)
+echo "   📱 Building for iOS..."
+xcodebuild archive -project mParticle-Apple-SDK.xcodeproj \
+  -scheme mParticle-Apple-SDK \
+  -destination "generic/platform=iOS" \
+  -archivePath "archives/mParticle-Apple-SDK-iOS" \
+  SKIP_INSTALL=NO \
+  BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+
+echo "   📱 Building for iOS Simulator..."
+xcodebuild archive -project mParticle-Apple-SDK.xcodeproj \
+  -scheme mParticle-Apple-SDK \
+  -destination "generic/platform=iOS Simulator" \
+  -archivePath "archives/mParticle-Apple-SDK-iOS_Simulator" \
+  SKIP_INSTALL=NO \
+  BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+
+# Create xcframework
+echo "   📦 Creating xcframework..."
+xcodebuild -create-xcframework \
+  -archive archives/mParticle-Apple-SDK-iOS.xcarchive -framework mParticle_Apple_SDK.framework \
+  -archive archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive -framework mParticle_Apple_SDK.framework \
+  -output mParticle_Apple_SDK.xcframework
+
+# Move to temp artifacts directory
+echo "   📁 Moving xcframework to temp directory..."
+rm -rf "$TEMP_ARTIFACTS_DIR"
+mkdir -p "$TEMP_ARTIFACTS_DIR"
+mv mParticle_Apple_SDK.xcframework "$TEMP_ARTIFACTS_DIR/"
+rm -rf archives
+
+echo "✅ SDK built successfully."
+
+cd IntegrationTests
+
+# === 🔄 Regenerating Tuist project ===
+echo "🔄 Regenerating Tuist project..."
+tuist clean
+tuist generate --no-open
+
+echo "✅ Project regenerated."
 
 # === 🧹 Complete simulator cleanup ===
 echo "🧹 Resetting simulators..."
@@ -21,6 +71,7 @@ echo "✅ Simulators cleaned."
 # === 🧱 Building project ===
 echo "📦 Building application '$APP_NAME'..."
 xcodebuild \
+  -project IntegrationTests.xcodeproj \
   -scheme "$SCHEME" \
   -configuration "$CONFIGURATION" \
   -destination "platform=iOS Simulator,name=$DEVICE_NAME" \

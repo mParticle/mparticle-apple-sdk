@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0C6CD8EB1F585F78A9A015A6 /* mParticle_Apple_SDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 216AB0387408883407C8915C /* mParticle_Apple_SDK.xcframework */; };
-		8374A28E80128CC9E2C842B2 /* mParticle_Apple_SDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 216AB0387408883407C8915C /* mParticle_Apple_SDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		28134DA90F8657ECB4F6C539 /* mParticle_Apple_SDK.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 26F9862560039626BD32D4B4 /* mParticle_Apple_SDK.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		9D84477E41BD661F22DD9A1E /* mParticle_Apple_SDK.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 26F9862560039626BD32D4B4 /* mParticle_Apple_SDK.xcframework */; };
+		C30B667D32ECADC38CD47BA0 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E256507728F66DA7C6AEE247 /* main.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,7 +19,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				8374A28E80128CC9E2C842B2 /* mParticle_Apple_SDK.xcframework in Embed Frameworks */,
+				28134DA90F8657ECB4F6C539 /* mParticle_Apple_SDK.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -26,43 +27,24 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		216AB0387408883407C8915C /* mParticle_Apple_SDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = mParticle_Apple_SDK.xcframework; sourceTree = "<group>"; };
+		26F9862560039626BD32D4B4 /* mParticle_Apple_SDK.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = mParticle_Apple_SDK.xcframework; sourceTree = "<group>"; };
 		A15D36CBDF8CBAC9555B4CCC /* IntegrationTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "IntegrationTests-Info.plist"; sourceTree = "<group>"; };
 		AC97D5247A70D0BDE82ED45C /* IntegrationTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IntegrationTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E256507728F66DA7C6AEE247 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		00E84C6999F5C8F287A40DD7 /* Sources */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = Sources;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		095AAF94981E6DAB211F2EE0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C6CD8EB1F585F78A9A015A6 /* mParticle_Apple_SDK.xcframework in Frameworks */,
+				9D84477E41BD661F22DD9A1E /* mParticle_Apple_SDK.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		062927053AAAE5ED254568BA /* artifacts */ = {
-			isa = PBXGroup;
-			children = (
-				ACDFA17DD22860381BC4601F /* mparticle-apple-sdk */,
-			);
-			path = artifacts;
-			sourceTree = "<group>";
-		};
 		1D9327473CB1F47F5755F0F3 = {
 			isa = PBXGroup;
 			children = (
@@ -79,28 +61,20 @@
 			path = Derived;
 			sourceTree = "<group>";
 		};
-		6B45315E5402FEE4DE8DEE09 /* Tuist */ = {
+		74AF33F37ACF11368047836C /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				8C8676645B16516BA119B877 /* .build */,
+				E256507728F66DA7C6AEE247 /* main.swift */,
 			);
-			path = Tuist;
-			sourceTree = "<group>";
-		};
-		8C8676645B16516BA119B877 /* .build */ = {
-			isa = PBXGroup;
-			children = (
-				062927053AAAE5ED254568BA /* artifacts */,
-			);
-			path = .build;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		9944185A86239A1541B296AB /* Project */ = {
 			isa = PBXGroup;
 			children = (
 				5458C7AC8E558506C31A2548 /* Derived */,
-				6B45315E5402FEE4DE8DEE09 /* Tuist */,
-				00E84C6999F5C8F287A40DD7 /* Sources */,
+				74AF33F37ACF11368047836C /* Sources */,
+				BCCCC193ACF295F1C7901FC7 /* temp_artifacts */,
 			);
 			name = Project;
 			sourceTree = "<group>";
@@ -113,20 +87,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		ACDFA17DD22860381BC4601F /* mparticle-apple-sdk */ = {
+		BCCCC193ACF295F1C7901FC7 /* temp_artifacts */ = {
 			isa = PBXGroup;
 			children = (
-				B7C552667014B2DB41A984E7 /* mParticle_Apple_SDK */,
+				26F9862560039626BD32D4B4 /* mParticle_Apple_SDK.xcframework */,
 			);
-			path = "mparticle-apple-sdk";
-			sourceTree = "<group>";
-		};
-		B7C552667014B2DB41A984E7 /* mParticle_Apple_SDK */ = {
-			isa = PBXGroup;
-			children = (
-				216AB0387408883407C8915C /* mParticle_Apple_SDK.xcframework */,
-			);
-			path = mParticle_Apple_SDK;
+			path = temp_artifacts;
 			sourceTree = "<group>";
 		};
 		C259AF659750947495DF8D19 /* InfoPlists */ = {
@@ -152,9 +118,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				00E84C6999F5C8F287A40DD7 /* Sources */,
 			);
 			name = IntegrationTests;
 			packageProductDependencies = (
@@ -206,6 +169,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C30B667D32ECADC38CD47BA0 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -221,7 +185,7 @@
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/Tuist/.build/artifacts/mparticle-apple-sdk/mParticle_Apple_SDK",
+					"$(SRCROOT)/temp_artifacts",
 				);
 				INFOPLIST_FILE = "Derived/InfoPlists/IntegrationTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -367,7 +331,7 @@
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(SRCROOT)/Tuist/.build/artifacts/mparticle-apple-sdk/mParticle_Apple_SDK",
+					"$(SRCROOT)/temp_artifacts",
 				);
 				INFOPLIST_FILE = "Derived/InfoPlists/IntegrationTests-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;

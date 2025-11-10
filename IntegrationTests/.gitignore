@@ -1,0 +1,22 @@
+# Temporary artifacts directory
+temp_artifacts/
+
+# Xcode
+*.xcworkspace
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata/
+IntegrationTests.xcodeproj/
+Derived/
+
+# Build artifacts
+build/
+*.app
+
+# CocoaPods (if used)
+Pods/
+Podfile.lock
+
+# Tuist
+.tuist/
+Tuist/Package.swift.backup
+

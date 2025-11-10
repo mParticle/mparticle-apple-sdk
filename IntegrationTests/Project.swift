@@ -9,11 +9,9 @@ let project = Project(
             product: .app,
             bundleId: "com.mparticle.IntegrationTests",
             deploymentTargets: .iOS("14.0"),
-            buildableFolders: [
-                "Sources"
-            ],
+            sources: ["Sources/**"],
             dependencies: [
-                .external(name: "mParticle-Apple-SDK")
+                .xcframework(path: "temp_artifacts/mParticle_Apple_SDK.xcframework")
             ]
         )
     ]
