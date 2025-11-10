@@ -925,7 +925,7 @@ MPLog* logger;
         event = [[MPEvent alloc] initWithName:eventName type:eventType];
     }
     
-    event.customAttributes = eventInfo;
+    event.customAttributes = @{@"1": @"dakjaskj"};
     [self logEvent:event];
 }
 

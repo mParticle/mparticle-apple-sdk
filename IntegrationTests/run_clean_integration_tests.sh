@@ -99,7 +99,7 @@ open -a Simulator
 
 # Wait for simulator to boot
 echo "⏳ Waiting for simulator to start..."
-sleep 50
+sleep 30
 
 # === 📲 Installing application ===
 echo "📲 Installing '$APP_NAME'..."
