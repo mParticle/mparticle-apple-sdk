@@ -91,13 +91,25 @@ open -a Simulator
 
 # Wait for simulator to boot
 echo "⏳ Waiting for simulator to start..."
-sleep 20
+xcrun simctl bootstatus "$DEVICE_ID" -b
 
 # === 📲 Installing application ===
 echo "📲 Installing '$APP_NAME'..."
 xcrun simctl install "$DEVICE_ID" "$APP_PATH"
 
-sleep 10
+# Wait for app to be fully installed
+echo "⏳ Waiting for app installation to complete..."
+MAX_WAIT=30
+WAIT_COUNT=0
+while ! xcrun simctl get_app_container "$DEVICE_ID" "$BUNDLE_ID" &>/dev/null; do
+  sleep 1
+  WAIT_COUNT=$((WAIT_COUNT + 1))
+  if [ $WAIT_COUNT -ge $MAX_WAIT ]; then
+    echo "❌ App installation timed out after ${MAX_WAIT} seconds"
+    exit 1
+  fi
+done
+echo "✅ App installed successfully"
 
 # === 🚀 Starting WireMock container ===
 echo "🚀 Starting WireMock container in detached mode..."
@@ -130,11 +142,31 @@ defaults write "$BUNDLE_ID" APIBaseURL "$WIREMOCK_URL"
 
 # === ▶️ Launching application ===
 echo "▶️ Launching application..."
-xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
+LAUNCH_OUTPUT=$(xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID")
+APP_PID=$(echo "$LAUNCH_OUTPUT" | awk -F': ' '{print $2}')
 
-echo "✅ Application '$APP_NAME' launched on clean '$DEVICE_NAME'."
+if [ -z "$APP_PID" ]; then
+  echo "❌ Failed to get app PID"
+  exit 1
+fi
 
-sleep 10
+echo "✅ Application '$APP_NAME' started with PID: $APP_PID"
+
+# Wait for app to complete its execution
+echo "⏳ Waiting for app to complete execution..."
+MAX_WAIT=60
+WAIT_COUNT=0
+while kill -0 "$APP_PID" 2>/dev/null; do
+  sleep 1
+  WAIT_COUNT=$((WAIT_COUNT + 1))
+  if [ $WAIT_COUNT -ge $MAX_WAIT ]; then
+    echo "⚠️  App still running after ${MAX_WAIT} seconds, proceeding anyway..."
+    break
+  fi
+done
+if [ $WAIT_COUNT -lt $MAX_WAIT ]; then
+  echo "✅ App execution completed"
+fi
 
 # === 🔍 Verifying WireMock results ===
 echo ""
