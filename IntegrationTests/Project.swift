@@ -16,6 +16,7 @@ let project = Project(
         )
     ],
     additionalFiles: [
-        .glob(pattern: "wiremock-recordings/**/*.json")
+        .glob(pattern: "wiremock-recordings/**/*.json"),
+        .glob(pattern: "*.sh")
     ]
 )
