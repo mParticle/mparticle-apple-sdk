@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -48,8 +48,8 @@
 		1D9327473CB1F47F5755F0F3 = {
 			isa = PBXGroup;
 			children = (
-				9944185A86239A1541B296AB /* Project */,
 				9D61F26C168B587B004F5469 /* Products */,
+				9944185A86239A1541B296AB /* Project */,
 			);
 			sourceTree = "<group>";
 		};
