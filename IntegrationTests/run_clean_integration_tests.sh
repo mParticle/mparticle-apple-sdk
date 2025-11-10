@@ -12,22 +12,14 @@ WIREMOCK_URL="https://localhost:443"   # Your local WireMock endpoint
 TEMP_ARTIFACTS_DIR="$(pwd)/temp_artifacts"
 
 # === 🏗️ Building SDK xcframework ===
-echo "🏗️  Building mParticle SDK xcframework from source..."
+echo "🏗️  Building mParticle SDK xcframework for iOS Simulator..."
 cd ..
 
 # Clean previous builds
 rm -rf archives mParticle_Apple_SDK.xcframework
 
-# Build xcframework for iOS and iOS Simulator only (faster than full build)
-echo "   📱 Building for iOS..."
-xcodebuild archive -project mParticle-Apple-SDK.xcodeproj \
-  -scheme mParticle-Apple-SDK \
-  -destination "generic/platform=iOS" \
-  -archivePath "archives/mParticle-Apple-SDK-iOS" \
-  SKIP_INSTALL=NO \
-  BUILD_LIBRARY_FOR_DISTRIBUTION=YES
-
-echo "   📱 Building for iOS Simulator..."
+# Build for iOS Simulator only (faster for integration tests)
+echo "   📱 Building archive for iOS Simulator..."
 xcodebuild archive -project mParticle-Apple-SDK.xcodeproj \
   -scheme mParticle-Apple-SDK \
   -destination "generic/platform=iOS Simulator" \
@@ -35,14 +27,13 @@ xcodebuild archive -project mParticle-Apple-SDK.xcodeproj \
   SKIP_INSTALL=NO \
   BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
-# Create xcframework
+# Create xcframework from simulator archive only
 echo "   📦 Creating xcframework..."
 xcodebuild -create-xcframework \
-  -archive archives/mParticle-Apple-SDK-iOS.xcarchive -framework mParticle_Apple_SDK.framework \
   -archive archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive -framework mParticle_Apple_SDK.framework \
   -output mParticle_Apple_SDK.xcframework
 
-# Move to temp artifacts directory
+# Move xcframework to temp artifacts directory
 echo "   📁 Moving xcframework to temp directory..."
 rm -rf "$TEMP_ARTIFACTS_DIR"
 mkdir -p "$TEMP_ARTIFACTS_DIR"
@@ -56,6 +47,7 @@ cd IntegrationTests
 # === 🔄 Regenerating Tuist project ===
 echo "🔄 Regenerating Tuist project..."
 tuist clean
+tuist install
 tuist generate --no-open
 
 echo "✅ Project regenerated."
@@ -99,13 +91,13 @@ open -a Simulator
 
 # Wait for simulator to boot
 echo "⏳ Waiting for simulator to start..."
-sleep 30
+sleep 20
 
 # === 📲 Installing application ===
 echo "📲 Installing '$APP_NAME'..."
 xcrun simctl install "$DEVICE_ID" "$APP_PATH"
 
-sleep 30
+sleep 10
 
 # === ⚙️ Configuring environment variable / API URL ===
 # If application reads from UserDefaults
