@@ -99,6 +99,30 @@ xcrun simctl install "$DEVICE_ID" "$APP_PATH"
 
 sleep 10
 
+# === 🚀 Starting WireMock container ===
+echo "🚀 Starting WireMock container in detached mode..."
+WIREMOCK_RECORDINGS_DIR="$(pwd)/wiremock-recordings"
+
+# Stop any existing container
+docker stop wiremock-verify 2>/dev/null || true
+docker rm wiremock-verify 2>/dev/null || true
+
+# Start WireMock in detached mode
+docker run -d \
+  --name wiremock-verify \
+  -p 8080:8080 \
+  -p 443:8443 \
+  -v "${WIREMOCK_RECORDINGS_DIR}:/home/wiremock" \
+  wiremock/wiremock:3.9.1 \
+  --https-port 8443 \
+  --verbose
+
+# Wait for WireMock to be ready
+echo "⏳ Waiting for WireMock to start..."
+sleep 5
+
+echo "✅ WireMock container started."
+
 # === ⚙️ Configuring environment variable / API URL ===
 # If application reads from UserDefaults
 echo "⚙️ Configuring APIBaseURL -> $WIREMOCK_URL"
@@ -109,4 +133,67 @@ echo "▶️ Launching application..."
 xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
 
 echo "✅ Application '$APP_NAME' launched on clean '$DEVICE_NAME'."
+
+sleep 10
+
+# === 🔍 Verifying WireMock results ===
+echo ""
+echo "🔍 Verifying WireMock results..."
+echo
+
+WIREMOCK_PORT=8080
+MAPPINGS_DIR="./wiremock-recordings/mappings"
+
+# Count all requests
+TOTAL=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests | jq '.requests | length')
+UNMATCHED=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests/unmatched | jq '.requests | length')
+MATCHED=$((TOTAL - UNMATCHED))
+PROXIED=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests | jq '[.requests[] | select(.wasProxyRequest==true)] | length')
+
+echo "📊 WireMock summary:"
+echo "──────────────────────────────"
+echo "  Total requests:     $TOTAL"
+echo "  Matched requests:   $MATCHED"
+echo "  Unmatched requests: $UNMATCHED"
+echo "  Proxied requests:   $PROXIED"
+echo "──────────────────────────────"
+echo
+
+# Check for unmatched requests
+if [ "$UNMATCHED" -gt 0 ]; then
+  echo "❌ Found requests that did not match any mappings:"
+  curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests/unmatched | \
+    jq -r '.requests[] | "  [\(.method)] \(.url)"'
+  echo
+else
+  echo "✅ All incoming requests matched their mappings."
+  echo
+fi
+
+# Check for missed mappings
+echo "🧩 Checking: were all mappings invoked..."
+MISSING=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests | \
+  jq -r --slurpfile m <(jq -s '[.[].request | {method: (.method // "ANY"), url: (.url // .urlPattern // .urlPath // .urlPathPattern)}]' ${MAPPINGS_DIR}/*.json) '
+    ([(.requests? // .)[] | {method: .request.method, url: .request.url}] | unique) as $actual |
+    ($m[0] - $actual)[] | "\(.method) \(.url)"' || true)
+
+if [ -n "$MISSING" ]; then
+  echo "⚠️  These mappings were not invoked by the application:"
+  echo "$MISSING"
+else
+  echo "✅ All recorded mappings were invoked by the application."
+fi
+
+echo
+echo "🎯 Verification complete."
+
+# === 🛑 Stopping WireMock container ===
+echo ""
+echo "🛑 Stopping WireMock container..."
+docker stop wiremock-verify
+docker rm wiremock-verify
+
+echo "✅ WireMock container stopped and removed."
+echo ""
+echo "🎉 Integration tests completed!"
 
