@@ -8,6 +8,7 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "com.mparticle.IntegrationTests",
+            deploymentTargets: .iOS("14.0"),
             buildableFolders: [
                 "Sources"
             ],

@@ -1,69 +1,69 @@
 #!/bin/bash
 set -e
 
-# === 🔧 Настройки ===
+# === 🔧 Settings ===
 APP_NAME="IntegrationTests"
 SCHEME="IntegrationTests"
 BUNDLE_ID="com.mparticle.IntegrationTests"
-DEVICE_NAME="iPhone 16"                # Симулятор
+DEVICE_NAME="iPhone 16"                # Simulator
 CONFIGURATION="Debug"
 DERIVED_DATA="$HOME/Library/Developer/Xcode/DerivedData"
-WIREMOCK_URL="https://localhost:443"   # Твой локальный WireMock endpoint
+WIREMOCK_URL="https://localhost:443"   # Your local WireMock endpoint
 
-# === 🧹 Полная очистка симулятора ===
-echo "🧹 Сброс симуляторов..."
+# === 🧹 Complete simulator cleanup ===
+echo "🧹 Resetting simulators..."
 xcrun simctl shutdown all || true
 xcrun simctl erase all || true
 killall Simulator || true
 
-echo "✅ Симуляторы очищены."
+echo "✅ Simulators cleaned."
 
-# === 🧱 Сборка проекта ===
-echo "📦 Сборка приложения '$APP_NAME'..."
+# === 🧱 Building project ===
+echo "📦 Building application '$APP_NAME'..."
 xcodebuild \
   -scheme "$SCHEME" \
   -configuration "$CONFIGURATION" \
   -destination "platform=iOS Simulator,name=$DEVICE_NAME" \
   -derivedDataPath "$DERIVED_DATA" \
-  build || { echo "❌ Ошибка сборки"; exit 1; }
+  build || { echo "❌ Build error"; exit 1; }
 
-# === 🔍 Поиск устройства ===
+# === 🔍 Finding device ===
 DEVICE_ID=$(xcrun simctl list devices | grep "$DEVICE_NAME" | grep -v "unavailable" | awk -F '[()]' '{print $2}' | head -1)
 if [ -z "$DEVICE_ID" ]; then
-  echo "❌ Симулятор '$DEVICE_NAME' не найден. Проверь Xcode > Devices & Simulators."
+  echo "❌ Simulator '$DEVICE_NAME' not found. Check Xcode > Devices & Simulators."
   exit 1
 fi
 
-# === 🔍 Поиск .app файла ===
+# === 🔍 Finding .app file ===
 APP_PATH=$(find "$DERIVED_DATA" -type d -path "*/Build/Products/${CONFIGURATION}-iphonesimulator/${APP_NAME}.app" | head -1)
 if [ ! -d "$APP_PATH" ]; then
-  echo "❌ .app не найден. Проверь схему и путь сборки."
+  echo "❌ .app not found. Check scheme and build path."
   exit 1
 fi
 
-# === 📱 Запуск симулятора ===
-echo "📱 Запуск симулятора $DEVICE_NAME..."
+# === 📱 Starting simulator ===
+echo "📱 Starting simulator $DEVICE_NAME..."
 xcrun simctl boot "$DEVICE_ID" || true
 open -a Simulator
 
-# Подождём, пока симулятор загрузится
-echo "⏳ Ожидание запуска симулятора..."
+# Wait for simulator to boot
+echo "⏳ Waiting for simulator to start..."
 sleep 50
 
-# === 📲 Установка приложения ===
-echo "📲 Установка '$APP_NAME'..."
+# === 📲 Installing application ===
+echo "📲 Installing '$APP_NAME'..."
 xcrun simctl install "$DEVICE_ID" "$APP_PATH"
 
 sleep 30
 
-# === ⚙️ Настройка переменной окружения / API URL ===
-# Если приложение читает из UserDefaults
-echo "⚙️ Настройка APIBaseURL -> $WIREMOCK_URL"
+# === ⚙️ Configuring environment variable / API URL ===
+# If application reads from UserDefaults
+echo "⚙️ Configuring APIBaseURL -> $WIREMOCK_URL"
 defaults write "$BUNDLE_ID" APIBaseURL "$WIREMOCK_URL"
 
-# === ▶️ Запуск приложения ===
-echo "▶️ Запуск приложения..."
+# === ▶️ Launching application ===
+echo "▶️ Launching application..."
 xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
 
-echo "✅ Приложение '$APP_NAME' запущено на чистом '$DEVICE_NAME'."
+echo "✅ Application '$APP_NAME' launched on clean '$DEVICE_NAME'."
 
