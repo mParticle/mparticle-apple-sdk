@@ -14,5 +14,8 @@ let project = Project(
                 .xcframework(path: "temp_artifacts/mParticle_Apple_SDK.xcframework")
             ]
         )
+    ],
+    additionalFiles: [
+        .glob(pattern: "wiremock-recordings/**/*.json")
     ]
 )
