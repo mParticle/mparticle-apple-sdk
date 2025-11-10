@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -37,10 +37,8 @@
 		72D3AB786349452E4D708C2C /* body-v2-us1-e5145d11865db44eb24cd5a9f194d654-events-XaEtG.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "body-v2-us1-e5145d11865db44eb24cd5a9f194d654-events-XaEtG.json"; sourceTree = "<group>"; };
 		87B8F83F55F54522FF67A1EE /* run_clean_integration_tests.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run_clean_integration_tests.sh; sourceTree = "<group>"; };
 		98831843009A9B1C855EA953 /* mapping-v1-identify-RHrUm.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "mapping-v1-identify-RHrUm.json"; sourceTree = "<group>"; };
-		A0361AB927B21CBD12FBF085 /* verify_wiremock_results.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = verify_wiremock_results.sh; sourceTree = "<group>"; };
 		A15D36CBDF8CBAC9555B4CCC /* IntegrationTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "IntegrationTests-Info.plist"; sourceTree = "<group>"; };
 		AC97D5247A70D0BDE82ED45C /* IntegrationTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IntegrationTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AE2650D6DC803B9AB916A0B3 /* run_wiremock_replay.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run_wiremock_replay.sh; sourceTree = "<group>"; };
 		D37FDABF659A220D49AAB9A6 /* proxy-events.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "proxy-events.json"; sourceTree = "<group>"; };
 		E256507728F66DA7C6AEE247 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -99,8 +97,6 @@
 				05D60716FB5C388D0186E4BE /* wiremock-recordings */,
 				87B8F83F55F54522FF67A1EE /* run_clean_integration_tests.sh */,
 				70D8E20A6557B411363D9290 /* run_wiremock_recorder.sh */,
-				AE2650D6DC803B9AB916A0B3 /* run_wiremock_replay.sh */,
-				A0361AB927B21CBD12FBF085 /* verify_wiremock_results.sh */,
 			);
 			name = Project;
 			sourceTree = "<group>";
@@ -181,8 +177,6 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				TargetAttributes = {
-				};
 			};
 			buildConfigurationList = 6F34A9539E6805442595B706 /* Build configuration list for PBXProject "IntegrationTests" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -247,10 +241,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = (
-					"$(inherited)",
-					DEBUG,
-				);
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				SWIFT_COMPILATION_MODE = singlefile;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
