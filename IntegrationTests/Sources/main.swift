@@ -40,4 +40,4 @@ sleep(1)
 
 mparticle.logEvent("Simple Event Name", eventType: .other, eventInfo: ["SimpleKey": "SimpleValue"])
 
-sleep(10)
+sleep(7)
