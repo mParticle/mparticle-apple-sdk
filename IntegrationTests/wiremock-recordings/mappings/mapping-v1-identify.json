@@ -11,7 +11,7 @@
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-v1-identify-RHrUm.json",
+    "bodyFileName" : "body-v1-identify-response.json",
     "headers" : {
       "X-Cache" : "MISS",
       "X-MP-Trace-Id" : "690cf8ddafe953c59086638eb093dfd5",

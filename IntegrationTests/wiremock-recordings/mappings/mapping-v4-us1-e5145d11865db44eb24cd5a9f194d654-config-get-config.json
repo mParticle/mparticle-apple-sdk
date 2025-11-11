@@ -6,7 +6,7 @@
   },
   "response" : {
     "status" : 200,
-    "bodyFileName" : "body-v4-us1-e5145d11865db44eb24cd5a9f194d654-config-52Pur.json",
+    "bodyFileName" : "body-v4-us1-get-config-response.json",
     "headers" : {
       "X-Cache" : "MISS, MISS",
       "Server" : "Kestrel",

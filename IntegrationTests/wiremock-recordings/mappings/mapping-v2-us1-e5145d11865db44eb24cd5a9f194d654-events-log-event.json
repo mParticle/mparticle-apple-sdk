@@ -11,7 +11,7 @@
   },
   "response" : {
     "status" : 202,
-    "bodyFileName" : "body-v2-us1-e5145d11865db44eb24cd5a9f194d654-events-XaEtG.json",
+    "bodyFileName" : "body-v2-us1-log-event-response.json",
     "headers" : {
       "X-Cache" : "MISS, MISS",
       "X-MP-Trace-Id" : "690cf8e296a7a5c9974b078c5bdc6b95",
