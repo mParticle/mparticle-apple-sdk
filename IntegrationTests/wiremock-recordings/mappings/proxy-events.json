@@ -1,0 +1,9 @@
+{
+  "priority": 1,
+  "request": {
+    "urlPathPattern": "/v2/events"
+  },
+  "response": {
+    "proxyBaseUrl": "https://nativesdks.mparticle.com"
+  }
+}

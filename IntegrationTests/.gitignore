@@ -1,0 +1,17 @@
+# Temporary artifacts directory
+temp_artifacts/
+
+# Xcode
+*.xcworkspace
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata/
+IntegrationTests.xcodeproj/
+Derived/
+
+# Build artifacts
+build/
+*.app
+
+# Tuist
+.tuist/
+
