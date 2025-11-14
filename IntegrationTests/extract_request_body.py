@@ -3,17 +3,41 @@
 Script for extracting JSON request bodies from WireMock mappings.
 
 Usage:
-    python3 extract_request_body.py <mapping_file> <test_name>
+    python3 extract_request_body.py <mapping_file> <test_name> [--replace]
 
 Example:
     python3 extract_request_body.py wiremock-recordings/mappings/mapping-v1-identify.json identify_test
+    python3 extract_request_body.py wiremock-recordings/mappings/mapping-v1-identify.json identify_test --replace
 """
 
 import json
 import sys
 import os
+import argparse
 from pathlib import Path
 from typing import Dict, Any, List, Union
+
+
+# Default list of fields to replace with ${json-unit.ignore}
+# Based on existing WireMock mappings that contain dynamic/timestamp values
+DEFAULT_REPLACE_FIELDS = [
+    'a',       # App ID
+    'bid',     # Bundle ID / Build ID
+    'bsv',     # Build System Version
+    'ct',      # Creation Time / Current Time
+    'das',     # Device Application Stamp
+    'dfs',     # Device Fingerprint String
+    'dlc',     # Device Locale
+    'dn',      # Device Name
+    'dosv',    # Device OS Version
+    'est',     # Event Start Time
+    'ict',     # Init Config Time
+    'id',      # ID (various message/event IDs)
+    'lud',     # Last Update Date
+    'sct',     # Session Creation Time
+    'sid',     # Session ID
+    'vid',     # Vendor ID
+]
 
 
 def replace_field_value(data: Union[Dict, List, Any], field_name: str, replacement_value: str) -> Union[Dict, List, Any]:
@@ -82,14 +106,14 @@ def replace_fields_from_list(data: Union[Dict, List, Any], field_names: List[str
     
     return result
 
-
-def extract_request_body(mapping_file: str, test_name: str) -> None:
+def extract_request_body(mapping_file: str, test_name: str, replace_fields: bool = False) -> None:
     """
     Extracts JSON body from WireMock mapping and saves it to a separate file.
     
     Args:
         mapping_file: Path to mapping file
         test_name: Test name
+        replace_fields: If True, replaces known dynamic fields with ${json-unit.ignore}
     """
     # Check if mapping file exists
     mapping_path = Path(mapping_file)
@@ -135,6 +159,11 @@ def extract_request_body(mapping_file: str, test_name: str) -> None:
         # (unescape)
         request_body = json.loads(equal_to_json)
         
+        # Apply field replacements if requested
+        if replace_fields:
+            print(f"🔄 Replacing {len(DEFAULT_REPLACE_FIELDS)} known dynamic fields with ${{json-unit.ignore}}")
+            request_body = replace_fields_from_list(request_body, DEFAULT_REPLACE_FIELDS)
+        
     except json.JSONDecodeError as e:
         print(f"❌ Error: failed to parse JSON from equalToJson: {e}")
         sys.exit(1)
@@ -173,21 +202,31 @@ def extract_request_body(mapping_file: str, test_name: str) -> None:
 
 
 def main():
-    # Check command line arguments
-    if len(sys.argv) != 3:
-        print("❌ Error: incorrect number of arguments")
-        print()
-        print("Usage:")
-        print(f"    {sys.argv[0]} <mapping_file> <test_name>")
-        print()
-        print("Example:")
-        print(f"    {sys.argv[0]} wiremock-recordings/mappings/mapping-v1-identify.json identify_test")
-        sys.exit(1)
+    # Set up command line argument parser
+    parser = argparse.ArgumentParser(
+        description='Extract JSON request bodies from WireMock mappings',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     
-    mapping_file = sys.argv[1]
-    test_name = sys.argv[2]
+    parser.add_argument(
+        'mapping_file',
+        help='Path to WireMock mapping file'
+    )
     
-    extract_request_body(mapping_file, test_name)
+    parser.add_argument(
+        'test_name',
+        help='Test name for the output file'
+    )
+    
+    parser.add_argument(
+        '--replace',
+        action='store_true',
+        help='Replace known dynamic fields with ${json-unit.ignore}'
+    )
+    
+    args = parser.parse_args()
+    
+    extract_request_body(args.mapping_file, args.test_name, replace_fields=args.replace)
 
 
 if __name__ == "__main__":
