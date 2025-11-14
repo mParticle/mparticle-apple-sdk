@@ -1,0 +1,22 @@
+{
+  "test_name": "identify",
+  "source_mapping": "wiremock-recordings/mappings/mapping-v1-identify.json",
+  "request_method": "POST",
+  "request_url": "/v1/identify",
+  "request_body": {
+    "client_sdk": {
+      "platform": "ios",
+      "sdk_version": "8.40.0",
+      "sdk_vendor": "mparticle"
+    },
+    "environment": "development",
+    "request_timestamp_ms": 1762457821120,
+    "request_id": "1F7C5D84-CDF2-4E68-9E4E-3D320ED84AF0",
+    "known_identities": {
+      "email": "foo@example.com",
+      "customerid": "123456",
+      "ios_idfv": "EE48E7EC-1EB3-468C-BAAC-2CC7DBFBDB34",
+      "device_application_stamp": "24E78BF4-257D-440C-9C75-3B793CD41971"
+    }
+  }
+}
