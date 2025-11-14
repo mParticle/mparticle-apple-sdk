@@ -13,7 +13,74 @@ import json
 import sys
 import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List, Union
+
+
+def replace_field_value(data: Union[Dict, List, Any], field_name: str, replacement_value: str) -> Union[Dict, List, Any]:
+    """
+    Recursively replaces the value of a specified field in a JSON structure.
+    
+    Args:
+        data: JSON data (dict, list, or primitive value)
+        field_name: Name of the field to replace
+        replacement_value: New value to set for the field
+        
+    Returns:
+        Modified data structure with replaced field values
+    
+    Example:
+        data = {"id": "123", "name": "test", "nested": {"id": "456"}}
+        result = replace_field_value(data, "id", "${json-unit.ignore}")
+        # result = {"id": "${json-unit.ignore}", "name": "test", "nested": {"id": "${json-unit.ignore}"}}
+    """
+    if isinstance(data, dict):
+        # For dictionaries, check each key
+        result = {}
+        for key, value in data.items():
+            if key == field_name:
+                # Replace the value for this field
+                result[key] = replacement_value
+            else:
+                # Recursively process the value
+                result[key] = replace_field_value(value, field_name, replacement_value)
+        return result
+    elif isinstance(data, list):
+        # For lists, recursively process each item
+        return [replace_field_value(item, field_name, replacement_value) for item in data]
+    else:
+        # For primitive values, return as is
+        return data
+
+
+def replace_fields_from_list(data: Union[Dict, List, Any], field_names: List[str], replacement_value: str = "${json-unit.ignore}") -> Union[Dict, List, Any]:
+    """
+    Replaces values of multiple fields in a JSON structure with a specified value.
+    
+    Args:
+        data: JSON data (dict, list, or primitive value)
+        field_names: List of field names to replace
+        replacement_value: Value to use for replacement (default: "${json-unit.ignore}")
+        
+    Returns:
+        Modified data structure with all specified fields replaced
+    
+    Example:
+        data = {"id": "123", "ct": "1234567890", "name": "test", "nested": {"id": "456", "ct": "0987654321"}}
+        result = replace_fields_from_list(data, ["id", "ct"])
+        # result = {"id": "${json-unit.ignore}", "ct": "${json-unit.ignore}", "name": "test", 
+        #           "nested": {"id": "${json-unit.ignore}", "ct": "${json-unit.ignore}"}}
+        
+        # Or with custom replacement value:
+        result = replace_fields_from_list(data, ["id", "ct"], "IGNORED")
+        # result = {"id": "IGNORED", "ct": "IGNORED", "name": "test", "nested": {"id": "IGNORED", "ct": "IGNORED"}}
+    """
+    result = data
+    
+    # Apply replacement for each field in the list
+    for field_name in field_names:
+        result = replace_field_value(result, field_name, replacement_value)
+    
+    return result
 
 
 def extract_request_body(mapping_file: str, test_name: str) -> None:
