@@ -80,3 +80,7 @@ vendor/
 
 # Cursor private rules
 .cursor/rules/private-*
+
+# Integration Tests - Build Artifacts
+archives/
+IntegrationTests/temp_artifacts/
