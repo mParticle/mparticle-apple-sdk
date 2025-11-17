@@ -10,6 +10,9 @@ MAPPINGS_DIR=${3:-"./wiremock-recordings"}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
+# === Build framework and generate project ===
+build_framework
+
 echo "🔄 Generating project with Tuist..."
 tuist generate --no-open
 

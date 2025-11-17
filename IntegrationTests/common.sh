@@ -18,6 +18,46 @@ DEVICE_NAME=""
 DEVICE_ID=""
 APP_PATH=""
 APP_PID=""
+TEMP_ARTIFACTS_DIR="$(pwd)/temp_artifacts"
+
+build_framework() {
+  echo "🏗️  Building mParticle SDK xcframework for iOS Simulator..."
+  
+  local SDK_DIR="$(cd .. && pwd)"
+  
+  # Clean previous builds
+  echo "🧹 Cleaning previous builds..."
+  rm -rf "$SDK_DIR/archives" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
+  
+  # Build for iOS Simulator only (faster for integration tests)
+  echo "📱 Building archive for iOS Simulator..."
+  xcodebuild archive \
+    -project "$SDK_DIR/mParticle-Apple-SDK.xcodeproj" \
+    -scheme mParticle-Apple-SDK \
+    -destination "generic/platform=iOS Simulator" \
+    -archivePath "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator" \
+    SKIP_INSTALL=NO \
+    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+    -quiet || { echo "❌ Framework build error"; exit 1; }
+  
+  # Create xcframework from simulator archive only
+  echo "📦 Creating xcframework..."
+  xcodebuild -create-xcframework \
+    -archive "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive" -framework mParticle_Apple_SDK.framework \
+    -output "$SDK_DIR/mParticle_Apple_SDK.xcframework" \
+    2>&1 | grep -v "note:" || true
+  
+  # Move xcframework to temp artifacts directory
+  echo "📁 Moving xcframework to temp directory..."
+  mkdir -p "$TEMP_ARTIFACTS_DIR"
+  rm -rf "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
+  mv "$SDK_DIR/mParticle_Apple_SDK.xcframework" "$TEMP_ARTIFACTS_DIR/"
+  
+  # Clean up archives
+  rm -rf "$SDK_DIR/archives"
+  
+  echo "✅ SDK built successfully at: $TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
+}
 
 build_application() {
   echo "📦 Building application '$APP_NAME'..."
