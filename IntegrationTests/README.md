@@ -115,11 +115,10 @@ python3 update_mapping_from_extracted.py wiremock-recordings/requests/identify_t
 - Reads the extracted request body from JSON file
 - Updates the source WireMock mapping file with the modified request body
 - Preserves all WireMock configuration (response, headers, etc.)
-- Creates backup of original mapping file
 
 **Use case:** After extracting and editing a request body, use this script to apply changes back to the mapping.
 
-**Note:** This script is automatically called by the test runner when executing integration tests with modified request bodies.
+**Note:** This script is automatically called by `run_clean_integration_tests.sh` for all files in `wiremock-recordings/requests/` before starting WireMock, so manual execution is usually not needed during testing.
 
 ## Troubleshooting
 
@@ -215,8 +214,43 @@ After recording, you should update request bodies to make them more maintainable
 
 ### Running Integration Tests
 
-When running integration tests, the test framework will:
-1. Automatically look for extracted request bodies in `wiremock-recordings/requests/`
-2. Apply any changes from extracted bodies to the mappings before starting WireMock
-3. Run tests against the updated mappings
+Use the verification script to run full end-to-end integration tests:
+
+```bash
+./run_clean_integration_tests.sh
+```
+
+**What the verification script does:**
+
+1. **Rebuilds SDK:** Creates fresh xcframework from latest source code
+2. **Regenerates project:** Runs Tuist to regenerate project with new SDK
+3. **Resets environment:** Cleans simulators and builds test app
+4. **📝 Applies user-friendly mappings:** Automatically converts all user-friendly request bodies from `wiremock-recordings/requests/` back to WireMock mappings
+5. **Starts WireMock:** Launches WireMock container in verification mode with updated mappings
+6. **Runs tests:** Executes test app in simulator
+7. **Verifies results:** Checks that all requests matched mappings and all mappings were invoked
+8. **Returns exit code:** Exits with code 1 if any verification fails (CI/CD compatible)
+
+**Automatic mapping application:**
+
+The script automatically looks for user-friendly request bodies in `wiremock-recordings/requests/` and applies them to the corresponding WireMock mappings before starting WireMock. This means you can:
+
+1. Edit request bodies in `wiremock-recordings/requests/*.json`
+2. Run `./run_clean_integration_tests.sh`
+3. Changes are automatically applied - no manual update step needed!
+
+**Example workflow:**
+
+```bash
+# 1. Edit user-friendly mapping
+vim wiremock-recordings/requests/<test_name>.json
+
+# 2. Run verification (automatically applies changes)
+./run_clean_integration_tests.sh
+
+# 3. If tests pass, commit both files
+git add wiremock-recordings/requests/<test_name>.json
+git add wiremock-recordings/mappings/<mapping_file>.json
+git commit -m "Update request expectations"
+```
 

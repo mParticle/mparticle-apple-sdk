@@ -136,7 +136,8 @@ def extract_request_body(mapping_file: str, test_name: str, replace_fields: bool
     try:
         request_data = mapping_data.get('request', {})
         method = request_data.get('method', 'UNKNOWN')
-        url = request_data.get('url', 'UNKNOWN')
+        # Support both 'url' and 'urlPattern' fields
+        url = request_data.get('url') or request_data.get('urlPattern', 'UNKNOWN')
         
         body_patterns = request_data.get('bodyPatterns', [])
         

@@ -10,13 +10,13 @@
       "sdk_vendor": "mparticle"
     },
     "environment": "development",
-    "request_timestamp_ms": 1762457821120,
-    "request_id": "1F7C5D84-CDF2-4E68-9E4E-3D320ED84AF0",
+    "request_timestamp_ms": "${json-unit.ignore}",
+    "request_id": "${json-unit.ignore}",
     "known_identities": {
       "email": "foo@example.com",
       "customerid": "123456",
-      "ios_idfv": "EE48E7EC-1EB3-468C-BAAC-2CC7DBFBDB34",
-      "device_application_stamp": "24E78BF4-257D-440C-9C75-3B793CD41971"
+      "ios_idfv": "${json-unit.ignore}",
+      "device_application_stamp": "${json-unit.ignore}"
     }
   }
 }

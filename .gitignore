@@ -77,3 +77,6 @@ node_modules
 .ruby-version
 /**/.ruby-version
 vendor/
+
+# Cursor private rules
+.cursor/rules/private-*
