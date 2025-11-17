@@ -220,11 +220,3 @@ When running integration tests, the test framework will:
 2. Apply any changes from extracted bodies to the mappings before starting WireMock
 3. Run tests against the updated mappings
 
-### Benefits of This Workflow
-
-- ✅ **Cleaner recordings:** Test only specific SDK methods to avoid recording unrelated API calls
-- ✅ **Dynamic values ignored:** Timestamps, IDs, and device info are automatically ignored in matching
-- ✅ **Easy maintenance:** Request bodies are stored in separate, readable JSON files
-- ✅ **Clear diffs:** Changes to request expectations are easy to review in git diffs
-- ✅ **No manual JSON escaping:** No need to edit escaped JSON strings in mapping files
-- ✅ **Fast iteration:** SDK changes are automatically picked up without rebuilding
