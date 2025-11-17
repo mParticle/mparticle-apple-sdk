@@ -41,6 +41,7 @@ final class MParticleSceneDelegateTests: MParticleTestBase {
     
     // MARK: - Method Existence Tests
     
+    @available(tvOS 13.0, *)
     func test_handleURLContext_methodExists() {
         // Verify the method exists with correct signature
         XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleURLContext(_:))))
@@ -49,19 +50,6 @@ final class MParticleSceneDelegateTests: MParticleTestBase {
     func test_handleUserActivity_methodExists() {
         // Verify the method exists with correct signature
         XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleUserActivity(_:))))
-    }
-    
-    // MARK: - handleURLContext Tests
-    // Note: Testing with mock URLContext is complex due to system class limitations
-    // These tests focus on method availability and basic functionality
-    
-    func test_handleURLContext_availabilityCheck() {
-        // Verify the method is only available on iOS 13+
-        if #available(iOS 13.0, *) {
-            XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleURLContext(_:))))
-        } else {
-            XCTAssertFalse(mparticle.responds(to: #selector(mparticle.handleURLContext(_:))))
-        }
     }
     
     // MARK: - handleUserActivity Tests
@@ -117,7 +105,9 @@ final class MParticleSceneDelegateTests: MParticleTestBase {
     
     func test_bothMethods_exist() {
         // Verify both SceneDelegate support methods exist
-        XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleURLContext(_:))))
+        if #available(tvOS 13.0, *) {
+            XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleURLContext(_:))))
+        }
         XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleUserActivity(_:))))
     }
 }
