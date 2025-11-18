@@ -37,12 +37,12 @@ tuist generate
 ## Overview
 
 This project provides tools for recording mParticle SDK API requests by:
-- Generating a test iOS app using Tuist
-- Linking directly to local SDK source code
+- Building mParticle SDK as an xcframework for iOS Simulator
+- Generating a test iOS app using Tuist that links to the built framework
 - Running the app in iOS Simulator
 - Recording all API traffic with WireMock for later use in testing
 
-The project uses Tuist with `.local(path: "../")` package reference, which allows Xcode to resolve the local SDK package and use source files directly, automatically picking up your latest code changes.
+The project builds the SDK into an xcframework stored in `temp_artifacts/` before each test run, ensuring tests always use your latest code changes. The framework is built for iOS Simulator only for faster compilation times during testing.
 
 ## Available Scripts
 
@@ -55,21 +55,25 @@ Records all mParticle SDK API requests using WireMock for later use in integrati
 ```
 
 **What it does:**
-1. Generates Tuist project with local SDK sources
-2. Builds the integration test application
-3. Finds and resets iOS Simulators
-4. Automatically selects available iPhone simulator (iPhone 17/16/15 priority)
-5. Starts simulator
-6. Installs test application
-7. Starts WireMock in recording mode
-8. Launches test application
-9. Records all API traffic to mapping files
-10. Waits for application completion
-11. Stops WireMock and shows results
+1. Builds mParticle SDK as xcframework for iOS Simulator
+2. Generates Tuist project linked to the built framework
+3. Builds the integration test application
+4. Finds and resets iOS Simulators
+5. Automatically selects available iPhone simulator (iPhone 17/16/15 priority)
+6. Starts simulator
+7. Installs test application
+8. Starts WireMock in recording mode
+9. Launches test application
+10. Records all API traffic to mapping files
+11. Waits for application completion
+12. Stops WireMock and shows results
 
 **Recorded Files:**
 - `wiremock-recordings/mappings/*.json` - API request/response mappings
 - `wiremock-recordings/__files/*` - Response body files
+
+**Build Artifacts:**
+- `temp_artifacts/mParticle_Apple_SDK.xcframework` - Compiled SDK framework (auto-generated, not committed to git)
 
 ### `extract_request_body.py` - Extract Request Body from WireMock Mapping
 
@@ -115,11 +119,10 @@ python3 update_mapping_from_extracted.py wiremock-recordings/requests/identify_t
 - Reads the extracted request body from JSON file
 - Updates the source WireMock mapping file with the modified request body
 - Preserves all WireMock configuration (response, headers, etc.)
-- Creates backup of original mapping file
 
 **Use case:** After extracting and editing a request body, use this script to apply changes back to the mapping.
 
-**Note:** This script is automatically called by the test runner when executing integration tests with modified request bodies.
+**Note:** This script is automatically called by `run_clean_integration_tests.sh` for all files in `wiremock-recordings/requests/` before starting WireMock, so manual execution is usually not needed during testing.
 
 ## Troubleshooting
 
@@ -163,7 +166,7 @@ If another application is using the ports, terminate it before running the scrip
    ```bash
    ./run_wiremock_recorder.sh
    ```
-   The script automatically uses your latest changes, runs the app, and records all API traffic
+   The script automatically builds the SDK as an xcframework with your latest changes, runs the app, and records all API traffic
 
 3. **Review and filter recorded mappings:**
    - All recordings are saved to `wiremock-recordings/mappings/`
@@ -215,8 +218,45 @@ After recording, you should update request bodies to make them more maintainable
 
 ### Running Integration Tests
 
-When running integration tests, the test framework will:
-1. Automatically look for extracted request bodies in `wiremock-recordings/requests/`
-2. Apply any changes from extracted bodies to the mappings before starting WireMock
-3. Run tests against the updated mappings
+Use the verification script to run full end-to-end integration tests:
+
+```bash
+./run_clean_integration_tests.sh
+```
+
+**What the verification script does:**
+
+1. **Rebuilds SDK:** Compiles mParticle SDK as xcframework for iOS Simulator from latest source code
+2. **Regenerates project:** Runs Tuist to regenerate project linked to the new xcframework
+3. **Resets environment:** Cleans simulators and builds test app
+4. **📝 Applies user-friendly mappings:** Automatically converts all user-friendly request bodies from `wiremock-recordings/requests/` back to WireMock mappings
+5. **Starts WireMock:** Launches WireMock container in verification mode with updated mappings
+6. **Runs tests:** Executes test app in simulator
+7. **Verifies results:** Checks that all requests matched mappings and all mappings were invoked
+8. **Returns exit code:** Exits with code 1 if any verification fails (CI/CD compatible)
+
+**Note:** The SDK xcframework is built fresh on each run, stored in `temp_artifacts/mParticle_Apple_SDK.xcframework`. This ensures tests always use your latest code changes.
+
+**Automatic mapping application:**
+
+The script automatically looks for user-friendly request bodies in `wiremock-recordings/requests/` and applies them to the corresponding WireMock mappings before starting WireMock. This means you can:
+
+1. Edit request bodies in `wiremock-recordings/requests/*.json`
+2. Run `./run_clean_integration_tests.sh`
+3. Changes are automatically applied - no manual update step needed!
+
+**Example workflow:**
+
+```bash
+# 1. Edit user-friendly mapping
+vim wiremock-recordings/requests/<test_name>.json
+
+# 2. Run verification (automatically applies changes)
+./run_clean_integration_tests.sh
+
+# 3. If tests pass, commit both files
+git add wiremock-recordings/requests/<test_name>.json
+git add wiremock-recordings/mappings/<mapping_file>.json
+git commit -m "Update request expectations"
+```
 

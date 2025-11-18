@@ -1,0 +1,33 @@
+{
+  "id": "04cb059c-f069-30d2-bc49-99cbb469a6c3",
+  "request": {
+    "urlPattern": "/v2/us1-[a-f0-9]+/events",
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"id\":\"${json-unit.ignore}\",\"ltv\":0,\"msgs\":[{\"vc\":\"off_thread\",\"ct\":\"${json-unit.ignore}\",\"psl\":0,\"id\":\"${json-unit.ignore}\",\"dt\":\"ss\",\"mt\":false},{\"sct\":\"${json-unit.ignore}\",\"id\":\"${json-unit.ignore}\",\"ct\":\"${json-unit.ignore}\",\"dt\":\"fr\",\"sid\":\"${json-unit.ignore}\",\"mt\":false,\"vc\":\"off_thread\"},{\"sct\":\"${json-unit.ignore}\",\"dt\":\"uic\",\"ct\":\"${json-unit.ignore}\",\"ni\":{\"dfs\":\"${json-unit.ignore}\",\"i\":\"123456\",\"n\":1,\"f\":true},\"id\":\"${json-unit.ignore}\",\"sid\":\"${json-unit.ignore}\",\"mt\":false,\"vc\":\"off_thread\"},{\"sct\":\"${json-unit.ignore}\",\"dt\":\"uic\",\"ct\":\"${json-unit.ignore}\",\"ni\":{\"dfs\":\"${json-unit.ignore}\",\"i\":\"foo@example.com\",\"n\":7,\"f\":true},\"id\":\"${json-unit.ignore}\",\"sid\":\"${json-unit.ignore}\",\"mt\":false,\"vc\":\"off_thread\"},{\"id\":\"${json-unit.ignore}\",\"vc\":\"off_thread\",\"sf\":true,\"dt\":\"ast\",\"ct\":\"${json-unit.ignore}\",\"sct\":\"${json-unit.ignore}\",\"sc\":true,\"sid\":\"${json-unit.ignore}\",\"t\":\"app_init\",\"ifr\":true,\"nsi\":0,\"mt\":false},{\"et\":\"Other\",\"id\":\"${json-unit.ignore}\",\"vc\":\"off_thread\",\"dt\":\"e\",\"el\":0,\"ct\":\"${json-unit.ignore}\",\"attrs\":{\"SimpleKey\":\"SimpleValue\"},\"sct\":\"${json-unit.ignore}\",\"sid\":\"${json-unit.ignore}\",\"en\":0,\"n\":\"Simple Event Name\",\"est\":\"${json-unit.ignore}\",\"mt\":false}],\"dt\":\"h\",\"a\":\"${json-unit.ignore}\",\"ai\":{\"av\":\"1.0\",\"sideloaded_kits_count\":0,\"bid\":\"${json-unit.ignore}\",\"pir\":false,\"fi\":false,\"lud\":\"${json-unit.ignore}\",\"arc\":\"arm64\",\"tsv\":\"90000\",\"apn\":\"com.mparticle.IntegrationTests\",\"env\":1,\"abn\":\"1\",\"bsv\":\"${json-unit.ignore}\",\"ict\":\"${json-unit.ignore}\"},\"ct\":\"${json-unit.ignore}\",\"das\":\"${json-unit.ignore}\",\"mpid\":6504934091054997508,\"ui\":[{\"i\":\"123456\",\"n\":1},{\"i\":\"foo@example.com\",\"n\":7}],\"uitl\":60,\"oo\":false,\"sdk\":\"8.40.0\",\"di\":{\"p\":\"arm64\",\"bid\":\"${json-unit.ignore}\",\"tz\":\"-5\",\"dn\":\"${json-unit.ignore}\",\"dll\":\"en\",\"dlc\":\"${json-unit.ignore}\",\"dsh\":\"1440\",\"dma\":\"Apple\",\"vid\":\"${json-unit.ignore}\",\"idst\":false,\"tzn\":\"America/New_York\",\"dp\":\"iOS\",\"dsw\":\"960\",\"dosv\":\"${json-unit.ignore}\",\"it\":false,\"dmdl\":\"arm64\",\"dr\":\"None\",\"jb\":{\"cydia\":false},\"lat\":false,\"arc\":\"arm64e\",\"b\":\"arm64\"},\"stl\":60}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ]
+  },
+  "response": {
+    "status": 202,
+    "bodyFileName": "body-v2-us1-log-event-response.json",
+    "headers": {
+      "X-Cache": "MISS, MISS",
+      "X-MP-Trace-Id": "690cf8e296a7a5c9974b078c5bdc6b95",
+      "Server": "Kestrel",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kiad7000042_IAD",
+      "Date": "Thu, 06 Nov 2025 19:37:06 GMT",
+      "X-Timer": "S1762457827.775908,VS0,VE22",
+      "Via": "1.1 varnish, 1.1 varnish",
+      "Accept-Ranges": "bytes",
+      "X-Served-By": "cache-iad-kiad7000042-IAD, cache-ewr-kewr1740038-EWR",
+      "Vary": "Accept-Encoding",
+      "X-Cache-Hits": "0, 0",
+      "Content-Type": "application/json"
+    }
+  },
+  "uuid": "04cb059c-f069-30d2-bc49-99cbb469a6c3"
+}

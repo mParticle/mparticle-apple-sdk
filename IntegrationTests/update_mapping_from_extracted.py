@@ -88,6 +88,19 @@ def update_mapping(extracted_file: str) -> None:
         
         mapping_data['request']['bodyPatterns'][0]['equalToJson'] = escaped_json
         
+        # Update URL from extracted data (supports both url and urlPattern)
+        request_url = extracted_data.get('request_url')
+        if request_url:
+            # If URL contains regex pattern, use urlPattern, otherwise use url
+            if '[' in request_url or '\\' in request_url:
+                mapping_data['request']['urlPattern'] = request_url
+                # Remove old 'url' field if it exists
+                mapping_data['request'].pop('url', None)
+            else:
+                mapping_data['request']['url'] = request_url
+                # Remove old 'urlPattern' field if it exists
+                mapping_data['request'].pop('urlPattern', None)
+        
     except Exception as e:
         print(f"❌ Error updating mapping: {e}")
         sys.exit(1)

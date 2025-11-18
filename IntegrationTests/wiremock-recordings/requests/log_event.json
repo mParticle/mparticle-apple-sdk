@@ -1,8 +1,8 @@
 {
   "test_name": "log_event",
-  "source_mapping": "wiremock-recordings/mappings/mapping-v2-us1-e5145d11865db44eb24cd5a9f194d654-events-log-event.json",
+  "source_mapping": "wiremock-recordings/mappings/mapping-v2-events-log-event.json",
   "request_method": "POST",
-  "request_url": "/v2/us1-e5145d11865db44eb24cd5a9f194d654/events",
+  "request_url": "/v2/us1-[a-f0-9]+/events",
   "request_body": {
     "id": "${json-unit.ignore}",
     "ltv": 0,
