@@ -1,7 +1,7 @@
 {
   "id": "fd8ecbb2-c308-3500-879c-0c5c9d591c34",
   "request": {
-    "url": "/v2/us1-773c44ed5daf6840a65b75832b548be1/events",
+    "url": "/v2/{API_KEY}/events",
     "method": "POST",
     "bodyPatterns": [
       {

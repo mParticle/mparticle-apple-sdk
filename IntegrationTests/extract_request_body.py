@@ -14,8 +14,9 @@ import json
 import sys
 import os
 import argparse
+import re
 from pathlib import Path
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List, Union, Tuple
 
 
 # Default list of fields to replace with ${json-unit.ignore}
@@ -106,61 +107,227 @@ def replace_fields_from_list(data: Union[Dict, List, Any], field_names: List[str
     
     return result
 
-def extract_request_body(mapping_file: str, test_name: str, replace_fields: bool = False) -> None:
+
+def sanitize_url(url: str) -> str:
     """
-    Extracts JSON body from WireMock mapping and saves it to a separate file.
+    Replaces API key in URL with a placeholder.
+    
+    Matches patterns like:
+    - /v2/us1-XXXXXXXX/events -> /v2/{API_KEY}/events
+    - /v1/us1-XXXXXXXX/identify -> /v1/{API_KEY}/identify
     
     Args:
-        mapping_file: Path to mapping file
-        test_name: Test name
-        replace_fields: If True, replaces known dynamic fields with ${json-unit.ignore}
+        url: Original URL that may contain API key
+        
+    Returns:
+        Sanitized URL with API key replaced by {API_KEY}
     """
-    # Check if mapping file exists
+    # Pattern to match API keys like "api-key"
+    # Format: us1-{32 hex characters}
+    api_key_pattern = r'us1-[a-f0-9]{32}'
+    
+    # Replace API key with placeholder
+    sanitized = re.sub(api_key_pattern, '{API_KEY}', url)
+    
+    return sanitized
+
+
+def sanitize_body_filename(filename: str) -> Tuple[str, str]:
+    """
+    Removes API key from body filename and returns both old and new names.
+    
+    Args:
+        filename: Original filename that may contain API key
+        
+    Returns:
+        Tuple of (old_filename, new_filename)
+    """
+    if not filename:
+        return (filename, filename)
+    
+    # Pattern to match API keys in filename
+    api_key_pattern = r'us1-[a-f0-9]{32}'
+    
+    # Find API key in filename
+    match = re.search(api_key_pattern, filename)
+    if not match:
+        # No API key found, return as is
+        return (filename, filename)
+    
+    # Replace API key pattern with generic name
+    # Example: body-v2-us1-XXX-events-YYY.json -> body-v2-events-YYY.json
+    new_filename = re.sub(r'-us1-[a-f0-9]{32}', '', filename)
+    
+    return (filename, new_filename)
+
+
+def rename_body_file(old_filename: str, new_filename: str) -> bool:
+    """
+    Renames body file if names are different.
+    
+    Args:
+        old_filename: Current filename
+        new_filename: New filename to rename to
+        
+    Returns:
+        True if file was renamed, False otherwise
+    """
+    if old_filename == new_filename:
+        return False
+    
+    old_path = Path("wiremock-recordings/__files") / old_filename
+    new_path = Path("wiremock-recordings/__files") / new_filename
+    
+    if not old_path.exists():
+        print(f"⚠️  Warning: Body file not found: {old_path}")
+        return False
+    
+    if new_path.exists():
+        print(f"⚠️  Warning: Target body file already exists: {new_path}")
+        return False
+    
+    try:
+        old_path.rename(new_path)
+        print(f"📝 Renamed body file: {old_filename} -> {new_filename}")
+        return True
+    except Exception as e:
+        print(f"❌ Error renaming body file: {e}")
+        return False
+
+
+def load_mapping_file(mapping_file: str) -> Tuple[Path, Dict[str, Any]]:
+    """
+    Загружает и парсит файл маппинга.
+    
+    Args:
+        mapping_file: Путь к файлу маппинга
+        
+    Returns:
+        Tuple (Path к файлу, данные маппинга из JSON)
+    """
+    # Проверяем существование файла
     mapping_path = Path(mapping_file)
     if not mapping_path.exists():
         print(f"❌ Error: mapping file not found: {mapping_file}")
         sys.exit(1)
     
-    # Read mapping file
+    # Читаем файл маппинга
     try:
         with open(mapping_path, 'r', encoding='utf-8') as f:
             mapping_data = json.load(f)
+        return (mapping_path, mapping_data)
     except json.JSONDecodeError as e:
         print(f"❌ Error: failed to parse JSON from mapping file: {e}")
         sys.exit(1)
     except Exception as e:
         print(f"❌ Error reading mapping file: {e}")
         sys.exit(1)
+
+
+def rename_mapping_file(mapping_path: Path) -> Path:
+    """
+    Консистентно переименовывает файл маппинга, если в имени есть API key.
     
-    # Extract request information
+    Args:
+        mapping_path: Path к файлу маппинга
+        
+    Returns:
+        Path к переименованному файлу (или к исходному, если переименование не требуется)
+    """
+    filename = mapping_path.name
+    
+    # Убираем API key из имени файла
+    api_key_pattern = r'-us1-[a-f0-9]{32}'
+    if re.search(api_key_pattern, filename):
+        new_filename = re.sub(api_key_pattern, '', filename)
+        new_path = mapping_path.parent / new_filename
+        
+        if new_path.exists():
+            print(f"⚠️  Warning: Target mapping file already exists: {new_path}")
+            return mapping_path
+        
+        try:
+            mapping_path.rename(new_path)
+            print(f"📝 Renamed mapping file: {filename} -> {new_filename}")
+            return new_path
+        except Exception as e:
+            print(f"❌ Error renaming mapping file: {e}")
+            return mapping_path
+    
+    return mapping_path
+
+
+def rename_response_body_and_update_mapping(mapping_data: Dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
+    """
+    Переименовывает тело ответа (bodyFileName) и обновляет его имя в данных маппинга.
+    
+    Args:
+        mapping_data: Данные маппинга из JSON
+        
+    Returns:
+        Tuple (обновленные данные маппинга, был ли переименован файл)
+    """
+    response_data = mapping_data.get('response', {})
+    original_body_filename = response_data.get('bodyFileName', '')
+    
+    if not original_body_filename:
+        return (mapping_data, False)
+    
+    old_body_filename, new_body_filename = sanitize_body_filename(original_body_filename)
+    
+    if old_body_filename == new_body_filename:
+        return (mapping_data, False)
+    
+    # Переименовываем файл
+    if rename_body_file(old_body_filename, new_body_filename):
+        # Обновляем mapping data с новым именем файла
+        mapping_data['response']['bodyFileName'] = new_body_filename
+        print(f"🔐 Updated body filename reference in mapping")
+        return (mapping_data, True)
+    
+    return (mapping_data, False)
+
+
+def extract_and_save_request_body(
+    mapping_data: Dict[str, Any], 
+    test_name: str, 
+    mapping_path: Path,
+    replace_fields: bool = False
+) -> None:
+    """
+    Извлекает тело запроса из маппинга, применяет замены полей и сохраняет в файл.
+    
+    Args:
+        mapping_data: Данные маппинга из JSON
+        test_name: Имя теста для output файла
+        mapping_path: Path к исходному файлу маппинга
+        replace_fields: Применять ли замены полей на ${json-unit.ignore}
+    """
     try:
         request_data = mapping_data.get('request', {})
         method = request_data.get('method', 'UNKNOWN')
-        # Support both 'url' and 'urlPattern' fields
         url = request_data.get('url') or request_data.get('urlPattern', 'UNKNOWN')
         
         body_patterns = request_data.get('bodyPatterns', [])
         
-        # Check for body presence
+        # Проверяем наличие body
         if not body_patterns:
-            # This might be a GET request or another method without body
             print(f"⚠️  Warning: bodyPatterns not found in mapping")
             print(f"    Request method: {method}")
             print(f"    URL: {url}")
             print("    (GET requests usually don't have a body)")
             sys.exit(1)
         
-        # Get escaped JSON string
+        # Получаем escaped JSON string
         equal_to_json = body_patterns[0].get('equalToJson')
         if equal_to_json is None:
             print("❌ Error: equalToJson not found in bodyPatterns")
             sys.exit(1)
         
-        # Parse escaped JSON string to get the actual JSON object
-        # (unescape)
+        # Парсим escaped JSON string в actual JSON object
         request_body = json.loads(equal_to_json)
         
-        # Apply field replacements if requested
+        # Применяем замены полей если указано
         if replace_fields:
             print(f"🔄 Replacing {len(DEFAULT_REPLACE_FIELDS)} known dynamic fields with ${{json-unit.ignore}}")
             request_body = replace_fields_from_list(request_body, DEFAULT_REPLACE_FIELDS)
@@ -172,7 +339,7 @@ def extract_request_body(mapping_file: str, test_name: str, replace_fields: bool
         print(f"❌ Error extracting body from mapping: {e}")
         sys.exit(1)
     
-    # Form output structure
+    # Формируем структуру для output
     output_data = {
         "test_name": test_name,
         "source_mapping": str(mapping_path),
@@ -181,14 +348,14 @@ def extract_request_body(mapping_file: str, test_name: str, replace_fields: bool
         "request_body": request_body
     }
     
-    # Create directory for saving extracted bodies
+    # Создаем директорию для сохранения
     output_dir = Path("wiremock-recordings/requests")
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Form output filename
+    # Формируем имя output файла
     output_file = output_dir / f"{test_name}.json"
     
-    # Save to file with pretty-print for readability
+    # Сохраняем в файл
     try:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, indent=2, ensure_ascii=False)
@@ -200,6 +367,38 @@ def extract_request_body(mapping_file: str, test_name: str, replace_fields: bool
     except Exception as e:
         print(f"❌ Error saving file: {e}")
         sys.exit(1)
+
+
+def sanitize_and_save_mapping(mapping_data: Dict[str, Any], mapping_path: Path) -> Dict[str, Any]:
+    """
+    Санитизирует URL в маппинге (убирает API key) и сохраняет файл.
+    
+    Args:
+        mapping_data: Данные маппинга из JSON
+        mapping_path: Path к файлу маппинга
+        
+    Returns:
+        Обновленные данные маппинга
+    """
+    request_data = mapping_data.get('request', {})
+    original_url = request_data.get('url') or request_data.get('urlPattern', 'UNKNOWN')
+    
+    # Санитизируем URL для удаления API key
+    sanitized_url = sanitize_url(original_url)
+    
+    # Проверяем, был ли изменен URL
+    url_was_sanitized = (original_url != sanitized_url)
+    if url_was_sanitized:
+        print(f"🔐 Sanitized API key from URL:")
+        print(f"   Before: {original_url}")
+        print(f"   After:  {sanitized_url}")
+        # Обновляем mapping data с sanitized URL
+        if 'url' in request_data:
+            mapping_data['request']['url'] = sanitized_url
+        if 'urlPattern' in request_data:
+            mapping_data['request']['urlPattern'] = sanitized_url
+    
+    return (mapping_data, url_was_sanitized)
 
 
 def main():
@@ -227,7 +426,21 @@ def main():
     
     args = parser.parse_args()
     
-    extract_request_body(args.mapping_file, args.test_name, replace_fields=args.replace)
+    mapping_path, mapping_data = load_mapping_file(args.mapping_file)
+    mapping_path = rename_mapping_file(mapping_path)
+    mapping_data, body_file_was_renamed = rename_response_body_and_update_mapping(mapping_data)
+    mapping_data, url_was_sanitized = sanitize_and_save_mapping(mapping_data, mapping_path)
+    extract_and_save_request_body(mapping_data, args.test_name, mapping_path, args.replace)
+    
+    mapping_was_modified = url_was_sanitized or body_file_was_renamed
+    if mapping_was_modified:
+        try:
+            with open(mapping_path, 'w', encoding='utf-8') as f:
+                json.dump(mapping_data, f, indent=2, ensure_ascii=False)
+            print(f"✅ Regenerated mapping file with sanitized data: {mapping_path}")
+        except Exception as e:
+            print(f"❌ Error saving updated mapping file: {e}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
