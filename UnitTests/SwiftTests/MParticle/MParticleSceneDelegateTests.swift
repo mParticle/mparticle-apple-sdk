@@ -6,7 +6,6 @@ import mParticle_Apple_SDK
 #endif
 import XCTest
 
-@available(iOS 13.0, *)
 final class MParticleSceneDelegateTests: MParticleTestBase {
     
     // MARK: - Properties
