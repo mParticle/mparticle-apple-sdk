@@ -187,6 +187,8 @@ def set_request_body_in_mapping(mapping_data: Dict[str, Any], request_body: Dict
             # Keep as JSON object (for unescape mode)
             mapping_data['request']['bodyPatterns'][0]['equalToJson'] = request_body
         
+        mapping_data['request']['bodyPatterns'][0]['ignoreExtraElements'] = False
+        
         return mapping_data
         
     except Exception as e:
@@ -211,6 +213,7 @@ def mode_unescape(mapping_data: Dict[str, Any], mapping_path: Path) -> None:
     # Replace escaped string with actual JSON object
     if 'request' in mapping_data and 'bodyPatterns' in mapping_data['request']:
         mapping_data['request']['bodyPatterns'][0]['equalToJson'] = request_body
+        mapping_data['request']['bodyPatterns'][0]['ignoreExtraElements'] = False
     
     # Save updated mapping back to file
     try:
@@ -253,6 +256,7 @@ def mode_escape(mapping_data: Dict[str, Any], mapping_path: Path) -> None:
         
         escaped_json = json.dumps(equal_to_json, ensure_ascii=False)
         mapping_data['request']['bodyPatterns'][0]['equalToJson'] = escaped_json
+        mapping_data['request']['bodyPatterns'][0]['ignoreExtraElements'] = False
         
         # Save updated mapping back to file
         with open(mapping_path, 'w', encoding='utf-8') as f:

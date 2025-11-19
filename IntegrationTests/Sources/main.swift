@@ -66,5 +66,5 @@ mparticle.start(with: options)
 
 sleep(1)
 
-mparticle.logEvent("Simple Event Name", eventType: .other, eventInfo: ["SimpleKey": "SimpleValue", "SimpleKey2": "SimpleValue2"])
+mparticle.logEvent("Simple Event Name", eventType: .other, eventInfo: ["SimpleKey": "SimpleValue"])
 listener.wait()

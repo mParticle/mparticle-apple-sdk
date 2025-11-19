@@ -232,11 +232,12 @@ def sanitize_mapping_data(mapping_data: Dict[str, Any], mapping_path: Path, test
             print(f"   Before: {original_url}")
             print(f"   After:  {sanitized_url}")
             
-            # Update mapping data with sanitized URL
+            # After sanitization, URL contains regex pattern, so use urlPattern
+            # Remove 'url' if it exists and use 'urlPattern' instead
             if 'url' in request_data:
-                mapping_data['request']['url'] = sanitized_url
-            if 'urlPattern' in request_data:
-                mapping_data['request']['urlPattern'] = sanitized_url
+                del mapping_data['request']['url']
+                print(f"   Changed 'url' to 'urlPattern' (contains regex)")
+            mapping_data['request']['urlPattern'] = sanitized_url
             
             changes_made = True
     

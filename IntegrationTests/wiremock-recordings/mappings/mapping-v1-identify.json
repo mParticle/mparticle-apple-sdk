@@ -22,7 +22,7 @@
           }
         },
         "ignoreArrayOrder": true,
-        "ignoreExtraElements": true
+        "ignoreExtraElements": false
       }
     ]
   },
