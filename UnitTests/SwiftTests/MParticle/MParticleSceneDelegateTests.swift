@@ -1,9 +1,3 @@
-//
-//  MParticleSceneDelegateTests.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 11/13/25.
-//
 
 #if MPARTICLE_LOCATION_DISABLE
 import mParticle_Apple_SDK_NoLocation
@@ -38,20 +32,7 @@ final class MParticleSceneDelegateTests: MParticleTestBase {
         appNotificationHandler.openURLWithOptionsURLParam = nil
         appNotificationHandler.openURLWithOptionsOptionsParam = nil
     }
-    
-    // MARK: - Method Existence Tests
-    
-    @available(tvOS 13.0, *)
-    func test_handleURLContext_methodExists() {
-        // Verify the method exists with correct signature
-        XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleURLContext(_:))))
-    }
-    
-    func test_handleUserActivity_methodExists() {
-        // Verify the method exists with correct signature
-        XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleUserActivity(_:))))
-    }
-    
+        
     // MARK: - handleUserActivity Tests
     
     func test_handleUserActivity_invokesAppNotificationHandler() {
@@ -92,22 +73,5 @@ final class MParticleSceneDelegateTests: MParticleTestBase {
         // Test that calling the restoration handler doesn't crash
         XCTAssertNoThrow(restorationHandler?(nil))
         XCTAssertNoThrow(restorationHandler?([]))
-    }
-    
-    // MARK: - iOS Version Availability Tests
-    
-    func test_handleUserActivity_alwaysAvailable() {
-        // handleUserActivity should be available on all iOS versions
-        XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleUserActivity(_:))))
-    }
-    
-    // MARK: - Integration Tests
-    
-    func test_bothMethods_exist() {
-        // Verify both SceneDelegate support methods exist
-        if #available(tvOS 13.0, *) {
-            XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleURLContext(_:))))
-        }
-        XCTAssertTrue(mparticle.responds(to: #selector(mparticle.handleUserActivity(_:))))
     }
 }

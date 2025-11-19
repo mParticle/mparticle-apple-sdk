@@ -755,6 +755,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 /**
  DEPRECATED: https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(_:open:sourceapplication:annotation:)
+ Use a UIScene lifecycle, mParticle's handleURLContext: method, and scene(_:openURLContexts:) from UISceneDelegate instead.
  
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
  This method should be called only if proxiedAppDelegate is disabled.
@@ -767,6 +768,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 /**
  DEPRECATED: https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(_:open:sourceapplication:annotation:)
+ Use a UIScene lifecycle, mParticle's handleURLContext: method, and scene(_:openURLContexts:) from UISceneDelegate instead.
  
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
  This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 9 and above.
@@ -778,6 +780,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 /**
  DEPRECATED: https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(_:continue:restorationhandler:)
+ Use UIScene lifecycle, mParticle's handleUserActivity: method, and scene(_:continue:) from UISceneDelegate instead.
  
  Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
  This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 9 and above.

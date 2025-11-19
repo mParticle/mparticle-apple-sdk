@@ -717,7 +717,7 @@ MPLog* logger;
     // https://github.com/mparticle-integrations/mparticle-apple-integration-flurry/blob/a0856e271aa9a63a6668805582395dea63f96af5/mParticle-Flurry/MPKitFlurry.m#L148C38-L148C85
     NSDictionary *options = @{@"UIApplicationOpenURLOptionsSourceApplicationKey": urlContext.options.sourceApplication};
     
-    [[MParticle sharedInstance].appNotificationHandler openURL:urlContext.URL options:options];
+    [self.appNotificationHandler openURL:urlContext.URL options:options];
 }
 
 - (void)handleUserActivity:(NSUserActivity *)userActivity {
@@ -734,7 +734,7 @@ MPLog* logger;
         [logger debug:messageURL];
     }
     // When provided by the SceneDelegate NSUserActivity is not paired with a restorationHandler
-    [[MParticle sharedInstance].appNotificationHandler continueUserActivity: userActivity restorationHandler:^(NSArray<id<UIUserActivityRestoring>> * _Nullable restorableObjects) {}];
+    [self.appNotificationHandler continueUserActivity: userActivity restorationHandler:^(NSArray<id<UIUserActivityRestoring>> * _Nullable restorableObjects) {}];
 }
 
 - (void)reset:(void (^)(void))completion {
