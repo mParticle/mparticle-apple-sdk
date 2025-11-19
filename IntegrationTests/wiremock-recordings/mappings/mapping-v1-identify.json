@@ -5,7 +5,22 @@
     "method": "POST",
     "bodyPatterns": [
       {
-        "equalToJson": "{\"client_sdk\":{\"platform\":\"ios\",\"sdk_version\":\"8.40.0\",\"sdk_vendor\":\"mparticle\"},\"environment\":\"development\",\"request_timestamp_ms\":\"${json-unit.ignore}\",\"request_id\":\"${json-unit.ignore}\",\"known_identities\":{\"email\":\"foo@example.com\",\"customerid\":\"123456\",\"ios_idfv\":\"${json-unit.ignore}\",\"device_application_stamp\":\"${json-unit.ignore}\"}}",
+        "equalToJson": {
+          "client_sdk": {
+            "platform": "ios",
+            "sdk_version": "8.40.0",
+            "sdk_vendor": "mparticle"
+          },
+          "environment": "development",
+          "request_timestamp_ms": "${json-unit.ignore}",
+          "request_id": "${json-unit.ignore}",
+          "known_identities": {
+            "email": "foo@example.com",
+            "customerid": "123456",
+            "ios_idfv": "${json-unit.ignore}",
+            "device_application_stamp": "${json-unit.ignore}"
+          }
+        },
         "ignoreArrayOrder": true,
         "ignoreExtraElements": true
       }
