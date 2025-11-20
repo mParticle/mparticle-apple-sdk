@@ -97,3 +97,8 @@ if let event = event {
     mparticle.logEvent(event)
 }
 listener.wait()
+
+// Test 3: Log Screen
+// Based on ViewController.m logScreen method (lines 149-151)
+mparticle.logScreen("Home Screen", eventInfo: nil)
+listener.wait()
