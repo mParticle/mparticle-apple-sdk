@@ -243,8 +243,22 @@ start_wiremock() {
   eval $docker_cmd
 }
 
+show_wiremock_logs() {
+  echo ""
+  echo "📋 WireMock container logs:"
+  echo "════════════════════════════════════════════════════════════════"
+  docker logs ${CONTAINER_NAME} 2>&1 || echo "❌ Could not retrieve container logs"
+  echo "════════════════════════════════════════════════════════════════"
+  echo ""
+}
+
 stop_wiremock() {
   docker stop ${CONTAINER_NAME} 2>/dev/null || true
   docker rm ${CONTAINER_NAME} 2>/dev/null || true
+}
+
+stop_wiremock_with_logs() {
+  show_wiremock_logs
+  stop_wiremock
 }
 
