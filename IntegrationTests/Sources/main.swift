@@ -58,8 +58,8 @@ networkOptions.pinningDisabled = true;
 options.networkOptions = networkOptions
 
 // Register listener for tracking upload events
-let listener = EventUploadWaiter()
-MPListenerController.sharedInstance().addSdkListener(listener)
+let uploadWaiter = EventUploadWaiter()
+MPListenerController.sharedInstance().addSdkListener(uploadWaiter)
 
 let mparticle = MParticle.sharedInstance()
 mparticle.start(with: options)
@@ -68,7 +68,7 @@ sleep(1)
 
 // Test 1: Simple Event
 mparticle.logEvent("Simple Event Name", eventType: .other, eventInfo: ["SimpleKey": "SimpleValue"])
-listener.wait()
+uploadWaiter.wait()
 
 // Test 2: Log Event with Custom Attributes and Custom Flags
 // Based on ViewController.m logEvent method (lines 131-147)
@@ -96,12 +96,12 @@ event?.addCustomFlag("Top Secret", withKey: "Not_forwarded_to_providers")
 if let event = event {
     mparticle.logEvent(event)
 }
-listener.wait()
+uploadWaiter.wait()
 
 // Test 3: Log Screen
 // Based on ViewController.m logScreen method (lines 149-151)
 mparticle.logScreen("Home Screen", eventInfo: nil)
-listener.wait()
+uploadWaiter.wait()
 
 // Test 4: Log Commerce Event with Product and Transaction
 // Based on ViewController.m logCommerceEvent method (lines 153-180)
@@ -135,7 +135,7 @@ commerceEvent.transactionAttributes = transactionAttributes
 
 // Log the commerce event
 mparticle.logEvent(commerceEvent)
-listener.wait()
+uploadWaiter.wait()
 
 // Test 5: Rokt Select Overlay Placement
 // Based on ViewController.m selectOverlayPlacement method (lines 182-192)
@@ -150,4 +150,4 @@ let roktAttributes: [String: String] = [
 
 // Select Rokt placement with identifier and attributes
 mparticle.rokt.selectPlacements("RoktLayout", attributes: roktAttributes)
-listener.wait()
+uploadWaiter.wait()
