@@ -1,7 +1,7 @@
 import Foundation
 import mParticle_Apple_SDK
 
-// Listener для отслеживания upload событий
+// Listener for tracking upload events
 class MyUploadListener: NSObject, MPListenerProtocol {
     private var uploadCompletedSemaphore: DispatchSemaphore?
     var mparticle = MParticle.sharedInstance()
@@ -57,7 +57,7 @@ networkOptions.pinningDisabled = true;
 
 options.networkOptions = networkOptions
 
-// Регистрация listener для отслеживания upload событий
+// Register listener for tracking upload events
 let listener = MyUploadListener()
 MPListenerController.sharedInstance().addSdkListener(listener)
 
