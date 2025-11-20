@@ -136,3 +136,18 @@ commerceEvent.transactionAttributes = transactionAttributes
 // Log the commerce event
 mparticle.logEvent(commerceEvent)
 listener.wait()
+
+// Test 5: Rokt Select Overlay Placement
+// Based on ViewController.m selectOverlayPlacement method (lines 182-192)
+// Tests Rokt SDK integration through mParticle for selecting placements with custom attributes
+let roktAttributes: [String: String] = [
+    "email": "j.smit@example.com",
+    "firstname": "Jenny",
+    "lastname": "Smith",
+    "sandbox": "true",
+    "mobile": "(555)867-5309"
+]
+
+// Select Rokt placement with identifier and attributes
+mparticle.rokt.selectPlacements("RoktLayout", attributes: roktAttributes)
+listener.wait()
