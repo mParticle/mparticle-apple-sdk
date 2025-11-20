@@ -69,3 +69,31 @@ sleep(1)
 // Test 1: Simple Event
 mparticle.logEvent("Simple Event Name", eventType: .other, eventInfo: ["SimpleKey": "SimpleValue"])
 listener.wait()
+
+// Test 2: Log Event with Custom Attributes and Custom Flags
+// Based on ViewController.m logEvent method (lines 131-147)
+let event = MPEvent(name: "Event Name", type: .transaction)
+
+// Use static date instead of Date() for deterministic testing
+let staticDate = Date(timeIntervalSince1970: 1700000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC
+
+// Add custom attributes including string, number, date, and nested dictionary
+event?.customAttributes = [
+    "A_String_Key": "A String Value",
+    "A Number Key": 42,
+    "A Date Key": staticDate,
+    "test Dictionary": [
+        "test1": "test",
+        "test2": 2,
+        "test3": staticDate
+    ]
+]
+
+// Custom flags - sent to mParticle but not forwarded to other providers
+event?.addCustomFlag("Top Secret", withKey: "Not_forwarded_to_providers")
+
+// Log the event
+if let event = event {
+    mparticle.logEvent(event)
+}
+listener.wait()
