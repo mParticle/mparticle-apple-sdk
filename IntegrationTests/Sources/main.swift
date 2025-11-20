@@ -102,3 +102,37 @@ listener.wait()
 // Based on ViewController.m logScreen method (lines 149-151)
 mparticle.logScreen("Home Screen", eventInfo: nil)
 listener.wait()
+
+// Test 4: Log Commerce Event with Product and Transaction
+// Based on ViewController.m logCommerceEvent method (lines 153-180)
+let product = MPProduct(
+    name: "Awesome Book",
+    sku: "1234567890",
+    quantity: NSNumber(value: 1),
+    price: NSNumber(value: 9.99)
+)
+product.brand = "A Publisher"
+product.category = "Fiction"
+product.couponCode = "XYZ123"
+product.position = 1
+product["custom key"] = "custom value" // Product may contain custom key/value pairs
+
+// Create a commerce event with purchase action
+let commerceEvent = MPCommerceEvent(action: .purchase, product: product)
+commerceEvent.checkoutOptions = "Credit Card"
+commerceEvent.screenName = "Timeless Books"
+commerceEvent.checkoutStep = 4
+commerceEvent.customAttributes = ["an_extra_key": "an_extra_value"] // Commerce event may contain custom key/value pairs
+
+// Create transaction attributes
+let transactionAttributes = MPTransactionAttributes()
+transactionAttributes.affiliation = "Book seller"
+transactionAttributes.shipping = NSNumber(value: 1.23)
+transactionAttributes.tax = NSNumber(value: 0.87)
+transactionAttributes.revenue = NSNumber(value: 12.09)
+transactionAttributes.transactionId = "zyx098"
+commerceEvent.transactionAttributes = transactionAttributes
+
+// Log the commerce event
+mparticle.logEvent(commerceEvent)
+listener.wait()
