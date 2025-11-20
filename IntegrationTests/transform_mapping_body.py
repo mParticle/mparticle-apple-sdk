@@ -34,12 +34,14 @@ DEFAULT_REPLACE_FIELDS = [
     'a',       # App ID
     'bid',     # Bundle ID / Build ID
     'bsv',     # Build System Version
+    'ck',      # Cookies (appears after first API response)
     'ct',      # Creation Time / Current Time
     'das',     # Device Application Stamp
     'dfs',     # Device Fingerprint String
     'dlc',     # Device Locale
     'dn',      # Device Name
     'dosv',    # Device OS Version
+    'en',      # Event Number (position in session, e.g., 0, 1, 2...)
     'est',     # Event Start Time
     'ict',     # Init Config Time
     'id',      # ID (various message/event IDs)

@@ -125,7 +125,7 @@ python3 transform_mapping_body.py wiremock-recordings/mappings/mapping-v1-identi
 3. **`unescape+update`** - Parse, replace dynamic fields with `${json-unit.ignore}`, convert to JSON object, and save
 
 **Dynamic fields replaced with `${json-unit.ignore}`:**
-`a`, `bid`, `bsv`, `ct`, `das`, `dfs`, `dlc`, `dn`, `dosv`, `est`, `ict`, `id`, `lud`, `sct`, `sid`, `vid`
+`a`, `bid`, `bsv`, `ck`, `ct`, `das`, `dfs`, `dlc`, `dn`, `dosv`, `en`, `est`, `ict`, `id`, `lud`, `sct`, `sid`, `vid`
 
 ## Troubleshooting
 

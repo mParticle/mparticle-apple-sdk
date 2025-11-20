@@ -66,5 +66,6 @@ mparticle.start(with: options)
 
 sleep(1)
 
+// Test 1: Simple Event
 mparticle.logEvent("Simple Event Name", eventType: .other, eventInfo: ["SimpleKey": "SimpleValue"])
 listener.wait()
