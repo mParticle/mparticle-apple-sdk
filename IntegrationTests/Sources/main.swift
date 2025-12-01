@@ -158,6 +158,31 @@ func testGetUserAudiences(mparticle: MParticle) {
     }
 }
 
+// Test 7: Log Timed Event
+// Based on ViewController.m logTimedEvent method
+// Tests logging timed events - begins a timed event, waits a fixed duration, then ends it
+func testLogTimedEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    // Begin a timed event
+    let eventName = "Timed Event"
+    let timedEvent = MPEvent(name: eventName, type: .transaction)
+    
+    if let event = timedEvent {
+        mparticle.beginTimedEvent(event)
+        
+        // Use fixed delay instead of random (required for deterministic testing)
+        // Original code uses arc4random_uniform(4000.0) / 1000.0 + 1.0 which is 1-5 seconds
+        // We use fixed 2 seconds for consistent test behavior
+        sleep(2)
+        
+        // Retrieve the timed event by name and end it
+        if let retrievedTimedEvent = mparticle.event(withName: eventName) {
+            mparticle.endTimedEvent(retrievedTimedEvent)
+        }
+    }
+    
+    uploadWaiter.wait()
+}
+
 var options = MParticleOptions(
     key: "",
     secret: ""
@@ -199,3 +224,4 @@ testLogScreen(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testCommerceEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testRoktSelectPlacement(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testGetUserAudiences(mparticle: mparticle)
+testLogTimedEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
