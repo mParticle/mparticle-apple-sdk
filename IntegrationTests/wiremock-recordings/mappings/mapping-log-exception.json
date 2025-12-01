@@ -1,5 +1,5 @@
 {
-  "id": "1393a0c9-7861-3968-90c3-0cdb20104b4d",
+  "id": "ed21a661-dd24-3c78-88e9-0e4f7a4c639b",
   "request": {
     "method": "POST",
     "bodyPatterns": [
@@ -14,14 +14,12 @@
               "dt": "x",
               "is": "${json-unit.ignore}",
               "ct": "${json-unit.ignore}",
-              "attrs": {
-                "cause": "slippery floor"
-              },
               "eh": "true",
+              "c": "NSInvalidArgumentException",
               "sct": "${json-unit.ignore}",
               "s": "error",
               "sid": "${json-unit.ignore}",
-              "m": "Oops",
+              "m": "-[ViewController someMethodThatDoesNotExist]: unrecognized selector sent to instance",
               "iba": "${json-unit.ignore}",
               "mt": false
             }
@@ -61,18 +59,18 @@
           "oo": false,
           "sdk": "8.40.0",
           "di": {
-            "p": "arm64",
-            "b": "arm64",
             "tz": "-5",
+            "bid": "${json-unit.ignore}",
+            "p": "arm64",
             "dn": "${json-unit.ignore}",
+            "dll": "en",
             "dma": "Apple",
             "dsh": "1440",
-            "idst": false,
             "dlc": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
-            "dll": "en",
-            "dp": "iOS",
+            "idst": false,
             "tzn": "America/New_York",
+            "dp": "iOS",
             "dsw": "960",
             "dosv": "${json-unit.ignore}",
             "it": false,
@@ -83,7 +81,7 @@
             },
             "lat": false,
             "arc": "arm64e",
-            "bid": "${json-unit.ignore}"
+            "b": "arm64"
           },
           "stl": 60
         },
@@ -95,21 +93,21 @@
   },
   "response": {
     "status": 202,
-    "bodyFileName": "body-log-error.json",
+    "bodyFileName": "body-log-exception.json",
     "headers": {
       "X-Cache": "MISS, MISS",
-      "X-MP-Trace-Id": "692dd6cc4c581190f73bde872046f0ae",
+      "X-MP-Trace-Id": "692ddc5c414ea0173fc8815b5ab4ac31",
       "Server": "Kestrel",
-      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kjyo7100066_IAD",
-      "Date": "Mon, 01 Dec 2025 17:56:28 GMT",
-      "X-Timer": "S1764611788.131532,VS0,VE24",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kiad7000038_IAD",
+      "Date": "Mon, 01 Dec 2025 18:20:12 GMT",
+      "X-Timer": "S1764613213.841436,VS0,VE20",
       "Via": "1.1 varnish, 1.1 varnish",
       "Accept-Ranges": "bytes",
-      "X-Served-By": "cache-iad-kjyo7100066-IAD, cache-lga21920-LGA",
+      "X-Served-By": "cache-iad-kiad7000038-IAD, cache-lga21987-LGA",
       "Vary": "Accept-Encoding",
       "X-Cache-Hits": "0, 0",
       "Content-Type": "application/json"
     }
   },
-  "uuid": "1393a0c9-7861-3968-90c3-0cdb20104b4d"
+  "uuid": "ed21a661-dd24-3c78-88e9-0e4f7a4c639b"
 }

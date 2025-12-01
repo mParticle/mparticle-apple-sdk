@@ -194,6 +194,26 @@ func testLogError(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     uploadWaiter.wait()
 }
 
+// Test 9: Log Exception
+// Based on ViewController.m logException method
+// Tests logging NSException with topmost context information
+func testLogException(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    // Create an NSException similar to the one caught in ViewController.m
+    // The original code tries to invoke a non-existing method which throws NSException
+    let exception = NSException(
+        name: NSExceptionName(rawValue: "NSInvalidArgumentException"),
+        reason: "-[ViewController someMethodThatDoesNotExist]: unrecognized selector sent to instance",
+        userInfo: nil
+    )
+    
+    // Log the exception - mParticle SDK will capture exception details
+    // Note: topmostContext parameter is not available in Swift API, 
+    // so we use the simpler logException method
+    mparticle.logException(exception)
+    
+    uploadWaiter.wait()
+}
+
 var options = MParticleOptions(
     key: "",
     secret: ""
@@ -237,3 +257,4 @@ testRoktSelectPlacement(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testGetUserAudiences(mparticle: mparticle)
 testLogTimedEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testLogError(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testLogException(mparticle: mparticle, uploadWaiter: uploadWaiter)
