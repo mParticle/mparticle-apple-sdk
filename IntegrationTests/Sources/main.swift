@@ -239,6 +239,29 @@ func testSetUserAttributes(mparticle: MParticle, uploadWaiter: EventUploadWaiter
     uploadWaiter.wait()
 }
 
+// Test 11: Increment User Attribute
+// Based on ViewController.m incrementUserAttribute method
+// Tests incrementing a numeric user attribute by a specified value
+func testIncrementUserAttribute(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    guard let currentUser = mparticle.identity.currentUser else {
+        print("No current user available")
+        return
+    }
+    
+    // First, set an initial value for the attribute to ensure it exists
+    // Using static value 10 for deterministic testing
+    currentUser.setUserAttribute("Achieved Level", value: 10)
+    
+    // Wait for the initial set to be uploaded
+    uploadWaiter.wait()
+    
+    // Now increment the attribute by 1 - exactly as in ViewController.m
+    currentUser.incrementUserAttribute("Achieved Level", byValue: NSNumber(value: 1))
+    
+    // Wait for the increment to be uploaded
+    uploadWaiter.wait()
+}
+
 // Read API key and secret from environment variables
 guard let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"],
       let apiSecret = ProcessInfo.processInfo.environment["MPARTICLE_API_SECRET"] else {
@@ -291,3 +314,4 @@ testLogTimedEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testLogError(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testLogException(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testSetUserAttributes(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testIncrementUserAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
