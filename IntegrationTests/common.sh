@@ -158,7 +158,17 @@ install_application() {
 
 launch_application() {
   echo "▶️ Launching application..."
-  LAUNCH_OUTPUT=$(xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID")
+  
+  # Check that required environment variables are set
+  if [ -z "$MPARTICLE_API_KEY" ] || [ -z "$MPARTICLE_API_SECRET" ]; then
+    echo "❌ Error: MPARTICLE_API_KEY and MPARTICLE_API_SECRET environment variables must be set"
+    exit 1
+  fi
+  
+  # Launch with environment variables using SIMCTL_CHILD_ prefix
+  LAUNCH_OUTPUT=$(SIMCTL_CHILD_MPARTICLE_API_KEY="$MPARTICLE_API_KEY" \
+    SIMCTL_CHILD_MPARTICLE_API_SECRET="$MPARTICLE_API_SECRET" \
+    xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID")
   APP_PID=$(echo "$LAUNCH_OUTPUT" | awk -F': ' '{print $2}')
 
   if [ -z "$APP_PID" ]; then

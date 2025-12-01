@@ -10,6 +10,17 @@ Before getting started, install Tuist:
 brew install tuist
 ```
 
+### Environment Variables
+
+The integration tests require mParticle API credentials to be set as environment variables:
+
+```bash
+export MPARTICLE_API_KEY="your-api-key"
+export MPARTICLE_API_SECRET="your-api-secret"
+```
+
+**Important:** These environment variables must be set before running any integration test scripts (`run_wiremock_recorder.sh` or `run_clean_integration_tests.sh`). The scripts will fail with an error if these variables are not set.
+
 Then generate the Xcode project:
 
 ```bash

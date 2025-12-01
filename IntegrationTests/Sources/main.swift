@@ -214,9 +214,16 @@ func testLogException(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     uploadWaiter.wait()
 }
 
+// Read API key and secret from environment variables
+guard let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"],
+      let apiSecret = ProcessInfo.processInfo.environment["MPARTICLE_API_SECRET"] else {
+    print("Error: MPARTICLE_API_KEY and MPARTICLE_API_SECRET environment variables must be set")
+    exit(1)
+}
+
 var options = MParticleOptions(
-    key: "",
-    secret: ""
+    key: apiKey,
+    secret: apiSecret
 )
 
 var identityRequest = MPIdentityApiRequest.withEmptyUser()
