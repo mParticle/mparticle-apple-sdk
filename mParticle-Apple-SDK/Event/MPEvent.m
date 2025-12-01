@@ -170,14 +170,6 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     return eventDictionary;
 }
 
-- (NSDictionary *)info {
-    return [self.customAttributes copy];
-}
-
-- (void)setInfo:(NSDictionary *)info {
-    self.customAttributes = info;
-}
-
 - (void)setName:(NSString *)name {
     MPLog *logger = MParticle.sharedInstance.getLogger;
     if (name.length == 0) {

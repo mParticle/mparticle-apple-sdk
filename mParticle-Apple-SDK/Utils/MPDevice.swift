@@ -84,11 +84,11 @@ public class MPDevice: NSObject, NSCopying {
         }
 
         @objc public var radioAccessTechnology: String {
-            if let radioAccessTechnology = CTTelephonyNetworkInfo().currentRadioAccessTechnology {
-                if let range = radioAccessTechnology.range(of: "CTRadioAccessTechnology") {
-                    if !range.isEmpty {
-                        return String(radioAccessTechnology[...range.upperBound])
-                    }
+            let networkInfo = CTTelephonyNetworkInfo()
+
+            if let radioAccessTechnologies = networkInfo.serviceCurrentRadioAccessTechnology {
+                if let defaultService = radioAccessTechnologies.first {
+                    return defaultService.value
                 }
             }
             return "None"
@@ -232,7 +232,7 @@ public class MPDevice: NSObject, NSCopying {
     }
 
     @objc public var isTablet: Bool {
-        let isTablet = UI_USER_INTERFACE_IDIOM() == .pad
+        let isTablet = UIDevice.current.userInterfaceIdiom == .pad
         return isTablet
     }
 
