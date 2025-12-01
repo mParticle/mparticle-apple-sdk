@@ -7,7 +7,7 @@ class EventUploadWaiter: NSObject, MPListenerProtocol {
     var mparticle = MParticle.sharedInstance()
 
     @discardableResult
-    func wait(timeout: Int = 10) -> Bool {
+    func wait(timeout: Int = 5) -> Bool {
         mparticle.upload()
         let semaphore = DispatchSemaphore(value: 0)
         uploadCompletedSemaphore = semaphore
