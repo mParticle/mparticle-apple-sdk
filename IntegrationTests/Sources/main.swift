@@ -39,7 +39,7 @@ func testSimpleEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
 }
 
 // Test 2: Log Event with Custom Attributes and Custom Flags
-// Based on ViewController.m logEvent method (lines 131-147)
+// Based on ViewController.m logEvent method
 func testEventWithCustomAttributesAndFlags(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     let event = MPEvent(name: "Event Name", type: .transaction)
     
@@ -69,14 +69,14 @@ func testEventWithCustomAttributesAndFlags(mparticle: MParticle, uploadWaiter: E
 }
 
 // Test 3: Log Screen
-// Based on ViewController.m logScreen method (lines 149-151)
+// Based on ViewController.m logScreen method
 func testLogScreen(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     mparticle.logScreen("Home Screen", eventInfo: nil)
     uploadWaiter.wait()
 }
 
 // Test 4: Log Commerce Event with Product and Transaction
-// Based on ViewController.m logCommerceEvent method (lines 153-180)
+// Based on ViewController.m logCommerceEvent method
 func testCommerceEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     let product = MPProduct(
         name: "Awesome Book",
@@ -112,7 +112,7 @@ func testCommerceEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
 }
 
 // Test 5: Rokt Select Overlay Placement
-// Based on ViewController.m selectOverlayPlacement method (lines 182-192)
+// Based on ViewController.m selectOverlayPlacement method
 // Tests Rokt SDK integration through mParticle for selecting placements with custom attributes
 func testRoktSelectPlacement(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     let roktAttributes: [String: String] = [
