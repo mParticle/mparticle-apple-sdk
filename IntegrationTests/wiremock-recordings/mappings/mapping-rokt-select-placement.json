@@ -1,0 +1,119 @@
+{
+  "id": "c2644c1c-86a7-3f6d-aa7f-071eea68634e",
+  "request": {
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "id": "${json-unit.ignore}",
+          "ltv": 0,
+          "msgs": [
+            {
+              "sct": "${json-unit.ignore}",
+              "oi": {
+                "dfs": "${json-unit.ignore}",
+                "i": "foo@example.com",
+                "n": 7,
+                "f": false
+              },
+              "ct": "${json-unit.ignore}",
+              "ni": {
+                "dfs": "${json-unit.ignore}",
+                "i": "j.smit@example.com",
+                "n": 7,
+                "f": false
+              },
+              "dt": "uic",
+              "id": "${json-unit.ignore}",
+              "sid": "${json-unit.ignore}",
+              "mt": false,
+              "vc": "off_thread"
+            }
+          ],
+          "dt": "h",
+          "a": "${json-unit.ignore}",
+          "ai": {
+            "av": "1.0",
+            "sideloaded_kits_count": 0,
+            "bid": "${json-unit.ignore}",
+            "pir": false,
+            "fi": false,
+            "lud": "${json-unit.ignore}",
+            "arc": "arm64",
+            "tsv": "90000",
+            "apn": "com.mparticle.IntegrationTests",
+            "env": 1,
+            "abn": "1",
+            "bsv": "${json-unit.ignore}",
+            "ict": "${json-unit.ignore}"
+          },
+          "ct": "${json-unit.ignore}",
+          "ck": "${json-unit.ignore}",
+          "das": "${json-unit.ignore}",
+          "mpid": 6504934091054997508,
+          "ui": [
+            {
+              "i": "123456",
+              "n": 1
+            },
+            {
+              "i": "j.smit@example.com",
+              "n": 7
+            }
+          ],
+          "uitl": 60,
+          "oo": false,
+          "sdk": "8.40.0",
+          "di": {
+            "p": "arm64",
+            "tz": "-5",
+            "bid": "${json-unit.ignore}",
+            "dn": "${json-unit.ignore}",
+            "dll": "en",
+            "dsh": "1440",
+            "dlc": "${json-unit.ignore}",
+            "dma": "Apple",
+            "vid": "${json-unit.ignore}",
+            "idst": false,
+            "dp": "iOS",
+            "tzn": "America/New_York",
+            "dsw": "960",
+            "dosv": "${json-unit.ignore}",
+            "it": false,
+            "dmdl": "arm64",
+            "dr": "None",
+            "jb": {
+              "cydia": false
+            },
+            "lat": false,
+            "arc": "arm64e",
+            "b": "arm64"
+          },
+          "stl": 60
+        },
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": false
+      }
+    ],
+    "urlPattern": "/v2/us1-[a-f0-9]+/events"
+  },
+  "response": {
+    "status": 202,
+    "bodyFileName": "body-rokt-select-placement.json",
+    "headers": {
+      "X-Cache": "MISS, MISS",
+      "X-MP-Trace-Id": "691f6c8a67782ff119fc374a12526891",
+      "Server": "Kestrel",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kcgs7200068_IAD",
+      "Date": "Thu, 20 Nov 2025 19:31:22 GMT",
+      "X-Timer": "S1763667082.266146,VS0,VE18",
+      "Via": "1.1 varnish, 1.1 varnish",
+      "Accept-Ranges": "bytes",
+      "X-Served-By": "cache-iad-kcgs7200068-IAD, cache-lga21927-LGA",
+      "Vary": "Accept-Encoding",
+      "X-Cache-Hits": "0, 0",
+      "Content-Type": "application/json"
+    }
+  },
+  "uuid": "c2644c1c-86a7-3f6d-aa7f-071eea68634e"
+}

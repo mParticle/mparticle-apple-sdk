@@ -19,24 +19,34 @@ tuist generate --no-open
 # === Script-specific configuration ===
 CONTAINER_NAME="wiremock-verify"
 
-apply_user_friendly_mappings() {
-  echo "🔄 Applying user-friendly mappings to WireMock..."
-  local REQUESTS_DIR="${MAPPINGS_DIR}/requests"
+
+escape_mapping_bodies() {
+  echo "🔄 Converting mapping bodies to escaped format (WireMock-compatible)..."
+  local MAPPINGS_FILES="${MAPPINGS_DIR}/mappings"
   
-  if [ -d "$REQUESTS_DIR" ] && [ "$(ls -A $REQUESTS_DIR/*.json 2>/dev/null)" ]; then
-    local APPLIED_COUNT=0
-    for request_file in "$REQUESTS_DIR"/*.json; do
-      if [ -f "$request_file" ]; then
-        echo "  📝 Applying: $(basename $request_file)"
-        python3 update_mapping_from_extracted.py "$request_file" 2>/dev/null || {
-          echo "  ⚠️  Failed to apply $(basename $request_file)"
+  if [ -d "$MAPPINGS_FILES" ] && [ "$(ls -A $MAPPINGS_FILES/*.json 2>/dev/null)" ]; then
+    for mapping_file in "$MAPPINGS_FILES"/*.json; do
+      if [ -f "$mapping_file" ]; then
+        python3 transform_mapping_body.py "$mapping_file" escape > /dev/null 2>&1 || {
+          echo "⚠️  Failed to escape $(basename $mapping_file)"
         }
-        APPLIED_COUNT=$((APPLIED_COUNT + 1))
       fi
     done
-    echo "✅ Applied $APPLIED_COUNT user-friendly mapping(s)"
-  else
-    echo "⚠️  No user-friendly mappings found in $REQUESTS_DIR (skipping)"
+  fi
+}
+
+unescape_mapping_bodies() {
+  echo "🔄 Converting mapping bodies back to unescaped format (readable)..."
+  local MAPPINGS_FILES="${MAPPINGS_DIR}/mappings"
+  
+  if [ -d "$MAPPINGS_FILES" ] && [ "$(ls -A $MAPPINGS_FILES/*.json 2>/dev/null)" ]; then
+    for mapping_file in "$MAPPINGS_FILES"/*.json; do
+      if [ -f "$mapping_file" ]; then
+        python3 transform_mapping_body.py "$mapping_file" unescape > /dev/null 2>&1 || {
+          echo "⚠️  Failed to unescape $(basename $mapping_file)"
+        }
+      fi
+    done
   fi
 }
 
@@ -65,6 +75,8 @@ verify_wiremock_results() {
     echo "❌ Found requests that did not match any mappings:"
     curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests/unmatched | \
       jq -r '.requests[] | "  [\(.method)] \(.url)"'
+    echo ""
+    show_wiremock_logs
     stop_wiremock
     exit 1
   else
@@ -128,8 +140,26 @@ verify_wiremock_results() {
   echo "🎉 Verification completed successfully!"
 }
 
-# Trap to ensure cleanup on exit
-trap stop_wiremock EXIT INT TERM
+# Cleanup function to restore mappings and stop WireMock
+cleanup() {
+  unescape_mapping_bodies
+  stop_wiremock
+}
+
+# Error handler that shows logs before cleanup
+error_handler() {
+  local exit_code=$?
+  echo ""
+  echo "❌ Script failed with exit code: $exit_code"
+  show_wiremock_logs
+  unescape_mapping_bodies
+  stop_wiremock
+  exit $exit_code
+}
+
+# Trap to ensure cleanup on exit or error
+trap cleanup EXIT INT TERM
+trap error_handler ERR
 
 # === Main execution flow ===
 build_application
@@ -137,7 +167,7 @@ find_app_path
 reset_simulators
 find_available_device
 find_device
-apply_user_friendly_mappings
+escape_mapping_bodies
 start_wiremock "verify"
 wait_for_wiremock
 echo "📝 WireMock is running in verification mode"
@@ -149,4 +179,5 @@ install_application
 launch_application
 wait_for_app_completion
 verify_wiremock_results
+unescape_mapping_bodies
 stop_wiremock
