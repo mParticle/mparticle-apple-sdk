@@ -214,6 +214,31 @@ func testLogException(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     uploadWaiter.wait()
 }
 
+// Test 10: Set User Attributes
+// Based on ViewController.m setUserAttribute method
+// Tests setting predefined and custom user attributes on the current user
+func testSetUserAttributes(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    guard let currentUser = mparticle.identity.currentUser else {
+        print("No current user available")
+        return
+    }
+    
+    // Set 'Age' as a user attribute using predefined mParticle constant
+    // Using static value instead of random for deterministic testing
+    let age = "45" // Original: 21 + arc4random_uniform(80)
+    currentUser.setUserAttribute(mParticleUserAttributeAge, value: age)
+    
+    // Set 'Gender' as a user attribute using predefined mParticle constant
+    // Using static value instead of random for deterministic testing
+    let gender = "m" // Original: arc4random_uniform(2) ? "m" : "f"
+    currentUser.setUserAttribute(mParticleUserAttributeGender, value: gender)
+    
+    // Set a numeric user attribute using a custom key
+    currentUser.setUserAttribute("Achieved Level", value: 4)
+    
+    uploadWaiter.wait()
+}
+
 // Read API key and secret from environment variables
 guard let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"],
       let apiSecret = ProcessInfo.processInfo.environment["MPARTICLE_API_SECRET"] else {
@@ -265,3 +290,4 @@ testGetUserAudiences(mparticle: mparticle)
 testLogTimedEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testLogError(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testLogException(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testSetUserAttributes(mparticle: mparticle, uploadWaiter: uploadWaiter)
