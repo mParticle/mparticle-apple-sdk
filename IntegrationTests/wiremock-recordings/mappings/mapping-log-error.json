@@ -1,5 +1,5 @@
 {
-  "id": "35c40706-b94c-3dc5-9de7-954f74178568",
+  "id": "1393a0c9-7861-3968-90c3-0cdb20104b4d",
   "request": {
     "method": "POST",
     "bodyPatterns": [
@@ -9,20 +9,20 @@
           "ltv": 0,
           "msgs": [
             {
-              "et": "Transaction",
               "id": "${json-unit.ignore}",
               "vc": "off_thread",
-              "dt": "e",
-              "el": "${json-unit.ignore}",
+              "dt": "x",
+              "is": 1711208,
               "ct": "${json-unit.ignore}",
               "attrs": {
-                "EventLength": "${json-unit.ignore}"
+                "cause": "slippery floor"
               },
+              "eh": "true",
               "sct": "${json-unit.ignore}",
+              "s": "error",
               "sid": "${json-unit.ignore}",
-              "en": "${json-unit.ignore}",
-              "n": "Timed Event",
-              "est": "${json-unit.ignore}",
+              "m": "Oops",
+              "iba": "${json-unit.ignore}",
               "mt": false
             }
           ],
@@ -61,16 +61,16 @@
           "oo": false,
           "sdk": "8.40.0",
           "di": {
-            "tz": "-5",
-            "bid": "${json-unit.ignore}",
             "p": "arm64",
+            "b": "arm64",
+            "tz": "-5",
             "dn": "${json-unit.ignore}",
-            "dll": "en",
+            "dma": "Apple",
             "dsh": "1440",
             "idst": false,
             "dlc": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
-            "dma": "Apple",
+            "dll": "en",
             "dp": "iOS",
             "tzn": "America/New_York",
             "dsw": "960",
@@ -83,7 +83,7 @@
             },
             "lat": false,
             "arc": "arm64e",
-            "b": "arm64"
+            "bid": "${json-unit.ignore}"
           },
           "stl": 60
         },
@@ -95,21 +95,21 @@
   },
   "response": {
     "status": 202,
-    "bodyFileName": "body-timed-event.json",
+    "bodyFileName": "body-log-error.json",
     "headers": {
       "X-Cache": "MISS, MISS",
-      "X-MP-Trace-Id": "692dbcb044c20919c68bac1420c1ab2f",
+      "X-MP-Trace-Id": "692dd6cc4c581190f73bde872046f0ae",
       "Server": "Kestrel",
-      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kjyo7100098_IAD",
-      "Date": "Mon, 01 Dec 2025 16:05:04 GMT",
-      "X-Timer": "S1764605104.140119,VS0,VE21",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kjyo7100066_IAD",
+      "Date": "Mon, 01 Dec 2025 17:56:28 GMT",
+      "X-Timer": "S1764611788.131532,VS0,VE24",
       "Via": "1.1 varnish, 1.1 varnish",
       "Accept-Ranges": "bytes",
-      "X-Served-By": "cache-iad-kjyo7100098-IAD, cache-lga21971-LGA",
+      "X-Served-By": "cache-iad-kjyo7100066-IAD, cache-lga21920-LGA",
       "Vary": "Accept-Encoding",
       "X-Cache-Hits": "0, 0",
       "Content-Type": "application/json"
     }
   },
-  "uuid": "35c40706-b94c-3dc5-9de7-954f74178568"
+  "uuid": "1393a0c9-7861-3968-90c3-0cdb20104b4d"
 }

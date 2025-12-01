@@ -183,6 +183,17 @@ func testLogTimedEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     uploadWaiter.wait()
 }
 
+// Test 8: Log Error
+// Based on ViewController.m logError method
+// Tests logging errors with custom event info dictionary
+func testLogError(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    // Log an error with event info - exactly as in ViewController.m
+    let eventInfo = ["cause": "slippery floor"]
+    mparticle.logError("Oops", eventInfo: eventInfo)
+    
+    uploadWaiter.wait()
+}
+
 var options = MParticleOptions(
     key: "",
     secret: ""
@@ -225,3 +236,4 @@ testCommerceEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testRoktSelectPlacement(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testGetUserAudiences(mparticle: mparticle)
 testLogTimedEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testLogError(mparticle: mparticle, uploadWaiter: uploadWaiter)
