@@ -128,6 +128,36 @@ func testRoktSelectPlacement(mparticle: MParticle, uploadWaiter: EventUploadWait
     uploadWaiter.wait()
 }
 
+// Test 6: Get User Audiences
+// Based on ViewController.m getAudience method
+// Tests retrieving audience memberships for the current user via Identity API
+func testGetUserAudiences(mparticle: MParticle) {
+    let semaphore = DispatchSemaphore(value: 0)
+    
+    // Get audiences for current user
+    if let currentUser = mparticle.identity.currentUser {
+        currentUser.getAudiencesWithCompletionHandler { audiences, error in
+            if let error = error {
+                print("Failed to retrieve Audience: \(error)")
+            } else {
+                print("Successfully retrieved Audience for user: \(currentUser.userId) with audiences: \(audiences)")
+            }
+            semaphore.signal()
+        }
+    } else {
+        print("No current user available")
+        semaphore.signal()
+    }
+    
+    // Wait for async completion (timeout 10 seconds)
+    let timeout = DispatchTime.now() + .seconds(10)
+    let result = semaphore.wait(timeout: timeout)
+    
+    if result == .timedOut {
+        print("Warning: getAudiencesWithCompletionHandler timed out")
+    }
+}
+
 var options = MParticleOptions(
     key: "",
     secret: ""
@@ -168,3 +198,4 @@ testEventWithCustomAttributesAndFlags(mparticle: mparticle, uploadWaiter: upload
 testLogScreen(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testCommerceEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testRoktSelectPlacement(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testGetUserAudiences(mparticle: mparticle)
