@@ -262,11 +262,13 @@ func testIncrementUserAttribute(mparticle: MParticle, uploadWaiter: EventUploadW
     uploadWaiter.wait()
 }
 
-// Read API key and secret from environment variables
-guard let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"],
-      let apiSecret = ProcessInfo.processInfo.environment["MPARTICLE_API_SECRET"] else {
-    print("Error: MPARTICLE_API_KEY and MPARTICLE_API_SECRET environment variables must be set")
-    exit(1)
+// Read API key and secret from environment variables, or use fake keys for verification mode
+// Fake keys must match the pattern us1-[a-f0-9]+ to work with WireMock mappings
+let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"] ?? "us1-00000000000000000000000000000000"
+let apiSecret = ProcessInfo.processInfo.environment["MPARTICLE_API_SECRET"] ?? "fake-secret-for-integration-tests"
+
+if ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"] == nil {
+    print("⚠️  MPARTICLE_API_KEY not set, using fake key for verification mode")
 }
 
 var options = MParticleOptions(

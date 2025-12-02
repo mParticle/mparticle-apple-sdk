@@ -12,14 +12,18 @@ brew install tuist
 
 ### Environment Variables
 
-The integration tests require mParticle API credentials to be set as environment variables:
+mParticle API credentials are required **only for recording** new API interactions:
 
 ```bash
 export MPARTICLE_API_KEY="your-api-key"
 export MPARTICLE_API_SECRET="your-api-secret"
 ```
 
-**Important:** These environment variables must be set before running any integration test scripts (`run_wiremock_recorder.sh` or `run_clean_integration_tests.sh`). The scripts will fail with an error if these variables are not set.
+**Recording mode (`run_wiremock_recorder.sh`):** Real API keys are required to record actual API responses from mParticle servers.
+
+**Verification mode (`run_clean_integration_tests.sh`):** API keys are **optional**. If not set, the tests will automatically use fake keys (`us1-00000000000000000000000000000000`) that match the WireMock URL patterns. This allows running integration tests without exposing real credentials.
+
+**Note:** Fake keys must match the pattern `us1-[a-f0-9]+` to work with WireMock mappings.
 
 Then generate the Xcode project:
 
