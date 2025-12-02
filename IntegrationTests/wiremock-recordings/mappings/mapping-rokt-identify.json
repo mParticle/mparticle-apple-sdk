@@ -1,0 +1,53 @@
+{
+  "id": "a5526351-3efc-3c34-a8cc-c1173ad5d153",
+  "request": {
+    "url": "/v1/identify",
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "client_sdk": {
+            "platform": "ios",
+            "sdk_version": "8.40.0",
+            "sdk_vendor": "mparticle"
+          },
+          "environment": "development",
+          "request_timestamp_ms": "${json-unit.ignore}",
+          "request_id": "${json-unit.ignore}",
+          "known_identities": {
+            "email": "j.smit@example.com",
+            "customerid": "123456",
+            "ios_idfv": "${json-unit.ignore}",
+            "device_application_stamp": "${json-unit.ignore}"
+          },
+          "previous_mpid": "${json-unit.ignore}"
+        },
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": false
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "body-rokt-identify.json",
+    "headers": {
+      "X-Cache": "MISS",
+      "X-MP-Trace-Id": "692f29e6c420372d1290a7d10bd25d68",
+      "Server": "Kestrel",
+      "X-Origin-Name": "4PrgpUXX9K0sNAH1JImfyI--F_us1_origin",
+      "X-Fastly-Trace-Id": "3402929065",
+      "X-MP-Max-Age": "86400",
+      "Date": "Tue, 02 Dec 2025 18:03:18 GMT",
+      "X-Timer": "S1764698599.589821,VS0,VE58",
+      "Via": "1.1 varnish",
+      "Accept-Ranges": "bytes",
+      "Strict-Transport-Security": "max-age=900",
+      "Access-Control-Expose-Headers": "X-MP-Max-Age",
+      "X-Served-By": "cache-lga21939-LGA",
+      "Vary": "Accept-Encoding",
+      "X-Cache-Hits": "0",
+      "Content-Type": "application/json; charset=utf-8"
+    }
+  },
+  "uuid": "a5526351-3efc-3c34-a8cc-c1173ad5d153"
+}
