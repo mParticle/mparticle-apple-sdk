@@ -272,3 +272,47 @@ stop_wiremock_with_logs() {
   stop_wiremock
 }
 
+create_proxy_mappings() {
+  echo "📝 Creating proxy mappings for recording mode..."
+  
+  local PROXY_DIR="${MAPPINGS_DIR}/mappings"
+  mkdir -p "$PROXY_DIR"
+  
+  # Create proxy-identify.json
+  cat > "${PROXY_DIR}/proxy-identify.json" << 'EOF'
+{
+  "priority": 1,
+  "request": {
+    "urlPathPattern": "/v1/identify"
+  },
+  "response": {
+    "proxyBaseUrl": "https://identity.mparticle.com"
+  }
+}
+EOF
+
+  # Create proxy-events.json
+  cat > "${PROXY_DIR}/proxy-events.json" << 'EOF'
+{
+  "priority": 1,
+  "request": {
+    "urlPathPattern": "/v2/events"
+  },
+  "response": {
+    "proxyBaseUrl": "https://nativesdks.mparticle.com"
+  }
+}
+EOF
+
+  echo "✅ Proxy mappings created"
+}
+
+remove_proxy_mappings() {
+  echo "🗑️  Removing proxy mappings for verification mode..."
+  
+  rm -f "${MAPPINGS_DIR}/mappings/proxy-identify.json" 2>/dev/null || true
+  rm -f "${MAPPINGS_DIR}/mappings/proxy-events.json" 2>/dev/null || true
+  
+  echo "✅ Proxy mappings removed"
+}
+

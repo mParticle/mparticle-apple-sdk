@@ -23,6 +23,9 @@ CONTAINER_NAME="wiremock-recorder"
 mkdir -p "${MAPPINGS_DIR}/mappings"
 mkdir -p "${MAPPINGS_DIR}/__files"
 
+# Create proxy mappings for recording
+create_proxy_mappings
+
 # Trap to ensure cleanup on exit
 trap stop_wiremock EXIT INT TERM
 
