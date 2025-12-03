@@ -570,6 +570,8 @@
 		7E15B2072D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		7E573D2A2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */; };
 		7E573D2B2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */; };
+		7E87E0C12EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */; };
+		7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */; };
 		B31360F92E012760000DFBC9 /* MPRoktEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.swift */; };
 		B3D778622E02F55F00D887A4 /* MPRoktEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.swift */; };
 		D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B0629CDFB1F00E7489F /* MPStateMachine.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -929,6 +931,7 @@
 		7E0387802DB913D2003B7D5E /* MPRokt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRokt.m; sourceTree = "<group>"; };
 		7E15B2052D94617900C1FF3E /* MPRoktTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktTests.m; sourceTree = "<group>"; };
 		7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleSceneDelegateTests.swift; sourceTree = "<group>"; };
+		7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegateHandlerMock.swift; path = UnitTests/Mocks/SceneDelegateHandlerMock.swift; sourceTree = "<group>"; };
 		B31360F72E012760000DFBC9 /* MPRoktEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPRoktEvent.swift; sourceTree = "<group>"; };
 		D33C8B312B8510C20012EDFD /* MPAudience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAudience.h; sourceTree = "<group>"; };
 		D33C8B322B8510C20012EDFD /* MPAudience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAudience.m; sourceTree = "<group>"; };
@@ -1011,6 +1014,7 @@
 		53A79A6F29CCCD6400E7489F = {
 			isa = PBXGroup;
 			children = (
+				7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */,
 				D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */,
 				53A79CFE29CE12AB00E7489F /* mParticle-Apple-SDK.modulemap */,
 				53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */,
@@ -1948,6 +1952,7 @@
 				534CD27B29CE2CE1008452B3 /* MPZipTests.m in Sources */,
 				7231B8522EB964A1001565E5 /* MParticleOpenURLTests.swift in Sources */,
 				53E20DC82CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
+				7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */,
 				534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */,
 				356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
 				534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */,
@@ -2169,6 +2174,7 @@
 				53E20DC72CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
 				7231B8532EB964A1001565E5 /* MParticleOpenURLTests.swift in Sources */,
 				53A79CEC29CE019F00E7489F /* MPZipTests.m in Sources */,
+				7E87E0C12EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */,
 				356752942E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
 				53A79CCC29CE019F00E7489F /* MPIntegrationAttributesTest.m in Sources */,
 				53A79CBD29CE019F00E7489F /* MPDataModelTests.m in Sources */,

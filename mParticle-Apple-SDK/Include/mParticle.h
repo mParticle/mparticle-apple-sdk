@@ -790,6 +790,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler DEPRECATED_MSG_ATTRIBUTE("iOS 27 will no longer support this protocol method");
 
+#if TARGET_OS_IOS == 1
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
  This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 13 and above.
@@ -797,6 +798,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see proxiedAppDelegate
  */
 - (void)handleURLContext:(UIOpenURLContext *)urlContext NS_SWIFT_NAME(handleURLContext(_:)) API_AVAILABLE(ios(13.0));
+#endif
 
 /**
  Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.

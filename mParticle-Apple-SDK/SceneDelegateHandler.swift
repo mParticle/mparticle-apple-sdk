@@ -1,14 +1,7 @@
-//
-//  SceneDelegateHandler.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Denis Chilik on 12/2/25.
-//
-
 import Foundation
 
 @objc
-public protocol OpenUrlHandlerProtocol {
+public protocol OpenURLHandlerProtocol {
     func open(_ url: URL, options: [String: Any]?)
     func continueUserActivity(
         _ userActivity: NSUserActivity,
@@ -19,31 +12,32 @@ public protocol OpenUrlHandlerProtocol {
 @objcMembers
 public class SceneDelegateHandler: NSObject {
     private let logger: MPLog
-    private let appNotificationHandler: OpenUrlHandlerProtocol
+    private let appNotificationHandler: OpenURLHandlerProtocol
     
-    public init(logger: MPLog, appNotificationHandler: OpenUrlHandlerProtocol) {
+    public init(logger: MPLog, appNotificationHandler: OpenURLHandlerProtocol) {
         self.logger = logger
         self.appNotificationHandler = appNotificationHandler
     }
     
+    #if os(iOS)
+    @available(iOS 13.0, *)
     @available(iOSApplicationExtension 13.0, *)
     public func handle(urlContext: UIOpenURLContext) {
         logger.debug("Opening URLContext URL: \(urlContext.url)")
         logger.debug("Source: \(String(describing: urlContext.options.sourceApplication ?? "unknown"))")
         logger.debug("Annotation: \(String(describing: urlContext.options.annotation))")
-        #if os(iOS)
         if #available(iOS 14.5, *) {
             logger.debug("Event Attribution: \(String(describing: urlContext.options.eventAttribution))")
         }
-        #endif
         logger.debug("Open in place: \(urlContext.options.openInPlace ? "True" : "False")")
 
         let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": urlContext.options.sourceApplication];
         
         self.appNotificationHandler.open(urlContext.url, options: options as [String: Any])
     }
+    #endif
     
-    public func continueUserActivity(_ userActivity: NSUserActivity) {
+    public func handleUserActivity(_ userActivity: NSUserActivity) {
         logger.debug("User Activity Received")
         logger.debug("User Activity Type: \(userActivity.activityType)")
         logger.debug("User Activity Title: \(userActivity.title ?? "")")

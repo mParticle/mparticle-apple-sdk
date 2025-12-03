@@ -54,7 +54,8 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
-@property (nonatomic, strong) id<MPAppNotificationHandlerProtocol, OpenUrlHandlerProtocol> appNotificationHandler;
+@property (nonatomic, strong) id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol> appNotificationHandler;
+@property (nonatomic, strong) SceneDelegateHandler *sceneDelegateHandler;
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
@@ -98,6 +99,7 @@ static NSString *const kMPStateKey = @"state";
 @synthesize listenerController = _listenerController;
 static id<ExecutorProtocol> executor;
 MPLog* logger;
+@synthesize sceneDelegateHandler = _sceneDelegateHandler;
 
 + (void)initialize {
     if (self == [MParticle class]) {
@@ -149,13 +151,14 @@ MPLog* logger;
     _collectSearchAdsAttribution = NO;
     _trackNotifications = YES;
     _automaticSessionTracking = YES;
-    _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
+    _appNotificationHandler = (id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol>)[[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
     logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
+    _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithLogger:logger appNotificationHandler:_appNotificationHandler];
     
     return self;
 }
@@ -700,13 +703,14 @@ MPLog* logger;
 
 
 
+#if TARGET_OS_IOS == 1
 - (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
-    MPartiche.shredInstanse.hsceneDelegareHandler.andleURLContext
-    [handler handleWithUrlContext:urlContext];
+    [self.sceneDelegateHandler handleWithUrlContext:urlContext];
 }
+#endif
 
 - (void)handleUserActivity:(NSUserActivity *)userActivity {
-    [handler handleUserActivity:userActivity];
+    [self.sceneDelegateHandler handleUserActivity:userActivity];
 }
 
 - (void)reset:(void (^)(void))completion {
