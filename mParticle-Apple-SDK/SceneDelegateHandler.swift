@@ -1,0 +1,61 @@
+//
+//  SceneDelegateHandler.swift
+//  mParticle-Apple-SDK
+//
+//  Created by Denis Chilik on 12/2/25.
+//
+
+import Foundation
+
+@objc
+public protocol OpenUrlHandlerProtocol {
+    func open(_ url: URL, options: [String: Any]?)
+    func continueUserActivity(
+        _ userActivity: NSUserActivity,
+        restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
+    ) -> Bool
+}
+
+@objcMembers
+public class SceneDelegateHandler: NSObject {
+    private let logger: MPLog
+    private let appNotificationHandler: OpenUrlHandlerProtocol
+    
+    public init(logger: MPLog, appNotificationHandler: OpenUrlHandlerProtocol) {
+        self.logger = logger
+        self.appNotificationHandler = appNotificationHandler
+    }
+    
+    @available(iOSApplicationExtension 13.0, *)
+    public func handle(urlContext: UIOpenURLContext) {
+        logger.debug("Opening URLContext URL: \(urlContext.url)")
+        logger.debug("Source: \(String(describing: urlContext.options.sourceApplication ?? "unknown"))")
+        logger.debug("Annotation: \(String(describing: urlContext.options.annotation))")
+        #if os(iOS)
+        if #available(iOS 14.5, *) {
+            logger.debug("Event Attribution: \(String(describing: urlContext.options.eventAttribution))")
+        }
+        #endif
+        logger.debug("Open in place: \(urlContext.options.openInPlace ? "True" : "False")")
+
+        let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": urlContext.options.sourceApplication];
+        
+        self.appNotificationHandler.open(urlContext.url, options: options as [String: Any])
+    }
+    
+    public func continueUserActivity(_ userActivity: NSUserActivity) {
+        logger.debug("User Activity Received")
+        logger.debug("User Activity Type: \(userActivity.activityType)")
+        logger.debug("User Activity Title: \(userActivity.title ?? "")")
+        logger.debug("User Activity User Info: \(userActivity.userInfo ?? [:])")
+
+        if userActivity.activityType == NSUserActivityTypeBrowsingWeb {
+            logger.debug("Opening UserActivity URL: \(userActivity.webpageURL?.absoluteString ?? "")")
+        }
+
+        _ = appNotificationHandler.continueUserActivity(
+            userActivity,
+            restorationHandler: { _ in }
+        )
+    }
+}

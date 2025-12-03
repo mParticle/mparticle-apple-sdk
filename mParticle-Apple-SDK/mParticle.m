@@ -54,7 +54,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
-@property (nonatomic, strong) id<MPAppNotificationHandlerProtocol> appNotificationHandler;
+@property (nonatomic, strong) id<MPAppNotificationHandlerProtocol, OpenUrlHandlerProtocol> appNotificationHandler;
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
@@ -697,44 +697,16 @@ MPLog* logger;
     return [self.appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
-- (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)){
-    NSString *messageURL = [NSString stringWithFormat:@"Opening URLContext URL: %@", urlContext.URL];
-    [logger debug:messageURL];
-    NSString *messageSource = [NSString stringWithFormat:@"Source: %@", urlContext.options.sourceApplication ? urlContext.options.sourceApplication : @"unknown"];
-    [logger debug:messageSource];
-    NSString *messageAnnotation = [NSString stringWithFormat:@"Annotation: %@", urlContext.options.annotation];
-    [logger debug:messageAnnotation];
-#if TARGET_OS_IOS == 1
-    if (@available(iOS 14.5, *)) {
-        NSString *messageEventAttribution = [NSString stringWithFormat:@"Event Attribution: %@", urlContext.options.eventAttribution];
-        [logger debug:messageEventAttribution];
-    }
-#endif
-    NSString *messageOpenInPlace = [NSString stringWithFormat:@"Open in place: %@", urlContext.options.openInPlace ? @"True" : @"False"];
-    [logger debug:messageOpenInPlace];
 
-    // Currently only one kit integration uses this dictionary for this key
-    // https://github.com/mparticle-integrations/mparticle-apple-integration-flurry/blob/a0856e271aa9a63a6668805582395dea63f96af5/mParticle-Flurry/MPKitFlurry.m#L148C38-L148C85
-    NSDictionary *options = @{@"UIApplicationOpenURLOptionsSourceApplicationKey": urlContext.options.sourceApplication};
-    
-    [self.appNotificationHandler openURL:urlContext.URL options:options];
+
+
+- (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
+    MPartiche.shredInstanse.hsceneDelegareHandler.andleURLContext
+    [handler handleWithUrlContext:urlContext];
 }
 
 - (void)handleUserActivity:(NSUserActivity *)userActivity {
-    NSString *message = [NSString stringWithFormat:@"User Activity Received"];
-    [logger debug:message];
-    NSString *messageType = [NSString stringWithFormat:@"User Activity Type: %@", userActivity.activityType];
-    [logger debug:messageType];
-    NSString *messageTitle = [NSString stringWithFormat:@"User Activity Title: %@", userActivity.title];
-    [logger debug:messageTitle];
-    NSString *messageUserInfo = [NSString stringWithFormat:@"User Activity User Info: %@", userActivity.userInfo];
-    [logger debug:messageUserInfo];
-    if (userActivity.activityType == NSUserActivityTypeBrowsingWeb) {
-        NSString *messageURL = [NSString stringWithFormat:@"Opening UserActivity URL: %@", userActivity.webpageURL];
-        [logger debug:messageURL];
-    }
-    // When provided by the SceneDelegate NSUserActivity is not paired with a restorationHandler
-    [self.appNotificationHandler continueUserActivity: userActivity restorationHandler:^(NSArray<id<UIUserActivityRestoring>> * _Nullable restorableObjects) {}];
+    [handler handleUserActivity:userActivity];
 }
 
 - (void)reset:(void (^)(void))completion {
