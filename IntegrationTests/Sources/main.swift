@@ -276,6 +276,29 @@ func testSetSessionAttribute(mparticle: MParticle, uploadWaiter: EventUploadWait
     uploadWaiter.wait()
 }
 
+// Test 13: Increment Session Attribute
+// Based on ViewController.m incrementSessionAttribute method (lines 348-351)
+// Tests incrementing a numeric session attribute - session attributes are sent when session ends
+func testIncrementSessionAttribute(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    // Start a new session since the previous test ended the session
+    mparticle.beginSession()
+    
+    // Allow time for session to be created
+    sleep(1)
+    
+    // First set an initial numeric value for the session attribute
+    mparticle.setSessionAttribute("Song Count", value: 5)
+    
+    // Increment the session attribute by 1 - exactly as in ViewController.m
+    mparticle.incrementSessionAttribute("Song Count", byValue: 1)
+    
+    // End the session to trigger sending the session attribute
+    // Session attributes are sent in the session end message (dt: "se")
+    mparticle.endSession()
+    
+    uploadWaiter.wait()
+}
+
 // Read API key and secret from environment variables, or use fake keys for verification mode
 // Fake keys must match the pattern us1-[a-f0-9]+ to work with WireMock mappings
 let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"] ?? "us1-00000000000000000000000000000000"
@@ -332,3 +355,4 @@ testLogException(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testSetUserAttributes(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testIncrementUserAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testSetSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testIncrementSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
