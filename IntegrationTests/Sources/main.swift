@@ -262,6 +262,20 @@ func testIncrementUserAttribute(mparticle: MParticle, uploadWaiter: EventUploadW
     uploadWaiter.wait()
 }
 
+// Test 12: Set Session Attribute
+// Based on ViewController.m setSessionAttribute method
+// Tests setting a session attribute - session attributes are sent when session ends
+func testSetSessionAttribute(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    // Set a session attribute - this will be included in the session end message
+    mparticle.setSessionAttribute("Station", value: "Classic Rock")
+    
+    // End the session to trigger sending the session attribute
+    // Session attributes are sent in the session end message (dt: "se")
+    mparticle.endSession()
+    
+    uploadWaiter.wait()
+}
+
 // Read API key and secret from environment variables, or use fake keys for verification mode
 // Fake keys must match the pattern us1-[a-f0-9]+ to work with WireMock mappings
 let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"] ?? "us1-00000000000000000000000000000000"
@@ -317,3 +331,4 @@ testLogError(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testLogException(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testSetUserAttributes(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testIncrementUserAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testSetSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
