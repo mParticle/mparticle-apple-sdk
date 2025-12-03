@@ -299,6 +299,45 @@ func testIncrementSessionAttribute(mparticle: MParticle, uploadWaiter: EventUplo
     uploadWaiter.wait()
 }
 
+// Test 14: Toggle CCPA Consent
+// Based on ViewController.m toggleCCPAConsent method (lines 357-386)
+// Tests setting CCPA consent state on the current user and verifying it's transmitted
+func testToggleCCPAConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    guard let currentUser = mparticle.identity.currentUser else {
+        print("No current user available")
+        return
+    }
+    
+    // Use static timestamp for deterministic testing
+    let staticTimestamp = Date(timeIntervalSince1970: 1700000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC
+    
+    // Create CCPA consent with consented = YES
+    let ccpaConsent = MPCCPAConsent()
+    ccpaConsent.consented = true
+    ccpaConsent.document = "ccpa_consent_agreement_v3"
+    ccpaConsent.timestamp = staticTimestamp
+    ccpaConsent.location = "17 Cherry Tree Lane"
+    ccpaConsent.hardwareId = "IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"
+    
+    // Create new consent state and set CCPA consent
+    let newConsentState = MPConsentState()
+    newConsentState.setCCPA(ccpaConsent)
+    
+    // Preserve existing GDPR consent state if any
+    if let existingGDPR = currentUser.consentState()?.gdprConsentState() {
+        newConsentState.setGDPR(existingGDPR)
+    }
+    
+    // Set consent state on current user
+    currentUser.setConsentState(newConsentState)
+    
+    // Log an event to trigger upload that includes the CCPA consent state
+    // The consent state is included in the request body ("con" field) with event uploads
+    mparticle.logEvent("CCPA Consent Updated", eventType: .other, eventInfo: ["consent_status": "opted_in"])
+    
+    uploadWaiter.wait()
+}
+
 // Read API key and secret from environment variables, or use fake keys for verification mode
 // Fake keys must match the pattern us1-[a-f0-9]+ to work with WireMock mappings
 let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"] ?? "us1-00000000000000000000000000000000"
@@ -356,3 +395,4 @@ testSetUserAttributes(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testIncrementUserAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testSetSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testIncrementSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testToggleCCPAConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
