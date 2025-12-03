@@ -52,6 +52,7 @@
 
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong) id<MPAppNotificationHandlerProtocol> appNotificationHandler;
+@property (nonatomic, strong) SceneDelegateHandler *sceneDelegateHandler;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
