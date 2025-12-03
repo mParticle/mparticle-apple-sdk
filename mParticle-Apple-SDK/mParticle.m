@@ -700,9 +700,6 @@ MPLog* logger;
     return [self.appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
-
-
-
 #if TARGET_OS_IOS == 1
 - (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
     [self.sceneDelegateHandler handleWithUrlContext:urlContext];

@@ -5,7 +5,7 @@ import XCTest
     import mParticle_Apple_SDK
 #endif
 
-class SceneDelegateHandlerMock: OpenURLHandlerProtocol {
+class OpenURLHandlerProtocolMock: OpenURLHandlerProtocol {
     
     var openURLWithOptionsCalled = false
     var openURLWithOptionsURLParam: URL?

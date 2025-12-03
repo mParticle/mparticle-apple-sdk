@@ -10,7 +10,7 @@ final class MParticleSceneDelegateTests: XCTestCase {
     
     // MARK: - Properties
     var mparticle: MParticle!
-    var sceneMock: SceneDelegateHandlerMock!
+    var sceneMock: OpenURLHandlerProtocolMock!
     var testURL: URL!
     var testUserActivity: NSUserActivity!
     
@@ -23,7 +23,7 @@ final class MParticleSceneDelegateTests: XCTestCase {
         testUserActivity.userInfo = ["key": "value"]
         
         // The implementation calls [MParticle sharedInstance], so we need to set the mock on the shared instance
-        sceneMock = SceneDelegateHandlerMock()
+        sceneMock = OpenURLHandlerProtocolMock()
         let sceneHandler = SceneDelegateHandler(logger: MPLog(logLevel: .verbose), appNotificationHandler: sceneMock)
         mparticle.sceneDelegateHandler = sceneHandler
     }
