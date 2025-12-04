@@ -1,0 +1,1 @@
+{"dt":"rh","id":"a7c8f4d7-aeb2-4f55-91e5-91a267afc382","ct":1764858535905,"err":[{"dt":"err","id":"92e1921b-09d0-434c-a3ef-0484baa5c2c3","ct":1764858535905,"msg":"Invalid Consent State provided - please verify the Consent Purposes that you have defined for this workspace.","code":"invalid_consent"}]}

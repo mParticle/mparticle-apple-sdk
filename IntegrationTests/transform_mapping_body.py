@@ -41,8 +41,10 @@ DEFAULT_REPLACE_FIELDS = [
     'dlc',     # Device Locale
     'dn',      # Device Name
     'dosv',    # Device OS Version
+    'el',      # Event Length (duration in milliseconds for timed events)
     'en',      # Event Number (position in session, e.g., 0, 1, 2...)
     'est',     # Event Start Time
+    'iba',     # Instruction Base Address (memory address for errors)
     'ict',     # Init Config Time
     'id',      # ID (various message/event IDs)
     'lud',     # Last Update Date
