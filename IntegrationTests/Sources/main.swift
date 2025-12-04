@@ -338,6 +338,45 @@ func testToggleCCPAConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter
     uploadWaiter.wait()
 }
 
+// Test 15: Toggle GDPR Consent
+// Based on ViewController.m toggleGDPRConsent method (lines 388-416)
+// Tests setting GDPR consent state on the current user and verifying it's transmitted
+func testToggleGDPRConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    guard let currentUser = mparticle.identity.currentUser else {
+        print("No current user available")
+        return
+    }
+    
+    // Use static timestamp for deterministic testing
+    let staticTimestamp = Date(timeIntervalSince1970: 1700000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC
+    
+    // Create GDPR consent with consented = YES (testing the "else" branch from ViewController.m)
+    let gdprConsent = MPGDPRConsent()
+    gdprConsent.consented = true
+    gdprConsent.document = "location_collection_agreement_v4"
+    gdprConsent.timestamp = staticTimestamp
+    gdprConsent.location = "17 Cherry Tree Lane"
+    gdprConsent.hardwareId = "IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"
+    
+    // Create new consent state and add GDPR consent with purpose
+    let newConsentState = MPConsentState()
+    newConsentState.addGDPRConsentState(gdprConsent, purpose: "My GDPR Purpose")
+    
+    // Preserve existing CCPA consent state if any
+    if let existingCCPA = currentUser.consentState()?.ccpaConsentState() {
+        newConsentState.setCCPA(existingCCPA)
+    }
+    
+    // Set consent state on current user
+    currentUser.setConsentState(newConsentState)
+    
+    // Log an event to trigger upload that includes the GDPR consent state
+    // The consent state is included in the request body ("con" field) with event uploads
+    mparticle.logEvent("GDPR Consent Updated", eventType: .other, eventInfo: ["consent_status": "opted_in"])
+    
+    uploadWaiter.wait()
+}
+
 // Read API key and secret from environment variables, or use fake keys for verification mode
 // Fake keys must match the pattern us1-[a-f0-9]+ to work with WireMock mappings
 let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"] ?? "us1-00000000000000000000000000000000"
@@ -396,3 +435,4 @@ testIncrementUserAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testSetSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testIncrementSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testToggleCCPAConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testToggleGDPRConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
