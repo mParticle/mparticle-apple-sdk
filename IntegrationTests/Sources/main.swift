@@ -377,6 +377,32 @@ func testToggleGDPRConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter
     uploadWaiter.wait()
 }
 
+// Test 16: Log IDFA (iOS Advertiser ID)
+// Based on ViewController.m logIDFA method (lines 418-429)
+// Tests modifying user identity to add/update the iOS Advertiser ID via Identity API
+func testLogIDFA(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    // Get current user from identity API
+    guard let currentUser = mparticle.identity.currentUser else {
+        print("No current user available")
+        return
+    }
+    
+    // Create identity request with current user
+    let identityRequest = MPIdentityApiRequest(user: currentUser)
+    
+    // Use static IDFA for deterministic testing
+    // Format: UUID-style string typical for iOS Advertiser IDs
+    let staticIDFA = "A5D934N0-232F-4AFC-2E9A-3832D95ZC702"
+    
+    // Set the iOS Advertiser ID identity
+    identityRequest.setIdentity(staticIDFA, identityType: MPIdentity.iosAdvertiserId)
+    
+    // Modify the user identity
+    mparticle.identity.modify(identityRequest) { _, _ in }
+    
+    uploadWaiter.wait()
+}
+
 // Read API key and secret from environment variables, or use fake keys for verification mode
 // Fake keys must match the pattern us1-[a-f0-9]+ to work with WireMock mappings
 let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"] ?? "us1-00000000000000000000000000000000"
@@ -436,3 +462,4 @@ testSetSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testIncrementSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testToggleCCPAConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testToggleGDPRConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testLogIDFA(mparticle: mparticle, uploadWaiter: uploadWaiter)
