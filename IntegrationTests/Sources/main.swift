@@ -403,6 +403,24 @@ func testLogIDFA(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     uploadWaiter.wait()
 }
 
+// Test 17: Set ATT Status (App Tracking Transparency)
+// Based on ViewController.m requestIDFA method (lines 431-476)
+// Tests setting the ATT authorization status which is sent with device info on uploads
+func testSetATTStatus(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+    // Use static timestamp in milliseconds for deterministic testing
+    let staticTimestampMillis = NSNumber(value: 1700000000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC in milliseconds
+    
+    // Set ATT status to Authorized (simulating user granting tracking permission)
+    // This corresponds to the ATTrackingManagerAuthorizationStatusAuthorized case in ViewController.m
+    mparticle.setATTStatus(MPATTAuthorizationStatus.authorized, withATTStatusTimestampMillis: staticTimestampMillis)
+    
+    // Log an event to trigger upload that includes the ATT status in device info
+    // ATT status is sent in the "att" field within device_info ("di") section
+    mparticle.logEvent("ATT Status Updated", eventType: .other, eventInfo: ["att_status": "authorized"])
+    
+    uploadWaiter.wait()
+}
+
 // Read API key and secret from environment variables, or use fake keys for verification mode
 // Fake keys must match the pattern us1-[a-f0-9]+ to work with WireMock mappings
 let apiKey = ProcessInfo.processInfo.environment["MPARTICLE_API_KEY"] ?? "us1-00000000000000000000000000000000"
@@ -463,3 +481,4 @@ testIncrementSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testToggleCCPAConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testToggleGDPRConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
 testLogIDFA(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testSetATTStatus(mparticle: mparticle, uploadWaiter: uploadWaiter)
