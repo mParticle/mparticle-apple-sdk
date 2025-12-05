@@ -69,7 +69,7 @@
           "oo": false,
           "sdk": "8.40.0",
           "di": {
-            "tz": "-5",
+            "tz": "${json-unit.ignore}",
             "p": "arm64",
             "b": "arm64",
             "dn": "${json-unit.ignore}",

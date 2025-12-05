@@ -63,7 +63,7 @@
           "sdk": "8.40.0",
           "di": {
             "b": "arm64",
-            "tz": "-5",
+            "tz": "${json-unit.ignore}",
             "p": "arm64",
             "dn": "${json-unit.ignore}",
             "dma": "Apple",
