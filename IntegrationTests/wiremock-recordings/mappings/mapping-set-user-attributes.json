@@ -88,7 +88,7 @@
           "di": {
             "p": "arm64",
             "b": "arm64",
-            "tz": "-5",
+            "tz": "${json-unit.ignore}",
             "dn": "${json-unit.ignore}",
             "dma": "Apple",
             "dlc": "${json-unit.ignore}",

@@ -124,7 +124,7 @@
           "di": {
             "p": "arm64",
             "bid": "${json-unit.ignore}",
-            "tz": "-5",
+            "tz": "${json-unit.ignore}",
             "dn": "${json-unit.ignore}",
             "dll": "en",
             "dlc": "${json-unit.ignore}",
