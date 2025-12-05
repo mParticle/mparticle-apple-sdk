@@ -201,9 +201,35 @@ public protocol MPUserDefaultsProtocol {
         let configurationData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data
         guard let configurationData = configurationData else { return nil }
 
-        let configuration = NSKeyedUnarchiver.unarchiveObject(with: configurationData) as? [AnyHashable: Any]
-
-        return configuration
+        do {
+            let allowedClasses: [AnyClass] = [
+                NSDictionary.self,
+                NSArray.self,
+                NSString.self,
+                NSNumber.self,
+                NSDate.self,
+                NSData.self,
+                NSURL.self,
+                NSNull.self  // Required for null values from JSON
+            ]
+            
+            if let nsDict = try NSKeyedUnarchiver.unarchivedObject(
+                ofClasses: allowedClasses,
+                from: configurationData
+            ) as? NSDictionary {
+                // Manually convert NSDictionary to Swift Dictionary
+                var swiftDict: [AnyHashable: Any] = [:]
+                nsDict.enumerateKeysAndObjects { key, value, _ in
+                    if let hashableKey = key as? AnyHashable {
+                        swiftDict[hashableKey] = value
+                    }
+                }
+                return swiftDict
+            }
+        } catch {
+            MPLog.error("Failed to unarchive configuration: \(error)")
+        }
+        return nil
     }
 
     @objc public func getKitConfigurations() -> [Any]? {
@@ -217,13 +243,17 @@ public protocol MPUserDefaultsProtocol {
         currentAge: TimeInterval,
         maxAge: NSNumber?
     ) {
-        let configurationData = NSKeyedArchiver.archivedData(withRootObject: responseConfiguration)
-        let userID = identity?.currentUser?.userId ?? 0
+        do {
+            let configurationData = try NSKeyedArchiver.archivedData(withRootObject: responseConfiguration, requiringSecureCoding: true)
+            let userID = identity?.currentUser?.userId ?? 0
 
-        setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
-        setMPObject(configurationData, forKey: kMResponseConfigurationKey, userId: userID)
-        setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
-        setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
+            setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
+            setMPObject(configurationData, forKey: kMResponseConfigurationKey, userId: userID)
+            setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
+            setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
+        } catch {
+            MPLog.error("Failed to archive configuration: \(error)")
+        }
     }
 
     @objc public func migrateConfiguration() {
@@ -335,21 +365,26 @@ public protocol MPUserDefaultsProtocol {
 
     @objc public func setLastUploadSettings(_ lastUploadSettings: MPUploadSettings?) {
         if let lastUploadSettings = lastUploadSettings {
-            let data = NSKeyedArchiver.archivedData(withRootObject: lastUploadSettings)
-            setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
+            do {
+                let data = try NSKeyedArchiver.archivedData(withRootObject: lastUploadSettings, requiringSecureCoding: true)
+                setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
+            } catch {
+                MPLog.error("Failed to archive upload settings: \(error)")
+            }
         } else {
             removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
         }
     }
 
     @objc public func lastUploadSettings() -> MPUploadSettings? {
-        let data = mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data
-
-        if let data = data {
-            return NSKeyedUnarchiver.unarchiveObject(with: data) as? MPUploadSettings
-        } else {
-            return nil
+        if let data = mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data {
+            do {
+                return try NSKeyedUnarchiver.unarchivedObject(ofClass: MPUploadSettings.self, from: data)
+            } catch {
+                MPLog.error("Failed to unarchive upload settings: \(error)")
+            }
         }
+        return nil
     }
 
     @objc public class func isOlderThanConfigMaxAgeSeconds() -> Bool {

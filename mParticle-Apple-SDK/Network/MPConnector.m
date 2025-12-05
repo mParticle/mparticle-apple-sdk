@@ -109,42 +109,56 @@ static NSArray *mpStoredCertificates = nil;
         [protectionSpace receivesCredentialSecurely] &&
         serverTrust)
     {
-        SecTrustCallback evaluateResult = ^(SecTrustRef _Nonnull trustRef, SecTrustResultType trustResult) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             BOOL trustChallenge = NO;
+            CFErrorRef error = NULL;
             
-            if (trustResult == kSecTrustResultUnspecified || trustResult == kSecTrustResultProceed) {
-                CFIndex certificateCount = SecTrustGetCertificateCount(trustRef);
-                CFIndex certIdx = certificateCount - 1; //The Root Cert is always the last Cert in the chain
+            // Evaluate trust synchronously (iOS 12+)
+            BOOL trustResult = SecTrustEvaluateWithError(serverTrust, &error);
+            
+            if (trustResult) {
+                // Get certificate chain (iOS 15+)
+                CFArrayRef certificateChain = SecTrustCopyCertificateChain(serverTrust);
                 
-                SecCertificateRef certificate = SecTrustGetCertificateAtIndex(trustRef, certIdx);
-                CFDataRef certificateDataRef = SecCertificateCopyData(certificate);
-                
-                if (certificateDataRef != NULL) {
-                    NSData *certificateData = (__bridge NSData *)certificateDataRef;
+                if (certificateChain != NULL) {
+                    CFIndex certificateCount = CFArrayGetCount(certificateChain);
+                    CFIndex certIdx = certificateCount - 1; //The Root Cert is always the last Cert in the chain
                     
-                    if (certificateData) {
-                        NSString *certificateEncodedString = [certificateData base64EncodedStringWithOptions:0];
-                        trustChallenge = [mpStoredCertificates containsObject:certificateEncodedString];
+                    SecCertificateRef certificate = (SecCertificateRef)CFArrayGetValueAtIndex(certificateChain, certIdx);
+                    CFDataRef certificateDataRef = SecCertificateCopyData(certificate);
+                
+                    if (certificateDataRef != NULL) {
+                        NSData *certificateData = (__bridge NSData *)certificateDataRef;
                         
-                        if (!trustChallenge && networkOptions.certificates.count > 0) {
-                            trustChallenge = [networkOptions.certificates containsObject:certificateData];
+                        if (certificateData) {
+                            NSString *certificateEncodedString = [certificateData base64EncodedStringWithOptions:0];
+                            trustChallenge = [mpStoredCertificates containsObject:certificateEncodedString];
+                            
+                            if (!trustChallenge && networkOptions.certificates.count > 0) {
+                                trustChallenge = [networkOptions.certificates containsObject:certificateData];
+                            }
                         }
+                        
+                        CFRelease(certificateDataRef);
                     }
                     
-                    CFRelease(certificateDataRef);
+                    CFRelease(certificateChain);
                 }
             }
             
+            if (error) {
+                CFRelease(error);
+            }
+            
             BOOL shouldDisablePinning = (networkOptions.pinningDisabledInDevelopment && [MParticle sharedInstance].environment == MPEnvironmentDevelopment) || networkOptions.pinningDisabled;
+            
             if (trustChallenge || shouldDisablePinning) {
-                NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:trustRef];
+                NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:serverTrust];
                 completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
             } else {
                 completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
             }
-        };
-        
-        SecTrustEvaluateAsync(serverTrust, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), evaluateResult);
+        });
     }
 }
 
