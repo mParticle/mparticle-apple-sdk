@@ -1,0 +1,136 @@
+name: Integration Tests
+
+on:
+  # Run for all PRs
+  pull_request:
+  # Run again once merged into development branch
+  push:
+    branches:
+      - development
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  XCODE_VERSION: "16.4"
+  WORKING_DIRECTORY: IntegrationTests
+
+jobs:
+  integration-tests:
+    name: iOS Integration Tests
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Install Homebrew dependencies
+        run: |
+          brew install tuist colima docker
+
+      - name: Start Colima (Docker runtime for macOS)
+        run: |
+          colima start --cpu 2 --memory 4 --disk 10
+          # Wait for Docker to be ready
+          timeout 60 bash -c 'until docker info &>/dev/null; do sleep 2; done'
+          echo "✅ Docker is ready"
+
+      - name: Verify Docker is working
+        run: |
+          docker --version
+          docker info
+
+      - name: Pull WireMock image
+        run: |
+          docker pull wiremock/wiremock:3.9.1
+
+      - name: List available simulators
+        run: |
+          xcrun simctl list devices iPhone | head -20
+
+      - name: Run Integration Tests
+        id: integration_tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        env:
+          CI: "true"
+        run: |
+          # Make scripts executable
+          chmod +x run_clean_integration_tests.sh common.sh
+          
+          # Run the verification script
+          ./run_clean_integration_tests.sh
+
+      - name: Collect WireMock logs on failure
+        if: failure()
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          echo "📋 Collecting WireMock logs..."
+          mkdir -p artifacts
+          
+          # Get container name from the script
+          CONTAINER_NAME="wiremock-verify"
+          
+          # Collect logs if container exists
+          if docker ps -a --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
+            docker logs "$CONTAINER_NAME" > artifacts/wiremock-logs.txt 2>&1 || true
+            
+            # Get unmatched requests
+            curl -s http://localhost:8080/__admin/requests/unmatched > artifacts/unmatched-requests.json 2>/dev/null || true
+            
+            # Get all requests
+            curl -s http://localhost:8080/__admin/requests > artifacts/all-requests.json 2>/dev/null || true
+          fi
+          
+          echo "✅ Logs collected"
+
+      - name: Collect test artifacts on failure
+        if: failure()
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          echo "📋 Collecting test artifacts..."
+          mkdir -p artifacts
+          
+          # Copy WireMock mappings for debugging
+          if [ -d "wiremock-recordings/mappings" ]; then
+            cp -r wiremock-recordings/mappings artifacts/mappings || true
+          fi
+          
+          # Collect simulator logs
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone" | grep "Booted" | head -1 | awk -F '[()]' '{print $2}')
+          if [ -n "$DEVICE_ID" ]; then
+            xcrun simctl spawn "$DEVICE_ID" log show --predicate 'subsystem == "com.mparticle"' --last 10m > artifacts/simulator-logs.txt 2>/dev/null || true
+          fi
+          
+          echo "✅ Artifacts collected"
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-artifacts
+          path: ${{ env.WORKING_DIRECTORY }}/artifacts/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Stop any running containers
+          docker stop wiremock-verify 2>/dev/null || true
+          docker rm wiremock-verify 2>/dev/null || true
+          
+          # Stop Colima
+          colima stop || true
+          
+          # Shutdown simulators
+          xcrun simctl shutdown all || true
+
