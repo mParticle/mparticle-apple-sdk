@@ -6,7 +6,7 @@ on:
   # Run again once merged into development branch
   push:
     branches:
-      - development
+      - blackout/Phase-1
       - main
 
 concurrency:
