@@ -347,11 +347,11 @@
         }
         
         if (oldVersionValue < 31) {
-            @try {
-                NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:uploadSettings];
-                sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
-            } @catch(NSException *exception) {
-                MPILogError(@"Error while migrating upload record: %@: %@", exception.name, exception.reason);
+            NSError *error;
+            NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:uploadSettings requiringSecureCoding:YES error:&error];
+            sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
+            if (error != nil) {
+                MPILogError(@"Error while migrating upload record: %ld: %@", error.code, error.localizedDescription);
                 sqlite3_reset(insertStatementHandle);
                 continue;
             }
