@@ -19,6 +19,7 @@ permissions:
 env:
   XCODE_VERSION: "16.4"
   WORKING_DIRECTORY: IntegrationTests
+  WIREMOCK_VERSION: "3.9.1"
 
 jobs:
   integration-tests:
@@ -33,25 +34,20 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Install Homebrew dependencies
-        run: |
-          brew install tuist colima docker
+      - name: Install Tuist
+        run: brew install tuist
 
-      - name: Start Colima (Docker runtime for macOS)
-        run: |
-          colima start --cpu 2 --memory 4 --disk 10
-          # Wait for Docker to be ready
-          timeout 60 bash -c 'until docker info &>/dev/null; do sleep 2; done'
-          echo "✅ Docker is ready"
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Verify Docker is working
+      - name: Download WireMock standalone
         run: |
-          docker --version
-          docker info
-
-      - name: Pull WireMock image
-        run: |
-          docker pull wiremock/wiremock:3.9.1
+          curl -L -o wiremock.jar \
+            "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${{ env.WIREMOCK_VERSION }}/wiremock-standalone-${{ env.WIREMOCK_VERSION }}.jar"
+          echo "✅ WireMock downloaded"
 
       - name: List available simulators
         run: |
@@ -62,12 +58,13 @@ jobs:
         working-directory: ${{ env.WORKING_DIRECTORY }}
         env:
           CI: "true"
+          WIREMOCK_JAR: ${{ github.workspace }}/wiremock.jar
         run: |
           # Make scripts executable
-          chmod +x run_clean_integration_tests.sh common.sh
+          chmod +x run_clean_integration_tests.sh common.sh run_integration_tests_ci.sh
           
-          # Run the verification script
-          ./run_clean_integration_tests.sh
+          # Run the CI-specific verification script
+          ./run_integration_tests_ci.sh
 
       - name: Collect WireMock logs on failure
         if: failure()
@@ -76,19 +73,16 @@ jobs:
           echo "📋 Collecting WireMock logs..."
           mkdir -p artifacts
           
-          # Get container name from the script
-          CONTAINER_NAME="wiremock-verify"
-          
-          # Collect logs if container exists
-          if docker ps -a --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
-            docker logs "$CONTAINER_NAME" > artifacts/wiremock-logs.txt 2>&1 || true
-            
-            # Get unmatched requests
-            curl -s http://localhost:8080/__admin/requests/unmatched > artifacts/unmatched-requests.json 2>/dev/null || true
-            
-            # Get all requests
-            curl -s http://localhost:8080/__admin/requests > artifacts/all-requests.json 2>/dev/null || true
+          # Collect WireMock log file if exists
+          if [ -f "wiremock.log" ]; then
+            cp wiremock.log artifacts/wiremock-logs.txt || true
           fi
+          
+          # Get unmatched requests
+          curl -s http://localhost:8080/__admin/requests/unmatched > artifacts/unmatched-requests.json 2>/dev/null || true
+          
+          # Get all requests
+          curl -s http://localhost:8080/__admin/requests > artifacts/all-requests.json 2>/dev/null || true
           
           echo "✅ Logs collected"
 
@@ -123,13 +117,10 @@ jobs:
 
       - name: Cleanup
         if: always()
+        working-directory: ${{ env.WORKING_DIRECTORY }}
         run: |
-          # Stop any running containers
-          docker stop wiremock-verify 2>/dev/null || true
-          docker rm wiremock-verify 2>/dev/null || true
-          
-          # Stop Colima
-          colima stop || true
+          # Stop WireMock if running
+          pkill -f wiremock || true
           
           # Shutdown simulators
           xcrun simctl shutdown all || true
