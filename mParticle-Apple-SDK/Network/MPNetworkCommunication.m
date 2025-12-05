@@ -42,7 +42,7 @@ NSString *const aliasURLFormatOverride = @"%@://%@/%@/%@"; // Scheme, URL Host, 
 
 NSString *const kMPConfigVersion = @"v4";
 NSString *const kMPConfigURL = @"/config";
-NSString *const kMPEventsVersion = @"v2";
+NSString *const kMPEventsVersion = @"v3";
 NSString *const kMPEventsURL = @"/events";
 NSString *const kMPAudienceVersion = @"v1";
 NSString *const kMPAudienceURL = @"/audience";
