@@ -69,7 +69,7 @@
             "dlc": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
             "idst": false,
-            "tzn": "America/New_York",
+            "tzn": "${json-unit.ignore}",
             "dp": "iOS",
             "dsw": "960",
             "dosv": "${json-unit.ignore}",

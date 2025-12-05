@@ -72,7 +72,7 @@
             "vid": "${json-unit.ignore}",
             "dma": "Apple",
             "atts": "authorized",
-            "tzn": "America/New_York",
+            "tzn": "${json-unit.ignore}",
             "dp": "iOS",
             "dsw": "960",
             "attt": 1700000000000,
