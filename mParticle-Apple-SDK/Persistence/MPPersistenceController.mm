@@ -1265,8 +1265,10 @@ const int MaxBreadcrumbs = 50;
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             NSData *uploadSettingsData = dataValue(preparedStatement, 8);
             if (uploadSettingsData) {
-                @try {
-                    MPUploadSettings *uploadSettings = [NSKeyedUnarchiver unarchiveObjectWithData:uploadSettingsData];
+                NSError *error = nil;
+                MPUploadSettings *uploadSettings = [NSKeyedUnarchiver unarchivedObjectOfClass:[MPUploadSettings class] fromData:uploadSettingsData error:&error];
+                
+                if (uploadSettings && !error) {
                     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
                                                                   uploadId:int64Value(preparedStatement, 0)
                                                                       UUID:stringValue(preparedStatement, 1)
@@ -1277,8 +1279,8 @@ const int MaxBreadcrumbs = 50;
                                                            dataPlanVersion:intValue(preparedStatement, 7) ? @(intValue(preparedStatement, 7)) : nil
                                                             uploadSettings:uploadSettings];
                     uploadsVector.push_back(upload);
-                } @catch(NSException *exception) {
-                    MPILogError(@"Error while fetching upload: %@: %@", exception.name, exception.reason);
+                } else {
+                    MPILogError(@"Error unarchiving upload settings: %@", error);
                 }
             }
         }
@@ -1708,15 +1710,17 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_null(preparedStatement, 7);
         }
         
-        @try {
-            NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:upload.uploadSettings];
-            sqlite3_bind_blob(preparedStatement, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
-        } @catch(NSException *exception) {
-            MPILogError(@"Error while storing upload: %@: %@", exception.name, exception.reason);
+        NSError *error = nil;
+        NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:upload.uploadSettings requiringSecureCoding:YES error:&error];
+
+        if (!uploadSettingsData || error) {
+            MPILogError(@"Error archiving upload settings: %@", error);
             sqlite3_clear_bindings(preparedStatement);
             sqlite3_finalize(preparedStatement);
             return;
         }
+
+        sqlite3_bind_blob(preparedStatement, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
