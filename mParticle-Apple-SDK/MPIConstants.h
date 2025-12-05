@@ -442,7 +442,6 @@ extern NSString * _Nonnull const kMPEventTypeStringMedia;
 // Primitive data type constants
 //
 extern const NSTimeInterval MINIMUM_SESSION_TIMEOUT;
-extern const NSTimeInterval MAXIMUM_SESSION_TIMEOUT DEPRECATED_MSG_ATTRIBUTE("There is no longer a maximum session timout, the value is unlimited");
 extern const NSTimeInterval DEFAULT_SESSION_TIMEOUT;
 extern const NSTimeInterval TWENTY_FOUR_HOURS; // Database clean up interval
 extern const NSTimeInterval SEVEN_DAYS;
