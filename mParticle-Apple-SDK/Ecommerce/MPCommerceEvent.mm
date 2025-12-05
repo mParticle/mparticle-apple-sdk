@@ -287,43 +287,6 @@ static NSArray *actionNames;
     }
 }
 
-- (NSMutableDictionary *)userDefinedAttributes {
-    return [self.customAttributes copy];
-}
-
-- (void)setUserDefinedAttributes:(NSMutableDictionary *)userDefinedAttributes {
-    self.customAttributes = userDefinedAttributes;
-}
-
-#pragma mark Subscripting
-- (id)objectForKeyedSubscript:(NSString *const)key {
-    NSAssert(key != nil, @"'key' cannot be nil.");
-    
-    id object = [self.customAttributes objectForKey:key];
-    return object;
-}
-
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
-    NSAssert(key != nil, @"'key' cannot be nil.");
-    NSAssert(obj != nil, @"'obj' cannot be nil.");
-    
-    if (obj == nil) {
-        return;
-    }
-    
-    NSMutableDictionary *mutatingAttributes = [[NSMutableDictionary alloc] init];
-
-    if (self.customAttributes != nil && self.customAttributes.count > 0) {
-        mutatingAttributes = [self.customAttributes mutableCopy];
-    }
-    
-    mutatingAttributes[key] = obj;
-    self.customAttributes = [mutatingAttributes copy];
-}
-
-- (NSArray *)allKeys {
-    return [self.customAttributes allKeys];
-}
 #pragma mark NSObject
 - (BOOL)isEqual:(MPCommerceEvent *)object {
     BOOL isEqual = [super isEqual:object] &&

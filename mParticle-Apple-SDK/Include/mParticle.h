@@ -501,16 +501,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, readonly) MPRokt * rokt;
 
 /**
- If set to YES development logs will be output to the
- console, if set to NO the development logs will be suppressed. This property works in conjunction with
- the environment property. If the environment is Production, consoleLogging will always be NO,
- regardless of the value you assign to it.
- @see environment
- @see logLevel
- */
-@property (nonatomic, readonly) BOOL consoleLogging DEPRECATED_MSG_ATTRIBUTE("set logLevel on MParticleOptions instead");
-
-/**
  The environment property returns the running SDK environment: Development or Production.
  @see MPEnvironment
  @see startWithOptions:
@@ -986,14 +976,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 - (void)logCrash:(nullable NSString *)message
       stackTrace:(nullable NSString *)stackTrace
    plCrashReport:(NSString *)plCrashReport;
-
-#pragma mark - eCommerce Transactions
-/**
- Logs a commerce event.
- @param commerceEvent An instance of MPCommerceEvent
- @see MPCommerceEvent
- */
-- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent DEPRECATED_MSG_ATTRIBUTE("Replace calls to `logCommerceEvent:` with `logEvent:`");
 
 /**
  Increases the LTV (LifeTime Value) amount of a user.

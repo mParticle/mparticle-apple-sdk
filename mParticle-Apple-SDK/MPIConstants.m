@@ -424,9 +424,6 @@ NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdentityType"
 // Primitive data type constants
 //
 const NSTimeInterval MINIMUM_SESSION_TIMEOUT = 1.0;
-
-const NSTimeInterval MAXIMUM_SESSION_TIMEOUT = DBL_MAX;
-
 const NSTimeInterval DEFAULT_SESSION_TIMEOUT = 60.0;
 
 const NSTimeInterval TWENTY_FOUR_HOURS = 86400; // database clean up interval

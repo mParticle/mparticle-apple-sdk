@@ -795,20 +795,6 @@
     XCTAssertNil(e);
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)testLogNilCommerceEvent {
-    MParticle *instance = [MParticle sharedInstance];
-    NSException *e = nil;
-    @try {
-        [instance logCommerceEvent:(id _Nonnull)nil];
-    } @catch (NSException *ex) {
-        e = ex;
-    }
-    XCTAssertNil(e);
-}
-#pragma clang diagnostic pop
-
 - (void)testSetATTStatusNotDetermined {
     MParticle *instance = [MParticle sharedInstance];
     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
