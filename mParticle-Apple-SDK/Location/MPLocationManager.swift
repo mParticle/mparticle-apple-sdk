@@ -31,8 +31,15 @@ import UIKit
             guard Self._locationManager == nil else {
                 return Self._locationManager
             }
+            guard CLLocationManager.locationServicesEnabled() else {
+                return nil
+            }
+            
+            let _locationManager = CLLocationManager()
+            _locationManager.delegate = self
+            Self._locationManager = _locationManager
 
-            let authorizationStatus = CLLocationManager.authorizationStatus()
+            let authorizationStatus = _locationManager.authorizationStatus
             guard authorizationStatus != .restricted, authorizationStatus != .denied else {
                 if let _ = Self._locationManager {
                     Self._locationManager = nil
@@ -42,9 +49,6 @@ import UIKit
                 return nil
             }
 
-            let _locationManager = CLLocationManager()
-            _locationManager.delegate = self
-            Self._locationManager = _locationManager
             return Self._locationManager
         }
 
@@ -53,11 +57,6 @@ import UIKit
             distanceFilter: CLLocationDistance,
             authorizationRequest: MPLocationAuthorizationRequest
         ) {
-            let authorizationStatus = CLLocationManager.authorizationStatus()
-            guard authorizationStatus != .restricted, authorizationStatus != .denied else {
-                return nil
-            }
-
             self.authorizationRequest = authorizationRequest
             requestedAccuracy = accuracy
             requestedDistanceFilter = distanceFilter
