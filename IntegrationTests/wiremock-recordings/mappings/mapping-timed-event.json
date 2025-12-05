@@ -1,5 +1,5 @@
 {
-  "id": "6fd492b0-abdb-39f1-976e-8e7fb6f7ed00",
+  "id": "35c40706-b94c-3dc5-9de7-954f74178568",
   "request": {
     "method": "POST",
     "bodyPatterns": [
@@ -9,43 +9,21 @@
           "ltv": 0,
           "msgs": [
             {
-              "sct": "${json-unit.ignore}",
-              "pd": {
-                "tr": "12.09",
-                "pl": [
-                  {
-                    "ca": "Fiction",
-                    "nm": "Awesome Book",
-                    "qt": "1",
-                    "id": "${json-unit.ignore}",
-                    "tpa": "9.99",
-                    "pr": "9.99",
-                    "attrs": {
-                      "custom key": "custom value"
-                    },
-                    "br": "A Publisher",
-                    "cc": "XYZ123",
-                    "ps": "1"
-                  }
-                ],
-                "an": "purchase",
-                "co": "Credit Card",
-                "ti": "zyx098",
-                "ts": "1.23",
-                "ta": "Book seller",
-                "tt": "0.87",
-                "cs": "4"
-              },
-              "ct": "${json-unit.ignore}",
-              "dt": "cm",
+              "et": "Transaction",
               "id": "${json-unit.ignore}",
-              "sn": "Timeless Books",
-              "sid": "${json-unit.ignore}",
+              "vc": "off_thread",
+              "dt": "e",
+              "el": "${json-unit.ignore}",
+              "ct": "${json-unit.ignore}",
               "attrs": {
-                "an_extra_key": "an_extra_value"
+                "EventLength": "${json-unit.ignore}"
               },
-              "mt": false,
-              "vc": "off_thread"
+              "sct": "${json-unit.ignore}",
+              "sid": "${json-unit.ignore}",
+              "en": "${json-unit.ignore}",
+              "n": "Timed Event",
+              "est": "${json-unit.ignore}",
+              "mt": false
             }
           ],
           "dt": "h",
@@ -75,7 +53,7 @@
               "n": 1
             },
             {
-              "i": "foo@example.com",
+              "i": "j.smit@example.com",
               "n": 7
             }
           ],
@@ -83,16 +61,16 @@
           "oo": false,
           "sdk": "8.40.0",
           "di": {
-            "b": "arm64",
-            "p": "arm64",
             "tz": "${json-unit.ignore}",
+            "bid": "${json-unit.ignore}",
+            "p": "arm64",
             "dn": "${json-unit.ignore}",
-            "dma": "Apple",
-            "dlc": "${json-unit.ignore}",
-            "dsh": "1440",
             "dll": "en",
+            "dsh": "1440",
             "idst": false,
+            "dlc": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
+            "dma": "Apple",
             "dp": "iOS",
             "tzn": "${json-unit.ignore}",
             "dsw": "960",
@@ -105,7 +83,7 @@
             },
             "lat": false,
             "arc": "arm64e",
-            "bid": "${json-unit.ignore}"
+            "b": "arm64"
           },
           "stl": 60
         },
@@ -117,21 +95,21 @@
   },
   "response": {
     "status": 202,
-    "bodyFileName": "body-commerce-event-purchase.json",
+    "bodyFileName": "body-timed-event.json",
     "headers": {
       "X-Cache": "MISS, MISS",
-      "X-MP-Trace-Id": "691f69910145954350c1981a987e0d31",
+      "X-MP-Trace-Id": "692dbcb044c20919c68bac1420c1ab2f",
       "Server": "Kestrel",
-      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kiad7000043_IAD",
-      "Date": "Thu, 20 Nov 2025 19:18:41 GMT",
-      "X-Timer": "S1763666321.275657,VS0,VE17",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kjyo7100098_IAD",
+      "Date": "Mon, 01 Dec 2025 16:05:04 GMT",
+      "X-Timer": "S1764605104.140119,VS0,VE21",
       "Via": "1.1 varnish, 1.1 varnish",
       "Accept-Ranges": "bytes",
-      "X-Served-By": "cache-iad-kiad7000043-IAD, cache-lga21934-LGA",
+      "X-Served-By": "cache-iad-kjyo7100098-IAD, cache-lga21971-LGA",
       "Vary": "Accept-Encoding",
       "X-Cache-Hits": "0, 0",
       "Content-Type": "application/json"
     }
   },
-  "uuid": "6fd492b0-abdb-39f1-976e-8e7fb6f7ed00"
+  "uuid": "35c40706-b94c-3dc5-9de7-954f74178568"
 }

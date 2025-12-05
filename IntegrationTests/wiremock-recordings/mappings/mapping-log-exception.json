@@ -1,5 +1,5 @@
 {
-  "id": "6fd492b0-abdb-39f1-976e-8e7fb6f7ed00",
+  "id": "ed21a661-dd24-3c78-88e9-0e4f7a4c639b",
   "request": {
     "method": "POST",
     "bodyPatterns": [
@@ -9,43 +9,19 @@
           "ltv": 0,
           "msgs": [
             {
-              "sct": "${json-unit.ignore}",
-              "pd": {
-                "tr": "12.09",
-                "pl": [
-                  {
-                    "ca": "Fiction",
-                    "nm": "Awesome Book",
-                    "qt": "1",
-                    "id": "${json-unit.ignore}",
-                    "tpa": "9.99",
-                    "pr": "9.99",
-                    "attrs": {
-                      "custom key": "custom value"
-                    },
-                    "br": "A Publisher",
-                    "cc": "XYZ123",
-                    "ps": "1"
-                  }
-                ],
-                "an": "purchase",
-                "co": "Credit Card",
-                "ti": "zyx098",
-                "ts": "1.23",
-                "ta": "Book seller",
-                "tt": "0.87",
-                "cs": "4"
-              },
-              "ct": "${json-unit.ignore}",
-              "dt": "cm",
               "id": "${json-unit.ignore}",
-              "sn": "Timeless Books",
+              "vc": "off_thread",
+              "dt": "x",
+              "is": "${json-unit.ignore}",
+              "ct": "${json-unit.ignore}",
+              "eh": "true",
+              "c": "NSInvalidArgumentException",
+              "sct": "${json-unit.ignore}",
+              "s": "error",
               "sid": "${json-unit.ignore}",
-              "attrs": {
-                "an_extra_key": "an_extra_value"
-              },
-              "mt": false,
-              "vc": "off_thread"
+              "m": "-[ViewController someMethodThatDoesNotExist]: unrecognized selector sent to instance",
+              "iba": "${json-unit.ignore}",
+              "mt": false
             }
           ],
           "dt": "h",
@@ -75,7 +51,7 @@
               "n": 1
             },
             {
-              "i": "foo@example.com",
+              "i": "j.smit@example.com",
               "n": 7
             }
           ],
@@ -83,18 +59,18 @@
           "oo": false,
           "sdk": "8.40.0",
           "di": {
-            "b": "arm64",
-            "p": "arm64",
             "tz": "${json-unit.ignore}",
+            "bid": "${json-unit.ignore}",
+            "p": "arm64",
             "dn": "${json-unit.ignore}",
-            "dma": "Apple",
-            "dlc": "${json-unit.ignore}",
-            "dsh": "1440",
             "dll": "en",
-            "idst": false,
+            "dma": "Apple",
+            "dsh": "1440",
+            "dlc": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
-            "dp": "iOS",
+            "idst": false,
             "tzn": "${json-unit.ignore}",
+            "dp": "iOS",
             "dsw": "960",
             "dosv": "${json-unit.ignore}",
             "it": false,
@@ -105,7 +81,7 @@
             },
             "lat": false,
             "arc": "arm64e",
-            "bid": "${json-unit.ignore}"
+            "b": "arm64"
           },
           "stl": 60
         },
@@ -117,21 +93,21 @@
   },
   "response": {
     "status": 202,
-    "bodyFileName": "body-commerce-event-purchase.json",
+    "bodyFileName": "body-log-exception.json",
     "headers": {
       "X-Cache": "MISS, MISS",
-      "X-MP-Trace-Id": "691f69910145954350c1981a987e0d31",
+      "X-MP-Trace-Id": "692ddc5c414ea0173fc8815b5ab4ac31",
       "Server": "Kestrel",
-      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kiad7000043_IAD",
-      "Date": "Thu, 20 Nov 2025 19:18:41 GMT",
-      "X-Timer": "S1763666321.275657,VS0,VE17",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kiad7000038_IAD",
+      "Date": "Mon, 01 Dec 2025 18:20:12 GMT",
+      "X-Timer": "S1764613213.841436,VS0,VE20",
       "Via": "1.1 varnish, 1.1 varnish",
       "Accept-Ranges": "bytes",
-      "X-Served-By": "cache-iad-kiad7000043-IAD, cache-lga21934-LGA",
+      "X-Served-By": "cache-iad-kiad7000038-IAD, cache-lga21987-LGA",
       "Vary": "Accept-Encoding",
       "X-Cache-Hits": "0, 0",
       "Content-Type": "application/json"
     }
   },
-  "uuid": "6fd492b0-abdb-39f1-976e-8e7fb6f7ed00"
+  "uuid": "ed21a661-dd24-3c78-88e9-0e4f7a4c639b"
 }

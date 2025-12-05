@@ -1,5 +1,5 @@
 {
-  "id": "6fd492b0-abdb-39f1-976e-8e7fb6f7ed00",
+  "id": "4d641caa-122f-34be-9d26-7a8080b8d8b6",
   "request": {
     "method": "POST",
     "bodyPatterns": [
@@ -9,43 +9,46 @@
           "ltv": 0,
           "msgs": [
             {
-              "sct": "${json-unit.ignore}",
-              "pd": {
-                "tr": "12.09",
-                "pl": [
-                  {
-                    "ca": "Fiction",
-                    "nm": "Awesome Book",
-                    "qt": "1",
-                    "id": "${json-unit.ignore}",
-                    "tpa": "9.99",
-                    "pr": "9.99",
-                    "attrs": {
-                      "custom key": "custom value"
-                    },
-                    "br": "A Publisher",
-                    "cc": "XYZ123",
-                    "ps": "1"
-                  }
-                ],
-                "an": "purchase",
-                "co": "Credit Card",
-                "ti": "zyx098",
-                "ts": "1.23",
-                "ta": "Book seller",
-                "tt": "0.87",
-                "cs": "4"
-              },
-              "ct": "${json-unit.ignore}",
-              "dt": "cm",
               "id": "${json-unit.ignore}",
-              "sn": "Timeless Books",
+              "vc": "off_thread",
+              "ov": null,
+              "dt": "uac",
+              "ct": "${json-unit.ignore}",
+              "nv": "45",
+              "sct": "${json-unit.ignore}",
+              "d": false,
               "sid": "${json-unit.ignore}",
-              "attrs": {
-                "an_extra_key": "an_extra_value"
-              },
-              "mt": false,
-              "vc": "off_thread"
+              "na": true,
+              "n": "$Age",
+              "mt": false
+            },
+            {
+              "id": "${json-unit.ignore}",
+              "vc": "off_thread",
+              "ov": null,
+              "dt": "uac",
+              "ct": "${json-unit.ignore}",
+              "nv": "m",
+              "sct": "${json-unit.ignore}",
+              "d": false,
+              "sid": "${json-unit.ignore}",
+              "na": true,
+              "n": "$Gender",
+              "mt": false
+            },
+            {
+              "id": "${json-unit.ignore}",
+              "vc": "off_thread",
+              "ov": null,
+              "dt": "uac",
+              "ct": "${json-unit.ignore}",
+              "nv": "4",
+              "sct": "${json-unit.ignore}",
+              "d": false,
+              "sid": "${json-unit.ignore}",
+              "na": true,
+              "n": "Achieved Level",
+              "mt": false
             }
           ],
           "dt": "h",
@@ -75,7 +78,7 @@
               "n": 1
             },
             {
-              "i": "foo@example.com",
+              "i": "j.smit@example.com",
               "n": 7
             }
           ],
@@ -83,18 +86,18 @@
           "oo": false,
           "sdk": "8.40.0",
           "di": {
-            "b": "arm64",
             "p": "arm64",
+            "b": "arm64",
             "tz": "${json-unit.ignore}",
             "dn": "${json-unit.ignore}",
             "dma": "Apple",
             "dlc": "${json-unit.ignore}",
             "dsh": "1440",
-            "dll": "en",
             "idst": false,
+            "dll": "en",
             "vid": "${json-unit.ignore}",
-            "dp": "iOS",
             "tzn": "${json-unit.ignore}",
+            "dp": "iOS",
             "dsw": "960",
             "dosv": "${json-unit.ignore}",
             "it": false,
@@ -107,6 +110,11 @@
             "arc": "arm64e",
             "bid": "${json-unit.ignore}"
           },
+          "ua": {
+            "$Age": "45",
+            "$Gender": "m",
+            "Achieved Level": "4"
+          },
           "stl": 60
         },
         "ignoreArrayOrder": true,
@@ -117,21 +125,21 @@
   },
   "response": {
     "status": 202,
-    "bodyFileName": "body-commerce-event-purchase.json",
+    "bodyFileName": "body-set-user-attributes.json",
     "headers": {
       "X-Cache": "MISS, MISS",
-      "X-MP-Trace-Id": "691f69910145954350c1981a987e0d31",
+      "X-MP-Trace-Id": "692de9cffcd99a7298285f465aabf842",
       "Server": "Kestrel",
-      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kiad7000043_IAD",
-      "Date": "Thu, 20 Nov 2025 19:18:41 GMT",
-      "X-Timer": "S1763666321.275657,VS0,VE17",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kcgs7200110_IAD",
+      "Date": "Mon, 01 Dec 2025 19:17:35 GMT",
+      "X-Timer": "S1764616655.393677,VS0,VE14",
       "Via": "1.1 varnish, 1.1 varnish",
       "Accept-Ranges": "bytes",
-      "X-Served-By": "cache-iad-kiad7000043-IAD, cache-lga21934-LGA",
+      "X-Served-By": "cache-iad-kcgs7200110-IAD, cache-lga21930-LGA",
       "Vary": "Accept-Encoding",
       "X-Cache-Hits": "0, 0",
       "Content-Type": "application/json"
     }
   },
-  "uuid": "6fd492b0-abdb-39f1-976e-8e7fb6f7ed00"
+  "uuid": "4d641caa-122f-34be-9d26-7a8080b8d8b6"
 }

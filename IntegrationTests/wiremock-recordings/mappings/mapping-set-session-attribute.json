@@ -1,5 +1,5 @@
 {
-  "id": "6fd492b0-abdb-39f1-976e-8e7fb6f7ed00",
+  "id": "08b6ce22-0b43-31f0-886c-5a26f479a864",
   "request": {
     "method": "POST",
     "bodyPatterns": [
@@ -9,43 +9,22 @@
           "ltv": 0,
           "msgs": [
             {
-              "sct": "${json-unit.ignore}",
-              "pd": {
-                "tr": "12.09",
-                "pl": [
-                  {
-                    "ca": "Fiction",
-                    "nm": "Awesome Book",
-                    "qt": "1",
-                    "id": "${json-unit.ignore}",
-                    "tpa": "9.99",
-                    "pr": "9.99",
-                    "attrs": {
-                      "custom key": "custom value"
-                    },
-                    "br": "A Publisher",
-                    "cc": "XYZ123",
-                    "ps": "1"
-                  }
-                ],
-                "an": "purchase",
-                "co": "Credit Card",
-                "ti": "zyx098",
-                "ts": "1.23",
-                "ta": "Book seller",
-                "tt": "0.87",
-                "cs": "4"
-              },
-              "ct": "${json-unit.ignore}",
-              "dt": "cm",
               "id": "${json-unit.ignore}",
-              "sn": "Timeless Books",
-              "sid": "${json-unit.ignore}",
+              "smpids": [
+                6504934091054997508
+              ],
+              "vc": "off_thread",
+              "slx": "${json-unit.ignore}",
+              "dt": "se",
+              "ct": "${json-unit.ignore}",
               "attrs": {
-                "an_extra_key": "an_extra_value"
+                "Station": "Classic Rock"
               },
-              "mt": false,
-              "vc": "off_thread"
+              "sl": "${json-unit.ignore}",
+              "sct": "${json-unit.ignore}",
+              "sid": "${json-unit.ignore}",
+              "en": "${json-unit.ignore}",
+              "mt": false
             }
           ],
           "dt": "h",
@@ -75,7 +54,7 @@
               "n": 1
             },
             {
-              "i": "foo@example.com",
+              "i": "j.smit@example.com",
               "n": 7
             }
           ],
@@ -83,15 +62,15 @@
           "oo": false,
           "sdk": "8.40.0",
           "di": {
-            "b": "arm64",
             "p": "arm64",
             "tz": "${json-unit.ignore}",
+            "bid": "${json-unit.ignore}",
             "dn": "${json-unit.ignore}",
             "dma": "Apple",
-            "dlc": "${json-unit.ignore}",
             "dsh": "1440",
-            "dll": "en",
             "idst": false,
+            "dll": "en",
+            "dlc": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
             "dp": "iOS",
             "tzn": "${json-unit.ignore}",
@@ -105,7 +84,12 @@
             },
             "lat": false,
             "arc": "arm64e",
-            "bid": "${json-unit.ignore}"
+            "b": "arm64"
+          },
+          "ua": {
+            "$Age": "45",
+            "$Gender": "m",
+            "Achieved Level": "11"
           },
           "stl": 60
         },
@@ -117,21 +101,21 @@
   },
   "response": {
     "status": 202,
-    "bodyFileName": "body-commerce-event-purchase.json",
+    "bodyFileName": "body-set-session-attribute.json",
     "headers": {
       "X-Cache": "MISS, MISS",
-      "X-MP-Trace-Id": "691f69910145954350c1981a987e0d31",
+      "X-MP-Trace-Id": "69304e36e3e1bc5ad0f28209bf28f429",
       "Server": "Kestrel",
-      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kiad7000043_IAD",
-      "Date": "Thu, 20 Nov 2025 19:18:41 GMT",
-      "X-Timer": "S1763666321.275657,VS0,VE17",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kjyo7100170_IAD",
+      "Date": "Wed, 03 Dec 2025 14:50:30 GMT",
+      "X-Timer": "S1764773430.055993,VS0,VE19",
       "Via": "1.1 varnish, 1.1 varnish",
       "Accept-Ranges": "bytes",
-      "X-Served-By": "cache-iad-kiad7000043-IAD, cache-lga21934-LGA",
+      "X-Served-By": "cache-iad-kjyo7100170-IAD, cache-lga21922-LGA",
       "Vary": "Accept-Encoding",
       "X-Cache-Hits": "0, 0",
       "Content-Type": "application/json"
     }
   },
-  "uuid": "6fd492b0-abdb-39f1-976e-8e7fb6f7ed00"
+  "uuid": "08b6ce22-0b43-31f0-886c-5a26f479a864"
 }

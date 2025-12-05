@@ -1,0 +1,47 @@
+{
+  "id": "a20d4746-5f12-3170-9589-11e5d7a2703e",
+  "request": {
+    "urlPattern": "/v1/[0-9]+/modify",
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "client_sdk": {
+            "platform": "ios",
+            "sdk_version": "${json-unit.ignore}",
+            "sdk_vendor": "mparticle"
+          },
+          "environment": "development",
+          "request_timestamp_ms": "${json-unit.ignore}",
+          "request_id": "${json-unit.ignore}",
+          "identity_changes": [
+            {
+              "new_value": "A5D934N0-232F-4AFC-2E9A-3832D95ZC702",
+              "old_value": null,
+              "identity_type": "ios_idfa"
+            }
+          ]
+        },
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": false
+      }
+    ]
+  },
+  "response": {
+    "status": 404,
+    "bodyFileName": "body-log-idfa.txt",
+    "headers": {
+      "Accept-Ranges": "bytes",
+      "X-Cache": "MISS, MISS",
+      "Server": "Kestrel",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kjyo7100065_IAD",
+      "X-Served-By": "cache-iad-kjyo7100065-IAD, cache-lga21945-LGA",
+      "Vary": "Accept-Encoding",
+      "X-Cache-Hits": "0, 0",
+      "Date": "Thu, 04 Dec 2025 15:39:30 GMT",
+      "X-Timer": "S1764862771.947527,VS0,VE9",
+      "Via": "1.1 varnish, 1.1 varnish"
+    }
+  },
+  "uuid": "a20d4746-5f12-3170-9589-11e5d7a2703e"
+}
