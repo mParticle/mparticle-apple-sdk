@@ -227,7 +227,7 @@ public protocol MPUserDefaultsProtocol {
                 return swiftDict
             }
         } catch {
-            print(error)
+            MPLog.error("Failed to unarchive configuration: \(error)")
         }
         return nil
     }
@@ -252,7 +252,7 @@ public protocol MPUserDefaultsProtocol {
             setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
             setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
         } catch {
-            print(error)
+            MPLog.error("Failed to archive configuration: \(error)")
         }
     }
 
@@ -369,7 +369,7 @@ public protocol MPUserDefaultsProtocol {
                 let data = try NSKeyedArchiver.archivedData(withRootObject: lastUploadSettings, requiringSecureCoding: true)
                 setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
             } catch {
-                print(error)
+                MPLog.error("Failed to archive upload settings: \(error)")
             }
         } else {
             removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
@@ -381,7 +381,7 @@ public protocol MPUserDefaultsProtocol {
             do {
                 return try NSKeyedUnarchiver.unarchivedObject(ofClass: MPUploadSettings.self, from: data)
             } catch {
-                print(error)
+                MPLog.error("Failed to unarchive upload settings: \(error)")
             }
         }
         return nil
