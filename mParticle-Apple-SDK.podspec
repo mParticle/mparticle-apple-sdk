@@ -24,8 +24,8 @@ Pod::Spec.new do |s|
     s.requires_arc      = true
     s.default_subspec   = 'mParticle'
     s.module_name       = 'mParticle_Apple_SDK'
-    s.ios.deployment_target  = "9.0"
-    s.tvos.deployment_target = "9.0"
+    s.ios.deployment_target  = "15.6"
+    s.tvos.deployment_target = "15.6"
     s.swift_versions = ["5.0"]
 
     s.subspec 'mParticle' do |ss|
