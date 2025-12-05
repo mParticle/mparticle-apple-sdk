@@ -325,17 +325,13 @@
     XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
     XCTAssertEqual(commerceEvent.products.count, 1, @"Incorrect product count.");
     
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     commerceEvent.checkoutOptions = @"option 1";
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
-    commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @"3.14";
+    commerceEvent.customAttributes = @{@"key_string": @"val_string", @"key_number": @"3.14"};
     commerceEvent.currency = @"bitcoins";
     commerceEvent.nonInteractive = YES;
     commerceEvent.screenName = @"time machine screen";
-#pragma clang diagnostic pop
     
     product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
     product.brand = @"Gallifrey Tardis";
