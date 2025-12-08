@@ -167,6 +167,7 @@ find_app_path
 reset_simulators
 find_available_device
 find_device
+remove_proxy_mappings
 escape_mapping_bodies
 start_wiremock "verify"
 wait_for_wiremock

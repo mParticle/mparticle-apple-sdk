@@ -1,0 +1,24 @@
+{
+  "id": "1185200e-3f83-3ae5-8323-4810b47060cb",
+  "request": {
+    "method": "GET",
+    "urlPattern": "/v1/us1-[a-f0-9]+/audience\\?mpid=[0-9]+"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "body-get-user-audiences.json",
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Accept-Ranges": "bytes",
+      "X-Cache": "MISS, MISS",
+      "Server": "Kestrel",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kjyo7100175_IAD",
+      "X-Served-By": "cache-iad-kjyo7100175-IAD, cache-lga21925-LGA",
+      "X-Cache-Hits": "0, 0",
+      "Date": "Mon, 01 Dec 2025 15:33:54 GMT",
+      "X-Timer": "S1764603234.125633,VS0,VE40",
+      "Via": "1.1 varnish, 1.1 varnish"
+    }
+  },
+  "uuid": "1185200e-3f83-3ae5-8323-4810b47060cb"
+}

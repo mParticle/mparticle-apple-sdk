@@ -1,0 +1,141 @@
+{
+  "id": "c43a090d-ecf3-3318-a31d-f7950c361e69",
+  "request": {
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "id": "${json-unit.ignore}",
+          "ltv": 0,
+          "msgs": [
+            {
+              "et": "Other",
+              "id": "${json-unit.ignore}",
+              "vc": "off_thread",
+              "dt": "e",
+              "el": "${json-unit.ignore}",
+              "ct": "${json-unit.ignore}",
+              "attrs": {
+                "att_status": "authorized"
+              },
+              "sct": "${json-unit.ignore}",
+              "sid": "${json-unit.ignore}",
+              "en": "${json-unit.ignore}",
+              "n": "ATT Status Updated",
+              "est": "${json-unit.ignore}",
+              "mt": false
+            }
+          ],
+          "dt": "h",
+          "a": "${json-unit.ignore}",
+          "ai": {
+            "ict": "${json-unit.ignore}",
+            "sideloaded_kits_count": 0,
+            "bid": "${json-unit.ignore}",
+            "pir": false,
+            "fi": true,
+            "lud": "${json-unit.ignore}",
+            "arc": "arm64",
+            "tsv": "90000",
+            "apn": "com.mparticle.IntegrationTests",
+            "env": 1,
+            "abn": "1",
+            "bsv": "${json-unit.ignore}",
+            "av": "1.0"
+          },
+          "ct": "${json-unit.ignore}",
+          "ck": "${json-unit.ignore}",
+          "das": "${json-unit.ignore}",
+          "mpid": 6504934091054997508,
+          "ui": [
+            {
+              "i": "123456",
+              "n": 1
+            },
+            {
+              "i": "j.smit@example.com",
+              "n": 7
+            }
+          ],
+          "uitl": 60,
+          "oo": false,
+          "sdk": "8.40.0",
+          "di": {
+            "tz": "-5",
+            "p": "arm64",
+            "b": "arm64",
+            "dn": "${json-unit.ignore}",
+            "dll": "en",
+            "dlc": "${json-unit.ignore}",
+            "idst": false,
+            "dsh": "1440",
+            "vid": "${json-unit.ignore}",
+            "dma": "Apple",
+            "atts": "authorized",
+            "tzn": "America/New_York",
+            "dp": "iOS",
+            "dsw": "960",
+            "attt": 1700000000000,
+            "dosv": "${json-unit.ignore}",
+            "it": false,
+            "dmdl": "arm64",
+            "dr": "None",
+            "jb": {
+              "cydia": false
+            },
+            "lat": false,
+            "arc": "arm64e",
+            "bid": "${json-unit.ignore}"
+          },
+          "ua": {
+            "$Age": "45",
+            "$Gender": "m",
+            "Achieved Level": "11"
+          },
+          "con": {
+            "ccpa": {
+              "data_sale_opt_out": {
+                "d": "ccpa_consent_agreement_v3",
+                "ts": 1700000000000,
+                "l": "17 Cherry Tree Lane",
+                "c": true,
+                "h": "IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"
+              }
+            },
+            "gdpr": {
+              "my gdpr purpose": {
+                "d": "location_collection_agreement_v4",
+                "ts": 1700000000000,
+                "l": "17 Cherry Tree Lane",
+                "c": true,
+                "h": "IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"
+              }
+            }
+          },
+          "stl": 60
+        },
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": false
+      }
+    ],
+    "urlPattern": "/v2/us1-[a-f0-9]+/events"
+  },
+  "response": {
+    "status": 400,
+    "bodyFileName": "body-set-att-status.json",
+    "headers": {
+      "X-Cache": "MISS, MISS",
+      "Server": "Kestrel",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kiad7000150_IAD",
+      "Date": "Thu, 04 Dec 2025 16:26:49 GMT",
+      "X-Timer": "S1764865610.515283,VS0,VE22",
+      "Via": "1.1 varnish, 1.1 varnish",
+      "Accept-Ranges": "bytes",
+      "X-Served-By": "cache-iad-kiad7000150-IAD, cache-lga21931-LGA",
+      "Vary": "Accept-Encoding",
+      "X-Cache-Hits": "0, 0",
+      "Content-Type": "application/json"
+    }
+  },
+  "uuid": "c43a090d-ecf3-3318-a31d-f7950c361e69"
+}
