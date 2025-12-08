@@ -158,6 +158,18 @@ install_application() {
 
 launch_application() {
   echo "▶️ Launching application..."
+  
+  # Launch with environment variables using SIMCTL_CHILD_ prefix
+  # If not set, the app will use fake keys for verification mode
+  local launch_cmd="xcrun simctl launch \"$DEVICE_ID\" \"$BUNDLE_ID\""
+  
+  if [ -n "$MPARTICLE_API_KEY" ]; then
+    export SIMCTL_CHILD_MPARTICLE_API_KEY="$MPARTICLE_API_KEY"
+  fi
+  if [ -n "$MPARTICLE_API_SECRET" ]; then
+    export SIMCTL_CHILD_MPARTICLE_API_SECRET="$MPARTICLE_API_SECRET"
+  fi
+  
   LAUNCH_OUTPUT=$(xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID")
   APP_PID=$(echo "$LAUNCH_OUTPUT" | awk -F': ' '{print $2}')
 
@@ -171,7 +183,7 @@ launch_application() {
 
 wait_for_app_completion() {
   echo "⏳ Waiting for app to complete execution..."
-  local MAX_WAIT=60
+  local MAX_WAIT=120
   local WAIT_COUNT=0
   while kill -0 "$APP_PID" 2>/dev/null; do
     sleep 1
@@ -260,5 +272,49 @@ stop_wiremock() {
 stop_wiremock_with_logs() {
   show_wiremock_logs
   stop_wiremock
+}
+
+create_proxy_mappings() {
+  echo "📝 Creating proxy mappings for recording mode..."
+  
+  local PROXY_DIR="${MAPPINGS_DIR}/mappings"
+  mkdir -p "$PROXY_DIR"
+  
+  # Create proxy-identify.json
+  cat > "${PROXY_DIR}/proxy-identify.json" << 'EOF'
+{
+  "priority": 1,
+  "request": {
+    "urlPathPattern": "/v1/identify"
+  },
+  "response": {
+    "proxyBaseUrl": "https://identity.mparticle.com"
+  }
+}
+EOF
+
+  # Create proxy-events.json
+  cat > "${PROXY_DIR}/proxy-events.json" << 'EOF'
+{
+  "priority": 1,
+  "request": {
+    "urlPathPattern": "/v2/events"
+  },
+  "response": {
+    "proxyBaseUrl": "https://nativesdks.mparticle.com"
+  }
+}
+EOF
+
+  echo "✅ Proxy mappings created"
+}
+
+remove_proxy_mappings() {
+  echo "🗑️  Removing proxy mappings for verification mode..."
+  
+  rm -f "${MAPPINGS_DIR}/mappings/proxy-identify.json" 2>/dev/null || true
+  rm -f "${MAPPINGS_DIR}/mappings/proxy-events.json" 2>/dev/null || true
+  
+  echo "✅ Proxy mappings removed"
 }
 
