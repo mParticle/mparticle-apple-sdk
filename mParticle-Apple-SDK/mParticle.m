@@ -676,30 +676,6 @@ MPLog* logger;
 }
 #endif
 
-- (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    if (_proxiedAppDelegate) {
-        return;
-    }
-    
-    [self.appNotificationHandler openURL:url sourceApplication:sourceApplication annotation:annotation];
-}
-
-- (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
-    if (_proxiedAppDelegate || [[[UIDevice currentDevice] systemVersion] floatValue] < 9.0) {
-        return;
-    }
-    
-    [self.appNotificationHandler openURL:url options:options];
-}
-
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler {
-    if (self.proxiedAppDelegate) {
-        return NO;
-    }
-
-    return [self.appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
-}
-
 #if TARGET_OS_IOS == 1
 - (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
     [self.sceneDelegateHandler handleWithUrlContext:urlContext];
