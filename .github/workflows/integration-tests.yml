@@ -44,10 +44,6 @@ jobs:
             "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${{ env.WIREMOCK_VERSION }}/wiremock-standalone-${{ env.WIREMOCK_VERSION }}.jar"
           echo "✅ WireMock downloaded"
 
-      - name: List available simulators
-        run: |
-          xcrun simctl list devices iPhone | head -20
-
       - name: Run Integration Tests
         id: integration_tests
         working-directory: ${{ env.WORKING_DIRECTORY }}
@@ -109,14 +105,3 @@ jobs:
           path: ${{ env.WORKING_DIRECTORY }}/artifacts/
           retention-days: 7
           if-no-files-found: ignore
-
-      - name: Cleanup
-        if: always()
-        working-directory: ${{ env.WORKING_DIRECTORY }}
-        run: |
-          # Stop WireMock if running
-          pkill -f wiremock || true
-          
-          # Shutdown simulators
-          xcrun simctl shutdown all || true
-
