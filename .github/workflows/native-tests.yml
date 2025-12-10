@@ -12,6 +12,7 @@ env:
 
 jobs:
   native-unit-tests:
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       max-parallel: 4
