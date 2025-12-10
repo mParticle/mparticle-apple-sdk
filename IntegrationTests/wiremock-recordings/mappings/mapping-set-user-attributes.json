@@ -1,0 +1,145 @@
+{
+  "id": "4d641caa-122f-34be-9d26-7a8080b8d8b6",
+  "request": {
+    "method": "POST",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "id": "${json-unit.ignore}",
+          "ltv": 0,
+          "msgs": [
+            {
+              "id": "${json-unit.ignore}",
+              "vc": "off_thread",
+              "ov": null,
+              "dt": "uac",
+              "ct": "${json-unit.ignore}",
+              "nv": "45",
+              "sct": "${json-unit.ignore}",
+              "d": false,
+              "sid": "${json-unit.ignore}",
+              "na": true,
+              "n": "$Age",
+              "mt": false
+            },
+            {
+              "id": "${json-unit.ignore}",
+              "vc": "off_thread",
+              "ov": null,
+              "dt": "uac",
+              "ct": "${json-unit.ignore}",
+              "nv": "m",
+              "sct": "${json-unit.ignore}",
+              "d": false,
+              "sid": "${json-unit.ignore}",
+              "na": true,
+              "n": "$Gender",
+              "mt": false
+            },
+            {
+              "id": "${json-unit.ignore}",
+              "vc": "off_thread",
+              "ov": null,
+              "dt": "uac",
+              "ct": "${json-unit.ignore}",
+              "nv": "4",
+              "sct": "${json-unit.ignore}",
+              "d": false,
+              "sid": "${json-unit.ignore}",
+              "na": true,
+              "n": "Achieved Level",
+              "mt": false
+            }
+          ],
+          "dt": "h",
+          "a": "${json-unit.ignore}",
+          "ai": {
+            "av": "1.0",
+            "sideloaded_kits_count": 0,
+            "bid": "${json-unit.ignore}",
+            "pir": false,
+            "fi": false,
+            "lud": "${json-unit.ignore}",
+            "arc": "arm64",
+            "tsv": "90000",
+            "apn": "com.mparticle.IntegrationTests",
+            "env": 1,
+            "abn": "1",
+            "bsv": "${json-unit.ignore}",
+            "ict": "${json-unit.ignore}"
+          },
+          "ct": "${json-unit.ignore}",
+          "ck": "${json-unit.ignore}",
+          "das": "${json-unit.ignore}",
+          "mpid": 6504934091054997508,
+          "ui": [
+            {
+              "i": "123456",
+              "n": 1
+            },
+            {
+              "i": "j.smit@example.com",
+              "n": 7
+            }
+          ],
+          "uitl": 60,
+          "oo": false,
+          "sdk": "8.40.0",
+          "di": {
+            "p": "arm64",
+            "b": "arm64",
+            "tz": "-5",
+            "dn": "${json-unit.ignore}",
+            "dma": "Apple",
+            "dlc": "${json-unit.ignore}",
+            "dsh": "1440",
+            "idst": false,
+            "dll": "en",
+            "vid": "${json-unit.ignore}",
+            "tzn": "America/New_York",
+            "dp": "iOS",
+            "dsw": "960",
+            "dosv": "${json-unit.ignore}",
+            "it": false,
+            "dmdl": "arm64",
+            "dr": "None",
+            "jb": {
+              "cydia": false
+            },
+            "lat": false,
+            "arc": "arm64e",
+            "bid": "${json-unit.ignore}"
+          },
+          "ua": {
+            "$Age": "45",
+            "$Gender": "m",
+            "Achieved Level": "4"
+          },
+          "stl": 60
+        },
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": false
+      }
+    ],
+    "urlPattern": "/v2/us1-[a-f0-9]+/events"
+  },
+  "response": {
+    "status": 202,
+    "bodyFileName": "body-set-user-attributes.json",
+    "headers": {
+      "X-Cache": "MISS, MISS",
+      "X-MP-Trace-Id": "692de9cffcd99a7298285f465aabf842",
+      "Server": "Kestrel",
+      "X-Origin-Name": "fastlyshield--shield_ssl_cache_iad_kcgs7200110_IAD",
+      "Date": "Mon, 01 Dec 2025 19:17:35 GMT",
+      "X-Timer": "S1764616655.393677,VS0,VE14",
+      "Via": "1.1 varnish, 1.1 varnish",
+      "Accept-Ranges": "bytes",
+      "X-Served-By": "cache-iad-kcgs7200110-IAD, cache-lga21930-LGA",
+      "Vary": "Accept-Encoding",
+      "X-Cache-Hits": "0, 0",
+      "Content-Type": "application/json"
+    }
+  },
+  "uuid": "4d641caa-122f-34be-9d26-7a8080b8d8b6"
+}
