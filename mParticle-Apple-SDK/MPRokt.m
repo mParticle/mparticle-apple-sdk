@@ -87,11 +87,8 @@ NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
                 }
             }
             
-            // Add IDFA to attributes if available
-            NSString *idfa = resolvedUser.identities[@(MPIdentityIOSAdvertiserId)];
-            if (idfa.length > 0) {
-                mappedAttributes[kMPRoktAttributeKeyIDFA] = idfa;
-            }
+            // Add device identifiers (IDFA, IDFV) if available
+            [self addDeviceIdentifiers:mappedAttributes fromUser:resolvedUser];
             
             dispatch_async([MParticle messageQueue], ^{
                 // Forwarding call to kits
@@ -266,6 +263,26 @@ NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
     }
     
     return finalAttributes;
+}
+
+/// Adds device identifiers (IDFA and IDFV) to the attributes dictionary if they are available.
+/// This method extracts IDFA (iOS Advertising Identifier) and IDFV (iOS Vendor Identifier) from the user's
+/// identities and adds them to the provided attributes dictionary using the Rokt-specific attribute keys.
+/// - Parameters:
+///   - attributes: Mutable dictionary to which device identifiers will be added
+///   - user: The mParticle user from which to extract identity information
+- (void)addDeviceIdentifiers:(NSMutableDictionary<NSString *, NSString *> *)attributes fromUser:(MParticleUser *)user {
+    // Add IDFA to attributes if available
+    NSString *idfa = user.identities[@(MPIdentityIOSAdvertiserId)];
+    if (idfa.length > 0) {
+        attributes[kMPRoktAttributeKeyIDFA] = idfa;
+    }
+    
+    // Add IDFV to attributes if available
+    NSString *idfv = user.identities[@(MPIdentityIOSVendorId)];
+    if (idfv.length > 0) {
+        attributes[kMPRoktAttributeKeyIDFV] = idfv;
+    }
 }
 
 /// Synchronizes user identity with mParticle if email or hashed email is provided in attributes.
