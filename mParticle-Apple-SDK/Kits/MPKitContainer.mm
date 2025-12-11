@@ -70,7 +70,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 @interface MPKitContainer_PRIVATE () {
     dispatch_semaphore_t kitsSemaphore;
-    std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>> brackets;
+    NSMutableDictionary<NSNumber *, MPBracket *> *brackets;
     NSInteger sideloadedKitCodeNextValue;
 }
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
@@ -97,6 +97,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSMutableDictionary *linkInfo = _attributionInfo;
         _initializedTime = [NSDate date];
         kitsSemaphore = dispatch_semaphore_create(1);
+        brackets = [[NSMutableDictionary alloc] init];
         sideloadedKitCodeNextValue = sideloadedKitCodeStartValue;
         
         _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
@@ -197,14 +198,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     return kitsRegistry;
 }
 
-- (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)integrationId {
+- (MPBracket *)bracketForKit:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
-    std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
-    bracketIterator = brackets.find(integrationId);
-    
-    shared_ptr<mParticle::Bracket> bracket = bracketIterator != brackets.end() ? bracketIterator->second : nullptr;
-    return bracket;
+    return brackets[integrationId];
 }
 
 - (void)flushSerializedKits {
@@ -408,7 +405,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
-    shared_ptr<mParticle::Bracket> localBracket;
     if (!bracketConfiguration) {
         return NO;
     }
@@ -418,8 +414,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     long mpId = [[MPPersistenceController_PRIVATE mpId] longValue];
     short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
     short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
-    localBracket = make_shared<mParticle::Bracket>(mpId, low, high);
-    return !localBracket->shouldForward();
+    MPBracket *localBracket = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
+    return ![localBracket shouldForward];
 }
 
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter {
@@ -610,14 +606,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
-    std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
-    bracketIterator = brackets.find(integrationId);
-    
     if (!configuration) {
-        if (bracketIterator != brackets.end()) {
-            brackets.erase(bracketIterator);
-        }
-        
+        [brackets removeObjectForKey:integrationId];
         return;
     }
     
@@ -625,14 +615,13 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     short low = (short)[configuration[@"lo"] integerValue];
     short high = (short)[configuration[@"hi"] integerValue];
     
-    shared_ptr<mParticle::Bracket> bracket;
-    if (bracketIterator != brackets.end()) {
-        bracket = bracketIterator->second;
-        bracket->mpId = mpId;
-        bracket->low = low;
-        bracket->high = high;
+    MPBracket *bracket = brackets[integrationId];
+    if (bracket) {
+        bracket.mpId = mpId;
+        bracket.low = low;
+        bracket.high = high;
     } else {
-        brackets[integrationId] = make_shared<mParticle::Bracket>(mpId, low, high);
+        brackets[integrationId] = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
     }
 }
 
@@ -1966,14 +1955,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (BOOL)isActiveAndNotDisabled:(id<MPExtensionKitProtocol>)kitRegister {
     BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
-    std::shared_ptr<mParticle::Bracket> bracket = [self bracketForKit:kitRegister.code];
+    MPBracket *bracket = [self bracketForKit:kitRegister.code];
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-    
+
     BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitRegister.code].consentKitFilter];
     BOOL disabledByExcludingAnonymousUsers =  (self.kitConfigurations[kitRegister.code].excludeAnonymousUsers && !currentUser.isLoggedIn);
-    BOOL disabledByRamping =  !(bracket == nullptr || (bracket != nullptr && bracket->shouldForward()));
+    // May be able to remove this entirely and not require CPP
+    BOOL disabledByRamping =  !(bracket == nil || (bracket != nil && [bracket shouldForward]));
     BOOL disabledKit = [_disabledKits containsObject:kitRegister.code];
-    
+
     return (active && !disabledByRamping && !disabledByConsent && !disabledByExcludingAnonymousUsers && !disabledKit);
 }
 
