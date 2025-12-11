@@ -60,6 +60,11 @@
 
 - (void)testSelectPlacementsSimpleWithValidParameters {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    
+    // Set up IDFA on the current user
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    NSArray *userIdentityArray = @[@{@"n" : @(MPIdentityIOSAdvertiserId), @"i" : @"ABC123-IDFA-TEST"}];
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
 
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
@@ -82,7 +87,7 @@
 
     // Set up test parameters
     NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"idfa": @"ABC123-IDFA-TEST", @"sandbox": @"false"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
@@ -113,17 +118,36 @@
 }
 
 - (void)testSelectPlacementsExpandedWithValidParameters {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    
+    // Set up IDFA on the current user
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    NSArray *userIdentityArray = @[@{@"n" : @(MPIdentityIOSAdvertiserId), @"i" : @"DEF456-IDFA-TEST"}];
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [[[self.identityMock stub] andReturn:currentUser] currentUser];
+    
+    self.mockApiResult = OCMClassMock([MPIdentityApiResult class]);
+    OCMStub([self.mockApiResult user]).andReturn(currentUser);
+    
+    [[[self.identityMock stub] andDo:^(NSInvocation *invocation) {
+        void (^completion)(MPIdentityApiResult * _Nullable, NSError * _Nullable);
+        [invocation getArgument:&completion atIndex:3];
+        completion(self.mockApiResult, nil);
+    }] identify:[OCMArg any] completion:[OCMArg any]];
     
     // Set up test parameters
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
-    NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
+    NSDictionary *finalAttributes = @{@"key": @"value", @"idfa": @"DEF456-IDFA-TEST", @"sandbox": @"true"};
     MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement": exampleView};
     MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
@@ -221,17 +245,36 @@
 }
 
 - (void)testSelectPlacementsSimpleWithMapping {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    
+    // Set up IDFA on the current user
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    NSArray *userIdentityArray = @[@{@"n" : @(MPIdentityIOSAdvertiserId), @"i" : @"C56A4180-65AA-42EC-A945-5FD21DEC0538"}];
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    
     [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [[[self.identityMock stub] andReturn:currentUser] currentUser];
+    
+    self.mockApiResult = OCMClassMock([MPIdentityApiResult class]);
+    OCMStub([self.mockApiResult user]).andReturn(currentUser);
+    
+    [[[self.identityMock stub] andDo:^(NSInvocation *invocation) {
+        void (^completion)(MPIdentityApiResult * _Nullable, NSError * _Nullable);
+        [invocation getArgument:&completion atIndex:3];
+        completion(self.mockApiResult, nil);
+    }] identify:[OCMArg any] completion:[OCMArg any]];
     
     // Set up test parameters
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
-    NSDictionary *mappedAttributes = @{@"firstname": @"Brandon", @"sandbox": @"true"};
+    NSDictionary *mappedAttributes = @{@"firstname": @"Brandon", @"idfa": @"C56A4180-65AA-42EC-A945-5FD21DEC0538", @"sandbox": @"true"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
