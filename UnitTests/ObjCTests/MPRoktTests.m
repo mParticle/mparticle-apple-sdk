@@ -60,10 +60,14 @@
 
 #pragma mark - Helper Methods
 
+- (MParticle *)sharedInstance {
+    return [MParticle sharedInstance];
+}
+
 - (void)setUserIdentities:(NSArray<NSDictionary *> *)identities forUser:(MParticleUser *)user {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine 
-                                                                     backendController:[MParticle sharedInstance].backendController 
-                                                                              identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:self.sharedInstance.stateMachine 
+                                                                     backendController:self.sharedInstance.backendController 
+                                                                              identity:self.sharedInstance.identity];
     [userDefaults setMPObject:identities forKey:kMPUserIdentityArrayKey userId:user.userId];
 }
 
@@ -78,13 +82,13 @@
 #pragma mark - Tests
 
 - (void)testSelectPlacementsSimpleWithValidParameters {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
     [self setIDFA:@"ABC123-IDFA-TEST" IDFV:@"ABC123-IDFV-TEST" forUser:currentUser];
 
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
@@ -135,13 +139,13 @@
 }
 
 - (void)testSelectPlacementsExpandedWithValidParameters {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
     [self setIDFA:@"DEF456-IDFA-TEST" IDFV:@"DEF456-IDFV-TEST" forUser:currentUser];
     
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
@@ -216,7 +220,7 @@
 
 - (void)testSelectPlacementsExpandedWithNilParameters {
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
@@ -260,13 +264,13 @@
 }
 
 - (void)testSelectPlacementsSimpleWithMapping {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
     [self setIDFA:@"C56A4180-65AA-42EC-A945-5FD21DEC0538" IDFV:@"C56A4180-65AA-42EC-A945-5FD21DEC0539" forUser:currentUser];
     
     [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
@@ -319,7 +323,7 @@
 
 - (void)testSelectPlacementsSimpleWithNilMapping {
     [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
@@ -345,7 +349,7 @@
 }
 
 - (void)testGetRoktPlacementAttributesMapping {
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     NSArray *kitConfig = @[@{
@@ -373,7 +377,7 @@
 
 - (void)testSelectPlacementsIdentifyUser {
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
@@ -400,10 +404,10 @@
 }
 
 - (void)testTriggeredIdentifyWithNoIdentities {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
 
     //Mock Identity as needed
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
@@ -424,7 +428,7 @@
 }
 
 - (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
 
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@yahoo.com"}];
     [self setUserIdentities:userIdentityArray forUser:currentUser];
@@ -432,7 +436,7 @@
     XCTAssertEqualObjects(currentUser.identities[@(MPIdentityEmail)], @"test@yahoo.com");
     
     //Mock Identity as needed
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
@@ -492,7 +496,7 @@
 }
 
 - (void)hashedIdentityTest: (MPIdentity)mpIdentity {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
 
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:mpIdentity], @"i" : @"test@yahoo.com"}];
     [self setUserIdentities:userIdentityArray forUser:currentUser];
@@ -501,7 +505,7 @@
     
     //Mock Identity as needed
     [[[self.mockRokt stub] andReturn:@(mpIdentity)] getRoktHashedEmailUserIdentityType];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
@@ -522,7 +526,7 @@
 }
 
 - (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityType {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
 
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
     [self setUserIdentities:userIdentityArray forUser:currentUser];
@@ -531,7 +535,7 @@
     
     //Mock Identity as needed
     [[[self.mockRokt stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
@@ -552,7 +556,7 @@
 }
 
 - (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityType {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
 
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
     [self setUserIdentities:userIdentityArray forUser:currentUser];
@@ -561,7 +565,7 @@
     
     //Mock Identity as needed
     [[[self.mockRokt stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
@@ -582,7 +586,7 @@
 }
 
 - (void)testPurchaseFinalized {
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
@@ -610,7 +614,7 @@
     });
     
     // Execute method
-    [[MParticle sharedInstance].rokt purchaseFinalized:placementId catalogItemId:catalogItemId success:success];
+    [self.sharedInstance.rokt purchaseFinalized:placementId catalogItemId:catalogItemId success:success];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
@@ -620,7 +624,7 @@
 }
 
 - (void)testEventsWithIdentifier {
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
@@ -662,7 +666,7 @@
 }
 
 - (void)testEventsWithIdentifierWithNilCallback {
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
@@ -697,7 +701,7 @@
 }
 
 - (void)testEventsWithIdentifierCallbackInvocation {
-    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance = self.sharedInstance;
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
