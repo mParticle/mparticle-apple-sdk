@@ -278,7 +278,12 @@ static const NSInteger kMPRoktKitId = 181;
 /// - Parameters:
 ///   - attributes: Mutable dictionary to which device identifiers will be added
 ///   - user: The mParticle user from which to extract identity information
-- (void)addDeviceIdentifiers:(NSMutableDictionary<NSString *, NSString *> *)attributes fromUser:(MParticleUser *)user {
+- (void)addDeviceIdentifiers:(NSMutableDictionary<NSString *, NSString *> * _Nullable)attributes fromUser:(MParticleUser *)user {
+    // Return early if attributes is nil
+    if (!attributes) {
+        return;
+    }
+    
     // Add IDFA to attributes if available
     NSString *idfa = user.identities[@(MPIdentityIOSAdvertiserId)];
     if (idfa.length > 0) {
