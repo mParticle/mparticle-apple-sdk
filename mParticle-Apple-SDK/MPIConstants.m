@@ -419,6 +419,9 @@ NSString * const kMPDeviceInvalidVendorId = @"00000000-0000-0000-0000-0000000000
 // MPRokt Constants
 NSString * const kMPPlacementAttributesMapping = @"placementAttributesMapping";
 NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
+NSString * const kMPRoktAttributeKeyIDFA = @"idfa";
+NSString * const kMPRoktAttributeKeyIDFV = @"idfv";
+NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
 
 //
 // Primitive data type constants

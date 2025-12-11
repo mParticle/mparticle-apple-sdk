@@ -12,6 +12,11 @@
 #import "MPIConstants.h"
 #import "MPIdentityDTO.h"
 
+// Constants for kit configuration keys
+static NSString * const kMPKitConfigurationIdKey = @"id";
+static NSString * const kMPAttributeMappingSourceKey = @"map";
+static NSString * const kMPAttributeMappingDestinationKey = @"value";
+
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
@@ -49,8 +54,8 @@
         if (attributeMap) {
             NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
             for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
-                NSString *mapFrom = map[@"map"];
-                NSString *mapTo = map[@"value"];
+                NSString *mapFrom = map[kMPAttributeMappingSourceKey];
+                NSString *mapTo = map[kMPAttributeMappingDestinationKey];
                 if (mappedAttributes[mapFrom]) {
                     NSString * value = mappedAttributes[mapFrom];
                     [mappedAttributes removeObjectForKey:mapFrom];
@@ -58,7 +63,7 @@
                 }
             }
             for (NSString *key in mappedAttributes) {
-                if (![key isEqual:@"sandbox"]) {
+                if (![key isEqual:kMPRoktAttributeKeySandbox]) {
                     [resolvedUser setUserAttribute:key value:mappedAttributes[key]];
                 }
             }
@@ -66,7 +71,7 @@
             // Add IDFA to attributes if available
             NSString *idfa = resolvedUser.identities[@(MPIdentityIOSAdvertiserId)];
             if (idfa.length > 0) {
-                mappedAttributes[@"idfa"] = idfa;
+                mappedAttributes[kMPRoktAttributeKeyIDFA] = idfa;
             }
             
             dispatch_async([MParticle messageQueue], ^{
@@ -145,7 +150,7 @@
     NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
     NSDictionary *roktKitConfig;
     for (NSDictionary *kitConfig in kitConfigs) {
-        if (kitConfig[@"id"] != nil && [kitConfig[@"id"] integerValue] == 181) {
+        if (kitConfig[kMPKitConfigurationIdKey] != nil && [kitConfig[kMPKitConfigurationIdKey] integerValue] == 181) {
             roktKitConfig = kitConfig;
         }
     }
@@ -190,7 +195,7 @@
     NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
     NSDictionary *roktKitConfig;
     for (NSDictionary *kitConfig in kitConfigs) {
-        if (kitConfig[@"id"] != nil && [kitConfig[@"id"] integerValue] == 181) {
+        if (kitConfig[kMPKitConfigurationIdKey] != nil && [kitConfig[kMPKitConfigurationIdKey] integerValue] == 181) {
             roktKitConfig = kitConfig;
         }
     }
@@ -204,18 +209,17 @@
 
 - (NSDictionary<NSString *, NSString *> *)confirmSandboxAttribute:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
     NSMutableDictionary<NSString *, NSString *> *finalAttributes = attributes.mutableCopy;
-    NSString *sandboxKey = @"sandbox";
     
     // Determine the value of the sandbox attribute based off the current environment
     NSString *sandboxValue = ([[MParticle sharedInstance] environment] == MPEnvironmentDevelopment) ? @"true" : @"false";
     
     if (finalAttributes != nil) {
         // Only set sandbox if it`s not set by the client
-        if (![finalAttributes.allKeys containsObject:sandboxKey]) {
-            finalAttributes[sandboxKey] = sandboxValue;
+        if (![finalAttributes.allKeys containsObject:kMPRoktAttributeKeySandbox]) {
+            finalAttributes[kMPRoktAttributeKeySandbox] = sandboxValue;
         }
     } else {
-        finalAttributes = [[NSMutableDictionary alloc] initWithDictionary:@{sandboxKey: sandboxValue}];
+        finalAttributes = [[NSMutableDictionary alloc] initWithDictionary:@{kMPRoktAttributeKeySandbox: sandboxValue}];
     }
     
     return finalAttributes;

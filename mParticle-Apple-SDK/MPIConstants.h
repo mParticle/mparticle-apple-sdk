@@ -520,4 +520,7 @@ extern NSString * _Nonnull const kMPDeviceInvalidVendorId;
 // MPRokt Constants
 extern NSString * _Nonnull const kMPPlacementAttributesMapping;
 extern NSString * _Nonnull const kMPHashedEmailUserIdentityType;
+extern NSString * _Nonnull const kMPRoktAttributeKeyIDFA;
+extern NSString * _Nonnull const kMPRoktAttributeKeyIDFV;
+extern NSString * _Nonnull const kMPRoktAttributeKeySandbox;
 #endif
