@@ -13,9 +13,14 @@
 #import "MPIdentityDTO.h"
 
 // Constants for kit configuration keys
-static NSString * const kMPKitConfigurationIdKey = @"id";
-static NSString * const kMPAttributeMappingSourceKey = @"map";
-static NSString * const kMPAttributeMappingDestinationKey = @"value";
+NSString * const kMPKitConfigurationIdKey = @"id";
+NSString * const kMPAttributeMappingSourceKey = @"map";
+NSString * const kMPAttributeMappingDestinationKey = @"value";
+
+// Rokt attribute keys
+NSString * const kMPRoktAttributeKeyIDFA = @"idfa";
+NSString * const kMPRoktAttributeKeyIDFV = @"idfv";
+NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
 
 @interface MParticle ()
 

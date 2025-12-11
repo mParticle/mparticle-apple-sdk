@@ -60,6 +60,16 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  */
 @class MPRoktEvent;
 
+// Kit configuration keys
+extern NSString * _Nonnull const kMPKitConfigurationIdKey;
+extern NSString * _Nonnull const kMPAttributeMappingSourceKey;
+extern NSString * _Nonnull const kMPAttributeMappingDestinationKey;
+
+// Rokt attribute keys
+extern NSString * _Nonnull const kMPRoktAttributeKeyIDFA;
+extern NSString * _Nonnull const kMPRoktAttributeKeyIDFV;
+extern NSString * _Nonnull const kMPRoktAttributeKeySandbox;
+
 /**
  * Main interface for interacting with Rokt functionality.
  * Handles placement selection and widget management.
