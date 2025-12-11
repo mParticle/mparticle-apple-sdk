@@ -1,12 +1,11 @@
 name: Cross Platform Tests
 
 on:
-  # Run for all PRs
   pull_request:
-  # Run again once merged into development branch
-  push:
-    branches:
-      - development
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
   XCODE_VERSION: "16.4"
