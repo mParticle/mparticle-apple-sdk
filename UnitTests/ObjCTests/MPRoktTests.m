@@ -58,16 +58,30 @@
     [super tearDown];
 }
 
+#pragma mark - Helper Methods
+
+- (void)setUserIdentities:(NSArray<NSDictionary *> *)identities forUser:(MParticleUser *)user {
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine 
+                                                                     backendController:[MParticle sharedInstance].backendController 
+                                                                              identity:[MParticle sharedInstance].identity];
+    [userDefaults setMPObject:identities forKey:kMPUserIdentityArrayKey userId:user.userId];
+}
+
+- (void)setIDFA:(NSString *)idfa IDFV:(NSString *)idfv forUser:(MParticleUser *)user {
+    NSArray *userIdentityArray = @[
+        @{@"n" : @(MPIdentityIOSAdvertiserId), @"i" : idfa},
+        @{@"n" : @(MPIdentityIOSVendorId), @"i" : idfv}
+    ];
+    [self setUserIdentities:userIdentityArray forUser:user];
+}
+
+#pragma mark - Tests
+
 - (void)testSelectPlacementsSimpleWithValidParameters {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    NSArray *userIdentityArray = @[
-        @{@"n" : @(MPIdentityIOSAdvertiserId), @"i" : @"ABC123-IDFA-TEST"},
-        @{@"n" : @(MPIdentityIOSVendorId), @"i" : @"ABC123-IDFV-TEST"}
-    ];
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    [self setIDFA:@"ABC123-IDFA-TEST" IDFV:@"ABC123-IDFV-TEST" forUser:currentUser];
 
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
@@ -124,12 +138,7 @@
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    NSArray *userIdentityArray = @[
-        @{@"n" : @(MPIdentityIOSAdvertiserId), @"i" : @"DEF456-IDFA-TEST"},
-        @{@"n" : @(MPIdentityIOSVendorId), @"i" : @"DEF456-IDFV-TEST"}
-    ];
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    [self setIDFA:@"DEF456-IDFA-TEST" IDFV:@"DEF456-IDFV-TEST" forUser:currentUser];
     
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
@@ -254,12 +263,7 @@
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    NSArray *userIdentityArray = @[
-        @{@"n" : @(MPIdentityIOSAdvertiserId), @"i" : @"C56A4180-65AA-42EC-A945-5FD21DEC0538"},
-        @{@"n" : @(MPIdentityIOSVendorId), @"i" : @"C56A4180-65AA-42EC-A945-5FD21DEC0539"}
-    ];
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    [self setIDFA:@"C56A4180-65AA-42EC-A945-5FD21DEC0538" IDFV:@"C56A4180-65AA-42EC-A945-5FD21DEC0539" forUser:currentUser];
     
     [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
@@ -422,11 +426,9 @@
 - (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@yahoo.com"}];
+    [self setUserIdentities:userIdentityArray forUser:currentUser];
     
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     XCTAssertEqualObjects(currentUser.identities[@(MPIdentityEmail)], @"test@yahoo.com");
     
     //Mock Identity as needed
@@ -492,11 +494,9 @@
 - (void)hashedIdentityTest: (MPIdentity)mpIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:mpIdentity], @"i" : @"test@yahoo.com"}];
+    [self setUserIdentities:userIdentityArray forUser:currentUser];
     
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     XCTAssertEqualObjects(currentUser.identities[@(mpIdentity)], @"test@yahoo.com");
     
     //Mock Identity as needed
@@ -524,11 +524,9 @@
 - (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityType {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
+    [self setUserIdentities:userIdentityArray forUser:currentUser];
     
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
     
     //Mock Identity as needed
@@ -556,11 +554,9 @@
 - (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityType {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
+    [self setUserIdentities:userIdentityArray forUser:currentUser];
     
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
     
     //Mock Identity as needed

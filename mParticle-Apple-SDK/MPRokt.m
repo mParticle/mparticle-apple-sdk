@@ -13,14 +13,17 @@
 #import "MPIdentityDTO.h"
 
 // Constants for kit configuration keys
-NSString * const kMPKitConfigurationIdKey = @"id";
-NSString * const kMPAttributeMappingSourceKey = @"map";
-NSString * const kMPAttributeMappingDestinationKey = @"value";
+static NSString * const kMPKitConfigurationIdKey = @"id";
+static NSString * const kMPAttributeMappingSourceKey = @"map";
+static NSString * const kMPAttributeMappingDestinationKey = @"value";
 
 // Rokt attribute keys
-NSString * const kMPRoktAttributeKeyIDFA = @"idfa";
-NSString * const kMPRoktAttributeKeyIDFV = @"idfv";
-NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
+static NSString * const kMPRoktAttributeKeyIDFA = @"idfa";
+static NSString * const kMPRoktAttributeKeyIDFV = @"idfv";
+static NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
+
+// Rokt kit identifier
+static const NSInteger kMPRoktKitId = 181;
 
 @interface MParticle ()
 
@@ -172,6 +175,22 @@ NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
     });
 }
 
+#pragma mark - Private Helper Methods
+
+/// Retrieves the Rokt Kit configuration from the kit container.
+/// @return The Rokt Kit configuration dictionary, or nil if Rokt Kit is not configured.
+- (NSDictionary * _Nullable)getRoktKitConfiguration {
+    NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
+    for (NSDictionary *kitConfig in kitConfigs) {
+        if ([kitConfig[kMPKitConfigurationIdKey] integerValue] == kMPRoktKitId) {
+            return kitConfig;
+        }
+    }
+    return nil;
+}
+
+#pragma mark - Public Methods
+
 /// Retrieves the attribute mapping configuration for the Rokt Kit from the mParticle dashboard settings.
 /// The mapping defines how attribute keys should be renamed before being sent to Rokt (e.g., "userEmail" → "email").
 /// @return An array of mapping dictionaries with "map" (source key) and "value" (destination key), or nil if Rokt Kit is not configured.
@@ -179,13 +198,7 @@ NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     
     // Get the kit configuration
-    NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
-    NSDictionary *roktKitConfig;
-    for (NSDictionary *kitConfig in kitConfigs) {
-        if (kitConfig[kMPKitConfigurationIdKey] != nil && [kitConfig[kMPKitConfigurationIdKey] integerValue] == 181) {
-            roktKitConfig = kitConfig;
-        }
-    }
+    NSDictionary *roktKitConfig = [self getRoktKitConfiguration];
     
     // Return nil if no Rokt Kit configuration found
     if (!roktKitConfig) {
@@ -227,13 +240,7 @@ NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
 /// @return The NSNumber representing the MPIdentity type for hashed email, or nil if not configured.
 - (NSNumber *)getRoktHashedEmailUserIdentityType {
     // Get the kit configuration
-    NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
-    NSDictionary *roktKitConfig;
-    for (NSDictionary *kitConfig in kitConfigs) {
-        if (kitConfig[kMPKitConfigurationIdKey] != nil && [kitConfig[kMPKitConfigurationIdKey] integerValue] == 181) {
-            roktKitConfig = kitConfig;
-        }
-    }
+    NSDictionary *roktKitConfig = [self getRoktKitConfiguration];
     
     // Get the string representing which identity to use and convert it to the key (NSNumber)
     NSString *hashedIdentityTypeString = roktKitConfig[kMPHashedEmailUserIdentityType];
