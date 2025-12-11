@@ -63,6 +63,12 @@
                 }
             }
             
+            // Add IDFA to attributes if available
+            NSString *idfa = resolvedUser.identities[@(MPIdentityIOSAdvertiserId)];
+            if (idfa.length > 0) {
+                mappedAttributes[@"idfa"] = idfa;
+            }
+            
             dispatch_async([MParticle messageQueue], ^{
                 // Forwarding call to kits
                 MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
