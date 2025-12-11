@@ -155,8 +155,9 @@
     NSData *dataAttributeMap;
     // Rokt Kit is available though there may not be an attribute map
     attributeMap = @[];
-    if (roktKitConfig[kMPPlacementAttributesMapping] != [NSNull null]) {
-        strAttributeMap = [roktKitConfig[kMPPlacementAttributesMapping] stringByRemovingPercentEncoding];
+    id configJSONString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPPlacementAttributesMapping];
+    if (configJSONString != nil && configJSONString != [NSNull null]) {
+        strAttributeMap = [configJSONString stringByRemovingPercentEncoding];
         dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
     }
     
@@ -167,12 +168,13 @@
         @try {
             attributeMap = [NSJSONSerialization JSONObjectWithData:dataAttributeMap options:kNilOptions error:&error];
         } @catch (NSException *exception) {
+            MPILogVerbose(@"Exception parsing placement attribute map: %@", exception);
         }
         
         if (attributeMap && !error) {
-            NSLog(@"%@", attributeMap);
+            MPILogVerbose(@"Successfully parsed placement attribute map with %lu entries", (unsigned long)attributeMap.count);
         } else {
-            NSLog(@"%@", error);
+            MPILogVerbose(@"Failed to parse placement attribute map: %@", error);
         }
     }
     
@@ -190,7 +192,7 @@
     }
     
     // Get the string representing which identity to use and convert it to the key (NSNumber)
-    NSString *hashedIdentityTypeString = roktKitConfig[kMPHashedEmailUserIdentityType];
+    NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPHashedEmailUserIdentityType];
     NSNumber *hashedIdentityTypeNumber = [MPIdentityHTTPIdentities identityTypeForString:hashedIdentityTypeString.lowercaseString];
     
     return hashedIdentityTypeNumber;
@@ -233,19 +235,19 @@
         
         [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
             if (error) {
-                NSLog(@"Failed to sync email from selectPlacement to user: %@", error);
+                MPILogVerbose(@"Failed to sync email from selectPlacement to user: %@", error);
                 completion(user);
             } else {
-                NSLog(@"Updated user identity based off selectPlacement's attributes: %@", apiResult.user.identities);
+                MPILogVerbose(@"Updated user identity based off selectPlacement's attributes: %@", apiResult.user.identities);
                 completion(apiResult.user);
             }
         }];
         
         // Warn the customer if we had to identify and therefore delay their Rokt placement.
         if (shouldIdentifyFromEmail) {
-            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+            MPILogVerbose(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
         } else if (shouldIdentifyFromHash) {
-            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
+            MPILogVerbose(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
         }
     } else {
         completion(user);

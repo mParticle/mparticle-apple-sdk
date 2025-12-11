@@ -293,17 +293,19 @@
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     NSArray *kitConfig = @[@{
-        @"AllowJavaScriptResponse": @"True",
-        @"accountId": @12345,
-        @"onboardingExpProvider": @"None",
-        kMPPlacementAttributesMapping: @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
-        @"sandboxMode": @"True",
-        @"eau": @0,
-        @"hs": @{
-            @"pur": @{},
-            @"reg": @{}
-        },
-        @"id": @181
+        @"id": @181,
+        kMPRemoteConfigKitConfigurationKey: @{
+            @"AllowJavaScriptResponse": @"True",
+            @"accountId": @12345,
+            @"onboardingExpProvider": @"None",
+            kMPPlacementAttributesMapping: @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
+            @"sandboxMode": @"True",
+            @"eau": @0,
+            @"hs": @{
+                @"pur": @{},
+                @"reg": @{}
+            }
+        }
     }];
     [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
@@ -313,6 +315,49 @@
     NSArray<NSDictionary<NSString *, NSString *> *> *expectedResult = @[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname", @"jsmap": [NSNull null]}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode", @"jsmap": [NSNull null]}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname", @"jsmap": [NSNull null]}];
     
     XCTAssertEqualObjects(testResult, expectedResult, @"Mapping does not match .");
+}
+
+- (void)testGetRoktHashedEmailUserIdentityType {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    NSArray *kitConfig = @[@{
+        @"id": @181,
+        kMPRemoteConfigKitConfigurationKey: @{
+            @"AllowJavaScriptResponse": @"True",
+            @"accountId": @12345,
+            kMPHashedEmailUserIdentityType: @"other3",
+            @"sandboxMode": @"True"
+        }
+    }];
+    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    
+    NSNumber *testResult = [self.rokt getRoktHashedEmailUserIdentityType];
+    
+    XCTAssertEqualObjects(testResult, @(MPIdentityOther3), @"Hashed email identity type does not match.");
+}
+
+- (void)testGetRoktHashedEmailUserIdentityTypeReturnsNilWhenNotConfigured {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    NSArray *kitConfig = @[@{
+        @"id": @181,
+        kMPRemoteConfigKitConfigurationKey: @{
+            @"AllowJavaScriptResponse": @"True",
+            @"accountId": @12345,
+            @"sandboxMode": @"True"
+        }
+    }];
+    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    
+    NSNumber *testResult = [self.rokt getRoktHashedEmailUserIdentityType];
+    
+    XCTAssertNil(testResult, @"Hashed email identity type should be nil when not configured.");
 }
 
 - (void)testSelectPlacementsIdentifyUser {
