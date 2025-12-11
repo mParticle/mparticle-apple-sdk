@@ -60,7 +60,7 @@
           "di": {
             "p": "arm64",
             "b": "arm64",
-            "tz": "-5",
+            "tz": "${json-unit.ignore}",
             "dn": "${json-unit.ignore}",
             "dll": "en",
             "dsh": "1440",
@@ -68,7 +68,7 @@
             "dlc": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
             "dma": "Apple",
-            "tzn": "America/New_York",
+            "tzn": "${json-unit.ignore}",
             "dp": "iOS",
             "dsw": "960",
             "dosv": "${json-unit.ignore}",
