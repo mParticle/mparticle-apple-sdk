@@ -8,6 +8,10 @@
 #import "MParticleSwift.h"
 #import "MPIConstants.h"
 
+// Test constants for device identifiers
+static NSString * const kTestIDFA = @"ABC123-IDFA-TEST";
+static NSString * const kTestIDFV = @"ABC123-IDFV-TEST";
+
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
 - (NSNumber *)getRoktHashedEmailUserIdentityType;
@@ -85,7 +89,7 @@
     MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
-    [self setIDFA:@"ABC123-IDFA-TEST" IDFV:@"ABC123-IDFV-TEST" forUser:currentUser];
+    [self setIDFA:kTestIDFA IDFV:kTestIDFV forUser:currentUser];
 
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = self.sharedInstance;
@@ -108,7 +112,7 @@
 
     // Set up test parameters
     NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"idfa": @"ABC123-IDFA-TEST", @"idfv": @"ABC123-IDFV-TEST", @"sandbox": @"false"};
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"idfa": kTestIDFA, @"idfv": kTestIDFV, @"sandbox": @"false"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
@@ -142,7 +146,7 @@
     MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
-    [self setIDFA:@"DEF456-IDFA-TEST" IDFV:@"DEF456-IDFV-TEST" forUser:currentUser];
+    [self setIDFA:kTestIDFA IDFV:kTestIDFV forUser:currentUser];
     
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = self.sharedInstance;
@@ -166,7 +170,7 @@
     // Set up test parameters
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
-    NSDictionary *finalAttributes = @{@"key": @"value", @"idfa": @"DEF456-IDFA-TEST", @"idfv": @"DEF456-IDFV-TEST", @"sandbox": @"true"};
+    NSDictionary *finalAttributes = @{@"key": @"value", @"idfa": kTestIDFA, @"idfv": kTestIDFV, @"sandbox": @"true"};
     MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement": exampleView};
     MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
@@ -267,7 +271,7 @@
     MParticleUser *currentUser = self.sharedInstance.identity.currentUser;
     
     // Set up IDFA and IDFV on the current user
-    [self setIDFA:@"C56A4180-65AA-42EC-A945-5FD21DEC0538" IDFV:@"C56A4180-65AA-42EC-A945-5FD21DEC0539" forUser:currentUser];
+    [self setIDFA:kTestIDFA IDFV:kTestIDFV forUser:currentUser];
     
     [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributesMapping];
     MParticle *instance = self.sharedInstance;
@@ -291,7 +295,7 @@
     // Set up test parameters
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
-    NSDictionary *mappedAttributes = @{@"firstname": @"Brandon", @"idfa": @"C56A4180-65AA-42EC-A945-5FD21DEC0538", @"idfv": @"C56A4180-65AA-42EC-A945-5FD21DEC0539", @"sandbox": @"true"};
+    NSDictionary *mappedAttributes = @{@"firstname": @"Brandon", @"idfa": kTestIDFA, @"idfv": kTestIDFV, @"sandbox": @"true"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
