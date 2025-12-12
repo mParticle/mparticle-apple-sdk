@@ -172,7 +172,26 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     NSNumber *mainThreadFlag;
     if ([NSThread isMainThread]) {
         if (![MPStateMachine_PRIVATE isAppExtension]) {
-            UIViewController *presentedViewController = [MPApplication_PRIVATE sharedUIApplication].keyWindow.rootViewController.presentedViewController;
+            UIWindow *keyWindow = nil;
+            
+            // Get key window from active window scene (iOS 13+)
+            NSSet<UIScene *> *connectedScenes = [MPApplication_PRIVATE sharedUIApplication].connectedScenes;
+            for (UIScene *scene in connectedScenes) {
+                if ([scene isKindOfClass:[UIWindowScene class]] && scene.activationState == UISceneActivationStateForegroundActive) {
+                    UIWindowScene *windowScene = (UIWindowScene *)scene;
+                    for (UIWindow *window in windowScene.windows) {
+                        if (window.isKeyWindow) {
+                            keyWindow = window;
+                            break;
+                        }
+                    }
+                    if (keyWindow) {
+                        break;
+                    }
+                }
+            }
+            
+            UIViewController *presentedViewController = keyWindow.rootViewController.presentedViewController;
             presentedViewControllerDescription = presentedViewController ? [[presentedViewController class] description] : nil;
         } else {
             presentedViewControllerDescription = @"extension_message";
