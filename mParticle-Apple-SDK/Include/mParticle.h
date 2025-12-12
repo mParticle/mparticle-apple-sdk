@@ -743,43 +743,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 #endif
 
-/**
- DEPRECATED: https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(_:open:sourceapplication:annotation:)
- Use a UIScene lifecycle, mParticle's handleURLContext: method, and scene(_:openURLContexts:) from UISceneDelegate instead.
- 
- Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
- This method should be called only if proxiedAppDelegate is disabled.
- @param url The URL resource to open
- @param sourceApplication The bundle ID of the requesting app
- @param annotation A property list object supplied by the source app
- @see proxiedAppDelegate
- */
-- (void)openURL:(NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation DEPRECATED_MSG_ATTRIBUTE("iOS 27 will no longer support this protocol method");
-
-/**
- DEPRECATED: https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(_:open:sourceapplication:annotation:)
- Use a UIScene lifecycle, mParticle's handleURLContext: method, and scene(_:openURLContexts:) from UISceneDelegate instead.
- 
- Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
- This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 9 and above.
- @param url The URL resource to open
- @param options The dictionary of launch options
- @see proxiedAppDelegate
- */
-- (void)openURL:(NSURL *)url options:(nullable NSDictionary *)options DEPRECATED_MSG_ATTRIBUTE("iOS 27 will no longer support this protocol method");
-
-/**
- DEPRECATED: https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(_:continue:restorationhandler:)
- Use UIScene lifecycle, mParticle's handleUserActivity: method, and scene(_:continue:) from UISceneDelegate instead.
- 
- Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
- This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 9 and above.
- @param userActivity The NSUserActivity that caused the app to be opened
- @param restorationHandler A block to execute if your app creates objects to perform the task.
- @see proxiedAppDelegate
- */
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler DEPRECATED_MSG_ATTRIBUTE("iOS 27 will no longer support this protocol method");
-
 #if TARGET_OS_IOS == 1
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
@@ -802,7 +765,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  DEPRECATED: This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further upload or download behavior that may be prepared
  
  NOTE: This method is less comprehensive than the new `reset:` method. It resets less state and is called within a `dispatch_sync()` which has the potential to deadlock in rare cases.
-
  If you have any reference to the MParticle instance, you must remove your reference by setting it to "nil", in order to avoid any unexpected behavior
  The SDK will be shut down and [MParticle sharedInstance] will return a new instance without apiKey or secretKey. MParticle can be restarted by calling MParticle.startWithOptions
  */
