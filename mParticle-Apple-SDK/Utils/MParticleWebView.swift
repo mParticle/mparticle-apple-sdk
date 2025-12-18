@@ -7,9 +7,11 @@
 
 // NOTE: @objc specifier added to private properties to support existing Obj-C unit tests
 
+import mParticle_Apple_SDK_Swift
+
 @objc public class MParticleWebView_PRIVATE: NSObject {
     @objc public var userAgent: String? { resolvedUserAgent ?? defaultUserAgent }
-    @objc public var originalDefaultUserAgent: String? { "mParticle Apple SDK/\(kMParticleSDKVersion)" }
+    @objc public var originalDefaultUserAgent: String? { "mParticle Apple SDK/\(Version.kMParticleSDKVersion)" }
 
     private var messageQueue: DispatchQueue
 

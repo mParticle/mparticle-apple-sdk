@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import mParticle_Apple_SDK_Swift
 
 @objc public class MPResponseConfig: NSObject {
     @objc public private(set) var configuration: [AnyHashable: Any]?

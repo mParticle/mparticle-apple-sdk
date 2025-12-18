@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import mParticle_Apple_SDK_Swift
 
 private var userDefaults: MPUserDefaults?
 private var sharedGroupID: String?

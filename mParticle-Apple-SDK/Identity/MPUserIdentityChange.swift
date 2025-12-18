@@ -1,9 +1,4 @@
-//
-//  MPUserIdentityChange.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Ben Baron on 12/3/24.
-//
+import mParticle_Apple_SDK_Swift
 
 @objc public final class MPUserIdentityChange_PRIVATE: NSObject {
     @objc public var newUserIdentity: MPUserIdentityInstance_PRIVATE?

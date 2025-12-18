@@ -8,6 +8,7 @@
 import Foundation
 import MachO
 import QuartzCore
+import mParticle_Apple_SDK_Swift
 
 #if os(iOS) && !MPARTICLE_LOCATION_DISABLE
     import CoreTelephony
