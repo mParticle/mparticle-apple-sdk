@@ -7,7 +7,8 @@
 
 // NOTE: @objc specifier added to private properties to support existing Obj-C unit tests
 
-import mParticle_Apple_SDK_Swift
+import Foundation
+import WebKit
 
 @objc public class MParticleWebView_PRIVATE: NSObject {
     @objc public var userAgent: String? { resolvedUserAgent ?? defaultUserAgent }
@@ -18,6 +19,7 @@ import mParticle_Apple_SDK_Swift
     private var customUserAgent: String? = nil
     private var shouldCollect = false
     private var defaultUserAgent: String? = nil
+    private let logger: MPLog
 
     @objc private var initializedDate: Date? = nil
     @objc private var resolvedUserAgent: String? = nil // final result
@@ -28,9 +30,11 @@ import mParticle_Apple_SDK_Swift
         @objc private var webView: WKWebView?
     #endif
 
-    @objc public init(messageQueue: DispatchQueue) {
+    @objc public init(messageQueue: DispatchQueue, logger: MPLog) {
         self.messageQueue = messageQueue
+        self.logger = logger
         super.init()
+        
     }
 
     @objc public func start(customUserAgent: String?, shouldCollect: Bool, defaultUserAgentOverride: String?) {
@@ -68,29 +72,26 @@ import mParticle_Apple_SDK_Swift
                     if self.webView == nil {
                         self.webView = WKWebView(frame: .zero)
                     }
-                    let mparticle = MParticle.sharedInstance()
-                    let logger = MPLog(logLevel: mparticle.logLevel)
-                    logger.customLogger = mparticle.customLogger
                     
-                    logger.verbose("Getting user agent")
+                    self.logger.verbose("Getting user agent")
                     self.webView?.evaluateJavaScript("navigator.userAgent") { result, error in
                         if result == nil, let error = error as? NSError {
-                            logger.verbose("Error collecting user agent: \(error)")
+                            self.logger.verbose("Error collecting user agent: \(error)")
                         }
                         if let result = result as? String {
-                            logger.verbose("Finished getting user agent")
+                            self.logger.verbose("Finished getting user agent")
                             self.resolvedUserAgent = result
                         } else {
                             if self.retryCount < 10 {
                                 self.retryCount += 1
-                                logger.verbose("User agent collection failed (count=\(self.retryCount), retrying")
+                                self.logger.verbose("User agent collection failed (count=\(self.retryCount), retrying")
                                 self.webView = nil
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                     self.evaluateAgent()
                                 }
                                 return
                             } else {
-                                logger.verbose("Falling back on default user agent")
+                                self.logger.verbose("Falling back on default user agent")
                                 self.resolvedUserAgent = self.defaultUserAgent
                             }
                         }
@@ -110,10 +111,6 @@ import mParticle_Apple_SDK_Swift
         guard let initializedDate = initializedDate, resolvedUserAgent == nil, isCollecting else {
             return false
         }
-        
-        let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: mparticle.logLevel)
-        logger.customLogger = mparticle.customLogger
 
         if -initializedDate.timeIntervalSinceNow > maxWaitTime {
             if !printedMessage {

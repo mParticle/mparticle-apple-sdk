@@ -153,11 +153,12 @@ MPLog* logger;
     _automaticSessionTracking = YES;
     _appNotificationHandler = (id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol>)[[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
-    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
+    logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
+    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger];
     _listenerController = MPListenerController.sharedInstance;
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
-    logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
+    
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithLogger:logger appNotificationHandler:_appNotificationHandler];
     
     return self;
