@@ -68,25 +68,29 @@ import mParticle_Apple_SDK_Swift
                     if self.webView == nil {
                         self.webView = WKWebView(frame: .zero)
                     }
-                    MPLog.verbose("Getting user agent")
+                    let mparticle = MParticle.sharedInstance()
+                    let logger = MPLog(logLevel: mparticle.logLevel)
+                    logger.customLogger = mparticle.customLogger
+                    
+                    logger.verbose("Getting user agent")
                     self.webView?.evaluateJavaScript("navigator.userAgent") { result, error in
                         if result == nil, let error = error as? NSError {
-                            MPLog.verbose("Error collecting user agent: %@", error)
+                            logger.verbose("Error collecting user agent: \(error)")
                         }
                         if let result = result as? String {
-                            MPLog.verbose("Finished getting user agent")
+                            logger.verbose("Finished getting user agent")
                             self.resolvedUserAgent = result
                         } else {
                             if self.retryCount < 10 {
                                 self.retryCount += 1
-                                MPLog.verbose("User agent collection failed (count=%@), retrying", self.retryCount)
+                                logger.verbose("User agent collection failed (count=\(self.retryCount), retrying")
                                 self.webView = nil
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                     self.evaluateAgent()
                                 }
                                 return
                             } else {
-                                MPLog.verbose("Falling back on default user agent")
+                                logger.verbose("Falling back on default user agent")
                                 self.resolvedUserAgent = self.defaultUserAgent
                             }
                         }
@@ -106,17 +110,21 @@ import mParticle_Apple_SDK_Swift
         guard let initializedDate = initializedDate, resolvedUserAgent == nil, isCollecting else {
             return false
         }
+        
+        let mparticle = MParticle.sharedInstance()
+        let logger = MPLog(logLevel: mparticle.logLevel)
+        logger.customLogger = mparticle.customLogger
 
         if -initializedDate.timeIntervalSinceNow > maxWaitTime {
             if !printedMessage {
                 printedMessage = true
-                MPLog.debug("Max wait time exceeded for user agent")
+                logger.debug("Max wait time exceeded for user agent")
             }
             return false
         }
         if !printedMessageDelay {
             printedMessageDelay = true
-            MPLog.verbose("Delaying initial upload for user agent")
+            logger.verbose("Delaying initial upload for user agent")
         }
         return true
     }

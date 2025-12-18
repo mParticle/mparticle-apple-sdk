@@ -10,6 +10,7 @@
 #import "MPKitAPI.h"
 #import "MPApplication.h"
 #import "mParticle.h"
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -283,11 +284,15 @@
         return NO;
     }
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:mparticle.logLevel];
+    logger.customLogger = mparticle.customLogger;
+    
     if (userActivity.webpageURL != nil) {
-        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil logger:logger];
     } else {
         NSURL *defaultURL = [[NSURL alloc] initWithString:@""];
-        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:defaultURL options:nil];
+        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:defaultURL options:nil logger:logger];
     }
     
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
@@ -323,7 +328,11 @@
         return;
     }
     
-    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:mparticle.logLevel];
+    logger.customLogger = mparticle.customLogger;
+    
+    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options logger:logger];
     
     SEL openURLOptionsSelector = @selector(openURL:options:);
     
@@ -347,9 +356,14 @@
         return;
     }
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:mparticle.logLevel];
+    logger.customLogger = mparticle.customLogger;
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     SEL openURLSourceAppAnnotationSelector = @selector(openURL:sourceApplication:annotation:);
     
@@ -359,12 +373,11 @@
     [queueParameters addParameter:annotation];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:openURLSourceAppAnnotationSelector
-                                                          event:nil
-                                                     parameters:queueParameters
-                                                    messageType:MPMessageTypeUnknown
-                                                       userInfo:nil
-         ];
+        [mparticle.kitContainer_PRIVATE forwardSDKCall:openURLSourceAppAnnotationSelector
+                                                 event:nil
+                                            parameters:queueParameters
+                                           messageType:MPMessageTypeUnknown
+                                              userInfo:nil];
     });
 }
 

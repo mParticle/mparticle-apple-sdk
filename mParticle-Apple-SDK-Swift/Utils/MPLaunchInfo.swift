@@ -5,21 +5,22 @@
 //  Created by Brandon Stalnaker on 2/11/25.
 //
 
-import Foundation
-import mParticle_Apple_SDK_Swift
+import UIKit
 
 @objc public class MPLaunchInfo: NSObject {
     private let annotationKey = UIApplication.OpenURLOptionsKey.annotation
     private let sourceAppKey = UIApplication.OpenURLOptionsKey.sourceApplication
     private var sourceApp: String?
+    private let logger: MPLog
 
     @objc public private(set) var sourceApplication: String?
     @objc public private(set) var annotation: String?
     @objc public private(set) var url: URL
 
-    @objc public required init(URL: URL, sourceApplication: String?, annotation: Any?) {
+    @objc public required init(URL: URL, sourceApplication: String?, annotation: Any?, logger: MPLog) {
         sourceApp = sourceApplication
         url = URL
+        self.logger = logger
         if let sourceApp = sourceApp {
             let urlString = url.absoluteString
             let appLinksRange = urlString.range(of: "al_applink_data")
@@ -27,13 +28,15 @@ import mParticle_Apple_SDK_Swift
         } else {
             self.sourceApplication = nil
         }
-        self.annotation = MPLaunchInfo.stringifyAnnotation(annotation)
 
         super.init()
+        self.annotation = stringifyAnnotation(annotation)
     }
 
-    @objc public init(URL: URL, options: [String: Any]?) {
+    @objc public init(URL: URL, options: [String: Any]?, logger: MPLog) {
         url = URL
+        self.logger = logger
+                
         if let options = options {
             if let sourceApp = options[sourceAppKey.rawValue] as? String {
                 self.sourceApp = sourceApp
@@ -54,7 +57,7 @@ import mParticle_Apple_SDK_Swift
         super.init()
     }
 
-    private class func stringifyAnnotation(_ annotation: Any?) -> String? {
+    private func stringifyAnnotation(_ annotation: Any?) -> String? {
         if let stringAnnotation = annotation as? String {
             return stringAnnotation
         }
@@ -64,6 +67,8 @@ import mParticle_Apple_SDK_Swift
         if let dateAnnotation = annotation as? Date {
             return MPDateFormatter.string(fromDateRFC3339: dateAnnotation)
         }
+
+        
         if let dictionaryAnnotation = annotation as? [String: Any?] {
             var jsonData: Data?
             var stringDict: [String: String] = [:]
@@ -75,7 +80,7 @@ import mParticle_Apple_SDK_Swift
             do {
                 jsonData = try JSONSerialization.data(withJSONObject: stringDict, options: [])
             } catch {
-                MPLog.error("Error serializing annotation from app launch: \(dictionaryAnnotation)")
+                logger.error("Error serializing annotation from app launch: \(dictionaryAnnotation)")
             }
             if let jsonData = jsonData {
                 return String(data: jsonData, encoding: .utf8)
@@ -94,7 +99,7 @@ import mParticle_Apple_SDK_Swift
             do {
                 jsonData = try JSONSerialization.data(withJSONObject: stringArray, options: [])
             } catch {
-                MPLog.error("Error serializing annotation from app launch: \(arrayAnnotation)")
+                logger.error("Error serializing annotation from app launch: \(arrayAnnotation)")
             }
             if let jsonData = jsonData {
                 return String(data: jsonData, encoding: .utf8)

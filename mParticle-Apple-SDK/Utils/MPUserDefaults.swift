@@ -237,17 +237,21 @@ public protocol MPUserDefaultsProtocol {
         let configurationURL = stateMachineURL.appendingPathComponent("RequestConfig.cfg")
         let configuration = mpObject(forKey: kMResponseConfigurationKey, userId: userID)
 
+        let mparticle = MParticle.sharedInstance()
+        let logger = MPLog(logLevel: mparticle.logLevel)
+        logger.customLogger = mparticle.customLogger
+        
         if fileManager.fileExists(atPath: configurationURL.path) {
             do {
                 try fileManager.removeItem(at: configurationURL)
             } catch {
-                MPLog.error("Failed to remove old configuration file: \(error)")
+                logger.error("Failed to remove old configuration file: \(error)")
             }
             deleteConfiguration()
-            MPLog.debug("Configuration Migration Complete")
+            logger.debug("Configuration Migration Complete")
         } else if (eTag != nil && configuration == nil) || (eTag == nil && configuration != nil) {
             deleteConfiguration()
-            MPLog.debug("Configuration Migration Complete")
+            logger.debug("Configuration Migration Complete")
         }
 
         UserDefaults.standard.set(1, forKey: kMResponseConfigurationMigrationKey)
@@ -260,7 +264,11 @@ public protocol MPUserDefaultsProtocol {
         removeMPObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey)
         removeMPObject(forKey: Miscellaneous.kMPConfigParameters)
 
-        MPLog.debug("Configuration Deleted")
+        let mparticle = MParticle.sharedInstance()
+        let logger = MPLog(logLevel: mparticle.logLevel)
+        logger.customLogger = mparticle.customLogger
+        
+        logger.debug("Configuration Deleted")
     }
 
     @objc public func resetDefaults() {
