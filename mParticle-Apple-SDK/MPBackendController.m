@@ -26,6 +26,7 @@
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
