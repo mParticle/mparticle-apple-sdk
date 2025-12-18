@@ -74,8 +74,8 @@
     
     //Remove IDFA if ATT status demands
     NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
-    if (userIdentities[@(MPIdentityIOSAdvertiserId)] && currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized) {
-        [userIdentities removeObjectForKey:@(MPIdentityIOSAdvertiserId)];
+    if (userIdentities[@(MPIdentityIosAdvertiserId)] && currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized) {
+        [userIdentities removeObjectForKey:@(MPIdentityIosAdvertiserId)];
     }
     
     return userIdentities;

@@ -307,7 +307,7 @@
                     self->_phoneNumber3 = obj;
                     break;
                     
-                case MPIdentityIOSAdvertiserId: {
+                case MPIdentityIosAdvertiserId: {
                     NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
                     if (currentStatus == nil || currentStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
                         self->_advertiserId = obj;
@@ -315,7 +315,7 @@
                     break;
                 }
                     
-                case MPIdentityIOSVendorId:
+                case MPIdentityIosVendorId:
                     self->_vendorId = obj;
                     break;
                     
@@ -511,10 +511,10 @@
         case MPIdentityPhoneNumber3:
             return @"phone_number_3";
             
-        case MPIdentityIOSAdvertiserId:
+        case MPIdentityIosAdvertiserId:
             return @"ios_idfa";
             
-        case MPIdentityIOSVendorId:
+        case MPIdentityIosVendorId:
             return @"ios_idfv";
             
         case MPIdentityPushToken:
@@ -572,9 +572,9 @@
     } else if ([identityString isEqualToString:@"phone_number_3"]){
         return @(MPIdentityPhoneNumber3);
     } else if ([identityString isEqualToString:@"ios_idfa"]){
-        return @(MPIdentityIOSAdvertiserId);
+        return @(MPIdentityIosAdvertiserId);
     } else if ([identityString isEqualToString:@"ios_idfv"]){
-        return @(MPIdentityIOSVendorId);
+        return @(MPIdentityIosVendorId);
     } else if ([identityString isEqualToString:@"push_token"]){
         return @(MPIdentityPushToken);
     } else if ([identityString isEqualToString:@"device_application_stamp"]){

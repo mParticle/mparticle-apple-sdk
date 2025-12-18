@@ -2,6 +2,7 @@
 #define mParticle_MPEnums_h
 
 #import <Foundation/Foundation.h>
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 /// Running Environment
 typedef NS_ENUM(NSUInteger, MPEnvironment) {
@@ -176,65 +177,6 @@ typedef NS_ENUM(NSUInteger, MPUserIdentity) {
     MPUserIdentityPhoneNumber2,
     /** User identity phone number 3 */
     MPUserIdentityPhoneNumber3
-};
-
-/// MP Identities
-typedef NS_ENUM(NSUInteger, MPIdentity) {
-    /** User identity other */
-    MPIdentityOther = 0,
-    /** User identity customer id. This is an id issued by your own system */
-    MPIdentityCustomerId,
-    /** User identity Facebook */
-    MPIdentityFacebook,
-    /** User identity Twitter */
-    MPIdentityTwitter,
-    /** User identity Google */
-    MPIdentityGoogle,
-    /** User identity Microsoft */
-    MPIdentityMicrosoft,
-    /** User identity Yahoo! */
-    MPIdentityYahoo,
-    /** User identity Email */
-    MPIdentityEmail,
-    /** User identity Alias */
-    MPIdentityAlias,
-    /** User identity Facebook Custom Audience Third Party Id, or User App Id */
-    MPIdentityFacebookCustomAudienceId,
-    /** User identity other 2 */
-    MPIdentityOther2,
-    /** User identity other 3 */
-    MPIdentityOther3,
-    /** User identity other 4 */
-    MPIdentityOther4,
-    /** User identity other 5 */
-    MPIdentityOther5,
-    /** User identity other 6 */
-    MPIdentityOther6,
-    /** User identity other 7 */
-    MPIdentityOther7,
-    /** User identity other 8 */
-    MPIdentityOther8,
-    /** User identity other 9 */
-    MPIdentityOther9,
-    /** User identity other 10 */
-    MPIdentityOther10,
-    /** User identity mobile number */
-    MPIdentityMobileNumber,
-    /** User identity phone number 2 */
-    MPIdentityPhoneNumber2,
-    /** User identity phone number 3 */
-    MPIdentityPhoneNumber3,
-    /** Device identity advertiser ID (IDFA)
-     When setting this, you must also provide the App Tracking Transparency status of the device
-     @see setATTStatus:withTimestamp:
-     */
-    MPIdentityIOSAdvertiserId,
-    /** Device identity vendor  */
-    MPIdentityIOSVendorId,
-    /** Device identity Push Token  */
-    MPIdentityPushToken,
-    /** Device identity Application Stamp  */
-    MPIdentityDeviceApplicationStamp
 };
 
 /// Kit Instance Codes

@@ -49,7 +49,7 @@
             shouldFilter = self.kitConfiguration.userIdentityFilters[identityTypeString] && [self.kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
         }
         
-        if (key.integerValue >= MPIdentityIOSAdvertiserId) {
+        if (key.integerValue >= MPIdentityIosAdvertiserId) {
             shouldFilter = YES;
         }
         

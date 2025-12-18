@@ -1080,7 +1080,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    if (!userDefaults[kMPATT] && identifyRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
+    if (!userDefaults[kMPATT] && identifyRequest.identities[@(MPIdentityIosAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
     
@@ -1090,7 +1090,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    if (!userDefaults[kMPATT] && loginRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
+    if (!userDefaults[kMPATT] && loginRequest.identities[@(MPIdentityIosAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
     
@@ -1101,7 +1101,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 - (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable
                                                                           MPIdentityApiManagerCallback)completion {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    if (!userDefaults[kMPATT] && logoutRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
+    if (!userDefaults[kMPATT] && logoutRequest.identities[@(MPIdentityIosAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
     
@@ -1111,7 +1111,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    if (!userDefaults[kMPATT] && modifyRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
+    if (!userDefaults[kMPATT] && modifyRequest.identities[@(MPIdentityIosAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
     

@@ -197,7 +197,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     
     BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
         NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
-        BOOL foundMatch = [currentIdentityType isEqualToNumber:@(MPIdentityIOSAdvertiserId)];
+        BOOL foundMatch = [currentIdentityType isEqualToNumber:@(MPIdentityIosAdvertiserId)];
         
         if (foundMatch) {
             *stop = YES;
@@ -229,7 +229,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     [identities enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         id currentIdentityType = [identities objectAtIndex:idx][kMPUserIdentityTypeKey];
         // Should be a number and should be one of the valid identity types
-        if (![currentIdentityType isKindOfClass:[NSNumber class]] || [(NSNumber *)currentIdentityType intValue] >= MPIdentityIOSAdvertiserId) {
+        if (![currentIdentityType isKindOfClass:[NSNumber class]] || [(NSNumber *)currentIdentityType intValue] >= MPIdentityIosAdvertiserId) {
             [userIdentities removeObjectAtIndex:idx];
         }
     }];

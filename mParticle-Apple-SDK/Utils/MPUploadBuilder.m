@@ -168,7 +168,7 @@
     NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
     NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
     NSDictionary *userIdentities = [[[MParticle sharedInstance] identity] getUser:mpid].identities;
-    NSString *advertiserId = userIdentities[@(MPIdentityIOSAdvertiserId)];
+    NSString *advertiserId = userIdentities[@(MPIdentityIosAdvertiserId)];
 
     if (authStatus && advertiserId && authStatus.intValue == MPATTAuthorizationStatusAuthorized) {
         NSMutableDictionary *deviceInfoDictCopy = [_uploadDictionary[kMPDeviceInformationKey] mutableCopy];
