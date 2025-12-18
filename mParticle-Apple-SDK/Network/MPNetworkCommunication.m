@@ -24,6 +24,7 @@
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path

@@ -4,6 +4,7 @@
 #import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 NSString *const kMPCKContent = @"c";
 NSString *const kMPCKDomain = @"d";
