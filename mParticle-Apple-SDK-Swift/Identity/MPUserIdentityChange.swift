@@ -1,4 +1,4 @@
-import mParticle_Apple_SDK_Swift
+import Foundation
 
 @objc public final class MPUserIdentityChange_PRIVATE: NSObject {
     @objc public var newUserIdentity: MPUserIdentityInstance_PRIVATE?

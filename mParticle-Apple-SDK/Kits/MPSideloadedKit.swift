@@ -31,25 +31,31 @@ import Foundation
     // Consent Filtering being handled seperately
     private var consentRegulationFilters: [String: Any] = [:]
     private var consentPurposeFilters: [String: Any] = [:]
+    
+    private let hasher: MPIHasher
 
     @objc public init(kitInstance: MPKitProtocol) {
         self.kitInstance = kitInstance
+        let mparticle = MParticle.sharedInstance()
+        let logger = MPLog(logLevel: mparticle.logLevel)
+        logger.customLogger = mparticle.customLogger
+        self.hasher = MPIHasher(logger: logger)
     }
 
     @objc public func addEventTypeFilter(eventType: MPEventType) {
-        eventTypeFilters[MPIHasher.hashEventType(eventType)] = 0
+        eventTypeFilters[hasher.hashEventType(eventType)] = 0
     }
 
     @objc public func addEventNameFilter(eventType: MPEventType, eventName: String) {
-        eventNameFilters[MPIHasher.hashEventType(eventType, eventName: eventName, isLogScreen: false)] = 0
+        eventNameFilters[hasher.hashEventType(eventType, eventName: eventName, isLogScreen: false)] = 0
     }
 
     @objc public func addScreenNameFilter(screenName: String) {
-        eventNameFilters[MPIHasher.hashEventType(MPEventType.click, eventName: screenName, isLogScreen: true)] = 0
+        eventNameFilters[hasher.hashEventType(MPEventType.click, eventName: screenName, isLogScreen: true)] = 0
     }
 
     @objc public func addEventAttributeFilter(eventType: MPEventType, eventName: String, customAttributeKey: String) {
-        eventAttributeFilters[MPIHasher.hashEventAttributeKey(
+        eventAttributeFilters[hasher.hashEventAttributeKey(
             eventType,
             eventName: eventName,
             customAttributeName: customAttributeKey,
@@ -58,7 +64,7 @@ import Foundation
     }
 
     @objc public func addScreenAttributeFilter(screenName: String, customAttributeKey: String) {
-        eventAttributeFilters[MPIHasher.hashEventAttributeKey(
+        eventAttributeFilters[hasher.hashEventAttributeKey(
             MPEventType.click,
             eventName: screenName,
             customAttributeName: customAttributeKey,
@@ -67,15 +73,15 @@ import Foundation
     }
 
     @objc public func addUserIdentityFilter(userIdentity: MPUserIdentity) {
-        userIdentityFilters[MPIHasher.hashUserIdentity(userIdentity)] = 0
+        userIdentityFilters[hasher.hashUserIdentity(userIdentity)] = 0
     }
 
     @objc public func addUserAttributeFilter(userAttributeKey: String) {
-        userAttributeFilters[MPIHasher.hashUserAttributeKey(userAttributeKey)] = 0
+        userAttributeFilters[hasher.hashUserAttributeKey(userAttributeKey)] = 0
     }
 
     @objc public func addCommerceEventAttributeFilter(eventType: MPEventType, eventAttributeKey: String) {
-        commerceEventAttributeFilters[MPIHasher.hashCommerceEventAttribute(eventType, key: eventAttributeKey)] = 0
+        commerceEventAttributeFilters[hasher.hashCommerceEventAttribute(eventType, key: eventAttributeKey)] = 0
     }
 
     @objc public func addCommerceEventEntityTypeFilter(commerceEventKind: MPCommerceEventKind) {
@@ -83,7 +89,7 @@ import Foundation
     }
 
     @objc public func addCommerceEventAppFamilyAttributeFilter(attributeKey: String) {
-        commerceEventAppFamilyAttributeFilters[MPIHasher.hashString(attributeKey.lowercased())] = 1
+        commerceEventAppFamilyAttributeFilters[hasher.hashString(attributeKey.lowercased())] = 1
     }
 
     // Special filter case that can only have 1 at a time unlike the others
@@ -91,8 +97,8 @@ import Foundation
     // NOTE: This is iOS/Android only, web has a different signature
     // Attribute value filtering
     @objc public func setEventAttributeConditionalForwarding(attributeName: String, attributeValue: String, onlyForward: Bool) {
-        attributeValueFiltering["a"] = MPIHasher.hashUserAttributeKey(attributeName)
-        attributeValueFiltering["v"] = MPIHasher.hashUserAttributeValue(attributeValue)
+        attributeValueFiltering["a"] = hasher.hashUserAttributeKey(attributeName)
+        attributeValueFiltering["v"] = hasher.hashUserAttributeValue(attributeValue)
         attributeValueFiltering["i"] = onlyForward
     }
 

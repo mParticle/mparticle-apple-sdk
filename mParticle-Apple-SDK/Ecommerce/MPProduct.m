@@ -304,8 +304,13 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     __block id hashedValue;
     NSNumber *const zero = @0;
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:mparticle.logLevel];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        hashedKey = [MPIHasher hashString:key];
+        hashedKey = [hasher hashString:key];
         hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {
@@ -314,7 +319,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     }];
     
     [_userDefinedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        hashedKey = [MPIHasher hashString:key];
+        hashedKey = [hasher hashString:key];
         hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {

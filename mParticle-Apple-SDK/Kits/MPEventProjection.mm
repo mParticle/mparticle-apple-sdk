@@ -84,7 +84,12 @@
     __block NSString *auxString;
     
     auxString = matchDictionary[@"event"];
-    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? [MPIHasher eventTypeForHash:auxString] : MPEventTypeOther;
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:mparticle.logLevel];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    
+    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? [hasher eventTypeForHash:auxString] : MPEventTypeOther;
     
     _messageType = !MPIsNull(matchDictionary[@"message_type"]) ? (MPMessageType)[matchDictionary[@"message_type"] integerValue] : MPMessageTypeEvent;
     
