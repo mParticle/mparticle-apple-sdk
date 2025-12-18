@@ -594,14 +594,6 @@
 		D3B3E2072AE029AE001AB58C /* mParticle_Apple_SDK.h in Headers */ = {isa = PBXBuildFile; fileRef = D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D3BE919B2D5B96700038C87A /* MPLaunchInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BE919A2D5B965A0038C87A /* MPLaunchInfo.swift */; };
 		D3BE919C2D5B96700038C87A /* MPLaunchInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BE919A2D5B965A0038C87A /* MPLaunchInfo.swift */; };
-		D3CEDAB92C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
-		D3CEDABA2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
-		D3CEDABB2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
-		D3CEDABC2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
-		D3CEDABE2C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
-		D3CEDABF2C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
-		D3CEDAC02C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
-		D3CEDAC12C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
 		D3CEDAC32C9DAC25001B32DF /* MPDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */; };
 		D3CEDAC42C9DB0E0001B32DF /* MPDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */; };
 		D3CEDAC52C9DB0E0001B32DF /* MPDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */; };
@@ -972,8 +964,6 @@
 		D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK.h; sourceTree = "<group>"; };
 		D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D3BE919A2D5B965A0038C87A /* MPLaunchInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPLaunchInfo.swift; sourceTree = "<group>"; };
-		D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCCPAConsent.swift; sourceTree = "<group>"; };
-		D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPGDPRConsent.swift; sourceTree = "<group>"; };
 		D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDateFormatter.swift; sourceTree = "<group>"; };
 		D3CEDAC72CA2F214001B32DF /* MPLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPLogger.swift; sourceTree = "<group>"; };
 		D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConvertJS.swift; sourceTree = "<group>"; };
@@ -1225,8 +1215,6 @@
 			isa = PBXGroup;
 			children = (
 				53A79AF729CDFB1F00E7489F /* MPConsentSerialization.m */,
-				D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */,
-				D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */,
 				53A79AF829CDFB1F00E7489F /* MPConsentKitFilter.m */,
 				53A79AF929CDFB1F00E7489F /* MPConsentState.m */,
 				53A79AFA29CDFB1F00E7489F /* MPConsentSerialization.h */,
@@ -2052,7 +2040,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3CEDABC2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */,
 				534CD26429CE2CE1008452B3 /* MPKitSecondTestClass.m in Sources */,
 				534CD26529CE2CE1008452B3 /* MPKitAPITests.m in Sources */,
 				534CD26629CE2CE1008452B3 /* MPUserIdentityChangeTests.m in Sources */,
@@ -2081,7 +2068,6 @@
 				534CD27529CE2CE1008452B3 /* MPIdentityTests.m in Sources */,
 				35E3FCD32E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */,
 				D3CEDAC62C9DB0E1001B32DF /* MPDateFormatter.swift in Sources */,
-				D3CEDAC12C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */,
 				534CD27629CE2CE1008452B3 /* MPUserAttributeChangeTests.m in Sources */,
 				534CD27729CE2CE1008452B3 /* MPForwardRecordTests.m in Sources */,
 				D3961CE52CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift in Sources */,
@@ -2200,7 +2186,6 @@
 				53A79B6F29CDFB2000E7489F /* MPIdentityApi.m in Sources */,
 				53A79B9329CDFB2000E7489F /* MPUpload.m in Sources */,
 				53A79BFD29CDFB2100E7489F /* MPAppDelegateProxy.m in Sources */,
-				D3CEDAB92C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */,
 				53A79BD229CDFB2000E7489F /* MPApplication.m in Sources */,
 				53A79BF629CDFB2000E7489F /* MPCustomModule.m in Sources */,
 				53A79C1329CDFB2100E7489F /* MPKitActivity.m in Sources */,
@@ -2216,7 +2201,6 @@
 				53A79B7A29CDFB2000E7489F /* MPConnector.m in Sources */,
 				53A79B8B29CDFB2000E7489F /* MPBreadcrumb.m in Sources */,
 				D3961CDE2CC0B7E4003B3194 /* NSString+MPPercentEscape.swift in Sources */,
-				D3CEDABE2C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */,
 				53A79B9A29CDFB2000E7489F /* MPEnums.m in Sources */,
 				53A79B8029CDFB2000E7489F /* MPNetworkPerformance.m in Sources */,
 				53A79C0929CDFB2100E7489F /* MPDataPlanFilter.m in Sources */,
@@ -2272,7 +2256,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3CEDABB2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */,
 				53A79CBF29CE019F00E7489F /* MPKitSecondTestClass.m in Sources */,
 				53A79CE629CE019F00E7489F /* MPKitAPITests.m in Sources */,
 				53A79CC229CE019F00E7489F /* MPUserIdentityChangeTests.m in Sources */,
@@ -2300,7 +2283,6 @@
 				7231B8332EB95EDD001565E5 /* MParticleScreenEventTests.swift in Sources */,
 				35E3FCD22E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */,
 				D3CEDAC52C9DB0E0001B32DF /* MPDateFormatter.swift in Sources */,
-				D3CEDAC02C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */,
 				53A79CCB29CE019F00E7489F /* MPIdentityTests.m in Sources */,
 				53A79CE529CE019F00E7489F /* MPUserAttributeChangeTests.m in Sources */,
 				D3961CE42CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift in Sources */,
@@ -2420,7 +2402,6 @@
 				53A79D8429CE23F700E7489F /* MPIdentityApi.m in Sources */,
 				53A79D8629CE23F700E7489F /* MPUpload.m in Sources */,
 				53A79D8729CE23F700E7489F /* MPAppDelegateProxy.m in Sources */,
-				D3CEDABA2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */,
 				53A79D8829CE23F700E7489F /* MPApplication.m in Sources */,
 				53A79D8A29CE23F700E7489F /* MPCustomModule.m in Sources */,
 				53A79D8C29CE23F700E7489F /* MPKitActivity.m in Sources */,
@@ -2437,7 +2418,6 @@
 				53A79D9429CE23F700E7489F /* MPConnector.m in Sources */,
 				D3961CDF2CC0B7E4003B3194 /* NSString+MPPercentEscape.swift in Sources */,
 				53A79D9529CE23F700E7489F /* MPBreadcrumb.m in Sources */,
-				D3CEDABF2C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */,
 				53A79D9629CE23F700E7489F /* MPEnums.m in Sources */,
 				53A79D9729CE23F700E7489F /* MPNetworkPerformance.m in Sources */,
 				53A79D9929CE23F700E7489F /* MPDataPlanFilter.m in Sources */,
@@ -2523,6 +2503,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -2549,7 +2530,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_MODULE = YES;
-				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_INSTALL_OBJC_HEADER = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -2563,6 +2544,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -2588,7 +2570,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_MODULE = YES;
-				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_INSTALL_OBJC_HEADER = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -2644,7 +2626,6 @@
 		534CD2A829CE2CE1008452B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -2674,7 +2655,6 @@
 		534CD2A929CE2CE1008452B3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -2909,7 +2889,6 @@
 		53A79A9129CCCD6400E7489F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -2934,7 +2913,6 @@
 		53A79A9229CCCD6400E7489F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

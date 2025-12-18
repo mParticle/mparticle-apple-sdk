@@ -4,7 +4,7 @@
 #import "MPIConstants.h"
 #import "MPConsentKitFilter.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 @implementation MPConsentSerialization
 

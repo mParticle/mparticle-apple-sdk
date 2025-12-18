@@ -33,6 +33,7 @@
 #import "MPBracket.h"
 #import <map>
 #import <vector>
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 using namespace std;
 
