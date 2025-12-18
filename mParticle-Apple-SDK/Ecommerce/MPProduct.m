@@ -4,6 +4,7 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPILogger.h"
 #import "mParticle.h"
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 // Internal
 NSString *const kMPProductBrand = @"br";
