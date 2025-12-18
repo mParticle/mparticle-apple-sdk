@@ -22,8 +22,6 @@
 		35201C872EF4515A00731349 /* mParticle_Apple_SDK_Swift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 35201C6F2EF4510800731349 /* mParticle_Apple_SDK_Swift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		35201CD72EF45D5400731349 /* mParticle_Apple_SDK_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35201C6F2EF4510800731349 /* mParticle_Apple_SDK_Swift.framework */; platformFilter = ios; };
 		35201CD82EF45D5400731349 /* mParticle_Apple_SDK_Swift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 35201C6F2EF4510800731349 /* mParticle_Apple_SDK_Swift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
-		35329FEA2E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
 		35329FED2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
 		35329FEF2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */; };
@@ -651,7 +649,6 @@
 		3517794C2E706BE4004BF05E /* ExecutorMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExecutorMock.swift; sourceTree = "<group>"; };
 		35201C6F2EF4510800731349 /* mParticle_Apple_SDK_Swift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_Swift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		35201C772EF4510900731349 /* mParticle-Apple-SDK-SwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-Apple-SDK-SwiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPNetworkOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
 		35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MParticleOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
@@ -1071,7 +1068,6 @@
 				359BAFFB2E56335300A8A704 /* SettingsProvider.m */,
 				35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */,
 				35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */,
-				35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */,
 				35E3FCCE2E54978C00DB5B18 /* MParticleSession+MParticlePrivate.m */,
 				35E3FCCB2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h */,
 				35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */,
@@ -2175,7 +2171,6 @@
 				53A79B8929CDFB2000E7489F /* MPMessage.m in Sources */,
 				53A79BFC29CDFB2100E7489F /* MPSurrogateAppDelegate.m in Sources */,
 				53A79B7629CDFB2000E7489F /* MPURL.m in Sources */,
-				35329FEA2E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */,
 				53A79B6B29CDFB2000E7489F /* MPIdentityDTO.m in Sources */,
 				53A79B7529CDFB2000E7489F /* MPNetworkCommunication.m in Sources */,
 				53A79BC729CDFB2000E7489F /* MPMessageBuilder.m in Sources */,
@@ -2376,7 +2371,6 @@
 				53A79DA029CE23F700E7489F /* MPKitExecStatus.m in Sources */,
 				53A79DA129CE23F700E7489F /* MPMessage.m in Sources */,
 				53A79DA229CE23F700E7489F /* MPSurrogateAppDelegate.m in Sources */,
-				35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */,
 				53A79DA329CE23F700E7489F /* MPURL.m in Sources */,
 				53A79DA429CE23F700E7489F /* MPIdentityDTO.m in Sources */,
 				53A79DA529CE23F700E7489F /* MPNetworkCommunication.m in Sources */,
