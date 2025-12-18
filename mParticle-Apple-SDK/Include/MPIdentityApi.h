@@ -10,6 +10,7 @@
 #import "MPAliasResponse.h"
 #import "FilteredMParticleUser.h"
 #import "FilteredMPIdentityApiRequest.h"
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

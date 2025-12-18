@@ -130,55 +130,6 @@ typedef NS_ENUM(NSUInteger, MPSurveyProvider) {
     MPSurveyProviderForesee = 64
 };
 
-/// User Identities
-/// The identities in this enum are limited to end-user forms of identity. A new enum, MPIdentity, has been provided to cover all valid forms of identity supported by the mParticle Identity API (user identities and device identities)
-typedef NS_ENUM(NSUInteger, MPUserIdentity) {
-    /** User identity other */
-    MPUserIdentityOther = 0,
-    /** User identity customer id. This is an id issued by your own system */
-    MPUserIdentityCustomerId,
-    /** User identity Facebook */
-    MPUserIdentityFacebook,
-    /** User identity Twitter */
-    MPUserIdentityTwitter,
-    /** User identity Google */
-    MPUserIdentityGoogle,
-    /** User identity Microsoft */
-    MPUserIdentityMicrosoft,
-    /** User identity Yahoo! */
-    MPUserIdentityYahoo,
-    /** User identity Email */
-    MPUserIdentityEmail,
-    /** User identity Alias */
-    MPUserIdentityAlias,
-    /** User identity Facebook Custom Audience Third Party Id, or User App Id */
-    MPUserIdentityFacebookCustomAudienceId,
-    /** User identity other 2 */
-    MPUserIdentityOther2,
-    /** User identity other 3 */
-    MPUserIdentityOther3,
-    /** User identity other 4 */
-    MPUserIdentityOther4,
-    /** User identity other 5 */
-    MPUserIdentityOther5,
-    /** User identity other 6 */
-    MPUserIdentityOther6,
-    /** User identity other 7 */
-    MPUserIdentityOther7,
-    /** User identity other 8 */
-    MPUserIdentityOther8,
-    /** User identity other 9 */
-    MPUserIdentityOther9,
-    /** User identity other 10 */
-    MPUserIdentityOther10,
-    /** User identity mobile number */
-    MPUserIdentityMobileNumber,
-    /** User identity phone number 2 */
-    MPUserIdentityPhoneNumber2,
-    /** User identity phone number 3 */
-    MPUserIdentityPhoneNumber3
-};
-
 /// Kit Instance Codes
 typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Urban Airship */

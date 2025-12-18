@@ -11,6 +11,55 @@ public class Version {
     public static let kMParticleSDKVersion = "8.40.0"
 }
 
+/// User Identities
+/// The identities in this enum are limited to end-user forms of identity. A new enum, MPIdentity, has been provided to cover all valid forms of identity supported by the mParticle Identity API (user identities and device identities)
+@objc public enum MPUserIdentity: UInt {
+    /** User identity other */
+    case other = 0
+    /** User identity customer id. This is an id issued by your own system */
+    case customerId
+    /** User identity Facebook */
+    case facebook
+    /** User identity Twitter */
+    case twitter
+    /** User identity Google */
+    case google
+    /** User identity Microsoft */
+    case microsoft
+    /** User identity Yahoo! */
+    case yahoo
+    /** User identity Email */
+    case email
+    /** User identity Alias */
+    case alias
+    /** User identity Facebook Custom Audience Third Party Id, or User App Id */
+    case facebookCustomAudienceId
+    /** User identity other 2 */
+    case other2
+    /** User identity other 3 */
+    case other3
+    /** User identity other 4 */
+    case other4
+    /** User identity other 5 */
+    case other5
+    /** User identity other 6 */
+    case other6
+    /** User identity other 7 */
+    case other7
+    /** User identity other 8 */
+    case other8
+    /** User identity other 9 */
+    case other9
+    /** User identity other 10 */
+    case other10
+    /** User identity mobile number */
+    case mobileNumber
+    /** User identity phone number 2 */
+    case phoneNumber2
+    /** User identity phone number 3 */
+    case phoneNumber3
+};
+
 /// MP Identities
 @objc public enum MPIdentity: UInt {
     /** User identity other */
