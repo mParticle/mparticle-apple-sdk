@@ -5,7 +5,7 @@
 //  Created by Ben Baron on 12/3/24.
 //
 
-import mParticle_Apple_SDK_Swift
+import Foundation
 
 @objc public final class MPUserIdentityInstance_PRIVATE: NSObject {
     @objc public var value: String?
