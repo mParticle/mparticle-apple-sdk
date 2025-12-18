@@ -581,8 +581,6 @@
 		D356E0242CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D3961CD62CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */; };
-		D3961CD72CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */; };
 		D3961CE42CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CE32CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift */; };
 		D3961CE52CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CE32CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift */; };
 		D3B3E2072AE029AE001AB58C /* mParticle_Apple_SDK.h in Headers */ = {isa = PBXBuildFile; fileRef = D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -963,7 +961,6 @@
 		D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUploadSettings.swift; sourceTree = "<group>"; };
 		D356E0232CFE08ED0020898D /* MPResponseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPResponseConfig.swift; sourceTree = "<group>"; };
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
-		D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitive.swift"; sourceTree = "<group>"; };
 		D3961CE32CC0C2A0003B3194 /* NSString+MPPercentEscapeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSString+MPPercentEscapeTests.swift"; sourceTree = "<group>"; };
 		D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK.h; sourceTree = "<group>"; };
 		D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -1252,7 +1249,6 @@
 				D3BE919A2D5B965A0038C87A /* MPLaunchInfo.swift */,
 				D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */,
 				53A79B0229CDFB1F00E7489F /* MPMessageBuilder.m */,
-				D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */,
 				D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */,
 				53A79B0929CDFB1F00E7489F /* NSDictionary+MPCaseInsensitive.m */,
 				D356E0232CFE08ED0020898D /* MPResponseConfig.swift */,
@@ -2166,7 +2162,6 @@
 				351308422E6B28F5002A3AD6 /* Executor.m in Sources */,
 				53A79B6D29CDFB2000E7489F /* FilteredMParticleUser.m in Sources */,
 				53A79C0729CDFB2100E7489F /* MPBaseEvent.m in Sources */,
-				D3961CD62CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */,
 				53A79C1829CDFB2100E7489F /* MPAttributeProjection.m in Sources */,
 				53A79B8E29CDFB2000E7489F /* MPConsumerInfo.m in Sources */,
 				53A79C0D29CDFB2100E7489F /* MPKitConfiguration.mm in Sources */,
@@ -2377,7 +2372,6 @@
 				53A79D7329CE23F700E7489F /* FilteredMParticleUser.m in Sources */,
 				53A79D7429CE23F700E7489F /* MPBaseEvent.m in Sources */,
 				53A79D7529CE23F700E7489F /* MPAttributeProjection.m in Sources */,
-				D3961CD72CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */,
 				53A79D7629CE23F700E7489F /* MPConsumerInfo.m in Sources */,
 				53A79D7729CE23F700E7489F /* MPKitConfiguration.mm in Sources */,
 				53A79D7829CE23F700E7489F /* MPConsentState.m in Sources */,
