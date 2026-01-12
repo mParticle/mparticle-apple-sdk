@@ -10,6 +10,13 @@ TARGET_URL=${4:-"https://config2.mparticle.com"}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
+# === Check required environment variables for recording ===
+if [ -z "$MPARTICLE_API_KEY" ] || [ -z "$MPARTICLE_API_SECRET" ]; then
+  echo "❌ Error: MPARTICLE_API_KEY and MPARTICLE_API_SECRET environment variables must be set for recording mode"
+  echo "   Real API keys are required to record actual API responses from mParticle servers"
+  exit 1
+fi
+
 # === Build framework and generate project ===
 build_framework
 
@@ -22,6 +29,9 @@ CONTAINER_NAME="wiremock-recorder"
 # === Prepare local directory for mappings ===
 mkdir -p "${MAPPINGS_DIR}/mappings"
 mkdir -p "${MAPPINGS_DIR}/__files"
+
+# Create proxy mappings for recording
+create_proxy_mappings
 
 # Trap to ensure cleanup on exit
 trap stop_wiremock EXIT INT TERM

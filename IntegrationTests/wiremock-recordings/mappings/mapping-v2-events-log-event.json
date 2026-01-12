@@ -124,7 +124,7 @@
           "di": {
             "p": "arm64",
             "bid": "${json-unit.ignore}",
-            "tz": "-5",
+            "tz": "${json-unit.ignore}",
             "dn": "${json-unit.ignore}",
             "dll": "en",
             "dlc": "${json-unit.ignore}",
@@ -132,7 +132,7 @@
             "dma": "Apple",
             "vid": "${json-unit.ignore}",
             "idst": false,
-            "tzn": "America/New_York",
+            "tzn": "${json-unit.ignore}",
             "dp": "iOS",
             "dsw": "960",
             "dosv": "${json-unit.ignore}",
