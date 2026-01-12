@@ -99,7 +99,7 @@ jobs:
 
       - name: Upload artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: integration-test-artifacts
           path: ${{ env.WORKING_DIRECTORY }}/artifacts/
