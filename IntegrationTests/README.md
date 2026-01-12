@@ -10,6 +10,21 @@ Before getting started, install Tuist:
 brew install tuist
 ```
 
+### Environment Variables
+
+mParticle API credentials are required **only for recording** new API interactions:
+
+```bash
+export MPARTICLE_API_KEY="your-api-key"
+export MPARTICLE_API_SECRET="your-api-secret"
+```
+
+**Recording mode (`run_wiremock_recorder.sh`):** Real API keys are required to record actual API responses from mParticle servers.
+
+**Verification mode (`run_clean_integration_tests.sh`):** API keys are **optional**. If not set, the tests will automatically use fake keys (`us1-00000000000000000000000000000000`) that match the WireMock URL patterns. This allows running integration tests without exposing real credentials.
+
+**Note:** Fake keys must match the pattern `us1-[a-f0-9]+` to work with WireMock mappings.
+
 Then generate the Xcode project:
 
 ```bash

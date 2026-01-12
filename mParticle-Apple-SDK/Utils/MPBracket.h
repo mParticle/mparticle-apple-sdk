@@ -1,32 +1,22 @@
 #ifndef __mParticle__Bracket__
 #define __mParticle__Bracket__
 
-#import <cstdint>
-#import <memory>
+#import <Foundation/Foundation.h>
 
-namespace mParticle {
-    class Bracket final {
-        
-    public:
-        int64_t mpId = 0;
-        short low = 0;
-        short high = 100;
-        bool shouldForward();
-        
-        Bracket(const long mpId, const short low, const short high) :
-        mpId(mpId), low(low), high(high)
-        {}
-        
-        inline bool operator==(const Bracket &bracket) const {
-            return mpId == bracket.mpId &&
-                   low == bracket.low &&
-                   high == bracket.high;
-        }
-        
-        inline bool operator!=(const Bracket &bracket) const {
-            return !(*this == bracket);
-        }
-    };
-}
+NS_ASSUME_NONNULL_BEGIN
+
+@interface MPBracket : NSObject
+
+@property (nonatomic, assign) int64_t mpId;
+@property (nonatomic, assign) short low;
+@property (nonatomic, assign) short high;
+
+- (instancetype)initWithMpId:(int64_t)mpId low:(short)low high:(short)high;
+- (BOOL)shouldForward;
+- (BOOL)isEqualToBracket:(MPBracket *)bracket;
+
+@end
+
+NS_ASSUME_NONNULL_END
 
 #endif

@@ -17,6 +17,8 @@
 		351308442E6B28F5002A3AD6 /* Executor.m in Sources */ = {isa = PBXBuildFile; fileRef = 351308402E6B28F5002A3AD6 /* Executor.m */; };
 		3517794F2E706BF8004BF05E /* ExecutorMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3517794C2E706BE4004BF05E /* ExecutorMock.swift */; };
 		351779502E706BF8004BF05E /* ExecutorMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3517794C2E706BE4004BF05E /* ExecutorMock.swift */; };
+		351F6FC72EDF7B2A00E527A7 /* SceneDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */; };
+		351F6FC82EDF7B2A00E527A7 /* SceneDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */; };
 		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEA2E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
@@ -91,7 +93,7 @@
 		534CD27129CE2CE1008452B3 /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7729CE019E00E7489F /* MPKitSecondTestClassNoStartImmediately.m */; };
 		534CD27229CE2CE1008452B3 /* MPConsentSerializationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9D29CE019F00E7489F /* MPConsentSerializationTests.m */; };
 		534CD27329CE2CE1008452B3 /* MPKitTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7D29CE019E00E7489F /* MPKitTestClassNoStartImmediately.m */; };
-		534CD27429CE2CE1008452B3 /* BracketTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAD29CE019F00E7489F /* BracketTests.mm */; };
+		534CD27429CE2CE1008452B3 /* BracketTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAD29CE019F00E7489F /* BracketTests.m */; };
 		534CD27529CE2CE1008452B3 /* MPIdentityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7F29CE019E00E7489F /* MPIdentityTests.m */; };
 		534CD27629CE2CE1008452B3 /* MPUserAttributeChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9E29CE019F00E7489F /* MPUserAttributeChangeTests.m */; };
 		534CD27729CE2CE1008452B3 /* MPForwardRecordTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAF29CE019F00E7489F /* MPForwardRecordTests.m */; };
@@ -208,7 +210,7 @@
 		53A79BD229CDFB2000E7489F /* MPApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B0D29CDFB1F00E7489F /* MPApplication.m */; };
 		53A79BD729CDFB2000E7489F /* MPUploadBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */; };
 		53A79BDF29CDFB2000E7489F /* MPMessageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B1A29CDFB1F00E7489F /* MPMessageBuilder.h */; };
-		53A79BE329CDFB2000E7489F /* MPBracket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1E29CDFB1F00E7489F /* MPBracket.cpp */; };
+		53A79BE329CDFB2000E7489F /* MPBracket.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1E29CDFB1F00E7489F /* MPBracket.m */; };
 		53A79BE829CDFB2000E7489F /* MPUploadBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B2329CDFB1F00E7489F /* MPUploadBuilder.h */; };
 		53A79BE929CDFB2000E7489F /* MPApplication.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B2429CDFB1F00E7489F /* MPApplication.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79BEB29CDFB2000E7489F /* NSNumber+MPFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B2629CDFB1F00E7489F /* NSNumber+MPFormatter.swift */; };
@@ -341,7 +343,7 @@
 		53A79CED29CE019F00E7489F /* MPCustomModuleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAA29CE019F00E7489F /* MPCustomModuleTests.m */; };
 		53A79CEE29CE019F00E7489F /* NSNumber+MPFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */; };
 		53A79CEF29CE019F00E7489F /* MPDeviceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAC29CE019F00E7489F /* MPDeviceTests.m */; };
-		53A79CF029CE019F00E7489F /* BracketTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAD29CE019F00E7489F /* BracketTests.mm */; };
+		53A79CF029CE019F00E7489F /* BracketTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAD29CE019F00E7489F /* BracketTests.m */; };
 		53A79CF129CE019F00E7489F /* MPAliasResponseTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAE29CE019F00E7489F /* MPAliasResponseTests.m */; };
 		53A79CF229CE019F00E7489F /* MPForwardRecordTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAF29CE019F00E7489F /* MPForwardRecordTests.m */; };
 		53A79CF329CE019F00E7489F /* MPKitConfigurationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CB029CE019F00E7489F /* MPKitConfigurationTests.mm */; };
@@ -443,7 +445,7 @@
 		53A79D7629CE23F700E7489F /* MPConsumerInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AC429CDFB1E00E7489F /* MPConsumerInfo.m */; };
 		53A79D7729CE23F700E7489F /* MPKitConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4F29CDFB1F00E7489F /* MPKitConfiguration.mm */; };
 		53A79D7829CE23F700E7489F /* MPConsentState.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF929CDFB1F00E7489F /* MPConsentState.m */; };
-		53A79D7929CE23F700E7489F /* MPBracket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1E29CDFB1F00E7489F /* MPBracket.cpp */; };
+		53A79D7929CE23F700E7489F /* MPBracket.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1E29CDFB1F00E7489F /* MPBracket.m */; };
 		53A79D7A29CE23F700E7489F /* MParticleUserNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AC729CDFB1E00E7489F /* MParticleUserNotification.m */; };
 		53A79D7B29CE23F700E7489F /* MPIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B6429CDFB1F00E7489F /* MPIConstants.m */; };
 		53A79D7D29CE23F700E7489F /* MPPromotion.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4129CDFB1F00E7489F /* MPPromotion.m */; };
@@ -566,6 +568,10 @@
 		7E0387842DB913D2003B7D5E /* MPRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E0387802DB913D2003B7D5E /* MPRokt.m */; };
 		7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		7E15B2072D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
+		7E573D2A2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */; };
+		7E573D2B2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */; };
+		7E87E0C12EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */; };
+		7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */; };
 		B31360F92E012760000DFBC9 /* MPRoktEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.swift */; };
 		B3D778622E02F55F00D887A4 /* MPRoktEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.swift */; };
 		D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B0629CDFB1F00E7489F /* MPStateMachine.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -632,6 +638,7 @@
 		3513083F2E6B28F5002A3AD6 /* Executor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Executor.h; sourceTree = "<group>"; };
 		351308402E6B28F5002A3AD6 /* Executor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Executor.m; sourceTree = "<group>"; };
 		3517794C2E706BE4004BF05E /* ExecutorMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExecutorMock.swift; sourceTree = "<group>"; };
+		351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegateHandler.swift; sourceTree = "<group>"; };
 		35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPNetworkOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
@@ -732,7 +739,7 @@
 		53A79B0D29CDFB1F00E7489F /* MPApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPApplication.m; sourceTree = "<group>"; };
 		53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUploadBuilder.m; sourceTree = "<group>"; };
 		53A79B1A29CDFB1F00E7489F /* MPMessageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPMessageBuilder.h; sourceTree = "<group>"; };
-		53A79B1E29CDFB1F00E7489F /* MPBracket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MPBracket.cpp; sourceTree = "<group>"; };
+		53A79B1E29CDFB1F00E7489F /* MPBracket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBracket.m; sourceTree = "<group>"; };
 		53A79B2329CDFB1F00E7489F /* MPUploadBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUploadBuilder.h; sourceTree = "<group>"; };
 		53A79B2429CDFB1F00E7489F /* MPApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPApplication.h; sourceTree = "<group>"; };
 		53A79B2629CDFB1F00E7489F /* NSNumber+MPFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSNumber+MPFormatter.swift"; sourceTree = "<group>"; };
@@ -875,7 +882,7 @@
 		53A79CAA29CE019F00E7489F /* MPCustomModuleTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomModuleTests.m; sourceTree = "<group>"; };
 		53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+MPFormatterTests.m"; sourceTree = "<group>"; };
 		53A79CAC29CE019F00E7489F /* MPDeviceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDeviceTests.m; sourceTree = "<group>"; };
-		53A79CAD29CE019F00E7489F /* BracketTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BracketTests.mm; sourceTree = "<group>"; };
+		53A79CAD29CE019F00E7489F /* BracketTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BracketTests.m; sourceTree = "<group>"; };
 		53A79CAE29CE019F00E7489F /* MPAliasResponseTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAliasResponseTests.m; sourceTree = "<group>"; };
 		53A79CAF29CE019F00E7489F /* MPForwardRecordTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardRecordTests.m; sourceTree = "<group>"; };
 		53A79CB029CE019F00E7489F /* MPKitConfigurationTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitConfigurationTests.mm; sourceTree = "<group>"; };
@@ -923,6 +930,8 @@
 		7E03877F2DB913D2003B7D5E /* MPRokt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPRokt.h; sourceTree = "<group>"; };
 		7E0387802DB913D2003B7D5E /* MPRokt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRokt.m; sourceTree = "<group>"; };
 		7E15B2052D94617900C1FF3E /* MPRoktTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktTests.m; sourceTree = "<group>"; };
+		7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleSceneDelegateTests.swift; sourceTree = "<group>"; };
+		7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegateHandlerMock.swift; path = UnitTests/Mocks/SceneDelegateHandlerMock.swift; sourceTree = "<group>"; };
 		B31360F72E012760000DFBC9 /* MPRoktEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPRoktEvent.swift; sourceTree = "<group>"; };
 		D33C8B312B8510C20012EDFD /* MPAudience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAudience.h; sourceTree = "<group>"; };
 		D33C8B322B8510C20012EDFD /* MPAudience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAudience.m; sourceTree = "<group>"; };
@@ -1005,6 +1014,7 @@
 		53A79A6F29CCCD6400E7489F = {
 			isa = PBXGroup;
 			children = (
+				7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */,
 				D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */,
 				53A79CFE29CE12AB00E7489F /* mParticle-Apple-SDK.modulemap */,
 				53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */,
@@ -1029,6 +1039,7 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
+				351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */,
 				3513083F2E6B28F5002A3AD6 /* Executor.h */,
 				729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */,
 				729721782EAC2B750045E55C /* AppEnvironmentProvider.m */,
@@ -1209,7 +1220,7 @@
 				D3961CDD2CC0B7E4003B3194 /* NSString+MPPercentEscape.swift */,
 				53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */,
 				53A79B1A29CDFB1F00E7489F /* MPMessageBuilder.h */,
-				53A79B1E29CDFB1F00E7489F /* MPBracket.cpp */,
+				53A79B1E29CDFB1F00E7489F /* MPBracket.m */,
 				53A79B2329CDFB1F00E7489F /* MPUploadBuilder.h */,
 				53A79B2629CDFB1F00E7489F /* NSNumber+MPFormatter.swift */,
 				D3DE316A2D5261F700CC537F /* MPDevice.swift */,
@@ -1468,7 +1479,7 @@
 				53A79CAA29CE019F00E7489F /* MPCustomModuleTests.m */,
 				53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */,
 				53A79CAC29CE019F00E7489F /* MPDeviceTests.m */,
-				53A79CAD29CE019F00E7489F /* BracketTests.mm */,
+				53A79CAD29CE019F00E7489F /* BracketTests.m */,
 				53A79CAE29CE019F00E7489F /* MPAliasResponseTests.m */,
 				53A79CAF29CE019F00E7489F /* MPForwardRecordTests.m */,
 				53A79CB029CE019F00E7489F /* MPKitConfigurationTests.mm */,
@@ -1504,6 +1515,7 @@
 			isa = PBXGroup;
 			children = (
 				7231B8342EB95F9F001565E5 /* MParticleBreadcrumbTests.swift */,
+				7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */,
 				7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */,
 				7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */,
 				7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */,
@@ -1910,6 +1922,7 @@
 				534CD26929CE2CE1008452B3 /* MPSurrogateAppDelegateTests.m in Sources */,
 				534CD26A29CE2CE1008452B3 /* MPGDPRConsentTests.m in Sources */,
 				356D4A5A2E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */,
+				7E573D2A2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */,
 				534CD26B29CE2CE1008452B3 /* MPBackendControllerTests.m in Sources */,
 				534CD26C29CE2CE1008452B3 /* MPKitConfigurationTests.mm in Sources */,
 				7231B80E2EB3C4AC001565E5 /* MPKitMock.swift in Sources */,
@@ -1920,7 +1933,7 @@
 				534CD27129CE2CE1008452B3 /* MPKitSecondTestClassNoStartImmediately.m in Sources */,
 				534CD27229CE2CE1008452B3 /* MPConsentSerializationTests.m in Sources */,
 				534CD27329CE2CE1008452B3 /* MPKitTestClassNoStartImmediately.m in Sources */,
-				534CD27429CE2CE1008452B3 /* BracketTests.mm in Sources */,
+				534CD27429CE2CE1008452B3 /* BracketTests.m in Sources */,
 				351308242E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */,
 				356752902E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */,
 				7231B8322EB95EDD001565E5 /* MParticleScreenEventTests.swift in Sources */,
@@ -1939,6 +1952,7 @@
 				534CD27B29CE2CE1008452B3 /* MPZipTests.m in Sources */,
 				7231B8522EB964A1001565E5 /* MParticleOpenURLTests.swift in Sources */,
 				53E20DC82CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
+				7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */,
 				534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */,
 				356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
 				534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */,
@@ -2033,7 +2047,7 @@
 				53A79C0D29CDFB2100E7489F /* MPKitConfiguration.mm in Sources */,
 				D3CEDACB2CB027E1001B32DF /* MPConvertJS.swift in Sources */,
 				53A79BC129CDFB2000E7489F /* MPConsentState.m in Sources */,
-				53A79BE329CDFB2000E7489F /* MPBracket.cpp in Sources */,
+				53A79BE329CDFB2000E7489F /* MPBracket.m in Sources */,
 				531BCF362B28A23400F5C573 /* MPIdentityCaching.m in Sources */,
 				53A79B9129CDFB2000E7489F /* MParticleUserNotification.m in Sources */,
 				53A79C2129CDFB2100E7489F /* MPIConstants.m in Sources */,
@@ -2102,6 +2116,7 @@
 				53FDD1BD2AE871AF003D5FA1 /* MPIHasher.swift in Sources */,
 				D3DE316B2D5261FC00CC537F /* MPDevice.swift in Sources */,
 				53A79BBD29CDFB2000E7489F /* MPBackendController.m in Sources */,
+				351F6FC72EDF7B2A00E527A7 /* SceneDelegateHandler.swift in Sources */,
 				53A79C1B29CDFB2100E7489F /* MPForwardQueueItem.m in Sources */,
 				53A79C1629CDFB2100E7489F /* MPEventProjection.mm in Sources */,
 				D3CEDAC32C9DAC25001B32DF /* MPDateFormatter.swift in Sources */,
@@ -2129,6 +2144,7 @@
 				53A79CD129CE019F00E7489F /* MPSurrogateAppDelegateTests.m in Sources */,
 				53A79CE729CE019F00E7489F /* MPGDPRConsentTests.m in Sources */,
 				356D4A592E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */,
+				7E573D2B2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */,
 				53A79CD229CE019F00E7489F /* MPBackendControllerTests.m in Sources */,
 				53A79CF329CE019F00E7489F /* MPKitConfigurationTests.mm in Sources */,
 				7231B80D2EB3C4AC001565E5 /* MPKitMock.swift in Sources */,
@@ -2141,7 +2157,7 @@
 				53A79CCA29CE019F00E7489F /* MPKitTestClassNoStartImmediately.m in Sources */,
 				351308252E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */,
 				3567528F2E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */,
-				53A79CF029CE019F00E7489F /* BracketTests.mm in Sources */,
+				53A79CF029CE019F00E7489F /* BracketTests.m in Sources */,
 				7231B8332EB95EDD001565E5 /* MParticleScreenEventTests.swift in Sources */,
 				35E3FCD22E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */,
 				D3CEDAC52C9DB0E0001B32DF /* MPDateFormatter.swift in Sources */,
@@ -2158,6 +2174,7 @@
 				53E20DC72CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
 				7231B8532EB964A1001565E5 /* MParticleOpenURLTests.swift in Sources */,
 				53A79CEC29CE019F00E7489F /* MPZipTests.m in Sources */,
+				7E87E0C12EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */,
 				356752942E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
 				53A79CCC29CE019F00E7489F /* MPIntegrationAttributesTest.m in Sources */,
 				53A79CBD29CE019F00E7489F /* MPDataModelTests.m in Sources */,
@@ -2251,7 +2268,7 @@
 				53A79D7729CE23F700E7489F /* MPKitConfiguration.mm in Sources */,
 				53A79D7829CE23F700E7489F /* MPConsentState.m in Sources */,
 				D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */,
-				53A79D7929CE23F700E7489F /* MPBracket.cpp in Sources */,
+				53A79D7929CE23F700E7489F /* MPBracket.m in Sources */,
 				53A79D7A29CE23F700E7489F /* MParticleUserNotification.m in Sources */,
 				531BCF372B28A23400F5C573 /* MPIdentityCaching.m in Sources */,
 				53A79D7B29CE23F700E7489F /* MPIConstants.m in Sources */,
@@ -2321,6 +2338,7 @@
 				53A79DB429CE23F700E7489F /* MPDataModelAbstract.m in Sources */,
 				D3DE316C2D5261FC00CC537F /* MPDevice.swift in Sources */,
 				53FDD1BE2AE871AF003D5FA1 /* MPIHasher.swift in Sources */,
+				351F6FC82EDF7B2A00E527A7 /* SceneDelegateHandler.swift in Sources */,
 				53A79DB529CE23F700E7489F /* MPBackendController.m in Sources */,
 				53A79DB629CE23F700E7489F /* MPForwardQueueItem.m in Sources */,
 				53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */,
@@ -2362,6 +2380,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = ./UnitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK-NoLocationTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2374,6 +2393,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "./UnitTests/mParticle_iOS_SDKTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
+				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Debug;
 		};
@@ -2390,6 +2410,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = ./UnitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK-NoLocationTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2402,6 +2423,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "./UnitTests/mParticle_iOS_SDKTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
+				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Release;
 		};
@@ -2619,6 +2641,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
 				INFOPLIST_FILE = ./UnitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDKTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2630,6 +2653,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "./UnitTests/mParticle_iOS_SDKTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
+				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Debug;
 		};
@@ -2642,6 +2666,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
 				INFOPLIST_FILE = ./UnitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDKTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2653,6 +2678,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "./UnitTests/mParticle_iOS_SDKTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3";
+				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Release;
 		};
