@@ -143,14 +143,8 @@ import Foundation
                         if let accuracy = locationDictionary[RemoteConfig.kMPRemoteConfigLocationAccuracyKey] as? NSNumber,
                            let minimumDistance =
                            locationDictionary[RemoteConfig.kMPRemoteConfigLocationMinimumDistanceKey] as? NSNumber {
-                            MParticle.sharedInstance().beginLocationTracking(
-                                accuracy.doubleValue,
-                                minDistance: minimumDistance.doubleValue,
-                                authorizationRequest: MPLocationAuthorizationRequest.always
-                            )
                         }
                     } else if locationMode == RemoteConfig.kMPRemoteConfigForceFalse {
-                        MParticle.sharedInstance().endLocationTracking()
                     }
                 #endif
             }

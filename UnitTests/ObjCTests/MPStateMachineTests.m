@@ -193,33 +193,6 @@
     XCTAssertEqual(environment, MPEnvironmentDevelopment, @"Should have been equal.");
 }
 
-- (void)testSetLocation {
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    id mockKitContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [MParticle sharedInstance].kitContainer_PRIVATE = mockKitContainer;
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Set Location"];
-    MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
-    
-    [MParticle sharedInstance].location = [[CLLocation alloc] init];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        OCMVerify([kitContainer forwardSDKCall:@selector(setLocation:)
-                                         event:OCMOCK_ANY
-                                    parameters:OCMOCK_ANY
-                                   messageType:MPMessageTypeEvent
-                                      userInfo:OCMOCK_ANY
-                   ]);
-        [expectation fulfill];
-    });
-
-
-    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-#endif
-#endif
-}
-
 #if TARGET_OS_IOS == 1
 - (void)testRequestAttribution {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Request Attribution"];

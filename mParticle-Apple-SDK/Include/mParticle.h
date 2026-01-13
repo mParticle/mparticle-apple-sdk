@@ -1053,55 +1053,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 - (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;
 
-#pragma mark - Location
-#if TARGET_OS_IOS == 1
-/**
- Enables or disables the inclusion of location information to messages when your app is running on the
- background. The default value is YES. Setting it to NO will cause the SDK to include location
- information only when your app is running on the foreground.
- @see beginLocationTracking:minDistance:
- */
-@property (nonatomic) BOOL backgroundLocationTracking;
-
-#ifndef MPARTICLE_LOCATION_DISABLE
-/**
- Gets/Sets the current location of the active session.
- @see beginLocationTracking:minDistance:
- */
-@property (nonatomic, strong, nullable) CLLocation *location;
-
-/**
- Begins geographic location tracking.
- 
- The desired accuracy of the location is determined by a passed in constant for accuracy.
- Choices are kCLLocationAccuracyBestForNavigation, kCLLocationAccuracyBest,
- kCLLocationAccuracyNearestTenMeters, kCLLocationAccuracyHundredMeters,
- kCLLocationAccuracyKilometer, and kCLLocationAccuracyThreeKilometers.
- @param accuracy The desired accuracy
- @param distanceFilter The minimum distance (measured in meters) a device must move before an update event is generated.
- */
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
-
-/**
- Begins geographic location tracking.
- 
- The desired accuracy of the location is determined by a passed in constant for accuracy.
- Choices are kCLLocationAccuracyBestForNavigation, kCLLocationAccuracyBest,
- kCLLocationAccuracyNearestTenMeters, kCLLocationAccuracyHundredMeters,
- kCLLocationAccuracyKilometer, and kCLLocationAccuracyThreeKilometers.
- @param accuracy The desired accuracy
- @param distanceFilter The minimum distance (measured in meters) a device must move before an update event is generated.
- @param authorizationRequest Type of authorization requested to use location services
- */
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
-
-/**
- Ends geographic location tracking.
- */
-- (void)endLocationTracking;
-#endif
-#endif
-
 #pragma mark - Network Performance
 /**
  Allows you to log a network performance measurement independently from the mParticle SDK measurement. 
