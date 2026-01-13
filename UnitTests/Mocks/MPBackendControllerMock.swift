@@ -319,28 +319,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     #if os(iOS)
-        #if !MPARTICLE_LOCATION_DISABLE
-
-            // MARK: - Location
-
-            var beginLocationTrackingCalled = false
-            var beginLocationTrackingAccuracyParam: CLLocationAccuracy?
-            var beginLocationTrackingDistanceParam: CLLocationDistance?
-            var beginLocationTrackingAuthParam: MPLocationAuthorizationRequest?
-            var beginLocationTrackingReturnValue: MPExecStatus = .success
-
-            func beginLocationTracking(
-                withAccuracy accuracy: CLLocationAccuracy,
-                distanceFilter distance: CLLocationDistance,
-                authorizationRequest: MPLocationAuthorizationRequest
-            ) -> MPExecStatus {
-                beginLocationTrackingCalled = true
-                beginLocationTrackingAccuracyParam = accuracy
-                beginLocationTrackingDistanceParam = distance
-                beginLocationTrackingAuthParam = authorizationRequest
-                return beginLocationTrackingReturnValue
-            }
-        #endif
 
         // MARK: - Notifications
 
