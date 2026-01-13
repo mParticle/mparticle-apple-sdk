@@ -82,9 +82,6 @@ extern const NSInteger kInvalidKey;
 - (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
 
 #if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
-#endif
 - (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 
@@ -146,9 +143,6 @@ extern const NSInteger kInvalidKey;
 - (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings;
 
 #if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
-#endif
 - (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
 - (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif

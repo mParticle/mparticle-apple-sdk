@@ -1870,20 +1870,6 @@ static BOOL skipNextUpload = NO;
 }
 
 #if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(accuracy) parameter2:@(distance) parameter3:@(authorizationRequest)];
-    
-    if ([[MParticle sharedInstance].stateMachine.locationTrackingMode isEqualToString:kMPRemoteConfigForceFalse]) {
-        return MPExecStatusDisabledRemotely;
-    }
-    
-    MPLocationManager_PRIVATE *locationManager = [[MPLocationManager_PRIVATE alloc] initWithAccuracy:accuracy distanceFilter:distance authorizationRequest:authorizationRequest];
-    [MParticle sharedInstance].stateMachine.locationManager = locationManager ? : nil;
-    
-    return MPExecStatusSuccess;
-}
-#endif
 
 - (MPNotificationController_PRIVATE *)notificationController {
     return _notificationController;
