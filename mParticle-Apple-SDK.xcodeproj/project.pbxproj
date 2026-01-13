@@ -498,8 +498,6 @@
 		53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */; };
 		53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5329CDFB1F00E7489F /* MPBaseProjection.m */; };
 		53A79DBF29CE23F700E7489F /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */; };
-		53B28FB22C938C26009072FC /* MPLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B28FB12C938C26009072FC /* MPLocationManager.swift */; };
-		53B28FB32C938C26009072FC /* MPLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B28FB12C938C26009072FC /* MPLocationManager.swift */; };
 		53B33E8A2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */; };
 		53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */; };
 		53E20DC72CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */; };
@@ -891,7 +889,6 @@
 		53A79CFE29CE12AB00E7489F /* mParticle-Apple-SDK.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK.modulemap"; path = "Framework/mParticle-Apple-SDK.modulemap"; sourceTree = "<group>"; };
 		53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK-NoLocation.modulemap"; path = "Framework/mParticle-Apple-SDK-NoLocation.modulemap"; sourceTree = "<group>"; };
 		53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_NoLocation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		53B28FB12C938C26009072FC /* MPLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPLocationManager.swift; sourceTree = "<group>"; };
 		53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSideloadedKit.swift; sourceTree = "<group>"; };
 		53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitiveTests.swift"; sourceTree = "<group>"; };
 		53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIHasher.swift; sourceTree = "<group>"; };
@@ -1068,7 +1065,6 @@
 				53A79B4A29CDFB1F00E7489F /* Kits */,
 				53A79AFD29CDFB1F00E7489F /* Libraries */,
 				53A79B6229CDFB1F00E7489F /* Listener */,
-				53A79AA429CDFB1E00E7489F /* Location */,
 				53A79B4529CDFB1F00E7489F /* Logger */,
 				53A79AA729CDFB1E00E7489F /* Network */,
 				53A79B3329CDFB1F00E7489F /* Notifications */,
@@ -1097,14 +1093,6 @@
 				53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */,
 			);
 			path = Identity;
-			sourceTree = "<group>";
-		};
-		53A79AA429CDFB1E00E7489F /* Location */ = {
-			isa = PBXGroup;
-			children = (
-				53B28FB12C938C26009072FC /* MPLocationManager.swift */,
-			);
-			path = Location;
 			sourceTree = "<group>";
 		};
 		53A79AA729CDFB1E00E7489F /* Network */ = {
@@ -2076,7 +2064,6 @@
 				D3CEDAC82CA2F214001B32DF /* MPLogger.swift in Sources */,
 				53A79B6A29CDFB2000E7489F /* MPAliasRequest.m in Sources */,
 				53A79B6829CDFB2000E7489F /* MParticleUser.m in Sources */,
-				53B28FB22C938C26009072FC /* MPLocationManager.swift in Sources */,
 				53A79BC529CDFB2000E7489F /* MParticleReachability.m in Sources */,
 				53A79C0B29CDFB2100E7489F /* MPKitExecStatus.m in Sources */,
 				53A79B8929CDFB2000E7489F /* MPMessage.m in Sources */,
@@ -2297,7 +2284,6 @@
 				D3CEDAC92CA2F214001B32DF /* MPLogger.swift in Sources */,
 				53A79D9C29CE23F700E7489F /* MPAliasRequest.m in Sources */,
 				53A79D9D29CE23F700E7489F /* MParticleUser.m in Sources */,
-				53B28FB32C938C26009072FC /* MPLocationManager.swift in Sources */,
 				53A79D9F29CE23F700E7489F /* MParticleReachability.m in Sources */,
 				53A79DA029CE23F700E7489F /* MPKitExecStatus.m in Sources */,
 				53A79DA129CE23F700E7489F /* MPMessage.m in Sources */,
