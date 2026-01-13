@@ -1339,42 +1339,6 @@ MPLog* logger;
     [self.kitActivity kitInstance:kitCode withHandler:completionHandler];
 }
 
-#pragma mark Location
-#if TARGET_OS_IOS == 1
-
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (CLLocation *)location {
-    [self.listenerController onAPICalled:_cmd];
-    
-    return self.stateMachine.location;
-}
-
-- (void)setLocation:(CLLocation *)location {
-    if (![self.stateMachine.location isEqual:location]) {
-        self.stateMachine.location = location;
-        NSString *message = [NSString stringWithFormat:@"Set location %@", location];
-        [logger debug:message];
-        
-        [executor executeOnMain: ^{
-            [self.listenerController onAPICalled:_cmd parameter1:location];
-            
-            // Forwarding calls to kits
-            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-            [queueParameters addParameter:location];
-            
-            [self.kitContainer forwardSDKCall:_cmd
-                                        event:nil
-                                   parameters:queueParameters
-                                  messageType:MPMessageTypeEvent
-                                     userInfo:nil
-            ];
-        }];
-    }
-}
-
-#endif // MPARTICLE_LOCATION_DISABLE
-#endif // TARGET_OS_IOS
-
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
         [logger debug:@"Logged network performance measurement"];
