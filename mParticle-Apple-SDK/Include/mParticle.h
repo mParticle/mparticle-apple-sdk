@@ -29,9 +29,6 @@
 #import "MPRokt.h"
 
 #if TARGET_OS_IOS == 1
-    #ifndef MPARTICLE_LOCATION_DISABLE
-        #import <CoreLocation/CoreLocation.h>
-    #endif
     #import <WebKit/WebKit.h>
 #endif
 

@@ -1,10 +1,5 @@
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import CoreLocation
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK_NoLocation
 
 class MPStateMachineMock: MPStateMachineProtocol {
     var optOut: Bool = false

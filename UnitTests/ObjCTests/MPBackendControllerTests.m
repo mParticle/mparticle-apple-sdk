@@ -758,9 +758,6 @@
                 XCTAssert([deviceInfo[kMPDeviceNameKey] isKindOfClass:[NSString class]], @"Device name should be a NSString.");
                 XCTAssert([deviceInfo[kMPDeviceOSKey] isKindOfClass:[NSString class]], @"Device OS version should be a NSString.");
                 XCTAssert([deviceInfo[kMPDevicePlatformKey] isKindOfClass:[NSString class]], @"Device platform should be a NSString.");
-#if TARGET_OS_IOS == 1 && !MPARTICLE_LOCATION_DISABLE
-                XCTAssert([deviceInfo[kMPDeviceRadioKey] isKindOfClass:[NSString class]], @"Device radio should be a NSString.");
-#endif
                 XCTAssert([deviceInfo[kMPScreenHeightKey] integerValue] != 0, @"Device screen height should be a NSNumber.");
                 XCTAssert([deviceInfo[kMPScreenWidthKey] integerValue] != 0, @"Device screen width should be a NSNumber.");
                 XCTAssert([deviceInfo[kMPDeviceIsDaylightSavingTime] isKindOfClass:[NSNumber class]], @"Identity status should be a NSNumber.");
@@ -1515,37 +1512,6 @@
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-}
-
-- (void)testSetLocation {
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE    
-    MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
-    event.shouldBeginSession = NO;
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Set location"];
-    
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
-    
-    [self.backendController logEvent:event
-                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
-    
-    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
-    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
-    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
-    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
-    
-    MPMessage *message = messages.lastObject;
-    NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-    [persistence deleteMessages:messages];
-    
-    [expectation fulfill];
-    
-    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-#endif
-#endif
 }
 
 - (void)testSessionAttributesAndIncrement {

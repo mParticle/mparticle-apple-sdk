@@ -393,14 +393,6 @@ MPLog* logger;
         if (settings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
             self->_trackNotifications = [settings[kMPConfigTrackNotifications] boolValue];
         }
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        if ([settings[kMPConfigLocationTracking] boolValue]) {
-            CLLocationAccuracy accuracy = [settings[kMPConfigLocationAccuracy] doubleValue];
-            CLLocationDistance distanceFilter = [settings[kMPConfigLocationDistanceFilter] doubleValue];
-        }
-#endif
-#endif
     }
 }
 

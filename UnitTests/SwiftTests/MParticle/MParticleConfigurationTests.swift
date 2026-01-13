@@ -1,16 +1,5 @@
-//
-//  MParticleConfigurationTests.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Nick Dimitrakas on 11/3/25.
-//
-
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK_NoLocation
 
 final class MParticleConfigurationTests: MParticleTestBase {
     
@@ -81,11 +70,6 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertNil(mparticle.customUserAgent)
         XCTAssertTrue(mparticle.collectUserAgent)
         XCTAssertTrue(mparticle.trackNotifications)
-#if os(iOS)
-#if !MPARTICLE_LOCATION_DISABLE
-        XCTAssertNil(listenerController.onAPICalledApiName)
-#endif
-#endif
     }
     
     func test_configure_appliesStoredSettings_whenOptionsNotSet() {

@@ -5,12 +5,7 @@
 #import "MPEnums.h"
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    #import <CoreLocation/CoreLocation.h>
-#endif
-#endif
+#import <CoreLocation/CoreLocation.h>
 
 @class MPCommerceEvent;
 @class MPBaseEvent;
@@ -75,13 +70,11 @@
 #endif
 
 #pragma mark Location tracking
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
+// We shouldn't remove this methods it is part of kit interface so MParticle will never send any event and data
+// And these methods will be required when we reimplement location support as separate module
 - (nonnull MPKitExecStatus *)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
 - (nonnull MPKitExecStatus *)endLocationTracking;
 - (nonnull MPKitExecStatus *)setLocation:(nonnull CLLocation *)location;
-#endif
-#endif
 
 #pragma mark Session management
 - (nonnull MPKitExecStatus *)beginSession;
