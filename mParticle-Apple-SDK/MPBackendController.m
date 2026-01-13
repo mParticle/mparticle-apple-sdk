@@ -2087,14 +2087,6 @@ static BOOL skipNextUpload = NO;
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition
                                                                                  session:self.session
                                                                              messageInfo:@{kMPAppStateTransitionType: kMPASTBackgroundKey}];
-    #if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        if ([MPLocationManager_PRIVATE trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
-            [[MParticle sharedInstance].stateMachine.locationManager.locationManager stopUpdatingLocation];
-        }
-        [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
-#endif
         MPMessage *message = [messageBuilder build];
         
         [self.session suspendSession];
@@ -2181,16 +2173,6 @@ static BOOL skipNextUpload = NO;
         }
         
         [self beginSession];
-
-        #if TARGET_OS_IOS == 1
-        #ifndef MPARTICLE_LOCATION_DISABLE
-        [MParticle executeOnMain:^{
-            if ([MPLocationManager_PRIVATE trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
-                [[MParticle sharedInstance].stateMachine.locationManager.locationManager startUpdatingLocation];
-            }
-        }];
-        #endif
-        #endif
     
         [self requestConfig:nil];
     }];
