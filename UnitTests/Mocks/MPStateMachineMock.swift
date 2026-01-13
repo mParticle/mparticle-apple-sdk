@@ -7,11 +7,6 @@ import XCTest
 #endif
 
 class MPStateMachineMock: MPStateMachineProtocol {
-    #if !MPARTICLE_LOCATION_DISABLE
-        var location: CLLocation?
-
-        var locationManager: mParticle_Apple_SDK.MPLocationManager_PRIVATE?
-    #endif
     var optOut: Bool = false
 
     var logLevel: MPILogLevel = .none
