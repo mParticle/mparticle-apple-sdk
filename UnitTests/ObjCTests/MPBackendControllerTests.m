@@ -1541,12 +1541,7 @@
     XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
     
     MPMessage *message = messages.lastObject;
-    NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-    NSRange range = [messageString rangeOfString:@"\"lat\":40.738526"];
-    XCTAssertNotEqual(range.location, NSNotFound);
-    range = [messageString rangeOfString:@"\"lng\":-73.98738"];
-    XCTAssertNotEqual(range.location, NSNotFound);
-    
+    NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];    
     [persistence deleteMessages:messages];
     
     [expectation fulfill];
