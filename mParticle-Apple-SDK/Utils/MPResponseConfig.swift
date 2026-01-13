@@ -136,8 +136,7 @@ import Foundation
     #if os(iOS)
         @objc public func configureLocationTracking(_ locationDictionary: [AnyHashable: Any]) {
             if let locationMode = locationDictionary[RemoteConfig.kMPRemoteConfigLocationModeKey] as? String {
-                stateMachine.locationTrackingMode = locationMode
-
+                
                 #if !MPARTICLE_LOCATION_DISABLE
                     if locationMode == RemoteConfig.kMPRemoteConfigForceTrue {
                         if let accuracy = locationDictionary[RemoteConfig.kMPRemoteConfigLocationAccuracyKey] as? NSNumber,

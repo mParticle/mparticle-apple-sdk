@@ -64,7 +64,6 @@ static BOOL runningInBackground = NO;
 @synthesize deviceTokenType = _deviceTokenType;
 @synthesize firstSeenInstallation = _firstSeenInstallation;
 @synthesize installationType = _installationType;
-@synthesize locationTrackingMode = _locationTrackingMode;
 @synthesize logLevel = _logLevel;
 @synthesize optOut = _optOut;
 @synthesize attAuthorizationStatus = _attAuthorizationStatus;
@@ -439,40 +438,6 @@ static BOOL runningInBackground = NO;
 }
 #endif
 #endif
-
-- (NSString *)locationTrackingMode {
-    if (_locationTrackingMode) {
-        return _locationTrackingMode;
-    }
-    
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    NSString *locationTrackingMode = userDefaults[kMPRemoteConfigLocationModeKey];
-    
-    [self willChangeValueForKey:@"locationTrackingMode"];
-    
-    if (locationTrackingMode) {
-        _locationTrackingMode = locationTrackingMode;
-    } else {
-        _locationTrackingMode = kMPRemoteConfigAppDefined;
-    }
-    
-    [self didChangeValueForKey:@"locationTrackingMode"];
-    
-    return _locationTrackingMode;
-}
-
-- (void)setLocationTrackingMode:(NSString *)locationTrackingMode {
-    if ([_locationTrackingMode isEqualToString:locationTrackingMode]) {
-        return;
-    }
-    
-    [self willChangeValueForKey:@"locationTrackingMode"];
-    _locationTrackingMode = locationTrackingMode;
-    [self didChangeValueForKey:@"locationTrackingMode"];
-    
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    userDefaults[kMPRemoteConfigLocationModeKey] = _locationTrackingMode;
-}
 
 - (NSString *)minDefaultsKeyForUploadType:(MPUploadType)uploadType {
     NSString *defaultsKey = nil;

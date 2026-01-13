@@ -40,7 +40,6 @@
 @property (nonatomic, strong, nullable) NSArray<MPCustomModule *> *customModules;
 @property (nonatomic, strong, nullable) NSString *exceptionHandlingMode;
 @property (nonatomic, strong, nullable) NSNumber *crashMaxPLReportLength;
-@property (nonatomic, strong, nullable) NSString *locationTrackingMode;
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
