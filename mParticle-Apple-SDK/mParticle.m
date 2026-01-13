@@ -1413,17 +1413,6 @@ MPLog* logger;
     }
 }
 
-- (void)endLocationTracking {
-    [self.listenerController onAPICalled:_cmd];
-    
-    MPExecStatus execStatus = [_backendController endLocationTracking];
-    if (execStatus == MPExecStatusSuccess) {
-        [logger debug:@"Ended location tracking"];
-    } else {
-        NSString *message = [NSString stringWithFormat:@"Could not end location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-        [logger error:message];
-    }
-}
 #endif // MPARTICLE_LOCATION_DISABLE
 #endif // TARGET_OS_IOS
 
