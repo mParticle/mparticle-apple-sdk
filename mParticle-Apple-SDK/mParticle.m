@@ -1341,25 +1341,6 @@ MPLog* logger;
 
 #pragma mark Location
 #if TARGET_OS_IOS == 1
-- (BOOL)backgroundLocationTracking {
-    [self.listenerController onAPICalled:_cmd];
-    
-#ifndef MPARTICLE_LOCATION_DISABLE
-    return self.stateMachine.locationManager.backgroundLocationTracking;
-#else
-    return false;
-#endif
-}
-
-- (void)setBackgroundLocationTracking:(BOOL)backgroundLocationTracking {
-    [self.listenerController onAPICalled:_cmd parameter1:@(backgroundLocationTracking)];
-    
-#ifndef MPARTICLE_LOCATION_DISABLE
-    [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking = backgroundLocationTracking;
-#else
-    [logger debug:@"Automatic background tracking has been disabled to support users excluding location services from their applications."];
-#endif
-}
 
 #ifndef MPARTICLE_LOCATION_DISABLE
 - (CLLocation *)location {
