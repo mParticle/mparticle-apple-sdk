@@ -76,12 +76,6 @@ static BOOL runningInBackground = NO;
 @synthesize allowASR = _allowASR;
 @synthesize networkStatus = _networkStatus;
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-@synthesize location = _location;
-#endif
-#endif
-
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -414,30 +408,6 @@ static BOOL runningInBackground = NO;
     
     _firstSeenInstallation = @(installationType == MPInstallationTypeKnownInstall);
 }
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (CLLocation *)location {
-    if ([MPLocationManager_PRIVATE trackingLocation]) {
-        return self.locationManager.location;
-    } else {
-        return _location;
-    }
-}
-
-- (void)setLocation:(CLLocation *)location {
-    if ([MPLocationManager_PRIVATE trackingLocation]) {
-        if (self.locationManager) {
-            self.locationManager.location = location;
-        }
-        
-        _location = nil;
-    } else {
-        _location = location;
-    }
-}
-#endif
-#endif
 
 - (NSString *)minDefaultsKeyForUploadType:(MPUploadType)uploadType {
     NSString *defaultsKey = nil;

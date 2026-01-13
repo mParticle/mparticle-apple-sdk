@@ -1519,10 +1519,7 @@
 
 - (void)testSetLocation {
 #if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    CLLocation *location = [[CLLocation alloc] initWithLatitude:40.738526 longitude:-73.98738];
-    [MParticle sharedInstance].stateMachine.location = location;
-    
+#ifndef MPARTICLE_LOCATION_DISABLE    
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     event.shouldBeginSession = NO;
     
@@ -1541,7 +1538,7 @@
     XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
     
     MPMessage *message = messages.lastObject;
-    NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];    
+    NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
     [persistence deleteMessages:messages];
     
     [expectation fulfill];

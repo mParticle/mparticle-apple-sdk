@@ -5,7 +5,6 @@
 @class MPConsumerInfo;
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
-    @class CLLocation;
     @class MPLocationManager_PRIVATE;
 #endif
 #endif
@@ -26,7 +25,6 @@
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
-@property (nonatomic, strong, nullable) CLLocation *location;
 @property (nonatomic, strong, nullable) MPLocationManager_PRIVATE *locationManager;
 #endif
 #endif
@@ -43,7 +41,6 @@
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
-@property (nonatomic, strong, nullable) CLLocation *location;
 @property (nonatomic, strong, nullable) MPLocationManager_PRIVATE *locationManager;
 #endif
 #endif
