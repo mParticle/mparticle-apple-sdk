@@ -251,11 +251,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         }
         
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
-#endif
+
         [messageBuilder timestamp:session.endTime];
         message = [messageBuilder build];
         
@@ -391,11 +387,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
             [self beginSession];
         }
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
-#endif
+
         [messageBuilder stateTransition:YES previousSession:nil];
         MPMessage *message = [messageBuilder build];
         
@@ -896,11 +888,7 @@ static BOOL skipNextUpload = NO;
         messageInfo[kMPPreviousSessionLengthKey] = @(previousSessionLength);
         
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionStart session:_session messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        [messageBuilder location:stateMachine.location];
-#endif
-#endif
+
         [messageBuilder timestamp:_session.startTime];
         MPMessage *message = [messageBuilder build];
         
@@ -1222,11 +1210,7 @@ static BOOL skipNextUpload = NO;
     }
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport session:self.session messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
-#endif
+
     MPMessage *errorMessage = [messageBuilder build];
     
     [self saveMessage:errorMessage updateSession:YES];
@@ -1317,11 +1301,7 @@ static BOOL skipNextUpload = NO;
             if (event.timestamp) {
                 [messageBuilder timestamp:[event.timestamp timeIntervalSince1970]];
             }
-        #if TARGET_OS_IOS == 1
-        #ifndef MPARTICLE_LOCATION_DISABLE
-            [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-        #endif
-        #endif
+
             MPMessage *message = [messageBuilder build];
             message.shouldUploadEvent = event.shouldUploadEvent;
             
@@ -1369,11 +1349,7 @@ static BOOL skipNextUpload = NO;
     NSDictionary *messageInfo = [networkPerformance dictionaryRepresentation];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeNetworkPerformance session:self.session messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
-#endif
+
     MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:YES];
@@ -1404,11 +1380,7 @@ static BOOL skipNextUpload = NO;
     if (event.timestamp) {
         [messageBuilder timestamp:[event.timestamp timeIntervalSince1970]];
     }
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
-#endif
+
     MPMessage *message = [messageBuilder build];
     message.shouldUploadEvent = event.shouldUploadEvent;
     
@@ -1434,11 +1406,7 @@ static BOOL skipNextUpload = NO;
         [MParticle sharedInstance].stateMachine.optOut = optOutStatus;
         
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")}];
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
-#endif
+
         MPMessage *message = [messageBuilder build];
         
         [self saveMessage:message updateSession:YES];
@@ -1953,9 +1921,7 @@ static BOOL skipNextUpload = NO;
         }
     
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushNotification session:self.session messageInfo:messageInfo];
-#ifndef MPARTICLE_LOCATION_DISABLE
-        [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
+
         MPMessage *message = [messageBuilder build];
     
         [self saveMessage:message updateSession:(self.session != nil)];
@@ -2197,11 +2163,7 @@ static BOOL skipNextUpload = NO;
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageDictionary];
         self.previousForegroundTime = MPCurrentEpochInMilliseconds;
         [messageBuilder stateTransition:isLaunch previousSession:nil];
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
-#endif
-#endif
+
         MPMessage *message = [messageBuilder build];
         [self saveMessage:message updateSession:YES];
         

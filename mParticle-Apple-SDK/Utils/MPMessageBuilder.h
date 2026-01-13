@@ -41,12 +41,6 @@
 - (void)stateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
 - (nonnull MPMessage *)build;
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (void)location:(nonnull CLLocation *)location;
-#endif
-#endif
-
 @end
 
 extern NSString * _Nonnull const launchInfoStringFormat;
