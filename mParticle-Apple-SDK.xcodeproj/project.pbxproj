@@ -111,7 +111,6 @@
 		534CD28429CE2CE1008452B3 /* MPCustomModuleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAA29CE019F00E7489F /* MPCustomModuleTests.m */; };
 		534CD28629CE2CE1008452B3 /* MPKitActivityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8229CE019E00E7489F /* MPKitActivityTests.m */; };
 		534CD28729CE2CE1008452B3 /* MPKitTestClassSideloaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C6B29CE019E00E7489F /* MPKitTestClassSideloaded.m */; };
-		534CD28829CE2CE1008452B3 /* MPDeviceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAC29CE019F00E7489F /* MPDeviceTests.m */; };
 		534CD28929CE2CE1008452B3 /* MPKitRegisterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CB629CE019F00E7489F /* MPKitRegisterTests.m */; };
 		534CD28A29CE2CE1008452B3 /* MPStateMachineTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9129CE019F00E7489F /* MPStateMachineTests.m */; };
 		534CD28B29CE2CE1008452B3 /* MPCCPAConsentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8C29CE019F00E7489F /* MPCCPAConsentTests.m */; };
@@ -1462,6 +1461,7 @@
 				53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */,
 				53A79CAC29CE019F00E7489F /* MPDeviceTests.m */,
 				53A79CAD29CE019F00E7489F /* BracketTests.m */,
+				53A79CAD29CE019F00E7489F /* BracketTests.mm */,
 				53A79CAE29CE019F00E7489F /* MPAliasResponseTests.m */,
 				53A79CAF29CE019F00E7489F /* MPForwardRecordTests.m */,
 				53A79CB029CE019F00E7489F /* MPKitConfigurationTests.mm */,
@@ -1954,7 +1954,6 @@
 				7231B83F2EB9627D001565E5 /* MParticleErrorTests.swift in Sources */,
 				534CD28729CE2CE1008452B3 /* MPKitTestClassSideloaded.m in Sources */,
 				7231B81A2EB94DCD001565E5 /* MParticleTestBase.swift in Sources */,
-				534CD28829CE2CE1008452B3 /* MPDeviceTests.m in Sources */,
 				534CD28929CE2CE1008452B3 /* MPKitRegisterTests.m in Sources */,
 				7231B81D2EB94EAA001565E5 /* MParticleConfigurationTests.swift in Sources */,
 				534CD28A29CE2CE1008452B3 /* MPStateMachineTests.m in Sources */,
@@ -2173,7 +2172,6 @@
 				7231B8402EB9627D001565E5 /* MParticleErrorTests.swift in Sources */,
 				53A79CBA29CE019F00E7489F /* MPKitTestClassSideloaded.m in Sources */,
 				7231B81B2EB94DCD001565E5 /* MParticleTestBase.swift in Sources */,
-				53A79CEF29CE019F00E7489F /* MPDeviceTests.m in Sources */,
 				53A79CF829CE019F00E7489F /* MPKitRegisterTests.m in Sources */,
 				7231B81E2EB94EAA001565E5 /* MParticleConfigurationTests.swift in Sources */,
 				53A79CDB29CE019F00E7489F /* MPStateMachineTests.m in Sources */,
