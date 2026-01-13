@@ -398,7 +398,6 @@ MPLog* logger;
         if ([settings[kMPConfigLocationTracking] boolValue]) {
             CLLocationAccuracy accuracy = [settings[kMPConfigLocationAccuracy] doubleValue];
             CLLocationDistance distanceFilter = [settings[kMPConfigLocationDistanceFilter] doubleValue];
-            [self beginLocationTracking:accuracy minDistance:distanceFilter];
         }
 #endif
 #endif
@@ -1389,27 +1388,6 @@ MPLog* logger;
                                      userInfo:nil
             ];
         }];
-    }
-}
-
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter {
-    [self beginLocationTracking:accuracy minDistance:distanceFilter authorizationRequest:MPLocationAuthorizationRequestAlways];
-}
-
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest {
-    [self.listenerController onAPICalled:_cmd parameter1:@(accuracy) parameter2:@(distanceFilter)];
-    
-    if (self.stateMachine.optOut) {
-        return;
-    }
-    
-    MPExecStatus execStatus = [_backendController beginLocationTrackingWithAccuracy:accuracy distanceFilter:distanceFilter authorizationRequest:authorizationRequest];
-    if (execStatus == MPExecStatusSuccess) {
-        NSString *message = [NSString stringWithFormat:@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter];
-        [logger debug:message];
-    } else {
-        NSString *message = [NSString stringWithFormat:@"Could not begin location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-        [logger error:message];
     }
 }
 
