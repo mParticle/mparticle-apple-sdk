@@ -1883,20 +1883,6 @@ static BOOL skipNextUpload = NO;
     
     return MPExecStatusSuccess;
 }
-
-- (MPExecStatus)endLocationTracking {
-    [MPListenerController.sharedInstance onAPICalled:_cmd];
-
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    if ([stateMachine.locationTrackingMode isEqualToString:kMPRemoteConfigForceTrue]) {
-        return MPExecStatusEnabledRemotely;
-    }
-    
-    [stateMachine.locationManager endLocationTracking];
-    stateMachine.locationManager = nil;
-    
-    return MPExecStatusSuccess;
-}
 #endif
 
 - (MPNotificationController_PRIVATE *)notificationController {

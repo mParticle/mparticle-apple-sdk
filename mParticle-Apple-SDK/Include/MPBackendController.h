@@ -84,7 +84,6 @@ extern const NSInteger kInvalidKey;
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
-- (MPExecStatus)endLocationTracking;
 #endif
 - (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
@@ -149,7 +148,6 @@ extern const NSInteger kInvalidKey;
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
-- (MPExecStatus)endLocationTracking;
 #endif
 - (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
 - (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;

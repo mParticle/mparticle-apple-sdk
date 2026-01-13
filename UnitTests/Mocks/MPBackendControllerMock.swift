@@ -340,14 +340,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
                 beginLocationTrackingAuthParam = authorizationRequest
                 return beginLocationTrackingReturnValue
             }
-
-            var endLocationTrackingCalled = false
-            var endLocationTrackingReturnValue: MPExecStatus = .success
-
-            func endLocationTracking() -> MPExecStatus {
-                endLocationTrackingCalled = true
-                return endLocationTrackingReturnValue
-            }
         #endif
 
         // MARK: - Notifications
