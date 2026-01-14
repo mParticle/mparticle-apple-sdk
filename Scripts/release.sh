@@ -1,6 +1,7 @@
 VERSION="$1"
 PREFIXED_VERSION="v$1"
-NOTES="$2"
+# Read notes from file to avoid shell escaping issues with parentheses in markdown
+NOTES=$(cat /tmp/release_notes.txt 2>/dev/null || echo "")
 
 # Update version number
 #
