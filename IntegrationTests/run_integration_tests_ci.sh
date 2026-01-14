@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck disable=SC2155
+# shellcheck disable=SC2312
 # CI-specific integration test script that runs WireMock as a Java process
 # instead of Docker (for GitHub Actions macOS runners)
 set -e
@@ -29,11 +31,11 @@ escape_mapping_bodies() {
 	echo "🔄 Converting mapping bodies to escaped format (WireMock-compatible)..."
 	local MAPPINGS_FILES="${MAPPINGS_DIR}/mappings"
 
-	if [ -d "$MAPPINGS_FILES" ] && [ "$(ls -A $MAPPINGS_FILES/*.json 2>/dev/null)" ]; then
-		for mapping_file in "$MAPPINGS_FILES"/*.json; do
-			if [ -f "$mapping_file" ]; then
-				python3 transform_mapping_body.py "$mapping_file" escape >/dev/null 2>&1 || {
-					echo "⚠️  Failed to escape $(basename $mapping_file)"
+	if [[ -d ${MAPPINGS_FILES} ]] && [[ -n "$(ls -A "${MAPPINGS_FILES}"/*.json 2>/dev/null)" ]]; then
+		for mapping_file in "${MAPPINGS_FILES}"/*.json; do
+			if [[ -f ${mapping_file} ]]; then
+				python3 transform_mapping_body.py "${mapping_file}" escape >/dev/null 2>&1 || {
+					echo "⚠️  Failed to escape $(basename "${mapping_file}")"
 				}
 			fi
 		done
@@ -44,11 +46,11 @@ unescape_mapping_bodies() {
 	echo "🔄 Converting mapping bodies back to unescaped format (readable)..."
 	local MAPPINGS_FILES="${MAPPINGS_DIR}/mappings"
 
-	if [ -d "$MAPPINGS_FILES" ] && [ "$(ls -A $MAPPINGS_FILES/*.json 2>/dev/null)" ]; then
-		for mapping_file in "$MAPPINGS_FILES"/*.json; do
-			if [ -f "$mapping_file" ]; then
-				python3 transform_mapping_body.py "$mapping_file" unescape >/dev/null 2>&1 || {
-					echo "⚠️  Failed to unescape $(basename $mapping_file)"
+	if [[ -d ${MAPPINGS_FILES} ]] && [[ -n "$(ls -A "${MAPPINGS_FILES}"/*.json 2>/dev/null)" ]]; then
+		for mapping_file in "${MAPPINGS_FILES}"/*.json; do
+			if [[ -f ${mapping_file} ]]; then
+				python3 transform_mapping_body.py "${mapping_file}" unescape >/dev/null 2>&1 || {
+					echo "⚠️  Failed to unescape $(basename "${mapping_file}")"
 				}
 			fi
 		done
@@ -62,8 +64,8 @@ start_wiremock_java() {
 	stop_wiremock_java
 
 	# Check if JAR exists
-	if [ ! -f "$WIREMOCK_JAR" ]; then
-		echo "❌ WireMock JAR not found at: $WIREMOCK_JAR"
+	if [[ ! -f ${WIREMOCK_JAR} ]]; then
+		echo "❌ WireMock JAR not found at: ${WIREMOCK_JAR}"
 		exit 1
 	fi
 
@@ -72,37 +74,36 @@ start_wiremock_java() {
 
 	# Start WireMock in background
 	# Use sudo if HTTPS_PORT is privileged (< 1024)
-	if [ "$HTTPS_PORT" -lt 1024 ]; then
+	if [[ ${HTTPS_PORT} -lt 1024 ]]; then
 		echo "ℹ️  Using sudo to bind to privileged port ${HTTPS_PORT}"
-		sudo java -jar "$WIREMOCK_JAR" \
-			--port ${HTTP_PORT} \
-			--https-port ${HTTPS_PORT} \
+		sudo java -jar "${WIREMOCK_JAR}" \
+			--port "${HTTP_PORT}" \
+			--https-port "${HTTPS_PORT}" \
 			--root-dir "${ABS_MAPPINGS_DIR}" \
-			--verbose \
-			>"$WIREMOCK_LOG_FILE" 2>&1 &
+			--verbose 2>&1 | sudo tee "${WIREMOCK_LOG_FILE}" >/dev/null &
 	else
-		java -jar "$WIREMOCK_JAR" \
-			--port ${HTTP_PORT} \
-			--https-port ${HTTPS_PORT} \
+		java -jar "${WIREMOCK_JAR}" \
+			--port "${HTTP_PORT}" \
+			--https-port "${HTTPS_PORT}" \
 			--root-dir "${ABS_MAPPINGS_DIR}" \
 			--verbose \
-			>"$WIREMOCK_LOG_FILE" 2>&1 &
+			>"${WIREMOCK_LOG_FILE}" 2>&1 &
 	fi
 
-	echo $! >"$WIREMOCK_PID_FILE"
-	echo "✅ WireMock started with PID: $(cat $WIREMOCK_PID_FILE)"
+	echo $! >"${WIREMOCK_PID_FILE}"
+	echo "✅ WireMock started with PID: $(cat "${WIREMOCK_PID_FILE}")"
 }
 
 stop_wiremock_java() {
-	if [ -f "$WIREMOCK_PID_FILE" ]; then
-		local pid=$(cat "$WIREMOCK_PID_FILE")
-		if kill -0 "$pid" 2>/dev/null; then
-			echo "🛑 Stopping WireMock (PID: $pid)..."
-			kill "$pid" 2>/dev/null || sudo kill "$pid" 2>/dev/null || true
+	if [[ -f ${WIREMOCK_PID_FILE} ]]; then
+		local pid=$(cat "${WIREMOCK_PID_FILE}")
+		if kill -0 "${pid}" 2>/dev/null; then
+			echo "🛑 Stopping WireMock (PID: ${pid})..."
+			kill "${pid}" 2>/dev/null || sudo kill "${pid}" 2>/dev/null || true
 			sleep 2
-			kill -9 "$pid" 2>/dev/null || sudo kill -9 "$pid" 2>/dev/null || true
+			kill -9 "${pid}" 2>/dev/null || sudo kill -9 "${pid}" 2>/dev/null || true
 		fi
-		rm -f "$WIREMOCK_PID_FILE"
+		rm -f "${WIREMOCK_PID_FILE}"
 	fi
 	# Also try to kill any remaining WireMock processes (may need sudo if started with sudo)
 	pkill -f "wiremock" 2>/dev/null || true
@@ -132,7 +133,7 @@ wait_for_wiremock_java() {
 
 	echo "❌ WireMock failed to start within ${MAX_RETRIES} seconds"
 	echo "📋 WireMock logs:"
-	cat "$WIREMOCK_LOG_FILE" || true
+	cat "${WIREMOCK_LOG_FILE}" || true
 	exit 1
 }
 
@@ -140,7 +141,7 @@ show_wiremock_logs_java() {
 	echo ""
 	echo "📋 WireMock logs:"
 	echo "════════════════════════════════════════════════════════════════"
-	cat "$WIREMOCK_LOG_FILE" 2>/dev/null || echo "❌ Could not retrieve logs"
+	cat "${WIREMOCK_LOG_FILE}" 2>/dev/null || echo "❌ Could not retrieve logs"
 	echo "════════════════════════════════════════════════════════════════"
 	echo ""
 }
@@ -153,22 +154,22 @@ verify_wiremock_results() {
 	local WIREMOCK_PORT=${HTTP_PORT}
 
 	# Count all requests
-	local TOTAL=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests | jq '.requests | length')
-	local UNMATCHED=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests/unmatched | jq '.requests | length')
+	local TOTAL=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests | jq '.requests | length')
+	local UNMATCHED=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests/unmatched | jq '.requests | length')
 	local MATCHED=$((TOTAL - UNMATCHED))
 
 	echo "📊 WireMock summary:"
 	echo "──────────────────────────────"
-	echo "  Total requests:     $TOTAL"
-	echo "  Matched requests:   $MATCHED"
-	echo "  Unmatched requests: $UNMATCHED"
+	echo "  Total requests:     ${TOTAL}"
+	echo "  Matched requests:   ${MATCHED}"
+	echo "  Unmatched requests: ${UNMATCHED}"
 	echo "──────────────────────────────"
 	echo ""
 
 	# Check for unmatched requests
-	if [ "$UNMATCHED" -gt 0 ]; then
+	if [[ ${UNMATCHED} -gt 0 ]]; then
 		echo "❌ Found requests that did not match any mappings:"
-		curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests/unmatched |
+		curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests/unmatched |
 			jq -r '.requests[] | "  [\(.method)] \(.url)"'
 		echo ""
 		show_wiremock_logs_java
@@ -182,41 +183,41 @@ verify_wiremock_results() {
 	echo ""
 	echo "🧩 Checking: were all mappings invoked..."
 
-	local EXPECTED_MAPPINGS=$(jq -r 'select(.response.proxyBaseUrl == null) | "\(.request.method // "ANY") \(.request.url // .request.urlPattern // .request.urlPath // .request.urlPathPattern)"' ${MAPPINGS_DIR}/mappings/*.json 2>/dev/null | sort)
+	local EXPECTED_MAPPINGS=$(jq -r 'select(.response.proxyBaseUrl == null) | "\(.request.method // "ANY") \(.request.url // .request.urlPattern // .request.urlPath // .request.urlPathPattern)"' "${MAPPINGS_DIR}"/mappings/*.json 2>/dev/null | sort)
 
-	local ACTUAL_REQUESTS=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests |
+	local ACTUAL_REQUESTS=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests |
 		jq -r '.requests[] | "\(.request.method) \(.request.url)"' | sort | uniq)
 
 	local UNUSED_FOUND=false
 	while IFS= read -r mapping; do
-		if [ -n "$mapping" ]; then
-			local method=$(echo "$mapping" | awk '{print $1}')
-			local url=$(echo "$mapping" | awk '{$1=""; print $0}' | sed 's/^ //')
+		if [[ -n ${mapping} ]]; then
+			local method=$(echo "${mapping}" | awk '{print $1}')
+			local url=$(echo "${mapping}" | awk '{$1=""; print $0}' | sed 's/^ //')
 
 			local matched=false
 
-			if echo "$url" | grep -q '\[' || echo "$url" | grep -q '\\'; then
-				local url_start=$(echo "$url" | cut -d'[' -f1 | cut -d'\' -f1)
-				if echo "$ACTUAL_REQUESTS" | grep -Fq "$method $url_start"; then
+			if echo "${url}" | grep -q '\[' || echo "${url}" | grep -Fq $'\\'; then
+				local url_start=$(echo "${url}" | cut -d'[' -f1 | cut -d $'\\' -f1)
+				if echo "${ACTUAL_REQUESTS}" | grep -Fq "${method} ${url_start}"; then
 					matched=true
 				fi
 			else
-				if echo "$ACTUAL_REQUESTS" | grep -Fq "$mapping"; then
+				if echo "${ACTUAL_REQUESTS}" | grep -Fq "${mapping}"; then
 					matched=true
 				fi
 			fi
 
-			if [ "$matched" = false ]; then
-				if [ "$UNUSED_FOUND" = false ]; then
+			if [[ ${matched} == false ]]; then
+				if [[ ${UNUSED_FOUND} == false ]]; then
 					echo "⚠️  Some mappings were not invoked by the application:"
 					UNUSED_FOUND=true
 				fi
-				echo "  $mapping"
+				echo "  ${mapping}"
 			fi
 		fi
-	done <<<"$EXPECTED_MAPPINGS"
+	done <<<"${EXPECTED_MAPPINGS}"
 
-	if [ "$UNUSED_FOUND" = false ]; then
+	if [[ ${UNUSED_FOUND} == false ]]; then
 		echo "✅ All recorded mappings were invoked by the application."
 	fi
 
@@ -234,11 +235,11 @@ cleanup() {
 error_handler() {
 	local exit_code=$?
 	echo ""
-	echo "❌ Script failed with exit code: $exit_code"
+	echo "❌ Script failed with exit code: ${exit_code}"
 	show_wiremock_logs_java
 	unescape_mapping_bodies
 	stop_wiremock_java
-	exit $exit_code
+	exit "${exit_code}"
 }
 
 # Trap to ensure cleanup on exit or error
