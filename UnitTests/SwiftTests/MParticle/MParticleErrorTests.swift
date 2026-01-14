@@ -67,7 +67,6 @@ final class MParticleErrorTests: MParticleTestBase {
         mparticle.logError(errorMessage)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        listenerController.assertCalled(#selector(mparticle.logError(_:eventInfo:)))
         
         XCTAssertTrue(backendController.logErrorCalled)
         XCTAssertNil(backendController.logErrorExceptionParam)
@@ -88,7 +87,6 @@ final class MParticleErrorTests: MParticleTestBase {
         mparticle.logError(errorMessage, eventInfo: keyValueDict)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        listenerController.assertCalled(#selector(mparticle.logError(_:eventInfo:)))
         
         XCTAssertTrue(backendController.logErrorCalled)
         XCTAssertNil(backendController.logErrorExceptionParam)

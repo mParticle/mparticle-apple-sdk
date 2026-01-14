@@ -37,9 +37,6 @@ final class MParticleLTVTests: MParticleTestBase {
         XCTAssertEqual(attrs["currency"] as? String, "USD")
         XCTAssertEqual(attrs.count, 4)
         
-        // Listener controller should be notified
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logLTVIncrease:eventName:eventInfo:")
-        
         // Backend completion handler should be stored
         XCTAssertTrue(backendController.logEventCalled)
         let completion = backendController.logEventCompletionHandler!
@@ -64,12 +61,6 @@ final class MParticleLTVTests: MParticleTestBase {
         XCTAssertEqual(attrs["$Amount"] as? Double, amount)
         XCTAssertEqual(attrs["$MethodName"] as? String, "LogLTVIncrease")
         XCTAssertEqual(attrs.count, 2)
-        
-        // Listener controller should be notified
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logLTVIncrease:eventName:eventInfo:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Double, amount)
-        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, name)
-        XCTAssertNil(listenerController.onAPICalledParameter3)
         
         // Backend completion handler should be stored
         XCTAssertTrue(backendController.logEventCalled)

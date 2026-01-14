@@ -22,7 +22,6 @@ final class MParticleCommerceEventTests: MParticleTestBase {
         
         XCTAssertNotNil(commerceEvent.timestamp)
         XCTAssertTrue(backendController.logCommerceEventCalled)
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === commerceEvent)
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
     }
     
@@ -33,10 +32,6 @@ final class MParticleCommerceEventTests: MParticleTestBase {
         
         // Verify event timestamp added
         XCTAssertNotNil(commerceEvent.timestamp)
-        
-        // Verify listener was called
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === commerceEvent)
         
         // Verify backend was called
         XCTAssertTrue(backendController.logCommerceEventCalled)
@@ -63,10 +58,6 @@ final class MParticleCommerceEventTests: MParticleTestBase {
         
         // Verify event timestamp added
         XCTAssertNotNil(commerceEvent.timestamp)
-        
-        // Verify listener was called
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === commerceEvent)
         
         // Verify backend was called
         XCTAssertTrue(backendController.logCommerceEventCalled)

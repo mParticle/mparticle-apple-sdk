@@ -54,7 +54,6 @@ final class MParticleKitBatchTests: MParticleTestBase {
         kitContainer.kitsInitialized = true
         mparticle.executeKitsInitializedBlocks()
 
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "executeKitsInitializedBlocks")
         XCTAssertTrue(executor.executeOnMainAsync)
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBatch:")

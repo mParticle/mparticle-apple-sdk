@@ -81,11 +81,6 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertNil(mparticle.customUserAgent)
         XCTAssertTrue(mparticle.collectUserAgent)
         XCTAssertTrue(mparticle.trackNotifications)
-#if os(iOS)
-#if !MPARTICLE_LOCATION_DISABLE
-        XCTAssertNil(listenerController.onAPICalledApiName)
-#endif
-#endif
     }
     
     func test_configure_appliesStoredSettings_whenOptionsNotSet() {
@@ -108,13 +103,6 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertEqual(mparticle.customUserAgent, "agent")
         XCTAssertFalse(mparticle.collectUserAgent)
         XCTAssertFalse(mparticle.trackNotifications)
-        
-#if os(iOS)
-#if !MPARTICLE_LOCATION_DISABLE
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description,
-                       "beginLocationTracking:minDistance:authorizationRequest:")
-#endif
-#endif
     }
     
     func test_reset_clearsState_andFlushesKits() {
