@@ -27,13 +27,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
     s.swift_versions = ["5.0"]
-
-    s.subspec 'mParticle' do |ss|
-        ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ss.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
-    end
     
     s.subspec 'mParticleNoLocation' do |ss|
         ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
