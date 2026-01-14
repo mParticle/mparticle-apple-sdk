@@ -101,7 +101,7 @@ final class MParticleKitBatchTests: MParticleTestBase {
         XCTAssertEqual(kitContainer.forwardSDKCallBatchParam?.count, 1)
         XCTAssertTrue(kit.logBatchCalled)
         XCTAssertEqual(kit.logBatchParam?["events"] as? [[String: Int]],
-                       LogKitBatchData.parsedSingleEvent.values.first as? [[String : Int]])
+                       LogKitBatchData.parsedSingleEvent.values.first as? [[String: Int]])
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(persistenceController.saveCalled)
         XCTAssertTrue(persistenceController.saveForwardRecordParam === forwardRecord)

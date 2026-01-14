@@ -1,9 +1,8 @@
 # [8.40.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.39.0...v8.40.0) (2025-10-10)
 
-
 ### Features
 
-* implement trunk tools ([#429](https://github.com/mParticle/mparticle-apple-sdk/issues/429)) ([273bd70](https://github.com/mParticle/mparticle-apple-sdk/commit/273bd703aa46820aa36998f0c4bfd45b20d3fc1b)), closes [#414](https://github.com/mParticle/mparticle-apple-sdk/issues/414) [#417](https://github.com/mParticle/mparticle-apple-sdk/issues/417) [#415](https://github.com/mParticle/mparticle-apple-sdk/issues/415) [#420](https://github.com/mParticle/mparticle-apple-sdk/issues/420)
+- implement trunk tools ([#429](https://github.com/mParticle/mparticle-apple-sdk/issues/429)) ([273bd70](https://github.com/mParticle/mparticle-apple-sdk/commit/273bd703aa46820aa36998f0c4bfd45b20d3fc1b)), closes [#414](https://github.com/mParticle/mparticle-apple-sdk/issues/414) [#417](https://github.com/mParticle/mparticle-apple-sdk/issues/417) [#415](https://github.com/mParticle/mparticle-apple-sdk/issues/415) [#420](https://github.com/mParticle/mparticle-apple-sdk/issues/420)
 
 # [8.39.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.38.0...v8.39.0) (2025-09-18)
 

@@ -33,8 +33,6 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
         XCTAssertFalse(appNotificationHandler.didReceiveRemoteNotificationCalled)
     }
     
-    
-    
     func test_didReceiveRemoteNotification_callsHandler_whenNotAppExtension_andNoProxiedDelegate() {
         appEnvironmentProvier.isAppExtensionReturnValue = false
         
@@ -42,7 +40,10 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
         
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertTrue(appNotificationHandler.didReceiveRemoteNotificationCalled)
-        XCTAssertEqual(appNotificationHandler.didReceiveRemoteNotificationParam?[keyValueDict.keys.first!] as? String, keyValueDict.values.first)
+        XCTAssertEqual(
+            appNotificationHandler.didReceiveRemoteNotificationParam?[keyValueDict.keys.first!] as? String,
+            keyValueDict.values.first
+        )
     }
     
     func test_didFailToRegisterForRemoteNotifications_doesNotCallHandler_whenAppExtension() {
@@ -132,13 +133,21 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
         
         XCTAssertTrue(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationCalled)
         XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationIdentifierParam, testName)
-        XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationUserInfoParam?[keyValueDict.keys.first!] as? String, keyValueDict.values.first)
+        XCTAssertEqual(
+            appNotificationHandler
+                .handleActionWithIdentifierForRemoteNotificationUserInfoParam?[keyValueDict.keys.first!] as? String,
+            keyValueDict.values.first
+        )
     }
     
     func test_handleActionForRemoteNotificationWithResponseInfo_doesNotCallHandler_whenAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = true
         
-        mparticle.handleAction(withIdentifier: testName, forRemoteNotification: keyValueDict, withResponseInfo: responseKeyValueDict)
+        mparticle.handleAction(
+            withIdentifier: testName,
+            forRemoteNotification: keyValueDict,
+            withResponseInfo: responseKeyValueDict
+        )
 
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertFalse(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled)
@@ -149,7 +158,11 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
 
         mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
         
-        mparticle.handleAction(withIdentifier: testName, forRemoteNotification: keyValueDict, withResponseInfo: responseKeyValueDict)
+        mparticle.handleAction(
+            withIdentifier: testName,
+            forRemoteNotification: keyValueDict,
+            withResponseInfo: responseKeyValueDict
+        )
 
         XCTAssertFalse(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertFalse(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled)
@@ -158,14 +171,30 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
     func test_handleActionForRemoteNotificationWithResponseInfo_callsHandler_whenNotAppExtension_andNoProxiedDelegate() {
         appEnvironmentProvier.isAppExtensionReturnValue = false
         
-        mparticle.handleAction(withIdentifier: testName, forRemoteNotification: keyValueDict, withResponseInfo: responseKeyValueDict)
+        mparticle.handleAction(
+            withIdentifier: testName,
+            forRemoteNotification: keyValueDict,
+            withResponseInfo: responseKeyValueDict
+        )
         
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertTrue(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled)
-        XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoIdentifierParam, testName)
-        XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoUserInfoParam?[keyValueDict.keys.first!] as? String, keyValueDict.values.first)
-        XCTAssertEqual(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam?[responseKeyValueDict.keys.first!] as? String, responseKeyValueDict.values.first)
+        XCTAssertEqual(
+            appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoIdentifierParam,
+            testName
+        )
+        XCTAssertEqual(
+            appNotificationHandler
+                .handleActionWithIdentifierForRemoteNotificationWithResponseInfoUserInfoParam?[keyValueDict.keys
+                .first!] as? String,
+            keyValueDict.values.first
+        )
+        XCTAssertEqual(
+            appNotificationHandler
+                .handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam?[responseKeyValueDict.keys
+                .first!] as? String,
+            responseKeyValueDict.values.first
+        )
     }
 }
 #endif
-
