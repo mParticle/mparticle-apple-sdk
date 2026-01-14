@@ -1,7 +1,8 @@
 VERSION="$1"
 PREFIXED_VERSION="v$1"
-# Read notes from file to avoid shell escaping issues with parentheses in markdown
-NOTES=$(cat /tmp/release_notes.txt 2>/dev/null || echo "")
+# Extract release notes from CHANGELOG.md (populated by @semantic-release/changelog)
+# This avoids shell escaping issues with parentheses in markdown
+NOTES=$(awk '/^# \['"${VERSION}"'\]/{flag=1; next} /^# \[/{flag=0} flag' CHANGELOG.md)
 
 # Update version number
 #
