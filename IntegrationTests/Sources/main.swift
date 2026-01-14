@@ -440,7 +440,7 @@ identityRequest.email = "foo@example.com"
 identityRequest.customerId = "123456"
 options.identifyRequest = identityRequest
 
-options.onIdentifyComplete = { apiResult, error in
+options.onIdentifyComplete = { apiResult, _ in
     if let apiResult {
         apiResult.user.setUserAttribute("example attribute key", value: "example attribute value")
     }

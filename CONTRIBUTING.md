@@ -20,10 +20,10 @@ Thanks for contributing! Please read this document to follow our conventions for
 
 ### Pull Requests
 
-* Fill in the required template
-* Follow the [Swift API Design Guidelines](https://swift.org/documentation/api-design-guidelines/)
-* Include screenshots and animated GIFs in your pull request whenever possible
-* End all files with a newline
+- Fill in the required template
+- Follow the [Swift API Design Guidelines](https://swift.org/documentation/api-design-guidelines/)
+- Include screenshots and animated GIFs in your pull request whenever possible
+- End all files with a newline
 
 ### PR Title and Commit Convention
 
@@ -58,11 +58,13 @@ The following lists the different types allowed in the commit message:
 We use XCTest framework for our testing. Please write tests for new code you create. Before submitting your PR, ensure all tests pass by running:
 
 #### Build and Test
+
 ```bash
 xcodebuild -workspace mParticle-Apple-SDK.xcworkspace -scheme mParticle-Apple-SDK-iOS test
 ```
 
 #### SwiftLint
+
 ```bash
 swiftlint
 ```
@@ -77,13 +79,13 @@ To notify our team about an issue, please submit a ticket through our [mParticle
 
 **When you are creating a ticket, please include as many details as possible:**
 
-* Use a clear and descriptive title
-* Describe the exact steps which reproduce the problem
-* Provide specific examples to demonstrate the steps
-* Describe the behavior you observed after following the steps
-* Explain which behavior you expected to see instead and why
-* Include console output and stack traces if applicable
-* Include your SDK version and iOS/macOS version
+- Use a clear and descriptive title
+- Describe the exact steps which reproduce the problem
+- Provide specific examples to demonstrate the steps
+- Describe the behavior you observed after following the steps
+- Explain which behavior you expected to see instead and why
+- Include console output and stack traces if applicable
+- Include your SDK version and iOS/macOS version
 
 ## License
 
