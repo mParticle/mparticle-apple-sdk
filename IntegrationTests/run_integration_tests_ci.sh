@@ -80,8 +80,7 @@ start_wiremock_java() {
 			--port "${HTTP_PORT}" \
 			--https-port "${HTTPS_PORT}" \
 			--root-dir "${ABS_MAPPINGS_DIR}" \
-			--verbose \
-			>"${WIREMOCK_LOG_FILE}" 2>&1 &
+			--verbose 2>&1 | sudo tee "${WIREMOCK_LOG_FILE}" >/dev/null &
 	else
 		java -jar "${WIREMOCK_JAR}" \
 			--port "${HTTP_PORT}" \
@@ -197,8 +196,8 @@ verify_wiremock_results() {
 
 			local matched=false
 
-			if echo "${url}" | grep -q '\[' || echo "${url}" | grep -q '\\'; then
-				local url_start=$(echo "${url}" | cut -d'[' -f1 | cut -d'\' -f1)
+			if echo "${url}" | grep -q '\[' || echo "${url}" | grep -Fq $'\\'; then
+				local url_start=$(echo "${url}" | cut -d'[' -f1 | cut -d $'\\' -f1)
 				if echo "${ACTUAL_REQUESTS}" | grep -Fq "${method} ${url_start}"; then
 					matched=true
 				fi
