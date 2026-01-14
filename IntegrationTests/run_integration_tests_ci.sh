@@ -114,17 +114,19 @@ wait_for_wiremock_java() {
 	local MAX_RETRIES=30
 	local RETRY_COUNT=0
 
-	while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+	while [[ ${RETRY_COUNT} -lt ${MAX_RETRIES} ]]; do
 		# Check HTTP admin endpoint
-		if curl -s -o /dev/null -w "%{http_code}" http://localhost:${HTTP_PORT}/__admin/mappings 2>/dev/null | grep -q "200"; then
+		# shellcheck disable=SC2312
+		if curl -s -o /dev/null -w "%{http_code}" http://localhost:"${HTTP_PORT}"/__admin/mappings 2>/dev/null | grep -q "200"; then
 			# Also verify HTTPS is working (skip certificate validation with -k)
-			if curl -k -s -o /dev/null -w "%{http_code}" https://localhost:${HTTPS_PORT}/__admin/mappings 2>/dev/null | grep -q "200"; then
+			# shellcheck disable=SC2312
+			if curl -k -s -o /dev/null -w "%{http_code}" https://localhost:"${HTTPS_PORT}"/__admin/mappings 2>/dev/null | grep -q "200"; then
 				echo "✅ WireMock is ready! (HTTP: ${HTTP_PORT}, HTTPS: ${HTTPS_PORT})"
 				return 0
 			fi
 		fi
 		RETRY_COUNT=$((RETRY_COUNT + 1))
-		echo "Waiting... ($RETRY_COUNT/$MAX_RETRIES)"
+		echo "Waiting... (${RETRY_COUNT}/${MAX_RETRIES})"
 		sleep 1
 	done
 

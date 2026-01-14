@@ -128,7 +128,7 @@ start_simulator() {
 	xcrun simctl boot "$DEVICE_ID" || true
 
 	# Only open Simulator GUI if not running in CI (headless mode)
-	if [ -z "$CI" ]; then
+	if [[ -z ${CI} ]]; then
 		open -a Simulator
 	else
 		echo "ℹ️  Running in CI mode - skipping Simulator GUI"
@@ -171,21 +171,17 @@ install_application() {
 launch_application() {
 	echo "▶️ Launching application..."
 
-	# Launch with environment variables using SIMCTL_CHILD_ prefix
-	# If not set, the app will use fake keys for verification mode
-	local launch_cmd="xcrun simctl launch \"$DEVICE_ID\" \"$BUNDLE_ID\""
-
-	if [ -n "$MPARTICLE_API_KEY" ]; then
-		export SIMCTL_CHILD_MPARTICLE_API_KEY="$MPARTICLE_API_KEY"
+	if [[ -n ${MPARTICLE_API_KEY} ]]; then
+		export SIMCTL_CHILD_MPARTICLE_API_KEY="${MPARTICLE_API_KEY}"
 	fi
-	if [ -n "$MPARTICLE_API_SECRET" ]; then
-		export SIMCTL_CHILD_MPARTICLE_API_SECRET="$MPARTICLE_API_SECRET"
+	if [[ -n ${MPARTICLE_API_SECRET} ]]; then
+		export SIMCTL_CHILD_MPARTICLE_API_SECRET="${MPARTICLE_API_SECRET}"
 	fi
 
-	LAUNCH_OUTPUT=$(xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID")
-	APP_PID=$(echo "$LAUNCH_OUTPUT" | awk -F': ' '{print $2}')
+	LAUNCH_OUTPUT=$(xcrun simctl launch "${DEVICE_ID}" "${BUNDLE_ID}")
+	APP_PID=$(echo "${LAUNCH_OUTPUT}" | awk -F': ' '{print $2}')
 
-	if [ -z "$APP_PID" ]; then
+	if [[ -z ${APP_PID} ]]; then
 		echo "❌ Failed to get app PID"
 		exit 1
 	fi
