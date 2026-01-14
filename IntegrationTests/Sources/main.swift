@@ -2,9 +2,7 @@ import Foundation
 import mParticle_Apple_SDK_NoLocation
 
 // Listener for tracking upload events
-// FIXME: Removal of MPListenerProtocol breaks the EventUploadWaiter
-// Find workaround to keep this working
-class EventUploadWaiter: NSObject {
+class EventUploadWaiter: NSObject, MPListenerProtocol {
     private var uploadCompletedSemaphore: DispatchSemaphore?
     var mparticle = MParticle.sharedInstance()
 
@@ -448,6 +446,7 @@ options.networkOptions = networkOptions
 
 // Register listener for tracking upload events
 let uploadWaiter = EventUploadWaiter()
+MPListenerController.sharedInstance().addSdkListener(uploadWaiter)
 
 let mparticle = MParticle.sharedInstance()
 mparticle.start(with: options)
