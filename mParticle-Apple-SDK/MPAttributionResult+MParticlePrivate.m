@@ -1,4 +1,4 @@
-#import <mParticle_Apple_SDK/mParticle.h>
+#import <mParticle_Apple_SDK_NoLocation/mParticle.h>
 #import "MPAttributionResult+MParticlePrivate.h"
 
 @implementation MPAttributionResult

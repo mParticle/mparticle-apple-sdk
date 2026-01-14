@@ -1,5 +1,5 @@
 import XCTest
-import mParticle_Apple_SDK_NoLocation
+@testable import mParticle_Apple_SDK_NoLocation
 
 class NSString_MPPercentEscapeTests: XCTestCase {
     override func setUp() {}
