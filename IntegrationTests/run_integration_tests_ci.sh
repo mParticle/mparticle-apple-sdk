@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck disable=SC2155
+# shellcheck disable=SC2312
 # CI-specific integration test script that runs WireMock as a Java process
 # instead of Docker (for GitHub Actions macOS runners)
 set -e
@@ -48,7 +50,7 @@ unescape_mapping_bodies() {
 		for mapping_file in "${MAPPINGS_FILES}"/*.json; do
 			if [[ -f ${mapping_file} ]]; then
 				python3 transform_mapping_body.py "${mapping_file}" unescape >/dev/null 2>&1 || {
-					echo "⚠️  Failed to unescape $(basename ${mapping_file})"
+					echo "⚠️  Failed to unescape $(basename "${mapping_file}")"
 				}
 			fi
 		done
@@ -75,15 +77,15 @@ start_wiremock_java() {
 	if [[ ${HTTPS_PORT} -lt 1024 ]]; then
 		echo "ℹ️  Using sudo to bind to privileged port ${HTTPS_PORT}"
 		sudo java -jar "${WIREMOCK_JAR}" \
-			--port ${HTTP_PORT} \
-			--https-port ${HTTPS_PORT} \
+			--port "${HTTP_PORT}" \
+			--https-port "${HTTPS_PORT}" \
 			--root-dir "${ABS_MAPPINGS_DIR}" \
 			--verbose \
 			>"${WIREMOCK_LOG_FILE}" 2>&1 &
 	else
 		java -jar "${WIREMOCK_JAR}" \
-			--port ${HTTP_PORT} \
-			--https-port ${HTTPS_PORT} \
+			--port "${HTTP_PORT}" \
+			--https-port "${HTTPS_PORT}" \
 			--root-dir "${ABS_MAPPINGS_DIR}" \
 			--verbose \
 			>"${WIREMOCK_LOG_FILE}" 2>&1 &
@@ -153,8 +155,8 @@ verify_wiremock_results() {
 	local WIREMOCK_PORT=${HTTP_PORT}
 
 	# Count all requests
-	local TOTAL=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests | jq '.requests | length')
-	local UNMATCHED=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests/unmatched | jq '.requests | length')
+	local TOTAL=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests | jq '.requests | length')
+	local UNMATCHED=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests/unmatched | jq '.requests | length')
 	local MATCHED=$((TOTAL - UNMATCHED))
 
 	echo "📊 WireMock summary:"
@@ -168,7 +170,7 @@ verify_wiremock_results() {
 	# Check for unmatched requests
 	if [[ ${UNMATCHED} -gt 0 ]]; then
 		echo "❌ Found requests that did not match any mappings:"
-		curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests/unmatched |
+		curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests/unmatched |
 			jq -r '.requests[] | "  [\(.method)] \(.url)"'
 		echo ""
 		show_wiremock_logs_java
@@ -182,9 +184,9 @@ verify_wiremock_results() {
 	echo ""
 	echo "🧩 Checking: were all mappings invoked..."
 
-	local EXPECTED_MAPPINGS=$(jq -r 'select(.response.proxyBaseUrl == null) | "\(.request.method // "ANY") \(.request.url // .request.urlPattern // .request.urlPath // .request.urlPathPattern)"' ${MAPPINGS_DIR}/mappings/*.json 2>/dev/null | sort)
+	local EXPECTED_MAPPINGS=$(jq -r 'select(.response.proxyBaseUrl == null) | "\(.request.method // "ANY") \(.request.url // .request.urlPattern // .request.urlPath // .request.urlPathPattern)"' "${MAPPINGS_DIR}"/mappings/*.json 2>/dev/null | sort)
 
-	local ACTUAL_REQUESTS=$(curl -s http://localhost:${WIREMOCK_PORT}/__admin/requests |
+	local ACTUAL_REQUESTS=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests |
 		jq -r '.requests[] | "\(.request.method) \(.request.url)"' | sort | uniq)
 
 	local UNUSED_FOUND=false
