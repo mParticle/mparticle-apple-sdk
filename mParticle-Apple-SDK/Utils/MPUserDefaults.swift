@@ -380,16 +380,12 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public func lastUploadSettings() -> MPUploadSettings? {
-        NSKeyedUnarchiver.setClass(MPUploadSettings.self,
-                                   forClassName: "mParticle_Apple_SDK.MPUploadSettings")
-        NSKeyedUnarchiver.setClass(MPUploadSettings.self,
-                                   forClassName: "mParticle_Apple_SDK_NoLocation.MPUploadSettings")
-        let data = mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data
-
-        if let data = data {
-            return NSKeyedUnarchiver.unarchiveObject(with: data) as? MPUploadSettings
-        } else {
-            return nil
+        if let data = mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data {
+            do {
+                return try NSKeyedUnarchiver.unarchivedObject(ofClass: MPUploadSettings.self, from: data)
+            } catch {
+                MPLog.error("Failed to unarchive upload settings: \(error)")
+            }
         }
         return nil
     }
