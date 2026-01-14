@@ -21,6 +21,7 @@ The following methods have been removed from the `MParticle` class:
 ##### URL Handling
 
 **Before (Objective-C):**
+
 ```objective-c
 // In AppDelegate
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
@@ -30,6 +31,7 @@ The following methods have been removed from the `MParticle` class:
 ```
 
 **After (Objective-C):**
+
 ```objective-c
 // In SceneDelegate
 - (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts {
@@ -40,6 +42,7 @@ The following methods have been removed from the `MParticle` class:
 ```
 
 **Before (Swift):**
+
 ```swift
 // In AppDelegate
 func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
@@ -49,6 +52,7 @@ func application(_ app: UIApplication, open url: URL, options: [UIApplication.Op
 ```
 
 **After (Swift):**
+
 ```swift
 // In SceneDelegate
 func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
@@ -61,6 +65,7 @@ func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
 ##### User Activity Handling (Universal Links, Handoff, etc.)
 
 **Before (Objective-C):**
+
 ```objective-c
 // In AppDelegate
 - (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler {
@@ -70,6 +75,7 @@ func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
 ```
 
 **After (Objective-C):**
+
 ```objective-c
 // In SceneDelegate
 - (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity {
@@ -78,6 +84,7 @@ func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
 ```
 
 **Before (Swift):**
+
 ```swift
 // In AppDelegate
 func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
@@ -87,6 +94,7 @@ func application(_ application: UIApplication, continue userActivity: NSUserActi
 ```
 
 **After (Swift):**
+
 ```swift
 // In SceneDelegate
 func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
@@ -106,4 +114,3 @@ func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
 ## Migrating from versions < 8.0.0
 
 For migration guidance from SDK 7.x to SDK 8.x, please see [migration-guide-v8.md](migration-guide-v8.md).
-

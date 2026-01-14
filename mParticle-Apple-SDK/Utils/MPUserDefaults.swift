@@ -210,9 +210,9 @@ public protocol MPUserDefaultsProtocol {
                 NSDate.self,
                 NSData.self,
                 NSURL.self,
-                NSNull.self  // Required for null values from JSON
+                NSNull.self // Required for null values from JSON
             ]
-            
+
             if let nsDict = try NSKeyedUnarchiver.unarchivedObject(
                 ofClasses: allowedClasses,
                 from: configurationData
@@ -244,7 +244,10 @@ public protocol MPUserDefaultsProtocol {
         maxAge: NSNumber?
     ) {
         do {
-            let configurationData = try NSKeyedArchiver.archivedData(withRootObject: responseConfiguration, requiringSecureCoding: true)
+            let configurationData = try NSKeyedArchiver.archivedData(
+                withRootObject: responseConfiguration,
+                requiringSecureCoding: true
+            )
             let userID = identity?.currentUser?.userId ?? 0
 
             setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
@@ -378,9 +381,9 @@ public protocol MPUserDefaultsProtocol {
 
     @objc public func lastUploadSettings() -> MPUploadSettings? {
         NSKeyedUnarchiver.setClass(MPUploadSettings.self,
-                                       forClassName: "mParticle_Apple_SDK.MPUploadSettings")
+                                   forClassName: "mParticle_Apple_SDK.MPUploadSettings")
         NSKeyedUnarchiver.setClass(MPUploadSettings.self,
-                                       forClassName: "mParticle_Apple_SDK_NoLocation.MPUploadSettings")
+                                   forClassName: "mParticle_Apple_SDK_NoLocation.MPUploadSettings")
         let data = mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data
 
         if let data = data {
