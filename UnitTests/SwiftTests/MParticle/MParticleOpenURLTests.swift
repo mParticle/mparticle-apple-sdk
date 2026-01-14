@@ -47,7 +47,10 @@ final class MParticleOpenURLTests: MParticleTestBase {
         
         XCTAssertTrue(appNotificationHandler.openURLWithOptionsCalled)
         XCTAssertEqual(appNotificationHandler.openURLWithOptionsURLParam, url)
-        XCTAssertEqual(appNotificationHandler.openURLWithOptionsOptionsParam?["UIApplicationOpenURLOptionsSourceApplicationKey"] as? String, "com.example.app")
+        XCTAssertEqual(
+            appNotificationHandler.openURLWithOptionsOptionsParam?["UIApplicationOpenURLOptionsSourceApplicationKey"] as? String,
+            "com.example.app"
+        )
     }
     
     func test_openURLOptions_doesNotCallHandler_whenProxiedDelegateExists() {

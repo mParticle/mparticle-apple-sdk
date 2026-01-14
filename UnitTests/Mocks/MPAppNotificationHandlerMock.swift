@@ -11,7 +11,7 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
     var didReceiveRemoteNotificationCalled = false
     var didReceiveRemoteNotificationParam: [AnyHashable: Any]?
 
-    func didReceiveRemoteNotification(_ userInfo: [AnyHashable : Any]) {
+    func didReceiveRemoteNotification(_ userInfo: [AnyHashable: Any]) {
         didReceiveRemoteNotificationCalled = true
         didReceiveRemoteNotificationParam = userInfo
     }
@@ -34,9 +34,9 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
     
     var handleActionWithIdentifierForRemoteNotificationCalled = false
     var handleActionWithIdentifierForRemoteNotificationIdentifierParam: String?
-    var handleActionWithIdentifierForRemoteNotificationUserInfoParam: [AnyHashable : Any]?
+    var handleActionWithIdentifierForRemoteNotificationUserInfoParam: [AnyHashable: Any]?
     
-    func handleAction(withIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable : Any]?) {
+    func handleAction(withIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable: Any]?) {
         handleActionWithIdentifierForRemoteNotificationCalled = true
         handleActionWithIdentifierForRemoteNotificationIdentifierParam = identifier
         handleActionWithIdentifierForRemoteNotificationUserInfoParam = userInfo
@@ -44,10 +44,14 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
     
     var handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled = false
     var handleActionWithIdentifierForRemoteNotificationWithResponseInfoIdentifierParam: String?
-    var handleActionWithIdentifierForRemoteNotificationWithResponseInfoUserInfoParam: [AnyHashable : Any]?
-    var handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam: [AnyHashable : Any]?
+    var handleActionWithIdentifierForRemoteNotificationWithResponseInfoUserInfoParam: [AnyHashable: Any]?
+    var handleActionWithIdentifierForRemoteNotificationWithResponseInfoResponseInfoParam: [AnyHashable: Any]?
     
-    func handleAction(withIdentifier identifier: String?, forRemoteNotification userInfo: [AnyHashable : Any]?, withResponseInfo responseInfo: [AnyHashable : Any]?) {
+    func handleAction(
+        withIdentifier identifier: String?,
+        forRemoteNotification userInfo: [AnyHashable: Any]?,
+        withResponseInfo responseInfo: [AnyHashable: Any]?
+    ) {
         handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled = true
         handleActionWithIdentifierForRemoteNotificationWithResponseInfoIdentifierParam = identifier
         handleActionWithIdentifierForRemoteNotificationWithResponseInfoUserInfoParam = userInfo
@@ -84,9 +88,9 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
     
     var openURLWithOptionsCalled = false
     var openURLWithOptionsURLParam: URL?
-    var openURLWithOptionsOptionsParam: [String : Any]?
+    var openURLWithOptionsOptionsParam: [String: Any]?
     
-    func open(_ url: URL, options: [String : Any]?) {
+    func open(_ url: URL, options: [String: Any]?) {
         openURLWithOptionsCalled = true
         openURLWithOptionsURLParam = url
         openURLWithOptionsOptionsParam = options
@@ -97,7 +101,8 @@ class MPAppNotificationHandlerMock: MPAppNotificationHandlerProtocol {
     var continueUserActivityRestorationHandlerParam: (([UIUserActivityRestoring]?) -> Void)?
     var continueUserActivityReturnValue: Bool = false
     
-    func `continue`(_ userActivity: NSUserActivity, restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void) -> Bool {
+    func `continue`(_ userActivity: NSUserActivity,
+                    restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void) -> Bool {
         continueUserActivityCalled = true
         continueUserActivityUserActivityParam = userActivity
         continueUserActivityRestorationHandlerParam = restorationHandler
