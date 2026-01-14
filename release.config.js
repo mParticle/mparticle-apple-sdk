@@ -23,8 +23,7 @@ module.exports = {
     [
       "@semantic-release/exec",
       {
-        prepareCmd:
-          'printf "%s" "${nextRelease.notes}" > /tmp/release_notes.txt && sh ./Scripts/release.sh ${nextRelease.version}',
+        prepareCmd: "sh ./Scripts/release.sh ${nextRelease.version}",
       },
     ],
     [

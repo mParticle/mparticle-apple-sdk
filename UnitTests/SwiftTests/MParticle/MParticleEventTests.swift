@@ -173,6 +173,6 @@ final class MParticleEventTests: MParticleTestBase {
         let createdEvent: MPEvent = (listenerController.onAPICalledParameter1 as? MPBaseEvent)! as! MPEvent
         XCTAssertEqual(createdEvent.name, event.name)
         XCTAssertEqual(createdEvent.type, event.type)
-        XCTAssertEqual(createdEvent.customAttributes as! [String:String], event.customAttributes as! [String : String])
+        XCTAssertEqual(createdEvent.customAttributes as! [String: String], event.customAttributes as! [String: String])
     }
 }
