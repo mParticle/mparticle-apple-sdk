@@ -57,7 +57,10 @@ final class MParticleBreadcrumbTests: MParticleTestBase {
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, event.name)
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .other)
         XCTAssertNotNil(backendController.leaveBreadcrumbEventParam?.timestamp)
-        XCTAssertEqual(backendController.leaveBreadcrumbEventParam!.customAttributes! as NSObject, event.customAttributes! as NSObject)
+        XCTAssertEqual(
+            backendController.leaveBreadcrumbEventParam!.customAttributes! as NSObject,
+            event.customAttributes! as NSObject
+        )
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
     
@@ -67,7 +70,10 @@ final class MParticleBreadcrumbTests: MParticleTestBase {
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.name, event.name)
         XCTAssertEqual(backendController.leaveBreadcrumbEventParam?.type, .other)
         XCTAssertNotNil(backendController.leaveBreadcrumbEventParam?.timestamp)
-        XCTAssertEqual(backendController.leaveBreadcrumbEventParam!.customAttributes! as NSObject, event.customAttributes! as NSObject)
+        XCTAssertEqual(
+            backendController.leaveBreadcrumbEventParam!.customAttributes! as NSObject,
+            event.customAttributes! as NSObject
+        )
         XCTAssertNotNil(backendController.leaveBreadcrumbCompletionHandler)
     }
     

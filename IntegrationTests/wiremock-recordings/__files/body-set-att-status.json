@@ -1,1 +1,14 @@
-{"dt":"rh","id":"845193e5-1f2e-4d0b-8062-685272884982","ct":1764865609530,"err":[{"dt":"err","id":"e00cc073-74b0-4434-ae09-037e4ce2b553","ct":1764865609531,"msg":"Invalid Consent State provided - please verify the Consent Purposes that you have defined for this workspace.","code":"invalid_consent"}]}
+{
+  "dt": "rh",
+  "id": "845193e5-1f2e-4d0b-8062-685272884982",
+  "ct": 1764865609530,
+  "err": [
+    {
+      "dt": "err",
+      "id": "e00cc073-74b0-4434-ae09-037e4ce2b553",
+      "ct": 1764865609531,
+      "msg": "Invalid Consent State provided - please verify the Consent Purposes that you have defined for this workspace.",
+      "code": "invalid_consent"
+    }
+  ]
+}

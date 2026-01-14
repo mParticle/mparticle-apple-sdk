@@ -108,4 +108,3 @@ final class MParticleLTVTests: MParticleTestBase {
         XCTAssertNil(kitContainer.forwardSDKCallEventParam)
     }
 }
-

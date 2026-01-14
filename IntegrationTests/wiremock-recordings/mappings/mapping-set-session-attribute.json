@@ -10,9 +10,7 @@
           "msgs": [
             {
               "id": "${json-unit.ignore}",
-              "smpids": [
-                6504934091054997508
-              ],
+              "smpids": [6504934091054997508],
               "vc": "off_thread",
               "slx": "${json-unit.ignore}",
               "dt": "se",
