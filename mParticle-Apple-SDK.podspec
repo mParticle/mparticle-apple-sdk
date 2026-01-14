@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
     s.documentation_url = "https://docs.mparticle.com/developers/sdk/ios/"
     s.social_media_url  = "https://twitter.com/mparticle"
     s.requires_arc      = true
-    s.default_subspec   = 'mParticleNoLocation'
+    s.default_subspec   = 'mParticle'
     s.module_name       = 'mParticle_Apple_SDK'
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
@@ -33,10 +33,6 @@ Pod::Spec.new do |s|
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
         ss.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
-        ss.pod_target_xcconfig  = {
-            'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
-            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
-        }
     end
 
     s.subspec 'AppExtension' do |ext|
