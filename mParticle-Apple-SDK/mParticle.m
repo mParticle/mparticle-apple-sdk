@@ -686,6 +686,16 @@ MPLog* logger;
     [self.sceneDelegateHandler handleUserActivity:userActivity];
 }
 
+#if TARGET_OS_IOS == 1
+- (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
+    [self.sceneDelegateHandler handleWithUrlContext:urlContext];
+}
+#endif
+
+- (void)handleUserActivity:(NSUserActivity *)userActivity {
+    [self.sceneDelegateHandler handleUserActivity:userActivity];
+}
+
 - (void)reset:(void (^)(void))completion {
     [executor executeOnMessage:^{
         [self.kitContainer flushSerializedKits];

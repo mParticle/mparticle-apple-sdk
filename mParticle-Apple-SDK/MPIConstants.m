@@ -194,6 +194,7 @@ NSString *const kMPRemoteConfigAppDefined = @"appdefined";
 NSString *const kMPRemoteConfigForceTrue = @"forcetrue";
 NSString *const kMPRemoteConfigForceFalse = @"forcefalse";
 NSString *const kMPRemoteConfigKitsKey = @"eks";
+NSString *const kMPRemoteConfigKitConfigurationKey = @"as";
 NSString *const kMPRemoteConfigKitHashesKey = @"hs";
 NSString *const kMPRemoteConfigConsumerInfoKey = @"ci";
 NSString *const kMPRemoteConfigCookiesKey = @"ck";

@@ -120,7 +120,13 @@ find_device() {
 start_simulator() {
   echo "📱 Starting simulator $DEVICE_NAME..."
   xcrun simctl boot "$DEVICE_ID" || true
-  open -a Simulator
+  
+  # Only open Simulator GUI if not running in CI (headless mode)
+  if [ -z "$CI" ]; then
+    open -a Simulator
+  else
+    echo "ℹ️  Running in CI mode - skipping Simulator GUI"
+  fi
 
   echo "⏳ Waiting for simulator to start..."
   xcrun simctl bootstatus "$DEVICE_ID" -b

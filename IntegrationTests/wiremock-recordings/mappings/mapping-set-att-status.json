@@ -61,7 +61,7 @@
           "oo": false,
           "sdk": "8.40.0",
           "di": {
-            "tz": "-5",
+            "tz": "${json-unit.ignore}",
             "p": "arm64",
             "b": "arm64",
             "dn": "${json-unit.ignore}",
@@ -72,7 +72,7 @@
             "vid": "${json-unit.ignore}",
             "dma": "Apple",
             "atts": "authorized",
-            "tzn": "America/New_York",
+            "tzn": "${json-unit.ignore}",
             "dp": "iOS",
             "dsw": "960",
             "attt": 1700000000000,

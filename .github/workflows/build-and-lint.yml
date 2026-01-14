@@ -1,6 +1,7 @@
 name: iOS SDK Build and Lint
 
-on: [pull_request]
+on:
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -16,6 +17,14 @@ env:
   XCODE_VERSION: "16.4"
 
 jobs:
+  trunk-check:
+    runs-on: macOS-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Trunk Check
+        uses: trunk-io/trunk-action@v1
+
   pod-lint:
     runs-on: macOS-15
     steps:
