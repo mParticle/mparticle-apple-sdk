@@ -22,21 +22,7 @@ mv tmp.json mParticle_Apple_SDK.json
 sed -i '' 's/\(^    s.version[^=]*= \).*/\1"'"$VERSION"'"/' mParticle-Apple-SDK.podspec
 
 # Update SDK version in integration test mappings
-# Update "sdk" field in all mapping files
-find IntegrationTests/wiremock-recordings/mappings -name "*.json" -type f | while read -r mapping_file; do
-	# Update top-level "sdk" field
-	if jq -e '.request.bodyPatterns[0].equalToJson.sdk' "${mapping_file}" >/dev/null 2>&1; then
-		jq --indent 2 -i '.request.bodyPatterns[0].equalToJson.sdk = "'"${VERSION}"'"' "${mapping_file}"
-	fi
-	# Update "client_sdk.sdk_version" field (for v1 identify endpoints)
-	if jq -e '.request.bodyPatterns[0].equalToJson.client_sdk.sdk_version' "${mapping_file}" >/dev/null 2>&1; then
-		jq --indent 2 -i '.request.bodyPatterns[0].equalToJson.client_sdk.sdk_version = "'"${VERSION}"'"' "${mapping_file}"
-	fi
-done || true
-
-# Update SDK version in config mapping urlPattern (sv=...)
-ESCAPED_VERSION="${VERSION//./\\.}"
-sed -i '' 's/\(sv=\)[0-9][0-9]*\\\.[0-9][0-9]*\\\.[0-9][0-9]*/'"sv=${ESCAPED_VERSION}"'/' IntegrationTests/wiremock-recordings/mappings/mapping-v4-config-get-config.json
+./Scripts/update_mapping_versions.sh "${VERSION}"
 
 # Build the frameworks so we can get the checksums for SPM
 #
