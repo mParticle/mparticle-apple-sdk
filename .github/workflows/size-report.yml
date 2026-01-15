@@ -50,21 +50,25 @@ jobs:
               # Extract SDK impact (delta between with-SDK and baseline)
               SDK_IMPACT_KB=$(echo "$RESULT" | jq -r '.sdk_impact_kb')
               SDK_EXECUTABLE_IMPACT=$(echo "$RESULT" | jq -r '.sdk_executable_impact_bytes')
+              XCFRAMEWORK_SIZE_KB=$(echo "$RESULT" | jq -r '.xcframework_size_kb // 0')
               echo "sdk_impact_kb=${SDK_IMPACT_KB}" >> $GITHUB_OUTPUT
               echo "sdk_executable_impact=${SDK_EXECUTABLE_IMPACT}" >> $GITHUB_OUTPUT
+              echo "xcframework_size_kb=${XCFRAMEWORK_SIZE_KB}" >> $GITHUB_OUTPUT
               echo "exists=true" >> $GITHUB_OUTPUT
             else
               echo "Build failed on base branch"
-              echo 'json={"sdk_impact_kb": 0, "sdk_executable_impact_bytes": 0}' >> $GITHUB_OUTPUT
+              echo 'json={"sdk_impact_kb": 0, "sdk_executable_impact_bytes": 0, "xcframework_size_kb": 0}' >> $GITHUB_OUTPUT
               echo "sdk_impact_kb=0" >> $GITHUB_OUTPUT
               echo "sdk_executable_impact=0" >> $GITHUB_OUTPUT
+              echo "xcframework_size_kb=0" >> $GITHUB_OUTPUT
               echo "exists=false" >> $GITHUB_OUTPUT
             fi
           else
             echo "Size test app not found on base branch, this PR introduces it"
-            echo 'json={"sdk_impact_kb": 0, "sdk_executable_impact_bytes": 0}' >> $GITHUB_OUTPUT
+            echo 'json={"sdk_impact_kb": 0, "sdk_executable_impact_bytes": 0, "xcframework_size_kb": 0}' >> $GITHUB_OUTPUT
             echo "sdk_impact_kb=0" >> $GITHUB_OUTPUT
             echo "sdk_executable_impact=0" >> $GITHUB_OUTPUT
+            echo "xcframework_size_kb=0" >> $GITHUB_OUTPUT
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
@@ -78,8 +82,10 @@ jobs:
           # Extract SDK impact (delta between with-SDK and baseline)
           SDK_IMPACT_KB=$(echo "$RESULT" | jq -r '.sdk_impact_kb')
           SDK_EXECUTABLE_IMPACT=$(echo "$RESULT" | jq -r '.sdk_executable_impact_bytes')
+          XCFRAMEWORK_SIZE_KB=$(echo "$RESULT" | jq -r '.xcframework_size_kb // 0')
           echo "sdk_impact_kb=${SDK_IMPACT_KB}" >> $GITHUB_OUTPUT
           echo "sdk_executable_impact=${SDK_EXECUTABLE_IMPACT}" >> $GITHUB_OUTPUT
+          echo "xcframework_size_kb=${XCFRAMEWORK_SIZE_KB}" >> $GITHUB_OUTPUT
 
       - name: Calculate size delta
         id: delta
@@ -88,17 +94,21 @@ jobs:
           PR_SDK_IMPACT=${{ steps.pr-size.outputs.sdk_impact_kb }}
           BASE_EXECUTABLE_IMPACT=${{ steps.base-size.outputs.sdk_executable_impact }}
           PR_EXECUTABLE_IMPACT=${{ steps.pr-size.outputs.sdk_executable_impact }}
+          BASE_XCFRAMEWORK=${{ steps.base-size.outputs.xcframework_size_kb }}
+          PR_XCFRAMEWORK=${{ steps.pr-size.outputs.xcframework_size_kb }}
           BASE_EXISTS=${{ steps.base-size.outputs.exists }}
 
           # Handle case where base branch doesn't have the test app
           if [[ "$BASE_EXISTS" != "true" ]] || [[ "$BASE_SDK_IMPACT" == "0" ]]; then
             echo "delta_kb=N/A" >> $GITHUB_OUTPUT
             echo "delta_executable=N/A" >> $GITHUB_OUTPUT
+            echo "delta_xcframework=N/A" >> $GITHUB_OUTPUT
             echo "delta_percent=N/A" >> $GITHUB_OUTPUT
             echo "status=new" >> $GITHUB_OUTPUT
           else
             DELTA_KB=$((PR_SDK_IMPACT - BASE_SDK_IMPACT))
             DELTA_EXECUTABLE=$((PR_EXECUTABLE_IMPACT - BASE_EXECUTABLE_IMPACT))
+            DELTA_XCFRAMEWORK=$((PR_XCFRAMEWORK - BASE_XCFRAMEWORK))
             
             if [[ "$BASE_SDK_IMPACT" -gt 0 ]]; then
               DELTA_PERCENT=$(awk "BEGIN {printf \"%.2f\", ($DELTA_KB / $BASE_SDK_IMPACT) * 100}")
@@ -108,6 +118,7 @@ jobs:
             
             echo "delta_kb=${DELTA_KB}" >> $GITHUB_OUTPUT
             echo "delta_executable=${DELTA_EXECUTABLE}" >> $GITHUB_OUTPUT
+            echo "delta_xcframework=${DELTA_XCFRAMEWORK}" >> $GITHUB_OUTPUT
             echo "delta_percent=${DELTA_PERCENT}" >> $GITHUB_OUTPUT
             
             # Determine status emoji
@@ -154,16 +165,20 @@ jobs:
           if [[ "$BASE_EXISTS" == "true" ]]; then
             echo "base_impact_formatted=$(format_size ${{ steps.base-size.outputs.sdk_impact_kb }})" >> $GITHUB_OUTPUT
             echo "base_executable_formatted=$(format_bytes ${{ steps.base-size.outputs.sdk_executable_impact }})" >> $GITHUB_OUTPUT
+            echo "base_xcframework_formatted=$(format_size ${{ steps.base-size.outputs.xcframework_size_kb }})" >> $GITHUB_OUTPUT
           else
             echo "base_impact_formatted=N/A" >> $GITHUB_OUTPUT
             echo "base_executable_formatted=N/A" >> $GITHUB_OUTPUT
+            echo "base_xcframework_formatted=N/A" >> $GITHUB_OUTPUT
           fi
 
           echo "pr_impact_formatted=$(format_size ${{ steps.pr-size.outputs.sdk_impact_kb }})" >> $GITHUB_OUTPUT
           echo "pr_executable_formatted=$(format_bytes ${{ steps.pr-size.outputs.sdk_executable_impact }})" >> $GITHUB_OUTPUT
+          echo "pr_xcframework_formatted=$(format_size ${{ steps.pr-size.outputs.xcframework_size_kb }})" >> $GITHUB_OUTPUT
 
           DELTA_KB="${{ steps.delta.outputs.delta_kb }}"
           DELTA_EXECUTABLE="${{ steps.delta.outputs.delta_executable }}"
+          DELTA_XCFRAMEWORK="${{ steps.delta.outputs.delta_xcframework }}"
 
           if [[ "$DELTA_KB" != "N/A" ]]; then
             if [[ "$DELTA_KB" -ge 0 ]]; then
@@ -177,9 +192,16 @@ jobs:
             else
               echo "delta_executable_formatted=$(format_bytes $DELTA_EXECUTABLE)" >> $GITHUB_OUTPUT
             fi
+
+            if [[ "$DELTA_XCFRAMEWORK" -ge 0 ]]; then
+              echo "delta_xcframework_formatted=+$(format_size $DELTA_XCFRAMEWORK)" >> $GITHUB_OUTPUT
+            else
+              echo "delta_xcframework_formatted=$(format_size $DELTA_XCFRAMEWORK)" >> $GITHUB_OUTPUT
+            fi
           else
             echo "delta_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
             echo "delta_executable_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
+            echo "delta_xcframework_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
           fi
       - name: Find Comment
         if: github.event_name == 'pull_request'
@@ -207,6 +229,7 @@ jobs:
             |--------|---------------|---------|--------|
             | App Bundle Impact | ${{ steps.format.outputs.base_impact_formatted }} | ${{ steps.format.outputs.pr_impact_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
             | Executable Impact | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
+            | XCFramework Size | ${{ steps.format.outputs.base_xcframework_formatted }} | ${{ steps.format.outputs.pr_xcframework_formatted }} | ${{ steps.format.outputs.delta_xcframework_formatted }} |
 
             ${{ steps.delta.outputs.status == 'increase' && '⚠️ This PR increases SDK size impact.' || '' }}
             ${{ steps.delta.outputs.status == 'decrease' && '✅ This PR decreases SDK size impact.' || '' }}
@@ -238,6 +261,7 @@ jobs:
           |--------|---------------|----------------|--------|
           | App Bundle Impact | ${{ steps.format.outputs.base_impact_formatted }} | ${{ steps.format.outputs.pr_impact_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
           | Executable Impact | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
+          | XCFramework Size | ${{ steps.format.outputs.base_xcframework_formatted }} | ${{ steps.format.outputs.pr_xcframework_formatted }} | ${{ steps.format.outputs.delta_xcframework_formatted }} |
 
           EOF
 

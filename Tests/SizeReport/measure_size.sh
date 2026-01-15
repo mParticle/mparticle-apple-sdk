@@ -77,17 +77,23 @@ build_sdk_from_source() {
 	echo "  SDK built successfully" >&2
 }
 
-# Function to get app size from the built .app bundle
-get_app_size() {
-	local app_path="$1"
+# Function to get directory size in KB
+get_dir_size_kb() {
+	local dir_path="$1"
 	local size_output
-	if [[ -d ${app_path} ]]; then
+	if [[ -d ${dir_path} ]]; then
 		# Get size in KB
-		size_output=$(du -sk "${app_path}" 2>/dev/null) || true
+		size_output=$(du -sk "${dir_path}" 2>/dev/null) || true
 		echo "${size_output}" | cut -f1
 	else
 		echo "0"
 	fi
+}
+
+# Function to get app size from the built .app bundle
+get_app_size() {
+	local app_path="$1"
+	get_dir_size_kb "${app_path}"
 }
 
 # Function to get executable size from the main binary
@@ -142,6 +148,14 @@ build_app() {
 # Build SDK from source first (required for with-SDK app)
 build_sdk_from_source
 
+# Measure xcframework size
+XCFRAMEWORK_PATH="${BUILD_DIR}/mParticle_Apple_SDK.xcframework"
+XCFRAMEWORK_SIZE_KB=0
+if [[ -d ${XCFRAMEWORK_PATH} ]]; then
+	# shellcheck disable=SC2311
+	XCFRAMEWORK_SIZE_KB=$(get_dir_size_kb "${XCFRAMEWORK_PATH}")
+fi
+
 # Build baseline app (if not with-sdk-only)
 BASELINE_SIZE_KB=0
 BASELINE_EXECUTABLE_SIZE=0
@@ -195,10 +209,13 @@ SDK_EXECUTABLE_SIZE=$((WITHSDK_EXECUTABLE_SIZE - BASELINE_EXECUTABLE_SIZE))
 # Output results
 if [[ ${OUTPUT_JSON} == "true" ]]; then
 	# Output compact single-line JSON for CI compatibility
-	echo "{\"baseline_app_size_kb\":${BASELINE_SIZE_KB},\"baseline_executable_size_bytes\":${BASELINE_EXECUTABLE_SIZE},\"with_sdk_app_size_kb\":${WITHSDK_SIZE_KB},\"with_sdk_executable_size_bytes\":${WITHSDK_EXECUTABLE_SIZE},\"sdk_impact_kb\":${SDK_SIZE_KB},\"sdk_executable_impact_bytes\":${SDK_EXECUTABLE_SIZE}}"
+	echo "{\"baseline_app_size_kb\":${BASELINE_SIZE_KB},\"baseline_executable_size_bytes\":${BASELINE_EXECUTABLE_SIZE},\"with_sdk_app_size_kb\":${WITHSDK_SIZE_KB},\"with_sdk_executable_size_bytes\":${WITHSDK_EXECUTABLE_SIZE},\"sdk_impact_kb\":${SDK_SIZE_KB},\"sdk_executable_impact_bytes\":${SDK_EXECUTABLE_SIZE},\"xcframework_size_kb\":${XCFRAMEWORK_SIZE_KB}}"
 else
 	echo ""
 	echo "=== SDK Size Measurement Results ==="
+	echo ""
+	echo "XCFramework:"
+	echo "  Size: ${XCFRAMEWORK_SIZE_KB} KB"
 	echo ""
 	if [[ ${WITH_SDK_ONLY} == "false" ]]; then
 		echo "Baseline App (no SDK):"
