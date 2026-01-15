@@ -1,7 +1,7 @@
 name: Secondary Platforms iOS Build
 
 on:
-  pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
