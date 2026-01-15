@@ -29,7 +29,7 @@
             "fi": true,
             "lud": "${json-unit.ignore}",
             "arc": "arm64",
-            "tsv": "90000",
+            "tsv": "150600",
             "apn": "com.mparticle.IntegrationTests",
             "env": 1,
             "abn": "1",
