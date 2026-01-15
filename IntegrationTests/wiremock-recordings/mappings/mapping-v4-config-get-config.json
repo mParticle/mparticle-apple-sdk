@@ -1,7 +1,7 @@
 {
   "id": "a7d323f1-a729-39c6-86cd-4035c71f7d05",
   "request": {
-    "urlPattern": "/v4/us1-[a-f0-9]+/config\\?av=1\\.0&sv=8\\.40\\.0",
+    "urlPattern": "/v4/us1-[a-f0-9]+/config\\?av=1\\.0&sv=8\\.41\\.0",
     "method": "GET"
   },
   "response": {
