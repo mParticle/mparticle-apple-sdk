@@ -203,6 +203,57 @@ jobs:
             echo "delta_executable_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
             echo "delta_xcframework_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
           fi
+
+      - name: Generate size report
+        id: report
+        run: |
+          REPORT_FILE="${RUNNER_TEMP}/size-report.md"
+
+          # Determine status message
+          STATUS="${{ steps.delta.outputs.status }}"
+          case "$STATUS" in
+            increase) STATUS_MSG="⚠️ This change increases SDK size impact." ;;
+            decrease) STATUS_MSG="✅ This change decreases SDK size impact." ;;
+            neutral)  STATUS_MSG="➡️ SDK size impact change is minimal." ;;
+            new)      STATUS_MSG="ℹ️ Size test app not found on target branch. This is the new baseline." ;;
+            *)        STATUS_MSG="" ;;
+          esac
+
+          # Generate the report
+          cat > "$REPORT_FILE" << EOF
+          ${{ env.COMMENT_IDENTIFIER }}
+          ## 📦 SDK Size Impact Report
+
+          Measures how much the SDK adds to an app's size (with-SDK minus without-SDK).
+
+          | Metric | Target Branch | This PR | Change |
+          |--------|---------------|---------|--------|
+          | App Bundle Impact | ${{ steps.format.outputs.base_impact_formatted }} | ${{ steps.format.outputs.pr_impact_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
+          | Executable Impact | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
+          | XCFramework Size | ${{ steps.format.outputs.base_xcframework_formatted }} | ${{ steps.format.outputs.pr_xcframework_formatted }} | ${{ steps.format.outputs.delta_xcframework_formatted }} |
+
+          ${STATUS_MSG}
+
+          <details>
+          <summary>Raw measurements</summary>
+
+          **Target branch (${{ github.base_ref || 'main' }}):**
+          \`\`\`json
+          ${{ steps.base-size.outputs.json }}
+          \`\`\`
+
+          **This PR (${{ github.head_ref || github.ref_name }}):**
+          \`\`\`json
+          ${{ steps.pr-size.outputs.json }}
+          \`\`\`
+          </details>
+          EOF
+
+          # Remove leading whitespace from heredoc
+          sed -i.bak 's/^          //' "$REPORT_FILE" && rm -f "${REPORT_FILE}.bak"
+
+          echo "path=${REPORT_FILE}" >> $GITHUB_OUTPUT
+
       - name: Find Comment
         if: github.event_name == 'pull_request'
         uses: peter-evans/find-comment@v3
@@ -219,59 +270,7 @@ jobs:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
-          body: |
-            ${{ env.COMMENT_IDENTIFIER }}
-            ## 📦 SDK Size Impact Report
-
-            Measures how much the SDK adds to an app's size (with-SDK minus without-SDK).
-
-            | Metric | Target Branch | This PR | Change |
-            |--------|---------------|---------|--------|
-            | App Bundle Impact | ${{ steps.format.outputs.base_impact_formatted }} | ${{ steps.format.outputs.pr_impact_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
-            | Executable Impact | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
-            | XCFramework Size | ${{ steps.format.outputs.base_xcframework_formatted }} | ${{ steps.format.outputs.pr_xcframework_formatted }} | ${{ steps.format.outputs.delta_xcframework_formatted }} |
-
-            ${{ steps.delta.outputs.status == 'increase' && '⚠️ This PR increases SDK size impact.' || '' }}
-            ${{ steps.delta.outputs.status == 'decrease' && '✅ This PR decreases SDK size impact.' || '' }}
-            ${{ steps.delta.outputs.status == 'neutral' && '➡️ SDK size impact change is minimal.' || '' }}
-            ${{ steps.delta.outputs.status == 'new' && 'ℹ️ Size test app not found on target branch. This is the new baseline.' || '' }}
-
-            <details>
-            <summary>Raw measurements</summary>
-
-            **Target branch (${{ github.event.pull_request.base.ref }}):**
-            ```json
-            ${{ steps.base-size.outputs.json }}
-            ```
-
-            **This PR (${{ github.event.pull_request.head.ref }}):**
-            ```json
-            ${{ steps.pr-size.outputs.json }}
-            ```
-            </details>
+          body-path: ${{ steps.report.outputs.path }}
 
       - name: Write job summary
-        run: |
-          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
-          ## 📦 SDK Size Impact Report
-
-          Measures how much the SDK adds to an app's size (with-SDK minus without-SDK).
-
-          | Metric | Target Branch | This PR/Branch | Change |
-          |--------|---------------|----------------|--------|
-          | App Bundle Impact | ${{ steps.format.outputs.base_impact_formatted }} | ${{ steps.format.outputs.pr_impact_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
-          | Executable Impact | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
-          | XCFramework Size | ${{ steps.format.outputs.base_xcframework_formatted }} | ${{ steps.format.outputs.pr_xcframework_formatted }} | ${{ steps.format.outputs.delta_xcframework_formatted }} |
-
-          EOF
-
-          STATUS="${{ steps.delta.outputs.status }}"
-          if [[ "$STATUS" == "increase" ]]; then
-            echo "⚠️ This change increases SDK size impact." >> $GITHUB_STEP_SUMMARY
-          elif [[ "$STATUS" == "decrease" ]]; then
-            echo "✅ This change decreases SDK size impact." >> $GITHUB_STEP_SUMMARY
-          elif [[ "$STATUS" == "neutral" ]]; then
-            echo "➡️ SDK size impact change is minimal." >> $GITHUB_STEP_SUMMARY
-          elif [[ "$STATUS" == "new" ]]; then
-            echo "ℹ️ Size test app not found on target branch. This is the new baseline." >> $GITHUB_STEP_SUMMARY
-          fi
+        run: cat "${{ steps.report.outputs.path }}" >> $GITHUB_STEP_SUMMARY
