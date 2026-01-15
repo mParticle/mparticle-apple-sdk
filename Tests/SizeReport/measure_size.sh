@@ -152,16 +152,8 @@ SDK_EXECUTABLE_SIZE=$((WITHSDK_EXECUTABLE_SIZE - BASELINE_EXECUTABLE_SIZE))
 
 # Output results
 if [[ ${OUTPUT_JSON} == "true" ]]; then
-	cat <<EOF
-{
-    "baseline_app_size_kb": ${BASELINE_SIZE_KB},
-    "baseline_executable_size_bytes": ${BASELINE_EXECUTABLE_SIZE},
-    "with_sdk_app_size_kb": ${WITHSDK_SIZE_KB},
-    "with_sdk_executable_size_bytes": ${WITHSDK_EXECUTABLE_SIZE},
-    "sdk_impact_kb": ${SDK_SIZE_KB},
-    "sdk_executable_impact_bytes": ${SDK_EXECUTABLE_SIZE}
-}
-EOF
+	# Output compact single-line JSON for CI compatibility
+	echo "{\"baseline_app_size_kb\":${BASELINE_SIZE_KB},\"baseline_executable_size_bytes\":${BASELINE_EXECUTABLE_SIZE},\"with_sdk_app_size_kb\":${WITHSDK_SIZE_KB},\"with_sdk_executable_size_bytes\":${WITHSDK_EXECUTABLE_SIZE},\"sdk_impact_kb\":${SDK_SIZE_KB},\"sdk_executable_impact_bytes\":${SDK_EXECUTABLE_SIZE}}"
 else
 	echo ""
 	echo "=== SDK Size Measurement Results ==="
