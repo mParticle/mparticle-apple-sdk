@@ -69,6 +69,9 @@ lint:
         - Example/Podfile.lock
         - RNExample/Gemfile.lock
         - RNExample/Gemfile
+    - linters: [markdownlint]
+      paths:
+        - CHANGELOG.md # Standard changelog format violates MD001, MD024, MD025
 
 actions:
   enabled:
