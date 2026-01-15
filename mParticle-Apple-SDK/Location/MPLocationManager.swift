@@ -34,7 +34,7 @@ import UIKit
             guard CLLocationManager.locationServicesEnabled() else {
                 return nil
             }
-            
+
             let _locationManager = CLLocationManager()
             _locationManager.delegate = self
             Self._locationManager = _locationManager

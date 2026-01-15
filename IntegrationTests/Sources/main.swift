@@ -283,8 +283,8 @@ func testIncrementSessionAttribute(mparticle: MParticle, uploadWaiter: EventUplo
     // Start a new session since the previous test ended the session
     mparticle.beginSession()
     
-    // Allow time for session to be created
-    sleep(1)
+    // Wait for session start to be uploaded (ensures separate request from session end)
+    uploadWaiter.wait()
     
     // First set an initial numeric value for the session attribute
     mparticle.setSessionAttribute("Song Count", value: 5)
@@ -440,7 +440,7 @@ identityRequest.email = "foo@example.com"
 identityRequest.customerId = "123456"
 options.identifyRequest = identityRequest
 
-options.onIdentifyComplete = { apiResult, error in
+options.onIdentifyComplete = { apiResult, _ in
     if let apiResult {
         apiResult.user.setUserAttribute("example attribute key", value: "example attribute value")
     }

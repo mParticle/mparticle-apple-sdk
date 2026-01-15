@@ -10,9 +10,7 @@
           "msgs": [
             {
               "id": "${json-unit.ignore}",
-              "smpids": [
-                6504934091054997508
-              ],
+              "smpids": [6504934091054997508],
               "vc": "off_thread",
               "slx": "${json-unit.ignore}",
               "dt": "se",
@@ -37,7 +35,7 @@
             "fi": false,
             "lud": "${json-unit.ignore}",
             "arc": "arm64",
-            "tsv": "90000",
+            "tsv": "150600",
             "apn": "com.mparticle.IntegrationTests",
             "env": 1,
             "abn": "1",
@@ -63,7 +61,7 @@
           "sdk": "8.40.0",
           "di": {
             "p": "arm64",
-            "tz": "-5",
+            "tz": "${json-unit.ignore}",
             "bid": "${json-unit.ignore}",
             "dn": "${json-unit.ignore}",
             "dma": "Apple",
@@ -73,7 +71,7 @@
             "dlc": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
             "dp": "iOS",
-            "tzn": "America/New_York",
+            "tzn": "${json-unit.ignore}",
             "dsw": "960",
             "dosv": "${json-unit.ignore}",
             "it": false,

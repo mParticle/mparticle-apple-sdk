@@ -641,10 +641,16 @@
 }
 
 - (void)testLoggingCommerceEventToUpload {
+    // Ensure upgrade date is set by simulating an app upgrade BEFORE session begins
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
+    application.storedVersion = @"1.0.0"; // Set a different version to trigger upgrade detection
+    [MPApplication_PRIVATE updateLaunchCountsAndDates]; // This will set the upgrade date
+    
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
+
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionClick];
     commerceEvent.customAttributes = @{@"key":@"value"};
     

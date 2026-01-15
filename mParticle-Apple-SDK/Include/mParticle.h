@@ -741,9 +741,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo;
 
-#endif
-
-#if TARGET_OS_IOS == 1
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
  This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 13 and above.

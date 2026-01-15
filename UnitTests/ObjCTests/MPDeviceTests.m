@@ -33,11 +33,13 @@
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
     userDefaults[kMPDeviceTokenKey] = testDeviceToken;
+    
+    NSString *testCountry = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
 
     MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
     NSDictionary *testDictionary = device.dictionaryRepresentation;
     XCTAssertEqualObjects(testDictionary[@"dll"], @"en");
-    XCTAssertEqualObjects(testDictionary[@"dlc"], @"US");
+    XCTAssertEqualObjects(testDictionary[@"dlc"], testCountry);
     XCTAssertEqualObjects(testDictionary[@"dma"], @"Apple");
     XCTAssertEqualObjects(testDictionary[kMPDeviceTokenKey], @"3c3030303030303030303030303030303030303030303030303030303030303e");
 #endif

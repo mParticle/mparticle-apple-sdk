@@ -11,7 +11,7 @@ class MPKitMock: NSObject, MPKitProtocol {
 
     var started: Bool = false
 
-    func didFinishLaunching(withConfiguration configuration: [AnyHashable : Any]) -> MPKitExecStatus {
+    func didFinishLaunching(withConfiguration configuration: [AnyHashable: Any]) -> MPKitExecStatus {
         return MPKitExecStatus()
     }
 
@@ -25,12 +25,10 @@ class MPKitMock: NSObject, MPKitProtocol {
     var logBatchParam: [AnyHashable: Any]?
     var logBatchReturnValue: [MPForwardRecord] = []
 
-
-    func logBatch(_ batch: [AnyHashable : Any]) -> [MPForwardRecord] {
+    func logBatch(_ batch: [AnyHashable: Any]) -> [MPForwardRecord] {
         logBatchCalled = true
         logBatchParam = batch
         return logBatchReturnValue
     }
-
 
 }

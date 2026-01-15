@@ -1,1 +1,30 @@
-{"dt":"ac","id":"03fcd379-b420-43a3-9004-c7bb821e0495","ct":1762457821105,"dbg":false,"cue":"appdefined","pmk":["mp_message","com.urbanairship.push.ALERT","alert","a","message","lp_message","gcm.notification.body"],"cnp":"appdefined","soc":0,"oo":false,"lsv":"6.13.0","rdlat":true,"inhd":false,"iasr":false,"wst":"D38F29DF","amw":90,"crml":1024000,"dur":false,"flags":{"AudienceAPI":"True"},"atos":0,"pio":30}
+{
+  "dt": "ac",
+  "id": "03fcd379-b420-43a3-9004-c7bb821e0495",
+  "ct": 1762457821105,
+  "dbg": false,
+  "cue": "appdefined",
+  "pmk": [
+    "mp_message",
+    "com.urbanairship.push.ALERT",
+    "alert",
+    "a",
+    "message",
+    "lp_message",
+    "gcm.notification.body"
+  ],
+  "cnp": "appdefined",
+  "soc": 0,
+  "oo": false,
+  "lsv": "6.13.0",
+  "rdlat": true,
+  "inhd": false,
+  "iasr": false,
+  "wst": "D38F29DF",
+  "amw": 90,
+  "crml": 1024000,
+  "dur": false,
+  "flags": { "AudienceAPI": "True" },
+  "atos": 0,
+  "pio": 30
+}

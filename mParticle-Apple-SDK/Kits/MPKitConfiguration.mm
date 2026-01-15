@@ -23,7 +23,11 @@
         return nil;
     }
     
-    NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:NSJSONWritingSortedKeys error:nil];
+    NSJSONWritingOptions options = 0;
+    if (@available(iOS 11.0, tvOS 11.0, *)) {
+        options = NSJSONWritingSortedKeys;
+    }
+    NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:options error:nil];
     NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
     _configurationHash = @([[MPIHasher hashString:ekConfigString] intValue]);
     

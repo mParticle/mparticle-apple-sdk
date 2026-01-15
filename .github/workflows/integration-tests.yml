@@ -1,0 +1,107 @@
+name: Integration Tests
+
+on:
+  # Run for all PRs
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  XCODE_VERSION: "16.4"
+  WORKING_DIRECTORY: IntegrationTests
+  WIREMOCK_VERSION: "3.9.1"
+
+jobs:
+  integration-tests:
+    name: iOS Integration Tests
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Install Tuist
+        run: brew install tuist
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Download WireMock standalone
+        run: |
+          curl -L -o wiremock.jar \
+            "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${{ env.WIREMOCK_VERSION }}/wiremock-standalone-${{ env.WIREMOCK_VERSION }}.jar"
+          echo "✅ WireMock downloaded"
+
+      - name: Run Integration Tests
+        id: integration_tests
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        env:
+          CI: "true"
+          WIREMOCK_JAR: ${{ github.workspace }}/wiremock.jar
+        run: |
+          # Make scripts executable
+          chmod +x run_clean_integration_tests.sh common.sh run_integration_tests_ci.sh
+
+          # Run the CI-specific verification script
+          ./run_integration_tests_ci.sh
+
+      - name: Collect WireMock logs on failure
+        if: failure()
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          echo "📋 Collecting WireMock logs..."
+          mkdir -p artifacts
+
+          # Collect WireMock log file if exists
+          if [ -f "wiremock.log" ]; then
+            cp wiremock.log artifacts/wiremock-logs.txt || true
+          fi
+
+          # Get unmatched requests
+          curl -s http://localhost:8080/__admin/requests/unmatched > artifacts/unmatched-requests.json 2>/dev/null || true
+
+          # Get all requests
+          curl -s http://localhost:8080/__admin/requests > artifacts/all-requests.json 2>/dev/null || true
+
+          echo "✅ Logs collected"
+
+      - name: Collect test artifacts on failure
+        if: failure()
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          echo "📋 Collecting test artifacts..."
+          mkdir -p artifacts
+
+          # Copy WireMock mappings for debugging
+          if [ -d "wiremock-recordings/mappings" ]; then
+            cp -r wiremock-recordings/mappings artifacts/mappings || true
+          fi
+
+          # Collect simulator logs
+          DEVICE_ID=$(xcrun simctl list devices | grep "iPhone" | grep "Booted" | head -1 | awk -F '[()]' '{print $2}')
+          if [ -n "$DEVICE_ID" ]; then
+            xcrun simctl spawn "$DEVICE_ID" log show --predicate 'subsystem == "com.mparticle"' --last 10m > artifacts/simulator-logs.txt 2>/dev/null || true
+          fi
+
+          echo "✅ Artifacts collected"
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-artifacts
+          path: ${{ env.WORKING_DIRECTORY }}/artifacts/
+          retention-days: 7
+          if-no-files-found: ignore

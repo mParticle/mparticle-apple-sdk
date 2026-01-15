@@ -241,6 +241,7 @@ extern NSString * _Nonnull const kMPRemoteConfigAppDefined;
 extern NSString * _Nonnull const kMPRemoteConfigForceTrue;
 extern NSString * _Nonnull const kMPRemoteConfigForceFalse;
 extern NSString * _Nonnull const kMPRemoteConfigKitsKey;
+extern NSString * _Nonnull const kMPRemoteConfigKitConfigurationKey;
 extern NSString * _Nonnull const kMPRemoteConfigKitHashesKey;
 extern NSString * _Nonnull const kMPRemoteConfigConsumerInfoKey;
 extern NSString * _Nonnull const kMPRemoteConfigCookiesKey;

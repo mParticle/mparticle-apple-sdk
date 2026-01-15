@@ -210,9 +210,9 @@ public protocol MPUserDefaultsProtocol {
                 NSDate.self,
                 NSData.self,
                 NSURL.self,
-                NSNull.self  // Required for null values from JSON
+                NSNull.self // Required for null values from JSON
             ]
-            
+
             if let nsDict = try NSKeyedUnarchiver.unarchivedObject(
                 ofClasses: allowedClasses,
                 from: configurationData
@@ -244,7 +244,10 @@ public protocol MPUserDefaultsProtocol {
         maxAge: NSNumber?
     ) {
         do {
-            let configurationData = try NSKeyedArchiver.archivedData(withRootObject: responseConfiguration, requiringSecureCoding: true)
+            let configurationData = try NSKeyedArchiver.archivedData(
+                withRootObject: responseConfiguration,
+                requiringSecureCoding: true
+            )
             let userID = identity?.currentUser?.userId ?? 0
 
             setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)

@@ -9,6 +9,7 @@ import XCTest
 final class MParticleSceneDelegateTests: XCTestCase {
     
     // MARK: - Properties
+
     var mparticle: MParticle!
     var sceneMock: OpenURLHandlerProtocolMock!
     var testURL: URL!
@@ -29,6 +30,7 @@ final class MParticleSceneDelegateTests: XCTestCase {
     }
         
     // MARK: - handleUserActivity Tests    
+
     func test_handleUserActivity_invokesAppNotificationHandler() {
         // Act
         mparticle.handleUserActivity(testUserActivity)

@@ -7,6 +7,7 @@ This document outlines the process for creating a new release of the mParticle A
 We use GitHub Actions to automate our release process. Follow these steps to create a new release:
 
 ### Pre-release Checklist
+
 - Ensure all commits are in the public main branch
 - Review `sdk-release.yml` in the repo for specific workflow details
 - The release job deploys the most current snapshot of main branch release tag to main branch
@@ -37,8 +38,6 @@ We use GitHub Actions to automate our release process. Follow these steps to cre
      - Updates Swift Package Manager
    - Creates GitHub release with artifacts
 
-
-
 ### How to Release
 
 1. Navigate to the Actions tab in GitHub
@@ -51,17 +50,18 @@ We use GitHub Actions to automate our release process. Follow these steps to cre
 ### Important Notes
 
 - **Release Duration**: Expect ~30 minutes due to comprehensive test suite across platforms
-- **Platform Requirements**: 
+- **Platform Requirements**:
   - Tests run on macOS runners
   - Multiple Xcode versions may be tested
   - Both iOS and tvOS platforms are validated
-- **Code Reusability**: 
+- **Code Reusability**:
   - Reusable GitHub Actions are defined in the [mparticle-workflows repo](https://github.com/mParticle/mparticle-workflows)
   - This enables other platforms to reuse similar jobs
 
 ## Post-Release Verification
 
 After a successful build through GitHub Actions, verify:
+
 1. Public repo has a new semantic release tag
 2. New version is available on:
    - [CocoaPods](https://cocoapods.org/pods/mParticle-Apple-SDK)
@@ -70,6 +70,7 @@ After a successful build through GitHub Actions, verify:
 ## Troubleshooting
 
 If you encounter issues during testing, check:
+
 - Xcode version compatibility
 - Platform-specific test failures (iOS vs tvOS)
 - GitHub Actions logs for specific error messages
