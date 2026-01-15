@@ -33,7 +33,7 @@ build_framework() {
 	echo "📱 Building archive for iOS Simulator..."
 	xcodebuild archive \
 		-project "$SDK_DIR/mParticle-Apple-SDK.xcodeproj" \
-		-scheme mParticle-Apple-SDK \
+		-scheme mParticle-Apple-SDK-NoLocation \
 		-destination "generic/platform=iOS Simulator" \
 		-archivePath "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator" \
 		SKIP_INSTALL=NO \
