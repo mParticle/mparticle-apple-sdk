@@ -46,7 +46,7 @@ build_framework() {
 	# Create xcframework from simulator archive only
 	echo "📦 Creating xcframework..."
 	xcodebuild -create-xcframework \
-		-archive "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive" -framework mParticle_Apple_SDK.framework \
+		-archive "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive" -framework mParticle_Apple_SDK_NoLocation.framework \
 		-output "$SDK_DIR/mParticle_Apple_SDK.xcframework" \
 		2>&1 | grep -v "note:" || true
 
