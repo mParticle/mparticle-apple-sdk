@@ -46,4 +46,4 @@ jobs:
         run: pod install
 
       - name: Build iOS extension scheme
-        run: xcodebuild -allowProvisioningUpdates -workspace RNExample.xcworkspace -scheme RNExample -destination 'id=${{ steps.simulator.outputs.UDID }}'
+        run: xcodebuild -allowProvisioningUpdates -workspace RNExample.xcworkspace -scheme RNExample -destination 'id=${{ steps.simulator.outputs.udid }}'
