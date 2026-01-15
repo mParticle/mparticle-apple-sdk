@@ -22,6 +22,7 @@
 		356D4A5A2E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
 		356D4A5D2E58B25900CB69FE /* MPDataPlanFilterMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */; };
 		356D4A5F2E5CAB0000CB69FE /* MPListenerControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */; };
+		359247692F19A11B00C9A21E /* MPDeviceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAC29CE019F00E7489F /* MPDeviceTests.m */; };
 		359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 359BAFF82E56330200A8A704 /* SettingsProvider.h */; };
 		359BAFFC2E56335300A8A704 /* SettingsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFB2E56335300A8A704 /* SettingsProvider.m */; };
 		359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
@@ -1469,6 +1470,7 @@
 				534CD29629CE2CE1008452B3 /* MPConsumerInfoTests.m in Sources */,
 				359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */,
 				7231B8582EB96598001565E5 /* MParticleRemoteNotificationTests.swift in Sources */,
+				359247692F19A11B00C9A21E /* MPDeviceTests.m in Sources */,
 				7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */,
 				534CD29729CE2CE1008452B3 /* MPURLRequestBuilderTests.m in Sources */,
 				7231B8212EB958DC001565E5 /* MParticleIdentityTests.swift in Sources */,
