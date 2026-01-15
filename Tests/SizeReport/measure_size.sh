@@ -16,18 +16,21 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
-EXPORT_OPTIONS="${SCRIPT_DIR}/ExportOptions.plist"
 
 # Parse arguments
 OUTPUT_JSON=false
 WITH_SDK_ONLY=false
 for arg in "$@"; do
-	case $arg in
+	case ${arg} in
 	--json)
 		OUTPUT_JSON=true
 		;;
 	--with-sdk-only)
 		WITH_SDK_ONLY=true
+		;;
+	*)
+		echo "Unknown argument: ${arg}" >&2
+		exit 1
 		;;
 	esac
 done
@@ -39,21 +42,24 @@ mkdir -p "${BUILD_DIR}"
 # Function to get app size from the built .app bundle
 get_app_size() {
 	local app_path="$1"
-	if [[ -d $app_path ]]; then
-		# Get size in bytes
-		du -sk "$app_path" | cut -f1
+	local size_output
+	if [[ -d ${app_path} ]]; then
+		# Get size in KB
+		size_output=$(du -sk "${app_path}" 2>/dev/null) || true
+		echo "${size_output}" | cut -f1
 	else
 		echo "0"
 	fi
 }
 
-# Function to get binary size from the executable
-get_binary_size() {
+# Function to get executable size from the main binary
+get_executable_size() {
 	local app_path="$1"
-	local app_name=$(basename "$app_path" .app)
+	local app_name
+	app_name=$(basename "${app_path}" .app)
 	local binary_path="${app_path}/${app_name}"
-	if [[ -f $binary_path ]]; then
-		stat -f%z "$binary_path" 2>/dev/null || stat -c%s "$binary_path" 2>/dev/null || echo "0"
+	if [[ -f ${binary_path} ]]; then
+		stat -f%z "${binary_path}" 2>/dev/null || stat -c%s "${binary_path}" 2>/dev/null || echo "0"
 	else
 		echo "0"
 	fi
@@ -96,8 +102,8 @@ build_app() {
 
 # Build baseline app (if not with-sdk-only)
 BASELINE_SIZE_KB=0
-BASELINE_BINARY_SIZE=0
-if [[ $WITH_SDK_ONLY == "false" ]]; then
+BASELINE_EXECUTABLE_SIZE=0
+if [[ ${WITH_SDK_ONLY} == "false" ]]; then
 	build_app \
 		"${SCRIPT_DIR}/SizeTestApp/SizeTestApp.xcodeproj" \
 		"SizeTestApp" \
@@ -107,12 +113,14 @@ if [[ $WITH_SDK_ONLY == "false" ]]; then
 	if [[ -d "${BUILD_DIR}/SizeTestApp.xcarchive" ]]; then
 		BASELINE_APP="${BUILD_DIR}/SizeTestApp.xcarchive/Products/Applications/SizeTestApp.app"
 	else
-		BASELINE_APP=$(find "${BUILD_DIR}/DerivedData/SizeTestApp" -name "SizeTestApp.app" -type d | head -1)
+		BASELINE_APP=$(find "${BUILD_DIR}/DerivedData/SizeTestApp" -name "SizeTestApp.app" -type d 2>/dev/null | head -1 || true)
 	fi
 
-	if [[ -d $BASELINE_APP ]]; then
-		BASELINE_SIZE_KB=$(get_app_size "$BASELINE_APP")
-		BASELINE_BINARY_SIZE=$(get_binary_size "$BASELINE_APP")
+	if [[ -d ${BASELINE_APP} ]]; then
+		# shellcheck disable=SC2311
+		BASELINE_SIZE_KB=$(get_app_size "${BASELINE_APP}")
+		# shellcheck disable=SC2311
+		BASELINE_EXECUTABLE_SIZE=$(get_executable_size "${BASELINE_APP}")
 	fi
 fi
 
@@ -126,50 +134,52 @@ build_app \
 if [[ -d "${BUILD_DIR}/SizeTestAppWithSDK.xcarchive" ]]; then
 	WITHSDK_APP="${BUILD_DIR}/SizeTestAppWithSDK.xcarchive/Products/Applications/SizeTestAppWithSDK.app"
 else
-	WITHSDK_APP=$(find "${BUILD_DIR}/DerivedData/SizeTestAppWithSDK" -name "SizeTestAppWithSDK.app" -type d | head -1)
+	WITHSDK_APP=$(find "${BUILD_DIR}/DerivedData/SizeTestAppWithSDK" -name "SizeTestAppWithSDK.app" -type d 2>/dev/null | head -1 || true)
 fi
 
 WITHSDK_SIZE_KB=0
-WITHSDK_BINARY_SIZE=0
-if [[ -d $WITHSDK_APP ]]; then
-	WITHSDK_SIZE_KB=$(get_app_size "$WITHSDK_APP")
-	WITHSDK_BINARY_SIZE=$(get_binary_size "$WITHSDK_APP")
+WITHSDK_EXECUTABLE_SIZE=0
+if [[ -d ${WITHSDK_APP} ]]; then
+	# shellcheck disable=SC2311
+	WITHSDK_SIZE_KB=$(get_app_size "${WITHSDK_APP}")
+	# shellcheck disable=SC2311
+	WITHSDK_EXECUTABLE_SIZE=$(get_executable_size "${WITHSDK_APP}")
 fi
 
 # Calculate SDK impact
 SDK_SIZE_KB=$((WITHSDK_SIZE_KB - BASELINE_SIZE_KB))
-SDK_BINARY_SIZE=$((WITHSDK_BINARY_SIZE - BASELINE_BINARY_SIZE))
+SDK_EXECUTABLE_SIZE=$((WITHSDK_EXECUTABLE_SIZE - BASELINE_EXECUTABLE_SIZE))
 
 # Output results
-if [[ $OUTPUT_JSON == "true" ]]; then
+if [[ ${OUTPUT_JSON} == "true" ]]; then
 	cat <<EOF
 {
     "baseline_app_size_kb": ${BASELINE_SIZE_KB},
-    "baseline_binary_size_bytes": ${BASELINE_BINARY_SIZE},
+    "baseline_executable_size_bytes": ${BASELINE_EXECUTABLE_SIZE},
     "with_sdk_app_size_kb": ${WITHSDK_SIZE_KB},
-    "with_sdk_binary_size_bytes": ${WITHSDK_BINARY_SIZE},
+    "with_sdk_executable_size_bytes": ${WITHSDK_EXECUTABLE_SIZE},
     "sdk_impact_kb": ${SDK_SIZE_KB},
-    "sdk_binary_impact_bytes": ${SDK_BINARY_SIZE}
+    "sdk_executable_impact_bytes": ${SDK_EXECUTABLE_SIZE}
 }
 EOF
 else
 	echo ""
 	echo "=== SDK Size Measurement Results ==="
 	echo ""
-	if [[ $WITH_SDK_ONLY == "false" ]]; then
+	if [[ ${WITH_SDK_ONLY} == "false" ]]; then
 		echo "Baseline App (no SDK):"
 		echo "  App bundle size: ${BASELINE_SIZE_KB} KB"
-		echo "  Binary size: ${BASELINE_BINARY_SIZE} bytes"
+		echo "  Executable size: ${BASELINE_EXECUTABLE_SIZE} bytes"
 		echo ""
 	fi
 	echo "With SDK App:"
 	echo "  App bundle size: ${WITHSDK_SIZE_KB} KB"
-	echo "  Binary size: ${WITHSDK_BINARY_SIZE} bytes"
+	echo "  Executable size: ${WITHSDK_EXECUTABLE_SIZE} bytes"
 	echo ""
-	if [[ $WITH_SDK_ONLY == "false" ]]; then
+	if [[ ${WITH_SDK_ONLY} == "false" ]]; then
 		echo "SDK Impact:"
 		echo "  App bundle delta: ${SDK_SIZE_KB} KB"
-		echo "  Binary delta: ${SDK_BINARY_SIZE} bytes"
+		echo "  Executable delta: ${SDK_EXECUTABLE_SIZE} bytes"
 	fi
 	echo ""
 fi

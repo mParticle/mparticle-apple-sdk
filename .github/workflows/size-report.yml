@@ -47,22 +47,22 @@ jobs:
             if [[ $? -eq 0 ]] && [[ -n "$RESULT" ]]; then
               echo "json=${RESULT}" >> $GITHUB_OUTPUT
               SIZE_KB=$(echo "$RESULT" | jq -r '.with_sdk_app_size_kb')
-              BINARY_SIZE=$(echo "$RESULT" | jq -r '.with_sdk_binary_size_bytes')
+              EXECUTABLE_SIZE=$(echo "$RESULT" | jq -r '.with_sdk_executable_size_bytes')
               echo "size_kb=${SIZE_KB}" >> $GITHUB_OUTPUT
-              echo "binary_size=${BINARY_SIZE}" >> $GITHUB_OUTPUT
+              echo "executable_size=${EXECUTABLE_SIZE}" >> $GITHUB_OUTPUT
               echo "exists=true" >> $GITHUB_OUTPUT
             else
               echo "Build failed on base branch"
-              echo 'json={"with_sdk_app_size_kb": 0, "with_sdk_binary_size_bytes": 0}' >> $GITHUB_OUTPUT
+              echo 'json={"with_sdk_app_size_kb": 0, "with_sdk_executable_size_bytes": 0}' >> $GITHUB_OUTPUT
               echo "size_kb=0" >> $GITHUB_OUTPUT
-              echo "binary_size=0" >> $GITHUB_OUTPUT
+              echo "executable_size=0" >> $GITHUB_OUTPUT
               echo "exists=false" >> $GITHUB_OUTPUT
             fi
           else
             echo "Size test app not found on base branch, this PR introduces it"
-            echo 'json={"with_sdk_app_size_kb": 0, "with_sdk_binary_size_bytes": 0}' >> $GITHUB_OUTPUT
+            echo 'json={"with_sdk_app_size_kb": 0, "with_sdk_executable_size_bytes": 0}' >> $GITHUB_OUTPUT
             echo "size_kb=0" >> $GITHUB_OUTPUT
-            echo "binary_size=0" >> $GITHUB_OUTPUT
+            echo "executable_size=0" >> $GITHUB_OUTPUT
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
@@ -74,28 +74,28 @@ jobs:
           RESULT=$(Tests/SizeReport/measure_size.sh --json --with-sdk-only)
           echo "json=${RESULT}" >> $GITHUB_OUTPUT
           SIZE_KB=$(echo "$RESULT" | jq -r '.with_sdk_app_size_kb')
-          BINARY_SIZE=$(echo "$RESULT" | jq -r '.with_sdk_binary_size_bytes')
+          EXECUTABLE_SIZE=$(echo "$RESULT" | jq -r '.with_sdk_executable_size_bytes')
           echo "size_kb=${SIZE_KB}" >> $GITHUB_OUTPUT
-          echo "binary_size=${BINARY_SIZE}" >> $GITHUB_OUTPUT
+          echo "executable_size=${EXECUTABLE_SIZE}" >> $GITHUB_OUTPUT
 
       - name: Calculate size delta
         id: delta
         run: |
           BASE_SIZE=${{ steps.base-size.outputs.size_kb }}
           PR_SIZE=${{ steps.pr-size.outputs.size_kb }}
-          BASE_BINARY=${{ steps.base-size.outputs.binary_size }}
-          PR_BINARY=${{ steps.pr-size.outputs.binary_size }}
+          BASE_EXECUTABLE=${{ steps.base-size.outputs.executable_size }}
+          PR_EXECUTABLE=${{ steps.pr-size.outputs.executable_size }}
           BASE_EXISTS=${{ steps.base-size.outputs.exists }}
 
           # Handle case where base branch doesn't have the test app
           if [[ "$BASE_EXISTS" != "true" ]] || [[ "$BASE_SIZE" == "0" ]]; then
             echo "delta_kb=N/A" >> $GITHUB_OUTPUT
-            echo "delta_binary=N/A" >> $GITHUB_OUTPUT
+            echo "delta_executable=N/A" >> $GITHUB_OUTPUT
             echo "delta_percent=N/A" >> $GITHUB_OUTPUT
             echo "status=new" >> $GITHUB_OUTPUT
           else
             DELTA_KB=$((PR_SIZE - BASE_SIZE))
-            DELTA_BINARY=$((PR_BINARY - BASE_BINARY))
+            DELTA_EXECUTABLE=$((PR_EXECUTABLE - BASE_EXECUTABLE))
             
             if [[ "$BASE_SIZE" -gt 0 ]]; then
               DELTA_PERCENT=$(awk "BEGIN {printf \"%.2f\", ($DELTA_KB / $BASE_SIZE) * 100}")
@@ -104,7 +104,7 @@ jobs:
             fi
             
             echo "delta_kb=${DELTA_KB}" >> $GITHUB_OUTPUT
-            echo "delta_binary=${DELTA_BINARY}" >> $GITHUB_OUTPUT
+            echo "delta_executable=${DELTA_EXECUTABLE}" >> $GITHUB_OUTPUT
             echo "delta_percent=${DELTA_PERCENT}" >> $GITHUB_OUTPUT
             
             # Determine status emoji
@@ -150,17 +150,17 @@ jobs:
           # Format base sizes - show N/A if base doesn't exist
           if [[ "$BASE_EXISTS" == "true" ]]; then
             echo "base_size_formatted=$(format_size ${{ steps.base-size.outputs.size_kb }})" >> $GITHUB_OUTPUT
-            echo "base_binary_formatted=$(format_bytes ${{ steps.base-size.outputs.binary_size }})" >> $GITHUB_OUTPUT
+            echo "base_executable_formatted=$(format_bytes ${{ steps.base-size.outputs.executable_size }})" >> $GITHUB_OUTPUT
           else
             echo "base_size_formatted=N/A" >> $GITHUB_OUTPUT
-            echo "base_binary_formatted=N/A" >> $GITHUB_OUTPUT
+            echo "base_executable_formatted=N/A" >> $GITHUB_OUTPUT
           fi
 
           echo "pr_size_formatted=$(format_size ${{ steps.pr-size.outputs.size_kb }})" >> $GITHUB_OUTPUT
-          echo "pr_binary_formatted=$(format_bytes ${{ steps.pr-size.outputs.binary_size }})" >> $GITHUB_OUTPUT
+          echo "pr_executable_formatted=$(format_bytes ${{ steps.pr-size.outputs.executable_size }})" >> $GITHUB_OUTPUT
 
           DELTA_KB="${{ steps.delta.outputs.delta_kb }}"
-          DELTA_BINARY="${{ steps.delta.outputs.delta_binary }}"
+          DELTA_EXECUTABLE="${{ steps.delta.outputs.delta_executable }}"
 
           if [[ "$DELTA_KB" != "N/A" ]]; then
             if [[ "$DELTA_KB" -ge 0 ]]; then
@@ -169,14 +169,14 @@ jobs:
               echo "delta_formatted=$(format_size $DELTA_KB)" >> $GITHUB_OUTPUT
             fi
             
-            if [[ "$DELTA_BINARY" -ge 0 ]]; then
-              echo "delta_binary_formatted=+$(format_bytes $DELTA_BINARY)" >> $GITHUB_OUTPUT
+            if [[ "$DELTA_EXECUTABLE" -ge 0 ]]; then
+              echo "delta_executable_formatted=+$(format_bytes $DELTA_EXECUTABLE)" >> $GITHUB_OUTPUT
             else
-              echo "delta_binary_formatted=$(format_bytes $DELTA_BINARY)" >> $GITHUB_OUTPUT
+              echo "delta_executable_formatted=$(format_bytes $DELTA_EXECUTABLE)" >> $GITHUB_OUTPUT
             fi
           else
             echo "delta_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
-            echo "delta_binary_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
+            echo "delta_executable_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
           fi
       - name: Find Comment
         if: github.event_name == 'pull_request'
@@ -200,7 +200,7 @@ jobs:
             | Metric | Target Branch | This PR | Delta |
             |--------|---------------|---------|-------|
             | App Bundle Size | ${{ steps.format.outputs.base_size_formatted }} | ${{ steps.format.outputs.pr_size_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
-            | Binary Size | ${{ steps.format.outputs.base_binary_formatted }} | ${{ steps.format.outputs.pr_binary_formatted }} | ${{ steps.format.outputs.delta_binary_formatted }} |
+            | Executable Size | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
 
             ${{ steps.delta.outputs.status == 'increase' && '⚠️ This PR increases SDK size significantly.' || '' }}
             ${{ steps.delta.outputs.status == 'decrease' && '✅ This PR decreases SDK size.' || '' }}
@@ -229,7 +229,7 @@ jobs:
           | Metric | Target Branch | This PR/Branch | Delta |
           |--------|---------------|----------------|-------|
           | App Bundle Size | ${{ steps.format.outputs.base_size_formatted }} | ${{ steps.format.outputs.pr_size_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
-          | Binary Size | ${{ steps.format.outputs.base_binary_formatted }} | ${{ steps.format.outputs.pr_binary_formatted }} | ${{ steps.format.outputs.delta_binary_formatted }} |
+          | Executable Size | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
 
           EOF
 
