@@ -1133,7 +1133,6 @@
 				53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */,
 				53A79CAC29CE019F00E7489F /* MPDeviceTests.m */,
 				53A79CAD29CE019F00E7489F /* BracketTests.m */,
-				53A79CAD29CE019F00E7489F /* BracketTests.mm */,
 				53A79CAE29CE019F00E7489F /* MPAliasResponseTests.m */,
 				53A79CAF29CE019F00E7489F /* MPForwardRecordTests.m */,
 				53A79CB029CE019F00E7489F /* MPKitConfigurationTests.mm */,
