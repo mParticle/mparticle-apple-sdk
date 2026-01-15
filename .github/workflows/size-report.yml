@@ -1,6 +1,7 @@
 name: SDK Size Report
 
 on:
+  push: # TODO: Remove after testing
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
