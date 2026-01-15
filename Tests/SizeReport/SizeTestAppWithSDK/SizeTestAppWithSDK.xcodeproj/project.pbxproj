@@ -103,7 +103,7 @@
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 89FF53332F18992700DEA060 /* Products */;
 			packageReferences = (
-				89FF534E2F18A00000DEA060 /* XCLocalSwiftPackageReference "mparticle-apple-sdk" */,
+				89FF534E2F18A00000DEA060 /* XCLocalSwiftPackageReference "LocalSDK" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -337,9 +337,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		89FF534E2F18A00000DEA060 /* XCLocalSwiftPackageReference "mparticle-apple-sdk" */ = {
+		89FF534E2F18A00000DEA060 /* XCLocalSwiftPackageReference "LocalSDK" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../..";
+			relativePath = "../LocalSDK";
 		};
 /* End XCLocalSwiftPackageReference section */
 

@@ -5,6 +5,9 @@
 # This script builds both the baseline and with-SDK test apps,
 # and measures their sizes to determine the SDK's size impact.
 #
+# The SDK is built FROM SOURCE using the main Xcode project to ensure
+# that source code changes in PRs are reflected in the size measurement.
+#
 # Usage: ./measure_size.sh [--json] [--with-sdk-only]
 #
 # Options:
@@ -15,6 +18,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
 
 # Parse arguments
@@ -38,6 +42,40 @@ done
 # Clean build directory
 rm -rf "${BUILD_DIR}"
 mkdir -p "${BUILD_DIR}"
+
+# Build SDK from source
+build_sdk_from_source() {
+	echo "Building SDK from source..." >&2
+
+	local SDK_PROJECT="${REPO_ROOT}/mParticle-Apple-SDK.xcodeproj"
+	local ARCHIVES_DIR="${BUILD_DIR}/sdk-archives"
+
+	# Build for iOS device (Release, arm64)
+	# Redirect all xcodebuild output to stderr to keep stdout clean for JSON output
+	echo "  Archiving for iOS device..." >&2
+	xcodebuild archive \
+		-project "${SDK_PROJECT}" \
+		-scheme "mParticle-Apple-SDK" \
+		-destination "generic/platform=iOS" \
+		-archivePath "${ARCHIVES_DIR}/mParticle-Apple-SDK-iOS" \
+		SKIP_INSTALL=NO \
+		BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+		-quiet >&2 2>&1
+
+	# Create xcframework from the archive
+	echo "  Creating xcframework..." >&2
+	xcodebuild -create-xcframework \
+		-archive "${ARCHIVES_DIR}/mParticle-Apple-SDK-iOS.xcarchive" -framework mParticle_Apple_SDK.framework \
+		-output "${BUILD_DIR}/mParticle_Apple_SDK.xcframework" \
+		>&2 2>&1 || true
+
+	if [[ ! -d "${BUILD_DIR}/mParticle_Apple_SDK.xcframework" ]]; then
+		echo "Error: Failed to build SDK xcframework" >&2
+		exit 1
+	fi
+
+	echo "  SDK built successfully" >&2
+}
 
 # Function to get app size from the built .app bundle
 get_app_size() {
@@ -66,6 +104,7 @@ get_executable_size() {
 }
 
 # Function to build an app
+# All xcodebuild output is redirected to stderr to keep stdout clean for JSON output
 build_app() {
 	local project_path="$1"
 	local scheme="$2"
@@ -83,7 +122,7 @@ build_app() {
 		CODE_SIGNING_REQUIRED=NO \
 		CODE_SIGNING_ALLOWED=NO \
 		ONLY_ACTIVE_ARCH=NO \
-		-quiet 2>/dev/null || {
+		-quiet >&2 2>&1 || {
 		echo "Warning: Archive failed, trying build instead..." >&2
 		# Fallback to regular build if archive fails
 		xcodebuild build \
@@ -96,9 +135,12 @@ build_app() {
 			CODE_SIGNING_REQUIRED=NO \
 			CODE_SIGNING_ALLOWED=NO \
 			ONLY_ACTIVE_ARCH=NO \
-			-quiet 2>/dev/null
+			-quiet >&2 2>&1
 	}
 }
+
+# Build SDK from source first (required for with-SDK app)
+build_sdk_from_source
 
 # Build baseline app (if not with-sdk-only)
 BASELINE_SIZE_KB=0
