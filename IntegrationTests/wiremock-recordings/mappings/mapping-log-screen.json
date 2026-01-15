@@ -71,7 +71,6 @@
             "dsw": "960",
             "dosv": "${json-unit.ignore}",
             "it": false,
-            "dr": "None",
             "dmdl": "arm64",
             "jb": {
               "cydia": false
