@@ -6,7 +6,7 @@ class EventUploadWaiter {
     var mparticle = MParticle.sharedInstance()
 
     @discardableResult
-    func wait(timeout: Int = 5) -> Bool {
+    func wait(timeout: UInt32 = 5) -> Bool {
         mparticle.upload()
         sleep(timeout)
         return true
