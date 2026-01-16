@@ -242,7 +242,7 @@ jobs:
           ${{ steps.base-size.outputs.json }}
           \`\`\`
 
-          **This PR (${{ github.head_ref || github.ref_name }}):**
+          **This PR:**
           \`\`\`json
           ${{ steps.pr-size.outputs.json }}
           \`\`\`
