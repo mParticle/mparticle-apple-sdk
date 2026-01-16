@@ -3,10 +3,14 @@ name: iOS SDK Manual Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version (e.g., 8.42.0)"
+      bump-type:
+        description: "Version bump type"
         required: true
-        type: string
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 env:
   XCODE_VERSION: "16.4"
@@ -23,7 +27,6 @@ jobs:
     needs: confirm-main-branch
     env:
       GITHUB_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
-      VERSION: ${{ github.event.inputs.version }}
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v5
@@ -32,6 +35,28 @@ jobs:
           repository: ${{ github.repository }}
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
           ref: main
+
+      - name: Get current version from latest tag
+        id: current-version
+        run: |
+          # Get the latest tag and strip the 'v' prefix (fallback to 0.0.0 if no tags)
+          CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Bump version
+        id: bump-version
+        uses: actions-ecosystem/action-bump-semver@v1
+        with:
+          current_version: ${{ steps.current-version.outputs.version }}
+          level: ${{ github.event.inputs.bump-type }}
+
+      - name: Set VERSION environment variable
+        run: |
+          # Strip 'v' prefix if present from bumped version
+          VERSION=$(echo "${{ steps.bump-version.outputs.new_version }}" | sed 's/^v//')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "New version: $VERSION"
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
@@ -52,13 +77,6 @@ jobs:
           env | grep -q '^BUILD_CERTIFICATE_BASE64=' || (echo "Required environment variable BUILD_CERTIFICATE_BASE64 is not set" && exit 1)
           env | grep -q '^P12_PASSWORD=' || (echo "Required environment variable P12_PASSWORD is not set" && exit 1)
           env | grep -q '^KEYCHAIN_PASSWORD=' || (echo "Required environment variable KEYCHAIN_PASSWORD is not set" && exit 1)
-
-      - name: Validate version format
-        run: |
-          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "Error: Version must be in semver format (e.g., 8.42.0)"
-            exit 1
-          fi
 
       - name: Setup git config
         run: |
@@ -98,16 +116,13 @@ jobs:
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-      - name: Get previous version tag
-        id: prev_tag
-        run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "tag=$PREV_TAG" >> $GITHUB_OUTPUT
-          echo "Previous tag: $PREV_TAG"
-
       - name: Generate changelog entry
         run: |
-          PREV_TAG="${{ steps.prev_tag.outputs.tag }}"
+          PREV_TAG="v${{ steps.current-version.outputs.version }}"
+          # Handle case where there's no previous version
+          if [ "$PREV_TAG" = "v0.0.0" ]; then
+            PREV_TAG=""
+          fi
           DATE=$(date +%Y-%m-%d)
 
           # Create temp file for new changelog entry
@@ -304,7 +319,7 @@ jobs:
 
           ### 3. Release to CocoaPods
           \`\`\`bash
-          pod trunk push --allow-warnings
+          COCOAPODS_TRUNK_TOKEN={from 1Password} pod trunk push --allow-warnings
           \`\`\`
 
           ---
