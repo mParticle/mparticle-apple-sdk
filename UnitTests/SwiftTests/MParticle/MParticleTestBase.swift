@@ -4,7 +4,6 @@ import mParticle_Apple_SDK_NoLocation
 class MParticleTestBase: XCTestCase {
     var receivedMessage: String?
     var mparticle: MParticle!
-    var listenerController: MPListenerControllerMock!
     var kitContainer: MPKitContainerMock!
     var executor: ExecutorMock!
     var backendController: MPBackendControllerMock!
@@ -45,9 +44,6 @@ class MParticleTestBase: XCTestCase {
         mparticle = MParticle()
         mparticle.logLevel = .verbose
         mparticle.customLogger = customLogger
-        listenerController = MPListenerControllerMock()
-        listenerController.onAPICalledExpectation = XCTestExpectation()
-        mparticle.listenerController = listenerController
 
         kitContainer = MPKitContainerMock()
         mparticle.setKitContainer(kitContainer)

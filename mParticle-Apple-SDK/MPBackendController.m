@@ -22,7 +22,6 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPKitContainer.h"
 #import "MPURLRequestBuilder.h"
-#import "MPListenerController.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
@@ -477,8 +476,6 @@ static id unproxiedAppDelegateReference = nil;
 }
 
 - (void)setUserAttributeChange:(MPUserAttributeChange *)userAttributeChange completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:userAttributeChange];
-    
     if ([MParticle sharedInstance].stateMachine.optOut) {
         if (completionHandler) {
             completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusOptOut);
@@ -1089,8 +1086,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
-    [MPListenerController.sharedInstance onAPICalled:_cmd  parameter1:key parameter2:value];
-    
     NSAssert([key isKindOfClass:[NSString class]], @"'key' must be a string.");
     NSAssert([value isKindOfClass:[NSNumber class]], @"'value' must be a number.");
     
@@ -1139,8 +1134,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)leaveBreadcrumb:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd  parameter1:event];
-    
     event.messageType = MPMessageTypeBreadcrumb;
     MPExecStatus execStatus = MPExecStatusFail;
     
@@ -1166,8 +1159,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logError:(NSString *)message exception:(NSException *)exception topmostContext:(id)topmostContext eventInfo:(NSDictionary *)eventInfo completionHandler:(void (^)(NSString *message, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:message parameter2:exception parameter3:topmostContext parameter4:eventInfo];
-    
     NSString *execMessage = exception ? exception.name : message;
     
     MPExecStatus execStatus = MPExecStatusFail;
@@ -1288,8 +1279,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
-    
     if (event.shouldBeginSession) {
         NSDate *date = event.timestamp ?: [NSDate date];
         [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
@@ -1316,8 +1305,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logEvent:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
-    
      event.messageType = MPMessageTypeEvent;
 
     [self logBaseEvent:event
@@ -1331,8 +1318,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent completionHandler:(void (^)(MPCommerceEvent *commerceEvent, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd  parameter1:commerceEvent];
-    
     commerceEvent.messageType = MPMessageTypeCommerceEvent;
     
     [self logBaseEvent:commerceEvent
@@ -1342,8 +1327,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logNetworkPerformanceMeasurement:(MPNetworkPerformance *)networkPerformance completionHandler:(void (^)(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:networkPerformance];
-    
     MPExecStatus execStatus = MPExecStatusFail;
     
     NSDictionary *messageInfo = [networkPerformance dictionaryRepresentation];
@@ -1362,8 +1345,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logScreen:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
-    
     event.messageType = MPMessageTypeScreenView;
 
     MPExecStatus execStatus = MPExecStatusFail;
@@ -1399,8 +1380,6 @@ static BOOL skipNextUpload = NO;
 
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler {
     dispatch_async([MParticle messageQueue], ^{
-        [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(optOutStatus)];
-        
         MPExecStatus execStatus = MPExecStatusFail;
         
         [MParticle sharedInstance].stateMachine.optOut = optOutStatus;
@@ -1446,8 +1425,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:apiKey parameter2:secret parameter3:@(firstRun) parameter4:consentState];
-    
     if (![MPStateMachine_PRIVATE isAppExtension]) {
         if (proxyAppDelegate) {
             [self proxyOriginalAppDelegate];
@@ -1640,8 +1617,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)setUserTag:(NSString *)key timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:timestamp];
-    
     NSString *keyCopy = [key mutableCopy];
     BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
     if (!validKey) {
@@ -1658,8 +1633,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)setUserAttribute:(NSString *)key value:(id)value timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:value parameter3:timestamp];
-    
     NSString *keyCopy = [key mutableCopy];
     BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
     if (!validKey) {
@@ -1684,8 +1657,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values timestamp:(NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:values parameter3:timestamp];
-
     NSString *keyCopy = [key mutableCopy];
     BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
     
@@ -1714,8 +1685,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)removeUserAttribute:(NSString *)key timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:timestamp];
-    
     NSString *keyCopy = [key mutableCopy];
     BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
     if (!validKey) {
@@ -1732,7 +1701,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:identityString parameter2:@(identityType) parameter3:timestamp];
     
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     
@@ -1831,7 +1799,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)clearUserAttributes {
-    [MPListenerController.sharedInstance onAPICalled:_cmd];
     MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     [defaults removeMPObjectForKey:@"ua"];
     [defaults synchronize];

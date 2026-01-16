@@ -16,10 +16,6 @@ final class MParticleCustomEventTests: MParticleTestBase {
         // Verify event timing ended
         XCTAssertNil(event.endTime)
         
-        // Verify listener was called
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
-        
         // Verify backend was called
         XCTAssertTrue(backendController.logEventCalled)
         XCTAssertTrue(backendController.logEventEventParam === event)
@@ -43,10 +39,6 @@ final class MParticleCustomEventTests: MParticleTestBase {
         
         // Verify event timing ended
         XCTAssertNil(event.endTime)
-        
-        // Verify listener was called
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
         
         // Verify backend was called
         XCTAssertTrue(backendController.logEventCalled)

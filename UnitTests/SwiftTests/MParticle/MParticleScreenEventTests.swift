@@ -7,8 +7,6 @@ final class MParticleScreenEventTests: MParticleTestBase {
         mparticle.logScreenEvent(event)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logScreenEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
         
         XCTAssertTrue(backendController.logScreenCalled)
         XCTAssertTrue(backendController.logScreenEventParam === event)
@@ -25,8 +23,6 @@ final class MParticleScreenEventTests: MParticleTestBase {
         mparticle.logScreenEvent(event)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logScreenEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
         
         XCTAssertTrue(backendController.logScreenCalled)
         XCTAssertTrue(backendController.logScreenEventParam === event)
@@ -52,7 +48,6 @@ final class MParticleScreenEventTests: MParticleTestBase {
         assertReceivedMessage("Screen name is required.")
         XCTAssertFalse(backendController.eventWithNameCalled)
         XCTAssertFalse(executor.executeOnMessageQueueAsync)
-        XCTAssertFalse(listenerController.onAPICalledCalled)
         XCTAssertFalse(backendController.logScreenCalled)
     }
     
@@ -66,8 +61,6 @@ final class MParticleScreenEventTests: MParticleTestBase {
         XCTAssertEqual(backendController.eventWithNameEventNameParam, testName)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logScreenEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
         XCTAssertTrue(backendController.logScreenCalled)
         XCTAssertNotNil(backendController.logScreenCompletionHandler)
         backendController.logScreenCompletionHandler!(event, .success)
@@ -98,8 +91,6 @@ final class MParticleScreenEventTests: MParticleTestBase {
         XCTAssertEqual(backendController.eventWithNameEventNameParam, testName)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logScreenEvent:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1, mockMPNavEvent)
         XCTAssertTrue(backendController.logScreenCalled)
         XCTAssertNotNil(backendController.logScreenCompletionHandler)
         backendController.logScreenCompletionHandler!(mockMPNavEvent, .success)

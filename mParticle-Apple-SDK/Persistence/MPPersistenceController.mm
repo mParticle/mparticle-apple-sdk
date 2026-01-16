@@ -15,7 +15,6 @@
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
 #import <sqlite3.h>
-#import "MPListenerProtocol.h"
 #import "MPKitFilter.h"
 #import "MPApplication.h"
 #import "MParticleSwift.h"
@@ -1401,8 +1400,6 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while storing breadcrumb: %s", sqlite3_errmsg(mParticleDB));
-        } else {
-            [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableBreadcrumbs primaryKey:@(message.messageId) message:message.description];
         }
         
         sqlite3_clear_bindings(preparedStatement);
@@ -1548,8 +1545,6 @@ const int MaxBreadcrumbs = 50;
             sqlite3_clear_bindings(preparedStatement);
             sqlite3_finalize(preparedStatement);
             return;
-        } else {
-            [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableAttributes primaryKey:integrationAttributes.integrationId message:integrationAttributes.description];
         }
         
         sqlite3_clear_bindings(preparedStatement);
@@ -1617,8 +1612,6 @@ const int MaxBreadcrumbs = 50;
         
         message.messageId = sqlite3_last_insert_rowid(mParticleDB);
         
-        [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableMessages primaryKey:@(message.messageId) message:message.description];
-        
         sqlite3_clear_bindings(preparedStatement);
     } else {
         MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(mParticleDB));
@@ -1661,8 +1654,6 @@ const int MaxBreadcrumbs = 50;
             }
             
             session.sessionId = sqlite3_last_insert_rowid(mParticleDB);
-            
-            [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableSessions primaryKey:@(session.sessionId) message:session.description];
 
             sqlite3_clear_bindings(preparedStatement);
         } else {
@@ -1730,8 +1721,6 @@ const int MaxBreadcrumbs = 50;
         }
         
         upload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
-        
-        [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableUploads primaryKey:@(upload.uploadId) message:upload.description];
 
         sqlite3_clear_bindings(preparedStatement);
     } else {

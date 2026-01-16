@@ -3,12 +3,6 @@ import mParticle_Apple_SDK_NoLocation
 
 final class MParticleRuntimeValuesTests: MParticleTestBase {
     
-    func test_setSharedInstance_notifiesListener() {
-        MParticle.setSharedInstance(mparticle)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setSharedInstance:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === mparticle)
-    }
-    
     func test_setOptOutCompletion_logsMessage_onSuccess() {
         mparticle.setOptOutCompletion(.success, optOut: true)
         assertReceivedMessage("Set Opt Out: 1")
