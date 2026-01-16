@@ -4,6 +4,7 @@
 #import "MPEnums.h"
 #import "MPEvent.h"
 #import "MPExtensionProtocol.h"
+#import "MPListenerProtocol.h"
 #import <Foundation/Foundation.h>
 #import "MPKitExecStatus.h"
 #import "MPKitRegister.h"
@@ -25,6 +26,7 @@
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
+#import "MPListenerProtocol.h"
 #import "MPRokt.h"
 
 #if TARGET_OS_IOS == 1

@@ -19,6 +19,17 @@ class EventUploadWaiter: NSObject, MPListenerProtocol {
         
         return result == .success
     }
+    
+    func onNetworkRequestFinished(_ type: MPEndpoint, 
+                                  url: String, 
+                                  body: NSObject, 
+                                  responseCode: Int) {
+        if type == .events {
+            uploadCompletedSemaphore?.signal()
+        }
+    }
+    
+    func onNetworkRequestStarted(_ type: MPEndpoint, url: String, body: NSObject) {}
 }
 
 // Test 1: Simple Event
@@ -444,9 +455,8 @@ networkOptions.pinningDisabled = true;
 
 options.networkOptions = networkOptions
 
-// Register listener for tracking upload events
+// Create upload waiter for triggering uploads and waiting for completion
 let uploadWaiter = EventUploadWaiter()
-MPListenerController.sharedInstance().addSdkListener(uploadWaiter)
 
 let mparticle = MParticle.sharedInstance()
 mparticle.start(with: options)
