@@ -1217,7 +1217,6 @@ MPLog* logger;
 
 #pragma mark Integration attributes
 - (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)integrationId {
-    NSDictionary *attributesCopy = [attributes copy];
     __block MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
 
     MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
