@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,9 @@
 		35329FF02E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */; };
 		35329FF32E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */; };
 		35329FF52E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
+		3561E5C92F1A9B1A00D8CBDA /* mParticle_Apple_SDK_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3561E5C02F1A9B1A00D8CBDA /* mParticle_Apple_SDK_Swift.framework */; };
+		3561E5D92F1A9B6F00D8CBDA /* mParticle_Apple_SDK_Swift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3561E5C02F1A9B1A00D8CBDA /* mParticle_Apple_SDK_Swift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3561E5E82F1FCBC100D8CBDA /* mParticle_Apple_SDK_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3561E5C02F1A9B1A00D8CBDA /* mParticle_Apple_SDK_Swift.framework */; };
 		356752902E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */; };
 		356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356752922E60928500DEEE23 /* MPStateMachineMock.swift */; };
 		356D4A5A2E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
@@ -28,7 +31,6 @@
 		359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
 		359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
 		35DDD5FD2F16EF390066DB14 /* NSString+MPPercentEscape.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CDD2CC0B7E4003B3194 /* NSString+MPPercentEscape.swift */; };
-		35DDD5FF2F16EFD60066DB14 /* SceneDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */; };
 		35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
 		35E3FCC32E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */; };
 		35E3FCC62E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */; };
@@ -287,7 +289,6 @@
 		7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E0387802DB913D2003B7D5E /* MPRokt.m */; };
 		7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		7E573D2A2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */; };
-		7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */; };
 		B3D778622E02F55F00D887A4 /* MPRoktEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.swift */; };
 		D33C8B342B8510C20012EDFD /* MPAudience.h in Headers */ = {isa = PBXBuildFile; fileRef = D33C8B312B8510C20012EDFD /* MPAudience.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */ = {isa = PBXBuildFile; fileRef = D33C8B322B8510C20012EDFD /* MPAudience.m */; };
@@ -304,12 +305,25 @@
 		D3CEDAC12C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
 		D3CEDAC42C9DB0E0001B32DF /* MPDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */; };
 		D3CEDAC62C9DB0E1001B32DF /* MPDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */; };
-		D3CEDAC92CA2F214001B32DF /* MPLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC72CA2F214001B32DF /* MPLogger.swift */; };
 		D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */; };
 		D3DE316C2D5261FC00CC537F /* MPDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DE316A2D5261F700CC537F /* MPDevice.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		3561E5CA2F1A9B1A00D8CBDA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 53A79A7029CCCD6400E7489F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3561E5BF2F1A9B1A00D8CBDA;
+			remoteInfo = "mParticle-Apple-SDK-NoLocation-Swift";
+		};
+		3561E5DA2F1A9B6F00D8CBDA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 53A79A7029CCCD6400E7489F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3561E5BF2F1A9B1A00D8CBDA;
+			remoteInfo = "mParticle-Apple-SDK-NoLocation-Swift";
+		};
 		53FE85E829CE2F330005FDF0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 53A79A7029CCCD6400E7489F /* Project object */;
@@ -319,18 +333,33 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		3561E5DC2F1A9B6F00D8CBDA /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				3561E5D92F1A9B6F00D8CBDA /* mParticle_Apple_SDK_Swift.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		3513081E2E6729D0002A3AD6 /* MPKitContainerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPKitContainerMock.swift; sourceTree = "<group>"; };
 		351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPPersistenceControllerMock.swift; sourceTree = "<group>"; };
 		3513083F2E6B28F5002A3AD6 /* Executor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Executor.h; sourceTree = "<group>"; };
 		351308402E6B28F5002A3AD6 /* Executor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Executor.m; sourceTree = "<group>"; };
 		3517794C2E706BE4004BF05E /* ExecutorMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExecutorMock.swift; sourceTree = "<group>"; };
-		351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegateHandler.swift; sourceTree = "<group>"; };
 		35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPNetworkOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
 		35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MParticleOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MParticleOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
+		3561E5C02F1A9B1A00D8CBDA /* mParticle_Apple_SDK_Swift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_Swift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3561E5C82F1A9B1A00D8CBDA /* mParticle-Apple-SDK-SwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-Apple-SDK-SwiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPBackendControllerMock.swift; sourceTree = "<group>"; };
 		356752922E60928500DEEE23 /* MPStateMachineMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPStateMachineMock.swift; sourceTree = "<group>"; };
 		356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderMock.swift; sourceTree = "<group>"; };
@@ -613,7 +642,6 @@
 		7E0387802DB913D2003B7D5E /* MPRokt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRokt.m; sourceTree = "<group>"; };
 		7E15B2052D94617900C1FF3E /* MPRoktTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktTests.m; sourceTree = "<group>"; };
 		7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleSceneDelegateTests.swift; sourceTree = "<group>"; };
-		7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegateHandlerMock.swift; path = UnitTests/Mocks/SceneDelegateHandlerMock.swift; sourceTree = "<group>"; };
 		B31360F72E012760000DFBC9 /* MPRoktEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPRoktEvent.swift; sourceTree = "<group>"; };
 		D33C8B312B8510C20012EDFD /* MPAudience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAudience.h; sourceTree = "<group>"; };
 		D33C8B322B8510C20012EDFD /* MPAudience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAudience.m; sourceTree = "<group>"; };
@@ -630,12 +658,31 @@
 		D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCCPAConsent.swift; sourceTree = "<group>"; };
 		D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPGDPRConsent.swift; sourceTree = "<group>"; };
 		D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDateFormatter.swift; sourceTree = "<group>"; };
-		D3CEDAC72CA2F214001B32DF /* MPLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPLogger.swift; sourceTree = "<group>"; };
 		D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConvertJS.swift; sourceTree = "<group>"; };
 		D3DE316A2D5261F700CC537F /* MPDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDevice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		3561E5C12F1A9B1A00D8CBDA /* mParticle-Apple-SDK-Swift */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "mParticle-Apple-SDK-Swift"; sourceTree = "<group>"; };
+		3561E5CC2F1A9B1A00D8CBDA /* mParticle-Apple-SDK-SwiftTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "mParticle-Apple-SDK-SwiftTests"; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		3561E5BD2F1A9B1A00D8CBDA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3561E5C52F1A9B1A00D8CBDA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3561E5C92F1A9B1A00D8CBDA /* mParticle_Apple_SDK_Swift.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		534CD2A129CE2CE1008452B3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -650,6 +697,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3561E5E82F1FCBC100D8CBDA /* mParticle_Apple_SDK_Swift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -679,12 +727,13 @@
 		53A79A6F29CCCD6400E7489F = {
 			isa = PBXGroup;
 			children = (
-				7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */,
 				D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */,
 				53A79CFE29CE12AB00E7489F /* mParticle-Apple-SDK.modulemap */,
 				53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */,
 				53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */,
 				53A79C6729CE019E00E7489F /* UnitTests */,
+				3561E5C12F1A9B1A00D8CBDA /* mParticle-Apple-SDK-Swift */,
+				3561E5CC2F1A9B1A00D8CBDA /* mParticle-Apple-SDK-SwiftTests */,
 				53A79A7A29CCCD6400E7489F /* Products */,
 				53A79CFA29CE046800E7489F /* Frameworks */,
 			);
@@ -695,6 +744,8 @@
 			children = (
 				53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */,
 				534CD2AA29CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests.xctest */,
+				3561E5C02F1A9B1A00D8CBDA /* mParticle_Apple_SDK_Swift.framework */,
+				3561E5C82F1A9B1A00D8CBDA /* mParticle-Apple-SDK-SwiftTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -702,7 +753,6 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
-				351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */,
 				3513083F2E6B28F5002A3AD6 /* Executor.h */,
 				729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */,
 				729721782EAC2B750045E55C /* AppEnvironmentProvider.m */,
@@ -934,7 +984,6 @@
 			isa = PBXGroup;
 			children = (
 				53A79B4629CDFB1F00E7489F /* MPILogger.h */,
-				D3CEDAC72CA2F214001B32DF /* MPLogger.swift */,
 			);
 			path = Logger;
 			sourceTree = "<group>";
@@ -1194,6 +1243,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		3561E5BB2F1A9B1A00D8CBDA /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		53A79D0129CE23F700E7489F /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1294,6 +1350,52 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		3561E5BF2F1A9B1A00D8CBDA /* mParticle-Apple-SDK-Swift */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3561E5D32F1A9B1A00D8CBDA /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-Swift" */;
+			buildPhases = (
+				3561E5BB2F1A9B1A00D8CBDA /* Headers */,
+				3561E5BC2F1A9B1A00D8CBDA /* Sources */,
+				3561E5BD2F1A9B1A00D8CBDA /* Frameworks */,
+				3561E5BE2F1A9B1A00D8CBDA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3561E5C12F1A9B1A00D8CBDA /* mParticle-Apple-SDK-Swift */,
+			);
+			name = "mParticle-Apple-SDK-Swift";
+			packageProductDependencies = (
+			);
+			productName = "mParticle-Apple-SDK-NoLocation-Swift";
+			productReference = 3561E5C02F1A9B1A00D8CBDA /* mParticle_Apple_SDK_Swift.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		3561E5C72F1A9B1A00D8CBDA /* mParticle-Apple-SDK-SwiftTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3561E5D42F1A9B1A00D8CBDA /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-SwiftTests" */;
+			buildPhases = (
+				3561E5C42F1A9B1A00D8CBDA /* Sources */,
+				3561E5C52F1A9B1A00D8CBDA /* Frameworks */,
+				3561E5C62F1A9B1A00D8CBDA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3561E5CB2F1A9B1A00D8CBDA /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3561E5CC2F1A9B1A00D8CBDA /* mParticle-Apple-SDK-SwiftTests */,
+			);
+			name = "mParticle-Apple-SDK-SwiftTests";
+			packageProductDependencies = (
+			);
+			productName = "mParticle-Apple-SDK-NoLocation-SwiftTests";
+			productReference = 3561E5C82F1A9B1A00D8CBDA /* mParticle-Apple-SDK-SwiftTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		534CD26029CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 534CD2A729CE2CE1008452B3 /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-NoLocationTests" */;
@@ -1320,10 +1422,12 @@
 				53A79D6629CE23F700E7489F /* Sources */,
 				53A79DC029CE23F700E7489F /* Frameworks */,
 				53A79DC229CE23F700E7489F /* Resources */,
+				3561E5DC2F1A9B6F00D8CBDA /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3561E5DB2F1A9B6F00D8CBDA /* PBXTargetDependency */,
 			);
 			name = "mParticle-Apple-SDK-NoLocation";
 			productName = "mParticle-Apple-SDK";
@@ -1337,8 +1441,16 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1420;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					3561E5BF2F1A9B1A00D8CBDA = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					3561E5C72F1A9B1A00D8CBDA = {
+						CreatedOnToolsVersion = 16.4;
+					};
+				};
 			};
 			buildConfigurationList = 53A79A7329CCCD6400E7489F /* Build configuration list for PBXProject "mParticle-Apple-SDK" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1355,11 +1467,27 @@
 			targets = (
 				53A79D0029CE23F700E7489F /* mParticle-Apple-SDK-NoLocation */,
 				534CD26029CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests */,
+				3561E5BF2F1A9B1A00D8CBDA /* mParticle-Apple-SDK-Swift */,
+				3561E5C72F1A9B1A00D8CBDA /* mParticle-Apple-SDK-SwiftTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3561E5BE2F1A9B1A00D8CBDA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3561E5C62F1A9B1A00D8CBDA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		534CD2A529CE2CE1008452B3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1379,6 +1507,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3561E5BC2F1A9B1A00D8CBDA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3561E5C42F1A9B1A00D8CBDA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		534CD26329CE2CE1008452B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1422,7 +1564,6 @@
 				534CD27A29CE2CE1008452B3 /* MPDataPlanFilterTests.m in Sources */,
 				534CD27B29CE2CE1008452B3 /* MPZipTests.m in Sources */,
 				53E20DC82CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
-				7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */,
 				534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */,
 				356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
 				534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */,
@@ -1553,7 +1694,6 @@
 				53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */,
 				53A79D9A29CE23F700E7489F /* MPSession.m in Sources */,
 				53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */,
-				D3CEDAC92CA2F214001B32DF /* MPLogger.swift in Sources */,
 				53A79D9C29CE23F700E7489F /* MPAliasRequest.m in Sources */,
 				53A79D9D29CE23F700E7489F /* MParticleUser.m in Sources */,
 				53A79D9F29CE23F700E7489F /* MParticleReachability.m in Sources */,
@@ -1563,7 +1703,6 @@
 				35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */,
 				53A79DA329CE23F700E7489F /* MPURL.m in Sources */,
 				53A79DA429CE23F700E7489F /* MPIdentityDTO.m in Sources */,
-				35DDD5FF2F16EFD60066DB14 /* SceneDelegateHandler.swift in Sources */,
 				53A79DA529CE23F700E7489F /* MPNetworkCommunication.m in Sources */,
 				53A79DA629CE23F700E7489F /* MPMessageBuilder.m in Sources */,
 				35DDD5FD2F16EF390066DB14 /* NSString+MPPercentEscape.swift in Sources */,
@@ -1601,6 +1740,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3561E5CB2F1A9B1A00D8CBDA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3561E5BF2F1A9B1A00D8CBDA /* mParticle-Apple-SDK-Swift */;
+			targetProxy = 3561E5CA2F1A9B1A00D8CBDA /* PBXContainerItemProxy */;
+		};
+		3561E5DB2F1A9B6F00D8CBDA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3561E5BF2F1A9B1A00D8CBDA /* mParticle-Apple-SDK-Swift */;
+			targetProxy = 3561E5DA2F1A9B6F00D8CBDA /* PBXContainerItemProxy */;
+		};
 		53FE85E929CE2F330005FDF0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 53A79D0029CE23F700E7489F /* mParticle-Apple-SDK-NoLocation */;
@@ -1609,10 +1758,141 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		3561E5CF2F1A9B1A00D8CBDA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.mParticle-Apple-SDK-Swift";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos appletvsimulator appletvos";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INSTALL_MODULE = YES;
+				SWIFT_INSTALL_OBJC_HEADER = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3561E5D02F1A9B1A00D8CBDA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.mParticle-Apple-SDK-Swift";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos appletvsimulator appletvos";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INSTALL_MODULE = YES;
+				SWIFT_INSTALL_OBJC_HEADER = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		3561E5D12F1A9B1A00D8CBDA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.mParticle-Apple-SDK-SwiftTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos appletvsimulator appletvos";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3561E5D22F1A9B1A00D8CBDA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.mParticle-Apple-SDK-SwiftTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos appletvsimulator appletvos";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		534CD2A829CE2CE1008452B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1639,7 +1919,6 @@
 		534CD2A929CE2CE1008452B3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				APPLICATION_EXTENSION_API_ONLY = NO;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1881,6 +2160,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3561E5D32F1A9B1A00D8CBDA /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-Swift" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3561E5CF2F1A9B1A00D8CBDA /* Debug */,
+				3561E5D02F1A9B1A00D8CBDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3561E5D42F1A9B1A00D8CBDA /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-SwiftTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3561E5D12F1A9B1A00D8CBDA /* Debug */,
+				3561E5D22F1A9B1A00D8CBDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		534CD2A729CE2CE1008452B3 /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-NoLocationTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

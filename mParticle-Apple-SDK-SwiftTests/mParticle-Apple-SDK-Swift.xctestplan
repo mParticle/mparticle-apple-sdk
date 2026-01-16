@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "AADF0CC9-FD83-49F4-B41C-EC23F5E17260",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:mParticle-Apple-SDK.xcodeproj",
+        "identifier" : "3561E5C72F1A9B1A00D8CBDA",
+        "name" : "mParticle-Apple-SDK-SwiftTests"
+      }
+    }
+  ],
+  "version" : 1
+}

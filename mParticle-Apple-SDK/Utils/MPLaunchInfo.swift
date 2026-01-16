@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import mParticle_Apple_SDK_Swift
 
 @objc public class MPLaunchInfo: NSObject {
     private let annotationKey = UIApplication.OpenURLOptionsKey.annotation
@@ -74,7 +75,10 @@ import Foundation
             do {
                 jsonData = try JSONSerialization.data(withJSONObject: stringDict, options: [])
             } catch {
-                MPLog.error("Error serializing annotation from app launch: \(dictionaryAnnotation)")
+                let mparticle = MParticle.sharedInstance()
+                let logger = MPLog(logLevel: mparticle.logLevel)
+                logger.customLogger = mparticle.customLogger
+                logger.error("Error serializing annotation from app launch: \(dictionaryAnnotation)")
             }
             if let jsonData = jsonData {
                 return String(data: jsonData, encoding: .utf8)
@@ -93,7 +97,10 @@ import Foundation
             do {
                 jsonData = try JSONSerialization.data(withJSONObject: stringArray, options: [])
             } catch {
-                MPLog.error("Error serializing annotation from app launch: \(arrayAnnotation)")
+                let mparticle = MParticle.sharedInstance()
+                let logger = MPLog(logLevel: mparticle.logLevel)
+                logger.customLogger = mparticle.customLogger
+                logger.error("Error serializing annotation from app launch: \(arrayAnnotation)")
             }
             if let jsonData = jsonData {
                 return String(data: jsonData, encoding: .utf8)
