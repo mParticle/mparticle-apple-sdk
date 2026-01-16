@@ -124,38 +124,11 @@ import Foundation
                 if let pushNotificationDictionary = config["pn"] as? [AnyHashable: Any] {
                     configurePushNotifications(pushNotificationDictionary)
                 }
-
-                // Location tracking
-                if let locationTrackingDictionary = config["lct"] as? [AnyHashable: Any] {
-                    configureLocationTracking(locationTrackingDictionary)
-                }
             #endif
         }
     }
 
     #if os(iOS)
-        @objc public func configureLocationTracking(_ locationDictionary: [AnyHashable: Any]) {
-            if let locationMode = locationDictionary[RemoteConfig.kMPRemoteConfigLocationModeKey] as? String {
-                stateMachine.locationTrackingMode = locationMode
-
-                #if !MPARTICLE_LOCATION_DISABLE
-                    if locationMode == RemoteConfig.kMPRemoteConfigForceTrue {
-                        if let accuracy = locationDictionary[RemoteConfig.kMPRemoteConfigLocationAccuracyKey] as? NSNumber,
-                           let minimumDistance =
-                           locationDictionary[RemoteConfig.kMPRemoteConfigLocationMinimumDistanceKey] as? NSNumber {
-                            MParticle.sharedInstance().beginLocationTracking(
-                                accuracy.doubleValue,
-                                minDistance: minimumDistance.doubleValue,
-                                authorizationRequest: MPLocationAuthorizationRequest.always
-                            )
-                        }
-                    } else if locationMode == RemoteConfig.kMPRemoteConfigForceFalse {
-                        MParticle.sharedInstance().endLocationTracking()
-                    }
-                #endif
-            }
-        }
-
         @objc public func configurePushNotifications(_ pushNotificationDictionary: [AnyHashable: Any]) {
             if let pushNotificationMode =
                 pushNotificationDictionary[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] as? String {

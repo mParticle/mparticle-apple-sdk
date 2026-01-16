@@ -81,7 +81,6 @@
             "dosv": "${json-unit.ignore}",
             "it": false,
             "dmdl": "arm64",
-            "dr": "None",
             "jb": {
               "cydia": false
             },

@@ -324,28 +324,4 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return message;
 }
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (void)location:(CLLocation *)location {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    if ([MPStateMachine_PRIVATE runningInBackground] && !stateMachine.locationManager.backgroundLocationTracking) {
-        return;
-    }
-    
-    BOOL isCrashReport = _messageTypeValue == MPMessageTypeCrashReport;
-    BOOL isOptOutMessage = _messageTypeValue == MPMessageTypeOptOut;
-    
-    if (location && !isCrashReport && !isOptOutMessage) {
-        _messageDictionary[kMPLocationKey] = @{kMPHorizontalAccuracyKey:@(location.horizontalAccuracy),
-                                              kMPVerticalAccuracyKey:@(location.verticalAccuracy),
-                                              kMPLatitudeKey:@(location.coordinate.latitude),
-                                              kMPLongitudeKey:@(location.coordinate.longitude),
-                                              kMPRequestedAccuracy:@(stateMachine.locationManager.requestedAccuracy),
-                                              kMPDistanceFilter:@(stateMachine.locationManager.requestedDistanceFilter),
-                                              kMPIsForegroung:@(!stateMachine.backgrounded)};
-    }
-}
-#endif
-#endif
-
 @end

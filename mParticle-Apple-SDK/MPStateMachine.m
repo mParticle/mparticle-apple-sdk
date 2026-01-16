@@ -16,9 +16,6 @@
 #import "MPIConstants.h"
 
 #if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    #import <CoreLocation/CoreLocation.h>
-#endif
 #import <AdServices/AAAttribution.h>
 #endif
 
@@ -64,7 +61,6 @@ static BOOL runningInBackground = NO;
 @synthesize deviceTokenType = _deviceTokenType;
 @synthesize firstSeenInstallation = _firstSeenInstallation;
 @synthesize installationType = _installationType;
-@synthesize locationTrackingMode = _locationTrackingMode;
 @synthesize logLevel = _logLevel;
 @synthesize optOut = _optOut;
 @synthesize attAuthorizationStatus = _attAuthorizationStatus;
@@ -76,12 +72,6 @@ static BOOL runningInBackground = NO;
 @synthesize automaticSessionTracking = _automaticSessionTracking;
 @synthesize allowASR = _allowASR;
 @synthesize networkStatus = _networkStatus;
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-@synthesize location = _location;
-#endif
-#endif
 
 - (instancetype)init {
     self = [super init];
@@ -414,64 +404,6 @@ static BOOL runningInBackground = NO;
     [self didChangeValueForKey:@"installationType"];
     
     _firstSeenInstallation = @(installationType == MPInstallationTypeKnownInstall);
-}
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (CLLocation *)location {
-    if ([MPLocationManager_PRIVATE trackingLocation]) {
-        return self.locationManager.location;
-    } else {
-        return _location;
-    }
-}
-
-- (void)setLocation:(CLLocation *)location {
-    if ([MPLocationManager_PRIVATE trackingLocation]) {
-        if (self.locationManager) {
-            self.locationManager.location = location;
-        }
-        
-        _location = nil;
-    } else {
-        _location = location;
-    }
-}
-#endif
-#endif
-
-- (NSString *)locationTrackingMode {
-    if (_locationTrackingMode) {
-        return _locationTrackingMode;
-    }
-    
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    NSString *locationTrackingMode = userDefaults[kMPRemoteConfigLocationModeKey];
-    
-    [self willChangeValueForKey:@"locationTrackingMode"];
-    
-    if (locationTrackingMode) {
-        _locationTrackingMode = locationTrackingMode;
-    } else {
-        _locationTrackingMode = kMPRemoteConfigAppDefined;
-    }
-    
-    [self didChangeValueForKey:@"locationTrackingMode"];
-    
-    return _locationTrackingMode;
-}
-
-- (void)setLocationTrackingMode:(NSString *)locationTrackingMode {
-    if ([_locationTrackingMode isEqualToString:locationTrackingMode]) {
-        return;
-    }
-    
-    [self willChangeValueForKey:@"locationTrackingMode"];
-    _locationTrackingMode = locationTrackingMode;
-    [self didChangeValueForKey:@"locationTrackingMode"];
-    
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    userDefaults[kMPRemoteConfigLocationModeKey] = _locationTrackingMode;
 }
 
 - (NSString *)minDefaultsKeyForUploadType:(MPUploadType)uploadType {

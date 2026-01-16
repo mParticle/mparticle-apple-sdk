@@ -1,5 +1,5 @@
 import Foundation
-import mParticle_Apple_SDK
+import mParticle_Apple_SDK_NoLocation
 
 // Listener for tracking upload events
 class EventUploadWaiter: NSObject, MPListenerProtocol {

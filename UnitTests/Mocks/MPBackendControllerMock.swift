@@ -1,9 +1,5 @@
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK_NoLocation
 
 class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var sessionTimeout: TimeInterval = 0.0
@@ -319,36 +315,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     #if os(iOS)
-        #if !MPARTICLE_LOCATION_DISABLE
-
-            // MARK: - Location
-
-            var beginLocationTrackingCalled = false
-            var beginLocationTrackingAccuracyParam: CLLocationAccuracy?
-            var beginLocationTrackingDistanceParam: CLLocationDistance?
-            var beginLocationTrackingAuthParam: MPLocationAuthorizationRequest?
-            var beginLocationTrackingReturnValue: MPExecStatus = .success
-
-            func beginLocationTracking(
-                withAccuracy accuracy: CLLocationAccuracy,
-                distanceFilter distance: CLLocationDistance,
-                authorizationRequest: MPLocationAuthorizationRequest
-            ) -> MPExecStatus {
-                beginLocationTrackingCalled = true
-                beginLocationTrackingAccuracyParam = accuracy
-                beginLocationTrackingDistanceParam = distance
-                beginLocationTrackingAuthParam = authorizationRequest
-                return beginLocationTrackingReturnValue
-            }
-
-            var endLocationTrackingCalled = false
-            var endLocationTrackingReturnValue: MPExecStatus = .success
-
-            func endLocationTracking() -> MPExecStatus {
-                endLocationTrackingCalled = true
-                return endLocationTrackingReturnValue
-            }
-        #endif
 
         // MARK: - Notifications
 

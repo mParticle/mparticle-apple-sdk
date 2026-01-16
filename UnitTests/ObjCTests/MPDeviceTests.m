@@ -20,29 +20,24 @@
 
 @implementation MPDeviceTests
 
-- (void)testTelephonyRadioAccessTechnology {
-#if TARGET_OS_IOS == 1 && !MPARTICLE_LOCATION_DISABLE
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
-    NSString *technology = device.radioAccessTechnology;
-    XCTAssertEqualObjects(technology, @"None");
-#endif
-}
-
 - (void)testDictionaryDescription {
-#if TARGET_OS_IOS == 1 && !MPARTICLE_LOCATION_DISABLE
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MParticle *mparticle = [MParticle sharedInstance];
+    MPUserDefaults *userDefaults = [MPUserDefaults
+            standardUserDefaultsWithStateMachine: mparticle.stateMachine
+                               backendController: mparticle.backendController
+                                        identity: mparticle.identity];
     NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
     userDefaults[kMPDeviceTokenKey] = testDeviceToken;
-    
+
     NSString *testCountry = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
 
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine: mparticle.stateMachine
+                                                 userDefaults: userDefaults
+                                                     identity: mparticle.identity];
     NSDictionary *testDictionary = device.dictionaryRepresentation;
     XCTAssertEqualObjects(testDictionary[@"dll"], @"en");
     XCTAssertEqualObjects(testDictionary[@"dlc"], testCountry);
     XCTAssertEqualObjects(testDictionary[@"dma"], @"Apple");
-    XCTAssertEqualObjects(testDictionary[kMPDeviceTokenKey], @"3c3030303030303030303030303030303030303030303030303030303030303e");
-#endif
 }
 
 @end

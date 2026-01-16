@@ -393,15 +393,6 @@ MPLog* logger;
         if (settings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
             self->_trackNotifications = [settings[kMPConfigTrackNotifications] boolValue];
         }
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        if ([settings[kMPConfigLocationTracking] boolValue]) {
-            CLLocationAccuracy accuracy = [settings[kMPConfigLocationAccuracy] doubleValue];
-            CLLocationDistance distanceFilter = [settings[kMPConfigLocationDistanceFilter] doubleValue];
-            [self beginLocationTracking:accuracy minDistance:distanceFilter];
-        }
-#endif
-#endif
     }
 }
 
@@ -1339,93 +1330,6 @@ MPLog* logger;
     
     [self.kitActivity kitInstance:kitCode withHandler:completionHandler];
 }
-
-#pragma mark Location
-#if TARGET_OS_IOS == 1
-- (BOOL)backgroundLocationTracking {
-    [self.listenerController onAPICalled:_cmd];
-    
-#ifndef MPARTICLE_LOCATION_DISABLE
-    return self.stateMachine.locationManager.backgroundLocationTracking;
-#else
-    return false;
-#endif
-}
-
-- (void)setBackgroundLocationTracking:(BOOL)backgroundLocationTracking {
-    [self.listenerController onAPICalled:_cmd parameter1:@(backgroundLocationTracking)];
-    
-#ifndef MPARTICLE_LOCATION_DISABLE
-    [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking = backgroundLocationTracking;
-#else
-    [logger debug:@"Automatic background tracking has been disabled to support users excluding location services from their applications."];
-#endif
-}
-
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (CLLocation *)location {
-    [self.listenerController onAPICalled:_cmd];
-    
-    return self.stateMachine.location;
-}
-
-- (void)setLocation:(CLLocation *)location {
-    if (![self.stateMachine.location isEqual:location]) {
-        self.stateMachine.location = location;
-        NSString *message = [NSString stringWithFormat:@"Set location %@", location];
-        [logger debug:message];
-        
-        [executor executeOnMain: ^{
-            [self.listenerController onAPICalled:_cmd parameter1:location];
-            
-            // Forwarding calls to kits
-            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-            [queueParameters addParameter:location];
-            
-            [self.kitContainer forwardSDKCall:_cmd
-                                        event:nil
-                                   parameters:queueParameters
-                                  messageType:MPMessageTypeEvent
-                                     userInfo:nil
-            ];
-        }];
-    }
-}
-
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter {
-    [self beginLocationTracking:accuracy minDistance:distanceFilter authorizationRequest:MPLocationAuthorizationRequestAlways];
-}
-
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest {
-    [self.listenerController onAPICalled:_cmd parameter1:@(accuracy) parameter2:@(distanceFilter)];
-    
-    if (self.stateMachine.optOut) {
-        return;
-    }
-    
-    MPExecStatus execStatus = [_backendController beginLocationTrackingWithAccuracy:accuracy distanceFilter:distanceFilter authorizationRequest:authorizationRequest];
-    if (execStatus == MPExecStatusSuccess) {
-        NSString *message = [NSString stringWithFormat:@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter];
-        [logger debug:message];
-    } else {
-        NSString *message = [NSString stringWithFormat:@"Could not begin location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-        [logger error:message];
-    }
-}
-
-- (void)endLocationTracking {
-    [self.listenerController onAPICalled:_cmd];
-    
-    MPExecStatus execStatus = [_backendController endLocationTracking];
-    if (execStatus == MPExecStatusSuccess) {
-        [logger debug:@"Ended location tracking"];
-    } else {
-        NSString *message = [NSString stringWithFormat:@"Could not end location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-        [logger error:message];
-    }
-}
-#endif // MPARTICLE_LOCATION_DISABLE
-#endif // TARGET_OS_IOS
 
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {

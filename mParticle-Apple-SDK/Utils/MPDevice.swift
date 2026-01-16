@@ -9,10 +9,6 @@ import Foundation
 import MachO
 import QuartzCore
 
-#if os(iOS) && !MPARTICLE_LOCATION_DISABLE
-    import CoreTelephony
-#endif
-
 @objc(MPDevice)
 public class MPDevice: NSObject, NSCopying {
     private var stateMachine: MPStateMachine_PRIVATE
@@ -76,24 +72,6 @@ public class MPDevice: NSObject, NSCopying {
     @objc public var brand: String {
         return UIDevice.current.model
     }
-
-    #if os(iOS) && !MPARTICLE_LOCATION_DISABLE
-        @objc public var carrier: String? {
-            // Deprecated and no longer provided by Apple https://developer.apple.com/documentation/coretelephony/cttelephonynetworkinfo/subscribercellularprovider
-            return nil
-        }
-
-        @objc public var radioAccessTechnology: String {
-            let networkInfo = CTTelephonyNetworkInfo()
-
-            if let radioAccessTechnologies = networkInfo.serviceCurrentRadioAccessTechnology {
-                if let defaultService = radioAccessTechnologies.first {
-                    return defaultService.value
-                }
-            }
-            return "None"
-        }
-    #endif
 
     @objc public var country: String? {
         return Locale.current.regionCode
@@ -358,17 +336,6 @@ public class MPDevice: NSObject, NSCopying {
         if let buildId = buildId {
             deviceDictionary[Device.kMPDeviceBuildIdKey] = buildId
         }
-
-        #if os(iOS) && !MPARTICLE_LOCATION_DISABLE
-            deviceDictionary[Device.kMPDeviceRadioKey] = radioAccessTechnology
-
-            let notificationController = MPNotificationController_PRIVATE()
-            if let pushNotificationToken = notificationController.deviceToken() {
-                if let tokenString = MPUserDefaults.stringFromDeviceToken(pushNotificationToken) {
-                    deviceDictionary[PushNotifications.kMPDeviceTokenKey] = tokenString
-                }
-            }
-        #endif
 
         if let noDeviceToken = stateMachine.deviceTokenType?.isEmpty, !noDeviceToken {
             deviceDictionary[Miscellaneous.kMPDeviceTokenTypeKey] = stateMachine.deviceTokenType

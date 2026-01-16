@@ -1,12 +1,6 @@
 #import "MPEnums.h"
 #import "MPIConstants.h"
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    #import <CoreLocation/CoreLocation.h>
-#endif
-#endif
-
 @class MPSession;
 @class MPCommerceEvent;
 @class MPUserAttributeChange;
@@ -40,12 +34,6 @@
 - (void)timestamp:(NSTimeInterval)timestamp;
 - (void)stateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
 - (nonnull MPMessage *)build;
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (void)location:(nonnull CLLocation *)location;
-#endif
-#endif
 
 @end
 
