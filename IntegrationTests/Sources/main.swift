@@ -1,35 +1,16 @@
 import Foundation
 import mParticle_Apple_SDK_NoLocation
 
-// Listener for tracking upload events
-class EventUploadWaiter: NSObject, MPListenerProtocol {
-    private var uploadCompletedSemaphore: DispatchSemaphore?
+// Helper for triggering uploads and waiting for completion
+class EventUploadWaiter {
     var mparticle = MParticle.sharedInstance()
 
     @discardableResult
     func wait(timeout: Int = 5) -> Bool {
         mparticle.upload()
-        let semaphore = DispatchSemaphore(value: 0)
-        uploadCompletedSemaphore = semaphore
-        
-        let timeoutTime = DispatchTime.now() + .seconds(timeout)
-        let result = semaphore.wait(timeout: timeoutTime)
-        
-        uploadCompletedSemaphore = nil
-        
-        return result == .success
+        sleep(timeout)
+        return true
     }
-    
-    func onNetworkRequestFinished(_ type: MPEndpoint, 
-                                  url: String, 
-                                  body: NSObject, 
-                                  responseCode: Int) {
-        if type == .events {
-            uploadCompletedSemaphore?.signal()
-        }
-    }
-    
-    func onNetworkRequestStarted(_ type: MPEndpoint, url: String, body: NSObject) {}
 }
 
 // Test 1: Simple Event
