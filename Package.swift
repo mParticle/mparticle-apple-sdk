@@ -3,11 +3,11 @@
 import PackageDescription
 
 let mParticle_Apple_SDK_URL = "https://static.mparticle.com/sdk/ios/v8.41.0/mParticle_Apple_SDK.xcframework.zip"
-let mParticle_Apple_SDK_Checksum = "9c2550ac04ca41fa4475b43f4b20405560cb7e16bfa4a0205d6d0e96bd3301aa"
+let mParticle_Apple_SDK_Checksum = "b44b80aeb15cb1e118df004063da332cc32f00b1ef7d5c6e51619b493fe77f4a"
 
 let mParticle_Apple_SDK_NoLocation_URL =
     "https://static.mparticle.com/sdk/ios/v8.41.0/mParticle_Apple_SDK_NoLocation.xcframework.zip"
-let mParticle_Apple_SDK_NoLocation_Checksum = "37d974c1b754c2f6a6b156dc05c4573c1860bb26141dc8ffcaaf2834a8dae67d"
+let mParticle_Apple_SDK_NoLocation_Checksum = "55e9ce93cf3c935bb22854456ac816ce75fb96389de3576f6a75e64779330cf8"
 
 let package = Package(
     name: "mParticle-Apple-SDK",
