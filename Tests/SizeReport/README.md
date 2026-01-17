@@ -2,6 +2,8 @@
 
 Measures the mParticle SDK's impact on app size by comparing a baseline app (no SDK) against one with the SDK integrated.
 
+![SDK Size Monitoring Diagram](diagram-mparticle-ios-sdk-size-monitoring.jpg)
+
 ## How It Works
 
 1. `measure_size.sh` builds the SDK **from source** into an xcframework
