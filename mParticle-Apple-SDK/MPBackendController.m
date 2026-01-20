@@ -1,5 +1,4 @@
 #import "MPBackendController.h"
-#import "MPAppDelegateProxy.h"
 #import "MPPersistenceController.h"
 #import "MPMessage.h"
 #import "MPSession.h"
@@ -62,10 +61,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @end
 
 @interface MPBackendController_PRIVATE() {
-    MPAppDelegateProxy *appDelegateProxy;
     NSTimeInterval nextCleanUpTime;
     dispatch_semaphore_t backendSemaphore;
-    BOOL originalAppDelegateProxied;
     MParticleSession *tempSession;
 }
 @property NSTimeInterval timeAppWentToBackground;
@@ -424,48 +421,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     }
     
     [self uploadOpenSessions:sessions completionHandler:completionHandler];
-}
-
-- (void)proxyOriginalAppDelegate {
-    if (originalAppDelegateProxied && !appDelegateProxy) {
-        return;
-    }
-    
-    // Add our proxy object to hook calls to the app delegate
-    UIApplication *application = [MPApplication_PRIVATE sharedUIApplication];
-    appDelegateProxy = [[MPAppDelegateProxy alloc] initWithOriginalAppDelegate:application.delegate];
-    application.delegate = appDelegateProxy;
-    
-    originalAppDelegateProxied = YES;
-}
-
-/**
-NOTE: This static variable is used to retain the app delegate after unproxying. Removing this will cause a crash when calling the MParticle "reset" method.
-
-The reason for this is that when an iOS app is first launched, the app delegate is implicitly retained. However, after we proxy it and call the setter for the UIApplication delegate property, the system no longer "magically" retains the app delegate. Because the property is marked with "assign", setting the original  delegate object back to the UIApplication delegate property will not cause it to be retained again by UIApplication, causing it to be deallocated as soon as our appDelegateProxy object is deallocated as it is the only thing still holding a reference. There is no real downside to doing this as app delegates are meant to live for the life of the application anyway. We're just using this reference in place of the "magic" reference/retain that iOS does when first launching the app.
-*/
-static id unproxiedAppDelegateReference = nil;
-
-// NOTE: This can only be called from the main thread
-- (void)unproxyOriginalAppDelegate {
-    if (!originalAppDelegateProxied && appDelegateProxy) {
-        return;
-    }
-        
-    UIApplication *application = [MPApplication_PRIVATE sharedUIApplication];
-    if (application.delegate != appDelegateProxy) {
-        MPILogWarning(@"Tried to unproxy the app delegate, but our proxy is no longer in place, application.delegate: %@", application.delegate);
-        return;
-    }
-    
-    // Hold a strong reference to the app delegate to prevent it from being deallocated
-    unproxiedAppDelegateReference = appDelegateProxy.originalAppDelegate;
-    
-    // Return the app delegate to it's original state and remove our proxy object
-    application.delegate = appDelegateProxy.originalAppDelegate;
-    appDelegateProxy = nil;
-    
-    originalAppDelegateProxied = NO;
 }
 
 - (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler {
@@ -1445,14 +1400,8 @@ static BOOL skipNextUpload = NO;
     return MPExecStatusSuccess;
 }
 
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:apiKey parameter2:secret parameter3:@(firstRun) parameter4:consentState];
-    
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        if (proxyAppDelegate) {
-            [self proxyOriginalAppDelegate];
-        }
-    }
     
     MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
     if (consentState != nil && storedConsentState == nil) {

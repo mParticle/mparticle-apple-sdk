@@ -468,7 +468,6 @@ MPLog* logger;
     
     MPInstallationType installationType = options.installType;
     MPEnvironment environment = options.environment;
-    BOOL proxyAppDelegate = options.proxyAppDelegate;
     BOOL startKitsAsync = options.startKitsAsync;
     
     __weak MParticle *weakSelf = self;
@@ -480,7 +479,6 @@ MPLog* logger;
         [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceController_PRIVATE mpId]];
     }
     
-    _proxiedAppDelegate = proxyAppDelegate;
     _automaticSessionTracking = self.options.automaticSessionTracking;
     _shouldBeginSession = self.options.shouldBeginSession;
     _customUserAgent = self.options.customUserAgent;
@@ -525,7 +523,6 @@ MPLog* logger;
                           networkOptions:options.networkOptions
                                 firstRun:firstRun
                         installationType:installationType
-                        proxyAppDelegate:proxyAppDelegate
                           startKitsAsync:startKitsAsync
                             consentState:consentState
                        completionHandler:^{
@@ -564,7 +561,6 @@ MPLog* logger;
         
         // Clean up mParticle instance
         [executor executeOnMain:^{
-            [self.backendController unproxyOriginalAppDelegate];
             [MParticle setSharedInstance:nil];
             if (completion) {
                 completion();
@@ -617,50 +613,30 @@ MPLog* logger;
 }
 
 - (void)didReceiveRemoteNotification:(NSDictionary *)userInfo {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didReceiveRemoteNotification:userInfo];
     }
 }
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     }
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     }
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
     }
 }
 
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
@@ -686,7 +662,6 @@ MPLog* logger;
                                                      identity:self.identity] resetDefaults];
         [self.persistenceController resetDatabase];
         [executor executeOnMain:^{
-            [self.backendController unproxyOriginalAppDelegate];
             predicate = 0;
             _sharedInstance = nil;
             if (completion) {
@@ -700,7 +675,6 @@ MPLog* logger;
     [executor executeOnMessageSync:^{
         [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
         [[MParticle sharedInstance].persistenceController resetDatabase];
-        [[MParticle sharedInstance].backendController unproxyOriginalAppDelegate];
         [MParticle setSharedInstance:nil];
     }];
 }

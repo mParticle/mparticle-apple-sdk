@@ -11,7 +11,6 @@ class MParticleOptionsMParticlePrivateTests: XCTestCase {
 
     func testInit() {
         XCTAssertNotNil(sut)
-        XCTAssertTrue(sut.proxyAppDelegate)
         XCTAssertTrue(sut.collectUserAgent)
         XCTAssertFalse(sut.collectSearchAdsAttribution)
         XCTAssertTrue(sut.trackNotifications)
@@ -59,16 +58,6 @@ class MParticleOptionsMParticlePrivateTests: XCTestCase {
 
         XCTAssertEqual(sut.apiKey, "key")
         XCTAssertEqual(sut.apiSecret, "secret")
-    }
-
-    func testSetProxyAppDelegate() {
-        XCTAssertTrue(sut.proxyAppDelegate)
-        XCTAssertFalse(sut.isProxyAppDelegateSet)
-
-        sut.setProxyAppDelegate(false)
-
-        XCTAssertFalse(sut.proxyAppDelegate)
-        XCTAssertTrue(sut.isProxyAppDelegateSet)
     }
 
     func testSetCollectUserAgent() {
