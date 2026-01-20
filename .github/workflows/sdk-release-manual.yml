@@ -328,7 +328,8 @@ jobs:
 
           ### 3. Release to CocoaPods
           \`\`\`bash
-          COCOAPODS_TRUNK_TOKEN={from 1Password} pod trunk push --allow-warnings
+          COCOAPODS_TRUNK_TOKEN={from 1Password}
+          pod trunk push --allow-warnings
           \`\`\`
 
           ---
@@ -339,4 +340,5 @@ jobs:
             --base main \
             --head chore/release-v${VERSION} \
             --title "chore: Release v${VERSION}" \
-            --body "$PR_BODY"
+            --body "$PR_BODY" \
+            --reviewer mParticle/sdk-team
