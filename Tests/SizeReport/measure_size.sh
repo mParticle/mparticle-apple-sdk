@@ -55,7 +55,7 @@ build_sdk_from_source() {
 	echo "  Archiving for iOS device..." >&2
 	xcodebuild archive \
 		-project "${SDK_PROJECT}" \
-		-scheme "mParticle-Apple-SDK" \
+		-scheme "mParticle-Apple-SDK-NoLocation" \
 		-destination "generic/platform=iOS" \
 		-archivePath "${ARCHIVES_DIR}/mParticle-Apple-SDK-iOS" \
 		SKIP_INSTALL=NO \
