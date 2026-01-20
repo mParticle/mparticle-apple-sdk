@@ -286,7 +286,7 @@ create_proxy_mappings() {
 	echo "📝 Creating proxy mappings for recording mode..."
 
 	local PROXY_DIR="${MAPPINGS_DIR}/mappings"
-	mkdir -p "$PROXY_DIR"
+	mkdir -p "${PROXY_DIR}"
 
 	# Create proxy-identify.json
 	cat >"${PROXY_DIR}/proxy-identify.json" <<'EOF'
