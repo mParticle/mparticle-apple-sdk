@@ -117,7 +117,6 @@ enum RemoteConfig {
     static let kMPRemoteConfigAliasMaxWindow = "alias_max_window"
     static let kMPRemoteConfigAllowASR = "iasr"
     static let kMPRemoteConfigExcludeAnonymousUsersKey = "eau"
-    static let kMPRemoteConfigDirectURLRouting = "dur"
     static let kMPRemoteConfigFlagsKey = "flags"
     static let kMPRemoteConfigAudienceAPIKey = "AudienceAPI"
     static let kMPRemoteConfigDataPlanningResults = "dpr"
