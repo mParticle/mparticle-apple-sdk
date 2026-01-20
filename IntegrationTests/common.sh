@@ -37,7 +37,7 @@ build_framework() {
 		-scheme mParticle-Apple-SDK-NoLocation \
 		-destination "generic/platform=iOS Simulator" \
 		-archivePath "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator" \
-		-derivedDataPath "$DERIVED_DATA_PATH" \
+		-derivedDataPath "${DERIVED_DATA_PATH}" \
 		SKIP_INSTALL=NO \
 		BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
 		-quiet || {
@@ -47,24 +47,24 @@ build_framework() {
 
 	# Copy Headers and Modules from standalone Swift framework to embedded Swift framework
 	echo "📋 Copying Swift framework headers and modules..."
-	local ARCHIVE_FRAMEWORKS="$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive/Products/Library/Frameworks"
-	local STANDALONE_SWIFT="$ARCHIVE_FRAMEWORKS/mParticle_Apple_SDK_Swift.framework"
-	local EMBEDDED_SWIFT="$ARCHIVE_FRAMEWORKS/mParticle_Apple_SDK_NoLocation.framework/Frameworks/mParticle_Apple_SDK_Swift.framework"
-	local MAIN_FRAMEWORK="$ARCHIVE_FRAMEWORKS/mParticle_Apple_SDK_NoLocation.framework"
+	local ARCHIVE_FRAMEWORKS="${SDK_DIR}/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive/Products/Library/Frameworks"
+	local STANDALONE_SWIFT="${ARCHIVE_FRAMEWORKS}/mParticle_Apple_SDK_Swift.framework"
+	local EMBEDDED_SWIFT="${ARCHIVE_FRAMEWORKS}/mParticle_Apple_SDK_NoLocation.framework/Frameworks/mParticle_Apple_SDK_Swift.framework"
+	local MAIN_FRAMEWORK="${ARCHIVE_FRAMEWORKS}/mParticle_Apple_SDK_NoLocation.framework"
 
-	if [ -d "$STANDALONE_SWIFT/Headers" ] && [ -d "$EMBEDDED_SWIFT" ]; then
-		cp -R "$STANDALONE_SWIFT/Headers" "$EMBEDDED_SWIFT/"
-		cp -R "$STANDALONE_SWIFT/Modules" "$EMBEDDED_SWIFT/"
+	if [[ -d "${STANDALONE_SWIFT}/Headers" ]] && [[ -d ${EMBEDDED_SWIFT} ]]; then
+		cp -R "${STANDALONE_SWIFT}/Headers" "${EMBEDDED_SWIFT}/"
+		cp -R "${STANDALONE_SWIFT}/Modules" "${EMBEDDED_SWIFT}/"
 		echo "✅ Swift framework headers and modules copied"
 	fi
 
 	# Update modulemap to reference Swift sub-framework
 	echo "📝 Updating modulemap to reference Swift sub-framework..."
-	local MODULEMAP_PATH="$MAIN_FRAMEWORK/Modules/module.modulemap"
-	if [ -f "$MODULEMAP_PATH" ]; then
+	local MODULEMAP_PATH="${MAIN_FRAMEWORK}/Modules/module.modulemap"
+	if [[ -f ${MODULEMAP_PATH} ]]; then
 		# Check if modulemap already has Swift sub-framework reference
-		if ! grep -q "module mParticle_Apple_SDK_Swift" "$MODULEMAP_PATH"; then
-			cat >>"$MODULEMAP_PATH" <<'EOF'
+		if ! grep -q "module mParticle_Apple_SDK_Swift" "${MODULEMAP_PATH}"; then
+			cat >>"${MODULEMAP_PATH}" <<'EOF'
 
 module mParticle_Apple_SDK_Swift {
   header "Frameworks/mParticle_Apple_SDK_Swift.framework/Headers/mParticle_Apple_SDK_Swift-Swift.h"
@@ -175,7 +175,8 @@ start_simulator() {
 
 find_app_path() {
 	echo "🔍 Finding application path..."
-	APP_PATH=$(find "$DERIVED_DATA" -type d -name "${APP_NAME}.app" | head -1)
+	local LOCAL_DERIVED_DATA="$(pwd)/Derived"
+	APP_PATH=$(find "$LOCAL_DERIVED_DATA" -type d -name "${APP_NAME}.app" | head -1)
 
 	if [ -z "$APP_PATH" ]; then
 		echo "❌ Application not found in DerivedData"
