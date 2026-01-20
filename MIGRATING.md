@@ -10,23 +10,23 @@ The `MPListenerController` class has been removed. The SDK no longer invokes any
 
 ### Direct Routing Enabled by Default
 
-The SDK now always uses region-specific API endpoints. Previously, this behavior was controlled by a server-side feature flag (`enableDirectRouting`).
+API requests now route directly to regional endpoints based on your API key prefix:
+
+| API Key Format              | Endpoint Example               |
+| --------------------------- | ------------------------------ |
+| `us1-xxxxx`                 | `nativesdks.us1.mparticle.com` |
+| `us2-xxxxx`                 | `nativesdks.us2.mparticle.com` |
+| `eu1-xxxxx`                 | `nativesdks.eu1.mparticle.com` |
+| `au1-xxxxx`                 | `nativesdks.au1.mparticle.com` |
+| `xxxxx` (legacy, no prefix) | `nativesdks.us1.mparticle.com` |
+
+Apps with network security policies should allow these regional subdomains. If you use App Transport Security with custom exceptions or allowlists, update them to permit the relevant hosts (for example, `*.us1.mparticle.com`, `*.eu1.mparticle.com`).
 
 ### Removed Deprecated UIApplicationDelegate Methods
 
 Apple has deprecated several `UIApplicationDelegate` protocol methods in favor of the modern `UIScene` lifecycle introduced in iOS 13. The mParticle SDK previously provided wrapper methods for these deprecated delegate methods, but these have been removed as they are scheduled for removal by Apple in iOS 27.
 
 #### What Has Changed
-
-API requests now route directly to regional endpoints based on your API key prefix:
-
-| API Key Format              | Endpoint Example               |
-| --------------------------- | ------------------------------ |
-| `us1-xxxxx`                 | `nativesdks.us1.mparticle.com` |
-| `eu1-xxxxx`                 | `nativesdks.eu1.mparticle.com` |
-| `xxxxx` (legacy, no prefix) | `nativesdks.us1.mparticle.com` |
-
----
 
 The following methods have been removed from the `MParticle` class:
 
