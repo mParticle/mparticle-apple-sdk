@@ -1,3 +1,5 @@
+# [8.41.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.41.0...v8.41.1) (2026-01-20)
+
 # [8.41.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.40.0...v8.41.0) (2026-01-20)
 
 ### Bug Fixes
