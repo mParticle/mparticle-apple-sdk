@@ -86,13 +86,13 @@ jobs:
       - name: Delete existing release branch if present
         run: |
           # Delete remote branch if it exists (ignore errors if it doesn't)
-          git push origin --delete release/v${VERSION} 2>/dev/null || true
+          git push origin --delete chore/release-v${VERSION} 2>/dev/null || true
           # Delete local branch if it exists
-          git branch -D release/v${VERSION} 2>/dev/null || true
+          git branch -D chore/release-v${VERSION} 2>/dev/null || true
 
       - name: Create release branch
         run: |
-          git checkout -b release/v${VERSION}
+          git checkout -b chore/release-v${VERSION}
 
       - name: Install the signing certificate
         env:
@@ -242,7 +242,16 @@ jobs:
 
       - name: Commit version changes
         run: |
-          git add -A
+          # Only add the version-related files, exclude build artifacts
+          git add \
+            CHANGELOG.md \
+            Framework/Info.plist \
+            Package.swift \
+            mParticle-Apple-SDK.podspec \
+            mParticle-Apple-SDK/MPConstants.swift \
+            mParticle-Apple-SDK/MPIConstants.m \
+            mParticle_Apple_SDK.json
+
           git commit -m "chore(release): ${VERSION}
 
           Updates version to ${VERSION} in:
@@ -256,7 +265,7 @@ jobs:
 
       - name: Push release branch
         run: |
-          git push origin release/v${VERSION}
+          git push origin chore/release-v${VERSION}
 
       - name: Create Pull Request
         env:
@@ -328,6 +337,6 @@ jobs:
 
           gh pr create \
             --base main \
-            --head release/v${VERSION} \
+            --head chore/release-v${VERSION} \
             --title "chore: Release v${VERSION}" \
             --body "$PR_BODY"
