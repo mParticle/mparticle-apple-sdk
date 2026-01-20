@@ -45,6 +45,26 @@ typedef NS_ENUM(NSInteger, MPDataType) {
     MPDataTypeLong = 5
 };
 
+typedef NS_ENUM(NSInteger, MPEndpoint) {
+    MPEndpointIdentityLogin = 0,
+    MPEndpointIdentityLogout,
+    MPEndpointIdentityIdentify,
+    MPEndpointIdentityModify,
+    MPEndpointEvents,
+    MPEndpointConfig,
+    MPEndpointAlias
+};
+
+typedef NS_ENUM(NSInteger, MPDatabaseTable) {
+    MPDatabaseTableAttributes = 0,
+    MPDatabaseTableBreadcrumbs,
+    MPDatabaseTableMessages,
+    MPDatabaseTableReporting,
+    MPDatabaseTableSessions,
+    MPDatabaseTableUploads,
+    MPDatabaseTableUnknown
+};
+
 // mParticle SDK Version
 extern NSString * _Nonnull const kMParticleSDKVersion;
 
