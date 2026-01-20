@@ -128,7 +128,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     [self deswizzle];
     
-    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://identity.mparticle.com/v1/0/modify"].location != NSNotFound);
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://identity.us1.mparticle.com/v1/0/modify"].location != NSNotFound);
     XCTAssert([modifyURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
@@ -198,7 +198,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     [self deswizzle];
     
-    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://nativesdks.mparticle.com/v1/identity/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://nativesdks.us1.mparticle.com/v1/identity/"].location != NSNotFound);
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
@@ -250,7 +250,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     [self deswizzle];
     
-    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://nativesdks.mparticle.com/v1/identity/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://nativesdks.us1.mparticle.com/v1/identity/"].location != NSNotFound);
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
@@ -936,31 +936,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     ];
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    NSString *oldEventHost = @"nativesdks.mparticle.com";
-    NSString *oldIdentityHost = @"identity.mparticle.com";
     
-    stateMachine.enableDirectRouting = NO;
-    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusNotDetermined);
-    for (NSArray *test in testKeys) {
-        NSString *key = test[0];
-        stateMachine.apiKey = key;
-        
-        XCTAssertEqualObjects(oldEventHost, [networkCommunication defaultEventHost]);
-        XCTAssertEqualObjects(oldIdentityHost, [networkCommunication defaultIdentityHost]);
-    }
-    
-    NSString *newEventHost = @"tracking-nativesdks.mparticle.com";
-    NSString *newIdentityHost = @"tracking-identity.mparticle.com";
-    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
-    for (NSArray *test in testKeys) {
-        NSString *key = test[0];
-        stateMachine.apiKey = key;
-        
-        XCTAssertEqualObjects(newEventHost, [networkCommunication defaultEventHost]);
-        XCTAssertEqualObjects(newIdentityHost, [networkCommunication defaultIdentityHost]);
-    }
-    
-    stateMachine.enableDirectRouting = YES;
     stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusNotDetermined);
     for (NSArray *test in testKeys) {
         NSString *key = test[0];
