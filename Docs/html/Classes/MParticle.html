@@ -1,0 +1,6054 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+
+	<title>MParticle Class Reference</title>
+
+	<link rel="stylesheet" href="../css/style.css">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1.4">
+	<meta name="generator" content="appledoc 2.2.1 (build 1334)">
+</head>
+<body class="appledoc">
+	<header>
+		<div class="container" class="hide-in-xcode">
+			
+			<h1 id="library-title">
+				<a href="../index.html">mParticle Apple SDK </a>
+			</h1>
+
+			<p id="developer-home">
+				<a href="../index.html">mParticle</a>
+			</p>
+			
+		</div>
+	</header>
+
+	<aside>
+		<div class="container">
+			<nav>
+				<ul id="header-buttons" role="toolbar">
+					<li><a href="../index.html">Index</a></li>
+<li><a href="../hierarchy.html">Hierarchy</a></li>
+
+					<li id="on-this-page" role="navigation">
+						<label>
+							On This Page
+
+							<div class="chevron">
+								<div class="chevy chevron-left"></div>
+								<div class="chevy chevron-right"></div>
+							</div>
+
+							<select id="jump-to">
+	<option value="top">Jump To&#133;</option>
+	
+	<option value="overview">Overview</option>
+	
+
+	
+	
+	<option value="tasks">Tasks</option>
+	
+	
+
+	
+	
+	<optgroup label="Properties">
+		
+		<option value="//api/name/)">)</option>
+		
+		<option value="//api/name/automaticSessionTracking">automaticSessionTracking</option>
+		
+		<option value="//api/name/backgroundLocationTracking">backgroundLocationTracking</option>
+		
+		<option value="//api/name/collectSearchAdsAttribution">collectSearchAdsAttribution</option>
+		
+		<option value="//api/name/collectUserAgent">collectUserAgent</option>
+		
+		<option value="//api/name/configMaxAgeSeconds">configMaxAgeSeconds</option>
+		
+		<option value="//api/name/currentSession">currentSession</option>
+		
+		<option value="//api/name/customLogger">customLogger</option>
+		
+		<option value="//api/name/customUserAgent">customUserAgent</option>
+		
+		<option value="//api/name/dataPlanId">dataPlanId</option>
+		
+		<option value="//api/name/dataPlanOptions">dataPlanOptions</option>
+		
+		<option value="//api/name/dataPlanVersion">dataPlanVersion</option>
+		
+		<option value="//api/name/deferredKitConfiguration_PRIVATE">deferredKitConfiguration_PRIVATE</option>
+		
+		<option value="//api/name/environment">environment</option>
+		
+		<option value="//api/name/identity">identity</option>
+		
+		<option value="//api/name/initialized">initialized</option>
+		
+		<option value="//api/name/kitContainer_PRIVATE">kitContainer_PRIVATE</option>
+		
+		<option value="//api/name/location">location</option>
+		
+		<option value="//api/name/logLevel">logLevel</option>
+		
+		<option value="//api/name/networkOptions">networkOptions</option>
+		
+		<option value="//api/name/optOut">optOut</option>
+		
+		<option value="//api/name/persistenceMaxAgeSeconds">persistenceMaxAgeSeconds</option>
+		
+		<option value="//api/name/proxiedAppDelegate">proxiedAppDelegate</option>
+		
+		<option value="//api/name/pushNotificationToken">pushNotificationToken</option>
+		
+		<option value="//api/name/rokt">rokt</option>
+		
+		<option value="//api/name/sessionTimeout">sessionTimeout</option>
+		
+		<option value="//api/name/shouldBeginSession">shouldBeginSession</option>
+		
+		<option value="//api/name/trackNotifications">trackNotifications</option>
+		
+		<option value="//api/name/uniqueIdentifier">uniqueIdentifier</option>
+		
+		<option value="//api/name/uploadInterval">uploadInterval</option>
+		
+		<option value="//api/name/version">version</option>
+		
+	</optgroup>
+	
+
+	
+	<optgroup label="Class Methods">
+		
+		<option value="//api/name/_setWrapperSdk_internal:version:">+ _setWrapperSdk_internal:version:</option>
+		
+		<option value="//api/name/isOlderThanConfigMaxAgeSeconds">+ isOlderThanConfigMaxAgeSeconds</option>
+		
+		<option value="//api/name/registerExtension:">+ registerExtension:</option>
+		
+		<option value="//api/name/sharedInstance">+ sharedInstance</option>
+		
+	</optgroup>
+	
+
+	
+	<optgroup label="Instance Methods">
+		
+		<option value="//api/name/activeTimedEvents">- activeTimedEvents</option>
+		
+		<option value="//api/name/attributionInfo">- attributionInfo</option>
+		
+		<option value="//api/name/beginLocationTracking:minDistance:">- beginLocationTracking:minDistance:</option>
+		
+		<option value="//api/name/beginLocationTracking:minDistance:authorizationRequest:">- beginLocationTracking:minDistance:authorizationRequest:</option>
+		
+		<option value="//api/name/beginSession">- beginSession</option>
+		
+		<option value="//api/name/beginTimedEvent:">- beginTimedEvent:</option>
+		
+		<option value="//api/name/clearIntegrationAttributesForKit:">- clearIntegrationAttributesForKit:</option>
+		
+		<option value="//api/name/continueUserActivity:restorationHandler:">- continueUserActivity:restorationHandler:</option>
+		
+		<option value="//api/name/didFailToRegisterForRemoteNotificationsWithError:">- didFailToRegisterForRemoteNotificationsWithError:</option>
+		
+		<option value="//api/name/didReceiveRemoteNotification:">- didReceiveRemoteNotification:</option>
+		
+		<option value="//api/name/didRegisterForRemoteNotificationsWithDeviceToken:">- didRegisterForRemoteNotificationsWithDeviceToken:</option>
+		
+		<option value="//api/name/endLocationTracking">- endLocationTracking</option>
+		
+		<option value="//api/name/endSession">- endSession</option>
+		
+		<option value="//api/name/endTimedEvent:">- endTimedEvent:</option>
+		
+		<option value="//api/name/eventWithName:">- eventWithName:</option>
+		
+		<option value="//api/name/handleActionWithIdentifier:forRemoteNotification:">- handleActionWithIdentifier:forRemoteNotification:</option>
+		
+		<option value="//api/name/handleActionWithIdentifier:forRemoteNotification:withResponseInfo:">- handleActionWithIdentifier:forRemoteNotification:withResponseInfo:</option>
+		
+		<option value="//api/name/handleURLContext:">- handleURLContext:</option>
+		
+		<option value="//api/name/handleUserActivity:">- handleUserActivity:</option>
+		
+		<option value="//api/name/incrementSessionAttribute:byValue:">- incrementSessionAttribute:byValue:</option>
+		
+		<option value="//api/name/initializeWKWebView:">- initializeWKWebView:</option>
+		
+		<option value="//api/name/initializeWKWebView:bridgeName:">- initializeWKWebView:bridgeName:</option>
+		
+		<option value="//api/name/integrationAttributesForKit:">- integrationAttributesForKit:</option>
+		
+		<option value="//api/name/isKitActive:">- isKitActive:</option>
+		
+		<option value="//api/name/kitInstance:">- kitInstance:</option>
+		
+		<option value="//api/name/kitInstance:completionHandler:">- kitInstance:completionHandler:</option>
+		
+		<option value="//api/name/leaveBreadcrumb:">- leaveBreadcrumb:</option>
+		
+		<option value="//api/name/leaveBreadcrumb:eventInfo:">- leaveBreadcrumb:eventInfo:</option>
+		
+		<option value="//api/name/logCommerceEvent:">- logCommerceEvent:</option>
+		
+		<option value="//api/name/logCrash:stackTrace:plCrashReport:">- logCrash:stackTrace:plCrashReport:</option>
+		
+		<option value="//api/name/logError:">- logError:</option>
+		
+		<option value="//api/name/logError:eventInfo:">- logError:eventInfo:</option>
+		
+		<option value="//api/name/logEvent:">- logEvent:</option>
+		
+		<option value="//api/name/logEvent:eventType:eventInfo:">- logEvent:eventType:eventInfo:</option>
+		
+		<option value="//api/name/logException:">- logException:</option>
+		
+		<option value="//api/name/logException:topmostContext:">- logException:topmostContext:</option>
+		
+		<option value="//api/name/logLTVIncrease:eventName:">- logLTVIncrease:eventName:</option>
+		
+		<option value="//api/name/logLTVIncrease:eventName:eventInfo:">- logLTVIncrease:eventName:eventInfo:</option>
+		
+		<option value="//api/name/logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:">- logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:</option>
+		
+		<option value="//api/name/logNotificationOpenedWithUserInfo:andActionIdentifier:">- logNotificationOpenedWithUserInfo:andActionIdentifier:</option>
+		
+		<option value="//api/name/logNotificationReceivedWithUserInfo:">- logNotificationReceivedWithUserInfo:</option>
+		
+		<option value="//api/name/logScreen:eventInfo:">- logScreen:eventInfo:</option>
+		
+		<option value="//api/name/logScreen:eventInfo:shouldUploadEvent:">- logScreen:eventInfo:shouldUploadEvent:</option>
+		
+		<option value="//api/name/logScreenEvent:">- logScreenEvent:</option>
+		
+		<option value="//api/name/onKitsInitialized:">- onKitsInitialized:</option>
+		
+		<option value="//api/name/openURL:options:">- openURL:options:</option>
+		
+		<option value="//api/name/openURL:sourceApplication:annotation:">- openURL:sourceApplication:annotation:</option>
+		
+		<option value="//api/name/reset">- reset</option>
+		
+		<option value="//api/name/reset:">- reset:</option>
+		
+		<option value="//api/name/setATTStatus:withATTStatusTimestampMillis:">- setATTStatus:withATTStatusTimestampMillis:</option>
+		
+		<option value="//api/name/setIntegrationAttributes:forKit:">- setIntegrationAttributes:forKit:</option>
+		
+		<option value="//api/name/setSessionAttribute:value:">- setSessionAttribute:value:</option>
+		
+		<option value="//api/name/startWithOptions:">- startWithOptions:</option>
+		
+		<option value="//api/name/surveyURL:">- surveyURL:</option>
+		
+		<option value="//api/name/switchWorkspaceWithOptions:">- switchWorkspaceWithOptions:</option>
+		
+		<option value="//api/name/upload">- upload</option>
+		
+		<option value="//api/name/userNotificationCenter:didReceiveNotificationResponse:">- userNotificationCenter:didReceiveNotificationResponse:</option>
+		
+		<option value="//api/name/userNotificationCenter:willPresentNotification:">- userNotificationCenter:willPresentNotification:</option>
+		
+	</optgroup>
+	
+	
+</select>
+						</label>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</aside>
+
+	<article>
+		<div id="overview_contents" class="container">
+			<div id="content">
+				<main role="main">
+					<h1 class="title">MParticle Class Reference</h1>
+
+					
+					<div class="section section-specification"><table cellspacing="0"><tbody>
+						<tr>
+	<th>Inherits from</th>
+	<td>NSObject</td>
+</tr><tr>
+	<th>Declared in</th>
+	<td>mParticle.h</td>
+</tr>
+						</tbody></table></div>
+					
+
+                    
+					
+					<div class="section section-overview">
+						<a title="Overview" name="overview"></a>
+						<h2 class="subtitle subtitle-overview">Overview</h2>
+						<p>This is the main class of the mParticle SDK. It interfaces your app with the mParticle API
+so you can report and measure the many different metrics of your app.</p>
+
+<p><b>Usage:</b></p>
+
+<p><b>Swift</b></p>
+
+<pre><code>
+let mParticle = MParticle.sharedInstance()
+</code></pre>
+
+
+<p><b>Objective-C</b></p>
+
+<pre><code>
+MParticle *mParticle = [MParticle sharedInstance];
+</code></pre>
+
+					</div>
+					
+					
+
+					
+					
+					<div class="section section-tasks">
+						<a title="Tasks" name="tasks"></a>
+						
+
+						
+						
+
+						<div class="task-list">
+							<div class="section-method">
+	<a name="//api/name/identity" title="identity"></a>
+	<h3 class="method-title"><code><a href="#//api/name/identity">&nbsp;&nbsp;identity</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>This property is an instance of <a href="../Classes/MPIdentityApi.html">MPIdentityApi</a>. It allows tracking login, logout, and identity changes.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) MPIdentityApi *identity</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>This property is an instance of <a href="../Classes/MPIdentityApi.html">MPIdentityApi</a>. It allows tracking login, logout, and identity changes.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPIdentityApi.html">MPIdentityApi</a></p></code></li>
+					
+					<li><code><p><a href="../Classes/MParticleUser.html">MParticleUser</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/rokt" title="rokt"></a>
+	<h3 class="method-title"><code><a href="#//api/name/rokt">&nbsp;&nbsp;rokt</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>This property is an instance of <a href="../Classes/MPRokt.html">MPRokt</a>. It allows you to access the Rokt SDK through mParticle</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) MPRokt *rokt</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>This property is an instance of <a href="../Classes/MPRokt.html">MPRokt</a>. It allows you to access the Rokt SDK through mParticle</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPRokt.html">MPRokt</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/)" title=")"></a>
+	<h3 class="method-title"><code><a href="#//api/name/)">&nbsp;&nbsp;)</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>If set to YES development logs will be output to the
+console, if set to NO the development logs will be suppressed. This property works in conjunction with
+the <a href="#//api/name/environment">environment</a> property. If the <a href="#//api/name/environment">environment</a> is Production, consoleLogging will always be NO,
+regardless of the value you assign to it.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly) BOOL consoleLogging DEPRECATED_MSG_ATTRIBUTE ( &quot;set logLevel on MParticleOptions instead&quot; )</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>If set to YES development logs will be output to the
+console, if set to NO the development logs will be suppressed. This property works in conjunction with
+the <a href="#//api/name/environment">environment</a> property. If the <a href="#//api/name/environment">environment</a> is Production, consoleLogging will always be NO,
+regardless of the value you assign to it.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/environment">@property environment</a></p></code></li>
+					
+					<li><code><p><a href="#//api/name/logLevel">@property logLevel</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/environment" title="environment"></a>
+	<h3 class="method-title"><code><a href="#//api/name/environment">&nbsp;&nbsp;environment</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The environment property returns the running SDK environment: Development or Production.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly) MPEnvironment environment</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The environment property returns the running SDK environment: Development or Production.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPEnvironment.html">MPEnvironment</a></p></code></li>
+					
+					<li><code><p><a href="#//api/name/startWithOptions:">- startWithOptions:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/initialized" title="initialized"></a>
+	<h3 class="method-title"><code><a href="#//api/name/initialized">&nbsp;&nbsp;initialized</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Flag indicating whether the mParticle SDK has been fully initialized yet or not. You can KVO this property to know when the SDK
+successfully finishes initializing</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly) BOOL initialized</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Flag indicating whether the mParticle SDK has been fully initialized yet or not. You can KVO this property to know when the SDK
+successfully finishes initializing</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logLevel" title="logLevel"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logLevel">&nbsp;&nbsp;logLevel</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Specifies the log level output to the console while the app is under development: none, error, warning, and debug.
+When the <a href="#//api/name/environment">environment</a> is Production, the log level will always be none, regardless of the value you assign to it.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic) MPILogLevel logLevel</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Specifies the log level output to the console while the app is under development: none, error, warning, and debug.
+When the <a href="#//api/name/environment">environment</a> is Production, the log level will always be none, regardless of the value you assign to it.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/environment">@property environment</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/customLogger" title="customLogger"></a>
+	<h3 class="method-title"><code><a href="#//api/name/customLogger">&nbsp;&nbsp;customLogger</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A custom handler callback for mParticle log messages. If set, this block will be invoked each time mParticle would normally log a message to the console.
+N.B.: The format/wording of mParticle log messages may change between releases&ndash;please avoid using this programatically to detect SDK behavior unless absolutely necessary, and then only as a temporary workaround.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, copy, nullable, readwrite) void ( ^ ) ( NSString *message ) customLogger</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A custom handler callback for mParticle log messages. If set, this block will be invoked each time mParticle would normally log a message to the console.
+N.B.: The format/wording of mParticle log messages may change between releases&ndash;please avoid using this programatically to detect SDK behavior unless absolutely necessary, and then only as a temporary workaround.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MParticleOptions.html">MParticleOptions</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/optOut" title="optOut"></a>
+	<h3 class="method-title"><code><a href="#//api/name/optOut">&nbsp;&nbsp;optOut</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Gets/Sets the opt-in/opt-out status for the application. Set it to YES to opt-out of event tracking. Set it to NO to opt-in of event tracking.
+The default value is NO (opt-in of event tracking)</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL optOut</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Gets/Sets the opt-in/opt-out status for the application. Set it to YES to opt-out of event tracking. Set it to NO to opt-in of event tracking.
+The default value is NO (opt-in of event tracking)</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/proxiedAppDelegate" title="proxiedAppDelegate"></a>
+	<h3 class="method-title"><code><a href="#//api/name/proxiedAppDelegate">&nbsp;&nbsp;proxiedAppDelegate</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
+application notifications automatically.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly) BOOL proxiedAppDelegate</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
+application notifications automatically.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/startWithOptions:">- startWithOptions:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/automaticSessionTracking" title="automaticSessionTracking"></a>
+	<h3 class="method-title"><code><a href="#//api/name/automaticSessionTracking">&nbsp;&nbsp;automaticSessionTracking</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A flag indicating whether the mParticle Apple SDK is using
+automated Session tracking.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly) BOOL automaticSessionTracking</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A flag indicating whether the mParticle Apple SDK is using
+automated Session tracking.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MParticleOptions.html">MParticleOptions</a></p></code></li>
+					
+					<li><code><p><a href="#//api/name/shouldBeginSession">@property shouldBeginSession</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/shouldBeginSession" title="shouldBeginSession"></a>
+	<h3 class="method-title"><code><a href="#//api/name/shouldBeginSession">&nbsp;&nbsp;shouldBeginSession</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A flag indicating whether the SDK should start a session on SDK init. (Defaults to YES.)</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL shouldBeginSession</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A flag indicating whether the SDK should start a session on SDK init. (Defaults to YES.)</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MParticleOptions.html">MParticleOptions</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/currentSession" title="currentSession"></a>
+	<h3 class="method-title"><code><a href="#//api/name/currentSession">&nbsp;&nbsp;currentSession</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The current session. You can access properties for Session ID and UUID.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (atomic, strong, nullable, readonly) MParticleSession *currentSession</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The current session. You can access properties for Session ID and UUID.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/customUserAgent" title="customUserAgent"></a>
+	<h3 class="method-title"><code><a href="#//api/name/customUserAgent">&nbsp;&nbsp;customUserAgent</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Gets/Sets the user agent to a custom value.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (atomic, strong, nullable, readonly) NSString *customUserAgent</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Gets/Sets the user agent to a custom value.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/collectUserAgent" title="collectUserAgent"></a>
+	<h3 class="method-title"><code><a href="#//api/name/collectUserAgent">&nbsp;&nbsp;collectUserAgent</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Determines whether the mParticle Apple SDK will instantiate a webview in order to collect the browser user agent.
+This value is required by attribution providers for fingerprint identification, when device IDs are not available.
+If you disable this flag, consider populating the user agent via the <a href="#//api/name/customUserAgent">customUserAgent</a> property above if you are using
+an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (atomic, readonly) BOOL collectUserAgent</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Determines whether the mParticle Apple SDK will instantiate a webview in order to collect the browser user agent.
+This value is required by attribution providers for fingerprint identification, when device IDs are not available.
+If you disable this flag, consider populating the user agent via the <a href="#//api/name/customUserAgent">customUserAgent</a> property above if you are using
+an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/collectSearchAdsAttribution" title="collectSearchAdsAttribution"></a>
+	<h3 class="method-title"><code><a href="#//api/name/collectSearchAdsAttribution">&nbsp;&nbsp;collectSearchAdsAttribution</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Determines whether the SDK will attempt to collect Apple Search Ads attribution information. Defaults to YES</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (atomic, readonly) BOOL collectSearchAdsAttribution</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Determines whether the SDK will attempt to collect Apple Search Ads attribution information. Defaults to YES</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/networkOptions" title="networkOptions"></a>
+	<h3 class="method-title"><code><a href="#//api/name/networkOptions">&nbsp;&nbsp;networkOptions</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Allows you to proxy SDK traffic by overriding the default network endpoints and certificates used by the SDK.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly, nullable) MPNetworkOptions *networkOptions</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Allows you to proxy SDK traffic by overriding the default network endpoints and certificates used by the SDK.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MParticleOptions.html">MParticleOptions</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/pushNotificationToken" title="pushNotificationToken"></a>
+	<h3 class="method-title"><code><a href="#//api/name/pushNotificationToken">&nbsp;&nbsp;pushNotificationToken</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Gets/Sets the push notification token for the application.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSData *pushNotificationToken</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Gets/Sets the push notification token for the application.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/trackNotifications" title="trackNotifications"></a>
+	<h3 class="method-title"><code><a href="#//api/name/trackNotifications">&nbsp;&nbsp;trackNotifications</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (atomic, readonly) BOOL trackNotifications</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/sessionTimeout" title="sessionTimeout"></a>
+	<h3 class="method-title"><code><a href="#//api/name/sessionTimeout">&nbsp;&nbsp;sessionTimeout</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Gets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged
+This value is no longer capped, any value from 1.0 to <code>DBL_MAX</code> seconds can be chosen.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly) NSTimeInterval sessionTimeout</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Gets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged
+This value is no longer capped, any value from 1.0 to <code>DBL_MAX</code> seconds can be chosen.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/uniqueIdentifier" title="uniqueIdentifier"></a>
+	<h3 class="method-title"><code><a href="#//api/name/uniqueIdentifier">&nbsp;&nbsp;uniqueIdentifier</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Unique identifier for this app running on this device. This unique identifier is synchronized with the mParticle servers.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly, nullable) NSString *uniqueIdentifier</code></div>
+
+		    
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>A string containing the unique identifier or nil, if communication with the server could not yet be established.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Unique identifier for this app running on this device. This unique identifier is synchronized with the mParticle servers.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/uploadInterval" title="uploadInterval"></a>
+	<h3 class="method-title"><code><a href="#//api/name/uploadInterval">&nbsp;&nbsp;uploadInterval</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Gets/Sets the interval to <a href="#//api/name/upload">upload</a> data to mParticle servers.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) NSTimeInterval uploadInterval</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Gets/Sets the interval to <a href="#//api/name/upload">upload</a> data to mParticle servers.</p>
+
+<p>Batches of data are sent periodically to the mParticle servers at the rate defined by the uploadInterval. Batches are also uploaded
+when the application is sent to the background or before they are terminated. When set, an <a href="#//api/name/upload">upload</a> is performed immediately before the sdk adheres to the new <a href="#//api/name/upload">upload</a> interval.
+The minimum uploadInterval is 1 second (1.0). The default uploadInterval is 10 minutes (600.0) on iOS and 6 seconds (6.0) on tvOS.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/version" title="version"></a>
+	<h3 class="method-title"><code><a href="#//api/name/version">&nbsp;&nbsp;version</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>mParticle Apple SDK version</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) NSString *version</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>mParticle Apple SDK version</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/dataPlanId" title="dataPlanId"></a>
+	<h3 class="method-title"><code><a href="#//api/name/dataPlanId">&nbsp;&nbsp;dataPlanId</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Data plan id</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) NSString *dataPlanId</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Data plan id</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/dataPlanVersion" title="dataPlanVersion"></a>
+	<h3 class="method-title"><code><a href="#//api/name/dataPlanVersion">&nbsp;&nbsp;dataPlanVersion</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Data plan <a href="#//api/name/version">version</a></p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) NSNumber *dataPlanVersion</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Data plan <a href="#//api/name/version">version</a></p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/dataPlanOptions" title="dataPlanOptions"></a>
+	<h3 class="method-title"><code><a href="#//api/name/dataPlanOptions">&nbsp;&nbsp;dataPlanOptions</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Sets data plan options for kit blocking</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly) MPDataPlanOptions *dataPlanOptions</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Sets data plan options for kit blocking</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MParticleOptions.html">MParticleOptions</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/configMaxAgeSeconds" title="configMaxAgeSeconds"></a>
+	<h3 class="method-title"><code><a href="#//api/name/configMaxAgeSeconds">&nbsp;&nbsp;configMaxAgeSeconds</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Maximum threshold for stored configuration age, in seconds.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly, nullable) NSNumber *configMaxAgeSeconds</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Maximum threshold for stored configuration age, in seconds.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MParticleOptions.html">MParticleOptions</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/persistenceMaxAgeSeconds" title="persistenceMaxAgeSeconds"></a>
+	<h3 class="method-title"><code><a href="#//api/name/persistenceMaxAgeSeconds">&nbsp;&nbsp;persistenceMaxAgeSeconds</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Maximum threshold for stored events, batches, and sessions, in seconds.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly, nullable) NSNumber *persistenceMaxAgeSeconds</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Maximum threshold for stored events, batches, and sessions, in seconds.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MParticleOptions.html">MParticleOptions</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/kitContainer_PRIVATE" title="kitContainer_PRIVATE"></a>
+	<h3 class="method-title"><code><a href="#//api/name/kitContainer_PRIVATE">&nbsp;&nbsp;kitContainer_PRIVATE</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The instance which manages all <a href="#//api/name/initialized">initialized</a> kits. For internal use only</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) MPKitContainer_PRIVATE *kitContainer_PRIVATE</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The instance which manages all <a href="#//api/name/initialized">initialized</a> kits. For internal use only</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/deferredKitConfiguration_PRIVATE" title="deferredKitConfiguration_PRIVATE"></a>
+	<h3 class="method-title"><code><a href="#//api/name/deferredKitConfiguration_PRIVATE">&nbsp;&nbsp;deferredKitConfiguration_PRIVATE</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The Kit Configuration needed should the initialization of kits need to be deferred until <a href="#//api/name/identity">identity</a> or consent is resolve. For internal use only</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSArray&lt;NSDictionary*&gt; *deferredKitConfiguration_PRIVATE</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The Kit Configuration needed should the initialization of kits need to be deferred until <a href="#//api/name/identity">identity</a> or consent is resolve. For internal use only</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/sharedInstance" title="sharedInstance"></a>
+	<h3 class="method-title"><code><a href="#//api/name/sharedInstance">+&nbsp;sharedInstance</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Returns the shared instance object.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>+ (instancetype)sharedInstance</code></div>
+
+		    
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>the Singleton instance of the MParticle class.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Returns the shared instance object.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/startWithOptions:" title="startWithOptions:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/startWithOptions:">&ndash;&nbsp;startWithOptions:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Starts the SDK with your API key and secret and installation type.
+It is required that you use either this method to authorize the SDK before
+using the other API methods. The apiKey and secret that are passed in to this method
+will override the <code>api_key</code> and <code>api_secret</code> parameters of the (optional) MParticleConfig.plist.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)startWithOptions:(MParticleOptions *)<em>options</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>options</code></th>
+						<td><p>SDK startup options</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Starts the SDK with your API key and secret and installation type.
+It is required that you use either this method to authorize the SDK before
+using the other API methods. The apiKey and secret that are passed in to this method
+will override the <code>api_key</code> and <code>api_secret</code> parameters of the (optional) MParticleConfig.plist.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/switchWorkspaceWithOptions:" title="switchWorkspaceWithOptions:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/switchWorkspaceWithOptions:">&ndash;&nbsp;switchWorkspaceWithOptions:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Switches the SDK to a new API key and secret.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)switchWorkspaceWithOptions:(MParticleOptions *)<em>options</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>options</code></th>
+						<td><p>SDK startup options</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Switches the SDK to a new API key and secret.</p>
+
+<p>Will first batch all events that have not been sent to mParticle into <a href="#//api/name/upload">upload</a> records,
+then all SDK state including user defaults, database (except uploads), etc will be
+completely <a href="#//api/name/reset">reset</a>. After that, <code>startWithOptions</code> will be called with the new
+key and secret and the SDK will initialize again as if it is a new app launch.</p>
+
+<p>Any kits that do not implement the <code>stop</code> method will be deactivated and will
+not receive any events until the app is restarted. Any kits that were not used by the
+previous workspace will continue to be available even if they don&rsquo;t implement <code>stop</code>.
+Any sideloaded kits will need new instances passed in via <code>options.sideloadedKits</code>.
+It is recommended to implement the <code>stop</code> in all sideloaded kits, though if it is not
+implemented then the old instances will still not receive any new events.</p>
+
+<p>The apiKey and secret that are passed in to this method will override the <code>api_key</code>
+and <code>api_secret</code> parameters of the (optional) MParticleConfig.plist.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/didReceiveRemoteNotification:" title="didReceiveRemoteNotification:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/didReceiveRemoteNotification:">&ndash;&nbsp;didReceiveRemoteNotification:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK a remote notification has been received. This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)didReceiveRemoteNotification:(NSDictionary *)<em>userInfo</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>userInfo</code></th>
+						<td><p>A dictionary containing information related to the remote notification</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK a remote notification has been received. This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/didFailToRegisterForRemoteNotificationsWithError:" title="didFailToRegisterForRemoteNotificationsWithError:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/didFailToRegisterForRemoteNotificationsWithError:">&ndash;&nbsp;didFailToRegisterForRemoteNotificationsWithError:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK the push notification service could not complete the registration process. This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)didFailToRegisterForRemoteNotificationsWithError:(nullable NSError *)<em>error</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>error</code></th>
+						<td><p>An NSError object encapsulating the information why registration did not succeed</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK the push notification service could not complete the registration process. This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/didRegisterForRemoteNotificationsWithDeviceToken:" title="didRegisterForRemoteNotificationsWithDeviceToken:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/didRegisterForRemoteNotificationsWithDeviceToken:">&ndash;&nbsp;didRegisterForRemoteNotificationsWithDeviceToken:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK the app successfully registered with the push notification service. This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)<em>deviceToken</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>deviceToken</code></th>
+						<td><p>A token that identifies the device+App to APNS</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK the app successfully registered with the push notification service. This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/handleActionWithIdentifier:forRemoteNotification:" title="handleActionWithIdentifier:forRemoteNotification:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/handleActionWithIdentifier:forRemoteNotification:">&ndash;&nbsp;handleActionWithIdentifier:forRemoteNotification:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)handleActionWithIdentifier:(nullable NSString *)<em>identifier</em> forRemoteNotification:(nullable NSDictionary *)<em>userInfo</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>identifier</code></th>
+						<td><p>The identifier associated with the custom action</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>userInfo</code></th>
+						<td><p>A dictionary that contains information related to the remote notification</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/handleActionWithIdentifier:forRemoteNotification:withResponseInfo:" title="handleActionWithIdentifier:forRemoteNotification:withResponseInfo:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/handleActionWithIdentifier:forRemoteNotification:withResponseInfo:">&ndash;&nbsp;handleActionWithIdentifier:forRemoteNotification:withResponseInfo:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)handleActionWithIdentifier:(nullable NSString *)<em>identifier</em> forRemoteNotification:(nullable NSDictionary *)<em>userInfo</em> withResponseInfo:(nonnull NSDictionary *)<em>responseInfo</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>identifier</code></th>
+						<td><p>The identifier associated with the custom action</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>userInfo</code></th>
+						<td><p>A dictionary that contains information related to the remote notification</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>responseInfo</code></th>
+						<td><p>The data dictionary sent by the action</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/openURL:sourceApplication:annotation:" title="openURL:sourceApplication:annotation:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/openURL:sourceApplication:annotation:">&ndash;&nbsp;openURL:sourceApplication:annotation:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>DEPRECATED: <a href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(">https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(</a><em>:open:sourceapplication:annotation:)
+Use a UIScene lifecycle, mParticle&rsquo;s <a href="#//api/name/handleURLContext:">handleURLContext:</a> method, and scene(</em>:openURLContexts:) from UISceneDelegate instead.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)openURL:(NSURL *)<em>url</em> sourceApplication:(nullable NSString *)<em>sourceApplication</em> annotation:(nullable id)<em>annotation</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>url</code></th>
+						<td><p>The URL resource to open</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>sourceApplication</code></th>
+						<td><p>The bundle ID of the requesting app</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>annotation</code></th>
+						<td><p>A property list object supplied by the source app</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>DEPRECATED: <a href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(">https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(</a><em>:open:sourceapplication:annotation:)
+Use a UIScene lifecycle, mParticle&rsquo;s <a href="#//api/name/handleURLContext:">handleURLContext:</a> method, and scene(</em>:openURLContexts:) from UISceneDelegate instead.</p>
+
+<p>Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/openURL:options:" title="openURL:options:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/openURL:options:">&ndash;&nbsp;openURL:options:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>DEPRECATED: <a href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(">https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(</a><em>:open:sourceapplication:annotation:)
+Use a UIScene lifecycle, mParticle&rsquo;s <a href="#//api/name/handleURLContext:">handleURLContext:</a> method, and scene(</em>:openURLContexts:) from UISceneDelegate instead.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)openURL:(NSURL *)<em>url</em> options:(nullable NSDictionary *)<em>options</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>url</code></th>
+						<td><p>The URL resource to open</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>options</code></th>
+						<td><p>The dictionary of launch options</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>DEPRECATED: <a href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(">https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(</a><em>:open:sourceapplication:annotation:)
+Use a UIScene lifecycle, mParticle&rsquo;s <a href="#//api/name/handleURLContext:">handleURLContext:</a> method, and scene(</em>:openURLContexts:) from UISceneDelegate instead.</p>
+
+<p>Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled. This method is only available for iOS 9 and above.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/continueUserActivity:restorationHandler:" title="continueUserActivity:restorationHandler:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/continueUserActivity:restorationHandler:">&ndash;&nbsp;continueUserActivity:restorationHandler:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>DEPRECATED: <a href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(">https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(</a><em>:continue:restorationhandler:)
+Use UIScene lifecycle, mParticle&rsquo;s <a href="#//api/name/handleUserActivity:">handleUserActivity:</a> method, and scene(</em>:continue:) from UISceneDelegate instead.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (BOOL)continueUserActivity:(nonnull NSUserActivity *)<em>userActivity</em> restorationHandler:(void ( ^ _Nonnull ) ( NSArray&lt;id&lt;UIUserActivityRestoring&gt; &gt; *__nullable restorableObjects ))<em>restorationHandler</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>userActivity</code></th>
+						<td><p>The NSUserActivity that caused the app to be opened</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>restorationHandler</code></th>
+						<td><p>A block to execute if your app creates objects to perform the task.</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>DEPRECATED: <a href="https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(">https://developer.apple.com/documentation/uikit/uiapplicationdelegate/application(</a><em>:continue:restorationhandler:)
+Use UIScene lifecycle, mParticle&rsquo;s <a href="#//api/name/handleUserActivity:">handleUserActivity:</a> method, and scene(</em>:continue:) from UISceneDelegate instead.</p>
+
+<p>Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled. This method is only available for iOS 9 and above.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/handleURLContext:" title="handleURLContext:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/handleURLContext:">&ndash;&nbsp;handleURLContext:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled. This method is only available for iOS 13 and above.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)handleURLContext:(UIOpenURLContext *)<em>urlContext</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>urlContext</code></th>
+						<td><p>The UIOpenURLContext provided by the SceneDelegate</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled. This method is only available for iOS 13 and above.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/handleUserActivity:" title="handleUserActivity:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/handleUserActivity:">&ndash;&nbsp;handleUserActivity:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)handleUserActivity:(NSUserActivity *)<em>userActivity</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>userActivity</code></th>
+						<td><p>The NSUserActivity that caused the app to be opened</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
+This method should be called only if <a href="#//api/name/proxiedAppDelegate">proxiedAppDelegate</a> is disabled.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/proxiedAppDelegate">@property proxiedAppDelegate</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/reset" title="reset"></a>
+	<h3 class="method-title"><code><a href="#//api/name/reset">&ndash;&nbsp;reset</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>DEPRECATED: This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further <a href="#//api/name/upload">upload</a> or download behavior that may be prepared</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)reset</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>DEPRECATED: This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further <a href="#//api/name/upload">upload</a> or download behavior that may be prepared</p>
+
+<p>NOTE: This method is less comprehensive than the new <a href="#//api/name/reset:"><code>reset:</code></a> method. It resets less state and is called within a <code>dispatch_sync()</code> which has the potential to deadlock in rare cases.</p>
+
+<p>If you have any reference to the MParticle instance, you must remove your reference by setting it to &ldquo;nil&rdquo;, in order to avoid any unexpected behavior
+The SDK will be shut down and <a href="#//api/name/sharedInstance">[MParticle sharedInstance]</a> will return a new instance without apiKey or secretKey. MParticle can be restarted by calling MParticle.startWithOptions</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/reset:" title="reset:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/reset:">&ndash;&nbsp;reset:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further <a href="#//api/name/upload">upload</a> or download behavior that may be prepared</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)reset:(nullable void ( ^ ) ( void ))<em>completion</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>completion</code></th>
+						<td><p>A block to execute on the main thread after the SDK is completely <a href="#//api/name/reset">reset</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further upload or download behavior that may be prepared</p>
+
+<p>If you have any reference to the MParticle instance, you must remove your reference by setting it to &ldquo;nil&rdquo;, in order to avoid any unexpected behavior
+The SDK will be shut down and <a href="#//api/name/sharedInstance">[MParticle sharedInstance]</a> will return a new instance without apiKey or secretKey. MParticle can be restarted by calling MParticle.startWithOptions</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/activeTimedEvents" title="activeTimedEvents"></a>
+	<h3 class="method-title"><code><a href="#//api/name/activeTimedEvents">&ndash;&nbsp;activeTimedEvents</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Contains a collection with all active timed events (timed events that had begun, but not yet ended). You should not keep a
+separate reference collection containing the events being timed. The mParticle SDK manages the lifecycle of those events.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nullable NSSet *)activeTimedEvents</code></div>
+
+		    
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>A set with all active timed events</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Contains a collection with all active timed events (timed events that had begun, but not yet ended). You should not keep a
+separate reference collection containing the events being timed. The mParticle SDK manages the lifecycle of those events.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/beginTimedEvent:">- beginTimedEvent:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/beginTimedEvent:" title="beginTimedEvent:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/beginTimedEvent:">&ndash;&nbsp;beginTimedEvent:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Begins timing an event. There can be many timed events going on at the same time, the only requirement is that each
+concurrent timed event must have a unique event name. After beginning a timed event you don&rsquo;t have to keep a reference
+to the event instance being timed, you can use the <a href="#//api/name/eventWithName:">eventWithName:</a> method to retrieve it later when ending the timed event.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)beginTimedEvent:(MPEvent *)<em>event</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>event</code></th>
+						<td><p>An instance of <a href="../Classes/MPEvent.html">MPEvent</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Begins timing an event. There can be many timed events going on at the same time, the only requirement is that each
+concurrent timed event must have a unique event name. After beginning a timed event you don&rsquo;t have to keep a reference
+to the event instance being timed, you can use the <a href="#//api/name/eventWithName:">eventWithName:</a> method to retrieve it later when ending the timed event.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPEvent.html">MPEvent</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/endTimedEvent:" title="endTimedEvent:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/endTimedEvent:">&ndash;&nbsp;endTimedEvent:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Ends timing an event and logs its data to the mParticle SDK. If you didn&rsquo;t keep a reference to the event
+being timed, you can use the <a href="#//api/name/eventWithName:">eventWithName:</a> method to retrieve it.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)endTimedEvent:(MPEvent *)<em>event</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>event</code></th>
+						<td><p>An instance of <a href="../Classes/MPEvent.html">MPEvent</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Ends timing an event and logs its data to the mParticle SDK. If you didn&rsquo;t keep a reference to the event
+being timed, you can use the <a href="#//api/name/eventWithName:">eventWithName:</a> method to retrieve it.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/beginTimedEvent:">- beginTimedEvent:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/eventWithName:" title="eventWithName:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/eventWithName:">&ndash;&nbsp;eventWithName:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>When working with timed events you don&rsquo;t need to keep a reference to the event being timed. You can use this method
+to retrieve the event being timed passing the event name as parameter. If an instance of <a href="../Classes/MPEvent.html">MPEvent</a>, with a matching
+event name cannot be found, this method will return nil.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nullable MPEvent *)eventWithName:(NSString *)<em>eventName</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventName</code></th>
+						<td><p>A string with the event name associated with the event being timed</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>An instance of <a href="../Classes/MPEvent.html">MPEvent</a>, if one could be found, or nil.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>When working with timed events you don&rsquo;t need to keep a reference to the event being timed. You can use this method
+to retrieve the event being timed passing the event name as parameter. If an instance of <a href="../Classes/MPEvent.html">MPEvent</a>, with a matching
+event name cannot be found, this method will return nil.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/endTimedEvent:">- endTimedEvent:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logEvent:" title="logEvent:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logEvent:">&ndash;&nbsp;logEvent:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs an event. This is one of the most fundamental methods of the SDK. You can define all the characteristics
+of an event in an instance of <a href="../Classes/MPEvent.html">MPEvent</a>, <a href="../Classes/MPCommerceEvent.html">MPCommerceEvent</a>, or any other subclass of <a href="../Classes/MPBaseEvent.html">MPBaseEvent</a> and pass that instance to this
+method to log its data to the mParticle SDK.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logEvent:(MPBaseEvent *)<em>event</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>event</code></th>
+						<td><p>An instance of a subclass of <a href="../Classes/MPBaseEvent.html">MPBaseEvent</a> (e.g <a href="../Classes/MPEvent.html">MPEvent</a>, <a href="../Classes/MPCommerceEvent.html">MPCommerceEvent</a>)</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs an event. This is one of the most fundamental methods of the SDK. You can define all the characteristics
+of an event in an instance of <a href="../Classes/MPEvent.html">MPEvent</a>, <a href="../Classes/MPCommerceEvent.html">MPCommerceEvent</a>, or any other subclass of <a href="../Classes/MPBaseEvent.html">MPBaseEvent</a> and pass that instance to this
+method to log its data to the mParticle SDK.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPEvent.html">MPEvent</a></p></code></li>
+					
+					<li><code><p><a href="../Classes/MPCommerceEvent.html">MPCommerceEvent</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logEvent:eventType:eventInfo:" title="logEvent:eventType:eventInfo:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logEvent:eventType:eventInfo:">&ndash;&nbsp;logEvent:eventType:eventInfo:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs an event. This is a convenience method for logging simple events; internally it creates an instance of <a href="../Classes/MPEvent.html">MPEvent</a>
+and calls <a href="#//api/name/logEvent:">logEvent:</a></p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logEvent:(NSString *)<em>eventName</em> eventType:(MPEventType)<em>eventType</em> eventInfo:(nullable NSDictionary&lt;NSString*,id&gt; *)<em>eventInfo</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventName</code></th>
+						<td><p>The name of the event to be logged (required not nil.) The string cannot be longer than 255 characters</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventType</code></th>
+						<td><p>An enum value that indicates the type of event to be logged</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventInfo</code></th>
+						<td><p>A dictionary containing further information about the event. This dictionary is limited to 100 key
+                  value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 4096 characters),
+                  numbers, booleans, or dates</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs an event. This is a convenience method for logging simple events; internally it creates an instance of <a href="../Classes/MPEvent.html">MPEvent</a>
+and calls <a href="#//api/name/logEvent:">logEvent:</a></p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/logEvent:">- logEvent:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logScreenEvent:" title="logScreenEvent:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logScreenEvent:">&ndash;&nbsp;logScreenEvent:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs a screen event. You can define all the characteristics of a screen event (name, attributes, etc) in an
+instance of <a href="../Classes/MPEvent.html">MPEvent</a> and pass that instance to this method to log its data to the mParticle SDK.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logScreenEvent:(MPEvent *)<em>event</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>event</code></th>
+						<td><p>An instance of <a href="../Classes/MPEvent.html">MPEvent</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs a screen event. You can define all the characteristics of a screen event (name, attributes, etc) in an
+instance of <a href="../Classes/MPEvent.html">MPEvent</a> and pass that instance to this method to log its data to the mParticle SDK.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPEvent.html">MPEvent</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logScreen:eventInfo:" title="logScreen:eventInfo:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logScreen:eventInfo:">&ndash;&nbsp;logScreen:eventInfo:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs a screen event. This is a convenience method for logging simple screen events; internally it creates an instance
+of <a href="../Classes/MPEvent.html">MPEvent</a> and calls <a href="#//api/name/logScreenEvent:">logScreenEvent:</a></p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logScreen:(NSString *)<em>screenName</em> eventInfo:(nullable NSDictionary&lt;NSString*,id&gt; *)<em>eventInfo</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>screenName</code></th>
+						<td><p>The name of the screen to be logged (required not nil and up to 255 characters)</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventInfo</code></th>
+						<td><p>A dictionary containing further information about the screen. This dictionary is limited to 100 key
+value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 4096 characters), numbers,
+booleans, or dates</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs a screen event. This is a convenience method for logging simple screen events; internally it creates an instance
+of <a href="../Classes/MPEvent.html">MPEvent</a> and calls <a href="#//api/name/logScreenEvent:">logScreenEvent:</a></p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/logScreenEvent:">- logScreenEvent:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logScreen:eventInfo:shouldUploadEvent:" title="logScreen:eventInfo:shouldUploadEvent:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logScreen:eventInfo:shouldUploadEvent:">&ndash;&nbsp;logScreen:eventInfo:shouldUploadEvent:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs a screen event and gives developer option to choose whether this screen event should be uploaded to mParticle when logged or only passed to kits. This is a convenience method for logging simple screen events; internally it creates an instance
+of <a href="../Classes/MPEvent.html">MPEvent</a> and calls <a href="#//api/name/logScreenEvent:">logScreenEvent:</a></p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logScreen:(NSString *)<em>screenName</em> eventInfo:(nullable NSDictionary&lt;NSString*,id&gt; *)<em>eventInfo</em> shouldUploadEvent:(BOOL)<em>shouldUploadEvent</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>screenName</code></th>
+						<td><p>The name of the screen to be logged (required not nil and up to 255 characters)</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventInfo</code></th>
+						<td><p>A dictionary containing further information about the screen. This dictionary is limited to 100 key
+value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 4096 characters), numbers,
+booleans, or dates</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>shouldUploadEvent</code></th>
+						<td><p>A boolean flag that indicates whether this screen event should be uploaded to mParticle when logged or only passed to kits</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs a screen event and gives developer option to choose whether this screen event should be uploaded to mParticle when logged or only passed to kits. This is a convenience method for logging simple screen events; internally it creates an instance
+of <a href="../Classes/MPEvent.html">MPEvent</a> and calls <a href="#//api/name/logScreenEvent:">logScreenEvent:</a></p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/logScreenEvent:">- logScreenEvent:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/setATTStatus:withATTStatusTimestampMillis:" title="setATTStatus:withATTStatusTimestampMillis:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/setATTStatus:withATTStatusTimestampMillis:">&ndash;&nbsp;setATTStatus:withATTStatusTimestampMillis:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Sets the ATT Authorization state with the supplied timestamp, or uses the current time if none is supplied.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)setATTStatus:(MPATTAuthorizationStatus)<em>status</em> withATTStatusTimestampMillis:(nullable NSNumber *)<em>attStatusTimestampMillis</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>status</code></th>
+						<td><p>The authorization state of ATT, determines whether the user has approved access to app-related data that can be used for tracking the user or the device.</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>attStatusTimestampMillis</code></th>
+						<td><p>The time at which the authorization status change. If not supplied, current time will be used.</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Sets the ATT Authorization state with the supplied timestamp, or uses the current time if none is supplied.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/attributionInfo" title="attributionInfo"></a>
+	<h3 class="method-title"><code><a href="#//api/name/attributionInfo">&ndash;&nbsp;attributionInfo</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Convenience method for getting the most recently retrieved attribution info for all kits.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nullable NSDictionary&lt;NSNumber*,MPAttributionResult*&gt; *)attributionInfo</code></div>
+
+		    
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>A dictionary containing the most recent attribution info that was retrieved by each kit</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Convenience method for getting the most recently retrieved attribution info for all kits.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPKitInstance.html">MPKitInstance</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/leaveBreadcrumb:" title="leaveBreadcrumb:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/leaveBreadcrumb:">&ndash;&nbsp;leaveBreadcrumb:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Leaves a breadcrumb. Breadcrumbs are send together with crash reports to help with debugging.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)leaveBreadcrumb:(NSString *)<em>breadcrumbName</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>breadcrumbName</code></th>
+						<td><p>The name of the breadcrumb (required not nil)</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Leaves a breadcrumb. Breadcrumbs are send together with crash reports to help with debugging.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/leaveBreadcrumb:eventInfo:" title="leaveBreadcrumb:eventInfo:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/leaveBreadcrumb:eventInfo:">&ndash;&nbsp;leaveBreadcrumb:eventInfo:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Leaves a breadcrumb. Breadcrumbs are send together with crash reports to help with debugging.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)leaveBreadcrumb:(NSString *)<em>breadcrumbName</em> eventInfo:(nullable NSDictionary&lt;NSString*,id&gt; *)<em>eventInfo</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>breadcrumbName</code></th>
+						<td><p>The name of the breadcrumb (required not nil)</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventInfo</code></th>
+						<td><p>A dictionary containing further information about the breadcrumb</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Leaves a breadcrumb. Breadcrumbs are send together with crash reports to help with debugging.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logError:" title="logError:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logError:">&ndash;&nbsp;logError:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs an error with a message.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logError:(NSString *)<em>message</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>message</code></th>
+						<td><p>The name of the error to be tracked (required not nil)</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs an error with a message.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/logError:eventInfo:">- logError:eventInfo:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logError:eventInfo:" title="logError:eventInfo:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logError:eventInfo:">&ndash;&nbsp;logError:eventInfo:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs an error with a message and an attributes dictionary. The eventInfo is limited to
+100 key value pairs. The values in eventInfo cannot contain more than 4096 characters.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logError:(NSString *)<em>message</em> eventInfo:(nullable NSDictionary&lt;NSString*,id&gt; *)<em>eventInfo</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>message</code></th>
+						<td><p>The name of the error event (required not nil)</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventInfo</code></th>
+						<td><p>A dictionary containing further information about the error</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs an error with a message and an attributes dictionary. The eventInfo is limited to
+100 key value pairs. The values in eventInfo cannot contain more than 4096 characters.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logException:" title="logException:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logException:">&ndash;&nbsp;logException:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs an exception.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logException:(NSException *)<em>exception</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>exception</code></th>
+						<td><p>The exception which occurred</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs an exception.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/logException:topmostContext:">- logException:topmostContext:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logException:topmostContext:" title="logException:topmostContext:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logException:topmostContext:">&ndash;&nbsp;logException:topmostContext:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs an exception and a context.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logException:(NSException *)<em>exception</em> topmostContext:(nullable id)<em>topmostContext</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>exception</code></th>
+						<td><p>The exception which occurred</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>topmostContext</code></th>
+						<td><p>The topmost context of the app, typically the topmost view controller</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs an exception and a context.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logCrash:stackTrace:plCrashReport:" title="logCrash:stackTrace:plCrashReport:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logCrash:stackTrace:plCrashReport:">&ndash;&nbsp;logCrash:stackTrace:plCrashReport:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs a crash report with additional exception information.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logCrash:(nullable NSString *)<em>message</em> stackTrace:(nullable NSString *)<em>stackTrace</em> plCrashReport:(NSString *)<em>plCrashReport</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>message</code></th>
+						<td><p>An error message to associate with the crash which occurred</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>stackTrace</code></th>
+						<td><p>The stack trace from the crash which occurred</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>plCrashReport</code></th>
+						<td><p>Plausible Labs crash report file (required not nil)</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs a crash report with additional exception information.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logCommerceEvent:" title="logCommerceEvent:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logCommerceEvent:">&ndash;&nbsp;logCommerceEvent:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs a commerce event.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logCommerceEvent:(MPCommerceEvent *)<em>commerceEvent</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>commerceEvent</code></th>
+						<td><p>An instance of <a href="../Classes/MPCommerceEvent.html">MPCommerceEvent</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs a commerce event.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPCommerceEvent.html">MPCommerceEvent</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logLTVIncrease:eventName:" title="logLTVIncrease:eventName:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logLTVIncrease:eventName:">&ndash;&nbsp;logLTVIncrease:eventName:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Increases the LTV (LifeTime Value) amount of a user.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logLTVIncrease:(double)<em>increaseAmount</em> eventName:(NSString *)<em>eventName</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>increaseAmount</code></th>
+						<td><p>The amount to be added to LTV</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventName</code></th>
+						<td><p>The name of the event (Optional). If not applicable, pass nil</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Increases the LTV (LifeTime Value) amount of a user.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logLTVIncrease:eventName:eventInfo:" title="logLTVIncrease:eventName:eventInfo:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logLTVIncrease:eventName:eventInfo:">&ndash;&nbsp;logLTVIncrease:eventName:eventInfo:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Increases the LTV (LifeTime Value) amount of a user.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logLTVIncrease:(double)<em>increaseAmount</em> eventName:(NSString *)<em>eventName</em> eventInfo:(nullable NSDictionary&lt;NSString*,id&gt; *)<em>eventInfo</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>increaseAmount</code></th>
+						<td><p>The amount to be added to LTV</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventName</code></th>
+						<td><p>The name of the event (Optional). If not applicable, pass nil</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>eventInfo</code></th>
+						<td><p>A dictionary containing further information about the LTV</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Increases the LTV (LifeTime Value) amount of a user.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/registerExtension:" title="registerExtension:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/registerExtension:">+&nbsp;registerExtension:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Registers an extension against the code mParticle SDK. Extensions are external code, unknown to the core SDK, which
+conform to one of more known protocols. They allow the core SDK to function in ways beyond its core functionality.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>+ (BOOL)registerExtension:(id&lt;MPExtensionProtocol&gt;)<em>extension</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>extension</code></th>
+						<td><p>An instance of a class conforming to a <a href="../Protocols/MPExtensionProtocol.html">MPExtensionProtocol</a> specialization</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Registers an extension against the code mParticle SDK. Extensions are external code, unknown to the core SDK, which
+conform to one of more known protocols. They allow the core SDK to function in ways beyond its core functionality.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Protocols/MPExtensionProtocol.html">MPExtensionProtocol</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/setIntegrationAttributes:forKit:" title="setIntegrationAttributes:forKit:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/setIntegrationAttributes:forKit:">&ndash;&nbsp;setIntegrationAttributes:forKit:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Set the integration attributes for a given integration ID.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (MPKitExecStatus *)setIntegrationAttributes:(NSDictionary&lt;NSString*,NSString*&gt; *)<em>attributes</em> forKit:(NSNumber *)<em>integrationId</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>attributes</code></th>
+						<td><p>a dictionary of attributes that will replace any current attributes. The keys are predefined by mParticle.
+Please consult with the mParticle docs or your solutions consultant for the correct value. You may
+also pass a null or empty map here to remove all of the attributes.</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>integrationId</code></th>
+						<td><p>mParticle integration ID. This may be the ID for a kit, or any mParticle integration.</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Set the integration attributes for a given integration ID.</p>
+
+<p>Integration attributes are keys and values specific to a given integration. For example,
+many integrations have their own internal user/device ID. mParticle will store integration attributes
+for a given device, and will be able to use these values for server-to-server communication to services.
+This is often useful when used in combination with a server-to-server feed, allowing the feed to be enriched
+with the necessary integration attributes to be properly forwarded to the given integration.</p>
+
+<p>Note: this action will be performed asynchronously.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPKitInstance.html">MPKitInstance</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/clearIntegrationAttributesForKit:" title="clearIntegrationAttributesForKit:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/clearIntegrationAttributesForKit:">&ndash;&nbsp;clearIntegrationAttributesForKit:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Clear the integration attributes for a given integration ID.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (MPKitExecStatus *)clearIntegrationAttributesForKit:(NSNumber *)<em>integrationId</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>integrationId</code></th>
+						<td><p>mParticle integration ID. This may be the ID for a kit, or any mParticle integration.</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Clear the integration attributes for a given integration ID.</p>
+
+<p>Integration attributes are keys and values specific to a given integration. For example,
+many integrations have their own internal user/device ID. mParticle will store integration attributes
+for a given device, and will be able to use these values for server-to-server communication to services.
+This is often useful when used in combination with a server-to-server feed, allowing the feed to be enriched
+with the necessary integration attributes to be properly forwarded to the given integration.</p>
+
+<p>Note: this action will be performed asynchronously.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPKitInstance.html">MPKitInstance</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/integrationAttributesForKit:" title="integrationAttributesForKit:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/integrationAttributesForKit:">&ndash;&nbsp;integrationAttributesForKit:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Get the integration attributes for a given integration ID.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nullable NSDictionary *)integrationAttributesForKit:(NSNumber *)<em>integrationId</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>integrationId</code></th>
+						<td><p>mParticle integration ID. This may be the ID for a kit, or any mParticle integration.</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Get the integration attributes for a given integration ID.</p>
+
+<p>Integration attributes are keys and values specific to a given integration. For example,
+many integrations have their own internal user/device ID. mParticle will store integration attributes
+for a given device, and will be able to use these values for server-to-server communication to services.
+This is often useful when used in combination with a server-to-server feed, allowing the feed to be enriched
+with the necessary integration attributes to be properly forwarded to the given integration.</p>
+
+<p>Note: this will make a direct call to SQLite and should not be called on the main thread.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPKitInstance.html">MPKitInstance</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onKitsInitialized:" title="onKitsInitialized:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onKitsInitialized:">&ndash;&nbsp;onKitsInitialized:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Allows you to schedule code to run after all kits have been <a href="#//api/name/initialized">initialized</a>. If kits have already been <a href="#//api/name/initialized">initialized</a>,
+your block will be invoked immediately. If not, your block will be copied and the copy will be invoked once
+kit initialization is finished.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onKitsInitialized:(void ( ^ ) ( void ))<em>block</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>block</code></th>
+						<td><p>A block to be invoked once kits are <a href="#//api/name/initialized">initialized</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Allows you to schedule code to run after all kits have been <a href="#//api/name/initialized">initialized</a>. If kits have already been <a href="#//api/name/initialized">initialized</a>,
+your block will be invoked immediately. If not, your block will be copied and the copy will be invoked once
+kit initialization is finished.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/isKitActive:" title="isKitActive:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/isKitActive:">&ndash;&nbsp;isKitActive:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Returns whether a kit is active or not. You can retrieve if a kit has been already <a href="#//api/name/initialized">initialized</a> and
+can be used.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (BOOL)isKitActive:(NSNumber *)<em>integrationId</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>integrationId</code></th>
+						<td><p>An NSNumber representing the kit to be checked</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>Whether the kit is active or not.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Returns whether a kit is active or not. You can retrieve if a kit has been already <a href="#//api/name/initialized">initialized</a> and
+can be used.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/kitInstance:" title="kitInstance:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/kitInstance:">&ndash;&nbsp;kitInstance:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Retrieves the internal instance of a kit, for cases where you need to use properties and methods of that kit directly.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nullable id const)kitInstance:(NSNumber *)<em>integrationId</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>integrationId</code></th>
+						<td><p>An NSNumber representing the kit to be retrieved</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>The internal instance of the kit, or nil, if the kit is not active</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Retrieves the internal instance of a kit, for cases where you need to use properties and methods of that kit directly.</p>
+
+<p>This method is only applicable to kits that allocate themselves as an object instance or as a singleton. For the cases
+where kits are implemented with class methods, you can call those class methods directly</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPKitInstance.html">MPKitInstance</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/kitInstance:completionHandler:" title="kitInstance:completionHandler:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/kitInstance:completionHandler:">&ndash;&nbsp;kitInstance:completionHandler:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Asynchronously retrieves the internal instance of a kit, for cases where you need to use properties and methods of that kit directly.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)kitInstance:(NSNumber *)<em>kitCode</em> completionHandler:(void ( ^ ) ( id _Nullable kitInstance ))<em>completionHandler</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>kitCode</code></th>
+						<td><p>An NSNumber representing the kit to be retrieved</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>completionHandler</code></th>
+						<td><p>A block to be called if or when the kit instance becomes available. If the kit never becomes
+active, the block will never be called. If the kit is class based, the instance will be nil</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Asynchronously retrieves the internal instance of a kit, for cases where you need to use properties and methods of that kit directly.</p>
+
+<p>This method is only applicable to kits that allocate themselves as an object instance or as a singleton. For the cases
+where kits are implemented with class methods, you can call those class methods directly</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPKitInstance.html">MPKitInstance</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/backgroundLocationTracking" title="backgroundLocationTracking"></a>
+	<h3 class="method-title"><code><a href="#//api/name/backgroundLocationTracking">&nbsp;&nbsp;backgroundLocationTracking</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Enables or disables the inclusion of <a href="#//api/name/location">location</a> information to messages when your app is running on the
+background. The default value is YES. Setting it to NO will cause the SDK to include <a href="#//api/name/location">location</a>
+information only when your app is running on the foreground.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic) BOOL backgroundLocationTracking</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Enables or disables the inclusion of <a href="#//api/name/location">location</a> information to messages when your app is running on the
+background. The default value is YES. Setting it to NO will cause the SDK to include <a href="#//api/name/location">location</a>
+information only when your app is running on the foreground.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/beginLocationTracking:minDistance:">- beginLocationTracking:minDistance:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/location" title="location"></a>
+	<h3 class="method-title"><code><a href="#//api/name/location">&nbsp;&nbsp;location</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Gets/Sets the current location of the active session.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) CLLocation *location</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Gets/Sets the current location of the active session.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/beginLocationTracking:minDistance:">- beginLocationTracking:minDistance:</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/beginLocationTracking:minDistance:" title="beginLocationTracking:minDistance:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/beginLocationTracking:minDistance:">&ndash;&nbsp;beginLocationTracking:minDistance:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Begins geographic <a href="#//api/name/location">location</a> tracking.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)beginLocationTracking:(CLLocationAccuracy)<em>accuracy</em> minDistance:(CLLocationDistance)<em>distanceFilter</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>accuracy</code></th>
+						<td><p>The desired accuracy</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>distanceFilter</code></th>
+						<td><p>The minimum distance (measured in meters) a device must move before an update event is generated.</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Begins geographic <a href="#//api/name/location">location</a> tracking.</p>
+
+<p>The desired accuracy of the <a href="#//api/name/location">location</a> is determined by a passed in constant for accuracy.
+Choices are kCLLocationAccuracyBestForNavigation, kCLLocationAccuracyBest,
+kCLLocationAccuracyNearestTenMeters, kCLLocationAccuracyHundredMeters,
+kCLLocationAccuracyKilometer, and kCLLocationAccuracyThreeKilometers.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/beginLocationTracking:minDistance:authorizationRequest:" title="beginLocationTracking:minDistance:authorizationRequest:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/beginLocationTracking:minDistance:authorizationRequest:">&ndash;&nbsp;beginLocationTracking:minDistance:authorizationRequest:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Begins geographic <a href="#//api/name/location">location</a> tracking.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)beginLocationTracking:(CLLocationAccuracy)<em>accuracy</em> minDistance:(CLLocationDistance)<em>distanceFilter</em> authorizationRequest:(MPLocationAuthorizationRequest)<em>authorizationRequest</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>accuracy</code></th>
+						<td><p>The desired accuracy</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>distanceFilter</code></th>
+						<td><p>The minimum distance (measured in meters) a device must move before an update event is generated.</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>authorizationRequest</code></th>
+						<td><p>Type of authorization requested to use <a href="#//api/name/location">location</a> services</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Begins geographic <a href="#//api/name/location">location</a> tracking.</p>
+
+<p>The desired accuracy of the <a href="#//api/name/location">location</a> is determined by a passed in constant for accuracy.
+Choices are kCLLocationAccuracyBestForNavigation, kCLLocationAccuracyBest,
+kCLLocationAccuracyNearestTenMeters, kCLLocationAccuracyHundredMeters,
+kCLLocationAccuracyKilometer, and kCLLocationAccuracyThreeKilometers.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/endLocationTracking" title="endLocationTracking"></a>
+	<h3 class="method-title"><code><a href="#//api/name/endLocationTracking">&ndash;&nbsp;endLocationTracking</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Ends geographic <a href="#//api/name/location">location</a> tracking.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)endLocationTracking</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Ends geographic <a href="#//api/name/location">location</a> tracking.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:" title="logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:">&ndash;&nbsp;logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Allows you to log a network performance measurement independently from the mParticle SDK measurement.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logNetworkPerformance:(NSString *)<em>urlString</em> httpMethod:(NSString *)<em>httpMethod</em> startTime:(NSTimeInterval)<em>startTime</em> duration:(NSTimeInterval)<em>duration</em> bytesSent:(NSUInteger)<em>bytesSent</em> bytesReceived:(NSUInteger)<em>bytesReceived</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>urlString</code></th>
+						<td><p>The absolute URL being measured</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>httpMethod</code></th>
+						<td><p>The method used in the network communication (e.g. GET, POST, etc)</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>startTime</code></th>
+						<td><p>The time when the network communication started measured in seconds since Unix Epoch Time: [[NSDate date] timeIntervalSince1970]</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>duration</code></th>
+						<td><p>The number of seconds it took for the network communication took to complete</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>bytesSent</code></th>
+						<td><p>The number of bytes sent</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>bytesReceived</code></th>
+						<td><p>The number of bytes received</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Allows you to log a network performance measurement independently from the mParticle SDK measurement.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/incrementSessionAttribute:byValue:" title="incrementSessionAttribute:byValue:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/incrementSessionAttribute:byValue:">&ndash;&nbsp;incrementSessionAttribute:byValue:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Increments the value of a session attribute by the provided amount. If the key does not
+exist among the current session attributes, this method will add the key to the session attributes
+and set the value to the provided amount. If the key already exists and the existing value is not
+a number, the operation will abort.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nullable NSNumber *)incrementSessionAttribute:(NSString *)<em>key</em> byValue:(NSNumber *)<em>value</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>key</code></th>
+						<td><p>The attribute key</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>value</code></th>
+						<td><p>The increment amount</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>The static value @0</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Increments the value of a session attribute by the provided amount. If the key does not
+exist among the current session attributes, this method will add the key to the session attributes
+and set the value to the provided amount. If the key already exists and the existing value is not
+a number, the operation will abort.</p>
+
+<p>Note: this method has been changed to be async, return value will always be @0.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/setSessionAttribute:value:" title="setSessionAttribute:value:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/setSessionAttribute:value:">&ndash;&nbsp;setSessionAttribute:value:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Set a single session attribute. The property will be combined with any existing attributes.
+There is a 100 count limit to existing session attributes. Passing in a nil value for an
+existing key will remove the session attribute.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)setSessionAttribute:(NSString *)<em>key</em> value:(nullable id)<em>value</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>key</code></th>
+						<td><p>The attribute key</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>value</code></th>
+						<td><p>The attribute value</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Set a single session attribute. The property will be combined with any existing attributes.
+There is a 100 count limit to existing session attributes. Passing in a nil value for an
+existing key will remove the session attribute.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/beginSession" title="beginSession"></a>
+	<h3 class="method-title"><code><a href="#//api/name/beginSession">&ndash;&nbsp;beginSession</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Manually begins a new session. Calling this method is a no-op if a session already exists.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)beginSession</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Manually begins a new session. Calling this method is a no-op if a session already exists.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/endSession" title="endSession"></a>
+	<h3 class="method-title"><code><a href="#//api/name/endSession">&ndash;&nbsp;endSession</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Manually ends the current session. Calling this method is a no-op if no session exists.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)endSession</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Manually ends the current session. Calling this method is a no-op if no session exists.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/upload" title="upload"></a>
+	<h3 class="method-title"><code><a href="#//api/name/upload">&ndash;&nbsp;upload</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Force uploads queued messages to mParticle.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)upload</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Force uploads queued messages to mParticle.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/surveyURL:" title="surveyURL:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/surveyURL:">&ndash;&nbsp;surveyURL:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Returns the survey URL for a given provider.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nullable NSString *)surveyURL:(MPSurveyProvider)<em>surveyProvider</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>surveyProvider</code></th>
+						<td><p>The survey provider</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>A string with the URL to the survey</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Returns the survey URL for a given provider.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPSurveyProvider.html">MPSurveyProvider</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/userNotificationCenter:willPresentNotification:" title="userNotificationCenter:willPresentNotification:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/userNotificationCenter:willPresentNotification:">&ndash;&nbsp;userNotificationCenter:willPresentNotification:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK that the app has received a user notification while in the foreground.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)userNotificationCenter:(UNUserNotificationCenter *)<em>center</em> willPresentNotification:(UNNotification *)<em>notification</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>center</code></th>
+						<td><p>The notification center that received the notification</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>notification</code></th>
+						<td><p>The notification that is about to be delivered</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK that the app has received a user notification while in the foreground.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/userNotificationCenter:didReceiveNotificationResponse:" title="userNotificationCenter:didReceiveNotificationResponse:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/userNotificationCenter:didReceiveNotificationResponse:">&ndash;&nbsp;userNotificationCenter:didReceiveNotificationResponse:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Informs the mParticle SDK that the user has interacted with a given notification</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)userNotificationCenter:(UNUserNotificationCenter *)<em>center</em> didReceiveNotificationResponse:(UNNotificationResponse *)<em>response</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>center</code></th>
+						<td><p>The notification center that received the notification</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>response</code></th>
+						<td><p>The user’s response to the notification</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Informs the mParticle SDK that the user has interacted with a given notification</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/initializeWKWebView:" title="initializeWKWebView:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/initializeWKWebView:">&ndash;&nbsp;initializeWKWebView:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Create a bridge between the mParticle web SDK and iOS SDK.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)initializeWKWebView:(WKWebView *)<em>webView</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>webView</code></th>
+						<td><p>The web view to be <a href="#//api/name/initialized">initialized</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Create a bridge between the mParticle web SDK and iOS SDK.</p>
+
+<p>This API will add a persistent <a href="https://developer.apple.com/documentation/webkit/wkscriptmessagehandler">WKScriptMessageHandler</a> to the given <code>WKWebView</code>, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that this handler will persist across page loads.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/initializeWKWebView:bridgeName:" title="initializeWKWebView:bridgeName:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/initializeWKWebView:bridgeName:">&ndash;&nbsp;initializeWKWebView:bridgeName:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Create a bridge between the mParticle web SDK and iOS SDK.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)initializeWKWebView:(WKWebView *)<em>webView</em> bridgeName:(nullable NSString *)<em>bridgeName</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>webView</code></th>
+						<td><p>The web view to be <a href="#//api/name/initialized">initialized</a></p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>bridgeName</code></th>
+						<td><p>The name of the webview bridge</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Create a bridge between the mParticle web SDK and iOS SDK.</p>
+
+<p>This API will add a persistent <a href="https://developer.apple.com/documentation/webkit/wkscriptmessagehandler">WKScriptMessageHandler</a> to the given <code>WKWebView</code>, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that this handler will persist across page loads.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logNotificationReceivedWithUserInfo:" title="logNotificationReceivedWithUserInfo:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logNotificationReceivedWithUserInfo:">&ndash;&nbsp;logNotificationReceivedWithUserInfo:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs a Notification event for a notification that has been reviewed but not acted upon. This is a convenience method for manually logging Notification events; Set <a href="#//api/name/trackNotifications">trackNotifications</a> to false on <a href="../Classes/MParticleOptions.html">MParticleOptions</a> to disable automatic tracking of Notifications and only set Notification manually:</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logNotificationReceivedWithUserInfo:(nonnull NSDictionary *)<em>userInfo</em></code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs a Notification event for a notification that has been reviewed but not acted upon. This is a convenience method for manually logging Notification events; Set <a href="#//api/name/trackNotifications">trackNotifications</a> to false on <a href="../Classes/MParticleOptions.html">MParticleOptions</a> to disable automatic tracking of Notifications and only set Notification manually:</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logNotificationOpenedWithUserInfo:andActionIdentifier:" title="logNotificationOpenedWithUserInfo:andActionIdentifier:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logNotificationOpenedWithUserInfo:andActionIdentifier:">&ndash;&nbsp;logNotificationOpenedWithUserInfo:andActionIdentifier:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set <a href="#//api/name/trackNotifications">trackNotifications</a> to false on <a href="../Classes/MParticleOptions.html">MParticleOptions</a> to disable automatic tracking of Notifications and only set Notification manually:</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)<em>userInfo</em> andActionIdentifier:(nullable NSString *)<em>actionIdentifier</em></code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set <a href="#//api/name/trackNotifications">trackNotifications</a> to false on <a href="../Classes/MParticleOptions.html">MParticleOptions</a> to disable automatic tracking of Notifications and only set Notification manually:</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/_setWrapperSdk_internal:version:" title="_setWrapperSdk_internal:version:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/_setWrapperSdk_internal:version:">+&nbsp;_setWrapperSdk_internal:version:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Internal use only. Used by our wrapper SDKs to identify themselves during initialization.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>+ (void)_setWrapperSdk_internal:(MPWrapperSdk)<em>wrapperSdk</em> version:(nonnull NSString *)<em>wrapperSdkVersion</em></code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Internal use only. Used by our wrapper SDKs to identify themselves during initialization.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/isOlderThanConfigMaxAgeSeconds" title="isOlderThanConfigMaxAgeSeconds"></a>
+	<h3 class="method-title"><code><a href="#//api/name/isOlderThanConfigMaxAgeSeconds">+&nbsp;isOlderThanConfigMaxAgeSeconds</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Internal use only. Used by our SDK to determine if configuration needs refreshed.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>+ (BOOL)isOlderThanConfigMaxAgeSeconds</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Internal use only. Used by our SDK to determine if configuration needs refreshed.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div>
+						</div>
+						
+					</div>
+					
+					
+
+                    
+                    
+          
+				</main>
+
+				<footer>
+					<div class="footer-copyright">
+						
+						<p class="copyright">Copyright &copy; 2026 mParticle. All rights reserved. Updated: 2026-01-20</p>
+						
+						
+						<p class="generator">Generated by <a href="http://appledoc.gentlebytes.com">appledoc 2.2.1 (build 1334)</a>.</p>
+						
+					</div>
+				</footer>
+			</div>
+		</div>
+	</article>
+
+	<script src="../js/script.js"></script>
+</body>
+</html>

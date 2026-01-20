@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+
+	<title>MPListenerProtocol Protocol Reference</title>
+
+	<link rel="stylesheet" href="../css/style.css">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1.4">
+	<meta name="generator" content="appledoc 2.2.1 (build 1334)">
+</head>
+<body class="appledoc">
+	<header>
+		<div class="container" class="hide-in-xcode">
+			
+			<h1 id="library-title">
+				<a href="../index.html">mParticle Apple SDK </a>
+			</h1>
+
+			<p id="developer-home">
+				<a href="../index.html">mParticle</a>
+			</p>
+			
+		</div>
+	</header>
+
+	<aside>
+		<div class="container">
+			<nav>
+				<ul id="header-buttons" role="toolbar">
+					<li><a href="../index.html">Index</a></li>
+<li><a href="../hierarchy.html">Hierarchy</a></li>
+
+					<li id="on-this-page" role="navigation">
+						<label>
+							On This Page
+
+							<div class="chevron">
+								<div class="chevy chevron-left"></div>
+								<div class="chevy chevron-right"></div>
+							</div>
+
+							<select id="jump-to">
+	<option value="top">Jump To&#133;</option>
+	
+
+	
+	
+	<option value="tasks">Tasks</option>
+	
+	
+
+	
+	
+
+	
+
+	
+	<optgroup label="Instance Methods">
+		
+		<option value="//api/name/onAPICalled:stackTrace:isExternal:objects:">- onAPICalled:stackTrace:isExternal:objects:</option>
+		
+		<option value="//api/name/onAliasRequestFinished:">- onAliasRequestFinished:</option>
+		
+		<option value="//api/name/onEntityStored:primaryKey:message:">- onEntityStored:primaryKey:message:</option>
+		
+		<option value="//api/name/onKitApiCalled:kitId:used:objects:">- onKitApiCalled:kitId:used:objects:</option>
+		
+		<option value="//api/name/onKitConfigReceived:configuration:">- onKitConfigReceived:configuration:</option>
+		
+		<option value="//api/name/onKitDetected:">- onKitDetected:</option>
+		
+		<option value="//api/name/onKitExcluded:reason:">- onKitExcluded:reason:</option>
+		
+		<option value="//api/name/onKitStarted:">- onKitStarted:</option>
+		
+		<option value="//api/name/onNetworkRequestFinished:url:body:responseCode:">- onNetworkRequestFinished:url:body:responseCode:</option>
+		
+		<option value="//api/name/onNetworkRequestStarted:url:body:">- onNetworkRequestStarted:url:body:</option>
+		
+		<option value="//api/name/onSessionUpdated:">- onSessionUpdated:</option>
+		
+	</optgroup>
+	
+	
+</select>
+						</label>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</aside>
+
+	<article>
+		<div id="overview_contents" class="container">
+			<div id="content">
+				<main role="main">
+					<h1 class="title">MPListenerProtocol Protocol Reference</h1>
+
+					
+					<div class="section section-specification"><table cellspacing="0"><tbody>
+						<tr>
+	<th>Conforms to</th>
+	<td>NSObject</td>
+</tr><tr>
+	<th>Declared in</th>
+	<td>MPListenerProtocol.h</td>
+</tr>
+						</tbody></table></div>
+					
+
+                    
+
+					
+					
+					<div class="section section-tasks">
+						<a title="Tasks" name="tasks"></a>
+						
+
+						
+						
+
+						<div class="task-list">
+							<div class="section-method">
+	<a name="//api/name/onAPICalled:stackTrace:isExternal:objects:" title="onAPICalled:stackTrace:isExternal:objects:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onAPICalled:stackTrace:isExternal:objects:">&ndash;&nbsp;onAPICalled:stackTrace:isExternal:objects:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that an API method was called. This includes invocations both from external sources (your code)
+and those which originated from within the SDK</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onAPICalled:(nonnull NSString *)<em>apiName</em> stackTrace:(nonnull NSArray *)<em>stackTrace</em> isExternal:(BOOL)<em>isExternal</em> objects:(nullable NSArray *)<em>objects</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>apiName</code></th>
+						<td><p>the name of the API method</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>stackTrace</code></th>
+						<td><p>is the current stackTrace as an array of NSStrings</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>isExternal</code></th>
+						<td><p>true, if the call originated from outside of the SDK</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>objects</code></th>
+						<td><p>is the arguments sent to this api, such as the <a href="../Classes/MPEvent.html">MPEvent</a> in logEvent</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that an API method was called. This includes invocations both from external sources (your code)
+and those which originated from within the SDK</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onEntityStored:primaryKey:message:" title="onEntityStored:primaryKey:message:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onEntityStored:primaryKey:message:">&ndash;&nbsp;onEntityStored:primaryKey:message:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that a new Database entry has been created</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onEntityStored:(MPDatabaseTable)<em>tableName</em> primaryKey:(nonnull NSNumber *)<em>primaryKey</em> message:(nonnull NSString *)<em>message</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>tableName</code></th>
+						<td><p>the name of the table</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>primaryKey</code></th>
+						<td><p>a unique identifier for the database row</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>message</code></th>
+						<td><p>the database entry in NSString form</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that a new Database entry has been created</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onNetworkRequestStarted:url:body:" title="onNetworkRequestStarted:url:body:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onNetworkRequestStarted:url:body:">&ndash;&nbsp;onNetworkRequestStarted:url:body:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that a Network Request has been started.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onNetworkRequestStarted:(MPEndpoint)<em>type</em> url:(nonnull NSString *)<em>url</em> body:(nonnull NSObject *)<em>body</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>type</code></th>
+						<td><p>the type of network request, see Endpoint</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>url</code></th>
+						<td><p>the URL of the request</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>body</code></th>
+						<td><p>the response body in JSON form</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that a Network Request has been started.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onNetworkRequestFinished:url:body:responseCode:" title="onNetworkRequestFinished:url:body:responseCode:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onNetworkRequestFinished:url:body:responseCode:">&ndash;&nbsp;onNetworkRequestFinished:url:body:responseCode:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that a Network Request has completed.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onNetworkRequestFinished:(MPEndpoint)<em>type</em> url:(nonnull NSString *)<em>url</em> body:(nonnull NSObject *)<em>body</em> responseCode:(NSInteger)<em>responseCode</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>type</code></th>
+						<td><p>the type of network request, see Endpoint</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>url</code></th>
+						<td><p>the URL of the request</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>body</code></th>
+						<td><p>the response body in JSON form</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>responseCode</code></th>
+						<td><p>the HTTP response code</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that a Network Request has completed.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onKitApiCalled:kitId:used:objects:" title="onKitApiCalled:kitId:used:objects:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onKitApiCalled:kitId:used:objects:">&ndash;&nbsp;onKitApiCalled:kitId:used:objects:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that a Kit&rsquo;s API method has been invoked and that the name of the Kit&rsquo;s method is different
+than the method containing this method&rsquo;s invocation</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onKitApiCalled:(nonnull NSString *)<em>methodName</em> kitId:(int)<em>kitId</em> used:(BOOL)<em>used</em> objects:(nonnull NSArray *)<em>objects</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>methodName</code></th>
+						<td><p>the name of the Kit&rsquo;s method being called</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>kitId</code></th>
+						<td><p>the Id of the kit</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>used</code></th>
+						<td><p>whether the Kit&rsquo;s method returned ReportingMessages, or null if return type is void</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>objects</code></th>
+						<td><p>the arguments supplied to the Kit</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that a Kit&rsquo;s API method has been invoked and that the name of the Kit&rsquo;s method is different
+than the method containing this method&rsquo;s invocation</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onKitDetected:" title="onKitDetected:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onKitDetected:">&ndash;&nbsp;onKitDetected:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that a Kit module, with kitId, has been included in the source files</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onKitDetected:(int)<em>kitId</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>kitId</code></th>
+						<td><p>the id of the kit, corresponds with a {@see MPKitInstance}</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that a Kit module, with kitId, has been included in the source files</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onKitConfigReceived:configuration:" title="onKitConfigReceived:configuration:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onKitConfigReceived:configuration:">&ndash;&nbsp;onKitConfigReceived:configuration:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that a Configuration for a kit with kitId is being applied</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onKitConfigReceived:(int)<em>kitId</em> configuration:(nonnull NSDictionary *)<em>configuration</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>kitId</code></th>
+						<td><p>the id of the kit, corresponds with a {@see MPKitInstance}</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>configuration</code></th>
+						<td><p>the kit</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that a Configuration for a kit with kitId is being applied</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onKitStarted:" title="onKitStarted:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onKitStarted:">&ndash;&nbsp;onKitStarted:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that a kit with kitId was successfully started</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onKitStarted:(int)<em>kitId</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>kitId</code></th>
+						<td><p>the id of the kit, corresponds with a {@see MPKitInstance}</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that a kit with kitId was successfully started</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onKitExcluded:reason:" title="onKitExcluded:reason:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onKitExcluded:reason:">&ndash;&nbsp;onKitExcluded:reason:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that either an attempt to start a kit was unsuccessful, or a started kit was stopped.
+Possibilities for why this may happen include: {@see MParticleUser}&rsquo;s loggedIn status or
+{@see MPConsentState} required it to be stopped, the Kit crashed, or a
+configuration was received that excluded the kit</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onKitExcluded:(int)<em>kitId</em> reason:(nonnull NSString *)<em>reason</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>kitId</code></th>
+						<td><p>the id of the kit, corresponds with a {@see MPKitInstance}</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>reason</code></th>
+						<td><p>a message containing the reason a kit was stopped</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that either an attempt to start a kit was unsuccessful, or a started kit was stopped.
+Possibilities for why this may happen include: {@see MParticleUser}&rsquo;s loggedIn status or
+{@see MPConsentState} required it to be stopped, the Kit crashed, or a
+configuration was received that excluded the kit</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onSessionUpdated:" title="onSessionUpdated:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onSessionUpdated:">&ndash;&nbsp;onSessionUpdated:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that state of a Session may have changed</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onSessionUpdated:(nullable MParticleSession *)<em>session</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>session</code></th>
+						<td><p>the current {@see MParticleSession} instance</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that state of a Session may have changed</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onAliasRequestFinished:" title="onAliasRequestFinished:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onAliasRequestFinished:">&ndash;&nbsp;onAliasRequestFinished:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Indicates that an alias request has completed</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)onAliasRequestFinished:(nullable MPAliasResponse *)<em>aliasResponse</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>aliasResponse</code></th>
+						<td><p>the alias response object</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Indicates that an alias request has completed</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPListenerProtocol.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div>
+						</div>
+						
+					</div>
+					
+					
+
+                    
+                    
+          
+				</main>
+
+				<footer>
+					<div class="footer-copyright">
+						
+						<p class="copyright">Copyright &copy; 2026 mParticle. All rights reserved. Updated: 2026-01-20</p>
+						
+						
+						<p class="generator">Generated by <a href="http://appledoc.gentlebytes.com">appledoc 2.2.1 (build 1334)</a>.</p>
+						
+					</div>
+				</footer>
+			</div>
+		</div>
+	</article>
+
+	<script src="../js/script.js"></script>
+</body>
+</html>

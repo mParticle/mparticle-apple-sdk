@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+
+	<title>MPRokt Class Reference</title>
+
+	<link rel="stylesheet" href="../css/style.css">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1.4">
+	<meta name="generator" content="appledoc 2.2.1 (build 1334)">
+</head>
+<body class="appledoc">
+	<header>
+		<div class="container" class="hide-in-xcode">
+			
+			<h1 id="library-title">
+				<a href="../index.html">mParticle Apple SDK </a>
+			</h1>
+
+			<p id="developer-home">
+				<a href="../index.html">mParticle</a>
+			</p>
+			
+		</div>
+	</header>
+
+	<aside>
+		<div class="container">
+			<nav>
+				<ul id="header-buttons" role="toolbar">
+					<li><a href="../index.html">Index</a></li>
+<li><a href="../hierarchy.html">Hierarchy</a></li>
+
+					<li id="on-this-page" role="navigation">
+						<label>
+							On This Page
+
+							<div class="chevron">
+								<div class="chevy chevron-left"></div>
+								<div class="chevy chevron-right"></div>
+							</div>
+
+							<select id="jump-to">
+	<option value="top">Jump To&#133;</option>
+	
+	<option value="overview">Overview</option>
+	
+
+	
+	
+	<option value="tasks">Tasks</option>
+	
+	
+
+	
+	
+
+	
+
+	
+	<optgroup label="Instance Methods">
+		
+		<option value="//api/name/close">- close</option>
+		
+		<option value="//api/name/events:onEvent:">- events:onEvent:</option>
+		
+		<option value="//api/name/purchaseFinalized:catalogItemId:success:">- purchaseFinalized:catalogItemId:success:</option>
+		
+		<option value="//api/name/selectPlacements:attributes:">- selectPlacements:attributes:</option>
+		
+		<option value="//api/name/selectPlacements:attributes:embeddedViews:config:callbacks:">- selectPlacements:attributes:embeddedViews:config:callbacks:</option>
+		
+	</optgroup>
+	
+	
+</select>
+						</label>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</aside>
+
+	<article>
+		<div id="overview_contents" class="container">
+			<div id="content">
+				<main role="main">
+					<h1 class="title">MPRokt Class Reference</h1>
+
+					
+					<div class="section section-specification"><table cellspacing="0"><tbody>
+						<tr>
+	<th>Inherits from</th>
+	<td>NSObject</td>
+</tr><tr>
+	<th>Declared in</th>
+	<td>MPRokt.h</td>
+</tr>
+						</tbody></table></div>
+					
+
+                    
+					
+					<div class="section section-overview">
+						<a title="Overview" name="overview"></a>
+						<h2 class="subtitle subtitle-overview">Overview</h2>
+						<p>Main interface for interacting with Rokt functionality.
+Handles placement selection and widget management.</p>
+					</div>
+					
+					
+
+					
+					
+					<div class="section section-tasks">
+						<a title="Tasks" name="tasks"></a>
+						
+
+						
+						
+
+						<div class="task-list">
+							<div class="section-method">
+	<a name="//api/name/selectPlacements:attributes:" title="selectPlacements:attributes:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/selectPlacements:attributes:">&ndash;&nbsp;selectPlacements:attributes:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Selects placements with the given identifier and attributes.
+Simplified version without embedded views or callbacks.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)selectPlacements:(NSString *_Nonnull)<em>identifier</em> attributes:(NSDictionary&lt;NSString*,NSString*&gt; *_Nullable)<em>attributes</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>identifier</code></th>
+						<td><p>Unique identifier for the placement</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>attributes</code></th>
+						<td><p>Optional dictionary of attributes to customize the placement</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Selects placements with the given identifier and attributes.
+Simplified version without embedded views or callbacks.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPRokt.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/selectPlacements:attributes:embeddedViews:config:callbacks:" title="selectPlacements:attributes:embeddedViews:config:callbacks:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/selectPlacements:attributes:embeddedViews:config:callbacks:">&ndash;&nbsp;selectPlacements:attributes:embeddedViews:config:callbacks:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Selects a Rokt placement with full configuration options including embedded views and callbacks.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)selectPlacements:(NSString *_Nonnull)<em>identifier</em> attributes:(NSDictionary&lt;NSString*,NSString*&gt; *_Nullable)<em>attributes</em> embeddedViews:(NSDictionary&lt;NSString*,MPRoktEmbeddedView*&gt; *_Nullable)<em>embeddedViews</em> config:(MPRoktConfig *_Nullable)<em>config</em> callbacks:(MPRoktEventCallback *_Nullable)<em>roktEventCallback</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>identifier</code></th>
+						<td><p>Unique identifier for the placement</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>attributes</code></th>
+						<td><p>Optional dictionary of attributes to customize the placement</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>embeddedViews</code></th>
+						<td><p>Optional dictionary mapping placement names to their embedded views</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>roktEventCallback</code></th>
+						<td><p>Optional callback object to handle widget events</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Selects a Rokt placement with full configuration options including embedded views and callbacks.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPRokt.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/purchaseFinalized:catalogItemId:success:" title="purchaseFinalized:catalogItemId:success:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/purchaseFinalized:catalogItemId:success:">&ndash;&nbsp;purchaseFinalized:catalogItemId:success:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Used to report a successful conversion without displaying a placement</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)purchaseFinalized:(NSString *_Nonnull)<em>placementId</em> catalogItemId:(NSString *_Nonnull)<em>catalogItemId</em> success:(BOOL)<em>success</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>placementId</code></th>
+						<td><p>Unique identifier for the placement</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>catalogItemId</code></th>
+						<td><p>Unique identifier for the catalog item ID</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>success</code></th>
+						<td><p>Indicates whether or not the purchase was successful</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Used to report a successful conversion without displaying a placement</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPRokt.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/events:onEvent:" title="events:onEvent:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/events:onEvent:">&ndash;&nbsp;events:onEvent:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Used to subscribe to Rokt events</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)events:(NSString *_Nonnull)<em>identifier</em> onEvent:(void ( ^ _Nullable ) ( MPRoktEvent *_Nonnull ))<em>onEvent</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>identifier</code></th>
+						<td><p>The identifier of the placement to subscribe to</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>onEvent</code></th>
+						<td><p>The block to execute when the event is triggered</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Used to subscribe to Rokt events</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPRokt.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/close" title="close"></a>
+	<h3 class="method-title"><code><a href="#//api/name/close">&ndash;&nbsp;close</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Used to close Rokt overlay placements</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)close</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Used to close Rokt overlay placements</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPRokt.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div>
+						</div>
+						
+					</div>
+					
+					
+
+                    
+                    
+          
+				</main>
+
+				<footer>
+					<div class="footer-copyright">
+						
+						<p class="copyright">Copyright &copy; 2026 mParticle. All rights reserved. Updated: 2026-01-20</p>
+						
+						
+						<p class="generator">Generated by <a href="http://appledoc.gentlebytes.com">appledoc 2.2.1 (build 1334)</a>.</p>
+						
+					</div>
+				</footer>
+			</div>
+		</div>
+	</article>
+
+	<script src="../js/script.js"></script>
+</body>
+</html>
