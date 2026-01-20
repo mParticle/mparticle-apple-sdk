@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 env:
-  XCODE_VERSION: "16.4"
+  XCODE_VERSION: 16.4
   WORKING_DIRECTORY: IntegrationTests
-  WIREMOCK_VERSION: "3.9.1"
+  WIREMOCK_VERSION: 3.9.1
 
 jobs:
   integration-tests:
@@ -35,8 +35,8 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: "17"
+          distribution: temurin
+          java-version: 17
 
       - name: Download WireMock standalone
         run: |
@@ -99,7 +99,7 @@ jobs:
 
       - name: Upload artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: integration-test-artifacts
           path: ${{ env.WORKING_DIRECTORY }}/artifacts/
