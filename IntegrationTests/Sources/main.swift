@@ -1,3 +1,5 @@
+// trunk-ignore-all(mparticle-api-key-check): To be removed and set via
+// env vars in the integration tests CI job
 import Foundation
 import mParticle_Apple_SDK
 
@@ -11,24 +13,24 @@ class EventUploadWaiter: NSObject, MPListenerProtocol {
         mparticle.upload()
         let semaphore = DispatchSemaphore(value: 0)
         uploadCompletedSemaphore = semaphore
-        
+
         let timeoutTime = DispatchTime.now() + .seconds(timeout)
         let result = semaphore.wait(timeout: timeoutTime)
-        
+
         uploadCompletedSemaphore = nil
-        
+
         return result == .success
     }
-    
-    func onNetworkRequestFinished(_ type: MPEndpoint, 
-                                  url: String, 
-                                  body: NSObject, 
+
+    func onNetworkRequestFinished(_ type: MPEndpoint,
+                                  url: String,
+                                  body: NSObject,
                                   responseCode: Int) {
         if type == .events {
             uploadCompletedSemaphore?.signal()
         }
     }
-    
+
     func onNetworkRequestStarted(_ type: MPEndpoint, url: String, body: NSObject) {}
 }
 
@@ -42,10 +44,10 @@ func testSimpleEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
 // Based on ViewController.m logEvent method
 func testEventWithCustomAttributesAndFlags(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     let event = MPEvent(name: "Event Name", type: .transaction)
-    
+
     // Use static date instead of Date() for deterministic testing
     let staticDate = Date(timeIntervalSince1970: 1700000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC
-    
+
     // Add custom attributes including string, number, date, and nested dictionary
     event?.customAttributes = [
         "A_String_Key": "A String Value",
@@ -57,10 +59,10 @@ func testEventWithCustomAttributesAndFlags(mparticle: MParticle, uploadWaiter: E
             "test3": staticDate
         ]
     ]
-    
+
     // Custom flags - sent to mParticle but not forwarded to other providers
     event?.addCustomFlag("Top Secret", withKey: "Not_forwarded_to_providers")
-    
+
     // Log the event
     if let event = event {
         mparticle.logEvent(event)
@@ -89,14 +91,14 @@ func testCommerceEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     product.couponCode = "XYZ123"
     product.position = 1
     product["custom key"] = "custom value" // Product may contain custom key/value pairs
-    
+
     // Create a commerce event with purchase action
     let commerceEvent = MPCommerceEvent(action: .purchase, product: product)
     commerceEvent.checkoutOptions = "Credit Card"
     commerceEvent.screenName = "Timeless Books"
     commerceEvent.checkoutStep = 4
     commerceEvent.customAttributes = ["an_extra_key": "an_extra_value"] // Commerce event may contain custom key/value pairs
-    
+
     // Create transaction attributes
     let transactionAttributes = MPTransactionAttributes()
     transactionAttributes.affiliation = "Book seller"
@@ -105,7 +107,7 @@ func testCommerceEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     transactionAttributes.revenue = NSNumber(value: 12.09)
     transactionAttributes.transactionId = "zyx098"
     commerceEvent.transactionAttributes = transactionAttributes
-    
+
     // Log the commerce event
     mparticle.logEvent(commerceEvent)
     uploadWaiter.wait()
@@ -122,7 +124,7 @@ func testRoktSelectPlacement(mparticle: MParticle, uploadWaiter: EventUploadWait
         "sandbox": "true",
         "mobile": "(555)867-5309"
     ]
-    
+
     // Select Rokt placement with identifier and attributes
     mparticle.rokt.selectPlacements("RoktLayout", attributes: roktAttributes)
     uploadWaiter.wait()
@@ -133,7 +135,7 @@ func testRoktSelectPlacement(mparticle: MParticle, uploadWaiter: EventUploadWait
 // Tests retrieving audience memberships for the current user via Identity API
 func testGetUserAudiences(mparticle: MParticle) {
     let semaphore = DispatchSemaphore(value: 0)
-    
+
     // Get audiences for current user
     if let currentUser = mparticle.identity.currentUser {
         currentUser.getAudiencesWithCompletionHandler { audiences, error in
@@ -148,11 +150,11 @@ func testGetUserAudiences(mparticle: MParticle) {
         print("No current user available")
         semaphore.signal()
     }
-    
+
     // Wait for async completion (timeout 10 seconds)
     let timeout = DispatchTime.now() + .seconds(10)
     let result = semaphore.wait(timeout: timeout)
-    
+
     if result == .timedOut {
         print("Warning: getAudiencesWithCompletionHandler timed out")
     }
@@ -165,21 +167,21 @@ func testLogTimedEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     // Begin a timed event
     let eventName = "Timed Event"
     let timedEvent = MPEvent(name: eventName, type: .transaction)
-    
+
     if let event = timedEvent {
         mparticle.beginTimedEvent(event)
-        
+
         // Use fixed delay instead of random (required for deterministic testing)
         // Original code uses arc4random_uniform(4000.0) / 1000.0 + 1.0 which is 1-5 seconds
         // We use fixed 2 seconds for consistent test behavior
         sleep(2)
-        
+
         // Retrieve the timed event by name and end it
         if let retrievedTimedEvent = mparticle.event(withName: eventName) {
             mparticle.endTimedEvent(retrievedTimedEvent)
         }
     }
-    
+
     uploadWaiter.wait()
 }
 
@@ -190,7 +192,7 @@ func testLogError(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     // Log an error with event info - exactly as in ViewController.m
     let eventInfo = ["cause": "slippery floor"]
     mparticle.logError("Oops", eventInfo: eventInfo)
-    
+
     uploadWaiter.wait()
 }
 
@@ -205,12 +207,12 @@ func testLogException(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
         reason: "-[ViewController someMethodThatDoesNotExist]: unrecognized selector sent to instance",
         userInfo: nil
     )
-    
+
     // Log the exception - mParticle SDK will capture exception details
     // Note: topmostContext parameter is not available in Swift API, 
     // so we use the simpler logException method
     mparticle.logException(exception)
-    
+
     uploadWaiter.wait()
 }
 
@@ -222,20 +224,20 @@ func testSetUserAttributes(mparticle: MParticle, uploadWaiter: EventUploadWaiter
         print("No current user available")
         return
     }
-    
+
     // Set 'Age' as a user attribute using predefined mParticle constant
     // Using static value instead of random for deterministic testing
     let age = "45" // Original: 21 + arc4random_uniform(80)
     currentUser.setUserAttribute(mParticleUserAttributeAge, value: age)
-    
+
     // Set 'Gender' as a user attribute using predefined mParticle constant
     // Using static value instead of random for deterministic testing
     let gender = "m" // Original: arc4random_uniform(2) ? "m" : "f"
     currentUser.setUserAttribute(mParticleUserAttributeGender, value: gender)
-    
+
     // Set a numeric user attribute using a custom key
     currentUser.setUserAttribute("Achieved Level", value: 4)
-    
+
     uploadWaiter.wait()
 }
 
@@ -247,17 +249,17 @@ func testIncrementUserAttribute(mparticle: MParticle, uploadWaiter: EventUploadW
         print("No current user available")
         return
     }
-    
+
     // First, set an initial value for the attribute to ensure it exists
     // Using static value 10 for deterministic testing
     currentUser.setUserAttribute("Achieved Level", value: 10)
-    
+
     // Wait for the initial set to be uploaded
     uploadWaiter.wait()
-    
+
     // Now increment the attribute by 1 - exactly as in ViewController.m
     currentUser.incrementUserAttribute("Achieved Level", byValue: NSNumber(value: 1))
-    
+
     // Wait for the increment to be uploaded
     uploadWaiter.wait()
 }
@@ -268,11 +270,11 @@ func testIncrementUserAttribute(mparticle: MParticle, uploadWaiter: EventUploadW
 func testSetSessionAttribute(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     // Set a session attribute - this will be included in the session end message
     mparticle.setSessionAttribute("Station", value: "Classic Rock")
-    
+
     // End the session to trigger sending the session attribute
     // Session attributes are sent in the session end message (dt: "se")
     mparticle.endSession()
-    
+
     uploadWaiter.wait()
 }
 
@@ -282,20 +284,20 @@ func testSetSessionAttribute(mparticle: MParticle, uploadWaiter: EventUploadWait
 func testIncrementSessionAttribute(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     // Start a new session since the previous test ended the session
     mparticle.beginSession()
-    
+
     // Wait for session start to be uploaded (ensures separate request from session end)
     uploadWaiter.wait()
-    
+
     // First set an initial numeric value for the session attribute
     mparticle.setSessionAttribute("Song Count", value: 5)
-    
+
     // Increment the session attribute by 1 - exactly as in ViewController.m
     mparticle.incrementSessionAttribute("Song Count", byValue: 1)
-    
+
     // End the session to trigger sending the session attribute
     // Session attributes are sent in the session end message (dt: "se")
     mparticle.endSession()
-    
+
     uploadWaiter.wait()
 }
 
@@ -307,10 +309,10 @@ func testToggleCCPAConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter
         print("No current user available")
         return
     }
-    
+
     // Use static timestamp for deterministic testing
     let staticTimestamp = Date(timeIntervalSince1970: 1700000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC
-    
+
     // Create CCPA consent with consented = YES
     let ccpaConsent = MPCCPAConsent()
     ccpaConsent.consented = true
@@ -318,23 +320,23 @@ func testToggleCCPAConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter
     ccpaConsent.timestamp = staticTimestamp
     ccpaConsent.location = "17 Cherry Tree Lane"
     ccpaConsent.hardwareId = "IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"
-    
+
     // Create new consent state and set CCPA consent
     let newConsentState = MPConsentState()
     newConsentState.setCCPA(ccpaConsent)
-    
+
     // Preserve existing GDPR consent state if any
     if let existingGDPR = currentUser.consentState()?.gdprConsentState() {
         newConsentState.setGDPR(existingGDPR)
     }
-    
+
     // Set consent state on current user
     currentUser.setConsentState(newConsentState)
-    
+
     // Log an event to trigger upload that includes the CCPA consent state
     // The consent state is included in the request body ("con" field) with event uploads
     mparticle.logEvent("CCPA Consent Updated", eventType: .other, eventInfo: ["consent_status": "opted_in"])
-    
+
     uploadWaiter.wait()
 }
 
@@ -346,10 +348,10 @@ func testToggleGDPRConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter
         print("No current user available")
         return
     }
-    
+
     // Use static timestamp for deterministic testing
     let staticTimestamp = Date(timeIntervalSince1970: 1700000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC
-    
+
     // Create GDPR consent with consented = YES (testing the "else" branch from ViewController.m)
     let gdprConsent = MPGDPRConsent()
     gdprConsent.consented = true
@@ -357,23 +359,23 @@ func testToggleGDPRConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter
     gdprConsent.timestamp = staticTimestamp
     gdprConsent.location = "17 Cherry Tree Lane"
     gdprConsent.hardwareId = "IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"
-    
+
     // Create new consent state and add GDPR consent with purpose
     let newConsentState = MPConsentState()
     newConsentState.addGDPRConsentState(gdprConsent, purpose: "My GDPR Purpose")
-    
+
     // Preserve existing CCPA consent state if any
     if let existingCCPA = currentUser.consentState()?.ccpaConsentState() {
         newConsentState.setCCPA(existingCCPA)
     }
-    
+
     // Set consent state on current user
     currentUser.setConsentState(newConsentState)
-    
+
     // Log an event to trigger upload that includes the GDPR consent state
     // The consent state is included in the request body ("con" field) with event uploads
     mparticle.logEvent("GDPR Consent Updated", eventType: .other, eventInfo: ["consent_status": "opted_in"])
-    
+
     uploadWaiter.wait()
 }
 
@@ -386,20 +388,20 @@ func testLogIDFA(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
         print("No current user available")
         return
     }
-    
+
     // Create identity request with current user
     let identityRequest = MPIdentityApiRequest(user: currentUser)
-    
+
     // Use static IDFA for deterministic testing
     // Format: UUID-style string typical for iOS Advertiser IDs
     let staticIDFA = "A5D934N0-232F-4AFC-2E9A-3832D95ZC702"
-    
+
     // Set the iOS Advertiser ID identity
     identityRequest.setIdentity(staticIDFA, identityType: MPIdentity.iosAdvertiserId)
-    
+
     // Modify the user identity
     mparticle.identity.modify(identityRequest) { _, _ in }
-    
+
     uploadWaiter.wait()
 }
 
@@ -409,15 +411,15 @@ func testLogIDFA(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
 func testSetATTStatus(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     // Use static timestamp in milliseconds for deterministic testing
     let staticTimestampMillis = NSNumber(value: 1700000000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC in milliseconds
-    
+
     // Set ATT status to Authorized (simulating user granting tracking permission)
     // This corresponds to the ATTrackingManagerAuthorizationStatusAuthorized case in ViewController.m
     mparticle.setATTStatus(MPATTAuthorizationStatus.authorized, withATTStatusTimestampMillis: staticTimestampMillis)
-    
+
     // Log an event to trigger upload that includes the ATT status in device info
     // ATT status is sent in the "att" field within device_info ("di") section
     mparticle.logEvent("ATT Status Updated", eventType: .other, eventInfo: ["att_status": "authorized"])
-    
+
     uploadWaiter.wait()
 }
 
@@ -451,7 +453,7 @@ var networkOptions = MPNetworkOptions()
 networkOptions.configHost = "127.0.0.1" // config2.mparticle.com
 networkOptions.eventsHost = "127.0.0.1" // nativesdks.mparticle.com
 networkOptions.identityHost = "127.0.0.1" // identity.mparticle.com
-networkOptions.pinningDisabled = true;
+networkOptions.pinningDisabled = true
 
 options.networkOptions = networkOptions
 
