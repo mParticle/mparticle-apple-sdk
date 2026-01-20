@@ -13,7 +13,7 @@ public enum MPILogLevel: UInt {
     case debug
     /** Verbose, debug, warning, and error log messages are displayed on the console */
     case verbose
-};
+}
 
 @objcMembers
 public class MPLog: NSObject {

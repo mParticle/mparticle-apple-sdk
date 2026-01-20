@@ -2,7 +2,7 @@ import XCTest
 @testable import mParticle_Apple_SDK_NoLocation
 
 final class SceneDelegateHandlerTests: XCTestCase {
-    
+
     // MARK: - Properties
 
     var sut: SceneDelegateHandler!
@@ -14,20 +14,20 @@ final class SceneDelegateHandlerTests: XCTestCase {
         userActivity.userInfo = ["key": "value"]
         return userActivity
     }
-    
+
     override func setUp() {
         super.setUp()
 
         openURLHandler = OpenURLHandlerProtocolMock()
         sut = SceneDelegateHandler(logger: MPLog(logLevel: .verbose), appNotificationHandler: openURLHandler)
     }
-        
+
     // MARK: - handleUserActivity Tests    
-    
+
     func test_handleUserActivity_callsContinueUserActivity() {
         // Act
         sut.handleUserActivity(testUserActivity)
-        
+
         // Assert - handleUserActivity directly calls the app notification handler
         XCTAssertTrue(openURLHandler.continueUserActivityCalled)
         XCTAssertEqual(openURLHandler.continueUserActivityUserActivityParam?.title, testUserActivity.title)

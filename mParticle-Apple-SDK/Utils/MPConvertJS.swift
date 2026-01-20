@@ -144,7 +144,7 @@ import mParticle_Apple_SDK_Swift
         let mparticle = MParticle.sharedInstance()
         let logger = MPLog(logLevel: mparticle.logLevel)
         logger.customLogger = mparticle.customLogger
-        
+
         guard let promotionDictionary = (json["PromotionAction"] as? [String: Any]) else {
             logger.error("Unexpected promotion container action data received from webview")
             return nil

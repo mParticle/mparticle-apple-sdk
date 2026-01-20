@@ -11,7 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/common.sh"
 
 # === Check required environment variables for recording ===
-if [ -z "$MPARTICLE_API_KEY" ] || [ -z "$MPARTICLE_API_SECRET" ]; then
+if [[ -z ${MPARTICLE_API_KEY} ]] || [[ -z ${MPARTICLE_API_SECRET} ]]; then
 	echo "❌ Error: MPARTICLE_API_KEY and MPARTICLE_API_SECRET environment variables must be set for recording mode"
 	echo "   Real API keys are required to record actual API responses from mParticle servers"
 	exit 1

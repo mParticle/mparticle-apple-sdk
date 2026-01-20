@@ -278,7 +278,7 @@ public protocol MPUserDefaultsProtocol {
         let mparticle = MParticle.sharedInstance()
         let logger = MPLog(logLevel: mparticle.logLevel)
         logger.customLogger = mparticle.customLogger
-        
+
         if fileManager.fileExists(atPath: configurationURL.path) {
             do {
                 try fileManager.removeItem(at: configurationURL)
