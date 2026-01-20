@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+
+	<title>MParticleOptions Class Reference</title>
+
+	<link rel="stylesheet" href="../css/style.css">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1.4">
+	<meta name="generator" content="appledoc 2.2.1 (build 1334)">
+</head>
+<body class="appledoc">
+	<header>
+		<div class="container" class="hide-in-xcode">
+			
+			<h1 id="library-title">
+				<a href="../index.html">mParticle Apple SDK </a>
+			</h1>
+
+			<p id="developer-home">
+				<a href="../index.html">mParticle</a>
+			</p>
+			
+		</div>
+	</header>
+
+	<aside>
+		<div class="container">
+			<nav>
+				<ul id="header-buttons" role="toolbar">
+					<li><a href="../index.html">Index</a></li>
+<li><a href="../hierarchy.html">Hierarchy</a></li>
+
+					<li id="on-this-page" role="navigation">
+						<label>
+							On This Page
+
+							<div class="chevron">
+								<div class="chevy chevron-left"></div>
+								<div class="chevy chevron-right"></div>
+							</div>
+
+							<select id="jump-to">
+	<option value="top">Jump To&#133;</option>
+	
+	<option value="overview">Overview</option>
+	
+
+	
+	
+	<option value="tasks">Tasks</option>
+	
+	
+
+	
+	
+	<optgroup label="Properties">
+		
+		<option value="//api/name/apiKey">apiKey</option>
+		
+		<option value="//api/name/apiSecret">apiSecret</option>
+		
+		<option value="//api/name/attStatus">attStatus</option>
+		
+		<option value="//api/name/attStatusTimestampMillis">attStatusTimestampMillis</option>
+		
+		<option value="//api/name/automaticSessionTracking">automaticSessionTracking</option>
+		
+		<option value="//api/name/collectSearchAdsAttribution">collectSearchAdsAttribution</option>
+		
+		<option value="//api/name/collectUserAgent">collectUserAgent</option>
+		
+		<option value="//api/name/configMaxAgeSeconds">configMaxAgeSeconds</option>
+		
+		<option value="//api/name/consentState">consentState</option>
+		
+		<option value="//api/name/customLogger">customLogger</option>
+		
+		<option value="//api/name/customUserAgent">customUserAgent</option>
+		
+		<option value="//api/name/dataPlanId">dataPlanId</option>
+		
+		<option value="//api/name/dataPlanOptions">dataPlanOptions</option>
+		
+		<option value="//api/name/dataPlanVersion">dataPlanVersion</option>
+		
+		<option value="//api/name/defaultAgent">defaultAgent</option>
+		
+		<option value="//api/name/disabledKits">disabledKits</option>
+		
+		<option value="//api/name/environment">environment</option>
+		
+		<option value="//api/name/identifyRequest">identifyRequest</option>
+		
+		<option value="//api/name/installType">installType</option>
+		
+		<option value="//api/name/logLevel">logLevel</option>
+		
+		<option value="//api/name/networkOptions">networkOptions</option>
+		
+		<option value="//api/name/onAttributionComplete">onAttributionComplete</option>
+		
+		<option value="//api/name/onCreateBatch">onCreateBatch</option>
+		
+		<option value="//api/name/onIdentifyComplete">onIdentifyComplete</option>
+		
+		<option value="//api/name/persistenceMaxAgeSeconds">persistenceMaxAgeSeconds</option>
+		
+		<option value="//api/name/proxyAppDelegate">proxyAppDelegate</option>
+		
+		<option value="//api/name/sessionTimeout">sessionTimeout</option>
+		
+		<option value="//api/name/sharedGroupID">sharedGroupID</option>
+		
+		<option value="//api/name/shouldBeginSession">shouldBeginSession</option>
+		
+		<option value="//api/name/sideloadedKits">sideloadedKits</option>
+		
+		<option value="//api/name/startKitsAsync">startKitsAsync</option>
+		
+		<option value="//api/name/trackNotifications">trackNotifications</option>
+		
+		<option value="//api/name/uploadInterval">uploadInterval</option>
+		
+	</optgroup>
+	
+
+	
+	<optgroup label="Class Methods">
+		
+		<option value="//api/name/optionsWithKey:secret:">+ optionsWithKey:secret:</option>
+		
+	</optgroup>
+	
+
+	
+	
+</select>
+						</label>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</aside>
+
+	<article>
+		<div id="overview_contents" class="container">
+			<div id="content">
+				<main role="main">
+					<h1 class="title">MParticleOptions Class Reference</h1>
+
+					
+					<div class="section section-specification"><table cellspacing="0"><tbody>
+						<tr>
+	<th>Inherits from</th>
+	<td>NSObject</td>
+</tr><tr>
+	<th>Declared in</th>
+	<td>mParticle.h</td>
+</tr>
+						</tbody></table></div>
+					
+
+                    
+					
+					<div class="section section-overview">
+						<a title="Overview" name="overview"></a>
+						<h2 class="subtitle subtitle-overview">Overview</h2>
+						<p>Main configuration object for initial SDK setup.</p>
+					</div>
+					
+					
+
+					
+					
+					<div class="section section-tasks">
+						<a title="Tasks" name="tasks"></a>
+						
+
+						
+						
+
+						<div class="task-list">
+							<div class="section-method">
+	<a name="//api/name/optionsWithKey:secret:" title="optionsWithKey:secret:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/optionsWithKey:secret:">+&nbsp;optionsWithKey:secret:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Creates an options object with your specified App key and Secret.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>+ (instancetype)optionsWithKey:(NSString *)<em>apiKey</em> secret:(NSString *)<em>secret</em></code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Creates an options object with your specified App key and Secret.</p>
+
+<p>These values can be retrieved from your App&rsquo;s dashboard within the mParticle platform.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/apiKey" title="apiKey"></a>
+	<h3 class="method-title"><code><a href="#//api/name/apiKey">&nbsp;&nbsp;apiKey</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>App key.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite) NSString *apiKey</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>App key.</p>
+
+<p>mParticle uses this to attribute incoming data to your app&rsquo;s acccount/workspace/platform.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/apiSecret" title="apiSecret"></a>
+	<h3 class="method-title"><code><a href="#//api/name/apiSecret">&nbsp;&nbsp;apiSecret</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>App secret.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite) NSString *apiSecret</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>App secret.</p>
+
+<p>An additional authentication token used to produce a signature header required by the server.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/sharedGroupID" title="sharedGroupID"></a>
+	<h3 class="method-title"><code><a href="#//api/name/sharedGroupID">&nbsp;&nbsp;sharedGroupID</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>If you have an App and App Extension, setting this value will share user defaults data between them.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite) NSString *sharedGroupID</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>If you have an App and App Extension, setting this value will share user defaults data between them.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/installType" title="installType"></a>
+	<h3 class="method-title"><code><a href="#//api/name/installType">&nbsp;&nbsp;installType</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Allows you to specify a specific installation type, or specify that the SDK should detect automatically.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) MPInstallationType installType</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Allows you to specify a specific installation type, or specify that the SDK should detect automatically.</p>
+
+<p>You can specify that this is a known-install, known-upgrade or known-same-version.</p>
+
+<p>For the first release of your app with the SDK, all users will appear as new to the SDK since it has no persistence.
+To avoid inflated install count, you will want to override this setting from autodetect and specifically
+tell the SDK whether or not this is an install, based on your app&rsquo;s existing persistence mechanisms.</p>
+
+<p>For future releases, the mParticle SDK will already be in the installed app, so you can change this value back to auto detect.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/identifyRequest" title="identifyRequest"></a>
+	<h3 class="method-title"><code><a href="#//api/name/identifyRequest">&nbsp;&nbsp;identifyRequest</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>This identity request object allows you to customize the information included in the initial Identify request sent by the SDK.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite) MPIdentityApiRequest *identifyRequest</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>This identity request object allows you to customize the information included in the initial Identify request sent by the SDK.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/environment" title="environment"></a>
+	<h3 class="method-title"><code><a href="#//api/name/environment">&nbsp;&nbsp;environment</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>SDK Environment. Autodetected as development or production, you can also override.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) MPEnvironment environment</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>SDK Environment. Autodetected as development or production, you can also override.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/proxyAppDelegate" title="proxyAppDelegate"></a>
+	<h3 class="method-title"><code><a href="#//api/name/proxyAppDelegate">&nbsp;&nbsp;proxyAppDelegate</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Whether the SDK should automatically collect UIApplicationDelegate information.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL proxyAppDelegate</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Whether the SDK should automatically collect UIApplicationDelegate information.</p>
+
+<p>If set to NO, you will need to manually add some calls to the SDK within certain AppDelegate methods.
+If set to YES (the default), the SDK will intercept app delegate messages before forwarding them to your app.</p>
+
+<p>This mechanism is acheived using NSProxy and without introducing dangerous swizzling.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/automaticSessionTracking" title="automaticSessionTracking"></a>
+	<h3 class="method-title"><code><a href="#//api/name/automaticSessionTracking">&nbsp;&nbsp;automaticSessionTracking</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Whether the SDK should automatically attempt to measure sessions. Ignored in App Extensions.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL automaticSessionTracking</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Whether the SDK should automatically attempt to measure sessions. Ignored in App Extensions.</p>
+
+<p>If set to YES (the default), the SDK will start a timer when the app enters the background and will end the session if a
+user leaves the app for a configurable number of seconds without bringing it back to foreground.</p>
+
+<p>Note that the above behavior does not apply to apps with long-running background sessions.</p>
+
+<p>Also note that the SDK will still start a session automatically when startWithOptions is called, even if automaticSessionTracking is disabled, unless <a href="#//api/name/shouldBeginSession"><code>shouldBeginSession</code></a> is also set to NO.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="#//api/name/shouldBeginSession">@property shouldBeginSession</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/shouldBeginSession" title="shouldBeginSession"></a>
+	<h3 class="method-title"><code><a href="#//api/name/shouldBeginSession">&nbsp;&nbsp;shouldBeginSession</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Whether the SDK should start a session on SDK init. (Defaults to YES.)</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL shouldBeginSession</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Whether the SDK should start a session on SDK init. (Defaults to YES.)</p>
+
+<p>The behavior of this flag does not change depending on whether automatic session tracking is enabled.</p>
+
+<p>If set to YES, the SDK will start session immediately when you call <code>startWithOptions:</code>
+If set to NO, the SDK will not create a session as as result of <code>startWithOptions:</code> being called.</p>
+
+<p>If your application can be launched into the background, you will want to set this to NO in that situation to avoid spurious sessions that do not correspond to user activity.
+You can detect being launched into the background from within <code>didFinishLaunchingWithOptions:</code> based on whether <code>launchOptions[UIApplicationLaunchOptionsRemoteNotificationsKey]["content-available"]</code> exists and is set to the <code>NSNumber</code> value <code>@1</code>.</p>
+
+<p>Note that even if this flag is set to NO, the SDK will still create sessions as a result of other application lifecycle events, unless <a href="#//api/name/automaticSessionTracking"><code>automaticSessionTracking</code></a> is also set to NO.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/customUserAgent" title="customUserAgent"></a>
+	<h3 class="method-title"><code><a href="#//api/name/customUserAgent">&nbsp;&nbsp;customUserAgent</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The browser user agent.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSString *customUserAgent</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The browser user agent.</p>
+
+<p>This is normally collected by the SDK automatically. If you are already incurring the cost of instantiating
+a webview to collect this, and wish to avoid the performance cost of duplicate work, (or if you need to customize
+the value) you can pass this into the SDK as a string.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/collectUserAgent" title="collectUserAgent"></a>
+	<h3 class="method-title"><code><a href="#//api/name/collectUserAgent">&nbsp;&nbsp;collectUserAgent</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Whether browser user agent should be collected by the SDK. This value is ignored (always NO) if you specify a non-nil custom user agent.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL collectUserAgent</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Whether browser user agent should be collected by the SDK. This value is ignored (always NO) if you specify a non-nil custom user agent.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/defaultAgent" title="defaultAgent"></a>
+	<h3 class="method-title"><code><a href="#//api/name/defaultAgent">&nbsp;&nbsp;defaultAgent</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Default user agent to be sent in case collecting the browser user agent fails repeatedly, times out or the APIs are unavailable.
+(Ignored if <a href="#//api/name/customUserAgent"><code>customUserAgent</code></a> is set.) By default, a value of the form &ldquo;mParticle Apple SDK/<SDK Version>&rdquo; will be used as a fallback.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, copy, readwrite) NSString *defaultAgent</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Default user agent to be sent in case collecting the browser user agent fails repeatedly, times out or the APIs are unavailable.
+(Ignored if <a href="#//api/name/customUserAgent"><code>customUserAgent</code></a> is set.) By default, a value of the form &ldquo;mParticle Apple SDK/<SDK Version>&rdquo; will be used as a fallback.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/collectSearchAdsAttribution" title="collectSearchAdsAttribution"></a>
+	<h3 class="method-title"><code><a href="#//api/name/collectSearchAdsAttribution">&nbsp;&nbsp;collectSearchAdsAttribution</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to YES</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL collectSearchAdsAttribution</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to YES</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/trackNotifications" title="trackNotifications"></a>
+	<h3 class="method-title"><code><a href="#//api/name/trackNotifications">&nbsp;&nbsp;trackNotifications</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL trackNotifications</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/startKitsAsync" title="startKitsAsync"></a>
+	<h3 class="method-title"><code><a href="#//api/name/startKitsAsync">&nbsp;&nbsp;startKitsAsync</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>This value is not currently read by the SDK and should not be used at this time.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) BOOL startKitsAsync</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>This value is not currently read by the SDK and should not be used at this time.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/logLevel" title="logLevel"></a>
+	<h3 class="method-title"><code><a href="#//api/name/logLevel">&nbsp;&nbsp;logLevel</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Log level. (Defaults to &lsquo;None&rsquo;.)</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) MPILogLevel logLevel</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Log level. (Defaults to &lsquo;None&rsquo;.)</p>
+
+<p>This controls the verbosity of the SDK.</p>
+
+<p>By default the SDK will produce no output. If you modify this for your development builds, please consider using
+a preprocessor directive or similar mechanism to ensure your change is not accidentally applied in production.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/customLogger" title="customLogger"></a>
+	<h3 class="method-title"><code><a href="#//api/name/customLogger">&nbsp;&nbsp;customLogger</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A custom handler callback for mParticle log messages. If set, this block will be invoked each time mParticle would normally log a message to the console.
+N.B.: The format/wording of mParticle log messages may change between releases&ndash;please avoid using this programatically to detect SDK behavior unless absolutely necessary, and then only as a temporary workaround.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, copy, readwrite) void ( ^ ) ( NSString *message ) customLogger</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A custom handler callback for mParticle log messages. If set, this block will be invoked each time mParticle would normally log a message to the console.
+N.B.: The format/wording of mParticle log messages may change between releases&ndash;please avoid using this programatically to detect SDK behavior unless absolutely necessary, and then only as a temporary workaround.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/uploadInterval" title="uploadInterval"></a>
+	<h3 class="method-title"><code><a href="#//api/name/uploadInterval">&nbsp;&nbsp;uploadInterval</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Upload interval.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) NSTimeInterval uploadInterval</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Upload interval.</p>
+
+<p>Batches of data are sent periodically to the mParticle servers at the rate defined by this property. This continues while the app is in the background (e.g. playing music).</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/sessionTimeout" title="sessionTimeout"></a>
+	<h3 class="method-title"><code><a href="#//api/name/sessionTimeout">&nbsp;&nbsp;sessionTimeout</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Session timeout.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readwrite) NSTimeInterval sessionTimeout</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Session timeout.</p>
+
+<p>Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval, counted since the last event was logged.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/networkOptions" title="networkOptions"></a>
+	<h3 class="method-title"><code><a href="#//api/name/networkOptions">&nbsp;&nbsp;networkOptions</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Allows you to override the default HTTPS hosts and certificates used by the SDK, if required.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) MPNetworkOptions *networkOptions</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Allows you to override the default HTTPS hosts and certificates used by the SDK, if required.</p>
+
+<p>(Provided to accomodate certain advanced use cases. Most integrations of the SDK will not require modifying this property.)</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/consentState" title="consentState"></a>
+	<h3 class="method-title"><code><a href="#//api/name/consentState">&nbsp;&nbsp;consentState</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Consent state.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) MPConsentState *consentState</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Consent state.</p>
+
+<p>Allows you to record one or more consent purposes and whether or not the user agreed to each one.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/dataPlanId" title="dataPlanId"></a>
+	<h3 class="method-title"><code><a href="#//api/name/dataPlanId">&nbsp;&nbsp;dataPlanId</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Data Plan ID.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) NSString *dataPlanId</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Data Plan ID.</p>
+
+<p>If set, this informs the SDK of which data plan each event is supposed to conform to.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/dataPlanVersion" title="dataPlanVersion"></a>
+	<h3 class="method-title"><code><a href="#//api/name/dataPlanVersion">&nbsp;&nbsp;dataPlanVersion</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Data Plan Version.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) NSNumber *dataPlanVersion</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Data Plan Version.</p>
+
+<p>If set, this informs the SDK of which version of the data plan each event is supposed to conform to.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/dataPlanOptions" title="dataPlanOptions"></a>
+	<h3 class="method-title"><code><a href="#//api/name/dataPlanOptions">&nbsp;&nbsp;dataPlanOptions</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Data Plan Options.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) MPDataPlanOptions *dataPlanOptions</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Data Plan Options.</p>
+
+<p>Settings for blocking data to kits</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/disabledKits" title="disabledKits"></a>
+	<h3 class="method-title"><code><a href="#//api/name/disabledKits">&nbsp;&nbsp;disabledKits</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Disabled Kits.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) NSArray&lt;NSNumber*&gt; *disabledKits</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Disabled Kits.</p>
+
+<p>Include the Kit Integration ID of any kit you&rsquo;d like to disable</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPKitInstance.html">MPKitInstance</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/attStatus" title="attStatus"></a>
+	<h3 class="method-title"><code><a href="#//api/name/attStatus">&nbsp;&nbsp;attStatus</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Set the App Tracking Transparency Authorization Status upon starting the SDK.
+Only sets a new state if it has changed.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) NSNumber *attStatus</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Set the App Tracking Transparency Authorization Status upon starting the SDK.
+Only sets a new state if it has changed.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/attStatusTimestampMillis" title="attStatusTimestampMillis"></a>
+	<h3 class="method-title"><code><a href="#//api/name/attStatusTimestampMillis">&nbsp;&nbsp;attStatusTimestampMillis</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Set the App Tracking Transparency Authorization Status timestamp upon starting the SDK.
+Requires @<a href="#//api/name/attStatus">attStatus</a> to be set and is only set if the authorization state is different from the stored state.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) NSNumber *attStatusTimestampMillis</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Set the App Tracking Transparency Authorization Status timestamp upon starting the SDK.
+Requires @<a href="#//api/name/attStatus">attStatus</a> to be set and is only set if the authorization state is different from the stored state.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/configMaxAgeSeconds" title="configMaxAgeSeconds"></a>
+	<h3 class="method-title"><code><a href="#//api/name/configMaxAgeSeconds">&nbsp;&nbsp;configMaxAgeSeconds</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Set a maximum threshold for stored configuration age, in seconds.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) NSNumber *configMaxAgeSeconds</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Set a maximum threshold for stored configuration age, in seconds.</p>
+
+<p>When the SDK starts, before we attempt to fetch a fresh config from the server, we
+will load the most recent previous config from disk. when configMaxAgeSeconds is set, we will
+check the timestamp on that config and, if its age is greater than the threshold, instead
+of loading it we will delete it and wait for the fresh config to arrive.</p>
+
+<p>This field is especially useful if your application often updates the kit/forwarding logic and
+has a portion of user&rsquo;s who experience prolonged network interruptions. In these cases, a reasonable
+configMaxAgeSeconds will prevent those users from potentially using very old forwarding logic.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/persistenceMaxAgeSeconds" title="persistenceMaxAgeSeconds"></a>
+	<h3 class="method-title"><code><a href="#//api/name/persistenceMaxAgeSeconds">&nbsp;&nbsp;persistenceMaxAgeSeconds</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Set a maximum threshold for stored events, batches, and sessions, in seconds.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSNumber *persistenceMaxAgeSeconds</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Set a maximum threshold for stored events, batches, and sessions, in seconds.</p>
+
+<p>By default, data is persisted for 90 days before being deleted to minimize data loss, however
+this can lead to excessive storage usage on some users' devices. This is exacerbated if you log
+a large number of events, or events with a lot of data (attributes, etc).</p>
+
+<p>You can set this to any value greater than 0 seconds, so if you have storage usage concerns, set a lower
+value such as 48 hours or 1 week. Or alternatively, if you have data loss concerns, you can set this to an even
+longer value than the default.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/sideloadedKits" title="sideloadedKits"></a>
+	<h3 class="method-title"><code><a href="#//api/name/sideloadedKits">&nbsp;&nbsp;sideloadedKits</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Set an array of instances of kit (<a href="../Protocols/MPKitProtocol.html">MPKitProtocol</a> wrapped in MPSideloadedKit) objects to be &ldquo;sideloaded&rdquo;.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readwrite, nullable) NSArray&lt;MPSideloadedKit*&gt; *sideloadedKits</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Set an array of instances of kit (<a href="../Protocols/MPKitProtocol.html">MPKitProtocol</a> wrapped in MPSideloadedKit) objects to be &ldquo;sideloaded&rdquo;.</p>
+
+<p>The difference between these kits and mParticle UI enabled kits is that they do not receive a server side configuration and are always activated.
+Registration is done locally, and these kits will receive all of the usual <a href="../Protocols/MPKitProtocol.html">MPKitProtocol</a> callback method calls. Some use cases
+include debugging (logging all <a href="../Protocols/MPKitProtocol.html">MPKitProtocol</a> callbacks) and creating custom integrations that are not yet officially supported.</p>
+
+<p>At the moment, all events are forwarded as event filtering is not yet supported. This will come in a future release.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onIdentifyComplete" title="onIdentifyComplete"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onIdentifyComplete">&nbsp;&nbsp;onIdentifyComplete</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Identify callback.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, copy) void ( ^ ) ( MPIdentityApiResult *_Nullable apiResult , NSError *_Nullable error ) onIdentifyComplete</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Identify callback.</p>
+
+<p>This will be called when an identify request completes.</p>
+
+<p>This applies to both the initial identify request triggered by the SDK and any identify requests you may send.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onAttributionComplete" title="onAttributionComplete"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onAttributionComplete">&nbsp;&nbsp;onAttributionComplete</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Attribution callback.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, copy) void ( ^ ) ( MPAttributionResult *_Nullable attributionResult , NSError *_Nullable error ) onAttributionComplete</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Attribution callback.</p>
+
+<p>This will be called each time a kit returns attribution info.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/onCreateBatch" title="onCreateBatch"></a>
+	<h3 class="method-title"><code><a href="#//api/name/onCreateBatch">&nbsp;&nbsp;onCreateBatch</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Custom handler to modify or block batch data before upload.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, copy) NSDictionary *( ^ ) ( NSDictionary *batch ) onCreateBatch</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Custom handler to modify or block batch data before upload.</p>
+
+<p>If set, this will be called when a new batch of data is created. By returning a different value, you can change the batch contents, or by returning &lsquo;nil&rsquo; you can block the batch from being uploaded.</p>
+
+<p>Use with care. This feature was initially added to allow the value of existing fields to be modified. If you add new data in a format that the platform is not expecting, it may be dropped or not parsed correctly.</p>
+
+<p>Note: Use of this handler will also cause the field &lsquo;mb&rsquo; (modified batch) to appear in the batch so we can distinguish for troubleshooting purposes whether data was changed.</p>
+
+<p>Also note: Unlike other callbacks, this block will be called on the SDK queue to prevent batches from being processed out of order. Please avoid excessively blocking in this handler as this will prevent the SDK from doing other tasks.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">mParticle.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div>
+						</div>
+						
+					</div>
+					
+					
+
+                    
+                    
+          
+				</main>
+
+				<footer>
+					<div class="footer-copyright">
+						
+						<p class="copyright">Copyright &copy; 2026 mParticle. All rights reserved. Updated: 2026-01-20</p>
+						
+						
+						<p class="generator">Generated by <a href="http://appledoc.gentlebytes.com">appledoc 2.2.1 (build 1334)</a>.</p>
+						
+					</div>
+				</footer>
+			</div>
+		</div>
+	</article>
+
+	<script src="../js/script.js"></script>
+</body>
+</html>

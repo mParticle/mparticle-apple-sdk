@@ -1,3 +1,24 @@
+# [8.41.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.40.0...v8.41.0) (2026-01-20)
+
+### Bug Fixes
+
+- fix: Use awk for changelog (#488) ([16fa9057](https://github.com/mParticle/mparticle-apple-sdk/commit/16fa9057cf9b61996c079ad4d07ac771d2e0b2c5))
+- fix: Handle Parenthesis in Release Notes (#487) ([a9ab2267](https://github.com/mParticle/mparticle-apple-sdk/commit/a9ab22678fd2df53d2cb0031521bf2fad10d000a))
+- fix: Rokt User Attribute Mapping Fix (#478) ([9f56a052](https://github.com/mParticle/mparticle-apple-sdk/commit/9f56a0524a7ef959f3a7035831dbea750afc926c))
+- fix: Crash on launch when upgrading due to NSInvalidUnarchiveOperationException (#469) ([5241667f](https://github.com/mParticle/mparticle-apple-sdk/commit/5241667f0745b192d372ea64922c49630645f326))
+- fix: Flakey test testLoggingCommerceEventToUpload (#475) ([6cb34755](https://github.com/mParticle/mparticle-apple-sdk/commit/6cb34755b0b2cdd0a84f95add7235537b8a8aab4))
+- fix: Simulator not found failing CI (#472) ([33df791d](https://github.com/mParticle/mparticle-apple-sdk/commit/33df791de8c06e57f793a483a9318e0d7970056f))
+- feat: SDKE-529 Implement Verification Script (#454) ([d5e25e02](https://github.com/mParticle/mparticle-apple-sdk/commit/d5e25e02f7d127f9f310deca001fe2a82f69211e))
+
+### Features
+
+- feat: Add trunk rule to detect mParticle API keys (#481) ([d78a8ecc](https://github.com/mParticle/mparticle-apple-sdk/commit/d78a8ecc65507fdbb9e0bb7cf05823e424a33bdb))
+- feat: Implement Manual Scene Delegate Support (#462) ([71fe8b75](https://github.com/mParticle/mparticle-apple-sdk/commit/71fe8b75d0f469fb938f0df37f704e4b9080d963))
+- feat: Implement Manual SceneDelegate Support (#453) ([e5cbe849](https://github.com/mParticle/mparticle-apple-sdk/commit/e5cbe849d376781a0ca98ede4e50e99bfb1e4d2a))
+- feat: SDKE-529 Implement Verification Script (#454) ([d5e25e02](https://github.com/mParticle/mparticle-apple-sdk/commit/d5e25e02f7d127f9f310deca001fe2a82f69211e))
+- feat: SDKE-528 Implement Script To Preprocess Request Recordings (#452) ([69a8ed34](https://github.com/mParticle/mparticle-apple-sdk/commit/69a8ed34a518a76934aaa807ca96a52da8a9f74e))
+- feat: Add IntegrationTests project with Tuist and WireMock setup (#451) ([a1e51fca](https://github.com/mParticle/mparticle-apple-sdk/commit/a1e51fcad9f579b08a93a93934453793a7d90156))
+
 # [8.41.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.40.0...v8.41.0) (2026-01-14)
 
 ### Bug Fixes

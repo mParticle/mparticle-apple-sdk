@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+
+	<title>MPAliasRequest Class Reference</title>
+
+	<link rel="stylesheet" href="../css/style.css">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1.4">
+	<meta name="generator" content="appledoc 2.2.1 (build 1334)">
+</head>
+<body class="appledoc">
+	<header>
+		<div class="container" class="hide-in-xcode">
+			
+			<h1 id="library-title">
+				<a href="../index.html">mParticle Apple SDK </a>
+			</h1>
+
+			<p id="developer-home">
+				<a href="../index.html">mParticle</a>
+			</p>
+			
+		</div>
+	</header>
+
+	<aside>
+		<div class="container">
+			<nav>
+				<ul id="header-buttons" role="toolbar">
+					<li><a href="../index.html">Index</a></li>
+<li><a href="../hierarchy.html">Hierarchy</a></li>
+
+					<li id="on-this-page" role="navigation">
+						<label>
+							On This Page
+
+							<div class="chevron">
+								<div class="chevy chevron-left"></div>
+								<div class="chevy chevron-right"></div>
+							</div>
+
+							<select id="jump-to">
+	<option value="top">Jump To&#133;</option>
+	
+	<option value="overview">Overview</option>
+	
+
+	
+	
+	<option value="tasks">Tasks</option>
+	
+	
+
+	
+	
+	<optgroup label="Properties">
+		
+		<option value="//api/name/destinationMPID">destinationMPID</option>
+		
+		<option value="//api/name/endTime">endTime</option>
+		
+		<option value="//api/name/sourceMPID">sourceMPID</option>
+		
+		<option value="//api/name/startTime">startTime</option>
+		
+		<option value="//api/name/usedFirstLastSeen">usedFirstLastSeen</option>
+		
+	</optgroup>
+	
+
+	
+	<optgroup label="Class Methods">
+		
+		<option value="//api/name/requestWithSourceMPID:destinationMPID:startTime:endTime:">+ requestWithSourceMPID:destinationMPID:startTime:endTime:</option>
+		
+		<option value="//api/name/requestWithSourceUser:destinationUser:">+ requestWithSourceUser:destinationUser:</option>
+		
+	</optgroup>
+	
+
+	
+	
+</select>
+						</label>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</aside>
+
+	<article>
+		<div id="overview_contents" class="container">
+			<div id="content">
+				<main role="main">
+					<h1 class="title">MPAliasRequest Class Reference</h1>
+
+					
+					<div class="section section-specification"><table cellspacing="0"><tbody>
+						<tr>
+	<th>Inherits from</th>
+	<td>NSObject</td>
+</tr><tr>
+	<th>Declared in</th>
+	<td>MPAliasRequest.h</td>
+</tr>
+						</tbody></table></div>
+					
+
+                    
+					
+					<div class="section section-overview">
+						<a title="Overview" name="overview"></a>
+						<h2 class="subtitle subtitle-overview">Overview</h2>
+						<p>A request to copy data from one user to another, constrained to a particular time period.</p>
+
+<p>Note that this request will not automatically copy user attributes to the destination user&ndash;this must be done manually, if desired.</p>
+					</div>
+					
+					
+
+					
+					
+					<div class="section section-tasks">
+						<a title="Tasks" name="tasks"></a>
+						
+
+						
+						
+
+						<div class="task-list">
+							<div class="section-method">
+	<a name="//api/name/requestWithSourceUser:destinationUser:" title="requestWithSourceUser:destinationUser:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/requestWithSourceUser:destinationUser:">+&nbsp;requestWithSourceUser:destinationUser:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Creates a request specifying a source and destination user.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>+ (MPAliasRequest *)requestWithSourceUser:(MParticleUser *)<em>sourceUser</em> destinationUser:(MParticleUser *)<em>destinationUser</em></code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Creates a request specifying a source and destination user.</p>
+
+<p>Alias start and end times will be automatically inferred based on the sourceUser&rsquo;s <code>firstSeen</code> and <code>lastSeen</code> properties.</p>
+
+<p>If the first/last seen dates are earlier than the supported alias max time window, they will be adjusted automatically.</p>
+
+<p>You can obtain user objects by indexing into the array returned by <code>[MParticle.sharedInstance.identity getAllUsers]</code> or by calling <code>[MParticle.sharedInstance.identity getUser:&lt;MPID&gt;]</code>.</p>
+
+<p>Note that when using the latter method the user IDs must be known to the SDK or the call to <code>getUser:</code> will return nil.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPAliasRequest.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/requestWithSourceMPID:destinationMPID:startTime:endTime:" title="requestWithSourceMPID:destinationMPID:startTime:endTime:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/requestWithSourceMPID:destinationMPID:startTime:endTime:">+&nbsp;requestWithSourceMPID:destinationMPID:startTime:endTime:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Creates a request specifying source and destination MPIDs and explicitly providing start and end times.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>+ (MPAliasRequest *)requestWithSourceMPID:(NSNumber *)<em>sourceMPID</em> destinationMPID:(NSNumber *)<em>destinationMPID</em> startTime:(NSDate *)<em>startTime</em> endTime:(NSDate *)<em>endTime</em></code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Creates a request specifying source and destination MPIDs and explicitly providing start and end times.</p>
+
+<p>(MPID is also referred to as the <code>userId</code> property on <a href="../Classes/MParticleUser.html"><code>MParticleUser</code></a>.)</p>
+
+<p>Unlike the above method, these dates will be sent to the server without adjusting them to take into account the alias max time window.</p>
+
+<p>You can register a listener to get any errors that may be returned if the start/end times are outside the range accepted by the server. See <code>MPListenerController#onAliasRequestFinished:</code>.</p>
+
+<p>Additionally, to support any potential advanced use cases, this method does not require MPIDs to be known to the SDK to perform the alias request.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPAliasRequest.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/sourceMPID" title="sourceMPID"></a>
+	<h3 class="method-title"><code><a href="#//api/name/sourceMPID">&nbsp;&nbsp;sourceMPID</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The MPID of the user that has existing data.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) NSNumber *sourceMPID</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The MPID of the user that has existing data.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPAliasRequest.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/destinationMPID" title="destinationMPID"></a>
+	<h3 class="method-title"><code><a href="#//api/name/destinationMPID">&nbsp;&nbsp;destinationMPID</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The MPID of the user that should receive the copied data.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) NSNumber *destinationMPID</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The MPID of the user that should receive the copied data.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPAliasRequest.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/startTime" title="startTime"></a>
+	<h3 class="method-title"><code><a href="#//api/name/startTime">&nbsp;&nbsp;startTime</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The timestamp of the earliest data that should be copied, defaults to the source user&rsquo;s first seen timestamp.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) NSDate *startTime</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The timestamp of the earliest data that should be copied, defaults to the source user&rsquo;s first seen timestamp.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPAliasRequest.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/endTime" title="endTime"></a>
+	<h3 class="method-title"><code><a href="#//api/name/endTime">&nbsp;&nbsp;endTime</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The timestamp of the latest data that should be copied, defaults to the source user&rsquo;s last seen timestamp.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly) NSDate *endTime</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The timestamp of the latest data that should be copied, defaults to the source user&rsquo;s last seen timestamp.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPAliasRequest.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/usedFirstLastSeen" title="usedFirstLastSeen"></a>
+	<h3 class="method-title"><code><a href="#//api/name/usedFirstLastSeen">&nbsp;&nbsp;usedFirstLastSeen</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Whether the start/end times were automatically inferred from the source user&rsquo;s firstSeen and lastSeen properties</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, readonly) BOOL usedFirstLastSeen</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Whether the start/end times were automatically inferred from the source user&rsquo;s firstSeen and lastSeen properties</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPAliasRequest.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div>
+						</div>
+						
+					</div>
+					
+					
+
+                    
+                    
+          
+				</main>
+
+				<footer>
+					<div class="footer-copyright">
+						
+						<p class="copyright">Copyright &copy; 2026 mParticle. All rights reserved. Updated: 2026-01-20</p>
+						
+						
+						<p class="generator">Generated by <a href="http://appledoc.gentlebytes.com">appledoc 2.2.1 (build 1334)</a>.</p>
+						
+					</div>
+				</footer>
+			</div>
+		</div>
+	</article>
+
+	<script src="../js/script.js"></script>
+</body>
+</html>

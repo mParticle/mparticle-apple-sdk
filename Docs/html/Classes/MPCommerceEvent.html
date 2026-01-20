@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+
+	<title>MPCommerceEvent Class Reference</title>
+
+	<link rel="stylesheet" href="../css/style.css">
+	<meta name="viewport" content="initial-scale=1, maximum-scale=1.4">
+	<meta name="generator" content="appledoc 2.2.1 (build 1334)">
+</head>
+<body class="appledoc">
+	<header>
+		<div class="container" class="hide-in-xcode">
+			
+			<h1 id="library-title">
+				<a href="../index.html">mParticle Apple SDK </a>
+			</h1>
+
+			<p id="developer-home">
+				<a href="../index.html">mParticle</a>
+			</p>
+			
+		</div>
+	</header>
+
+	<aside>
+		<div class="container">
+			<nav>
+				<ul id="header-buttons" role="toolbar">
+					<li><a href="../index.html">Index</a></li>
+<li><a href="../hierarchy.html">Hierarchy</a></li>
+
+					<li id="on-this-page" role="navigation">
+						<label>
+							On This Page
+
+							<div class="chevron">
+								<div class="chevy chevron-left"></div>
+								<div class="chevy chevron-right"></div>
+							</div>
+
+							<select id="jump-to">
+	<option value="top">Jump To&#133;</option>
+	
+	<option value="overview">Overview</option>
+	
+
+	
+	
+	<option value="tasks">Tasks</option>
+	
+	
+
+	
+	
+	<optgroup label="Properties">
+		
+		<option value="//api/name/action">action</option>
+		
+		<option value="//api/name/checkoutOptions">checkoutOptions</option>
+		
+		<option value="//api/name/checkoutStep">checkoutStep</option>
+		
+		<option value="//api/name/currency">currency</option>
+		
+		<option value="//api/name/impressions">impressions</option>
+		
+		<option value="//api/name/nonInteractive">nonInteractive</option>
+		
+		<option value="//api/name/productListName">productListName</option>
+		
+		<option value="//api/name/productListSource">productListSource</option>
+		
+		<option value="//api/name/products">products</option>
+		
+		<option value="//api/name/promotionContainer">promotionContainer</option>
+		
+		<option value="//api/name/screenName">screenName</option>
+		
+		<option value="//api/name/transactionAttributes">transactionAttributes</option>
+		
+	</optgroup>
+	
+
+	
+
+	
+	<optgroup label="Instance Methods">
+		
+		<option value="//api/name/addImpression:listName:">- addImpression:listName:</option>
+		
+		<option value="//api/name/addProduct:">- addProduct:</option>
+		
+		<option value="//api/name/allKeys">- allKeys</option>
+		
+		<option value="//api/name/dictionaryRepresentation">- dictionaryRepresentation</option>
+		
+		<option value="//api/name/initWithAction:product:">- initWithAction:product:</option>
+		
+		<option value="//api/name/initWithImpressionName:product:">- initWithImpressionName:product:</option>
+		
+		<option value="//api/name/initWithPromotionContainer:">- initWithPromotionContainer:</option>
+		
+		<option value="//api/name/removeProduct:">- removeProduct:</option>
+		
+		<option value="//api/name/setTimestamp:">- setTimestamp:</option>
+		
+		<option value="//api/name/timestamp">- timestamp</option>
+		
+		<option value="//api/name/userDefinedAttributes">- userDefinedAttributes</option>
+		
+	</optgroup>
+	
+	
+</select>
+						</label>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</aside>
+
+	<article>
+		<div id="overview_contents" class="container">
+			<div id="content">
+				<main role="main">
+					<h1 class="title">MPCommerceEvent Class Reference</h1>
+
+					
+					<div class="section section-specification"><table cellspacing="0"><tbody>
+						<tr>
+	<th>Inherits from</th>
+	<td><a href="../Classes/MPBaseEvent.html">MPBaseEvent</a> : NSObject</td>
+</tr><tr>
+	<th>Conforms to</th>
+	<td>NSSecureCoding</td>
+</tr><tr>
+	<th>Declared in</th>
+	<td>MPCommerceEvent.h</td>
+</tr>
+						</tbody></table></div>
+					
+
+                    
+					
+					<div class="section section-overview">
+						<a title="Overview" name="overview"></a>
+						<h2 class="subtitle subtitle-overview">Overview</h2>
+						<p>This class contains the information and represents a commerce event to be logged using the mParticle SDK.</p>
+
+<p><b>Usage:</b></p>
+
+<p><b>Swift</b></p>
+
+<pre><code>
+let commerceEvent = MPCommerceEvent(action: MPCommerceEventAction.AddToCart, product: product1)
+
+let mParticle = MParticle.sharedInstance()
+
+mParticle.logCommerceEvent(commerceEvent)
+</code></pre>
+
+
+<p><b>Objective-C</b></p>
+
+<pre><code>
+MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product1];
+
+MParticle *mParticle = [MParticle sharedInstance];
+
+[mParticle logCommerceEvent:commerceEvent];
+</code></pre>
+
+					</div>
+					
+					
+
+					
+					
+					<div class="section section-tasks">
+						<a title="Tasks" name="tasks"></a>
+						
+
+						
+						<h2 class="task-title">Other Methods</h2>
+
+						<div class="task-list">
+							<div class="section-method">
+	<a name="//api/name/checkoutOptions" title="checkoutOptions"></a>
+	<h3 class="method-title"><code><a href="#//api/name/checkoutOptions">&nbsp;&nbsp;checkoutOptions</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Checkout option string describing what the options are.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSString *checkoutOptions</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Checkout option string describing what the options are.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/currency" title="currency"></a>
+	<h3 class="method-title"><code><a href="#//api/name/currency">&nbsp;&nbsp;currency</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The currency used in the commerce event.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSString *currency</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The currency used in the commerce event.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/impressions" title="impressions"></a>
+	<h3 class="method-title"><code><a href="#//api/name/impressions">&nbsp;&nbsp;impressions</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A dictionary containing list names as keys and arrays of <a href="#//api/name/products">products</a> impressed under that list name</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly, nullable) NSDictionary&lt;NSString*__kindofNSSet&lt;MPProduct*&gt; *&gt; *impressions</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A dictionary containing list names as keys and arrays of products impressed under that list name</p>
+
+<pre><code>
+{"listName1":[product1, product2]}
+</code></pre>
+
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/products" title="products"></a>
+	<h3 class="method-title"><code><a href="#//api/name/products">&nbsp;&nbsp;products</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>List of products being applied <i>action</i></p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, readonly, nullable) NSArray&lt;MPProduct*&gt; *products</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>List of products being applied <i>action</i></p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/promotionContainer" title="promotionContainer"></a>
+	<h3 class="method-title"><code><a href="#//api/name/promotionContainer">&nbsp;&nbsp;promotionContainer</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A promotion container describing a promotion <a href="#//api/name/action">action</a> and its respective <a href="#//api/name/products">products</a>.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) MPPromotionContainer *promotionContainer</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A promotion container describing a promotion <a href="#//api/name/action">action</a> and its respective <a href="#//api/name/products">products</a>.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPPromotionContainer.html">MPPromotionContainer</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/productListName" title="productListName"></a>
+	<h3 class="method-title"><code><a href="#//api/name/productListName">&nbsp;&nbsp;productListName</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Describes a product <a href="#//api/name/action">action</a> list for this commerce event trans<a href="#//api/name/action">action</a>.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSString *productListName</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Describes a product <a href="#//api/name/action">action</a> list for this commerce event trans<a href="#//api/name/action">action</a>.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/productListSource" title="productListSource"></a>
+	<h3 class="method-title"><code><a href="#//api/name/productListSource">&nbsp;&nbsp;productListSource</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Describes a product list source for this commerce event trans<a href="#//api/name/action">action</a>.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSString *productListSource</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Describes a product list source for this commerce event trans<a href="#//api/name/action">action</a>.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/screenName" title="screenName"></a>
+	<h3 class="method-title"><code><a href="#//api/name/screenName">&nbsp;&nbsp;screenName</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The label describing the screen on which the commerce event trans<a href="#//api/name/action">action</a> occurred</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) NSString *screenName</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The label describing the screen on which the commerce event trans<a href="#//api/name/action">action</a> occurred</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/transactionAttributes" title="transactionAttributes"></a>
+	<h3 class="method-title"><code><a href="#//api/name/transactionAttributes">&nbsp;&nbsp;transactionAttributes</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The attributes of the trans<a href="#//api/name/action">action</a>, such as: transactionId, tax, affiliation, shipping, etc.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic, strong, nullable) MPTransactionAttributes *transactionAttributes</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The attributes of the trans<a href="#//api/name/action">action</a>, such as: transactionId, tax, affiliation, shipping, etc.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPTransactionAttributes.html">MPTransactionAttributes</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/action" title="action"></a>
+	<h3 class="method-title"><code><a href="#//api/name/action">&nbsp;&nbsp;action</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A value from the <b>MPCommerceEventAction</b> enum describing the commerce event action.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic) MPCommerceEventAction action</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A value from the <b>MPCommerceEventAction</b> enum describing the commerce event action.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/checkoutStep" title="checkoutStep"></a>
+	<h3 class="method-title"><code><a href="#//api/name/checkoutStep">&nbsp;&nbsp;checkoutStep</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The step number, within the chain of commerce event transactions, corresponding to the checkout.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic) NSInteger checkoutStep</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The step number, within the chain of commerce event transactions, corresponding to the checkout.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/nonInteractive" title="nonInteractive"></a>
+	<h3 class="method-title"><code><a href="#//api/name/nonInteractive">&nbsp;&nbsp;nonInteractive</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Flag indicating whether a refund is non-interactive. The default value is false/NO.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>@property (nonatomic) BOOL nonInteractive</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Flag indicating whether a refund is non-interactive. The default value is false/NO.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/initWithAction:product:" title="initWithAction:product:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/initWithAction:product:">&ndash;&nbsp;initWithAction:product:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Initializes an instance of MPCommerceEvent with an <a href="#//api/name/action">action</a> and a product.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nonnull instancetype)initWithAction:(MPCommerceEventAction)<em>action</em> product:(nullable MPProduct *)<em>product</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>action</code></th>
+						<td><p>A value from the <b>MPCommerceEventAction</b> enum describing the commerce event <a href="#//api/name/action">action</a></p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>product</code></th>
+						<td><p>An instance of <a href="../Classes/MPProduct.html">MPProduct</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Initializes an instance of MPCommerceEvent with an <a href="#//api/name/action">action</a> and a product.</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Constants/MPCommerceEventAction.html">MPCommerceEventAction</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/initWithImpressionName:product:" title="initWithImpressionName:product:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/initWithImpressionName:product:">&ndash;&nbsp;initWithImpressionName:product:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Initializes an instance of MPCommerceEvent with a list name for a product impression.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nonnull instancetype)initWithImpressionName:(nullable NSString *)<em>listName</em> product:(nullable MPProduct *)<em>product</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>listName</code></th>
+						<td><p>A string under which the product was listed for this impression</p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>product</code></th>
+						<td><p>An instance of <a href="../Classes/MPProduct.html">MPProduct</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Initializes an instance of MPCommerceEvent with a list name for a product impression.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/initWithPromotionContainer:" title="initWithPromotionContainer:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/initWithPromotionContainer:">&ndash;&nbsp;initWithPromotionContainer:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Initializes an instance of MPCommerceEvent with a promotion container (promotion for <a href="#//api/name/products">products</a>).</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nonnull instancetype)initWithPromotionContainer:(nullable MPPromotionContainer *)<em>promotionContainer</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>promotionContainer</code></th>
+						<td><p>An instance of <a href="../Classes/MPPromotionContainer.html">MPPromotionContainer</a> describing a promotion <a href="#//api/name/action">action</a> and its respective <a href="#//api/name/products">products</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Initializes an instance of MPCommerceEvent with a promotion container (promotion for <a href="#//api/name/products">products</a>).</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection see-also-section">
+				<h4 class="method-subtitle">See Also</h4>
+				<ul>
+					
+					<li><code><p><a href="../Classes/MPPromotionContainer.html">MPPromotionContainer</a></p></code></li>
+					
+				</ul>
+			</div>
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/addImpression:listName:" title="addImpression:listName:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/addImpression:listName:">&ndash;&nbsp;addImpression:listName:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Adds the representation of a product impression under a given list name.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)addImpression:(nonnull MPProduct *)<em>product</em> listName:(nonnull NSString *)<em>listName</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>product</code></th>
+						<td><p>An instance of <a href="../Classes/MPProduct.html">MPProduct</a></p></td>
+					</tr>
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>listName</code></th>
+						<td><p>A string under which the product was listed for this impression</p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Adds the representation of a product impression under a given list name.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/addProduct:" title="addProduct:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/addProduct:">&ndash;&nbsp;addProduct:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Adds a product to the list of <a href="#//api/name/products">products</a> to have <i>action</i> applied to.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)addProduct:(nonnull MPProduct *)<em>product</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>product</code></th>
+						<td><p>An instance of <a href="../Classes/MPProduct.html">MPProduct</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Adds a product to the list of <a href="#//api/name/products">products</a> to have <i>action</i> applied to.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/removeProduct:" title="removeProduct:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/removeProduct:">&ndash;&nbsp;removeProduct:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Removes a product from the list of <a href="#//api/name/products">products</a> to have <i>action</i> applied to.</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)removeProduct:(nonnull MPProduct *)<em>product</em></code></div>
+
+		    
+			
+			<div class="method-subsection arguments-section parameters">
+				<h4 class="method-subtitle parameter-title">Parameters</h4>
+				<table class="argument-def parameter-def">
+				
+					<tr>
+						<th scope="row" class="argument-name"><code>product</code></th>
+						<td><p>An instance of <a href="../Classes/MPProduct.html">MPProduct</a></p></td>
+					</tr>
+				
+				</table>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Removes a product from the list of <a href="#//api/name/products">products</a> to have <i>action</i> applied to.</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/allKeys" title="allKeys"></a>
+	<h3 class="method-title"><code><a href="#//api/name/allKeys">&ndash;&nbsp;allKeys</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>Returns an array with all keys in the custom attributes dictionary (<b class="deprecated">Deprecated:</b><span class="deprecated"> use customAttributes.allKeys instead</span>)</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (nullable NSArray *)allKeys</code></div>
+
+		    
+			
+
+			
+			<div class="method-subsection return">
+				<h4 class="method-subtitle parameter-title">Return Value</h4>
+				<p>An array with all keys in the custom attributes dictionary</p>
+			</div>
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>Returns an array with all keys in the custom attributes dictionary</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/userDefinedAttributes" title="userDefinedAttributes"></a>
+	<h3 class="method-title"><code><a href="#//api/name/userDefinedAttributes">&ndash;&nbsp;userDefinedAttributes</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A dictionary containing further information about the commerce event. The number of entries is
+limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values
+can be strings (up to 4096 characters), numbers, booleans, or dates (<b class="deprecated">Deprecated:</b><span class="deprecated"> use customAttributes instead</span>)</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (NSMutableDictionary *_Nullable)userDefinedAttributes</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A dictionary containing further information about the commerce event. The number of entries is
+limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values
+can be strings (up to 4096 characters), numbers, booleans, or dates</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPCommerceEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div>
+						</div>
+						
+
+						<a title="Dictionary Methods" name="task_Dictionary Methods"></a>
+						<h2 class="task-title">Dictionary Methods</h2>
+
+						<div class="task-list">
+							<div class="section-method">
+	<a name="//api/name/dictionaryRepresentation" title="dictionaryRepresentation"></a>
+	<h3 class="method-title"><code><a href="#//api/name/dictionaryRepresentation">&ndash;&nbsp;dictionaryRepresentation</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>A Dictionary representation of this instance for uploading the event
+Must be overridden by a subclass</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (NSDictionary *)dictionaryRepresentation</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>A Dictionary representation of this instance for uploading the event
+Must be overridden by a subclass</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPBaseEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/timestamp" title="timestamp"></a>
+	<h3 class="method-title"><code><a href="#//api/name/timestamp">&ndash;&nbsp;timestamp</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The timestamp when the event was created. Is non null but can be set by the client</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (NSDate *)timestamp</code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The timestamp when the event was created. Is non null but can be set by the client</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPBaseEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div><div class="section-method">
+	<a name="//api/name/setTimestamp:" title="setTimestamp:"></a>
+	<h3 class="method-title"><code><a href="#//api/name/setTimestamp:">&ndash;&nbsp;setTimestamp:</a></code>
+</h3>
+
+	<div class="method-info">
+		<div class="pointy-thing"></div>
+
+		<div class="method-info-container">
+			
+			
+			<div class="method-subsection brief-description">
+				<p>The timestamp when the event was created. Is non null but can be set by the client</p>
+			</div>
+			
+		    
+
+			<div class="method-subsection method-declaration"><code>- (void)setTimestamp:(NSDate *)<em>timestamp</em></code></div>
+
+		    
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection discussion-section">
+				<h4 class="method-subtitle">Discussion</h4>
+				<p>The timestamp when the event was created. Is non null but can be set by the client</p>
+			</div>
+			
+
+			
+
+			
+
+			
+			<div class="method-subsection declared-in-section">
+				<h4 class="method-subtitle">Declared In</h4>
+				<p><code class="declared-in-ref">MPBaseEvent.h</code></p>
+			</div>
+			
+			
+		</div>
+	</div>
+</div>
+						</div>
+						
+					</div>
+					
+					
+
+                    
+                    
+          
+				</main>
+
+				<footer>
+					<div class="footer-copyright">
+						
+						<p class="copyright">Copyright &copy; 2026 mParticle. All rights reserved. Updated: 2026-01-20</p>
+						
+						
+						<p class="generator">Generated by <a href="http://appledoc.gentlebytes.com">appledoc 2.2.1 (build 1334)</a>.</p>
+						
+					</div>
+				</footer>
+			</div>
+		</div>
+	</article>
+
+	<script src="../js/script.js"></script>
+</body>
+</html>
