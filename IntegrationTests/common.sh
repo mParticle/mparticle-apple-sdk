@@ -24,6 +24,7 @@ build_framework() {
 	echo "🏗️  Building mParticle SDK xcframework for iOS Simulator..."
 
 	local SDK_DIR="$(cd .. && pwd)"
+	local DERIVED_DATA_PATH="$(pwd)/Derived"
 
 	# Clean previous builds
 	echo "🧹 Cleaning previous builds..."
@@ -36,12 +37,44 @@ build_framework() {
 		-scheme mParticle-Apple-SDK-NoLocation \
 		-destination "generic/platform=iOS Simulator" \
 		-archivePath "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator" \
+		-derivedDataPath "$DERIVED_DATA_PATH" \
 		SKIP_INSTALL=NO \
 		BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
 		-quiet || {
 		echo "❌ Framework build error"
 		exit 1
 	}
+
+	# Copy Headers and Modules from standalone Swift framework to embedded Swift framework
+	echo "📋 Copying Swift framework headers and modules..."
+	local ARCHIVE_FRAMEWORKS="$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive/Products/Library/Frameworks"
+	local STANDALONE_SWIFT="$ARCHIVE_FRAMEWORKS/mParticle_Apple_SDK_Swift.framework"
+	local EMBEDDED_SWIFT="$ARCHIVE_FRAMEWORKS/mParticle_Apple_SDK_NoLocation.framework/Frameworks/mParticle_Apple_SDK_Swift.framework"
+	local MAIN_FRAMEWORK="$ARCHIVE_FRAMEWORKS/mParticle_Apple_SDK_NoLocation.framework"
+
+	if [ -d "$STANDALONE_SWIFT/Headers" ] && [ -d "$EMBEDDED_SWIFT" ]; then
+		cp -R "$STANDALONE_SWIFT/Headers" "$EMBEDDED_SWIFT/"
+		cp -R "$STANDALONE_SWIFT/Modules" "$EMBEDDED_SWIFT/"
+		echo "✅ Swift framework headers and modules copied"
+	fi
+
+	# Update modulemap to reference Swift sub-framework
+	echo "📝 Updating modulemap to reference Swift sub-framework..."
+	local MODULEMAP_PATH="$MAIN_FRAMEWORK/Modules/module.modulemap"
+	if [ -f "$MODULEMAP_PATH" ]; then
+		# Check if modulemap already has Swift sub-framework reference
+		if ! grep -q "module mParticle_Apple_SDK_Swift" "$MODULEMAP_PATH"; then
+			cat >>"$MODULEMAP_PATH" <<'EOF'
+
+module mParticle_Apple_SDK_Swift {
+  header "Frameworks/mParticle_Apple_SDK_Swift.framework/Headers/mParticle_Apple_SDK_Swift-Swift.h"
+  requires objc
+  export *
+}
+EOF
+			echo "✅ Modulemap updated with Swift sub-framework reference"
+		fi
+	fi
 
 	# Create xcframework from simulator archive only
 	echo "📦 Creating xcframework..."
@@ -64,12 +97,13 @@ build_framework() {
 
 build_application() {
 	echo "📦 Building application '$APP_NAME'..."
+	local LOCAL_DERIVED_DATA="$(pwd)/Derived"
 	xcodebuild \
 		-project IntegrationTests.xcodeproj \
 		-scheme "$SCHEME" \
 		-configuration "$CONFIGURATION" \
 		-destination "generic/platform=iOS Simulator" \
-		-derivedDataPath "$DERIVED_DATA" \
+		-derivedDataPath "$LOCAL_DERIVED_DATA" \
 		-quiet \
 		build || {
 		echo "❌ Build error"
