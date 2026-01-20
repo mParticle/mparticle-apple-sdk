@@ -30,7 +30,6 @@
 		359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
 		359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
 		35DDD5FD2F16EF390066DB14 /* NSString+MPPercentEscape.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CDD2CC0B7E4003B3194 /* NSString+MPPercentEscape.swift */; };
-		35DDD5FF2F16EFD60066DB14 /* SceneDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */; };
 		35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
 		35E3FCC32E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */; };
 		35E3FCC62E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */; };
@@ -1565,7 +1564,6 @@
 				35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */,
 				53A79DA329CE23F700E7489F /* MPURL.m in Sources */,
 				53A79DA429CE23F700E7489F /* MPIdentityDTO.m in Sources */,
-				35DDD5FF2F16EFD60066DB14 /* SceneDelegateHandler.swift in Sources */,
 				53A79DA529CE23F700E7489F /* MPNetworkCommunication.m in Sources */,
 				53A79DA629CE23F700E7489F /* MPMessageBuilder.m in Sources */,
 				35DDD5FD2F16EF390066DB14 /* NSString+MPPercentEscape.swift in Sources */,

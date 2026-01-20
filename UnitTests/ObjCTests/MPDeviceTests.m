@@ -31,8 +31,6 @@
     
     NSString *testCountry = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
 
-    NSString *testCountry = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
-
     MPDevice *device = [[MPDevice alloc] initWithStateMachine: mparticle.stateMachine
                                                  userDefaults: userDefaults
                                                      identity: mparticle.identity];
