@@ -21,7 +21,7 @@ export MPARTICLE_API_SECRET="your-api-secret"
 
 **Recording mode (`run_wiremock_recorder.sh`):** Real API keys are required to record actual API responses from mParticle servers.
 
-**Verification mode (`run_clean_integration_tests.sh`):** API keys are **optional**. If not set, the tests will automatically use fake keys (`us1-00000000000000000000000000000000`) that match the WireMock URL patterns. This allows running integration tests without exposing real credentials.
+**Verification mode (`run_clean_integration_tests.sh`):** API keys are **optional**. If not set, the tests will automatically use fake keys (`usX-00000000000000000000000000000000`) that match the WireMock URL patterns. This allows running integration tests without exposing real credentials.
 
 **Note:** Fake keys must match the pattern `us1-[a-f0-9]+` to work with WireMock mappings.
 
@@ -52,6 +52,7 @@ tuist generate
 ## Overview
 
 This project provides tools for recording mParticle SDK API requests by:
+
 - Building mParticle SDK as an xcframework for iOS Simulator
 - Generating a test iOS app using Tuist that links to the built framework
 - Running the app in iOS Simulator
@@ -70,6 +71,7 @@ Records all mParticle SDK API requests using WireMock for later use in integrati
 ```
 
 **What it does:**
+
 1. Builds mParticle SDK as xcframework for iOS Simulator
 2. Generates Tuist project linked to the built framework
 3. Builds the integration test application
@@ -84,10 +86,12 @@ Records all mParticle SDK API requests using WireMock for later use in integrati
 12. Stops WireMock and shows results
 
 **Recorded Files:**
+
 - `wiremock-recordings/mappings/*.json` - API request/response mappings
 - `wiremock-recordings/__files/*` - Response body files
 
 **Build Artifacts:**
+
 - `temp_artifacts/mParticle_Apple_SDK.xcframework` - Compiled SDK framework (auto-generated, not committed to git)
 
 ### `sanitize_mapping.py` - Remove API Keys and Rename WireMock Mappings
@@ -102,6 +106,7 @@ python3 sanitize_mapping.py \
 ```
 
 **What it does:**
+
 - Replaces API keys in URLs with regex pattern `us1-[a-f0-9]+` (matches any mParticle API key)
 - Renames mapping file based on test name
 - Renames response body file based on test name
@@ -109,11 +114,13 @@ python3 sanitize_mapping.py \
 - Creates clean, sanitized recordings without sensitive information
 
 **Example transformations with `--test-name identify`:**
+
 - URL: `/v2/us1-abc123def456.../events` → `/v2/us1-[a-f0-9]+/events`
 - File: `mapping-v1-us1-abc123-identify.json` → `mapping-v1-identify.json`
 - Body: `body-v1-us1-abc123-identify.json` → `body-v1-identify.json`
 
 **Example with `--test-name log-event`:**
+
 - URL: `/v2/us1-xyz789.../events` → `/v2/us1-[a-f0-9]+/events`
 - File: `mapping-v2-us1-xyz789-events.json` → `mapping-v2-log-event.json`
 - Body: `body-v2-us1-xyz789-events.json` → `body-v2-log-event.json`
@@ -179,11 +186,12 @@ If another application is using the ports, terminate it before running the scrip
    - Edit `IntegrationTests/Sources/main.swift` to test your new or existing SDK functionality
    - Add code to call the specific SDK methods you want to record
    - **Best practice:** Temporary comment out calls to unrelated your new code to record only relevant API requests
-   
 2. **Run the WireMock recorder:**
+
    ```bash
    ./run_wiremock_recorder.sh
    ```
+
    The script automatically builds the SDK as an xcframework with your latest changes, runs the app, and records all API traffic
 
 3. **Review and filter recorded mappings:**
@@ -191,7 +199,7 @@ If another application is using the ports, terminate it before running the scrip
    - The script records **all** API requests made during the test run
    - **Keep only the mappings related to your new test code**
    - Delete any unrelated or duplicate recordings
-   
+
    **Tip:** To get cleaner recordings, modify `main.swift` to call only the specific SDK method you're testing, avoiding unrelated API calls
 
 4. **Verify the recordings:**
@@ -204,12 +212,13 @@ If another application is using the ports, terminate it before running the scrip
 After recording, you should sanitize and process mappings to remove sensitive data and handle dynamic values:
 
 1. **Sanitize and rename mapping file:**
+
    ```bash
    python3 sanitize_mapping.py \
      wiremock-recordings/mappings/mapping-v1-us1-abc123-identify.json \
      --test-name identify
    ```
-   
+
    This automatically:
    - Replaces API keys in URLs with regex pattern `us1-[a-f0-9]+`
    - Renames the mapping file to `mapping-v1-identify.json` (or based on your test name)
@@ -217,26 +226,28 @@ After recording, you should sanitize and process mappings to remove sensitive da
    - Updates all references in the mapping JSON
 
 2. **Transform request body (replace dynamic fields):**
+
    ```bash
    # Replace dynamic fields and save
    python3 transform_mapping_body.py \
      wiremock-recordings/mappings/mapping-v1-identify.json \
      unescape+update
    ```
-   
+
    This replaces dynamic fields (timestamps, IDs, device info) with `${json-unit.ignore}`
 
 3. **Verify the changes:**
+
    ```bash
    # Check that API keys are replaced with regex pattern
    grep "us1-\[a-f0-9\]+" wiremock-recordings/mappings/mapping-v1-identify.json
-   
+
    # Should show the regex pattern us1-[a-f0-9]+
-   
+
    # Verify files were renamed correctly
    ls -l wiremock-recordings/mappings/mapping-v1-identify.json
    ls -l wiremock-recordings/__files/body-v1-identify.json
-   
+
    # View the transformed request body
    wiremock-recordings/mappings/mapping-identify.json
    ```
@@ -253,6 +264,7 @@ After recording, you should sanitize and process mappings to remove sensitive da
 If you need to manually edit the request body:
 
 1. **Edit the request body manually:**
+
    ```bash
    open wiremock-recordings/mappings/mapping-identify.json
    ```
@@ -283,4 +295,3 @@ Use the verification script to run full end-to-end integration tests:
 8. **Returns exit code:** Exits with code 1 if any verification fails (CI/CD compatible)
 
 **Note:** The SDK xcframework is built fresh on each run, stored in `temp_artifacts/mParticle_Apple_SDK.xcframework`. This ensures tests always use your latest code changes.
-

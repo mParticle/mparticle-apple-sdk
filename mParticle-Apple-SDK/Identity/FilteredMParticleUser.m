@@ -1,6 +1,7 @@
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
 #import "MParticleUser.h"
+#import "MPStateMachine.h"
 #import "MPKitConfiguration.h"
 #import "MPDataPlanFilter.h"
 #import "MParticleSwift.h"
@@ -8,6 +9,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong) id<MPDataPlanFilterProtocol> dataPlanFilter;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
@@ -37,6 +39,18 @@
 
 -(BOOL)isLoggedIn {
     return self.user.isLoggedIn;
+}
+
+-(NSString *)idfa {
+    NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    if (currentStatus != nil && currentStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        return self.user.identities[@(MPIdentityIOSAdvertiserId)];
+    }
+    return nil;
+}
+
+-(NSString *)idfv {
+    return self.user.identities[@(MPIdentityIOSVendorId)];
 }
 
 -(NSDictionary<NSNumber *, NSString *> *) userIdentities {

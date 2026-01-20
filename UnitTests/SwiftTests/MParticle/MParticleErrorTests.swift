@@ -93,7 +93,7 @@ final class MParticleErrorTests: MParticleTestBase {
         XCTAssertTrue(backendController.logErrorCalled)
         XCTAssertNil(backendController.logErrorExceptionParam)
         XCTAssertNil(backendController.logErrorTopmostContextParam)
-        XCTAssertEqual(backendController.logErrorEventInfoParam as? [String : String], keyValueDict)
+        XCTAssertEqual(backendController.logErrorEventInfoParam as? [String: String], keyValueDict)
         
         backendController.logErrorCompletionHandler?(errorMessage, .success)
         assertReceivedMessage("Logged error with message: \(errorMessage)")

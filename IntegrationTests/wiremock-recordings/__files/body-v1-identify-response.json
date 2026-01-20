@@ -1,1 +1,7 @@
-{"context":null,"matched_identities":{"customerid":"123456","email":"foo@example.com"},"is_ephemeral":false,"mpid":"6504934091054997508","is_logged_in":true}
+{
+  "context": null,
+  "matched_identities": { "customerid": "123456", "email": "foo@example.com" },
+  "is_ephemeral": false,
+  "mpid": "6504934091054997508",
+  "is_logged_in": true
+}

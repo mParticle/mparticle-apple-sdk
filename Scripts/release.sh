@@ -1,6 +1,8 @@
 VERSION="$1"
 PREFIXED_VERSION="v$1"
-NOTES="$2"
+# Extract release notes from CHANGELOG.md (populated by @semantic-release/changelog)
+# This avoids shell escaping issues with parentheses in markdown
+NOTES=$(awk '/^# \['"${VERSION}"'\]/{flag=1; next} /^# \[/{flag=0} flag' CHANGELOG.md)
 
 # Update version number
 #
@@ -18,6 +20,9 @@ mv tmp.json mParticle_Apple_SDK.json
 
 # Update CocoaPods podspec file
 sed -i '' 's/\(^    s.version[^=]*= \).*/\1"'"$VERSION"'"/' mParticle-Apple-SDK.podspec
+
+# Update SDK version in integration test mappings
+./Scripts/update_mapping_versions.sh "${VERSION}"
 
 # Build the frameworks so we can get the checksums for SPM
 #
@@ -52,6 +57,7 @@ git add CHANGELOG.md
 git add mParticle-Apple-SDK/MPIConstants.m
 git add mParticle-Apple-SDK/MPConstants.swift
 git add Framework/Info.plist
+git add IntegrationTests/wiremock-recordings/mappings/*.json
 git commit -m "chore(release): $VERSION [skip ci]
 
 $NOTES"
