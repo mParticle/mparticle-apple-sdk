@@ -28,6 +28,8 @@
                                         identity: mparticle.identity];
     NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
     userDefaults[kMPDeviceTokenKey] = testDeviceToken;
+    
+    NSString *testCountry = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
 
     NSString *testCountry = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
 
