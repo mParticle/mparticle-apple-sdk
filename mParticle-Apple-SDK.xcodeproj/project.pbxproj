@@ -248,7 +248,7 @@
 		53A79DB429CE23F700E7489F /* MPDataModelAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AC629CDFB1E00E7489F /* MPDataModelAbstract.m */; };
 		53A79DB529CE23F700E7489F /* MPBackendController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF429CDFB1F00E7489F /* MPBackendController.m */; };
 		53A79DB629CE23F700E7489F /* MPForwardQueueItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5D29CDFB1F00E7489F /* MPForwardQueueItem.m */; };
-		53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5829CDFB1F00E7489F /* MPEventProjection.mm */; };
+		53A79DB729CE23F700E7489F /* MPEventProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5829CDFB1F00E7489F /* MPEventProjection.m */; };
 		53A79DB829CE23F700E7489F /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B6329CDFB1F00E7489F /* MPListenerController.m */; };
 		53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5029CDFB1F00E7489F /* MPKitContainer.mm */; };
 		53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */; };
@@ -464,7 +464,7 @@
 		53A79B5529CDFB1F00E7489F /* MPKitActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitActivity.m; sourceTree = "<group>"; };
 		53A79B5629CDFB1F00E7489F /* MPEventProjection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEventProjection.h; sourceTree = "<group>"; };
 		53A79B5729CDFB1F00E7489F /* MPDataPlanFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPDataPlanFilter.h; sourceTree = "<group>"; };
-		53A79B5829CDFB1F00E7489F /* MPEventProjection.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPEventProjection.mm; sourceTree = "<group>"; };
+		53A79B5829CDFB1F00E7489F /* MPEventProjection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEventProjection.m; sourceTree = "<group>"; };
 		53A79B5929CDFB1F00E7489F /* MPForwardQueueParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPForwardQueueParameters.h; sourceTree = "<group>"; };
 		53A79B5A29CDFB1F00E7489F /* MPAttributeProjection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAttributeProjection.m; sourceTree = "<group>"; };
 		53A79B5B29CDFB1F00E7489F /* MPKitContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitContainer.h; sourceTree = "<group>"; };
@@ -965,7 +965,7 @@
 				53A79B5529CDFB1F00E7489F /* MPKitActivity.m */,
 				53A79B5629CDFB1F00E7489F /* MPEventProjection.h */,
 				53A79B5729CDFB1F00E7489F /* MPDataPlanFilter.h */,
-				53A79B5829CDFB1F00E7489F /* MPEventProjection.mm */,
+				53A79B5829CDFB1F00E7489F /* MPEventProjection.m */,
 				53A79B5929CDFB1F00E7489F /* MPForwardQueueParameters.h */,
 				53A79B5A29CDFB1F00E7489F /* MPAttributeProjection.m */,
 				53A79B5C29CDFB1F00E7489F /* MPKitAPI.m */,
@@ -1588,7 +1588,7 @@
 				53FDD1BE2AE871AF003D5FA1 /* MPIHasher.swift in Sources */,
 				53A79DB529CE23F700E7489F /* MPBackendController.m in Sources */,
 				53A79DB629CE23F700E7489F /* MPForwardQueueItem.m in Sources */,
-				53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */,
+				53A79DB729CE23F700E7489F /* MPEventProjection.m in Sources */,
 				53A79DB829CE23F700E7489F /* MPListenerController.m in Sources */,
 				53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */,
 				D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */,
