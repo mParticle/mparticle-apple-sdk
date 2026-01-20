@@ -183,5 +183,23 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+- (void)testIgnoresLegacyDirectRoutingConfig {
+    NSDictionary *configuration = @{
+        kMPRemoteConfigKitsKey: [NSNull null],
+        kMPRemoteConfigCustomModuleSettingsKey: [NSNull null],
+        kMPRemoteConfigRampKey: @100,
+        kMPRemoteConfigTriggerKey: [NSNull null],
+        kMPRemoteConfigExceptionHandlingModeKey: kMPRemoteConfigExceptionHandlingModeIgnore,
+        kMPRemoteConfigSessionTimeoutKey: @112,
+        @"dur": @NO
+    };
+    
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration 
+                                                                          stateMachine:[MParticle sharedInstance].stateMachine 
+                                                                     backendController:[MParticle sharedInstance].backendController];
+    
+    XCTAssertNotNil(responseConfig, @"Config should parse successfully even with legacy dur key");
+}
+
 
 @end
