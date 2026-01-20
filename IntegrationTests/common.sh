@@ -6,7 +6,8 @@ APP_NAME="IntegrationTests"
 SCHEME="IntegrationTests"
 BUNDLE_ID="com.mparticle.IntegrationTests"
 CONFIGURATION="Debug"
-DERIVED_DATA="$HOME/Library/Developer/Xcode/DerivedData"
+# DERIVED_DATA is no longer used - we use local DerivedData instead
+# DERIVED_DATA="$HOME/Library/Developer/Xcode/DerivedData"
 
 # WireMock configuration (can be overridden by scripts)
 HTTP_PORT=${HTTP_PORT:-8080}
@@ -23,8 +24,10 @@ TEMP_ARTIFACTS_DIR="$(pwd)/temp_artifacts"
 build_framework() {
 	echo "🏗️  Building mParticle SDK xcframework for iOS Simulator..."
 
-	local SDK_DIR="$(cd .. && pwd)"
-	local DERIVED_DATA_PATH="$(pwd)/Derived"
+	local SDK_DIR
+	SDK_DIR="$(cd .. && pwd)"
+	local DERIVED_DATA_PATH
+	DERIVED_DATA_PATH="$(pwd)/Derived"
 
 	# Clean previous builds
 	echo "🧹 Cleaning previous builds..."
@@ -97,7 +100,8 @@ EOF
 
 build_application() {
 	echo "📦 Building application '$APP_NAME'..."
-	local LOCAL_DERIVED_DATA="$(pwd)/Derived"
+	local LOCAL_DERIVED_DATA
+	LOCAL_DERIVED_DATA="$(pwd)/Derived"
 	xcodebuild \
 		-project IntegrationTests.xcodeproj \
 		-scheme "$SCHEME" \
@@ -175,7 +179,8 @@ start_simulator() {
 
 find_app_path() {
 	echo "🔍 Finding application path..."
-	local LOCAL_DERIVED_DATA="$(pwd)/Derived"
+	local LOCAL_DERIVED_DATA
+	LOCAL_DERIVED_DATA="$(pwd)/Derived"
 	APP_PATH=$(find "$LOCAL_DERIVED_DATA" -type d -name "${APP_NAME}.app" | head -1)
 
 	if [ -z "$APP_PATH" ]; then
