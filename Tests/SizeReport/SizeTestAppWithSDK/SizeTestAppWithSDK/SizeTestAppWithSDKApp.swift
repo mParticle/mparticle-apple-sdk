@@ -7,7 +7,7 @@
 //
 
 import SwiftUI
-import mParticle_Apple_SDK
+import mParticle_Apple_SDK_NoLocation
 
 @main
 struct SizeTestAppWithSDKApp: App {

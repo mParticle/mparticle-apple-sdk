@@ -63,13 +63,15 @@ build_sdk_from_source() {
 		-quiet >&2 2>&1
 
 	# Create xcframework from the archive
+	# Note: NoLocation scheme produces mParticle_Apple_SDK_NoLocation.framework but we output
+	# to mParticle_Apple_SDK.xcframework for compatibility with LocalSDK/Package.swift
 	echo "  Creating xcframework..." >&2
 	xcodebuild -create-xcframework \
 		-archive "${ARCHIVES_DIR}/mParticle-Apple-SDK-iOS.xcarchive" -framework mParticle_Apple_SDK_NoLocation.framework \
-		-output "${BUILD_DIR}/mParticle_Apple_SDK_NoLocation.xcframework" \
+		-output "${BUILD_DIR}/mParticle_Apple_SDK.xcframework" \
 		>&2 2>&1 || true
 
-	if [[ ! -d "${BUILD_DIR}/mParticle_Apple_SDK_NoLocation.xcframework" ]]; then
+	if [[ ! -d "${BUILD_DIR}/mParticle_Apple_SDK.xcframework" ]]; then
 		echo "Error: Failed to build SDK xcframework" >&2
 		exit 1
 	fi
@@ -149,7 +151,7 @@ build_app() {
 build_sdk_from_source
 
 # Measure xcframework size
-XCFRAMEWORK_PATH="${BUILD_DIR}/mParticle_Apple_SDK_NoLocation.xcframework"
+XCFRAMEWORK_PATH="${BUILD_DIR}/mParticle_Apple_SDK.xcframework"
 XCFRAMEWORK_SIZE_KB=0
 if [[ -d ${XCFRAMEWORK_PATH} ]]; then
 	# shellcheck disable=SC2311
