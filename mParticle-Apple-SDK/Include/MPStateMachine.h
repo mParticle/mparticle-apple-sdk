@@ -1,4 +1,5 @@
 #import "MPEnums.h"
+#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 @class MPSession;
 @class MPNotificationController_PRIVATE;
