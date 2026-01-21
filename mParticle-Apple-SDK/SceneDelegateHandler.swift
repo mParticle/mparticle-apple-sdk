@@ -13,12 +13,10 @@ public protocol OpenURLHandlerProtocol {
 public class SceneDelegateHandler: NSObject {
     private let logger: MPLog
     private let appNotificationHandler: OpenURLHandlerProtocol
-
     public init(logger: MPLog, appNotificationHandler: OpenURLHandlerProtocol) {
         self.logger = logger
         self.appNotificationHandler = appNotificationHandler
     }
-
     #if os(iOS)
     @available(iOS 13.0, *)
     @available(iOSApplicationExtension 13.0, *)
