@@ -63,6 +63,10 @@ import Foundation
         if let dateAnnotation = annotation as? Date {
             return MPDateFormatter.string(fromDateRFC3339: dateAnnotation)
         }
+        let mparticle = MParticle.sharedInstance()
+        let logger = MPLog(logLevel: mparticle.logLevel)
+        logger.customLogger = mparticle.customLogger
+        
         if let dictionaryAnnotation = annotation as? [String: Any?] {
             var jsonData: Data?
             var stringDict: [String: String] = [:]
@@ -74,7 +78,7 @@ import Foundation
             do {
                 jsonData = try JSONSerialization.data(withJSONObject: stringDict, options: [])
             } catch {
-                MPLog.error("Error serializing annotation from app launch: \(dictionaryAnnotation)")
+                logger.error("Error serializing annotation from app launch: \(dictionaryAnnotation)")
             }
             if let jsonData = jsonData {
                 return String(data: jsonData, encoding: .utf8)
@@ -93,7 +97,7 @@ import Foundation
             do {
                 jsonData = try JSONSerialization.data(withJSONObject: stringArray, options: [])
             } catch {
-                MPLog.error("Error serializing annotation from app launch: \(arrayAnnotation)")
+                logger.error("Error serializing annotation from app launch: \(arrayAnnotation)")
             }
             if let jsonData = jsonData {
                 return String(data: jsonData, encoding: .utf8)
