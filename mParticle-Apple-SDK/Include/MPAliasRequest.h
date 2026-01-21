@@ -34,8 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
  
  Unlike the above method, these dates will be sent to the server without adjusting them to take into account the alias max time window.
  
- You can register a listener to get any errors that may be returned if the start/end times are outside the range accepted by the server. See `MPListenerController#onAliasRequestFinished:`.
- 
  Additionally, to support any potential advanced use cases, this method does not require MPIDs to be known to the SDK to perform the alias request.
  */
 + (MPAliasRequest *)requestWithSourceMPID:(NSNumber *)sourceMPID destinationMPID:(NSNumber *)destinationMPID startTime:(NSDate *)startTime endTime:(NSDate *)endTime;
