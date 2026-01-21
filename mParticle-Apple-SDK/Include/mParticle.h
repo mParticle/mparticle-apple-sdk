@@ -16,7 +16,6 @@
 #import "MPIdentityApi.h"
 #import "MPKitAPI.h"
 #import "MPConsentState.h"
-#import "MPListenerController.h"
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
