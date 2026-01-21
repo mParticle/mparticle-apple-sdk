@@ -13,12 +13,10 @@ public protocol OpenURLHandlerProtocol {
 public class SceneDelegateHandler: NSObject {
     private let logger: MPLog
     private let appNotificationHandler: OpenURLHandlerProtocol
-    
     public init(logger: MPLog, appNotificationHandler: OpenURLHandlerProtocol) {
         self.logger = logger
         self.appNotificationHandler = appNotificationHandler
     }
-    
     #if os(iOS)
     @available(iOS 13.0, *)
     @available(iOSApplicationExtension 13.0, *)
@@ -31,12 +29,12 @@ public class SceneDelegateHandler: NSObject {
         }
         logger.debug("Open in place: \(urlContext.options.openInPlace ? "True" : "False")")
 
-        let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": urlContext.options.sourceApplication];
-        
+        let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": urlContext.options.sourceApplication]
+
         self.appNotificationHandler.open(urlContext.url, options: options as [String: Any])
     }
     #endif
-    
+
     public func handleUserActivity(_ userActivity: NSUserActivity) {
         logger.debug("User Activity Received")
         logger.debug("User Activity Type: \(userActivity.activityType)")

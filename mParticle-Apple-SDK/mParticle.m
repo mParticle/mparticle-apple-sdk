@@ -658,9 +658,7 @@ MPLog* logger;
         [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
 }
-#endif
 
-#if TARGET_OS_IOS == 1
 - (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
     [self.sceneDelegateHandler handleWithUrlContext:urlContext];
 }
