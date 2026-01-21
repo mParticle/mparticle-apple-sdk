@@ -89,8 +89,8 @@ build_framework() {
 	# Clean up archives
 	rm -rf "$SDK_DIR/archives"
 
-	echo "✅ SDK built successfully at: $TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
-	echo "✅ Swift SDK built successfully at${ $TEMP_ARTIFACTS_D}IR/mParticle_Apple_SDK_Swift.xcframework"
+	echo "✅ SDK built successfully at: ${TEMP_ARTIFACTS_DIR}/mParticle_Apple_SDK.xcframework"
+	echo "✅ Swift SDK built successfully at: ${TEMP_ARTIFACTS_DIR}/mParticle_Apple_SDK_Swift.xcframework"
 }
 
 build_application() {
@@ -242,7 +242,7 @@ wait_for_wiremock() {
 	local MAX_RETRIES=30
 	local RETRY_COUNT=0
 	while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-		if curl -k -s -o /dev/null -w "%{http_code}" https://localhost:${HTTPS_PORT}/__admin/mappings | grep -q "200"; then
+		if curl -k -s -o /dev/null -w "%{http_code}" "https://localhost:${HTTPS_PORT}/__admin/mappings" | grep -q "200"; then
 			echo "✅ WireMock is ready!"
 			break
 		fi
