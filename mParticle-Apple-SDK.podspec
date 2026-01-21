@@ -33,12 +33,14 @@ Pod::Spec.new do |s|
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
         ss.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
+        ss.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
     end
 
     s.subspec 'AppExtension' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
+        ext.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
     end
     
     s.subspec 'AppExtensionNoLocation' do |ext|
@@ -49,6 +51,7 @@ Pod::Spec.new do |s|
             'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
             'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
         }
+        ext.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
     end
 end
 
