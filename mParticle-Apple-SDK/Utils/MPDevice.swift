@@ -273,7 +273,7 @@ public class MPDevice: NSObject, NSCopying {
                     let mparticle = MParticle.sharedInstance()
                     let logger = MPLog(logLevel: mparticle.logLevel)
                     logger.customLogger = mparticle.customLogger
-                    
+
                     // Valid test only if running as root on a jailbroken device
                     let jailbrokenTestData = Data("Jailbroken filesystem test.".utf8)
                     let filePath = "/private/mpjailbrokentest.txt"

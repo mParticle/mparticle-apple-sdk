@@ -66,7 +66,7 @@ import Foundation
         let mparticle = MParticle.sharedInstance()
         let logger = MPLog(logLevel: mparticle.logLevel)
         logger.customLogger = mparticle.customLogger
-        
+
         if let dictionaryAnnotation = annotation as? [String: Any?] {
             var jsonData: Data?
             var stringDict: [String: String] = [:]

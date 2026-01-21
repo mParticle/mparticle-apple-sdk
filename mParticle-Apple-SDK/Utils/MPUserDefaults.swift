@@ -280,7 +280,7 @@ public protocol MPUserDefaultsProtocol {
         let mparticle = MParticle.sharedInstance()
         let logger = MPLog(logLevel: mparticle.logLevel)
         logger.customLogger = mparticle.customLogger
-        
+
         if fileManager.fileExists(atPath: configurationURL.path) {
             do {
                 try fileManager.removeItem(at: configurationURL)
@@ -391,7 +391,7 @@ public protocol MPUserDefaultsProtocol {
                 let mparticle = MParticle.sharedInstance()
                 let logger = MPLog(logLevel: mparticle.logLevel)
                 logger.customLogger = mparticle.customLogger
-                
+
                 logger.error("Failed to archive upload settings: \(error)")
             }
         } else {
@@ -407,7 +407,7 @@ public protocol MPUserDefaultsProtocol {
                 let mparticle = MParticle.sharedInstance()
                 let logger = MPLog(logLevel: mparticle.logLevel)
                 logger.customLogger = mparticle.customLogger
-                
+
                 logger.error("Failed to unarchive upload settings: \(error)")
             }
         }

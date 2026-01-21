@@ -112,7 +112,7 @@
         let mparticle = MParticle.sharedInstance()
         let logger = MPLog(logLevel: mparticle.logLevel)
         logger.customLogger = mparticle.customLogger
-        
+
         if -initializedDate.timeIntervalSinceNow > maxWaitTime {
             if !printedMessage {
                 printedMessage = true

@@ -27,15 +27,15 @@ build_framework() {
 
 	# Clean previous builds
 	echo "🧹 Cleaning previous builds..."
-	rm -rf "$SDK_DIR/archives" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK_Swift.xcframework"
+	rm -rf "$SDK_DIR/archives" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework" "${TEMP_ARTIFACTS_DIR}/mParticle_Apple_SDK_Swift.xcframework"
 
 	# # Build dependency target first (mParticle-Apple-SDK-Swift)
 	echo "📱 Building dependency target mParticle-Apple-SDK-Swift for iOS Simulator..."
 	xcodebuild archive \
-		-project "$SDK_DIR/mParticle-Apple-SDK.xcodeproj" \
+		-project "${SDK_DIR}/mParticle-Apple-SDK.xcodeproj" \
 		-scheme mParticle-Apple-SDK-Swift \
 		-destination "generic/platform=iOS Simulator" \
-		-archivePath "$SDK_DIR/archives/mParticle-Apple-SDK-Swift-iOS_Simulator" \
+		-archivePath "${SDK_DIR}/archives/mParticle-Apple-SDK-Swift-iOS_Simulator" \
 		SKIP_INSTALL=NO \
 		BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
 		-quiet || {
@@ -44,14 +44,14 @@ build_framework() {
 	}
 
 	echo "📦 --------------------------------------------------------------"
-	ls -la "$SDK_DIR/archives/mParticle-Apple-SDK-Swift-iOS_Simulator.xcarchive/Products/Library/Frameworks/mParticle_Apple_SDK_Swift.framework/"
+	ls -la "${SDK_DIR}/archives/mParticle-Apple-SDK-Swift-iOS_Simulator.xcarchive/Products/Library/Frameworks/mParticle_Apple_SDK_Swift.framework/"
 	echo "📦 --------------------------------------------------------------"
 
 	# Create xcframework from simulator archive only
 	echo "📦 Creating xcframework..."
 	xcodebuild -create-xcframework \
-		-archive "$SDK_DIR/archives/mParticle-Apple-SDK-Swift-iOS_Simulator.xcarchive" -framework mParticle_Apple_SDK_Swift.framework \
-		-output "$SDK_DIR/mParticle_Apple_SDK_Swift.xcframework" \
+		-archive "${SDK_DIR}/archives/mParticle-Apple-SDK-Swift-iOS_Simulator.xcarchive" -framework mParticle_Apple_SDK_Swift.framework \
+		-output "${SDK_DIR}/mParticle_Apple_SDK_Swift.xcframework" \
 		2>&1 | grep -v "note:" || true
 
 	# Build main target (mParticle-Apple-SDK-NoLocation) which depends on Swift target
@@ -69,7 +69,7 @@ build_framework() {
 	}
 
 	echo "📦 --------------------------------------------------------------"
-	ls -la "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive/Products/Library/Frameworks/mParticle_Apple_SDK_NoLocation.framework/Frameworks/mParticle_Apple_SDK_Swift.framework/mParticle_Apple_SDK_Swift"
+	ls -la "${SDK_DIR}/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive/Products/Library/Frameworks/mParticle_Apple_SDK_NoLocation.framework/Frameworks/mParticle_Apple_SDK_Swift.framework/mParticle_Apple_SDK_Swift"
 	echo "📦 --------------------------------------------------------------"
 
 	# Create xcframework from simulator archive only
@@ -82,15 +82,15 @@ build_framework() {
 	# Move xcframeworks to temp artifacts directory
 	echo "📁 Moving xcframeworks to temp directory..."
 	mkdir -p "$TEMP_ARTIFACTS_DIR"
-	rm -rf "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK_Swift.xcframework"
+	rm -rf "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework" "${TEMP_ARTIFACTS_DIR}/mParticle_Apple_SDK_Swift.xcframework"
 	mv "$SDK_DIR/mParticle_Apple_SDK.xcframework" "$TEMP_ARTIFACTS_DIR/"
-	mv "$SDK_DIR/mParticle_Apple_SDK_Swift.xcframework" "$TEMP_ARTIFACTS_DIR/"
+	mv "${SDK_DIR}/mParticle_Apple_SDK_Swift.xcframework" "${TEMP_ARTIFACTS_DIR}/"
 
 	# Clean up archives
 	rm -rf "$SDK_DIR/archives"
 
 	echo "✅ SDK built successfully at: $TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
-	echo "✅ Swift SDK built successfully at: $TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK_Swift.xcframework"
+	echo "✅ Swift SDK built successfully at${ $TEMP_ARTIFACTS_D}IR/mParticle_Apple_SDK_Swift.xcframework"
 }
 
 build_application() {
