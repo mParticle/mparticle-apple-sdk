@@ -106,6 +106,5 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertTrue(kitContainer.flushSerializedKitsCalled)
         XCTAssertTrue(kitContainer.removeAllSideloadedKitsCalled)
         XCTAssertEqual(persistenceController.resetDatabaseCalled, true)
-        XCTAssertTrue(backendController.unproxyOriginalAppDelegateCalled)
     }
 }
