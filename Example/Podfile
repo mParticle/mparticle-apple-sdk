@@ -5,6 +5,7 @@ target 'mParticleExample' do
   use_frameworks!
 
   # Pods for mParticleExample
+  pod 'mParticle-Apple-SDK-Swift', :path => '../mParticle-Apple-SDK-Swift'
   pod 'mParticle-Apple-SDK/mParticleNoLocation', :path => '..'
   pod 'mParticle-Apple-Media-SDK/mParticleMediaNoLocation', '~> 1.7.0'
   pod 'mParticle-Rokt', '~> 8.0'
