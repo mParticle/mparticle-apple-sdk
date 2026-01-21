@@ -3,46 +3,21 @@
 import Foundation
 import mParticle_Apple_SDK_NoLocation
 
-// Listener for tracking upload events
-class EventUploadWaiter: NSObject, MPListenerProtocol {
-    private var uploadCompletedSemaphore: DispatchSemaphore?
-    var mparticle = MParticle.sharedInstance()
-
-    @discardableResult
-    func wait(timeout: Int = 5) -> Bool {
-        mparticle.upload()
-        let semaphore = DispatchSemaphore(value: 0)
-        uploadCompletedSemaphore = semaphore
-
-        let timeoutTime = DispatchTime.now() + .seconds(timeout)
-        let result = semaphore.wait(timeout: timeoutTime)
-
-        uploadCompletedSemaphore = nil
-
-        return result == .success
-    }
-
-    func onNetworkRequestFinished(_ type: MPEndpoint,
-                                  url: String,
-                                  body: NSObject,
-                                  responseCode: Int) {
-        if type == .events {
-            uploadCompletedSemaphore?.signal()
-        }
-    }
-
-    func onNetworkRequestStarted(_ type: MPEndpoint, url: String, body: NSObject) {}
+@discardableResult
+func wait(timeout: UInt32 = 5) {
+    mparticle.upload()
+    sleep(timeout)
 }
 
 // Test 1: Simple Event
-func testSimpleEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testSimpleEvent(mparticle: MParticle) {
     mparticle.logEvent("Simple Event Name", eventType: .other, eventInfo: ["SimpleKey": "SimpleValue"])
-    uploadWaiter.wait()
+    wait()
 }
 
 // Test 2: Log Event with Custom Attributes and Custom Flags
 // Based on ViewController.m logEvent method
-func testEventWithCustomAttributesAndFlags(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testEventWithCustomAttributesAndFlags(mparticle: MParticle) {
     let event = MPEvent(name: "Event Name", type: .transaction)
 
     // Use static date instead of Date() for deterministic testing
@@ -67,19 +42,19 @@ func testEventWithCustomAttributesAndFlags(mparticle: MParticle, uploadWaiter: E
     if let event = event {
         mparticle.logEvent(event)
     }
-    uploadWaiter.wait()
+    wait()
 }
 
 // Test 3: Log Screen
 // Based on ViewController.m logScreen method
-func testLogScreen(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testLogScreen(mparticle: MParticle) {
     mparticle.logScreen("Home Screen", eventInfo: nil)
-    uploadWaiter.wait()
+    wait()
 }
 
 // Test 4: Log Commerce Event with Product and Transaction
 // Based on ViewController.m logCommerceEvent method
-func testCommerceEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testCommerceEvent(mparticle: MParticle) {
     let product = MPProduct(
         name: "Awesome Book",
         sku: "1234567890",
@@ -110,13 +85,13 @@ func testCommerceEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
 
     // Log the commerce event
     mparticle.logEvent(commerceEvent)
-    uploadWaiter.wait()
+    wait()
 }
 
 // Test 5: Rokt Select Overlay Placement
 // Based on ViewController.m selectOverlayPlacement method
 // Tests Rokt SDK integration through mParticle for selecting placements with custom attributes
-func testRoktSelectPlacement(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testRoktSelectPlacement(mparticle: MParticle) {
     let roktAttributes: [String: String] = [
         "email": "j.smit@example.com",
         "firstname": "Jenny",
@@ -127,7 +102,7 @@ func testRoktSelectPlacement(mparticle: MParticle, uploadWaiter: EventUploadWait
 
     // Select Rokt placement with identifier and attributes
     mparticle.rokt.selectPlacements("RoktLayout", attributes: roktAttributes)
-    uploadWaiter.wait()
+    wait()
 }
 
 // Test 6: Get User Audiences
@@ -162,7 +137,7 @@ func testGetUserAudiences(mparticle: MParticle) {
 // Test 7: Log Timed Event
 // Based on ViewController.m logTimedEvent method
 // Tests logging timed events - begins a timed event, waits a fixed duration, then ends it
-func testLogTimedEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testLogTimedEvent(mparticle: MParticle) {
     // Begin a timed event
     let eventName = "Timed Event"
     let timedEvent = MPEvent(name: eventName, type: .transaction)
@@ -179,23 +154,25 @@ func testLogTimedEvent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
             mparticle.endTimedEvent(retrievedTimedEvent)
         }
     }
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 8: Log Error
 // Based on ViewController.m logError method
 // Tests logging errors with custom event info dictionary
-func testLogError(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testLogError(mparticle: MParticle) {
     // Log an error with event info - exactly as in ViewController.m
     let eventInfo = ["cause": "slippery floor"]
     mparticle.logError("Oops", eventInfo: eventInfo)
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 9: Log Exception
 // Based on ViewController.m logException method
 // Tests logging NSException with topmost context information
-func testLogException(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testLogException(mparticle: MParticle) {
     // Create an NSException similar to the one caught in ViewController.m
     // The original code tries to invoke a non-existing method which throws NSException
     let exception = NSException(
@@ -207,13 +184,14 @@ func testLogException(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     // Note: topmostContext parameter is not available in Swift API, 
     // so we use the simpler logException method
     mparticle.logException(exception)
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 10: Set User Attributes
 // Based on ViewController.m setUserAttribute method
 // Tests setting predefined and custom user attributes on the current user
-func testSetUserAttributes(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testSetUserAttributes(mparticle: MParticle) {
     guard let currentUser = mparticle.identity.currentUser else {
         print("No current user available")
         return
@@ -229,14 +207,14 @@ func testSetUserAttributes(mparticle: MParticle, uploadWaiter: EventUploadWaiter
 
     // Set a numeric user attribute using a custom key
     currentUser.setUserAttribute("Achieved Level", value: 4)
-
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 11: Increment User Attribute
 // Based on ViewController.m incrementUserAttribute method
 // Tests incrementing a numeric user attribute by a specified value
-func testIncrementUserAttribute(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testIncrementUserAttribute(mparticle: MParticle) {
     guard let currentUser = mparticle.identity.currentUser else {
         print("No current user available")
         return
@@ -247,39 +225,39 @@ func testIncrementUserAttribute(mparticle: MParticle, uploadWaiter: EventUploadW
     currentUser.setUserAttribute("Achieved Level", value: 10)
 
     // Wait for the initial set to be uploaded
-    uploadWaiter.wait()
-
+    wait()
+    
     // Now increment the attribute by 1 - exactly as in ViewController.m
     currentUser.incrementUserAttribute("Achieved Level", byValue: NSNumber(value: 1))
 
     // Wait for the increment to be uploaded
-    uploadWaiter.wait()
+    wait()
 }
 
 // Test 12: Set Session Attribute
 // Based on ViewController.m setSessionAttribute method
 // Tests setting a session attribute - session attributes are sent when session ends
-func testSetSessionAttribute(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testSetSessionAttribute(mparticle: MParticle) {
     // Set a session attribute - this will be included in the session end message
     mparticle.setSessionAttribute("Station", value: "Classic Rock")
 
     // End the session to trigger sending the session attribute
     // Session attributes are sent in the session end message (dt: "se")
     mparticle.endSession()
-
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 13: Increment Session Attribute
 // Based on ViewController.m incrementSessionAttribute method (lines 348-351)
 // Tests incrementing a numeric session attribute - session attributes are sent when session ends
-func testIncrementSessionAttribute(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testIncrementSessionAttribute(mparticle: MParticle) {
     // Start a new session since the previous test ended the session
     mparticle.beginSession()
 
     // Wait for session start to be uploaded (ensures separate request from session end)
-    uploadWaiter.wait()
-
+    wait()
+    
     // First set an initial numeric value for the session attribute
     mparticle.setSessionAttribute("Song Count", value: 5)
 
@@ -289,14 +267,14 @@ func testIncrementSessionAttribute(mparticle: MParticle, uploadWaiter: EventUplo
     // End the session to trigger sending the session attribute
     // Session attributes are sent in the session end message (dt: "se")
     mparticle.endSession()
-
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 14: Toggle CCPA Consent
 // Based on ViewController.m toggleCCPAConsent method (lines 357-386)
 // Tests setting CCPA consent state on the current user and verifying it's transmitted
-func testToggleCCPAConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testToggleCCPAConsent(mparticle: MParticle) {
     guard let currentUser = mparticle.identity.currentUser else {
         print("No current user available")
         return
@@ -328,14 +306,14 @@ func testToggleCCPAConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter
     // Log an event to trigger upload that includes the CCPA consent state
     // The consent state is included in the request body ("con" field) with event uploads
     mparticle.logEvent("CCPA Consent Updated", eventType: .other, eventInfo: ["consent_status": "opted_in"])
-
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 15: Toggle GDPR Consent
 // Based on ViewController.m toggleGDPRConsent method (lines 388-416)
 // Tests setting GDPR consent state on the current user and verifying it's transmitted
-func testToggleGDPRConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testToggleGDPRConsent(mparticle: MParticle) {
     guard let currentUser = mparticle.identity.currentUser else {
         print("No current user available")
         return
@@ -367,14 +345,14 @@ func testToggleGDPRConsent(mparticle: MParticle, uploadWaiter: EventUploadWaiter
     // Log an event to trigger upload that includes the GDPR consent state
     // The consent state is included in the request body ("con" field) with event uploads
     mparticle.logEvent("GDPR Consent Updated", eventType: .other, eventInfo: ["consent_status": "opted_in"])
-
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 16: Log IDFA (iOS Advertiser ID)
 // Based on ViewController.m logIDFA method (lines 418-429)
 // Tests modifying user identity to add/update the iOS Advertiser ID via Identity API
-func testLogIDFA(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testLogIDFA(mparticle: MParticle) {
     // Get current user from identity API
     guard let currentUser = mparticle.identity.currentUser else {
         print("No current user available")
@@ -393,14 +371,14 @@ func testLogIDFA(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
 
     // Modify the user identity
     mparticle.identity.modify(identityRequest) { _, _ in }
-
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Test 17: Set ATT Status (App Tracking Transparency)
 // Based on ViewController.m requestIDFA method (lines 431-476)
 // Tests setting the ATT authorization status which is sent with device info on uploads
-func testSetATTStatus(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
+func testSetATTStatus(mparticle: MParticle) {
     // Use static timestamp in milliseconds for deterministic testing
     let staticTimestampMillis = NSNumber(value: 1700000000000) // Fixed timestamp: 2023-11-14 22:13:20 UTC in milliseconds
 
@@ -411,8 +389,8 @@ func testSetATTStatus(mparticle: MParticle, uploadWaiter: EventUploadWaiter) {
     // Log an event to trigger upload that includes the ATT status in device info
     // ATT status is sent in the "att" field within device_info ("di") section
     mparticle.logEvent("ATT Status Updated", eventType: .other, eventInfo: ["att_status": "authorized"])
-
-    uploadWaiter.wait()
+    
+    wait()
 }
 
 // Read API key and secret from environment variables, or use fake keys for verification mode
@@ -449,30 +427,26 @@ networkOptions.pinningDisabled = true
 
 options.networkOptions = networkOptions
 
-// Register listener for tracking upload events
-let uploadWaiter = EventUploadWaiter()
-MPListenerController.sharedInstance().addSdkListener(uploadWaiter)
-
 let mparticle = MParticle.sharedInstance()
 mparticle.start(with: options)
 
 sleep(1)
 
 // Run tests
-testSimpleEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testEventWithCustomAttributesAndFlags(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testLogScreen(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testCommerceEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testRoktSelectPlacement(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testSimpleEvent(mparticle: mparticle)
+testEventWithCustomAttributesAndFlags(mparticle: mparticle)
+testLogScreen(mparticle: mparticle)
+testCommerceEvent(mparticle: mparticle)
+testRoktSelectPlacement(mparticle: mparticle)
 testGetUserAudiences(mparticle: mparticle)
-testLogTimedEvent(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testLogError(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testLogException(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testSetUserAttributes(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testIncrementUserAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testSetSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testIncrementSessionAttribute(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testToggleCCPAConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testToggleGDPRConsent(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testLogIDFA(mparticle: mparticle, uploadWaiter: uploadWaiter)
-testSetATTStatus(mparticle: mparticle, uploadWaiter: uploadWaiter)
+testLogTimedEvent(mparticle: mparticle)
+testLogError(mparticle: mparticle)
+testLogException(mparticle: mparticle)
+testSetUserAttributes(mparticle: mparticle)
+testIncrementUserAttribute(mparticle: mparticle)
+testSetSessionAttribute(mparticle: mparticle)
+testIncrementSessionAttribute(mparticle: mparticle)
+testToggleCCPAConsent(mparticle: mparticle)
+testToggleGDPRConsent(mparticle: mparticle)
+testLogIDFA(mparticle: mparticle)
+testSetATTStatus(mparticle: mparticle)
