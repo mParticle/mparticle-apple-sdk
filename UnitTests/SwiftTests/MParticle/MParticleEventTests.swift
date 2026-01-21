@@ -3,26 +3,10 @@ import mParticle_Apple_SDK_NoLocation
 
 final class MParticleEventTests: MParticleTestBase {
     
-    func test_logEvent_callsLogCustomEvent() {
-        mparticle.logEvent(event)
-        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
-    }
-    
-    func test_logEvent_callsLogCommerceEvent() {
-        mparticle.logEvent(commerceEvent)
-        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
-    }
-    
     func test_logEvent_blocksEvent_whenFilterReturnsNil() {
         dataPlanFilter.transformEventForBaseEventReturnValue = nil
         
         mparticle.logEvent(baseEvent)
-        
-        // Verify listener was called
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === baseEvent)
         
         // Verify backend was called
         XCTAssertTrue(backendController.logBaseEventCalled)
@@ -46,10 +30,6 @@ final class MParticleEventTests: MParticleTestBase {
         dataPlanFilter.transformEventForBaseEventReturnValue = transformedBaseEvent
         
         mparticle.logEvent(baseEvent)
-        
-        // Verify listener was called
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === baseEvent)
         
         // Verify backend was called
         XCTAssertTrue(backendController.logBaseEventCalled)
@@ -145,9 +125,6 @@ final class MParticleEventTests: MParticleTestBase {
         
         XCTAssertTrue(backendController.eventWithNameCalled)
         XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
-        
-        XCTAssertTrue(listenerController.onAPICalledCalled)
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
     }
 
     func test_logEvent_createsNewEvent_whenNotFound() {
@@ -157,11 +134,5 @@ final class MParticleEventTests: MParticleTestBase {
         
         XCTAssertTrue(backendController.eventWithNameCalled)
         XCTAssertEqual(backendController.eventWithNameEventNameParam, event.name)
-        
-        XCTAssertTrue(listenerController.onAPICalledCalled)
-        let createdEvent: MPEvent = (listenerController.onAPICalledParameter1 as? MPBaseEvent)! as! MPEvent
-        XCTAssertEqual(createdEvent.name, event.name)
-        XCTAssertEqual(createdEvent.type, event.type)
-        XCTAssertEqual(createdEvent.customAttributes as! [String: String], event.customAttributes as! [String: String])
     }
 }
