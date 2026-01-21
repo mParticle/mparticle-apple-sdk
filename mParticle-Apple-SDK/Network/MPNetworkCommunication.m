@@ -473,8 +473,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         }];
     }
     
-    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointConfig url:self.configURL.url.absoluteString body:@[]];
-    
     connector = connector ? connector : [self makeConnector];
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromGetRequestToURL:self.configURL];
     NSData *data = response.data;
@@ -499,7 +497,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
         
         completionHandler(YES);
-        [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.url.absoluteString body:[NSDictionary dictionary] responseCode:responseCode];
         return;
     }
     
@@ -508,7 +505,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!data && success) {
         completionHandler(NO);
         MPILogWarning(@"Failed config request");
-        [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.url.absoluteString body:[NSDictionary dictionary] responseCode:HTTPStatusCodeNoContent];
         return;
     }
     
@@ -526,7 +522,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         }
     }
     
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:(self.configURL.url.absoluteString ?: @"") body:(configurationDictionary ?: @{}) responseCode:responseCode];
     if (success && configurationDictionary) {
         NSDictionary *headersDictionary = [httpResponse allHeaderFields];
         NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
@@ -697,8 +692,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:eventURL.url.absoluteString body:@[uploadString, zipUploadData]];
-    
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:eventURL
                                                                                       message:uploadString
                                                                              serializedParams:zipUploadData
@@ -718,7 +711,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     BOOL success = isSuccessCode && data && [data length] > 0;
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointEvents url:eventURL.url.absoluteString body:response.data responseCode:responseCode];
     if (success) {
         @try {
             NSError *serializationError = nil;
@@ -771,7 +763,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", aliasURL.url, uploadString);
-    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:aliasURL.url.absoluteString body:@[uploadString, upload.uploadData]];
     
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:aliasURL
                                                                                       message:uploadString
@@ -788,8 +779,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (isSuccessCode || isInvalidCode) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
-    
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointAlias url:aliasURL.url.absoluteString body:response.data responseCode:responseCode];
     
     NSString *responseString = [[NSString alloc] initWithData:response.data encoding:NSUTF8StringEncoding];
     if (responseString != nil && responseString.length > 0) {
@@ -830,18 +819,15 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
         aliasResponse.willRetry = YES;
-        [MPListenerController.sharedInstance onAliasRequestFinished:aliasResponse];
         [self throttleWithHTTPResponse:httpResponse uploadType:upload.uploadType];
         return YES;
     }
     
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
-        [MPListenerController.sharedInstance onAliasRequestFinished:aliasResponse];
         return YES;
     }
     
-    [MPListenerController.sharedInstance onAliasRequestFinished:aliasResponse];
     return NO;
 }
 
@@ -926,8 +912,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
     
-    
-    [MPListenerController.sharedInstance onNetworkRequestStarted:endpointType url:url.absoluteString body:data];
     
     BOOL success = NO;
     NSError *error = nil;
@@ -1040,7 +1024,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     self.identifying = NO;
     
-    [MPListenerController.sharedInstance onNetworkRequestFinished:endpointType url:(url.absoluteString ?: @"") body:(responseDictionary ?: @{}) responseCode:responseCode];
     if (success) {
         if (responseString) {
             MPILogVerbose(@"Identity response:\n%@", responseString);

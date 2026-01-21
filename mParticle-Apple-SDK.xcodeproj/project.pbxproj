@@ -21,7 +21,6 @@
 		356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356752922E60928500DEEE23 /* MPStateMachineMock.swift */; };
 		356D4A5A2E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
 		356D4A5D2E58B25900CB69FE /* MPDataPlanFilterMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */; };
-		356D4A5F2E5CAB0000CB69FE /* MPListenerControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */; };
 		359247692F19A11B00C9A21E /* MPDeviceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAC29CE019F00E7489F /* MPDeviceTests.m */; };
 		359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 359BAFF82E56330200A8A704 /* SettingsProvider.h */; };
 		359BAFFC2E56335300A8A704 /* SettingsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFB2E56335300A8A704 /* SettingsProvider.m */; };
@@ -111,7 +110,6 @@
 		53A79D0229CE23F700E7489F /* mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2729CDFB4800E7489F /* mParticle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D0329CE23F700E7489F /* FilteredMPIdentityApiRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3C29CDFB4800E7489F /* FilteredMPIdentityApiRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D0429CE23F700E7489F /* MPBaseEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2429CDFB4800E7489F /* MPBaseEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		53A79D0529CE23F700E7489F /* MPListenerController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3029CDFB4800E7489F /* MPListenerController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D0629CE23F700E7489F /* MPProduct+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4229CDFB4800E7489F /* MPProduct+Dictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D0729CE23F700E7489F /* MPKitRegister.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4129CDFB4800E7489F /* MPKitRegister.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D0829CE23F700E7489F /* MPTransactionAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2E29CDFB4800E7489F /* MPTransactionAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -130,7 +128,6 @@
 		53A79D1929CE23F700E7489F /* MPAliasRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3A29CDFB4800E7489F /* MPAliasRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D1A29CE23F700E7489F /* MPKitExecStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3E29CDFB4800E7489F /* MPKitExecStatus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D1B29CE23F700E7489F /* MPEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2329CDFB4800E7489F /* MPEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		53A79D1C29CE23F700E7489F /* MPListenerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2A29CDFB4800E7489F /* MPListenerProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D1E29CE23F700E7489F /* MPAliasResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3729CDFB4800E7489F /* MPAliasResponse.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D1F29CE23F700E7489F /* MPConsentState.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4029CDFB4800E7489F /* MPConsentState.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D2029CE23F700E7489F /* MParticleUser.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3429CDFB4800E7489F /* MParticleUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -249,7 +246,6 @@
 		53A79DB529CE23F700E7489F /* MPBackendController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF429CDFB1F00E7489F /* MPBackendController.m */; };
 		53A79DB629CE23F700E7489F /* MPForwardQueueItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5D29CDFB1F00E7489F /* MPForwardQueueItem.m */; };
 		53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5829CDFB1F00E7489F /* MPEventProjection.mm */; };
-		53A79DB829CE23F700E7489F /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B6329CDFB1F00E7489F /* MPListenerController.m */; };
 		53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5029CDFB1F00E7489F /* MPKitContainer.mm */; };
 		53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */; };
 		53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5329CDFB1F00E7489F /* MPBaseProjection.m */; };
@@ -335,7 +331,6 @@
 		356752922E60928500DEEE23 /* MPStateMachineMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPStateMachineMock.swift; sourceTree = "<group>"; };
 		356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderMock.swift; sourceTree = "<group>"; };
 		356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDataPlanFilterMock.swift; sourceTree = "<group>"; };
-		356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPListenerControllerMock.swift; sourceTree = "<group>"; };
 		359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticle+PrivateMethods.h"; sourceTree = "<group>"; };
 		359BAFF82E56330200A8A704 /* SettingsProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsProvider.h; sourceTree = "<group>"; };
 		359BAFFB2E56335300A8A704 /* SettingsProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsProvider.m; sourceTree = "<group>"; };
@@ -474,7 +469,6 @@
 		53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitConfiguration.h; sourceTree = "<group>"; };
 		53A79B6029CDFB1F00E7489F /* MPKitFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitFilter.h; sourceTree = "<group>"; };
 		53A79B6129CDFB1F00E7489F /* MPBaseProjection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBaseProjection.h; sourceTree = "<group>"; };
-		53A79B6329CDFB1F00E7489F /* MPListenerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPListenerController.m; sourceTree = "<group>"; };
 		53A79B6429CDFB1F00E7489F /* MPIConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIConstants.m; sourceTree = "<group>"; };
 		53A79C2329CDFB4800E7489F /* MPEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEvent.h; sourceTree = "<group>"; };
 		53A79C2429CDFB4800E7489F /* MPBaseEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBaseEvent.h; sourceTree = "<group>"; };
@@ -483,12 +477,10 @@
 		53A79C2729CDFB4800E7489F /* mParticle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle.h; sourceTree = "<group>"; };
 		53A79C2829CDFB4800E7489F /* MPExtensionProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPExtensionProtocol.h; sourceTree = "<group>"; };
 		53A79C2929CDFB4800E7489F /* FilteredMParticleUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FilteredMParticleUser.h; sourceTree = "<group>"; };
-		53A79C2A29CDFB4800E7489F /* MPListenerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPListenerProtocol.h; sourceTree = "<group>"; };
 		53A79C2B29CDFB4800E7489F /* MPPromotion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPromotion.h; sourceTree = "<group>"; };
 		53A79C2D29CDFB4800E7489F /* MPKitAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAPI.h; sourceTree = "<group>"; };
 		53A79C2E29CDFB4800E7489F /* MPTransactionAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTransactionAttributes.h; sourceTree = "<group>"; };
 		53A79C2F29CDFB4800E7489F /* MPCommerceEventInstruction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCommerceEventInstruction.h; sourceTree = "<group>"; };
-		53A79C3029CDFB4800E7489F /* MPListenerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPListenerController.h; sourceTree = "<group>"; };
 		53A79C3129CDFB4800E7489F /* MPIdentityApi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIdentityApi.h; sourceTree = "<group>"; };
 		53A79C3329CDFB4800E7489F /* NSDictionary+MPCaseInsensitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+MPCaseInsensitive.h"; sourceTree = "<group>"; };
 		53A79C3429CDFB4800E7489F /* MParticleUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MParticleUser.h; sourceTree = "<group>"; };
@@ -665,7 +657,6 @@
 				356752922E60928500DEEE23 /* MPStateMachineMock.swift */,
 				3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */,
 				356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */,
-				356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */,
 				359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */,
 				356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */,
 				727801DD2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift */,
@@ -736,7 +727,6 @@
 				53A79A9729CDFB1E00E7489F /* Identity */,
 				53A79B4A29CDFB1F00E7489F /* Kits */,
 				53A79AFD29CDFB1F00E7489F /* Libraries */,
-				53A79B6229CDFB1F00E7489F /* Listener */,
 				53A79B4529CDFB1F00E7489F /* Logger */,
 				53A79AA729CDFB1E00E7489F /* Network */,
 				53A79B3329CDFB1F00E7489F /* Notifications */,
@@ -978,14 +968,6 @@
 			path = Kits;
 			sourceTree = "<group>";
 		};
-		53A79B6229CDFB1F00E7489F /* Listener */ = {
-			isa = PBXGroup;
-			children = (
-				53A79B6329CDFB1F00E7489F /* MPListenerController.m */,
-			);
-			path = Listener;
-			sourceTree = "<group>";
-		};
 		53A79C2229CDFB4800E7489F /* Include */ = {
 			isa = PBXGroup;
 			children = (
@@ -998,12 +980,10 @@
 				53A79C2729CDFB4800E7489F /* mParticle.h */,
 				53A79C2829CDFB4800E7489F /* MPExtensionProtocol.h */,
 				53A79C2929CDFB4800E7489F /* FilteredMParticleUser.h */,
-				53A79C2A29CDFB4800E7489F /* MPListenerProtocol.h */,
 				53A79C2B29CDFB4800E7489F /* MPPromotion.h */,
 				53A79C2D29CDFB4800E7489F /* MPKitAPI.h */,
 				53A79C2E29CDFB4800E7489F /* MPTransactionAttributes.h */,
 				53A79C2F29CDFB4800E7489F /* MPCommerceEventInstruction.h */,
-				53A79C3029CDFB4800E7489F /* MPListenerController.h */,
 				53A79C3129CDFB4800E7489F /* MPIdentityApi.h */,
 				53A79C3329CDFB4800E7489F /* NSDictionary+MPCaseInsensitive.h */,
 				53A79C3429CDFB4800E7489F /* MParticleUser.h */,
@@ -1201,7 +1181,6 @@
 				53A79D0229CE23F700E7489F /* mParticle.h in Headers */,
 				53A79D0329CE23F700E7489F /* FilteredMPIdentityApiRequest.h in Headers */,
 				53A79D0429CE23F700E7489F /* MPBaseEvent.h in Headers */,
-				53A79D0529CE23F700E7489F /* MPListenerController.h in Headers */,
 				53A79D0629CE23F700E7489F /* MPProduct+Dictionary.h in Headers */,
 				53A79D0729CE23F700E7489F /* MPKitRegister.h in Headers */,
 				53A79D0829CE23F700E7489F /* MPTransactionAttributes.h in Headers */,
@@ -1221,7 +1200,6 @@
 				53A79D1929CE23F700E7489F /* MPAliasRequest.h in Headers */,
 				53A79D1A29CE23F700E7489F /* MPKitExecStatus.h in Headers */,
 				53A79D1B29CE23F700E7489F /* MPEvent.h in Headers */,
-				53A79D1C29CE23F700E7489F /* MPListenerProtocol.h in Headers */,
 				53A79D1E29CE23F700E7489F /* MPAliasResponse.h in Headers */,
 				53A79D1F29CE23F700E7489F /* MPConsentState.h in Headers */,
 				53A79D2029CE23F700E7489F /* MParticleUser.h in Headers */,
@@ -1453,7 +1431,6 @@
 				534CD28C29CE2CE1008452B3 /* MPUserDefaultsTests.m in Sources */,
 				7231B82F2EB95D96001565E5 /* MParticleEventTests.swift in Sources */,
 				534CD28D29CE2CE1008452B3 /* MPUploadBuilderTests.m in Sources */,
-				356D4A5F2E5CAB0000CB69FE /* MPListenerControllerMock.swift in Sources */,
 				534CD28E29CE2CE1008452B3 /* MPBaseTestCase.m in Sources */,
 				35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */,
 				7231B8352EB95F9F001565E5 /* MParticleBreadcrumbTests.swift in Sources */,
@@ -1589,7 +1566,6 @@
 				53A79DB529CE23F700E7489F /* MPBackendController.m in Sources */,
 				53A79DB629CE23F700E7489F /* MPForwardQueueItem.m in Sources */,
 				53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */,
-				53A79DB829CE23F700E7489F /* MPListenerController.m in Sources */,
 				53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */,
 				D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */,
 				53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */,
