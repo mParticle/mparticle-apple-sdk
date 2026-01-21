@@ -4,6 +4,10 @@ This document provides migration guidance for breaking changes in the mParticle 
 
 ## Migrating from versions < 9.0.0
 
+### Removed MPListenerController
+
+The `MPListenerController` class has been removed. The SDK no longer invokes any listener callbacks.
+
 ### Removed Deprecated UIApplicationDelegate Methods
 
 Apple has deprecated several `UIApplicationDelegate` protocol methods in favor of the modern `UIScene` lifecycle introduced in iOS 13. The mParticle SDK previously provided wrapper methods for these deprecated delegate methods, but these have been removed as they are scheduled for removal by Apple in iOS 27.

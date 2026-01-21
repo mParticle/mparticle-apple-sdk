@@ -2,6 +2,7 @@ name: Secondary Platforms iOS Build
 
 on:
   workflow_dispatch:
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -18,7 +19,7 @@ jobs:
         working-directory: ./RNExample/ios
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
