@@ -12,7 +12,6 @@
 		351308432E6B28F5002A3AD6 /* Executor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3513083F2E6B28F5002A3AD6 /* Executor.h */; };
 		351308442E6B28F5002A3AD6 /* Executor.m in Sources */ = {isa = PBXBuildFile; fileRef = 351308402E6B28F5002A3AD6 /* Executor.m */; };
 		351779502E706BF8004BF05E /* ExecutorMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3517794C2E706BE4004BF05E /* ExecutorMock.swift */; };
-		351F6FC72EDF7B2A00E527A7 /* SceneDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */; };
 		351F6FC82EDF7B2A00E527A7 /* SceneDelegateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351F6FC62EDF7B2100E527A7 /* SceneDelegateHandler.swift */; };
 		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
@@ -244,7 +243,7 @@
 		53A79DB429CE23F700E7489F /* MPDataModelAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AC629CDFB1E00E7489F /* MPDataModelAbstract.m */; };
 		53A79DB529CE23F700E7489F /* MPBackendController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AF429CDFB1F00E7489F /* MPBackendController.m */; };
 		53A79DB629CE23F700E7489F /* MPForwardQueueItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5D29CDFB1F00E7489F /* MPForwardQueueItem.m */; };
-		53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5829CDFB1F00E7489F /* MPEventProjection.mm */; };
+		53A79DB729CE23F700E7489F /* MPEventProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5829CDFB1F00E7489F /* MPEventProjection.m */; };
 		53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5029CDFB1F00E7489F /* MPKitContainer.mm */; };
 		53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */; };
 		53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5329CDFB1F00E7489F /* MPBaseProjection.m */; };
@@ -649,25 +648,8 @@
 		D3DE316A2D5261F700CC537F /* MPDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDevice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		35DBFDE12F21041800E872F5 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Tests/mParticle_Apple_SDK_SwiftTests.swift,
-			);
-			target = 35DBFDC72F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */;
-		};
-		35DBFDE22F21041800E872F5 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Tests/mParticle_Apple_SDK_SwiftTests.swift,
-			);
-			target = 35DBFDCF2F2103FD00E872F5 /* mParticle-Apple-SDK-SwiftTests */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		35DBFDC92F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (35DBFDE12F21041800E872F5 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 35DBFDE22F21041800E872F5 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "mParticle-Apple-SDK-Swift"; sourceTree = "<group>"; };
+		35DBFDC92F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "mParticle-Apple-SDK-Swift"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1705,7 +1687,7 @@
 				351F6FC82EDF7B2A00E527A7 /* SceneDelegateHandler.swift in Sources */,
 				53A79DB529CE23F700E7489F /* MPBackendController.m in Sources */,
 				53A79DB629CE23F700E7489F /* MPForwardQueueItem.m in Sources */,
-				53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */,
+				53A79DB729CE23F700E7489F /* MPEventProjection.m in Sources */,
 				53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */,
 				D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */,
 				53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */,
@@ -1768,6 +1750,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos appletvsimulator appletvos";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_MODULE = YES;
@@ -1809,6 +1792,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos appletvsimulator appletvos";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = YES;
