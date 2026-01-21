@@ -4,15 +4,6 @@ import mParticle_Apple_SDK_NoLocation
 #if os(iOS)
 final class MParticleRemoteNotificationTests: MParticleTestBase {
     
-    func test_didReceiveRemoteNotification_doesNotCallHandler_whenProxiedDelegateExists() {
-        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
-        
-        mparticle.didReceiveRemoteNotification([:])
-
-        XCTAssertFalse(appNotificationHandler.didReceiveRemoteNotificationCalled)
-        XCTAssertFalse(appEnvironmentProvier.isAppExtensionCalled)
-    }
-    
     func test_didReceiveRemoteNotification_doesNotCallHandler_whenAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = true
         
@@ -22,7 +13,7 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
         XCTAssertFalse(appNotificationHandler.didReceiveRemoteNotificationCalled)
     }
     
-    func test_didReceiveRemoteNotification_callsHandler_whenNotAppExtension_andNoProxiedDelegate() {
+    func test_didReceiveRemoteNotification_callsHandler_whenNotAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = false
         
         mparticle.didReceiveRemoteNotification(keyValueDict)
@@ -43,19 +34,8 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertFalse(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithErrorCalled)
     }
-
-    func test_didFailToRegisterForRemoteNotifications_doesNotCallHandler_whenProxiedDelegateExists() {
-        appEnvironmentProvier.isAppExtensionReturnValue = false
-
-        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
-        
-        mparticle.didFailToRegisterForRemoteNotificationsWithError(error)
-
-        XCTAssertFalse(appEnvironmentProvier.isAppExtensionCalled)
-        XCTAssertFalse(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithErrorCalled)
-    }
     
-    func test_didFailToRegisterForRemoteNotifications_callsHandler_whenNotAppExtension_andNoProxiedDelegate() {
+    func test_didFailToRegisterForRemoteNotifications_callsHandler_whenNotAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = false
         
         mparticle.didFailToRegisterForRemoteNotificationsWithError(error)
@@ -73,19 +53,8 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertFalse(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithDeviceTokenCalled)
     }
-
-    func test_didRegisterForRemoteNotifications_doesNotCallHandler_whenProxiedDelegateExists() {
-        appEnvironmentProvier.isAppExtensionReturnValue = false
-
-        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
-
-        mparticle.didRegisterForRemoteNotifications(withDeviceToken: token)
-
-        XCTAssertFalse(appEnvironmentProvier.isAppExtensionCalled)
-        XCTAssertFalse(appNotificationHandler.didFailToRegisterForRemoteNotificationsWithDeviceTokenCalled)
-    }
     
-    func test_didRegisterForRemoteNotifications_callsHandler_whenNotAppExtension_andNoProxiedDelegate() {
+    func test_didRegisterForRemoteNotifications_callsHandler_whenNotAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = false
 
         mparticle.didRegisterForRemoteNotifications(withDeviceToken: token)
@@ -103,19 +72,8 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertFalse(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationCalled)
     }
-
-    func test_handleActionForRemoteNotification_doesNotCallHandler_whenProxiedDelegateExists() {
-        appEnvironmentProvier.isAppExtensionReturnValue = false
-
-        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
-
-        mparticle.handleAction(withIdentifier: testName, forRemoteNotification: keyValueDict)
-
-        XCTAssertFalse(appEnvironmentProvier.isAppExtensionCalled)
-        XCTAssertFalse(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationCalled)
-    }
     
-    func test_handleActionForRemoteNotification_callsHandler_whenNotAppExtension_andNoProxiedDelegate() {
+    func test_handleActionForRemoteNotification_callsHandler_whenNotAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = false
         
         mparticle.handleAction(withIdentifier: testName, forRemoteNotification: keyValueDict)
@@ -141,23 +99,8 @@ final class MParticleRemoteNotificationTests: MParticleTestBase {
         XCTAssertTrue(appEnvironmentProvier.isAppExtensionCalled)
         XCTAssertFalse(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled)
     }
-
-    func test_handleActionForRemoteNotificationWithResponseInfo_doesNotCallHandler_whenProxiedDelegateExists() {
-        appEnvironmentProvier.isAppExtensionReturnValue = false
-
-        mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
-        
-        mparticle.handleAction(
-            withIdentifier: testName,
-            forRemoteNotification: keyValueDict,
-            withResponseInfo: responseKeyValueDict
-        )
-
-        XCTAssertFalse(appEnvironmentProvier.isAppExtensionCalled)
-        XCTAssertFalse(appNotificationHandler.handleActionWithIdentifierForRemoteNotificationWithResponseInfoCalled)
-    }
     
-    func test_handleActionForRemoteNotificationWithResponseInfo_callsHandler_whenNotAppExtension_andNoProxiedDelegate() {
+    func test_handleActionForRemoteNotificationWithResponseInfo_callsHandler_whenNotAppExtension() {
         appEnvironmentProvier.isAppExtensionReturnValue = false
         
         mparticle.handleAction(

@@ -236,16 +236,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, readwrite) MPEnvironment environment;
 
 /**
- Whether the SDK should automatically collect UIApplicationDelegate information.
- 
- If set to NO, you will need to manually add some calls to the SDK within certain AppDelegate methods.
- If set to YES (the default), the SDK will intercept app delegate messages before forwarding them to your app.
- 
- This mechanism is acheived using NSProxy and without introducing dangerous swizzling.
- */
-@property (nonatomic, readwrite) BOOL proxyAppDelegate;
-
-/**
  Whether the SDK should automatically attempt to measure sessions. Ignored in App Extensions.
  
  If set to YES (the default), the SDK will start a timer when the app enters the background and will end the session if a
@@ -530,13 +520,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, readwrite) BOOL optOut;
 
 /**
- A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
- application notifications automatically.
- @see startWithOptions:
- */
-@property (nonatomic, readonly) BOOL proxiedAppDelegate;
-
-/**
  A flag indicating whether the mParticle Apple SDK is using
  automated Session tracking.
  @see MParticleOptions
@@ -698,59 +681,49 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 #if TARGET_OS_IOS == 1
 
 /**
- Informs the mParticle SDK a remote notification has been received. This method should be called only if proxiedAppDelegate is disabled.
+ Informs the mParticle SDK a remote notification has been received.
  @param userInfo A dictionary containing information related to the remote notification
- @see proxiedAppDelegate
  */
 - (void)didReceiveRemoteNotification:(NSDictionary *)userInfo;
 
 /**
- Informs the mParticle SDK the push notification service could not complete the registration process. This method should be called only if proxiedAppDelegate is disabled.
+ Informs the mParticle SDK the push notification service could not complete the registration process.
  @param error An NSError object encapsulating the information why registration did not succeed
- @see proxiedAppDelegate
  */
 - (void)didFailToRegisterForRemoteNotificationsWithError:(nullable NSError *)error;
 
 /**
- Informs the mParticle SDK the app successfully registered with the push notification service. This method should be called only if proxiedAppDelegate is disabled.
+ Informs the mParticle SDK the app successfully registered with the push notification service.
  @param deviceToken A token that identifies the device+App to APNS
- @see proxiedAppDelegate
  */
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
 
 /**
  Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
- This method should be called only if proxiedAppDelegate is disabled.
  @param identifier The identifier associated with the custom action
  @param userInfo A dictionary that contains information related to the remote notification
- @see proxiedAppDelegate
  */
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 
 /**
  Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
- This method should be called only if proxiedAppDelegate is disabled.
  @param identifier The identifier associated with the custom action
  @param userInfo A dictionary that contains information related to the remote notification
  @param responseInfo The data dictionary sent by the action
- @see proxiedAppDelegate
  */
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo;
 
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
- This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 13 and above.
+ This method is only available for iOS 13 and above.
  @param urlContext The UIOpenURLContext provided by the SceneDelegate
- @see proxiedAppDelegate
  */
 - (void)handleURLContext:(UIOpenURLContext *)urlContext NS_SWIFT_NAME(handleURLContext(_:)) API_AVAILABLE(ios(13.0));
 #endif
 
 /**
  Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
- This method should be called only if proxiedAppDelegate is disabled.
  @param userActivity The NSUserActivity that caused the app to be opened
- @see proxiedAppDelegate
  */
 - (void)handleUserActivity:(NSUserActivity *)userActivity NS_SWIFT_NAME(handleUserActivity(_:));
 

@@ -58,5 +58,4 @@
 @property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
 @property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
 @property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
-@property (nonatomic, readonly) BOOL proxiedAppDelegate;
 @end
