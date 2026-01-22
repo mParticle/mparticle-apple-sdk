@@ -119,30 +119,6 @@ public protocol MPUserDefaultsProtocol {
         }
     }
 
-    @objc public func migrateUserKeys(withUserId userId: NSNumber) {
-        for key in userSpecificKeys {
-            let globalKey = MPUserDefaults.globalKeyForKey(key)
-            let userKey = MPUserDefaults.userKeyForKey(key, userId: userId)
-            guard let value = UserDefaults.standard.object(forKey: globalKey) else { continue }
-            customUserDefaults().set(value, forKey: userKey)
-        }
-
-        synchronize()
-    }
-
-    @objc public func migrateFirstLastSeenUsers() {
-        let globalFirstSeenDateMs = mpObject(
-            forKey: Miscellaneous.kMPAppInitialLaunchTimeKey,
-            userId: MPPersistenceController_PRIVATE.mpId()
-        )
-        let globalLastSeenDateMs = NSNumber(value: Date().timeIntervalSince1970 * 1000)
-        let users: [MParticleUser] = identity?.getAllUsers() ?? []
-        for user in users {
-            setMPObject(globalFirstSeenDateMs, forKey: Miscellaneous.kMPFirstSeenUser, userId: user.userId)
-            setMPObject(globalLastSeenDateMs, forKey: Miscellaneous.kMPLastSeenUser, userId: user.userId)
-        }
-    }
-
     @objc public func setSharedGroupIdentifier(_ groupIdentifier: String?) {
         let storedGroupID = mpObject(
             forKey: kMPUserIdentitySharedGroupIdentifier,

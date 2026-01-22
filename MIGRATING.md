@@ -70,6 +70,30 @@ For URL handling and user activity (universal links), use the `UIScene` lifecycl
 
 ---
 
+### Removed Legacy Database Migration Support
+
+Support for migrating from SDK versions prior to **SDK 8.27.0** (internal database version < 30) has been removed. Only migration from the immediately preceding database version (v30 → v31) is now supported.
+
+#### What This Means
+
+- Apps upgrading from **SDK 8.26.x or earlier** to SDK 9.x will start with a fresh local database
+- Any pending (unsent) events from the old SDK version will be lost during this upgrade
+- User identity and session data will be re-established after the upgrade
+
+#### Affected Users
+
+This change only affects users who:
+
+1. Are upgrading directly from mParticle SDK versions **before 8.27.0** (released August 2024)
+2. Have pending events that have not yet been uploaded to mParticle
+
+#### Recommendations
+
+- If you are upgrading from SDK 8.26.x or earlier, consider upgrading to SDK 8.27+ first, allowing events to sync, then upgrading to SDK 9.x
+- Users already on SDK 8.27.0 or later will have their pending events migrated automatically
+
+---
+
 ### Removed MPListenerController
 
 The `MPListenerController` class has been removed. The SDK no longer invokes any listener callbacks.
