@@ -27,7 +27,7 @@ build_framework() {
 
 	# Clean previous builds
 	echo "🧹 Cleaning previous builds..."
-	rm -rf "$SDK_DIR/archives" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework" "${TEMP_ARTIFACTS_DIR}/mParticle_Apple_SDK_Swift.xcframework"
+	rm -rf "$SDK_DIR/archives" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
 
 	# Build main target (mParticle-Apple-SDK-NoLocation) which depends on Swift target
 	echo "📱 Building archive for iOS Simulator..."
@@ -42,10 +42,6 @@ build_framework() {
 		echo "❌ Framework build error"
 		exit 1
 	}
-
-	echo "📦 --------------------------------------------------------------"
-	ls -la "${SDK_DIR}/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive/Products/Library/Frameworks/mParticle_Apple_SDK_NoLocation.framework/Frameworks/mParticle_Apple_SDK_Swift.framework/mParticle_Apple_SDK_Swift"
-	echo "📦 --------------------------------------------------------------"
 
 	# Create xcframework from simulator archive only
 	echo "📦 Creating xcframework..."
