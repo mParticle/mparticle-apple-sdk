@@ -1,0 +1,20 @@
+# Example Podfile for using MyModules-A
+# 
+# Usage:
+# 1. Copy this file to your project
+# 2. Update path to check folder
+# 3. Run: pod install
+
+platform :ios, '14.0'
+use_frameworks!
+
+target 'ExampleApp' do
+  # Local installation from check folder
+  # Update path relative to your project
+  pod 'MyModules-A', :path => '../'
+  
+  # Or use individual modules:
+  # pod 'MyModules-B', :path => '../'
+  # pod 'MyModules-BObjC', :path => '../'
+end
+

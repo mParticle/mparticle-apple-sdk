@@ -1,0 +1,17 @@
+# Tuist
+.Derived/
+*.xcodeproj
+*.xcworkspace
+
+# CocoaPods
+Pods/
+*.xcworkspace
+
+# macOS
+.DS_Store
+
+# Xcode
+*.xcuserdata
+*.xcuserdatad
+*.xcshareddata
+

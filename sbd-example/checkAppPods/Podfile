@@ -1,0 +1,29 @@
+# Podfile for CheckAppPods
+# Used with Tuist project
+
+platform :ios, '14.0'
+use_frameworks!
+
+target 'CheckAppPods' do
+  # Local dependencies - all modules from check folder
+  # 
+  # ⚠️ IMPORTANT: When developing locally with :path you need to specify all dependencies explicitly,
+  # because CocoaPods cannot automatically resolve local dependencies from podspec.
+  #
+  # ✅ After publishing to CocoaPods it will be enough to specify only:
+  #    pod 'MyModules-A', '~> 1.0.0'
+  # CocoaPods will automatically pull dependencies (BObjC and B) from podspec files.
+  #
+  pod 'MyModules-B', :path => '../check'
+  pod 'MyModules-BObjC', :path => '../check'
+  pod 'MyModules-A', :path => '../check'
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+    end
+  end
+end
+
