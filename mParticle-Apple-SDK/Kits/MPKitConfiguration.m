@@ -214,9 +214,9 @@
         }
     }
     
-    _configuredMessageTypeProjections = [configuredMessageTypeProjectionsArray copy];
-    _defaultProjections = [defaultProjectionsArray copy];
-    _projections = projectionsArray.count > 0 ? [projectionsArray copy] : nil;
+    _configuredMessageTypeProjections = configuredMessageTypeProjectionsArray;
+    _defaultProjections = defaultProjectionsArray;
+    _projections = projectionsArray.count > 0 ? projectionsArray : nil;
 }
 
 @end
