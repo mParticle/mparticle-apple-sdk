@@ -46,7 +46,7 @@ import Foundation
             return .removeFromWishlist
         default:
             let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: mparticle.logLevel)
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
             logger.customLogger = mparticle.customLogger
 
             logger.error("Invalid commerce event action received from webview: \(json)")
@@ -56,7 +56,7 @@ import Foundation
 
     @objc public static func commerceEvent(_ json: [AnyHashable: Any]) -> MPCommerceEvent? {
         let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: mparticle.logLevel)
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
         logger.customLogger = mparticle.customLogger
 
         guard json["ProductAction"] == nil || json["ProductAction"] is [String: Any] else {
@@ -143,7 +143,7 @@ import Foundation
 
     @objc public static func promotionContainer(_ json: [AnyHashable: Any]) -> MPPromotionContainer? {
         let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: mparticle.logLevel)
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
         logger.customLogger = mparticle.customLogger
 
         guard let promotionDictionary = (json["PromotionAction"] as? [String: Any]) else {
@@ -264,7 +264,7 @@ import Foundation
 
         guard let userIdentities = json?["UserIdentities"] as? [[AnyHashable: Any]] else {
             let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: mparticle.logLevel)
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
             logger.customLogger = mparticle.customLogger
 
             logger.error("Unexpected user identity data received from webview")

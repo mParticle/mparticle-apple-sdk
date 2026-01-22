@@ -64,7 +64,7 @@ import Foundation
             return MPDateFormatter.string(fromDateRFC3339: dateAnnotation)
         }
         let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: mparticle.logLevel)
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
         logger.customLogger = mparticle.customLogger
 
         if let dictionaryAnnotation = annotation as? [String: Any?] {

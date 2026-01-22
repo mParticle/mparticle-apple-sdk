@@ -67,7 +67,7 @@
                         self.webView = WKWebView(frame: .zero)
                     }
                     let mparticle = MParticle.sharedInstance()
-                    let logger = MPLog(logLevel: mparticle.logLevel)
+                    let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
                     logger.customLogger = mparticle.customLogger
 
                     logger.verbose("Getting user agent")
@@ -110,7 +110,7 @@
         }
 
         let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: mparticle.logLevel)
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
         logger.customLogger = mparticle.customLogger
 
         if -initializedDate.timeIntervalSinceNow > maxWaitTime {

@@ -313,6 +313,20 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceBlueshift = 1144
 };
 
+/// Log Levels
+typedef NS_ENUM(NSUInteger, MPILogLevel) {
+    /** No log messages are displayed on the console  */
+    MPILogLevelNone = 0,
+    /** Only error log messages are displayed on the console */
+    MPILogLevelError,
+    /** Warning and error log messages are displayed on the console */
+    MPILogLevelWarning,
+    /** Debug, warning, and error log messages are displayed on the console */
+    MPILogLevelDebug,
+    /** Verbose, debug, warning, and error log messages are displayed on the console */
+    MPILogLevelVerbose
+};
+
 /// Message Types
 typedef NS_ENUM(NSUInteger, MPMessageType) {
     /** Message type unknown - RESERVED, DO NOT USE */

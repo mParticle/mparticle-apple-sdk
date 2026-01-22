@@ -2,7 +2,7 @@ import Foundation
 
 /// Log Levels
 @objc
-public enum MPILogLevel: UInt {
+public enum MPILogLevelSwift: UInt {
     /** No log messages are displayed on the console  */
     case none = 0
     /** Only error log messages are displayed on the console */
@@ -17,14 +17,18 @@ public enum MPILogLevel: UInt {
 
 @objcMembers
 public class MPLog: NSObject {
-    public var logLevel: MPILogLevel
+    public var logLevel: MPILogLevelSwift
     public var customLogger: ((String) -> Void)?
 
-    public init(logLevel: MPILogLevel) {
+    public init(logLevel: MPILogLevelSwift) {
         self.logLevel = logLevel
     }
+    
+    public static func from(rawValue: UInt) -> MPILogLevelSwift {
+        return MPILogLevelSwift(rawValue: rawValue)!
+    }
 
-    private func log(loggerLevel: MPILogLevel, format: String, arguments: any CVarArg...) {
+    private func log(loggerLevel: MPILogLevelSwift, format: String, arguments: any CVarArg...) {
         if logLevel.rawValue >= loggerLevel.rawValue && loggerLevel != .none {
             let msg = String.localizedStringWithFormat("mParticle -> \(format)", arguments)
             if let customLogger = customLogger {

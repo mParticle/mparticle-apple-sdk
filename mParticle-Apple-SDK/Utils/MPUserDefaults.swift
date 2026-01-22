@@ -228,7 +228,7 @@ public protocol MPUserDefaultsProtocol {
             }
         } catch {
             let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: mparticle.logLevel)
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
             logger.customLogger = mparticle.customLogger
 
             logger.error("Failed to unarchive configuration: \(error)")
@@ -260,7 +260,7 @@ public protocol MPUserDefaultsProtocol {
             setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
         } catch {
             let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: mparticle.logLevel)
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
             logger.customLogger = mparticle.customLogger
 
             logger.error("Failed to archive configuration: \(error)")
@@ -278,7 +278,7 @@ public protocol MPUserDefaultsProtocol {
         let configuration = mpObject(forKey: kMResponseConfigurationKey, userId: userID)
 
         let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: mparticle.logLevel)
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
         logger.customLogger = mparticle.customLogger
 
         if fileManager.fileExists(atPath: configurationURL.path) {
@@ -305,7 +305,7 @@ public protocol MPUserDefaultsProtocol {
         removeMPObject(forKey: Miscellaneous.kMPConfigParameters)
 
         let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: mparticle.logLevel)
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
         logger.customLogger = mparticle.customLogger
 
         logger.debug("Configuration Deleted")
@@ -389,7 +389,7 @@ public protocol MPUserDefaultsProtocol {
                 setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
             } catch {
                 let mparticle = MParticle.sharedInstance()
-                let logger = MPLog(logLevel: mparticle.logLevel)
+                let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
                 logger.customLogger = mparticle.customLogger
 
                 logger.error("Failed to archive upload settings: \(error)")
@@ -405,7 +405,7 @@ public protocol MPUserDefaultsProtocol {
                 return try NSKeyedUnarchiver.unarchivedObject(ofClass: MPUploadSettings.self, from: data)
             } catch {
                 let mparticle = MParticle.sharedInstance()
-                let logger = MPLog(logLevel: mparticle.logLevel)
+                let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
                 logger.customLogger = mparticle.customLogger
 
                 logger.error("Failed to unarchive upload settings: \(error)")

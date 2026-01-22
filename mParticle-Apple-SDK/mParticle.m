@@ -154,7 +154,7 @@ MPLog* logger;
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
-    logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
+    logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithLogger:logger appNotificationHandler:_appNotificationHandler];
     
     return self;
@@ -248,7 +248,7 @@ MPLog* logger;
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    logger.logLevel = logLevel;
+    logger.logLevel = [MPLog fromRawValue: logLevel];
     self.stateMachine.logLevel = logLevel;
 }
 

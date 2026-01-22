@@ -25,7 +25,7 @@ import Foundation
         let lowercaseStringToHash = stringToHash.lowercased()
         guard let dataToHash = lowercaseStringToHash.data(using: .utf8) else {
             let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: mparticle.logLevel)
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
             logger.customLogger = mparticle.customLogger
 
             logger.warning("Hash String Failed. Could not encode string as data")
@@ -43,7 +43,7 @@ import Foundation
     @objc public class func hashStringUTF16(_ stringToHash: String) -> String {
         guard let data = stringToHash.data(using: .utf16LittleEndian) else {
             let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: mparticle.logLevel)
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
             logger.customLogger = mparticle.customLogger
 
             logger.warning("Hash String UTF16 Failed. Could not encode string as data")
