@@ -34,7 +34,7 @@ public class SceneDelegateHandler: NSObject {
         self.appNotificationHandler.open(urlContext.url, options: options as [String: Any])
     }
     #endif
-    
+
     public func setLogLevel(_ logLevel: UInt) {
         self.logger.logLevel = MPLog.from(rawValue: logLevel)
     }

@@ -23,7 +23,7 @@ public class MPLog: NSObject {
     public init(logLevel: MPILogLevelSwift) {
         self.logLevel = logLevel
     }
-    
+
     public static func from(rawValue: UInt) -> MPILogLevelSwift {
         return MPILogLevelSwift(rawValue: rawValue)!
     }

@@ -11,7 +11,7 @@ let project = Project(
             deploymentTargets: .iOS("14.0"),
             sources: ["Sources/**"],
             dependencies: [
-                .xcframework(path: "temp_artifacts/mParticle_Apple_SDK.xcframework"),
+                .xcframework(path: "temp_artifacts/mParticle_Apple_SDK.xcframework")
             ]
         )
     ],

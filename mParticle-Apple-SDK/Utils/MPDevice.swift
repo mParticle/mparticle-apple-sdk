@@ -1,11 +1,4 @@
-//
-//  MPDevice.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 2/3/25.
-//
-
-import Foundation
+internal import mParticle_Apple_SDK_Swift
 import MachO
 import QuartzCore
 
@@ -271,7 +264,7 @@ public class MPDevice: NSObject, NSCopying {
 
                 if !jailbroken {
                     let mparticle = MParticle.sharedInstance()
-                    let logger = MPLog(logLevel: mparticle.logLevel)
+                    let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
                     logger.customLogger = mparticle.customLogger
 
                     // Valid test only if running as root on a jailbroken device
