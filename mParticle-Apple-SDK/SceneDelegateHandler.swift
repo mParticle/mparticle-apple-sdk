@@ -1,4 +1,4 @@
-import Foundation
+import mParticle_Apple_SDK_Swift
 
 @objc
 public protocol OpenURLHandlerProtocol {

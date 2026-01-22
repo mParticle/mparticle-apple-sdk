@@ -1,11 +1,4 @@
-//
-//  MPLaunchInfo.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 2/11/25.
-//
-
-import Foundation
+import mParticle_Apple_SDK_Swift
 
 @objc public class MPLaunchInfo: NSObject {
     private let annotationKey = UIApplication.OpenURLOptionsKey.annotation

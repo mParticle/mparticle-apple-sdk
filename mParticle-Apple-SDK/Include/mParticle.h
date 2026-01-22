@@ -26,7 +26,6 @@
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
 #import "MPRokt.h"
-#import <mParticle_Apple_SDK_Swift/mParticle_Apple_SDK_Swift-Swift.h>
 
 #if TARGET_OS_IOS == 1
     #import <WebKit/WebKit.h>

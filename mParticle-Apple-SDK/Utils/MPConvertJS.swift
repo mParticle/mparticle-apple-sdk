@@ -1,11 +1,4 @@
-//
-//  MPConvertJS.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 10/3/24.
-//
-
-import Foundation
+import mParticle_Apple_SDK_Swift
 
 @objc public enum MPJSCommerceEventAction: UInt, @unchecked Sendable {
     case unknown = 0

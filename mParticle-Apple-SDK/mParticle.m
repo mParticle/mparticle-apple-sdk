@@ -19,6 +19,7 @@
 #import "SettingsProvider.h"
 #import "Executor.h"
 #import "AppEnvironmentProvider.h"
+@import mParticle_Apple_SDK_Swift;
 
 static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
