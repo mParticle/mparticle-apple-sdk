@@ -1,6 +1,6 @@
 import XCTest
 import mParticle_Apple_SDK_NoLocation
-import mParticle_Apple_SDK_Swift
+internal import mParticle_Apple_SDK_Swift
 
 class MPEventTests: XCTestCase {
     var sut: MPEvent!

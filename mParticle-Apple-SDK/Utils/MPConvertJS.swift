@@ -1,4 +1,4 @@
-import mParticle_Apple_SDK_Swift
+internal import mParticle_Apple_SDK_Swift
 
 @objc public enum MPJSCommerceEventAction: UInt, @unchecked Sendable {
     case unknown = 0

@@ -1,4 +1,4 @@
-import mParticle_Apple_SDK_Swift
+internal import mParticle_Apple_SDK_Swift
 
 @objc public class MParticleWebView_PRIVATE: NSObject {
     @objc public var userAgent: String? { resolvedUserAgent ?? defaultUserAgent }

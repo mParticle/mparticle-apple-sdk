@@ -1,4 +1,4 @@
-import mParticle_Apple_SDK_Swift
+internal import mParticle_Apple_SDK_Swift
 
 @objc public class MPIHasher: NSObject {
     @objc public class func hashFNV1a(_ data: Data) -> Int64 {

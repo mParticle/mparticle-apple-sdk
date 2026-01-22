@@ -1,4 +1,4 @@
-import mParticle_Apple_SDK_Swift
+internal import mParticle_Apple_SDK_Swift
 
 @objc
 public protocol OpenURLHandlerProtocol {
@@ -13,8 +13,8 @@ public protocol OpenURLHandlerProtocol {
 public class SceneDelegateHandler: NSObject {
     private let logger: MPLog
     private let appNotificationHandler: OpenURLHandlerProtocol
-    public init(logger: MPLog, appNotificationHandler: OpenURLHandlerProtocol) {
-        self.logger = logger
+    public init(appNotificationHandler: OpenURLHandlerProtocol) {
+        self.logger = MPLog(logLevel: .verbose)
         self.appNotificationHandler = appNotificationHandler
     }
     #if os(iOS)
@@ -34,6 +34,10 @@ public class SceneDelegateHandler: NSObject {
         self.appNotificationHandler.open(urlContext.url, options: options as [String: Any])
     }
     #endif
+    
+    public func setLogLevel(_ logLevel: UInt) {
+        self.logger.logLevel = MPLog.from(rawValue: logLevel)
+    }
 
     public func handleUserActivity(_ userActivity: NSUserActivity) {
         logger.debug("User Activity Received")
