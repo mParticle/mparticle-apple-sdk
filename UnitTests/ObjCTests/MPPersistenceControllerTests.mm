@@ -87,8 +87,8 @@
                                                                          messageInfo:messageInfo];
     
     [persistence saveMessage:[messageBuilder build]];
-    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@1,@28,@28]];
-    [migrationController migrateDatabaseFromVersion:@28];
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    [migrationController migrateDatabaseFromVersion:@30];
 }
 
 - (void)testMigrateUploadsWithNullSessions {
@@ -105,8 +105,8 @@
     __block BOOL tested = NO;
     [uploadBuilder build:^(MPUpload * _Nullable upload) {
         [persistence saveUpload:upload];
-        MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@1,@28,@28]];
-        [migrationController migrateDatabaseFromVersion:@28];
+        MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+        [migrationController migrateDatabaseFromVersion:@30];
         tested = YES;
     }];
     XCTAssertTrue(tested);
@@ -124,8 +124,8 @@
                                                                          messageInfo:messageInfo];
     
     [persistence saveMessage:[messageBuilder build]];
-    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@1,@28,@29]];
-    [migrationController migrateDatabaseFromVersion:@29 deleteDbFile:NO];
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    [migrationController migrateDatabaseFromVersion:@30 deleteDbFile:NO];
     [persistence openDatabase];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -153,8 +153,8 @@
     __block BOOL tested = NO;
     [uploadBuilder build:^(MPUpload * _Nullable upload) {
         [persistence saveUpload:upload];
-        MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@1,@28,@28]];
-        [migrationController migrateDatabaseFromVersion:@28 deleteDbFile:NO];
+        MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+        [migrationController migrateDatabaseFromVersion:@30 deleteDbFile:NO];
         tested = YES;
     }];
     XCTAssertTrue(tested);
@@ -976,6 +976,239 @@
     XCTAssertEqual([instance.persistenceController fetchMessagesForUploading].count, 0);
     XCTAssertEqual([instance.persistenceController fetchSessions].count, 0);
     XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);
+}
+
+#pragma mark - Database Migration Tests
+
+- (void)testNeedsMigration_NoOldDatabaseExists {
+    // Ensure no v30 database exists
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
+    
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    NSNumber *needsMigration = [migrationController needsMigration];
+    
+    XCTAssertNil(needsMigration, @"needsMigration should return nil when no old database exists");
+}
+
+- (void)testNeedsMigration_OldDatabaseExists {
+    // Create a v30 database file
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    
+    // Create an empty file to simulate old database
+    [[NSFileManager defaultManager] createFileAtPath:oldDbPath contents:nil attributes:nil];
+    
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    NSNumber *needsMigration = [migrationController needsMigration];
+    
+    XCTAssertNotNil(needsMigration, @"needsMigration should return a version when old database exists");
+    XCTAssertEqualObjects(needsMigration, @30, @"needsMigration should return 30 for v30 database");
+    
+    // Cleanup
+    [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
+}
+
+- (void)testMigrationDeletesOldDatabase {
+    // Setup: Create a v30 database with the correct schema
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    NSString *newDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    
+    // Cleanup any existing databases
+    [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
+    [[NSFileManager defaultManager] removeItemAtPath:newDbPath error:nil];
+    
+    // Create v30 database with proper schema
+    sqlite3 *oldDb;
+    if (sqlite3_open_v2([oldDbPath UTF8String], &oldDb, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL) == SQLITE_OK) {
+        // Create minimal tables needed for migration
+        const char *createSessions = "CREATE TABLE IF NOT EXISTS sessions (uuid TEXT, start_time REAL, end_time REAL, attributes_data BLOB, session_number INTEGER, background_time REAL, number_interruptions INTEGER, event_count INTEGER, suspend_time REAL, length REAL, mpid INTEGER, session_user_ids TEXT, app_info BLOB, device_info BLOB, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+        const char *createMessages = "CREATE TABLE IF NOT EXISTS messages (message_type TEXT, session_id INTEGER, uuid TEXT, timestamp REAL, message_data TEXT, upload_status INTEGER, data_plan_id TEXT, data_plan_version INTEGER, mpid INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+        const char *createUploads = "CREATE TABLE IF NOT EXISTS uploads (uuid TEXT, message_data TEXT, timestamp REAL, session_id INTEGER, upload_type INTEGER, data_plan_id TEXT, data_plan_version INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+        const char *createForwarding = "CREATE TABLE IF NOT EXISTS forwarding_records (_id INTEGER PRIMARY KEY, forwarding_data BLOB, mpid INTEGER)";
+        const char *createConsumerInfo = "CREATE TABLE IF NOT EXISTS consumer_info (_id INTEGER PRIMARY KEY, mpid INTEGER, unique_identifier TEXT)";
+        const char *createCookies = "CREATE TABLE IF NOT EXISTS cookies (_id INTEGER PRIMARY KEY, consumer_info_id INTEGER, content TEXT, domain TEXT, expiration TEXT, name TEXT, mpid INTEGER)";
+        const char *createIntegration = "CREATE TABLE IF NOT EXISTS integration_attributes (_id INTEGER PRIMARY KEY, kit_code INTEGER, attributes_data BLOB)";
+        
+        sqlite3_exec(oldDb, createSessions, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createMessages, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createUploads, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createForwarding, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createConsumerInfo, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createCookies, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createIntegration, NULL, NULL, NULL);
+        sqlite3_close(oldDb);
+    }
+    
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:oldDbPath], @"Old database should exist before migration");
+    
+    // Run migration with deleteDbFile:YES (default)
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    [migrationController migrateDatabaseFromVersion:@30 deleteDbFile:YES];
+    
+    XCTAssertFalse([[NSFileManager defaultManager] fileExistsAtPath:oldDbPath], @"Old database should be deleted after migration");
+    
+    // Cleanup
+    [[NSFileManager defaultManager] removeItemAtPath:newDbPath error:nil];
+}
+
+- (void)testMigrationPreservesOldDatabaseWhenRequested {
+    // Setup: Create a v30 database with the correct schema
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    NSString *newDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    
+    // Cleanup any existing databases
+    [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
+    [[NSFileManager defaultManager] removeItemAtPath:newDbPath error:nil];
+    
+    // Create v30 database with proper schema
+    sqlite3 *oldDb;
+    if (sqlite3_open_v2([oldDbPath UTF8String], &oldDb, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL) == SQLITE_OK) {
+        const char *createSessions = "CREATE TABLE IF NOT EXISTS sessions (uuid TEXT, start_time REAL, end_time REAL, attributes_data BLOB, session_number INTEGER, background_time REAL, number_interruptions INTEGER, event_count INTEGER, suspend_time REAL, length REAL, mpid INTEGER, session_user_ids TEXT, app_info BLOB, device_info BLOB, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+        const char *createMessages = "CREATE TABLE IF NOT EXISTS messages (message_type TEXT, session_id INTEGER, uuid TEXT, timestamp REAL, message_data TEXT, upload_status INTEGER, data_plan_id TEXT, data_plan_version INTEGER, mpid INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+        const char *createUploads = "CREATE TABLE IF NOT EXISTS uploads (uuid TEXT, message_data TEXT, timestamp REAL, session_id INTEGER, upload_type INTEGER, data_plan_id TEXT, data_plan_version INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+        const char *createForwarding = "CREATE TABLE IF NOT EXISTS forwarding_records (_id INTEGER PRIMARY KEY, forwarding_data BLOB, mpid INTEGER)";
+        const char *createConsumerInfo = "CREATE TABLE IF NOT EXISTS consumer_info (_id INTEGER PRIMARY KEY, mpid INTEGER, unique_identifier TEXT)";
+        const char *createCookies = "CREATE TABLE IF NOT EXISTS cookies (_id INTEGER PRIMARY KEY, consumer_info_id INTEGER, content TEXT, domain TEXT, expiration TEXT, name TEXT, mpid INTEGER)";
+        const char *createIntegration = "CREATE TABLE IF NOT EXISTS integration_attributes (_id INTEGER PRIMARY KEY, kit_code INTEGER, attributes_data BLOB)";
+        
+        sqlite3_exec(oldDb, createSessions, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createMessages, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createUploads, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createForwarding, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createConsumerInfo, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createCookies, NULL, NULL, NULL);
+        sqlite3_exec(oldDb, createIntegration, NULL, NULL, NULL);
+        sqlite3_close(oldDb);
+    }
+    
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:oldDbPath], @"Old database should exist before migration");
+    
+    // Run migration with deleteDbFile:NO
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    [migrationController migrateDatabaseFromVersion:@30 deleteDbFile:NO];
+    
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:oldDbPath], @"Old database should be preserved when deleteDbFile:NO");
+    
+    // Cleanup
+    [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
+    [[NSFileManager defaultManager] removeItemAtPath:newDbPath error:nil];
+}
+
+- (void)testMigrationPreservesSessionData {
+    // This test verifies that session data is preserved when migrating via the persistence controller
+    // Use the existing pattern from testMigrateMessagesWithSessions
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    NSString *testUUID = [[NSUUID UUID] UUIDString];
+    NSTimeInterval testStartTime = [[NSDate date] timeIntervalSince1970];
+    int64_t testMpid = 12345;
+    
+    // Create and save a session
+    MPSession *session = [[MPSession alloc] initWithStartTime:testStartTime userId:@(testMpid)];
+    session.uuid = testUUID;
+    [persistence saveSession:session];
+    
+    // Verify session was saved
+    NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
+    XCTAssertEqual(sessions.count, 1, @"Should have one session before migration");
+    
+    MPSession *savedSession = sessions.firstObject;
+    XCTAssertEqualObjects(savedSession.uuid, testUUID, @"Session UUID should match");
+    XCTAssertEqual(savedSession.userId.longLongValue, testMpid, @"MPID should match");
+    
+    // Run migration (this tests that migration preserves existing data)
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    [migrationController migrateDatabaseFromVersion:@30 deleteDbFile:NO];
+    [persistence openDatabase];
+    
+    // Verify session still exists after migration
+    sessions = [persistence fetchSessions];
+    XCTAssertGreaterThanOrEqual(sessions.count, 1, @"Should have at least one session after migration");
+    
+    // Cleanup
+    [persistence deleteSession:session];
+}
+
+- (void)testMigrationVersionArrayWithSingleVersion {
+    // Test edge case: databaseVersions with only the current version (no migration needed)
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@31]];
+    NSNumber *needsMigration = [migrationController needsMigration];
+    
+    XCTAssertNil(needsMigration, @"needsMigration should return nil when no old versions in array");
+}
+
+- (void)testMigrationDeletesStaleRecordsButPreservesRecentRecords {
+    // This test verifies that deleteRecordsOlderThan correctly removes stale records
+    // while preserving recent records during migration cleanup
+    
+    MParticle *instance = [MParticle sharedInstance];
+    MPPersistenceController_PRIVATE *persistence = instance.persistenceController;
+    
+    // Timestamps for test data
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    NSTimeInterval twoDaysAgo = now - (2 * 24 * 60 * 60);      // Recent - should be preserved
+    NSTimeInterval tenDaysAgo = now - (10 * 24 * 60 * 60);     // Stale - should be deleted
+    NSTimeInterval sevenDaysAgo = now - (7 * 24 * 60 * 60);    // Threshold for deletion
+    
+    // Create and save a RECENT message (2 days old - should be preserved)
+    NSDictionary *recentMessageDict = @{@"test": @"recent"};
+    NSData *recentMessageData = [NSJSONSerialization dataWithJSONObject:recentMessageDict options:0 error:nil];
+    MPMessage *recentMessage = [[MPMessage alloc] initWithSessionId:@17 messageId:1 UUID:@"recent-uuid" messageType:@"e" messageData:recentMessageData timestamp:twoDaysAgo uploadStatus:MPUploadStatusBatch userId:@1 dataPlanId:nil dataPlanVersion:nil];
+    [persistence saveMessage:recentMessage];
+    
+    // Create and save a STALE message (10 days old - should be deleted)
+    NSDictionary *staleMessageDict = @{@"test": @"stale"};
+    NSData *staleMessageData = [NSJSONSerialization dataWithJSONObject:staleMessageDict options:0 error:nil];
+    MPMessage *staleMessage = [[MPMessage alloc] initWithSessionId:@18 messageId:2 UUID:@"stale-uuid" messageType:@"e" messageData:staleMessageData timestamp:tenDaysAgo uploadStatus:MPUploadStatusBatch userId:@1 dataPlanId:nil dataPlanVersion:nil];
+    [persistence saveMessage:staleMessage];
+    
+    // Create and save a RECENT session (2 days old - should be preserved)
+    MPSession *recentSession = [[MPSession alloc] initWithStartTime:twoDaysAgo userId:[MPPersistenceController_PRIVATE mpId]];
+    recentSession.endTime = twoDaysAgo + 100;
+    [persistence saveSession:recentSession];
+    
+    // Create and save a STALE session (10 days old - should be deleted)
+    MPSession *staleSession = [[MPSession alloc] initWithStartTime:tenDaysAgo userId:[MPPersistenceController_PRIVATE mpId]];
+    staleSession.endTime = tenDaysAgo + 100;
+    [persistence saveSession:staleSession];
+    
+    // Verify we have 2 sessions before cleanup
+    NSMutableArray<MPSession *> *sessionsBefore = [persistence fetchSessions];
+    XCTAssertEqual(sessionsBefore.count, 2, @"Should have 2 sessions before cleanup");
+    
+    // Run deleteRecordsOlderThan (this is what migration calls internally)
+    [persistence deleteRecordsOlderThan:sevenDaysAgo];
+    
+    // Verify only recent records remain
+    NSDictionary *messagesDict = [persistence fetchMessagesForUploading];
+    NSMutableArray<MPSession *> *sessionsAfter = [persistence fetchSessions];
+    
+    // Check sessions - should only have the recent one
+    XCTAssertEqual(sessionsAfter.count, 1, @"Should have only 1 session after cleanup (recent one)");
+    if (sessionsAfter.count > 0) {
+        MPSession *remainingSession = sessionsAfter.firstObject;
+        XCTAssertEqualWithAccuracy(remainingSession.startTime, twoDaysAgo, 1.0, @"Remaining session should be the recent one");
+    }
+    
+    // Check messages - count total messages across all users/sessions
+    __block NSInteger totalMessages = 0;
+    [messagesDict enumerateKeysAndObjectsUsingBlock:^(id key, NSDictionary *sessionDict, BOOL *stop) {
+        [sessionDict enumerateKeysAndObjectsUsingBlock:^(id sessionKey, NSDictionary *dataPlanDict, BOOL *stop2) {
+            [dataPlanDict enumerateKeysAndObjectsUsingBlock:^(id planKey, NSDictionary *versionDict, BOOL *stop3) {
+                [versionDict enumerateKeysAndObjectsUsingBlock:^(id versionKey, NSArray *messages, BOOL *stop4) {
+                    totalMessages += messages.count;
+                }];
+            }];
+        }];
+    }];
+    XCTAssertEqual(totalMessages, 1, @"Should have only 1 message after cleanup (recent one)");
+    
+    // Cleanup
+    [persistence deleteSession:recentSession];
 }
 
 @end
