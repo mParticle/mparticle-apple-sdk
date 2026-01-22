@@ -12,7 +12,6 @@ let project = Project(
             sources: ["Sources/**"],
             dependencies: [
                 .xcframework(path: "temp_artifacts/mParticle_Apple_SDK.xcframework"),
-                .xcframework(path: "temp_artifacts/mParticle_Apple_SDK_Swift.xcframework")
             ]
         )
     ],
