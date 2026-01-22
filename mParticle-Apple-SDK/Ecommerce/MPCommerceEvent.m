@@ -13,7 +13,6 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "mParticle.h"
 #import "MPILogger.h"
-#import <vector>
 
 // Internal keys
 NSString *const kMPCECheckoutOptions = @"co";
@@ -570,7 +569,7 @@ static NSArray *actionNames;
 }
 
 - (NSArray<MPCommerceEventInstruction *> *)expandedInstructions {
-    __block std::vector<MPCommerceEventInstruction *> expansionInstructions;
+    NSMutableArray<MPCommerceEventInstruction *> *expansionInstructions = [NSMutableArray array];
     NSString *eventName;
     __block MPEvent *event;
     __block NSMutableDictionary *eventInfo;
@@ -613,7 +612,7 @@ static NSArray *actionNames;
                     }
 
                     commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:instruction event:event product:product];
-                    expansionInstructions.push_back(commerceEventInstruction);
+                    [expansionInstructions addObject:commerceEventInstruction];
                 }
             }
 
@@ -657,7 +656,7 @@ static NSArray *actionNames;
                 }
 
                 commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
-                expansionInstructions.push_back(commerceEventInstruction);
+                [expansionInstructions addObject:commerceEventInstruction];
             }
         }
             break;
@@ -682,7 +681,7 @@ static NSArray *actionNames;
             }
 
             commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
-            expansionInstructions.push_back(commerceEventInstruction);
+            [expansionInstructions addObject:commerceEventInstruction];
         }
             break;
             
@@ -712,7 +711,7 @@ static NSArray *actionNames;
                             }
 
                             commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
-                            expansionInstructions.push_back(commerceEventInstruction);
+                            [expansionInstructions addObject:commerceEventInstruction];
                         }
                     }
                 }];
@@ -725,8 +724,7 @@ static NSArray *actionNames;
             break;
     }
     
-    NSArray<MPCommerceEventInstruction *> *expInstructions = [NSArray arrayWithObjects:&expansionInstructions[0] count:expansionInstructions.size()];
-    return expInstructions;
+    return expansionInstructions;
 }
 
 - (NSArray<MPProduct *> *const)addedProducts {
