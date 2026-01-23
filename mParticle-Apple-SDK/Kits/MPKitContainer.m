@@ -2298,7 +2298,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                         return;
                     }
                     execStatus = [kitRegister.wrapperInstance logEvent:((MPEvent *)kitFilter.forwardEvent)];
-                } else if (selector == @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:)) {
+                } else if (selector == @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:)) {
                     if (kitFilter.shouldFilter) {
                         return;
                     }
@@ -2308,7 +2308,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                                                                          attributes:parameters[1]
                                                                       embeddedViews:parameters[2]
                                                                              config:parameters[3]
-                                                                          callbacks:parameters[4]
+                                                                            onEvent:parameters[4]
                                                                        filteredUser:filteredUser];
                 } else if (selector == @selector(logScreen:)) {
                     if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
