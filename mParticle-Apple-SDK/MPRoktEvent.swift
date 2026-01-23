@@ -8,6 +8,7 @@
 //
 
 import Foundation
+import UIKit
 
 @objc public class MPRoktEvent: NSObject {
     @objc public class MPRoktInitComplete: MPRoktEvent {
@@ -153,6 +154,24 @@ import Foundation
             self.quantity = quantity
             self.totalPrice = totalPrice
             self.unitPrice = unitPrice
+            super.init()
+        }
+    }
+
+    /// An event that is emitted when the height of an embedded placement changes.
+    /// This event is useful for dynamically adjusting the container view's height
+    /// to accommodate the Rokt placement content.
+    ///
+    /// - Note: This event is only emitted for embedded placements
+    @objc public class MPRoktEmbeddedSizeChanged: MPRoktEvent {
+        /// The identifier of the placement whose height has changed
+        @objc public let placementId: String
+        /// The new height of the placement
+        @objc public let updatedHeight: CGFloat
+
+        @objc public init(placementId: String, updatedHeight: CGFloat) {
+            self.placementId = placementId
+            self.updatedHeight = updatedHeight
             super.init()
         }
     }
