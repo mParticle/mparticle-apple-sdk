@@ -25,7 +25,7 @@ public class MPLog: NSObject {
     }
 
     public static func from(rawValue: UInt) -> MPILogLevelSwift {
-        return MPILogLevelSwift(rawValue: rawValue)!
+        return MPILogLevelSwift(rawValue: rawValue) ?? .none
     }
 
     private func log(loggerLevel: MPILogLevelSwift, format: String, arguments: any CVarArg...) {
