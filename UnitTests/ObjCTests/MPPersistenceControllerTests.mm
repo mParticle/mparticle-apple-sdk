@@ -46,6 +46,13 @@
 - (void)setUp {
     [super setUp];
     
+    // Ensure documents directory exists (may not exist on tvOS simulators)
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    [[NSFileManager defaultManager] createDirectoryAtPath:documentsDirectory
+                              withIntermediateDirectories:YES
+                                               attributes:nil
+                                                    error:nil];
+    
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
     MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     stateMachine.apiKey = @"test_key";
@@ -997,8 +1004,11 @@
     NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
     NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
     
-    // Create an empty file to simulate old database
-    [[NSFileManager defaultManager] createFileAtPath:oldDbPath contents:nil attributes:nil];
+    // Create a file with content to simulate old database
+    NSData *dummyData = [@"test" dataUsingEncoding:NSUTF8StringEncoding];
+    BOOL created = [[NSFileManager defaultManager] createFileAtPath:oldDbPath contents:dummyData attributes:nil];
+    XCTAssertTrue(created, @"Failed to create test database file at %@", oldDbPath);
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:oldDbPath], @"Test database file should exist after creation");
     
     MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
     NSNumber *needsMigration = [migrationController needsMigration];
