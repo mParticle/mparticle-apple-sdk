@@ -25,6 +25,8 @@
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
 

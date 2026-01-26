@@ -14,6 +14,8 @@
 #import "MParticleSwift.h"
 #import "MPIConstants.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 @interface MParticle ()
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;

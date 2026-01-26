@@ -1,7 +1,7 @@
 #import <XCTest/XCTest.h>
-#import "MPBaseTestCase.h"
 #import "zlib.h"
-#import "MParticleSwift.h"
+
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPZipTestHelper : NSObject
 
@@ -68,7 +68,7 @@
 
 @end
 
-@interface MPZipTests : MPBaseTestCase
+@interface MPZipTests : XCTestCase
 
 @end
 
