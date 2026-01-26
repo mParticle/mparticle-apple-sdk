@@ -6,6 +6,7 @@
 //
 
 import Foundation
+internal import mParticle_Apple_SDK_Swift
 
 @objc public class MPSideloadedKit: NSObject {
     @objc public var kitInstance: MPKitProtocol
@@ -32,7 +33,12 @@ import Foundation
     private var consentRegulationFilters: [String: Any] = [:]
     private var consentPurposeFilters: [String: Any] = [:]
 
-    private let hasher = MPIHasher()
+    private lazy var hasher: MPIHasher = {
+        let mparticle = MParticle.sharedInstance()
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+        logger.customLogger = mparticle.customLogger
+        return MPIHasher(logger: logger)
+    }()
 
     @objc public init(kitInstance: MPKitProtocol) {
         self.kitInstance = kitInstance

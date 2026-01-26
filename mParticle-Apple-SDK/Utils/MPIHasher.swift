@@ -1,6 +1,12 @@
 internal import mParticle_Apple_SDK_Swift
 
 @objc public class MPIHasher: NSObject {
+    private let logger: MPLog
+    
+    @objc init(logger: MPLog) {
+        self.logger = logger
+    }
+    
     @objc public func hashFNV1a(_ data: Data) -> Int64 {
         var rampHash: UInt64 = 0xCBF2_9CE4_8422_2325
 
@@ -17,10 +23,6 @@ internal import mParticle_Apple_SDK_Swift
 
         let lowercaseStringToHash = stringToHash.lowercased()
         guard let dataToHash = lowercaseStringToHash.data(using: .utf8) else {
-            let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-            logger.customLogger = mparticle.customLogger
-
             logger.warning("Hash String Failed. Could not encode string as data")
             return ""
         }
@@ -35,10 +37,6 @@ internal import mParticle_Apple_SDK_Swift
 
     @objc public func hashStringUTF16(_ stringToHash: String) -> String {
         guard let data = stringToHash.data(using: .utf16LittleEndian) else {
-            let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-            logger.customLogger = mparticle.customLogger
-
             logger.warning("Hash String UTF16 Failed. Could not encode string as data")
             return ""
         }

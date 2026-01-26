@@ -1515,7 +1515,10 @@ static BOOL skipNextUpload = NO;
         NSString *eventType = messageDictionary[kMPEventTypeKey];
         
         if (!error && eventName && eventType) {
-            MPIHasher* hasher = [[MPIHasher alloc] init];
+            MParticle* mparticle = MParticle.sharedInstance;
+            MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+            logger.customLogger = mparticle.customLogger;
+            MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
             NSString *hashedEvent = [hasher hashTriggerEventName:eventName eventType:eventType];
             shouldUpload = [stateMachine.triggerEventTypes containsObject:hashedEvent];
         }

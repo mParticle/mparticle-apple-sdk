@@ -3,6 +3,7 @@
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
 #import "MPIConstants.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface HasherTests : MPBaseTestCase
 
@@ -10,8 +11,17 @@
 
 @implementation HasherTests
 
+MPIHasher* hasher;
+
+- (void)setUp {
+    [super setUp];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    hasher = [[MPIHasher alloc] initWithLogger:logger];
+}
+
 - (void)testHashingString {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
     NSString *hashedString = [hasher hashString:referenceString];
     XCTAssertEqualObjects(hashedString, @"-142870245", @"Hasher is not hashing strings properly.");
@@ -24,13 +34,11 @@
 - (void)testHashingPerformance {
     [self measureBlock:^{
         NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
-        MPIHasher* hasher = [[MPIHasher alloc] init];
         (void)[hasher hashString:referenceString];
     }];
 }
 
 - (NSArray<NSString*> *)hashedEventTypes:(NSArray<NSNumber*> *)eventTypes {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSMutableArray *hashedTypes = [NSMutableArray arrayWithCapacity:eventTypes.count];
     if (eventTypes.count == 0) {
         return hashedTypes;
@@ -97,7 +105,6 @@
 }
 
 - (void)testRampHash {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *rampString = @"E1492888-3B7C-4FB2-98A5-6C483BF9EBEB";
     NSData *rampData = [rampString dataUsingEncoding:NSUTF8StringEncoding];
     int64_t rampHash = [hasher hashFNV1a:rampData];
@@ -106,7 +113,6 @@
 }
 
 - (void)testNegativeSessionIDHash {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *sessionUUID = @"76F1ABB9-7A9A-4D4E-AB4D-56C8FF79CAD1";
     int64_t sessionID = [hasher hashStringUTF16:sessionUUID].integerValue;
     
@@ -114,7 +120,6 @@
 }
 
 - (void)testPositiveSessionIDHash {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *sessionUUID = @"222F6BEA-F6A8-4DFC-A950-744EFD6FEC3D";
     int64_t sessionID = [hasher hashStringUTF16:sessionUUID].integerValue;
     
@@ -122,7 +127,6 @@
 }
 
 - (void)testOverflowSessionIDHash {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *sessionUUID = @"B469F3A1-79B6-4E83-823A-53CFC41C3880";
     int64_t sessionID = [hasher hashStringUTF16:sessionUUID].integerValue;
     
@@ -130,7 +134,6 @@
 }
 
 - (void)testEventTypeHash {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashString = @"49";
     MPEventType eventType = [hasher eventTypeForHash:hashString];
     XCTAssertEqual(eventType, MPEventTypeNavigation, @"Should have been equal.");
@@ -221,7 +224,6 @@
 }
 
 - (void)testHashEventType {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashTestString = [hasher hashEventType:MPEventTypeNavigation];
 
     XCTAssertEqualObjects(hashTestString, @"49", @"Should have been equal.");
@@ -291,7 +293,6 @@
 }
 
 - (void)testHashEventName {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashTestString = [hasher hashEventType:MPEventTypeNavigation eventName:@"test" isLogScreen:false];
     XCTAssertEqualObjects(hashTestString, @"48809027", @"Should have been equal.");
     
@@ -306,7 +307,6 @@
 }
 
 - (void)testHashEventAttributeKey {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashTestString = [hasher hashEventAttributeKey:MPEventTypeNavigation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:false];
     XCTAssertEqualObjects(hashTestString, @"-1449619668", @"Should have been equal.");
     
@@ -321,7 +321,6 @@
 }
 
 - (void)testHashUserAttributeKeyAndValue {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashTestString = [hasher hashUserAttributeKey:@"key1"];
     XCTAssertEqualObjects(hashTestString, @"3288498", @"Should have been equal.");
     
@@ -336,7 +335,6 @@
 }
 
 - (void)testHashUserIdentity {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashTestString = [hasher hashUserIdentity:MPUserIdentityOther];
     XCTAssertEqualObjects(hashTestString, @"0", @"Should have been equal.");
     
@@ -345,7 +343,6 @@
 }
 
 - (void)testHashConsentPurpose {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashTestString = [hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
     XCTAssertEqualObjects(hashTestString, @"-575335347", @"Should have been equal.");
     
@@ -357,7 +354,6 @@
 }
 
 - (void)testHashCommerceEventAttribute {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashTestString = [hasher hashCommerceEventAttribute:MPEventTypePurchase key:@"price"];
     XCTAssertEqualObjects(hashTestString, @"-2104051132", @"Should have been equal.");
     
@@ -366,13 +362,11 @@
 }
 
 - (void)testHashTriggerEvent {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     NSString *hashedEvent = [hasher hashTriggerEventName:@"Loaded screen" eventType:@"Navigation"];
     XCTAssertEqualObjects(hashedEvent, @"431828539", @"Should have been equal.");
 }
 
 - (void)testHashDifferences {
-    MPIHasher* hasher = [[MPIHasher alloc] init];
     // Creates a product object
     MPProduct *product = [[MPProduct alloc] initWithName:@"Awesome Book" sku:@"1234567890" quantity:@1 price:@9.99];
     product.brand = @"A Publisher";

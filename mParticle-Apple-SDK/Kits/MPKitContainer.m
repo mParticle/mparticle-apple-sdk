@@ -98,7 +98,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         kitsSemaphore = dispatch_semaphore_create(1);
         brackets = [[NSMutableDictionary alloc] init];
         sideloadedKitCodeNextValue = sideloadedKitCodeStartValue;
-        _hasher = [[MPIHasher alloc] init];
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        _hasher = [[MPIHasher alloc] initWithLogger:logger];
         _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
             if (attributionResult && attributionResult.kitCode) {
                 linkInfo[attributionResult.kitCode] = attributionResult;
@@ -1647,9 +1650,12 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         __block NSMutableDictionary<NSString *, NSNumber *> *keyHashMap = [NSMutableDictionary dictionary];
         __block NSMutableDictionary<NSNumber *, NSString *> *hashKeyMap = [NSMutableDictionary dictionary];
         NSString *key;
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
         NSEnumerator *keyEnumerator = [eventInfo keyEnumerator];
         while ((key = [keyEnumerator nextObject])) {
-            MPIHasher* hasher = [[MPIHasher alloc] init];
             NSNumber *hashNumber = @([[hasher hashEventAttributeKey:event.type eventName:event.name customAttributeName:key isLogScreen:(messageType == MPMessageTypeScreenView)] intValue]);
             keyHashMap[key] = hashNumber;
             hashKeyMap[hashNumber] = key;
@@ -1817,7 +1823,10 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                     
                 case MPProjectionMatchTypeHash: {
                     if (eventNameHash == 0) {
-                        MPIHasher* hasher = [[MPIHasher alloc] init];
+                        MParticle* mparticle = MParticle.sharedInstance;
+                        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+                        logger.customLogger = mparticle.customLogger;
+                        MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
                         eventNameHash = [[hasher hashEventType:event.type eventName:event.name isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
                     }
                     
