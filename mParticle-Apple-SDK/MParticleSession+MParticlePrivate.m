@@ -15,7 +15,8 @@
 
 - (NSNumber *)sessionIDFromUUID:(NSString *)uuid {
     NSNumber *sessionID = nil;
-    sessionID = @([MPIHasher hashStringUTF16:uuid].integerValue);
+    MPIHasher* hasher = [[MPIHasher alloc] init];
+    sessionID = @([hasher hashStringUTF16:uuid].integerValue);
     return sessionID;
 }
 

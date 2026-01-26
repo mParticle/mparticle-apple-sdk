@@ -160,9 +160,9 @@
                                 };
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     [userDefaults setMPObject:userAttributes forKey:kMPUserAttributeKey userId:currentUser.userId];
-    
-    NSString *goodHashedKey = [MPIHasher hashString:@"good data"];
-    NSString *badHashedKey = [MPIHasher hashString:@"bad data"];
+    MPIHasher* hasher = [[MPIHasher alloc] init];
+    NSString *goodHashedKey = [hasher hashString:@"good data"];
+    NSString *badHashedKey = [hasher hashString:@"bad data"];
     NSArray *configurations = @[
                                 @{
                                     @"id":@(42),
@@ -204,9 +204,9 @@
                                      @"bad data":@"12345"
                                      };
     [currentUser setUserAttributes:userAttributes];
-    
-    NSString *goodHashedKey = [MPIHasher hashString:@"good data"];
-    NSString *badHashedKey = [MPIHasher hashString:@"bad data"];
+    MPIHasher* hasher = [[MPIHasher alloc] init];
+    NSString *goodHashedKey = [hasher hashString:@"good data"];
+    NSString *badHashedKey = [hasher hashString:@"bad data"];
     NSArray *configurations = @[
                                 @{
                                     @"id":@(42),

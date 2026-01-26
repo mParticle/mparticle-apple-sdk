@@ -105,7 +105,8 @@
     __block NSString *auxString;
     
     auxString = matchDictionary[@"event"];
-    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? [MPIHasher eventTypeForHash:auxString] : MPEventTypeOther;
+    MPIHasher* hasher = [[MPIHasher alloc] init];
+    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? [hasher eventTypeForHash:auxString] : MPEventTypeOther;
     
     _messageType = !MPIsNull(matchDictionary[@"message_type"]) ? (MPMessageType)[matchDictionary[@"message_type"] integerValue] : MPMessageTypeEvent;
     

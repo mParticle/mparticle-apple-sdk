@@ -28,7 +28,8 @@
     }
     NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:options error:nil];
     NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
-    _configurationHash = @([[MPIHasher hashString:ekConfigString] intValue]);
+    MPIHasher* hasher = [[MPIHasher alloc] init];
+    _configurationHash = @([[hasher hashString:ekConfigString] intValue]);
     
     // Attribute value filtering
     NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];
