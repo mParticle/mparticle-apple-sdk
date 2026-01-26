@@ -683,9 +683,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         NSData *updatedData = [NSJSONSerialization dataWithJSONObject:[uploadDict copy] options:0 error:nil];
         uploadString = [[NSString alloc] initWithData:updatedData encoding:NSUTF8StringEncoding];
 
-        zipUploadData = [MPZip_PRIVATE compressedDataFromData:updatedData];
+        zipUploadData = [MPZipPRIVATE compressedDataFromData:updatedData];
     } else {
-        zipUploadData = [MPZip_PRIVATE compressedDataFromData:upload.uploadData];
+        zipUploadData = [MPZipPRIVATE compressedDataFromData:upload.uploadData];
     }
     
     if (zipUploadData == nil || zipUploadData.length <= 0) {

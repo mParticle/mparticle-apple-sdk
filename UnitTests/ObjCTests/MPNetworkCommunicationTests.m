@@ -335,7 +335,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     OCMStub([mockZip compressedDataFromData:OCMOCK_ANY]).andReturn(nil);
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     [networkCommunication upload:uploads completionHandler:^{
@@ -350,7 +350,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"not_determined"]);
@@ -367,7 +367,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"restricted"]);
@@ -384,7 +384,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"denied"]);
@@ -401,7 +401,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"authorized"]);
