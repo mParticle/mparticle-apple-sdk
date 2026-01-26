@@ -1,5 +1,6 @@
 #import "MParticleSwift.h"
 #import "MParticleSession+MParticlePrivate.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MParticleSession
 
@@ -15,7 +16,10 @@
 
 - (NSNumber *)sessionIDFromUUID:(NSString *)uuid {
     NSNumber *sessionID = nil;
-    MPIHasher* hasher = [[MPIHasher alloc] init];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
     sessionID = @([hasher hashStringUTF16:uuid].integerValue);
     return sessionID;
 }

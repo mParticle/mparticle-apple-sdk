@@ -5,6 +5,7 @@
 #import "MPKitConfiguration.h"
 #import "MPDataPlanFilter.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -84,9 +85,14 @@
     NSDictionary<NSString *, id> *unfilteredUserAttributes = self.user.userAttributes;
     NSMutableDictionary *userAttributes = [NSMutableDictionary dictionary];
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    
     for (NSString* key in unfilteredUserAttributes) {
         id value = [unfilteredUserAttributes objectForKey:key];
-        MPIHasher* hasher = [[MPIHasher alloc] init];
+        
         NSString *hashKey = [hasher hashString:key];
         BOOL shouldFilter = NO;
         

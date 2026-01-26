@@ -2,6 +2,7 @@
 #import "MPIConstants.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 // Internal keys
 NSString *const kMPPMAction = @"an";
@@ -144,7 +145,10 @@ static NSArray *actionNames;
     NSNumber *const zero = @0;
     
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        MPIHasher* hasher = [[MPIHasher alloc] init];
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
         NSString *hashedKey = [hasher hashString:key];
         id hashedValue = hashedMap[hashedKey];
         
