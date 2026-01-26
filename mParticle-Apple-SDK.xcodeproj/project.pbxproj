@@ -91,7 +91,6 @@
 		534CD29629CE2CE1008452B3 /* MPConsumerInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CA529CE019F00E7489F /* MPConsumerInfoTests.m */; };
 		534CD29729CE2CE1008452B3 /* MPURLRequestBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9329CE019F00E7489F /* MPURLRequestBuilderTests.m */; };
 		534CD29829CE2CE1008452B3 /* MPForwardQueueItemTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9529CE019F00E7489F /* MPForwardQueueItemTests.m */; };
-		534CD29929CE2CE1008452B3 /* MPDateFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9629CE019F00E7489F /* MPDateFormatterTests.m */; };
 		534CD29A29CE2CE1008452B3 /* MPResponseConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8D29CE019F00E7489F /* MPResponseConfigTests.m */; };
 		534CD29B29CE2CE1008452B3 /* MPCommerceEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C6C29CE019E00E7489F /* MPCommerceEventTests.m */; };
 		534CD29C29CE2CE1008452B3 /* MParticleUserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CA729CE019F00E7489F /* MParticleUserTests.m */; };
@@ -288,8 +287,6 @@
 		D3CEDABC2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
 		D3CEDABF2C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
 		D3CEDAC12C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
-		D3CEDAC42C9DB0E0001B32DF /* MPDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */; };
-		D3CEDAC62C9DB0E1001B32DF /* MPDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */; };
 		D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */; };
 		D3DE316C2D5261FC00CC537F /* MPDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3DE316A2D5261F700CC537F /* MPDevice.swift */; };
 /* End PBXBuildFile section */
@@ -549,7 +546,6 @@
 		53A79C9329CE019F00E7489F /* MPURLRequestBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilderTests.m; sourceTree = "<group>"; };
 		53A79C9429CE019F00E7489F /* MPKitSecondTestClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitSecondTestClass.h; sourceTree = "<group>"; };
 		53A79C9529CE019F00E7489F /* MPForwardQueueItemTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardQueueItemTests.m; sourceTree = "<group>"; };
-		53A79C9629CE019F00E7489F /* MPDateFormatterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDateFormatterTests.m; sourceTree = "<group>"; };
 		53A79C9829CE019F00E7489F /* sample_dataplan2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = sample_dataplan2.json; sourceTree = "<group>"; };
 		53A79C9929CE019F00E7489F /* MPUserDefaultsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserDefaultsTests.m; sourceTree = "<group>"; };
 		53A79C9A29CE019F00E7489F /* MPLaunchInfoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLaunchInfoTests.m; sourceTree = "<group>"; };
@@ -627,7 +623,6 @@
 		D3BE919A2D5B965A0038C87A /* MPLaunchInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPLaunchInfo.swift; sourceTree = "<group>"; };
 		D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCCPAConsent.swift; sourceTree = "<group>"; };
 		D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPGDPRConsent.swift; sourceTree = "<group>"; };
-		D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDateFormatter.swift; sourceTree = "<group>"; };
 		D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConvertJS.swift; sourceTree = "<group>"; };
 		D3DE316A2D5261F700CC537F /* MPDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDevice.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -636,6 +631,7 @@
 		35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Test/Utils/MPDateFormatterTests.m,
 				Test/Utils/MPZipTests.m,
 				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
 				"Test/Utils/NSNumber+MPFormatterTests.m",
@@ -646,6 +642,7 @@
 		35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Test/Utils/MPDateFormatterTests.m,
 				Test/Utils/MPZipTests.m,
 				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
 				"Test/Utils/NSNumber+MPFormatterTests.m",
@@ -908,7 +905,6 @@
 				D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */,
 				53A79B0929CDFB1F00E7489F /* NSDictionary+MPCaseInsensitive.m */,
 				D356E0232CFE08ED0020898D /* MPResponseConfig.swift */,
-				D3CEDAC22C9DAC25001B32DF /* MPDateFormatter.swift */,
 				53A79B0D29CDFB1F00E7489F /* MPApplication.m */,
 				53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */,
 				53A79B1A29CDFB1F00E7489F /* MPMessageBuilder.h */,
@@ -1133,7 +1129,6 @@
 				53A79C9329CE019F00E7489F /* MPURLRequestBuilderTests.m */,
 				53A79C9429CE019F00E7489F /* MPKitSecondTestClass.h */,
 				53A79C9529CE019F00E7489F /* MPForwardQueueItemTests.m */,
-				53A79C9629CE019F00E7489F /* MPDateFormatterTests.m */,
 				53A79C9929CE019F00E7489F /* MPUserDefaultsTests.m */,
 				53A79C9A29CE019F00E7489F /* MPLaunchInfoTests.m */,
 				53A79C9B29CE019F00E7489F /* MPKitTestClassSideloaded.h */,
@@ -1513,7 +1508,6 @@
 				7231B8322EB95EDD001565E5 /* MParticleScreenEventTests.swift in Sources */,
 				534CD27529CE2CE1008452B3 /* MPIdentityTests.m in Sources */,
 				35E3FCD32E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */,
-				D3CEDAC62C9DB0E1001B32DF /* MPDateFormatter.swift in Sources */,
 				D3CEDAC12C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */,
 				534CD27629CE2CE1008452B3 /* MPUserAttributeChangeTests.m in Sources */,
 				534CD27729CE2CE1008452B3 /* MPForwardRecordTests.m in Sources */,
@@ -1573,7 +1567,6 @@
 				7231B8212EB958DC001565E5 /* MParticleIdentityTests.swift in Sources */,
 				727801DE2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift in Sources */,
 				534CD29829CE2CE1008452B3 /* MPForwardQueueItemTests.m in Sources */,
-				534CD29929CE2CE1008452B3 /* MPDateFormatterTests.m in Sources */,
 				534CD29A29CE2CE1008452B3 /* MPResponseConfigTests.m in Sources */,
 				534CD29B29CE2CE1008452B3 /* MPCommerceEventTests.m in Sources */,
 				534CD29C29CE2CE1008452B3 /* MParticleUserTests.m in Sources */,
@@ -1628,7 +1621,6 @@
 				53A79D8A29CE23F700E7489F /* MPCustomModule.m in Sources */,
 				53A79D8C29CE23F700E7489F /* MPKitActivity.m in Sources */,
 				D342860A2D3806E600FEC2C8 /* MPUserDefaults.swift in Sources */,
-				D3CEDAC42C9DB0E0001B32DF /* MPDateFormatter.swift in Sources */,
 				53A79D9029CE23F700E7489F /* MPDatabaseMigrationController.m in Sources */,
 				53A79D9129CE23F700E7489F /* MPConsentKitFilter.m in Sources */,
 				35E3FCCF2E54978C00DB5B18 /* MParticleSession+MParticlePrivate.m in Sources */,

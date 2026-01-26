@@ -1,8 +1,8 @@
 #import <XCTest/XCTest.h>
-#import "MParticleSwift.h"
-#import "MPBaseTestCase.h"
 
-@interface MPDateFormatterTests : MPBaseTestCase {
+@import mParticle_Apple_SDK_Swift;
+
+@interface MPDateFormatterTests : XCTestCase {
     NSDate *referenceDate;
 }
 

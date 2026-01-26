@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPLaunchInfoTests : MPBaseTestCase
 
