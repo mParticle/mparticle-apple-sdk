@@ -608,8 +608,8 @@ static BOOL runningInBackground = NO;
     if (rampPercentage.integerValue != 0) {
         MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
         NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-        
-        uint64_t rampHash = [MPIHasher hashFNV1a:rampData];
+        MPIHasher* hasher = [[MPIHasher alloc] init];
+        uint64_t rampHash = [hasher hashFNV1a:rampData];
         NSUInteger modRampHash = rampHash % 100;
         
         dataRamped = modRampHash > [rampPercentage integerValue];

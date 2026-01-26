@@ -1,7 +1,7 @@
 internal import mParticle_Apple_SDK_Swift
 
 @objc public class MPIHasher: NSObject {
-    @objc public class func hashFNV1a(_ data: Data) -> Int64 {
+    @objc public func hashFNV1a(_ data: Data) -> Int64 {
         var rampHash: UInt64 = 0xCBF2_9CE4_8422_2325
 
         for byte in data {
@@ -10,7 +10,7 @@ internal import mParticle_Apple_SDK_Swift
         return Int64(bitPattern: rampHash)
     }
 
-    @objc public class func hashString(_ stringToHash: String) -> String {
+    @objc public func hashString(_ stringToHash: String) -> String {
         if stringToHash.isEmpty {
             return ""
         }
@@ -33,7 +33,7 @@ internal import mParticle_Apple_SDK_Swift
         return String(hash)
     }
 
-    @objc public class func hashStringUTF16(_ stringToHash: String) -> String {
+    @objc public func hashStringUTF16(_ stringToHash: String) -> String {
         guard let data = stringToHash.data(using: .utf16LittleEndian) else {
             let mparticle = MParticle.sharedInstance()
             let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
@@ -46,11 +46,11 @@ internal import mParticle_Apple_SDK_Swift
         return String(hash)
     }
 
-    @objc public class func hashEventType(_ eventType: MPEventType) -> String {
+    @objc public func hashEventType(_ eventType: MPEventType) -> String {
         return hashString(String(eventType.rawValue))
     }
 
-    @objc public class func eventType(forHash hashString: String) -> MPEventType {
+    @objc public func eventType(forHash hashString: String) -> MPEventType {
         for i in 1...MPEventType.impression.rawValue {
             if let eventType = MPEventType(rawValue: i), hashString == hashEventType(eventType) {
                 return eventType
@@ -59,7 +59,7 @@ internal import mParticle_Apple_SDK_Swift
         return .other
     }
 
-    @objc public class func hashEventType(_ eventType: MPEventType, eventName: String, isLogScreen: Bool) -> String {
+    @objc public func hashEventType(_ eventType: MPEventType, eventName: String, isLogScreen: Bool) -> String {
         let stringToBeHashed: String
         if isLogScreen {
             stringToBeHashed = "0\(eventName)"
@@ -69,7 +69,7 @@ internal import mParticle_Apple_SDK_Swift
         return hashString(stringToBeHashed)
     }
 
-    @objc public class func hashEventAttributeKey(
+    @objc public func hashEventAttributeKey(
         _ eventType: MPEventType,
         eventName: String,
         customAttributeName: String,
@@ -84,29 +84,29 @@ internal import mParticle_Apple_SDK_Swift
         return hashString(stringToBeHashed)
     }
 
-    @objc public class func hashUserAttributeKey(_ userAttributeKey: String) -> String {
+    @objc public func hashUserAttributeKey(_ userAttributeKey: String) -> String {
         return hashString(userAttributeKey)
     }
 
-    @objc public class func hashUserAttributeValue(_ userAttributeValue: String) -> String {
+    @objc public func hashUserAttributeValue(_ userAttributeValue: String) -> String {
         return hashString(userAttributeValue)
     }
 
     // User Identities are not actually hashed, this method is named this way to
     // be consistent with the filter class. UserIdentityType is also a number
-    @objc public class func hashUserIdentity(_ userIdentity: MPUserIdentity) -> String {
+    @objc public func hashUserIdentity(_ userIdentity: MPUserIdentity) -> String {
         return String(userIdentity.rawValue)
     }
 
-    @objc public class func hashConsentPurpose(_ regulationPrefix: String, purpose: String) -> String {
+    @objc public func hashConsentPurpose(_ regulationPrefix: String, purpose: String) -> String {
         return hashString("\(regulationPrefix)\(purpose)")
     }
 
-    @objc public class func hashCommerceEventAttribute(_ commerceEventType: MPEventType, key: String) -> String {
+    @objc public func hashCommerceEventAttribute(_ commerceEventType: MPEventType, key: String) -> String {
         return hashString("\(commerceEventType.rawValue)\(key)")
     }
 
-    @objc public class func hashTriggerEventName(_ eventName: String, eventType: String) -> String {
+    @objc public func hashTriggerEventName(_ eventName: String, eventType: String) -> String {
         return hashString("\(eventName)\(eventType)")
     }
 }

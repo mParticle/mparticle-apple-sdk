@@ -86,7 +86,8 @@
     
     for (NSString* key in unfilteredUserAttributes) {
         id value = [unfilteredUserAttributes objectForKey:key];
-        NSString *hashKey = [MPIHasher hashString:key];
+        MPIHasher* hasher = [[MPIHasher alloc] init];
+        NSString *hashKey = [hasher hashString:key];
         BOOL shouldFilter = NO;
         
         if (self.kitConfiguration) {
