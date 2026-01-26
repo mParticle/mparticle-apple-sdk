@@ -246,7 +246,6 @@
 		53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5329CDFB1F00E7489F /* MPBaseProjection.m */; };
 		53A79DBF29CE23F700E7489F /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */; };
 		53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */; };
-		53E20DC82CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */; };
 		53FDD1BE2AE871AF003D5FA1 /* MPIHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */; };
 		7231B80E2EB3C4AC001565E5 /* MPKitMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B80C2EB3C4AC001565E5 /* MPKitMock.swift */; };
 		7231B81A2EB94DCD001565E5 /* MParticleTestBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8192EB94DCD001565E5 /* MParticleTestBase.swift */; };
@@ -286,7 +285,6 @@
 		D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */; };
 		D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D3961CD72CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */; };
 		D3BE919C2D5B96700038C87A /* MPLaunchInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3BE919A2D5B965A0038C87A /* MPLaunchInfo.swift */; };
 		D3CEDABA2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
 		D3CEDABC2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
@@ -589,7 +587,6 @@
 		53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK-NoLocation.modulemap"; path = "Framework/mParticle-Apple-SDK-NoLocation.modulemap"; sourceTree = "<group>"; };
 		53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_NoLocation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSideloadedKit.swift; sourceTree = "<group>"; };
-		53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitiveTests.swift"; sourceTree = "<group>"; };
 		53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIHasher.swift; sourceTree = "<group>"; };
 		7231B80C2EB3C4AC001565E5 /* MPKitMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPKitMock.swift; sourceTree = "<group>"; };
 		7231B8192EB94DCD001565E5 /* MParticleTestBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleTestBase.swift; sourceTree = "<group>"; };
@@ -629,7 +626,6 @@
 		D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUploadSettings.swift; sourceTree = "<group>"; };
 		D356E0232CFE08ED0020898D /* MPResponseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPResponseConfig.swift; sourceTree = "<group>"; };
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
-		D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitive.swift"; sourceTree = "<group>"; };
 		D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK.h; sourceTree = "<group>"; };
 		D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D3BE919A2D5B965A0038C87A /* MPLaunchInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPLaunchInfo.swift; sourceTree = "<group>"; };
@@ -645,6 +641,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Test/Utils/MPZipTests.m,
+				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
 				"Test/Utils/NSString+MPPercentEscapeTests.swift",
 			);
 			target = 35DBFDC72F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */;
@@ -653,6 +650,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Test/Utils/MPZipTests.m,
+				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
 				"Test/Utils/NSString+MPPercentEscapeTests.swift",
 			);
 			target = 35DBFDCF2F2103FD00E872F5 /* mParticle-Apple-SDK-SwiftTests */;
@@ -909,7 +907,6 @@
 				D3BE919A2D5B965A0038C87A /* MPLaunchInfo.swift */,
 				D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */,
 				53A79B0229CDFB1F00E7489F /* MPMessageBuilder.m */,
-				D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */,
 				D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */,
 				53A79B0929CDFB1F00E7489F /* NSDictionary+MPCaseInsensitive.m */,
 				D356E0232CFE08ED0020898D /* MPResponseConfig.swift */,
@@ -1185,7 +1182,6 @@
 				35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */,
 				72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */,
 				72D356522E8460020012A0C2 /* MPEventTests.swift */,
-				53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */,
 			);
 			path = SwiftTests;
 			sourceTree = "<group>";
@@ -1529,7 +1525,6 @@
 				534CD27829CE2CE1008452B3 /* MPPersistenceControllerTests.mm in Sources */,
 				534CD27929CE2CE1008452B3 /* MPMessageTests.m in Sources */,
 				534CD27A29CE2CE1008452B3 /* MPDataPlanFilterTests.m in Sources */,
-				53E20DC82CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
 				7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */,
 				534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */,
 				356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
@@ -1617,7 +1612,6 @@
 				53A79D7329CE23F700E7489F /* FilteredMParticleUser.m in Sources */,
 				53A79D7429CE23F700E7489F /* MPBaseEvent.m in Sources */,
 				53A79D7529CE23F700E7489F /* MPAttributeProjection.m in Sources */,
-				D3961CD72CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */,
 				53A79D7629CE23F700E7489F /* MPConsumerInfo.m in Sources */,
 				53A79D7729CE23F700E7489F /* MPKitConfiguration.m in Sources */,
 				53A79D7829CE23F700E7489F /* MPConsentState.m in Sources */,
