@@ -1,10 +1,3 @@
-//
-//  MPUserAttributeChange.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 12/9/24.
-//
-
 import Foundation
 
 @objc public class MPUserAttributeChange: NSObject {

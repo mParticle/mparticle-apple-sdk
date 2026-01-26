@@ -1,8 +1,7 @@
 #import <XCTest/XCTest.h>
-#import "MParticleSwift.h"
-#import "MPBaseTestCase.h"
+@import mParticle_Apple_SDK_Swift;
 
-@interface MPUserAttributeChangeTests : MPBaseTestCase
+@interface MPUserAttributeChangeTests : XCTestCase
 
 @end
 

@@ -27,6 +27,7 @@
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
+@import mParticle_Apple_SDK_Swift;
 
 const NSInteger kNilAttributeValue = 101;
 const NSInteger kExceededAttributeValueMaximumLength = 104;
