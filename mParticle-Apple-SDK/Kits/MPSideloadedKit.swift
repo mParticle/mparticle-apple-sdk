@@ -78,7 +78,8 @@ internal import mParticle_Apple_SDK_Swift
     }
 
     @objc public func addUserIdentityFilter(userIdentity: MPUserIdentity) {
-        userIdentityFilters[hasher.hashUserIdentity(userIdentity)] = 0
+        let userIdentitySwift = MPUserIdentitySwift(rawValue: userIdentity.rawValue) ?? .other
+        userIdentityFilters[hasher.hashUserIdentity(userIdentitySwift)] = 0
     }
 
     @objc public func addUserAttributeFilter(userAttributeKey: String) {
@@ -86,7 +87,8 @@ internal import mParticle_Apple_SDK_Swift
     }
 
     @objc public func addCommerceEventAttributeFilter(eventType: MPEventType, eventAttributeKey: String) {
-        commerceEventAttributeFilters[hasher.hashCommerceEventAttribute(eventType, key: eventAttributeKey)] = 0
+        let eventTypeSwift = MPEventTypeSwift(rawValue: eventType.rawValue) ?? .other
+        commerceEventAttributeFilters[hasher.hashCommerceEventAttribute(eventTypeSwift, key: eventAttributeKey)] = 0
     }
 
     @objc public func addCommerceEventEntityTypeFilter(commerceEventKind: MPCommerceEventKind) {

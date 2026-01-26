@@ -1,9 +1,9 @@
-internal import mParticle_Apple_SDK_Swift
+import Foundation
 
 @objc public class MPIHasher: NSObject {
     private let logger: MPLog
     
-    @objc init(logger: MPLog) {
+    @objc public init(logger: MPLog) {
         self.logger = logger
     }
     
@@ -92,7 +92,7 @@ internal import mParticle_Apple_SDK_Swift
 
     // User Identities are not actually hashed, this method is named this way to
     // be consistent with the filter class. UserIdentityType is also a number
-    @objc public func hashUserIdentity(_ userIdentity: MPUserIdentity) -> String {
+    @objc public func hashUserIdentity(_ userIdentity: MPUserIdentitySwift) -> String {
         return String(userIdentity.rawValue)
     }
 
@@ -100,7 +100,7 @@ internal import mParticle_Apple_SDK_Swift
         return hashString("\(regulationPrefix)\(purpose)")
     }
 
-    @objc public func hashCommerceEventAttribute(_ commerceEventType: MPEventType, key: String) -> String {
+    @objc public func hashCommerceEventAttribute(_ commerceEventType: MPEventTypeSwift, key: String) -> String {
         return hashString("\(commerceEventType.rawValue)\(key)")
     }
 

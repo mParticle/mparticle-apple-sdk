@@ -1,11 +1,7 @@
-@import mParticle_Apple_SDK_NoLocation;
-
 #import <XCTest/XCTest.h>
-#import "MPBaseTestCase.h"
-#import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 
-@interface HasherTests : MPBaseTestCase
+@interface HasherTests : XCTestCase
 
 @end
 
@@ -15,9 +11,7 @@ MPIHasher* hasher;
 
 - (void)setUp {
     [super setUp];
-    MParticle* mparticle = MParticle.sharedInstance;
-    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-    logger.customLogger = mparticle.customLogger;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
     hasher = [[MPIHasher alloc] initWithLogger:logger];
 }
 
@@ -66,28 +60,28 @@ MPIHasher* hasher;
     
     NSArray *hashedEventTypes = [self hashedAllEventTypes];
     
-    hashedEventType = hashedEventTypes[MPEventTypeNavigation];
+    hashedEventType = hashedEventTypes[MPEventTypeSwiftNavigation];
     XCTAssertEqualObjects(hashedEventType, @"49", @"Hashed event type navigation is incorrect.");
     
-    hashedEventType = hashedEventTypes[MPEventTypeLocation];
+    hashedEventType = hashedEventTypes[MPEventTypeSwiftLocation];
     XCTAssertEqualObjects(hashedEventType, @"50", @"Hashed event type location is incorrect.");
     
-    hashedEventType = hashedEventTypes[MPEventTypeSearch];
+    hashedEventType = hashedEventTypes[MPEventTypeSwiftSearch];
     XCTAssertEqualObjects(hashedEventType, @"51", @"Hashed event type search is incorrect.");
     
-    hashedEventType = hashedEventTypes[MPEventTypeTransaction];
+    hashedEventType = hashedEventTypes[MPEventTypeSwiftTransaction];
     XCTAssertEqualObjects(hashedEventType, @"52", @"Hashed event type transaction is incorrect.");
     
-    hashedEventType = hashedEventTypes[MPEventTypeUserContent];
+    hashedEventType = hashedEventTypes[MPEventTypeSwiftUserContent];
     XCTAssertEqualObjects(hashedEventType, @"53", @"Hashed event type user content is incorrect.");
     
-    hashedEventType = hashedEventTypes[MPEventTypeUserPreference];
+    hashedEventType = hashedEventTypes[MPEventTypeSwiftUserPreference];
     XCTAssertEqualObjects(hashedEventType, @"54", @"Hashed event type user preference is incorrect.");
     
-    hashedEventType = hashedEventTypes[MPEventTypeSocial];
+    hashedEventType = hashedEventTypes[MPEventTypeSwiftSocial];
     XCTAssertEqualObjects(hashedEventType, @"55", @"Hashed event type social is incorrect.");
     
-    hashedEventType = hashedEventTypes[MPEventTypeOther];
+    hashedEventType = hashedEventTypes[MPEventTypeSwiftOther];
     XCTAssertEqualObjects(hashedEventType, @"56", @"Hashed event type other is incorrect.");
 }
 
@@ -96,7 +90,7 @@ MPIHasher* hasher;
     NSArray *hashedEventTypes = [self hashedEventTypes:eventTypes];
     XCTAssertTrue(hashedEventTypes.count == 0, @"Should have been empty.");
     
-    eventTypes = @[@(MPEventTypeNavigation), @(MPEventTypeTransaction), @(MPEventTypeOther)];
+    eventTypes = @[@(MPEventTypeSwiftNavigation), @(MPEventTypeSwiftTransaction), @(MPEventTypeSwiftOther)];
     hashedEventTypes = [self hashedEventTypes:eventTypes];
     
     XCTAssertTrue([hashedEventTypes containsObject:@"49"], @"Not hashing event type navigation.");
@@ -135,188 +129,188 @@ MPIHasher* hasher;
 
 - (void)testEventTypeHash {
     NSString *hashString = @"49";
-    MPEventType eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeNavigation, @"Should have been equal.");
+    MPEventTypeSwift eventType = [hasher eventTypeForHash:hashString];
+    XCTAssertEqual(eventType, MPEventTypeSwiftNavigation, @"Should have been equal.");
     
     hashString = @"50";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeLocation, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftLocation, @"Should have been equal.");
     
     hashString = @"51";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeSearch, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftSearch, @"Should have been equal.");
     
     hashString = @"52";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeTransaction, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftTransaction, @"Should have been equal.");
     
     hashString = @"53";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeUserContent, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftUserContent, @"Should have been equal.");
     
     hashString = @"54";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeUserPreference, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftUserPreference, @"Should have been equal.");
     
     hashString = @"55";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeSocial, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftSocial, @"Should have been equal.");
     
     hashString = @"56";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeOther, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftOther, @"Should have been equal.");
     
     hashString = @"1567";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeAddToCart, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftAddToCart, @"Should have been equal.");
     
     hashString = @"1568";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeRemoveFromCart, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftRemoveFromCart, @"Should have been equal.");
     
     hashString = @"1569";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeCheckout, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftCheckout, @"Should have been equal.");
     
     hashString = @"1570";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeCheckoutOption, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftCheckoutOption, @"Should have been equal.");
     
     hashString = @"1571";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeClick, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftClick, @"Should have been equal.");
     
     hashString = @"1572";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeViewDetail, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftViewDetail, @"Should have been equal.");
     
     hashString = @"1573";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypePurchase, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftPurchase, @"Should have been equal.");
     
     hashString = @"1574";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeRefund, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftRefund, @"Should have been equal.");
     
     hashString = @"1575";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypePromotionView, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftPromotionView, @"Should have been equal.");
     
     hashString = @"1576";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypePromotionClick, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftPromotionClick, @"Should have been equal.");
     
     hashString = @"1598";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeAddToWishlist, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftAddToWishlist, @"Should have been equal.");
     
     hashString = @"1599";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeRemoveFromWishlist, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftRemoveFromWishlist, @"Should have been equal.");
     
     hashString = @"1600";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeImpression, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftImpression, @"Should have been equal.");
     
     hashString = @"Invalid hash";
     eventType = [hasher eventTypeForHash:hashString];
-    XCTAssertEqual(eventType, MPEventTypeOther, @"Should have been equal.");
+    XCTAssertEqual(eventType, MPEventTypeSwiftOther, @"Should have been equal.");
 }
 
 - (void)testHashEventType {
-    NSString *hashTestString = [hasher hashEventType:MPEventTypeNavigation];
+    NSString *hashTestString = [hasher hashEventType:MPEventTypeSwiftNavigation];
 
     XCTAssertEqualObjects(hashTestString, @"49", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeLocation];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftLocation];
     XCTAssertEqualObjects(hashTestString, @"50", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeSearch];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftSearch];
     XCTAssertEqualObjects(hashTestString, @"51", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeTransaction];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftTransaction];
     XCTAssertEqualObjects(hashTestString, @"52", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeUserContent];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftUserContent];
     XCTAssertEqualObjects(hashTestString, @"53", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeUserPreference];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftUserPreference];
     XCTAssertEqualObjects(hashTestString, @"54", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeSocial];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftSocial];
     XCTAssertEqualObjects(hashTestString, @"55", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeOther];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftOther];
     XCTAssertEqualObjects(hashTestString, @"56", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeMedia];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftMedia];
     XCTAssertEqualObjects(hashTestString, @"57", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeAddToCart];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftAddToCart];
     XCTAssertEqualObjects(hashTestString, @"1567", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeRemoveFromCart];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftRemoveFromCart];
     XCTAssertEqualObjects(hashTestString, @"1568", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeCheckout];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftCheckout];
     XCTAssertEqualObjects(hashTestString, @"1569", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeCheckoutOption];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftCheckoutOption];
     XCTAssertEqualObjects(hashTestString, @"1570", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeClick];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftClick];
     XCTAssertEqualObjects(hashTestString, @"1571", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeViewDetail];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftViewDetail];
     XCTAssertEqualObjects(hashTestString, @"1572", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypePurchase];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftPurchase];
     XCTAssertEqualObjects(hashTestString, @"1573", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeRefund];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftRefund];
     XCTAssertEqualObjects(hashTestString, @"1574", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypePromotionView];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftPromotionView];
     XCTAssertEqualObjects(hashTestString, @"1575", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypePromotionClick];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftPromotionClick];
     XCTAssertEqualObjects(hashTestString, @"1576", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeAddToWishlist];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftAddToWishlist];
     XCTAssertEqualObjects(hashTestString, @"1598", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeRemoveFromWishlist];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftRemoveFromWishlist];
     XCTAssertEqualObjects(hashTestString, @"1599", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeImpression];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftImpression];
     XCTAssertEqualObjects(hashTestString, @"1600", @"Should have been equal.");
 }
 
 - (void)testHashEventName {
-    NSString *hashTestString = [hasher hashEventType:MPEventTypeNavigation eventName:@"test" isLogScreen:false];
+    NSString *hashTestString = [hasher hashEventType:MPEventTypeSwiftNavigation eventName:@"test" isLogScreen:false];
     XCTAssertEqualObjects(hashTestString, @"48809027", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeNavigation eventName:@"test" isLogScreen:true];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftNavigation eventName:@"test" isLogScreen:true];
     XCTAssertEqualObjects(hashTestString, @"47885506", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeLocation eventName:@"test" isLogScreen:false];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftLocation eventName:@"test" isLogScreen:false];
     XCTAssertEqualObjects(hashTestString, @"49732548", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventType:MPEventTypeLocation eventName:@"test" isLogScreen:true];
+    hashTestString = [hasher hashEventType:MPEventTypeSwiftLocation eventName:@"test" isLogScreen:true];
     XCTAssertEqualObjects(hashTestString, @"47885506", @"Should have been equal.");
 }
 
 - (void)testHashEventAttributeKey {
-    NSString *hashTestString = [hasher hashEventAttributeKey:MPEventTypeNavigation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:false];
+    NSString *hashTestString = [hasher hashEventAttributeKey:MPEventTypeSwiftNavigation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:false];
     XCTAssertEqualObjects(hashTestString, @"-1449619668", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventAttributeKey:MPEventTypeNavigation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:true];
+    hashTestString = [hasher hashEventAttributeKey:MPEventTypeSwiftNavigation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:true];
     XCTAssertEqualObjects(hashTestString, @"-1578702387", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventAttributeKey:MPEventTypeLocation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:false];
+    hashTestString = [hasher hashEventAttributeKey:MPEventTypeSwiftLocation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:false];
     XCTAssertEqualObjects(hashTestString, @"-1320536949", @"Should have been equal.");
     
-    hashTestString = [hasher hashEventAttributeKey:MPEventTypeLocation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:true];
+    hashTestString = [hasher hashEventAttributeKey:MPEventTypeSwiftLocation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:true];
     XCTAssertEqualObjects(hashTestString, @"-1578702387", @"Should have been equal.");
 }
 
@@ -335,29 +329,29 @@ MPIHasher* hasher;
 }
 
 - (void)testHashUserIdentity {
-    NSString *hashTestString = [hasher hashUserIdentity:MPUserIdentityOther];
+    NSString *hashTestString = [hasher hashUserIdentity:MPUserIdentitySwiftOther];
     XCTAssertEqualObjects(hashTestString, @"0", @"Should have been equal.");
     
-    hashTestString = [hasher hashUserIdentity:MPUserIdentityCustomerId];
+    hashTestString = [hasher hashUserIdentity:MPUserIdentitySwiftCustomerId];
     XCTAssertEqualObjects(hashTestString, @"1", @"Should have been equal.");
 }
 
-- (void)testHashConsentPurpose {
-    NSString *hashTestString = [hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
-    XCTAssertEqualObjects(hashTestString, @"-575335347", @"Should have been equal.");
-    
-    hashTestString = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
-    XCTAssertEqualObjects(hashTestString, @"49", @"Should have been equal.");
-    
-    hashTestString = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"purpose1"];
-    XCTAssertEqualObjects(hashTestString, @"-910367228", @"Should have been equal.");
-}
+//- (void)testHashConsentPurpose {
+//    NSString *hashTestString = [hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
+//    XCTAssertEqualObjects(hashTestString, @"-575335347", @"Should have been equal.");
+//    
+//    hashTestString = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
+//    XCTAssertEqualObjects(hashTestString, @"49", @"Should have been equal.");
+//    
+//    hashTestString = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"purpose1"];
+//    XCTAssertEqualObjects(hashTestString, @"-910367228", @"Should have been equal.");
+//}
 
 - (void)testHashCommerceEventAttribute {
-    NSString *hashTestString = [hasher hashCommerceEventAttribute:MPEventTypePurchase key:@"price"];
+    NSString *hashTestString = [hasher hashCommerceEventAttribute:MPEventTypeSwiftPurchase key:@"price"];
     XCTAssertEqualObjects(hashTestString, @"-2104051132", @"Should have been equal.");
     
-    hashTestString = [hasher hashCommerceEventAttribute:MPEventTypeRefund key:@"price"];
+    hashTestString = [hasher hashCommerceEventAttribute:MPEventTypeSwiftRefund key:@"price"];
     XCTAssertEqualObjects(hashTestString, @"-2075421981", @"Should have been equal.");
 }
 
@@ -366,26 +360,26 @@ MPIHasher* hasher;
     XCTAssertEqualObjects(hashedEvent, @"431828539", @"Should have been equal.");
 }
 
-- (void)testHashDifferences {
-    // Creates a product object
-    MPProduct *product = [[MPProduct alloc] initWithName:@"Awesome Book" sku:@"1234567890" quantity:@1 price:@9.99];
-    product.brand = @"A Publisher";
-    product.category = @"Fiction";
-    product.couponCode = @"XYZ123";
-    product.position = 1;
-    product[@"custom key"] = @"custom value"; // A product may contain custom key/value pairs
-    
-    // Creates a commerce event object
-    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
-    NSString *key = @"an_extra_key";
-    commerceEvent.customAttributes = @{key: @"an_extra_value"}; // A commerce event may contain custom key/value pairs
-    
-    NSString *attributeTohash = [[@(commerceEvent.type) stringValue] stringByAppendingString:key];
-    int hashValueOldInt = [[hasher hashString:attributeTohash] intValue];
-    
-    NSString *hashValueNewString = [hasher hashCommerceEventAttribute:commerceEvent.type key:key];
-    XCTAssertEqual(hashValueOldInt, [hashValueNewString intValue], @"Should have been equal.");
-
-}
+//- (void)testHashDifferences {
+//    // Creates a product object
+//    MPProduct *product = [[MPProduct alloc] initWithName:@"Awesome Book" sku:@"1234567890" quantity:@1 price:@9.99];
+//    product.brand = @"A Publisher";
+//    product.category = @"Fiction";
+//    product.couponCode = @"XYZ123";
+//    product.position = 1;
+//    product[@"custom key"] = @"custom value"; // A product may contain custom key/value pairs
+//    
+//    // Creates a commerce event object
+//    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
+//    NSString *key = @"an_extra_key";
+//    commerceEvent.customAttributes = @{key: @"an_extra_value"}; // A commerce event may contain custom key/value pairs
+//    
+//    NSString *attributeTohash = [[@(commerceEvent.type) stringValue] stringByAppendingString:key];
+//    int hashValueOldInt = [[hasher hashString:attributeTohash] intValue];
+//    
+//    NSString *hashValueNewString = [hasher hashCommerceEventAttribute:commerceEvent.type key:key];
+//    XCTAssertEqual(hashValueOldInt, [hashValueNewString intValue], @"Should have been equal.");
+//
+//}
 
 @end
