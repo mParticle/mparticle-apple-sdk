@@ -21,6 +21,7 @@
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
 #endif
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPMessage ()
 
@@ -904,9 +905,14 @@
     NSString *sourceApplication = @"com.mParticle.UnitTest";
     NSDictionary *annotation = @{@"foo":@"bar"};
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     
@@ -1014,9 +1020,14 @@
     NSString *sourceApplication = @"com.mParticle.UnitTest";
     NSDictionary *annotation = @{@"key1":@1, @"key2":[NSDate date]};
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     
@@ -1061,9 +1072,14 @@
     NSString *sourceApplication = @"com.mParticle.UnitTest";
     NSDictionary *annotation = @{@"key1":@1, @"key2":[NSDate date]};
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     [self.backendController handleApplicationDidBecomeActive:nil];
@@ -1107,9 +1123,13 @@
     NSString *sourceApplication = @"com.mParticle.UnitTest";
     NSDictionary *annotation = @{@"key1":@1, @"key2":[NSDate date]};
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     [self.backendController handleApplicationDidBecomeActive:nil];

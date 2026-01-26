@@ -1,15 +1,16 @@
-internal import mParticle_Apple_SDK_Swift
+import UIKit
 
 @objc public class MPLaunchInfo: NSObject {
     private let annotationKey = UIApplication.OpenURLOptionsKey.annotation
     private let sourceAppKey = UIApplication.OpenURLOptionsKey.sourceApplication
     private var sourceApp: String?
+    private let logger: MPLog
 
     @objc public private(set) var sourceApplication: String?
     @objc public private(set) var annotation: String?
     @objc public private(set) var url: URL
 
-    @objc public required init(URL: URL, sourceApplication: String?, annotation: Any?) {
+    @objc public required init(URL: URL, sourceApplication: String?, annotation: Any?, logger: MPLog) {
         sourceApp = sourceApplication
         url = URL
         if let sourceApp = sourceApp {
@@ -19,12 +20,13 @@ internal import mParticle_Apple_SDK_Swift
         } else {
             self.sourceApplication = nil
         }
-        self.annotation = MPLaunchInfo.stringifyAnnotation(annotation)
+        self.logger = logger
 
         super.init()
+        self.annotation = stringifyAnnotation(annotation)
     }
 
-    @objc public init(URL: URL, options: [String: Any]?) {
+    @objc public init(URL: URL, options: [String: Any]?, logger: MPLog) {
         url = URL
         if let options = options {
             if let sourceApp = options[sourceAppKey.rawValue] as? String {
@@ -42,11 +44,11 @@ internal import mParticle_Apple_SDK_Swift
                 self.annotation = annotation
             }
         }
-
+        self.logger = logger
         super.init()
     }
 
-    private class func stringifyAnnotation(_ annotation: Any?) -> String? {
+    private func stringifyAnnotation(_ annotation: Any?) -> String? {
         if let stringAnnotation = annotation as? String {
             return stringAnnotation
         }
@@ -56,9 +58,6 @@ internal import mParticle_Apple_SDK_Swift
         if let dateAnnotation = annotation as? Date {
             return MPDateFormatter.string(fromDateRFC3339: dateAnnotation)
         }
-        let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-        logger.customLogger = mparticle.customLogger
 
         if let dictionaryAnnotation = annotation as? [String: Any?] {
             var jsonData: Data?

@@ -6,6 +6,7 @@
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine_PRIVATE(Tests)
@@ -127,8 +128,12 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"State transitions"];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     MPLaunchInfo *launchInfo = [[MPLaunchInfo alloc] initWithURL:[NSURL URLWithString:@"http://mparticle.com"]
-                                                         options:@{@"Launching":@"WooHoo"}];
+                                                         options:@{@"Launching":@"WooHoo"} logger:logger];
     stateMachine.launchInfo = launchInfo;
     XCTAssertFalse(stateMachine.backgrounded, @"Should have been false.");
     XCTAssertNotNil(stateMachine.launchInfo, @"Should not have been nil.");
