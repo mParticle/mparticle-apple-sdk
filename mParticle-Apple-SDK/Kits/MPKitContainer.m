@@ -32,6 +32,8 @@
 #import "MPBracket.h"
 #import "MParticleSwift.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
 NSString *const kitFileExtension = @"eks";

@@ -1,10 +1,3 @@
-//
-//  MPDateFormatter.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 9/19/24.
-//
-
 import Foundation
 
 @objc public class MPDateFormatter: NSObject {

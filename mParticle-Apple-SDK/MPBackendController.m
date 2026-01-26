@@ -27,6 +27,7 @@
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
+@import mParticle_Apple_SDK_Swift;
 
 const NSInteger kNilAttributeValue = 101;
 const NSInteger kExceededAttributeValueMaximumLength = 104;
@@ -372,7 +373,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
         
         if (userActivity.webpageURL) {
-            stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+            MParticle* mparticle = MParticle.sharedInstance;
+            MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+            logger.customLogger = mparticle.customLogger;
+            
+            stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil logger:logger];
         }
     }
     

@@ -5,6 +5,8 @@
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 NSString *const kMPCKContent = @"c";
 NSString *const kMPCKDomain = @"d";
 NSString *const kMPCKExpiration = @"e";
