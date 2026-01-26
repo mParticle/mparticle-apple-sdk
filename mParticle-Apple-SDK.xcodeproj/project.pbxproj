@@ -44,7 +44,6 @@
 		531BCF3B2B28A83E00F5C573 /* MPIdentityCachingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 531BCF392B28A83E00F5C573 /* MPIdentityCachingTests.m */; };
 		534C11B32D08A73700466F71 /* MParticleWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534C11B22D08A73100466F71 /* MParticleWebView.swift */; };
 		534C11B62D08F53D00466F71 /* MPUserAttributeChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534C11B52D08F53D00466F71 /* MPUserAttributeChange.swift */; };
-		534CD25C29CE2877008452B3 /* NSNumber+MPFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B2629CDFB1F00E7489F /* NSNumber+MPFormatter.swift */; };
 		534CD25F29CE2BF1008452B3 /* MParticleSwift.h in Headers */ = {isa = PBXBuildFile; fileRef = 534CD25D29CE2BF1008452B3 /* MParticleSwift.h */; };
 		534CD26429CE2CE1008452B3 /* MPKitSecondTestClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7029CE019E00E7489F /* MPKitSecondTestClass.m */; };
 		534CD26529CE2CE1008452B3 /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9F29CE019F00E7489F /* MPKitAPITests.m */; };
@@ -69,7 +68,6 @@
 		534CD27A29CE2CE1008452B3 /* MPDataPlanFilterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9029CE019F00E7489F /* MPDataPlanFilterTests.m */; };
 		534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8029CE019E00E7489F /* MPIntegrationAttributesTest.m */; };
 		534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C6E29CE019E00E7489F /* MPDataModelTests.m */; };
-		534CD27F29CE2CE1008452B3 /* NSNumber+MPFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */; };
 		534CD28029CE2CE1008452B3 /* MPResponseEventsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8F29CE019F00E7489F /* MPResponseEventsTest.m */; };
 		534CD28129CE2CE1008452B3 /* MPConsentStateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7929CE019E00E7489F /* MPConsentStateTests.m */; };
 		534CD28229CE2CE1008452B3 /* HasherTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CB729CE019F00E7489F /* HasherTests.m */; };
@@ -442,7 +440,6 @@
 		53A79B1E29CDFB1F00E7489F /* MPBracket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBracket.m; sourceTree = "<group>"; };
 		53A79B2329CDFB1F00E7489F /* MPUploadBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUploadBuilder.h; sourceTree = "<group>"; };
 		53A79B2429CDFB1F00E7489F /* MPApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPApplication.h; sourceTree = "<group>"; };
-		53A79B2629CDFB1F00E7489F /* NSNumber+MPFormatter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSNumber+MPFormatter.swift"; sourceTree = "<group>"; };
 		53A79B2C29CDFB1F00E7489F /* MPBracket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBracket.h; sourceTree = "<group>"; };
 		53A79B2F29CDFB1F00E7489F /* MPCustomModulePreference.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomModulePreference.h; sourceTree = "<group>"; };
 		53A79B3029CDFB1F00E7489F /* MPCustomModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomModule.h; sourceTree = "<group>"; };
@@ -571,7 +568,6 @@
 		53A79CA729CE019F00E7489F /* MParticleUserTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleUserTests.m; sourceTree = "<group>"; };
 		53A79CA929CE019F00E7489F /* MPKitTestClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTestClass.h; sourceTree = "<group>"; };
 		53A79CAA29CE019F00E7489F /* MPCustomModuleTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomModuleTests.m; sourceTree = "<group>"; };
-		53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+MPFormatterTests.m"; sourceTree = "<group>"; };
 		53A79CAC29CE019F00E7489F /* MPDeviceTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDeviceTests.m; sourceTree = "<group>"; };
 		53A79CAD29CE019F00E7489F /* BracketTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BracketTests.m; sourceTree = "<group>"; };
 		53A79CAE29CE019F00E7489F /* MPAliasResponseTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAliasResponseTests.m; sourceTree = "<group>"; };
@@ -642,6 +638,7 @@
 			membershipExceptions = (
 				Test/Utils/MPZipTests.m,
 				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
+				"Test/Utils/NSNumber+MPFormatterTests.m",
 				"Test/Utils/NSString+MPPercentEscapeTests.swift",
 			);
 			target = 35DBFDC72F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */;
@@ -651,6 +648,7 @@
 			membershipExceptions = (
 				Test/Utils/MPZipTests.m,
 				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
+				"Test/Utils/NSNumber+MPFormatterTests.m",
 				"Test/Utils/NSString+MPPercentEscapeTests.swift",
 			);
 			target = 35DBFDCF2F2103FD00E872F5 /* mParticle-Apple-SDK-SwiftTests */;
@@ -916,7 +914,6 @@
 				53A79B1A29CDFB1F00E7489F /* MPMessageBuilder.h */,
 				53A79B1E29CDFB1F00E7489F /* MPBracket.m */,
 				53A79B2329CDFB1F00E7489F /* MPUploadBuilder.h */,
-				53A79B2629CDFB1F00E7489F /* NSNumber+MPFormatter.swift */,
 				D3DE316A2D5261F700CC537F /* MPDevice.swift */,
 				53A79B2C29CDFB1F00E7489F /* MPBracket.h */,
 				53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */,
@@ -1154,7 +1151,6 @@
 				53A79CA729CE019F00E7489F /* MParticleUserTests.m */,
 				53A79CA929CE019F00E7489F /* MPKitTestClass.h */,
 				53A79CAA29CE019F00E7489F /* MPCustomModuleTests.m */,
-				53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */,
 				53A79CAC29CE019F00E7489F /* MPDeviceTests.m */,
 				53A79CAD29CE019F00E7489F /* BracketTests.m */,
 				53A79CAE29CE019F00E7489F /* MPAliasResponseTests.m */,
@@ -1529,7 +1525,6 @@
 				534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */,
 				356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
 				534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */,
-				534CD27F29CE2CE1008452B3 /* NSNumber+MPFormatterTests.m in Sources */,
 				351779502E706BF8004BF05E /* ExecutorMock.swift in Sources */,
 				72D356542E84601A0012A0C2 /* MPEventTests.swift in Sources */,
 				727801E12EB0FECA00BDAD98 /* AppEnvironmentProviderMock.swift in Sources */,
@@ -1622,7 +1617,6 @@
 				53A79D7B29CE23F700E7489F /* MPIConstants.m in Sources */,
 				530D24822CFF72D9000FE7E3 /* MPConstants.swift in Sources */,
 				53A79D7D29CE23F700E7489F /* MPPromotion.m in Sources */,
-				534CD25C29CE2877008452B3 /* NSNumber+MPFormatter.swift in Sources */,
 				D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */,
 				53A79D8129CE23F700E7489F /* MPIdentityApiRequest.m in Sources */,
 				53A79D8229CE23F700E7489F /* MPCommerceEvent.m in Sources */,

@@ -1,16 +1,8 @@
-//
-//  NSNumber+MPFormatterTests.m
-//  mParticle-Apple-SDK
-//
-//  Created by Ben Baron on 3/9/23.
-//  Copyright © 2023 mParticle, Inc. All rights reserved.
-//
-
 #import <XCTest/XCTest.h>
-#import "MPBaseTestCase.h"
-#import "MParticleSwift.h"
 
-@interface NSNumber_MPFormatterTests : MPBaseTestCase
+@import mParticle_Apple_SDK_Swift;
+
+@interface NSNumber_MPFormatterTests : XCTestCase
 
 @end
 
