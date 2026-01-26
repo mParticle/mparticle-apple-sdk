@@ -44,20 +44,20 @@ internal import mParticle_Apple_SDK_Swift
         return String(hash)
     }
 
-    @objc public func hashEventType(_ eventType: MPEventType) -> String {
+    @objc public func hashEventType(_ eventType: MPEventTypeSwift) -> String {
         return hashString(String(eventType.rawValue))
     }
 
-    @objc public func eventType(forHash hashString: String) -> MPEventType {
-        for i in 1...MPEventType.impression.rawValue {
-            if let eventType = MPEventType(rawValue: i), hashString == hashEventType(eventType) {
+    @objc public func eventType(forHash hashString: String) -> MPEventTypeSwift {
+        for i in 1...MPEventTypeSwift.impression.rawValue {
+            if let eventType = MPEventTypeSwift(rawValue: i), hashString == hashEventType(eventType) {
                 return eventType
             }
         }
         return .other
     }
 
-    @objc public func hashEventType(_ eventType: MPEventType, eventName: String, isLogScreen: Bool) -> String {
+    @objc public func hashEventType(_ eventType: MPEventTypeSwift, eventName: String, isLogScreen: Bool) -> String {
         let stringToBeHashed: String
         if isLogScreen {
             stringToBeHashed = "0\(eventName)"
@@ -68,7 +68,7 @@ internal import mParticle_Apple_SDK_Swift
     }
 
     @objc public func hashEventAttributeKey(
-        _ eventType: MPEventType,
+        _ eventType: MPEventTypeSwift,
         eventName: String,
         customAttributeName: String,
         isLogScreen: Bool

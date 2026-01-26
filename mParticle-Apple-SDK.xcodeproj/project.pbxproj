@@ -623,6 +623,7 @@
 		35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Sources/MPEventTypeSwift.swift,
 				Test/Utils/MPDateFormatterTests.m,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPUserAttributeChangeTests.m,
@@ -646,10 +647,17 @@
 			);
 			target = 35DBFDCF2F2103FD00E872F5 /* mParticle-Apple-SDK-SwiftTests */;
 		};
+		35C3DD352F27F79E0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Sources/MPEventTypeSwift.swift,
+			);
+			target = 53A79D0029CE23F700E7489F /* mParticle-Apple-SDK-NoLocation */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		35DBFDC92F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "mParticle-Apple-SDK-Swift"; sourceTree = "<group>"; };
+		35DBFDC92F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (35C3DD352F27F79E0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = "mParticle-Apple-SDK-Swift"; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
