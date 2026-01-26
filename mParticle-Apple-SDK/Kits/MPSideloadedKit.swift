@@ -45,20 +45,23 @@ internal import mParticle_Apple_SDK_Swift
     }
 
     @objc public func addEventTypeFilter(eventType: MPEventType) {
-        eventTypeFilters[hasher.hashEventType(eventType)] = 0
+        let eventTypeSwift = MPEventTypeSwift(rawValue: eventType.rawValue) ?? .other
+        eventTypeFilters[hasher.hashEventType(eventTypeSwift)] = 0
     }
 
     @objc public func addEventNameFilter(eventType: MPEventType, eventName: String) {
-        eventNameFilters[hasher.hashEventType(eventType, eventName: eventName, isLogScreen: false)] = 0
+        let eventTypeSwift = MPEventTypeSwift(rawValue: eventType.rawValue) ?? .other
+        eventNameFilters[hasher.hashEventType(eventTypeSwift, eventName: eventName, isLogScreen: false)] = 0
     }
 
     @objc public func addScreenNameFilter(screenName: String) {
-        eventNameFilters[hasher.hashEventType(MPEventType.click, eventName: screenName, isLogScreen: true)] = 0
+        eventNameFilters[hasher.hashEventType(.click, eventName: screenName, isLogScreen: true)] = 0
     }
 
     @objc public func addEventAttributeFilter(eventType: MPEventType, eventName: String, customAttributeKey: String) {
+        let eventTypeSwift = MPEventTypeSwift(rawValue: eventType.rawValue) ?? .other
         eventAttributeFilters[hasher.hashEventAttributeKey(
-            eventType,
+            eventTypeSwift,
             eventName: eventName,
             customAttributeName: customAttributeKey,
             isLogScreen: false
@@ -67,7 +70,7 @@ internal import mParticle_Apple_SDK_Swift
 
     @objc public func addScreenAttributeFilter(screenName: String, customAttributeKey: String) {
         eventAttributeFilters[hasher.hashEventAttributeKey(
-            MPEventType.click,
+            .click,
             eventName: screenName,
             customAttributeName: customAttributeKey,
             isLogScreen: true
