@@ -1,5 +1,6 @@
 import XCTest
 import mParticle_Apple_SDK_NoLocation
+internal import mParticle_Apple_SDK_Swift
 
 class MPEventTests: XCTestCase {
     var sut: MPEvent!
@@ -62,7 +63,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testInit_withEmptyName_returnsNil() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
             self.receivedMessage = message
@@ -73,7 +74,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testInitWithTooLongName_returnsNil() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
             self.receivedMessage = message
@@ -159,7 +160,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testSetCategory_withTooLongCategory_discardsAndLogs() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
            self.receivedMessage = message
@@ -232,7 +233,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testSetName_withEmptyName_discardsAndLogs() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
             self.receivedMessage = message
@@ -243,7 +244,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testSetName_withTooLongName_discardsAndLogs() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
             self.receivedMessage = message

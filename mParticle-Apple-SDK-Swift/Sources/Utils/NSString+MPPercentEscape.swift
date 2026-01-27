@@ -1,10 +1,3 @@
-//
-//  NSString+MPPercentEscape.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 10/15/24.
-//
-
 import Foundation
 
 public extension NSString {

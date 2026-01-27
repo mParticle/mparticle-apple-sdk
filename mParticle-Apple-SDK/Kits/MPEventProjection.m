@@ -1,7 +1,6 @@
 #import "MPEventProjection.h"
 #import "MPAttributeProjection.h"
 #import "MParticleSwift.h"
-#import <vector>
 
 @implementation MPProjectionMatch
 
@@ -62,6 +61,28 @@
 @end
 
 @implementation MPEventProjection
+
+#pragma mark Private helpers
+
+- (nullable NSArray<MPAttributeProjection *> *)buildAttributeProjectionsFromMaps:(nullable NSArray *)attributeMaps configuration:(NSDictionary *)configuration {
+    if (!attributeMaps) {
+        return nil;
+    }
+    
+    NSMutableArray<MPAttributeProjection *> *attributeProjectionsArray = [NSMutableArray array];
+    
+    [attributeMaps enumerateObjectsUsingBlock:^(NSDictionary *attributeMap, NSUInteger idx, BOOL *stop) {
+        MPAttributeProjection *attributeProjection = [[MPAttributeProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeAttribute attributeIndex:idx];
+        
+        if (attributeProjection) {
+            [attributeProjectionsArray addObject:attributeProjection];
+        }
+    }];
+    
+    return attributeProjectionsArray.count > 0 ? [attributeProjectionsArray copy] : nil;
+}
+
+#pragma mark Lifecycle
 
 - (id)init {
     self = [self initWithConfiguration:nil];
@@ -137,21 +158,7 @@
     _outboundMessageType = !MPIsNull(actionDictionary[@"outbound_message_type"]) ? (MPMessageType)[actionDictionary[@"outbound_message_type"] integerValue] : MPMessageTypeEvent;
     
     NSArray *attributeMaps = !MPIsNull(actionDictionary[@"attribute_maps"]) ? actionDictionary[@"attribute_maps"] : nil;
-    if (attributeMaps) {
-        __block std::vector<MPAttributeProjection *> attributeProjectionsVector;
-        
-        [attributeMaps enumerateObjectsUsingBlock:^(NSDictionary *attributeMap, NSUInteger idx, BOOL *stop) {
-            MPAttributeProjection *attributeProjection = [[MPAttributeProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeAttribute attributeIndex:idx];
-            
-            if (attributeProjection) {
-                attributeProjectionsVector.push_back(attributeProjection);
-            }
-        }];
-        
-        _attributeProjections = !attributeProjectionsVector.empty() ? [NSArray arrayWithObjects:&attributeProjectionsVector[0] count:attributeProjectionsVector.size()] : nil;
-    } else {
-        _attributeProjections = nil;
-    }
+    _attributeProjections = [self buildAttributeProjectionsFromMaps:attributeMaps configuration:configuration];
 
     return self;
 }

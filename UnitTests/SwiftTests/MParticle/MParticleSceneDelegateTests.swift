@@ -1,5 +1,6 @@
 import XCTest
 @testable import mParticle_Apple_SDK_NoLocation
+internal import mParticle_Apple_SDK_Swift
 
 final class MParticleSceneDelegateTests: XCTestCase {
     
@@ -20,7 +21,7 @@ final class MParticleSceneDelegateTests: XCTestCase {
         
         // The implementation calls [MParticle sharedInstance], so we need to set the mock on the shared instance
         sceneMock = OpenURLHandlerProtocolMock()
-        let sceneHandler = SceneDelegateHandler(logger: MPLog(logLevel: .verbose), appNotificationHandler: sceneMock)
+        let sceneHandler = SceneDelegateHandler(appNotificationHandler: sceneMock)
         mparticle.sceneDelegateHandler = sceneHandler
     }
         

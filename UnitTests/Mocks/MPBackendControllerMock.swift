@@ -39,7 +39,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var startNetworkOptionsParam: MPNetworkOptions?
     var startFirstRunParam: Bool?
     var startInstallationTypeParam: MPInstallationType?
-    var startProxyAppDelegateParam: Bool?
     var startStartKitsAsyncParam: Bool?
     var startConsentStateParam: MPConsentState?
     var startCompletionHandler: (() -> Void)?
@@ -50,7 +49,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         networkOptions: MPNetworkOptions?,
         firstRun: Bool,
         installationType: MPInstallationType,
-        proxyAppDelegate: Bool,
         startKitsAsync: Bool,
         consentState: MPConsentState?,
         completionHandler: @escaping () -> Void
@@ -61,7 +59,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         startNetworkOptionsParam = networkOptions
         startFirstRunParam = firstRun
         startInstallationTypeParam = installationType
-        startProxyAppDelegateParam = proxyAppDelegate
         startStartKitsAsyncParam = startKitsAsync
         startConsentStateParam = consentState
         startCompletionHandler = completionHandler
@@ -85,14 +82,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     func tempSession() -> MParticleSession? {
         tempSessionCalled = true
         return tempSessionReturnValue
-    }
-
-    // MARK: - App delegate proxying
-
-    var unproxyOriginalAppDelegateCalled = false
-
-    func unproxyOriginalAppDelegate() {
-        unproxyOriginalAppDelegateCalled = true
     }
 
     // MARK: - Session lifecycle

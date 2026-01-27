@@ -154,7 +154,7 @@ func testLogTimedEvent(mparticle: MParticle) {
             mparticle.endTimedEvent(retrievedTimedEvent)
         }
     }
-    
+
     wait()
 }
 
@@ -165,7 +165,7 @@ func testLogError(mparticle: MParticle) {
     // Log an error with event info - exactly as in ViewController.m
     let eventInfo = ["cause": "slippery floor"]
     mparticle.logError("Oops", eventInfo: eventInfo)
-    
+
     wait()
 }
 
@@ -184,7 +184,7 @@ func testLogException(mparticle: MParticle) {
     // Note: topmostContext parameter is not available in Swift API, 
     // so we use the simpler logException method
     mparticle.logException(exception)
-    
+
     wait()
 }
 
@@ -207,7 +207,7 @@ func testSetUserAttributes(mparticle: MParticle) {
 
     // Set a numeric user attribute using a custom key
     currentUser.setUserAttribute("Achieved Level", value: 4)
-    
+
     wait()
 }
 
@@ -226,7 +226,7 @@ func testIncrementUserAttribute(mparticle: MParticle) {
 
     // Wait for the initial set to be uploaded
     wait()
-    
+
     // Now increment the attribute by 1 - exactly as in ViewController.m
     currentUser.incrementUserAttribute("Achieved Level", byValue: NSNumber(value: 1))
 
@@ -244,7 +244,7 @@ func testSetSessionAttribute(mparticle: MParticle) {
     // End the session to trigger sending the session attribute
     // Session attributes are sent in the session end message (dt: "se")
     mparticle.endSession()
-    
+
     wait()
 }
 
@@ -257,7 +257,7 @@ func testIncrementSessionAttribute(mparticle: MParticle) {
 
     // Wait for session start to be uploaded (ensures separate request from session end)
     wait()
-    
+
     // First set an initial numeric value for the session attribute
     mparticle.setSessionAttribute("Song Count", value: 5)
 
@@ -267,7 +267,7 @@ func testIncrementSessionAttribute(mparticle: MParticle) {
     // End the session to trigger sending the session attribute
     // Session attributes are sent in the session end message (dt: "se")
     mparticle.endSession()
-    
+
     wait()
 }
 
@@ -306,7 +306,7 @@ func testToggleCCPAConsent(mparticle: MParticle) {
     // Log an event to trigger upload that includes the CCPA consent state
     // The consent state is included in the request body ("con" field) with event uploads
     mparticle.logEvent("CCPA Consent Updated", eventType: .other, eventInfo: ["consent_status": "opted_in"])
-    
+
     wait()
 }
 
@@ -345,7 +345,7 @@ func testToggleGDPRConsent(mparticle: MParticle) {
     // Log an event to trigger upload that includes the GDPR consent state
     // The consent state is included in the request body ("con" field) with event uploads
     mparticle.logEvent("GDPR Consent Updated", eventType: .other, eventInfo: ["consent_status": "opted_in"])
-    
+
     wait()
 }
 
@@ -371,7 +371,7 @@ func testLogIDFA(mparticle: MParticle) {
 
     // Modify the user identity
     mparticle.identity.modify(identityRequest) { _, _ in }
-    
+
     wait()
 }
 
@@ -389,7 +389,7 @@ func testSetATTStatus(mparticle: MParticle) {
     // Log an event to trigger upload that includes the ATT status in device info
     // ATT status is sent in the "att" field within device_info ("di") section
     mparticle.logEvent("ATT Status Updated", eventType: .other, eventInfo: ["att_status": "authorized"])
-    
+
     wait()
 }
 

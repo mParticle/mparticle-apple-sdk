@@ -13,6 +13,8 @@
 #import "mParticle.h"
 #import "MParticleSwift.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
 NSString *const kMPLatitudeKey = @"lat";

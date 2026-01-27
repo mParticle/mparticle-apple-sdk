@@ -47,7 +47,7 @@
 - (NSTimeInterval)uploadInterval;
 - (NSDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId;
 
-- (MPLog*)getLogger;
+- (id)getLogger;
 
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong) id<MPAppNotificationHandlerProtocol> appNotificationHandler;
@@ -58,5 +58,4 @@
 @property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
 @property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
 @property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
-@property (nonatomic, readonly) BOOL proxiedAppDelegate;
 @end

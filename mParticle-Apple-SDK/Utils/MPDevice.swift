@@ -1,11 +1,4 @@
-//
-//  MPDevice.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 2/3/25.
-//
-
-import Foundation
+internal import mParticle_Apple_SDK_Swift
 import MachO
 import QuartzCore
 
@@ -270,13 +263,17 @@ public class MPDevice: NSObject, NSCopying {
                 }
 
                 if !jailbroken {
+                    let mparticle = MParticle.sharedInstance()
+                    let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+                    logger.customLogger = mparticle.customLogger
+
                     // Valid test only if running as root on a jailbroken device
                     let jailbrokenTestData = Data("Jailbroken filesystem test.".utf8)
                     let filePath = "/private/mpjailbrokentest.txt"
                     do {
                         try jailbrokenTestData.write(to: URL(fileURLWithPath: filePath), options: [])
                     } catch {
-                        MPLog.warning("Device is not jailbroken, failed to write test file: \(error)")
+                        logger.warning("Device is not jailbroken, failed to write test file: \(error)")
                     }
                     jailbroken = fileManager.fileExists(atPath: filePath)
 
@@ -284,7 +281,7 @@ public class MPDevice: NSObject, NSCopying {
                         do {
                             try FileManager.default.removeItem(atPath: filePath)
                         } catch {
-                            MPLog.error("Device is jailbroken and test file still exists, failed to remove test file: \(error)")
+                            logger.error("Device is jailbroken and test file still exists, failed to remove test file: \(error)")
                         }
                     }
                 }

@@ -6,7 +6,6 @@
 #import "mParticle.h"
 #import "MPEnums.h"
 #import "MParticleSwift.h"
-#import <vector>
 
 @interface MPKitConfiguration()
 @property (nonatomic, strong) NSDictionary *configurationDictionary;
@@ -191,36 +190,33 @@
         return;
     }
     
-    auto numberOfMessageTypes = [MPEnum messageTypeSize];
-    std::vector<NSNumber *> configuredMessageTypeProjectionsVector;
-    configuredMessageTypeProjectionsVector.reserve(numberOfMessageTypes);
-    std::vector<MPEventProjection *> defaultProjectionsVector;
-    defaultProjectionsVector.reserve(numberOfMessageTypes);
-    std::vector<MPEventProjection *> projectionsVector;
-    projectionsVector.reserve(projections.count - 1);
+    NSUInteger numberOfMessageTypes = [MPEnum messageTypeSize];
+    NSMutableArray<NSNumber *> *configuredMessageTypeProjectionsArray = [[NSMutableArray alloc] initWithCapacity:numberOfMessageTypes];
+    NSMutableArray *defaultProjectionsArray = [[NSMutableArray alloc] initWithCapacity:numberOfMessageTypes];
+    NSMutableArray<MPEventProjection *> *projectionsArray = [[NSMutableArray alloc] initWithCapacity:projections.count];
     
     for (NSUInteger i = 0; i < numberOfMessageTypes; ++i) {
-        configuredMessageTypeProjectionsVector.push_back(@NO);
-        defaultProjectionsVector.push_back((MPEventProjection *)[NSNull null]);
+        [configuredMessageTypeProjectionsArray addObject:@NO];
+        [defaultProjectionsArray addObject:[NSNull null]];
     }
     
     for (NSDictionary *projectionDictionary in projections) {
         MPEventProjection *eventProjection = [[MPEventProjection alloc] initWithConfiguration:projectionDictionary];
         
         if (eventProjection) {
-            configuredMessageTypeProjectionsVector[eventProjection.messageType] = @YES;
+            configuredMessageTypeProjectionsArray[eventProjection.messageType] = @YES;
             
             if (eventProjection.isDefault) {
-                defaultProjectionsVector[eventProjection.messageType] = eventProjection;
+                defaultProjectionsArray[eventProjection.messageType] = eventProjection;
             } else {
-                projectionsVector.push_back(eventProjection);
+                [projectionsArray addObject:eventProjection];
             }
         }
     }
     
-    _configuredMessageTypeProjections = [NSArray arrayWithObjects:&configuredMessageTypeProjectionsVector[0] count:configuredMessageTypeProjectionsVector.size()];
-    _defaultProjections = [NSArray arrayWithObjects:&defaultProjectionsVector[0] count:defaultProjectionsVector.size()];
-    _projections = !projectionsVector.empty() ? [NSArray arrayWithObjects:&projectionsVector[0] count:projectionsVector.size()] : nil;
+    _configuredMessageTypeProjections = configuredMessageTypeProjectionsArray;
+    _defaultProjections = defaultProjectionsArray;
+    _projections = projectionsArray.count > 0 ? projectionsArray : nil;
 }
 
 @end

@@ -1,10 +1,10 @@
+#import "MPKitAPI.h"
+#import "MPForwardRecord.h"
 #import "MPKitContainer.h"
-#import "MParticleSwift.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
-#import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
 #import "MPILogger.h"
 #import "MPKitFilter.h"
@@ -24,17 +24,15 @@
 #import "MPTransactionAttributes+Dictionary.h"
 #import "MPForwardQueueParameters.h"
 #import "MPIntegrationAttributes.h"
-#import "MPKitAPI.h"
 #import "mParticle.h"
 #import "MPConsentKitFilter.h"
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
 #import <objc/message.h>
 #import "MPBracket.h"
-#import <map>
-#import <vector>
+#import "MParticleSwift.h"
 
-using namespace std;
+@import mParticle_Apple_SDK_Swift;
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -799,22 +797,25 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         }
     }
     
-    [self project:kitRegister commerceEvent:forwardCommerceEvent completionHandler:^(vector<MPCommerceEvent *> projectedCommerceEvents, vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {
-        NSArray<MPEventProjection *> *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
+    [self project:kitRegister commerceEvent:forwardCommerceEvent completionHandler:^(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
+                                                                                     NSArray<MPEvent *> *projectedEvents,
+                                                                                     NSArray<MPEventProjection *> *appliedProjections) {
+        NSArray<MPEventProjection *> *appliedProjectionsArray = appliedProjections.count ? appliedProjections : nil;
         
-        if (!projectedEvents.empty()) {
-            for (auto &projectedEvent : projectedEvents) {
+        if (projectedEvents.count != 0) {
+            for (MPEvent *projectedEvent in projectedEvents) {
                 kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:appliedProjectionsArray eventCopy:nil commerceEventCopy:commerceEvent];
                 [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
             }
         }
         
-        if (!projectedCommerceEvents.empty()) {
-            for (auto &projectedCommerceEvent : projectedCommerceEvents) {
+        if (projectedCommerceEvents.count != 0) {
+            for (MPCommerceEvent *projectedCommerceEvent in projectedCommerceEvents) {
                 kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:projectedCommerceEvent shouldFilter:NO appliedProjections:appliedProjectionsArray];
                 [self attemptToLogCommerceEventToKit:kitRegister kitFilter:kitFilter];
             }
         }
+        
     }];
     
     return kitFilter;
@@ -904,15 +905,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         }
     }
     
-    [self project:kitRegister event:forwardEvent messageType:messageTypeCode completionHandler:^(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {
-        NSArray<MPEventProjection *> *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
+    [self project:kitRegister event:forwardEvent messageType:messageTypeCode completionHandler:^(NSArray<MPEvent *> *projectedEvents, NSArray<MPEventProjection *> *appliedProjections) {
+        NSArray<MPEventProjection *> *appliedProjectionsArray = appliedProjections.count > 0 ? appliedProjections : nil;
         
-        for (auto &projectedEvent : projectedEvents) {
+        for (MPEvent *projectedEvent in projectedEvents) {
             kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:shouldFilter appliedProjections:appliedProjectionsArray eventCopy:event commerceEventCopy:nil];
             SEL mutableSelector = selector;
             if (selector == @selector(logScreen:)) {
-                for (int i = 0; i < appliedProjectionsArray.count; i += 1) {
-                    auto appliedProjection = appliedProjectionsArray[i];
+                for (NSUInteger i = 0; i < appliedProjectionsArray.count; i++) {
+                    MPEventProjection *appliedProjection = appliedProjectionsArray[i];
                     if (appliedProjection.outboundMessageType == MPMessageTypeEvent) {
                         mutableSelector = @selector(logBaseEvent:);
                         break;
@@ -1087,18 +1088,22 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 #pragma mark Projection methods
-- (void)project:(id<MPExtensionKitProtocol>)kitRegister commerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(vector<MPCommerceEvent *> projectedCommerceEvents, vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections))completionHandler {
+- (void)project:(id<MPExtensionKitProtocol>)kitRegister
+      commerceEvent:(MPCommerceEvent *const)commerceEvent
+  completionHandler:(void (^)(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
+                              NSArray<MPEvent *> *projectedEvents,
+                              NSArray<MPEventProjection *> *appliedProjections))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
     if (!kitConfiguration.configuredMessageTypeProjections ||
         !(kitConfiguration.configuredMessageTypeProjections.count > MPMessageTypeCommerceEvent) ||
         ![kitConfiguration.configuredMessageTypeProjections[MPMessageTypeCommerceEvent] boolValue])
     {
-        vector<MPCommerceEvent *> projectedCommerceEvents;
-        vector<MPEvent *> projectedEvents;
-        vector<MPEventProjection *> appliedProjections;
+        NSMutableArray<MPCommerceEvent *> *projectedCommerceEvents = [NSMutableArray array];
+        NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
+        NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
         
-        projectedCommerceEvents.push_back(commerceEvent);
+        [projectedCommerceEvents addObject:commerceEvent];
         
         completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
         
@@ -1117,20 +1122,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSArray *projections = [kitConfiguration.projections filteredArrayUsingPredicate:predicate];
     
     // Priming projections
-    vector<MPCommerceEvent *> projectedCommerceEvents;
-    vector<MPEvent *> projectedEvents;
-    vector<MPEventProjection *> appliedProjections;
-    __block vector<MPEventProjection *> applicableEventProjections;
+    NSMutableArray<MPCommerceEvent *> *projectedCommerceEvents = [NSMutableArray array];
+    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
+    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
+    NSMutableArray<MPEventProjection *> *applicableEventProjections = [NSMutableArray array];
     MPEventType typeOfCommerceEvent = [commerceEvent type];
     MPCommerceEventKind kindOfCommerceEvent = [commerceEvent kind];
     
-    NSArray *const products = [&commerceEvent] {
-        return [commerceEvent kind] == MPCommerceEventKindProduct ? commerceEvent.products : (NSArray *)nil;
-    }();
-    
-    NSArray *const promotions = [&commerceEvent] {
-        return [commerceEvent kind] == MPCommerceEventKindPromotion ? commerceEvent.promotionContainer.promotions : (NSArray *)nil;
-    }();
+    NSArray<MPProduct *> *products = (commerceEvent.kind == MPCommerceEventKindProduct) ? commerceEvent.products : nil;
+    NSArray<MPPromotion *> *promotions = (commerceEvent.kind == MPCommerceEventKindPromotion) ? commerceEvent.promotionContainer.promotions : nil;
     
     BOOL (^isApplicableEventProjection)(MPEventProjection *, NSDictionary *) = ^ BOOL (MPEventProjection *eventProjection, NSDictionary *sourceDictionary) {
         
@@ -1158,13 +1158,13 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     switch (eventProjection.propertyKind) {
                         case MPProjectionPropertyKindEventField:
                             if (isApplicableEventProjection(eventProjection, [[commerceEvent beautifiedAttributes] transformValuesToString])) {
-                                applicableEventProjections.push_back(eventProjection);
+                                [applicableEventProjections addObject:eventProjection];
                             }
                             break;
                             
                         case MPProjectionPropertyKindEventAttribute:
                             if (isApplicableEventProjection(eventProjection, [[commerceEvent customAttributes] transformValuesToString])) {
-                                applicableEventProjections.push_back(eventProjection);
+                                [applicableEventProjections addObject:eventProjection];
                             }
                             break;
                             
@@ -1173,7 +1173,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                 [products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
                                     *stop = isApplicableEventProjection(eventProjection, [[product beautifiedAttributes] transformValuesToString]);
                                     if (*stop) {
-                                        applicableEventProjections.push_back(eventProjection);
+                                        [applicableEventProjections addObject:eventProjection];
                                     }
                                 }];
                             } else if (kindOfCommerceEvent == MPCommerceEventKindImpression) {
@@ -1184,7 +1184,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                     [productImpressions enumerateObjectsUsingBlock:^(MPProduct *productImpression, BOOL *stop) {
                                         stopIteration = isApplicableEventProjection(eventProjection, [[productImpression beautifiedAttributes] transformValuesToString]);
                                         if (stopIteration) {
-                                            applicableEventProjections.push_back(eventProjection);
+                                            [applicableEventProjections addObject:eventProjection];
                                             *stop = YES;
                                         }
                                     }];
@@ -1201,7 +1201,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                 [products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
                                     *stop = isApplicableEventProjection(eventProjection, [[product userDefinedAttributes] transformValuesToString]);
                                     if (*stop) {
-                                        applicableEventProjections.push_back(eventProjection);
+                                        [applicableEventProjections addObject:eventProjection];
                                     }
                                 }];
                             } else if (kindOfCommerceEvent == MPCommerceEventKindImpression) {
@@ -1212,7 +1212,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                     [productImpressions enumerateObjectsUsingBlock:^(MPProduct *productImpression, BOOL *stop) {
                                         stopIteration = isApplicableEventProjection(eventProjection, [[productImpression userDefinedAttributes] transformValuesToString]);
                                         if (stopIteration) {
-                                            applicableEventProjections.push_back(eventProjection);
+                                            [applicableEventProjections addObject:eventProjection];
                                             *stop = YES;
                                         }
                                     }];
@@ -1229,7 +1229,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                 [promotions enumerateObjectsUsingBlock:^(MPPromotion *promotion, NSUInteger idx, BOOL *stop) {
                                     *stop = isApplicableEventProjection(eventProjection, [[promotion beautifiedAttributes] transformValuesToString]);
                                     if (*stop) {
-                                        applicableEventProjections.push_back(eventProjection);
+                                        [applicableEventProjections addObject:eventProjection];
                                     }
                                 }];
                             }
@@ -1240,7 +1240,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                             break;
                     }
                 } else {
-                    applicableEventProjections.push_back(eventProjection);
+                    [applicableEventProjections addObject:eventProjection];
                 }
             }
         } // for
@@ -1253,15 +1253,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         
         switch (attributeProjection.matchType) {
             case MPProjectionMatchTypeHash: {
-                map<int, NSString *> hashKeyMap;
+                NSMutableDictionary<NSNumber *, NSString *> *hashKeyMap = [NSMutableDictionary dictionary];
                 NSString *key;
                 NSEnumerator *keyEnumerator = [sourceDictionary keyEnumerator];
                 while ((key = [keyEnumerator nextObject])) {
-                    int hashValue = [[MPIHasher hashCommerceEventAttribute:commerceEvent.type key:key] intValue];
-                    hashKeyMap[hashValue] = key;
+                    NSNumber *hashNumber = @([[MPIHasher hashCommerceEventAttribute:commerceEvent.type key:key] intValue]);
+                    hashKeyMap[hashNumber] = key;
                 }
                 
-                key = hashKeyMap[[attributeProjection.name intValue]];
+                key = hashKeyMap[@([attributeProjection.name intValue])];
                 
                 if (!MPIsNull(key)) {
                     value = [strongSelf transformValue:sourceDictionary[key] dataType:attributeProjection.dataType];
@@ -1315,9 +1315,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSPredicate *predicate;
         NSArray<MPAttributeProjection *> *filteredAttributeProjections;
         
-        vector<MPProjectionPropertyKind> propertyKinds = {MPProjectionPropertyKindEventField, MPProjectionPropertyKindEventAttribute};
+        NSArray *propertyKinds = @[@(MPProjectionPropertyKindEventField), @(MPProjectionPropertyKindEventAttribute)];
         
-        for (auto propertyKind : propertyKinds) {
+        for (NSNumber *n in propertyKinds) {
+            MPProjectionPropertyKind propertyKind = n.intValue;
             predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)propertyKind];
             filteredAttributeProjections = [attributeProjections filteredArrayUsingPredicate:predicate];
             
@@ -1358,9 +1359,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSPredicate *predicate;
         NSArray<MPAttributeProjection *> *filteredAttributeProjections;
         
-        vector<MPProjectionPropertyKind> propertyKinds = {MPProjectionPropertyKindProductField, MPProjectionPropertyKindProductAttribute};
+        NSArray *propertyKinds = @[@(MPProjectionPropertyKindProductField), @(MPProjectionPropertyKindProductAttribute)];
         
-        for (auto propertyKind : propertyKinds) {
+        for (NSNumber *n in propertyKinds) {
+            MPProjectionPropertyKind propertyKind = n.intValue;
             predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)propertyKind];
             filteredAttributeProjections = [attributeProjections filteredArrayUsingPredicate:predicate];
             
@@ -1407,8 +1409,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     return [key1 compare:key2];
                 }];
                 
-                NSRange deletionRange = NSMakeRange(maxCustomParams - 1, maxCustomParams - userDictionary.count);
-                [keys removeObjectsInRange:deletionRange];
+                if (keys.count > maxCustomParams) {
+                    NSRange deletionRange = NSMakeRange(maxCustomParams, keys.count - maxCustomParams);
+                    [keys removeObjectsInRange:deletionRange];
+                }
                 
                 for (NSString *key in keys) {
                     projectedDictionary[key] = userDictionary[key];
@@ -1420,11 +1424,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     };
     
     // Applying projections
-    if (!applicableEventProjections.empty()) {
-        for (auto &eventProjection : applicableEventProjections) {
+    if (applicableEventProjections.count != 0) {
+        for (MPEventProjection *eventProjection in applicableEventProjections) {
             NSMutableDictionary *projectedCommerceEventDictionary = [[NSMutableDictionary alloc] init];
             NSDictionary *projectedDictionary;
-            vector<NSMutableDictionary *> projectedDictionaries;
+            NSMutableArray<NSMutableDictionary *> *projectedDictionaries = [NSMutableArray array];
             BOOL requirementsMet = YES;
             
             // Projecting commerce event fields and attributes
@@ -1446,24 +1450,25 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             // Projecting products/promotions attributes
             switch (kindOfCommerceEvent) {
                 case MPCommerceEventKindProduct: {
-                    vector<NSUInteger> productIndexes;
+                    NSMutableArray<NSNumber *> *productIndexes = [NSMutableArray array];
                     NSUInteger numberOfProducts = products.count;
                     
                     if (numberOfProducts > 0) {
                         if (eventProjection.behaviorSelector == MPProjectionBehaviorSelectorForEach) {
-                            productIndexes.reserve(numberOfProducts);
+                            productIndexes = [NSMutableArray arrayWithCapacity:numberOfProducts];
                             
                             for (NSUInteger idx = 0; idx < numberOfProducts; ++idx) {
-                                productIndexes.push_back(idx);
+                                [productIndexes addObject:@(idx)];
                             }
                         } else {
-                            productIndexes.push_back(numberOfProducts - 1);
+                            [productIndexes addObject:@(numberOfProducts - 1)];
                         }
                         
                         predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d || propertyKind == %d", (int)MPProjectionPropertyKindProductField, (int)MPProjectionPropertyKindProductAttribute];
                         attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
                         
-                        for (auto idx : productIndexes) {
+                        for (NSNumber *idxNum in productIndexes) {
+                            NSUInteger idx = idxNum.unsignedIntegerValue;
                             MPProduct *product = products[idx];
                             projectedDictionary = projectProductWithAttributes(product, attributeProjections, projectedDictionary);
                             
@@ -1477,7 +1482,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                     
                                     applyMaxCustomAttributes(commerceEvent, eventProjection, projectedProductDictionary);
                                     
-                                    projectedDictionaries.push_back(projectedProductDictionary);
+                                    [projectedDictionaries addObject:projectedProductDictionary];
                                 } else {
                                     requirementsMet = NO;
                                     break;
@@ -1489,24 +1494,25 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     break;
                     
                 case MPCommerceEventKindPromotion: {
-                    vector<NSUInteger> promotionIndexes;
+                    NSMutableArray<NSNumber *> *promotionIndexes = [NSMutableArray array];
                     NSUInteger numberOfPromotions = promotions.count;
                     
                     if (numberOfPromotions > 0) {
                         if (eventProjection.behaviorSelector == MPProjectionBehaviorSelectorForEach) {
-                            promotionIndexes.reserve(numberOfPromotions);
+                            promotionIndexes = [NSMutableArray arrayWithCapacity:numberOfPromotions];
                             
                             for (NSUInteger index = 0; index < numberOfPromotions; ++index) {
-                                promotionIndexes.push_back(index);
+                                [promotionIndexes addObject:@(index)];
                             }
                         } else {
-                            promotionIndexes.push_back(numberOfPromotions - 1);
+                            [promotionIndexes addObject:@(numberOfPromotions - 1)];
                         }
                         
                         predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)MPProjectionPropertyKindPromotionField];
                         attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
                         
-                        for (auto idx : promotionIndexes) {
+                        for (NSNumber *idxNum in promotionIndexes) {
+                            NSUInteger idx = idxNum.unsignedIntegerValue;
                             MPPromotion *promotion = promotions[idx];
                             NSDictionary *sourceDictionary = [[promotion beautifiedAttributes] transformValuesToString];
                             
@@ -1523,7 +1529,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                         
                                         applyMaxCustomAttributes(commerceEvent, eventProjection, projectedPromotionDictionary);
                                         
-                                        projectedDictionaries.push_back(projectedPromotionDictionary);
+                                        [projectedDictionaries addObject:projectedPromotionDictionary];
                                     } else {
                                         requirementsMet = NO;
                                         break;
@@ -1545,41 +1551,41 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             
             // The collection of projected dictionaries become events or commerce events
             if (requirementsMet) {
-                if (!projectedDictionaries.empty()) {
-                    for (auto &projectedDictionary : projectedDictionaries) {
+                if (projectedDictionaries.count != 0) {
+                    for (NSMutableDictionary *projectedDictionary in projectedDictionaries) {
                         if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
                             MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
                             [projectedCommerceEvent setCustomAttributes:projectedDictionary];
-                            projectedCommerceEvents.push_back(projectedCommerceEvent);
+                            [projectedCommerceEvents addObject:projectedCommerceEvent];
                         } else {
                             MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
                             projectedEvent.customAttributes = projectedDictionary;
-                            projectedEvents.push_back(projectedEvent);
+                            [projectedEvents addObject:projectedEvent];
                         }
                         
-                        appliedProjections.push_back(eventProjection);
+                        [appliedProjections addObject:eventProjection];
                     }
                 } else {
                     if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
                         MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
-                        projectedCommerceEvents.push_back(projectedCommerceEvent);
+                        [projectedCommerceEvents addObject:projectedCommerceEvent];
                     } else {
                         MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
                         projectedEvent.customAttributes = commerceEvent.customAttributes;
-                        projectedEvents.push_back(projectedEvent);
+                        [projectedEvents addObject:projectedEvent];
                     }
                     
-                    appliedProjections.push_back(eventProjection);
+                    [appliedProjections addObject:eventProjection];
                 }
             } else {
-                projectedCommerceEvents.push_back(commerceEvent);
+                [projectedCommerceEvents addObject:commerceEvent];
             }
         } // for (event projection)
     } // If (applying projections)
     
     // If no projection was applied, uses the original commerce event.
-    if (projectedCommerceEvents.empty() && projectedEvents.empty()) {
-        projectedCommerceEvents.push_back(commerceEvent);
+    if (projectedCommerceEvents.count == 0 && projectedEvents.count == 0) {
+        [projectedCommerceEvents addObject:commerceEvent];
     }
     
     if (strongSelf) {
@@ -1589,16 +1595,22 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
 }
 
-- (void)project:(id<MPExtensionKitProtocol>)kitRegister event:(MPEvent *const)event messageType:(MPMessageType)messageType completionHandler:(void (^)(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections))completionHandler {
+- (void)project:(id<MPExtensionKitProtocol>)kitRegister
+          event:(MPEvent *const)event
+    messageType:(MPMessageType)messageType
+completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
+                            NSArray<MPEventProjection *> *appliedProjections))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
     if (!kitConfiguration.configuredMessageTypeProjections ||
         !(kitConfiguration.configuredMessageTypeProjections.count > messageType) ||
         ![kitConfiguration.configuredMessageTypeProjections[messageType] boolValue])
     {
-        vector<MPEvent *> projectedEvents;
-        vector<MPEventProjection *> appliedProjections;
-        projectedEvents.push_back(event);
+        NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
+        NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
+        if (event) {
+            [projectedEvents addObject:event];
+        }
         
         completionHandler(projectedEvents, appliedProjections);
         
@@ -1634,14 +1646,14 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         __block NSMutableArray<MPAttributeProjection *> *removeAttributeProjections = [[NSMutableArray alloc] init];
         
         // Building a map between keys and their respective hashes
-        __block std::map<NSString *, int> keyHashMap;
-        __block std::map<int, NSString *> hashKeyMap;
+        __block NSMutableDictionary<NSString *, NSNumber *> *keyHashMap = [NSMutableDictionary dictionary];
+        __block NSMutableDictionary<NSNumber *, NSString *> *hashKeyMap = [NSMutableDictionary dictionary];
         NSString *key;
         NSEnumerator *keyEnumerator = [eventInfo keyEnumerator];
         while ((key = [keyEnumerator nextObject])) {
-            int hashValue = [[MPIHasher hashEventAttributeKey:event.type eventName:event.name customAttributeName:key isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
-            keyHashMap[key] = hashValue;
-            hashKeyMap[hashValue] = key;
+            NSNumber *hashNumber = @([[MPIHasher hashEventAttributeKey:event.type eventName:event.name customAttributeName:key isLogScreen:(messageType == MPMessageTypeScreenView)] intValue]);
+            keyHashMap[key] = hashNumber;
+            hashKeyMap[hashNumber] = key;
         }
         
         [eventInfo enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
@@ -1677,9 +1689,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                         break;
                         
                     case MPProjectionMatchTypeHash: {
-                        int hashValue = keyHashMap[key];
+                        NSNumber *hashValue = keyHashMap[key];
                         
-                        if (hashValue == [attributeProjection.name integerValue]) {
+                        if (hashValue.integerValue == attributeProjection.name.integerValue) {
                             projectedAttributeValue = [strongSelf transformValue:obj dataType:attributeProjection.dataType];
                             
                             if (projectedAttributeValue) {
@@ -1694,9 +1706,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                 stopInnerLoop = YES;
                             }
                         } else if (attributeProjection.required) {
-                            auto iterator = hashKeyMap.find([attributeProjection.name intValue]);
+                            NSNumber *lookupKey = @([attributeProjection.name intValue]);
                             
-                            if (iterator == hashKeyMap.end()) {
+                            if (hashKeyMap[lookupKey] == nil) {
                                 doesNotContainRequiredAttribute = YES;
                                 *stop = YES;
                                 stopInnerLoop = YES;
@@ -1773,8 +1785,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSArray *projections = [kitConfiguration.projections filteredArrayUsingPredicate:predicate];
     
     // Apply projections
-    vector<MPEvent *> projectedEvents;
-    vector<MPEventProjection *> appliedProjections;
+    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
+    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
     MPEvent *projectedEvent;
     MPEventProjection *defaultProjection = nil;
     NSDictionary *projectedAttributes;
@@ -1859,15 +1871,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                         }
                     }
                     
-                    projectedEvents.push_back(projectedEvent);
-                    appliedProjections.push_back(eventProjection);
+                    [projectedEvents addObject:projectedEvent];
+                    [appliedProjections addObject:eventProjection];
                 }
             }
         }
     }
     
     // Default projection, applied only if no other projection was applicable
-    if (projectedEvents.empty()) {
+    if (projectedEvents.count == 0) {
         defaultProjection = kitConfiguration.defaultProjections[messageType];
         
         if (!MPIsNull(defaultProjection)) {
@@ -1881,13 +1893,13 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     projectedEvent.name = defaultProjection.projectedName;
                 }
                 
-                projectedEvents.push_back(projectedEvent);
-                appliedProjections.push_back(defaultProjection);
+                [projectedEvents addObject:projectedEvent];
+                [appliedProjections addObject:defaultProjection];
             }
         }
         
-        if (projectedEvents.empty()) {
-            projectedEvents.push_back(event);
+        if (projectedEvents.count == 0 && event) {
+            [projectedEvents addObject:event];
         }
     }
     
@@ -1994,9 +2006,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     Class NSArrayClass = [NSArray class];
     
     // Adds all currently configured kits to a list
-    vector<NSNumber *> deactivateKits;
+    NSMutableArray<NSNumber *> *deactivateKits = [NSMutableArray array];
     for (kitRegister in activeKitsRegistry) {
-        deactivateKits.push_back(kitRegister.code);
+        [deactivateKits addObject:kitRegister.code];
     }
     
     // Configure kits according to server instructions
@@ -2101,10 +2113,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", integrationId);
         }
         
-        if (!deactivateKits.empty()) {
-            for (size_t i = 0; i < deactivateKits.size(); ++i) {
-                if ([deactivateKits.at(i) isEqualToNumber:integrationId]) {
-                    deactivateKits.erase(deactivateKits.begin() + i);
+        if (deactivateKits.count != 0) {
+            for (NSUInteger i = 0; i < deactivateKits.count; i++) {
+                if ([deactivateKits[i] isEqualToNumber:integrationId]) {
+                    [deactivateKits removeObjectAtIndex:i];
                     break;
                 }
             }
@@ -2112,9 +2124,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
     
     // Remove currently configured kits that were not in the instructions from the server
-    if (!deactivateKits.empty()) {
-        for (vector<NSNumber *>::iterator ekIterator = deactivateKits.begin(); ekIterator != deactivateKits.end(); ++ekIterator) {
-            predicate = [NSPredicate predicateWithFormat:@"code == %@", *ekIterator];
+    if (deactivateKits.count != 0) {
+        for (NSNumber *ek in deactivateKits) {
+            predicate = [NSPredicate predicateWithFormat:@"code == %@", ek];
             kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
             [self freeKit:kitRegister.code];
         }

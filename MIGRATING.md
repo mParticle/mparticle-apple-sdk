@@ -1,8 +1,74 @@
+<!-- markdownlint-disable MD024 -->
+
 # Migration Guides
 
 This document provides migration guidance for breaking changes in the mParticle Apple SDK.
 
 ## Migrating from versions < 9.0.0
+
+### Removed AppDelegateProxy
+
+The `AppDelegateProxy` feature has been removed from the SDK. This feature previously allowed the SDK to automatically intercept `UIApplicationDelegate` messages to handle push notifications, URL opening, and user activity events without requiring explicit calls from your app delegate.
+
+#### What Has Changed
+
+- The `proxyAppDelegate` property has been removed from `MParticleOptions`
+- The `proxiedAppDelegate` property has been removed from `MParticle`
+- The `MPAppDelegateProxy` and `MPSurrogateAppDelegate` classes have been removed
+
+#### Migration Steps
+
+If you were using `proxyAppDelegate = YES` (which was the default), you must now explicitly forward app delegate events to the SDK.
+
+##### Push Notifications
+
+**After (Objective-C):**
+
+```objective-c
+// In AppDelegate
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    [[MParticle sharedInstance] didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+}
+
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    [[MParticle sharedInstance] didFailToRegisterForRemoteNotificationsWithError:error];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    [[MParticle sharedInstance] didReceiveRemoteNotification:userInfo];
+    completionHandler(UIBackgroundFetchResultNewData);
+}
+```
+
+**After (Swift):**
+
+```swift
+// In AppDelegate
+func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    MParticle.sharedInstance().didRegisterForRemoteNotifications(withDeviceToken: deviceToken)
+}
+
+func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    MParticle.sharedInstance().didFailToRegisterForRemoteNotificationsWithError(error)
+}
+
+func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    MParticle.sharedInstance().didReceiveRemoteNotification(userInfo)
+    completionHandler(.newData)
+}
+```
+
+##### URL Handling and User Activity
+
+For URL handling and user activity (universal links), use the `UIScene` lifecycle methods as described in the "Removed Deprecated UIApplicationDelegate Methods" section below.
+
+#### Notes
+
+- If you were already using `proxyAppDelegate = NO`, no changes are required
+- Remove any references to `proxyAppDelegate` from your `MParticleOptions` configuration
+- Remove any references to `proxiedAppDelegate` property checks
+
+---
 
 ### Removed MPListenerController
 

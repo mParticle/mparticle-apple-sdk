@@ -1,11 +1,4 @@
-//
-//  MPIHasher.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Ben Baron on 10/24/23.
-//
-
-import Foundation
+internal import mParticle_Apple_SDK_Swift
 
 @objc public class MPIHasher: NSObject {
     @objc public class func hashFNV1a(_ data: Data) -> Int64 {
@@ -24,7 +17,11 @@ import Foundation
 
         let lowercaseStringToHash = stringToHash.lowercased()
         guard let dataToHash = lowercaseStringToHash.data(using: .utf8) else {
-            MPLog.warning("Hash String Failed. Could not encode string as data")
+            let mparticle = MParticle.sharedInstance()
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+            logger.customLogger = mparticle.customLogger
+
+            logger.warning("Hash String Failed. Could not encode string as data")
             return ""
         }
 
@@ -38,7 +35,11 @@ import Foundation
 
     @objc public class func hashStringUTF16(_ stringToHash: String) -> String {
         guard let data = stringToHash.data(using: .utf16LittleEndian) else {
-            MPLog.warning("Hash String UTF16 Failed. Could not encode string as data")
+            let mparticle = MParticle.sharedInstance()
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+            logger.customLogger = mparticle.customLogger
+
+            logger.warning("Hash String UTF16 Failed. Could not encode string as data")
             return ""
         }
         let hash = hashFNV1a(data)

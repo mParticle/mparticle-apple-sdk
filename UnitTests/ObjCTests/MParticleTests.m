@@ -209,7 +209,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -227,7 +226,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -247,7 +245,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -268,7 +265,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -288,7 +284,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     

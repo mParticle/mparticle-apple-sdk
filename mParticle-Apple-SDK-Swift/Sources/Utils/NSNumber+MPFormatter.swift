@@ -1,11 +1,3 @@
-//
-//  NSNumber+MPFormatter.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Ben Baron on 3/9/23.
-//  Copyright © 2023 mParticle, Inc. All rights reserved.
-//
-
 import Foundation
 
 @objc public extension NSNumber {
