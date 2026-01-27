@@ -27,6 +27,8 @@
 		359BAFFC2E56335300A8A704 /* SettingsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFB2E56335300A8A704 /* SettingsProvider.m */; };
 		359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
 		359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
+		35C3DE702F2919B40077C0FD /* MPCCPAConsent.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C3DE6F2F2919B40077C0FD /* MPCCPAConsent.m */; };
+		35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */; };
 		35DBFDD12F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35DBFDC82F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework */; };
 		35DBFDEC2F2105F600E872F5 /* mParticle_Apple_SDK_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35DBFDC82F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework */; platformFilter = ios; };
 		35DBFDED2F2105F600E872F5 /* mParticle_Apple_SDK_Swift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 35DBFDC82F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -275,8 +277,6 @@
 		D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */; };
 		D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D3CEDABA2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
-		D3CEDABC2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */; };
 		D3CEDABF2C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
 		D3CEDAC12C9C5B5B001B32DF /* MPGDPRConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */; };
 		D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */; };
@@ -342,6 +342,8 @@
 		359BAFFB2E56335300A8A704 /* SettingsProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsProvider.m; sourceTree = "<group>"; };
 		359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderTests.swift; sourceTree = "<group>"; };
 		359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserDefaultsMock.swift; sourceTree = "<group>"; };
+		35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPCCPAConsent.h; sourceTree = "<group>"; };
+		35C3DE6F2F2919B40077C0FD /* MPCCPAConsent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPCCPAConsent.m; sourceTree = "<group>"; };
 		35DBFDC82F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_Swift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		35DBFDD02F2103FD00E872F5 /* mParticle-Apple-SDK-SwiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-Apple-SDK-SwiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPAttributionResult+MParticlePrivate.m"; sourceTree = "<group>"; };
@@ -605,7 +607,6 @@
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
 		D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK.h; sourceTree = "<group>"; };
 		D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCCPAConsent.swift; sourceTree = "<group>"; };
 		D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPGDPRConsent.swift; sourceTree = "<group>"; };
 		D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConvertJS.swift; sourceTree = "<group>"; };
 		D3DE316A2D5261F700CC537F /* MPDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDevice.swift; sourceTree = "<group>"; };
@@ -858,9 +859,9 @@
 		53A79AF529CDFB1F00E7489F /* Consent */ = {
 			isa = PBXGroup;
 			children = (
+				35C3DE6F2F2919B40077C0FD /* MPCCPAConsent.m */,
 				53A79AF729CDFB1F00E7489F /* MPConsentSerialization.m */,
 				D3CEDABD2C9C5B5B001B32DF /* MPGDPRConsent.swift */,
-				D3CEDAB82C9B14BF001B32DF /* MPCCPAConsent.swift */,
 				53A79AF829CDFB1F00E7489F /* MPConsentKitFilter.m */,
 				53A79AF929CDFB1F00E7489F /* MPConsentState.m */,
 				53A79AFA29CDFB1F00E7489F /* MPConsentSerialization.h */,
@@ -1035,6 +1036,7 @@
 				53A79AA329CDFB1E00E7489F /* MPBackendController.h */,
 				53A79ABB29CDFB1E00E7489F /* MPPersistenceController.h */,
 				7E03877F2DB913D2003B7D5E /* MPRokt.h */,
+				35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */,
 			);
 			path = Include;
 			sourceTree = "<group>";
@@ -1281,6 +1283,7 @@
 				53A79D5B29CE23F700E7489F /* MPKitContainer.h in Headers */,
 				53A79D5D29CE23F700E7489F /* MPNotificationController.h in Headers */,
 				53A79D5E29CE23F700E7489F /* MPURLConnectionAssociate.h in Headers */,
+				35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */,
 				53A79D5F29CE23F700E7489F /* MPSession.h in Headers */,
 				53A79D6029CE23F700E7489F /* MPUploadBuilder.h in Headers */,
 				53A79D6129CE23F700E7489F /* MPKitActivity.h in Headers */,
@@ -1465,7 +1468,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3CEDABC2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */,
 				534CD26429CE2CE1008452B3 /* MPKitSecondTestClass.m in Sources */,
 				534CD26529CE2CE1008452B3 /* MPKitAPITests.m in Sources */,
 				534CD26629CE2CE1008452B3 /* MPUserIdentityChangeTests.m in Sources */,
@@ -1582,6 +1584,7 @@
 				53A79D7529CE23F700E7489F /* MPAttributeProjection.m in Sources */,
 				53A79D7629CE23F700E7489F /* MPConsumerInfo.m in Sources */,
 				53A79D7729CE23F700E7489F /* MPKitConfiguration.m in Sources */,
+				35C3DE702F2919B40077C0FD /* MPCCPAConsent.m in Sources */,
 				53A79D7829CE23F700E7489F /* MPConsentState.m in Sources */,
 				D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */,
 				53A79D7929CE23F700E7489F /* MPBracket.m in Sources */,
@@ -1596,7 +1599,6 @@
 				53A79D8329CE23F700E7489F /* MPConsentSerialization.m in Sources */,
 				53A79D8429CE23F700E7489F /* MPIdentityApi.m in Sources */,
 				53A79D8629CE23F700E7489F /* MPUpload.m in Sources */,
-				D3CEDABA2C9B14BF001B32DF /* MPCCPAConsent.swift in Sources */,
 				53A79D8829CE23F700E7489F /* MPApplication.m in Sources */,
 				53A79D8A29CE23F700E7489F /* MPCustomModule.m in Sources */,
 				53A79D8C29CE23F700E7489F /* MPKitActivity.m in Sources */,

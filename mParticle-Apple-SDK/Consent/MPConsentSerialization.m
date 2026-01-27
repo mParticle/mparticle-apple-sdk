@@ -1,5 +1,6 @@
 #import "MPConsentSerialization.h"
 #import "MPConsentState.h"
+#import "MPCCPAConsent.h"
 #import "MPILogger.h"
 #import "MPIConstants.h"
 #import "MPConsentKitFilter.h"

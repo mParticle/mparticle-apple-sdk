@@ -29,6 +29,7 @@
 #import "MPKitTestClassSideloaded.h"
 #import "MPApplication.h"
 #import "MParticleSwift.h"
+#import "MPCCPAConsent.h"
 
 @interface MParticle ()
 

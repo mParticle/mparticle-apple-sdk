@@ -1,5 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MPConsentState.h"
+#import "MPCCPAConsent.h"
 #import "MPBaseTestCase.h"
 #import "MParticleSwift.h"
 
