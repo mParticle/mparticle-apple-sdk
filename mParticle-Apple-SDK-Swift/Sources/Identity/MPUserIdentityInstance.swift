@@ -1,6 +1,6 @@
 import Foundation
 
-@objc public final class MPUserIdentityInstance_PRIVATE: NSObject {
+@objc public final class MPUserIdentityInstancePRIVATE: NSObject {
     @objc public var value: String?
     @objc public var dateFirstSet: Date?
     @objc public var type: MPUserIdentitySwift
@@ -28,7 +28,6 @@ import Foundation
         self.init(type: type, value: value, dateFirstSet: dateFirstSet, isFirstTimeSet: isFirstSet)
     }
 
-    // TODO: Change return type to [AnyHashable: Any] once no longer used by Obj-C callers
     @objc public func dictionaryRepresentation() -> NSMutableDictionary {
         var identityDictionary = [AnyHashable: Any]()
         identityDictionary[MessageKeys.kMPUserIdentityTypeKey] = type.rawValue

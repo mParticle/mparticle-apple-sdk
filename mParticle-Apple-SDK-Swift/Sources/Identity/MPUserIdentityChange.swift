@@ -1,8 +1,8 @@
 import Foundation
 
-@objc public final class MPUserIdentityChange_PRIVATE: NSObject {
-    @objc public var newUserIdentity: MPUserIdentityInstance_PRIVATE?
-    @objc public var oldUserIdentity: MPUserIdentityInstance_PRIVATE?
+@objc public final class MPUserIdentityChangePRIVATE: NSObject {
+    @objc public var newUserIdentity: MPUserIdentityInstancePRIVATE?
+    @objc public var oldUserIdentity: MPUserIdentityInstancePRIVATE?
     @objc public private(set) var changed = false
 
     private var _timestamp: Date?
@@ -18,7 +18,7 @@ import Foundation
         }
     }
 
-    @objc public init(newUserIdentity: MPUserIdentityInstance_PRIVATE?, userIdentities: [[String: Any]]?) {
+    @objc public init(newUserIdentity: MPUserIdentityInstancePRIVATE?, userIdentities: [[String: Any]]?) {
         self.newUserIdentity = newUserIdentity
         changed = true
 
@@ -36,8 +36,8 @@ import Foundation
     }
 
     @objc public convenience init(
-        newUserIdentity: MPUserIdentityInstance_PRIVATE?,
-        oldUserIdentity: MPUserIdentityInstance_PRIVATE?,
+        newUserIdentity: MPUserIdentityInstancePRIVATE?,
+        oldUserIdentity: MPUserIdentityInstancePRIVATE?,
         timestamp: Date?,
         userIdentities: [[String: Any]]?
     ) {

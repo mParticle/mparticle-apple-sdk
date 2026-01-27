@@ -68,7 +68,7 @@
     NSDate *date = [NSDate date];
     
     // New user identity
-    MPUserIdentityInstance_PRIVATE *userIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:YES];
+    MPUserIdentityInstancePRIVATE *userIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:YES];
     XCTAssertNotNil(userIdentity);
     XCTAssertEqual(userIdentity.type, MPUserIdentityCustomerId);
     XCTAssertEqualObjects(userIdentity.value, @"The Most Interesting Man in the World");
@@ -83,7 +83,7 @@
     XCTAssertEqualObjects(dictionary[@"f"], @(YES));
     
     // Delete user identity
-    userIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:nil dateFirstSet:date isFirstTimeSet:NO];
+    userIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:nil dateFirstSet:date isFirstTimeSet:NO];
     XCTAssertNotNil(userIdentity);
     XCTAssertEqual(userIdentity.type, MPUserIdentityCustomerId);
     XCTAssertNil(userIdentity.value);
@@ -106,7 +106,7 @@
                                                              @"dfs":MPMilliseconds([date timeIntervalSince1970]),
                                                              @"f":@YES};
 
-    MPUserIdentityInstance_PRIVATE *userIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithUserIdentityDictionary:userIdentityDictionary];
+    MPUserIdentityInstancePRIVATE *userIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:userIdentityDictionary];
     XCTAssertNotNil(userIdentity);
     XCTAssertEqual(userIdentity.type, MPUserIdentityCustomerId);
     XCTAssertEqualObjects(userIdentity.value, @"The Most Interesting Man in the World");
@@ -119,7 +119,7 @@
                                @"dfs":MPMilliseconds([date timeIntervalSince1970]),
                                @"f":@YES};
 
-    userIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithUserIdentityDictionary:userIdentityDictionary];
+    userIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:userIdentityDictionary];
     XCTAssertNotNil(userIdentity);
     XCTAssertEqual(userIdentity.type, MPUserIdentityOther2);
     XCTAssertEqualObjects(userIdentity.value, @"34353234");
@@ -129,17 +129,17 @@
 
 - (void)testUserIdentityChange {
     NSDate *date = [NSDate date];
-    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:NO];
-    MPUserIdentityInstance_PRIVATE *oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Least Interesting Man in the World" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
+    MPUserIdentityInstancePRIVATE *newUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:NO];
+    MPUserIdentityInstancePRIVATE *oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Least Interesting Man in the World" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
 
-    MPUserIdentityChange_PRIVATE *userIdentityChange = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:oldUserIdentity timestamp:date userIdentities:nil];
+    MPUserIdentityChangePRIVATE *userIdentityChange = [[MPUserIdentityChangePRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:oldUserIdentity timestamp:date userIdentities:nil];
     XCTAssertNotNil(userIdentityChange);
     XCTAssertNotNil(userIdentityChange.newUserIdentity);
     XCTAssertNotNil(userIdentityChange.oldUserIdentity);
     XCTAssertNotNil(userIdentityChange.timestamp);
     XCTAssertTrue(userIdentityChange.changed);
     
-    userIdentityChange = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:nil timestamp:nil userIdentities:nil];
+    userIdentityChange = [[MPUserIdentityChangePRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:nil timestamp:nil userIdentities:nil];
     XCTAssertNotNil(userIdentityChange);
     XCTAssertNotNil(userIdentityChange.newUserIdentity);
     XCTAssertNil(userIdentityChange.oldUserIdentity);
@@ -155,8 +155,8 @@
                                                                 }
                                                               ];
 
-    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
-    MPUserIdentityChange_PRIVATE *userIdentityChange = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity userIdentities:userIdentities];
+    MPUserIdentityInstancePRIVATE *newUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
+    MPUserIdentityChangePRIVATE *userIdentityChange = [[MPUserIdentityChangePRIVATE alloc] initWithNewUserIdentity:newUserIdentity userIdentities:userIdentities];
     XCTAssertNotNil(userIdentityChange);
     XCTAssertNotNil(userIdentityChange.newUserIdentity);
     XCTAssertNil(userIdentityChange.oldUserIdentity);
@@ -166,16 +166,16 @@
 
 - (void)testUserIdentityChangeTimestampBehavior {
     
-    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"test1" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
-    MPUserIdentityInstance_PRIVATE *oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"test2" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
+    MPUserIdentityInstancePRIVATE *newUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"test1" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
+    MPUserIdentityInstancePRIVATE *oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"test2" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
 
     // Set date on init
     NSDate *date1 = [NSDate date];
-    MPUserIdentityChange_PRIVATE *userIdentityChange1 = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:oldUserIdentity timestamp:date1 userIdentities:nil];
+    MPUserIdentityChangePRIVATE *userIdentityChange1 = [[MPUserIdentityChangePRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:oldUserIdentity timestamp:date1 userIdentities:nil];
     XCTAssertEqualObjects(userIdentityChange1.timestamp, date1);
     
     // Date is created on get
-    MPUserIdentityChange_PRIVATE *userIdentityChange2 = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:oldUserIdentity timestamp:nil userIdentities:nil];
+    MPUserIdentityChangePRIVATE *userIdentityChange2 = [[MPUserIdentityChangePRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:oldUserIdentity timestamp:nil userIdentities:nil];
     NSTimeInterval timestamp = userIdentityChange2.timestamp.timeIntervalSince1970;
     XCTAssertNotNil(userIdentityChange2.timestamp);
     [NSThread sleepForTimeInterval:0.5];
