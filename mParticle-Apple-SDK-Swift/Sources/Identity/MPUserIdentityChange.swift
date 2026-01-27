@@ -1,4 +1,4 @@
-internal import mParticle_Apple_SDK_Swift;
+import Foundation
 
 @objc public final class MPUserIdentityChange_PRIVATE: NSObject {
     @objc public var newUserIdentity: MPUserIdentityInstance_PRIVATE?
@@ -25,7 +25,7 @@ internal import mParticle_Apple_SDK_Swift;
         if let userIdentities = userIdentities {
             for ui in userIdentities {
                 if let idTypeInt = ui[MessageKeys.kMPUserIdentityTypeKey] as? UInt,
-                   let idType = MPUserIdentity(rawValue: idTypeInt),
+                   let idType = MPUserIdentitySwift(rawValue: idTypeInt),
                    let idValue = ui[MessageKeys.kMPUserIdentityIdKey] as? String,
                    idType == newUserIdentity?.type && idValue == newUserIdentity?.value {
                     changed = false

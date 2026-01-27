@@ -6,6 +6,7 @@
 #import "MPBackendController.h"
 #import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -67,7 +68,7 @@
     NSDate *date = [NSDate date];
     
     // New user identity
-    MPUserIdentityInstance_PRIVATE *userIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentityCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:YES];
+    MPUserIdentityInstance_PRIVATE *userIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:YES];
     XCTAssertNotNil(userIdentity);
     XCTAssertEqual(userIdentity.type, MPUserIdentityCustomerId);
     XCTAssertEqualObjects(userIdentity.value, @"The Most Interesting Man in the World");
@@ -82,7 +83,7 @@
     XCTAssertEqualObjects(dictionary[@"f"], @(YES));
     
     // Delete user identity
-    userIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentityCustomerId value:nil dateFirstSet:date isFirstTimeSet:NO];
+    userIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:nil dateFirstSet:date isFirstTimeSet:NO];
     XCTAssertNotNil(userIdentity);
     XCTAssertEqual(userIdentity.type, MPUserIdentityCustomerId);
     XCTAssertNil(userIdentity.value);
@@ -128,8 +129,8 @@
 
 - (void)testUserIdentityChange {
     NSDate *date = [NSDate date];
-    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentityCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:NO];
-    MPUserIdentityInstance_PRIVATE *oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentityCustomerId value:@"The Least Interesting Man in the World" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
+    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:NO];
+    MPUserIdentityInstance_PRIVATE *oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Least Interesting Man in the World" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
 
     MPUserIdentityChange_PRIVATE *userIdentityChange = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:oldUserIdentity timestamp:date userIdentities:nil];
     XCTAssertNotNil(userIdentityChange);
@@ -154,7 +155,7 @@
                                                                 }
                                                               ];
 
-    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentityCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
+    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
     MPUserIdentityChange_PRIVATE *userIdentityChange = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity userIdentities:userIdentities];
     XCTAssertNotNil(userIdentityChange);
     XCTAssertNotNil(userIdentityChange.newUserIdentity);
@@ -165,8 +166,8 @@
 
 - (void)testUserIdentityChangeTimestampBehavior {
     
-    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentityCustomerId value:@"test1" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
-    MPUserIdentityInstance_PRIVATE *oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentityCustomerId value:@"test2" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
+    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"test1" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
+    MPUserIdentityInstance_PRIVATE *oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:MPUserIdentitySwiftCustomerId value:@"test2" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
 
     // Set date on init
     NSDate *date1 = [NSDate date];

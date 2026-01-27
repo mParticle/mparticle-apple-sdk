@@ -1,17 +1,17 @@
-internal import mParticle_Apple_SDK_Swift;
+import Foundation
 
 @objc public final class MPUserIdentityInstance_PRIVATE: NSObject {
     @objc public var value: String?
     @objc public var dateFirstSet: Date?
-    @objc public var type: MPUserIdentity
+    @objc public var type: MPUserIdentitySwift
     @objc public var isFirstTimeSet = false
 
-    @objc public init(type: MPUserIdentity, value: String?) {
+    @objc public init(type: MPUserIdentitySwift, value: String?) {
         self.type = type
         self.value = value
     }
 
-    @objc public init(type: MPUserIdentity, value: String?, dateFirstSet: Date, isFirstTimeSet: Bool) {
+    @objc public init(type: MPUserIdentitySwift, value: String?, dateFirstSet: Date, isFirstTimeSet: Bool) {
         self.type = type
         self.value = value
         self.dateFirstSet = dateFirstSet
@@ -20,7 +20,7 @@ internal import mParticle_Apple_SDK_Swift;
 
     @objc public convenience init(userIdentityDictionary: [String: Any]) {
         let typeInt = userIdentityDictionary[MessageKeys.kMPUserIdentityTypeKey] as? UInt ?? 0
-        let type = MPUserIdentity(rawValue: typeInt) ?? .other
+        let type = MPUserIdentitySwift(rawValue: typeInt) ?? .other
         let value = userIdentityDictionary[MessageKeys.kMPUserIdentityIdKey] as? String
         let firstSetMillis = userIdentityDictionary[MessageKeys.kMPDateUserIdentityWasFirstSet] as? Double ?? 0.0
         let dateFirstSet = Date(timeIntervalSince1970: firstSetMillis/1000.0)

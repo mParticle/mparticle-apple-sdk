@@ -1667,7 +1667,7 @@ static BOOL skipNextUpload = NO;
         identityString = nil;
     }
     
-    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:identityType
+    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:(MPUserIdentitySwift)identityType
                                                                                                      value:identityString];
     
     MPUserIdentityChange_PRIVATE *userIdentityChange = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity
@@ -1754,7 +1754,7 @@ static BOOL skipNextUpload = NO;
         }
     }
     
-    completionHandler(userIdentityChange.newUserIdentity.value, userIdentityChange.newUserIdentity.type, MPExecStatusSuccess);
+    completionHandler(userIdentityChange.newUserIdentity.value, (MPUserIdentity)userIdentityChange.newUserIdentity.type, MPExecStatusSuccess);
 }
 
 - (void)clearUserAttributes {
