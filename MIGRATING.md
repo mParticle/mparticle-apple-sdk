@@ -87,11 +87,6 @@ This change only affects users who:
 1. Are upgrading directly from mParticle SDK versions **before 8.27.0** (released August 2024)
 2. Have pending events that have not yet been uploaded to mParticle
 
-#### Recommendations
-
-- If you are upgrading from SDK 8.26.x or earlier, consider upgrading to SDK 8.27+ first, allowing events to sync, then upgrading to SDK 9.x
-- Users already on SDK 8.27.0 or later will have their pending events migrated automatically
-
 ---
 
 ### Removed MPListenerController
