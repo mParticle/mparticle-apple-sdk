@@ -1139,7 +1139,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
             __block BOOL isApplicable = NO;
             [sourceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-                NSString *keyHash = [_hasher hashCommerceEventAttribute:(MPEventTypeSwift)commerceEvent.type key:key];
+                NSString *keyHash = [self.hasher hashCommerceEventAttribute:(MPEventTypeSwift)commerceEvent.type key:key];
                 
                 isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues caseInsensitiveContainsObject:value];
                 *stop = isApplicable;
@@ -1258,7 +1258,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 NSString *key;
                 NSEnumerator *keyEnumerator = [sourceDictionary keyEnumerator];
                 while ((key = [keyEnumerator nextObject])) {
-                    NSNumber *hashNumber = @([[_hasher hashCommerceEventAttribute:(MPEventTypeSwift)commerceEvent.type key:key] intValue]);
+                    NSNumber *hashNumber = @([[self.hasher hashCommerceEventAttribute:(MPEventTypeSwift)commerceEvent.type key:key] intValue]);
                     hashKeyMap[hashNumber] = key;
                 }
                 
