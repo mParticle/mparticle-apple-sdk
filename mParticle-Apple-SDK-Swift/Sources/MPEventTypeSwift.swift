@@ -45,4 +45,4 @@ public enum MPEventTypeSwift: UInt {
     case removeFromWishlist = 21
     /** Internal. Used when a product is displayed in a promotion */
     case impression = 22
-};
+}
