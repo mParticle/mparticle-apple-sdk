@@ -2,11 +2,11 @@ import Foundation
 
 @objc public class MPIHasher: NSObject {
     private let logger: MPLog
-    
+
     @objc public init(logger: MPLog) {
         self.logger = logger
     }
-    
+
     @objc public func hashFNV1a(_ data: Data) -> Int64 {
         var rampHash: UInt64 = 0xCBF2_9CE4_8422_2325
 
