@@ -1,10 +1,3 @@
-//
-//  NSArray+MPCaseInsensitive.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 10/7/24.
-//
-
 import Foundation
 
 public extension NSArray {

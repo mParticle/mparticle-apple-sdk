@@ -4,6 +4,8 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 // Internal keys
 NSString *const kMPTAAffiliation = @"ta";
 NSString *const kMPTAShipping = @"ts";

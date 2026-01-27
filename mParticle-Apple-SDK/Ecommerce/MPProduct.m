@@ -5,6 +5,8 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 // Internal
 NSString *const kMPProductBrand = @"br";
 NSString *const kMPProductCouponCode = @"cc";

@@ -19,6 +19,7 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MParticleReachability.h"
+@import mParticle_Apple_SDK_Swift;
 
 NSString *const kMPStateInformationKey = @"cs";
 

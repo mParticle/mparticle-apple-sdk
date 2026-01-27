@@ -1,7 +1,7 @@
 import Foundation
 import zlib
 
-@objc public final class MPZip_PRIVATE: NSObject {
+@objc public final class MPZipPRIVATE: NSObject {
     @objc(compressedDataFromData:) public static func compressedData(from data: Data?) -> Data? {
         guard let data = data, !data.isEmpty else {
             return nil

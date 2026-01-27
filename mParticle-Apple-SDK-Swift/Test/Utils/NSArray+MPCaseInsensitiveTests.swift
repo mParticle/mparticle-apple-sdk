@@ -1,7 +1,7 @@
 import XCTest
 import mParticle_Apple_SDK_NoLocation
 
-class NSArray_MPCaseInsensitiveTests: XCTestCase {
+class NSArrayMPCaseInsensitiveTests: XCTestCase {
     override func setUp() {}
 
     override func tearDown() {}
