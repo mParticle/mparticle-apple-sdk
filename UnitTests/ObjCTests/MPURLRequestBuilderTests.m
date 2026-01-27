@@ -18,6 +18,7 @@
 #import "MPURL.h"
 #import "MPUpload.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 
 @interface MParticle ()

@@ -1,9 +1,6 @@
-#import <XCTest/XCTest.h>
-#import <OCMock/OCMock.h>
-#import "mParticle.h"
-#import "MPApplication.h"
-#import "MParticleSwift.h"
-#import <UIKit/UIKit.h>
+@import XCTest;
+@import WebKit;
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticleWebView_PRIVATE ()
 @property (nonatomic) NSDate *initializedDate;
@@ -23,7 +20,8 @@
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     dispatch_queue_t messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
-    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:messageQueue];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
+    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:messageQueue logger:logger skdVersion:@"sdk version"];
 }
 
 - (void)tearDown {
@@ -42,13 +40,13 @@
 
 - (void)testUserAgentDisabled {
     [_webView startWithCustomUserAgent:nil shouldCollect:NO defaultUserAgentOverride:nil];
-    NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
+    NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", @"sdk version"];
     XCTAssertEqualObjects(_webView.userAgent, defaultAgent);
 }
 
 - (void)testUserAgentDefaultOverride {
     [_webView startWithCustomUserAgent:nil shouldCollect:NO defaultUserAgentOverride:@"Test User Agent"];
-    NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
+    NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", @"sdk version"];
     XCTAssertNotEqualObjects(_webView.userAgent, defaultAgent);
     XCTAssertEqualObjects(_webView.userAgent, @"Test User Agent");
 }
@@ -87,7 +85,7 @@
 }
 
 - (void)testOriginalDefaultAgent {
-    NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
+    NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", @"sdk version"];
     XCTAssertEqualObjects(_webView.originalDefaultUserAgent, defaultAgent);
 }
 

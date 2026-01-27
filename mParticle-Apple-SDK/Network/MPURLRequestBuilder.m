@@ -9,6 +9,7 @@
 #import "MPURL.h"
 #import "mParticle.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 static NSDateFormatter *RFC1123DateFormatter;
 

@@ -16,6 +16,7 @@
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
 #import "MPForwardQueueParameters.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
