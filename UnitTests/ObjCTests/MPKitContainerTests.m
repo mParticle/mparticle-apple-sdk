@@ -30,6 +30,7 @@
 #import "MPApplication.h"
 #import "MParticleSwift.h"
 #import "MPCCPAConsent.h"
+#import "MPGDPRConsent.h"
 
 @interface MParticle ()
 

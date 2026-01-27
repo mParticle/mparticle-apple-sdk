@@ -32,6 +32,7 @@
 #import "MPBracket.h"
 #import "MParticleSwift.h"
 #import "MPCCPAConsent.h"
+#import "MPGDPRConsent.h"
 
 @import mParticle_Apple_SDK_Swift;
 
