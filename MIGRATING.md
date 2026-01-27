@@ -78,15 +78,30 @@ The `MPListenerController` class has been removed. The SDK no longer invokes any
 
 API requests now route directly to regional endpoints based on your API key prefix:
 
+**Before:**
+
+- `nativesdks.mparticle.com`
+- `identity.mparticle.com`
+- `config2.mparticle.com`
+
+**After:**
+
+- `nativesdks.[pod].mparticle.com`
+- `identity.[pod].mparticle.com`
+- `config2.mparticle.com`
+
+> [!NOTE]
+> The `config2.mparticle.com` subdomain is used to fetch SDK configuration and will not change.
+
+Examples:
+
 | API Key Format              | Endpoint Example               |
 | --------------------------- | ------------------------------ |
+| `xxxxx` (legacy, no prefix) | `nativesdks.us1.mparticle.com` |
 | `us1-xxxxx`                 | `nativesdks.us1.mparticle.com` |
 | `us2-xxxxx`                 | `nativesdks.us2.mparticle.com` |
 | `eu1-xxxxx`                 | `nativesdks.eu1.mparticle.com` |
 | `au1-xxxxx`                 | `nativesdks.au1.mparticle.com` |
-| `xxxxx` (legacy, no prefix) | `nativesdks.us1.mparticle.com` |
-
-Apps with network security policies should allow these regional subdomains. If you use App Transport Security with custom exceptions or allowlists, update them to permit the relevant hosts (for example, `*.us1.mparticle.com`, `*.eu1.mparticle.com`).
 
 ### Removed Deprecated UIApplicationDelegate Methods
 
