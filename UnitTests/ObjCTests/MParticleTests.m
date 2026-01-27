@@ -26,7 +26,7 @@
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @end
 
 @interface MParticleUser ()
@@ -961,7 +961,7 @@
 }
 
 - (void)testUserAgentDefault {
-    id mockWebView = OCMClassMock([MParticleWebView_PRIVATE class]);
+    id mockWebView = OCMClassMock([MParticleWebViewPRIVATE class]);
 #if TARGET_OS_IOS == 1
     [[[mockWebView stub] andReturn:@"Example resolved agent"] userAgent];
 #else
@@ -984,7 +984,7 @@
 
 - (void)testUserAgentCustom {
     NSString *customAgent = @"Foo 1.2.3 Like Bar";
-    id mockWebView = OCMClassMock([MParticleWebView_PRIVATE class]);
+    id mockWebView = OCMClassMock([MParticleWebViewPRIVATE class]);
     [[[mockWebView stub] andReturn:customAgent] userAgent];
     id mockMParticle = OCMPartialMock([MParticle sharedInstance]);
     [[[mockMParticle stub] andReturn:mockWebView] webView];

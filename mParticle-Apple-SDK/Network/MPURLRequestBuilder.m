@@ -17,7 +17,7 @@ static NSDateFormatter *RFC1123DateFormatter;
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong, readonly) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong, readonly) MParticleWebViewPRIVATE *webView;
 
 @end
     

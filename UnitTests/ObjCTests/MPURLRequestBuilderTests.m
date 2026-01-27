@@ -27,7 +27,7 @@
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 
 @end
 
@@ -372,7 +372,7 @@
 
 - (void)testEventRequest {
     MParticle *sharedInstance = [MParticle sharedInstance];
-    MParticleWebView_PRIVATE *webview = sharedInstance.webView;
+    MParticleWebViewPRIVATE *webview = sharedInstance.webView;
     NSString *agent = @"Example resolved agent";
     
     id mockWebView = OCMPartialMock(webview);

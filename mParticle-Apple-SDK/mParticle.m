@@ -63,7 +63,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
@@ -158,7 +158,7 @@ MPLog* logger;
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
     [_sceneDelegateHandler setLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
 
-    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger skdVersion:kMParticleSDKVersion];
+    _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger skdVersion:kMParticleSDKVersion];
     return self;
 }
 

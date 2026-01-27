@@ -1,26 +1,26 @@
 import Foundation
 import WebKit
 
-@objc internal class MParticleWebView_PRIVATE: NSObject {
+@objc internal class MParticleWebViewPRIVATE: NSObject {
     @objc public var userAgent: String? { resolvedUserAgent ?? defaultUserAgent }
     @objc public var originalDefaultUserAgent: String? { "mParticle Apple SDK/\(skdVersion)" }
 
     private var messageQueue: DispatchQueue
 
-    private var customUserAgent: String? = nil
+    private var customUserAgent: String?
     private var shouldCollect = false
-    private var defaultUserAgent: String? = nil
+    private var defaultUserAgent: String?
     private var skdVersion: String
 
-    @objc private var initializedDate: Date? = nil
-    @objc private var resolvedUserAgent: String? = nil // final result
+    @objc private var initializedDate: Date?
+    @objc private var resolvedUserAgent: String? // final result
     @objc private var isCollecting: Bool = false
     @objc private var retryCount: Int = 0
 
     #if os(iOS)
         @objc private var webView: WKWebView?
     #endif
-    
+
     private var logger: MPLog
 
     @objc public init(messageQueue: DispatchQueue, logger: MPLog, skdVersion: String) {
@@ -48,7 +48,7 @@ import WebKit
             resolvedUserAgent = defaultUserAgent
         }
 
-        if let _ = resolvedUserAgent {
+        guard let resolvedUserAgent else {
             return
         }
 

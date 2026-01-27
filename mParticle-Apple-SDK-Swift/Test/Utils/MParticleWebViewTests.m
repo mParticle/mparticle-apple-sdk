@@ -2,7 +2,7 @@
 @import WebKit;
 @import mParticle_Apple_SDK_Swift;
 
-@interface MParticleWebView_PRIVATE ()
+@interface MParticleWebViewPRIVATE ()
 @property (nonatomic) NSDate *initializedDate;
 @property (nonatomic) NSString *resolvedUserAgent;
 @property (nonatomic, assign) BOOL isCollecting;
@@ -12,20 +12,18 @@
 @end
 
 @interface MParticleWebViewTests : XCTestCase
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @end
 
 @implementation MParticleWebViewTests
 
 - (void)setUp {
-    // Put setup code here. This method is called before the invocation of each test method in the class.
     dispatch_queue_t messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
     MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
-    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:messageQueue logger:logger skdVersion:@"sdk version"];
+    _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:messageQueue logger:logger skdVersion:@"sdk version"];
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     _webView = nil;
 }
 
