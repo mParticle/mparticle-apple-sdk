@@ -8,10 +8,6 @@
 //       the need to make all our internal constants public during porting
 //
 
-func MPMilliseconds(timestamp: Double) -> Double {
-    return trunc(timestamp * 1000.0)
-}
-
 // NOTE: I kept the same naming here for clarity, but we should rename these
 //       after we remove them from the MPIConstants.h file
 
