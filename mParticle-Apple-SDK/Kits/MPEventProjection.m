@@ -111,8 +111,7 @@
     logger.customLogger = mparticle.customLogger;
     MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
     
-    MPEventTypeSwift swiftType = [hasher eventTypeForHash:auxString];
-    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? (MPEventType)swiftType : MPEventTypeOther;
+    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? (MPEventType)[hasher eventTypeForHash:auxString] : MPEventTypeOther;
     
     _messageType = !MPIsNull(matchDictionary[@"message_type"]) ? (MPMessageType)[matchDictionary[@"message_type"] integerValue] : MPMessageTypeEvent;
     
