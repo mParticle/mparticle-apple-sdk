@@ -165,19 +165,6 @@ enum RemoteConfig {
     static let kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionClick = "click"
 }
 
-enum ConsentFiltering {
-    static let kMPConsentKitFilter = "crvf"
-    static let kMPConsentKitFilterIncludeOnMatch = "i"
-    static let kMPConsentKitFilterItems = "v"
-    static let kMPConsentKitFilterItemConsented = "c"
-    static let kMPConsentKitFilterItemHash = "h"
-    static let kMPConsentRegulationFilters = "reg"
-    static let kMPConsentPurposeFilters = "pur"
-    static let kMPConsentGDPRRegulationType = "1"
-    static let kMPConsentCCPARegulationType = "2"
-    static let kMPConsentCCPAPurposeName = "data_sale_opt_out"
-}
-
 enum Notifications {
     static let kMPCrashReportOccurredNotification = Notification.Name("MPCrashReportOccurredNotification")
     static let kMPConfigureExceptionHandlingNotification = Notification.Name("MPConfigureExceptionHandlingNotification")
