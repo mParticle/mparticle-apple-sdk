@@ -662,7 +662,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
     
     // Event type filter
-    __block NSString *hashValue = [_hasher hashEventType:[commerceEvent type]];
+    __block NSString *hashValue = [_hasher hashEventType:(MPEventTypeSwift)[commerceEvent type]];
     
     __block BOOL shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
     if (shouldFilter) {
@@ -741,7 +741,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             // Commerce event attribute filter (expanded attributes)
             __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] init];
             [[forwardCommerceEvent beautifiedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                hashValue = [_hasher hashCommerceEventAttribute:[commerceEvent type] key:key];
+                hashValue = [_hasher hashCommerceEventAttribute:(MPEventTypeSwift)[commerceEvent type] key:key];
                 
                 id filterValue = commerceEventAttributeFilters[hashValue];
                 BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
@@ -757,7 +757,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             filteredAttributes = [[NSMutableDictionary alloc] init];
             
             [[forwardCommerceEvent customAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                hashValue = [_hasher hashCommerceEventAttribute:[commerceEvent type] key:key];
+                hashValue = [_hasher hashCommerceEventAttribute:(MPEventTypeSwift)[commerceEvent type] key:key];
 
                 id filterValue = commerceEventAttributeFilters[hashValue];
                 BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
@@ -773,7 +773,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             __block MPTransactionAttributes *filteredTransactionAttributes = [[MPTransactionAttributes alloc] init];
             
             [[forwardCommerceEvent.transactionAttributes beautifiedDictionaryRepresentation] enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-                hashValue = [_hasher hashCommerceEventAttribute:[commerceEvent type] key:key];
+                hashValue = [_hasher hashCommerceEventAttribute:(MPEventTypeSwift)[commerceEvent type] key:key];
                 
                 id filterValue = commerceEventAttributeFilters[hashValue];
                 BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
@@ -839,7 +839,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     
     // Event type filter
     if (selector != @selector(logScreen:)) {
-        hashValue = [_hasher hashEventType:event.type];
+        hashValue = [_hasher hashEventType:(MPEventTypeSwift)event.type];
         
         shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
         if (shouldFilter) {
@@ -880,7 +880,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
 
     if ([event isKindOfClass:[MPEvent class]]) {
-        hashValue = [_hasher hashEventType:event.type eventName:event.name isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
+        hashValue = [_hasher hashEventType:(MPEventTypeSwift)event.type eventName:event.name isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
         
         shouldFilter = nameFilters[hashValue] && [nameFilters[hashValue] isEqualToNumber:zero];
         if (shouldFilter) {
@@ -892,7 +892,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.customAttributes.count];
             
             [forwardEvent.customAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                hashValue = [_hasher hashEventAttributeKey:event.type eventName:event.name customAttributeName:key isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
+                hashValue = [_hasher hashEventAttributeKey:(MPEventTypeSwift)event.type eventName:event.name customAttributeName:key isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
                 
                 id attributeFilterValue = attributeFilters[hashValue];
                 BOOL attributeFilterIsFalse = [attributeFilterValue isEqualToNumber:zero];
@@ -1139,7 +1139,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
             __block BOOL isApplicable = NO;
             [sourceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-                NSString *keyHash = [_hasher hashCommerceEventAttribute:commerceEvent.type key:key];
+                NSString *keyHash = [_hasher hashCommerceEventAttribute:(MPEventTypeSwift)commerceEvent.type key:key];
                 
                 isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues caseInsensitiveContainsObject:value];
                 *stop = isApplicable;
@@ -1258,7 +1258,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 NSString *key;
                 NSEnumerator *keyEnumerator = [sourceDictionary keyEnumerator];
                 while ((key = [keyEnumerator nextObject])) {
-                    NSNumber *hashNumber = @([[_hasher hashCommerceEventAttribute:commerceEvent.type key:key] intValue]);
+                    NSNumber *hashNumber = @([[_hasher hashCommerceEventAttribute:(MPEventTypeSwift)commerceEvent.type key:key] intValue]);
                     hashKeyMap[hashNumber] = key;
                 }
                 
@@ -1656,7 +1656,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
         NSEnumerator *keyEnumerator = [eventInfo keyEnumerator];
         while ((key = [keyEnumerator nextObject])) {
-            NSNumber *hashNumber = @([[hasher hashEventAttributeKey:event.type eventName:event.name customAttributeName:key isLogScreen:(messageType == MPMessageTypeScreenView)] intValue]);
+            NSNumber *hashNumber = @([[hasher hashEventAttributeKey:(MPEventTypeSwift)event.type eventName:event.name customAttributeName:key isLogScreen:(messageType == MPMessageTypeScreenView)] intValue]);
             keyHashMap[key] = hashNumber;
             hashKeyMap[hashNumber] = key;
         }
@@ -1827,7 +1827,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                         MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
                         logger.customLogger = mparticle.customLogger;
                         MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
-                        eventNameHash = [[hasher hashEventType:event.type eventName:event.name isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
+                        eventNameHash = [[hasher hashEventType:(MPEventTypeSwift)event.type eventName:event.name isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
                     }
                     
                     if (eventNameHash == [eventProjection.name integerValue]) {
