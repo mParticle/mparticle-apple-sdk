@@ -1,9 +1,4 @@
-//
-//  MPUserIdentityInstance.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Ben Baron on 12/3/24.
-//
+internal import mParticle_Apple_SDK_Swift;
 
 @objc public final class MPUserIdentityInstance_PRIVATE: NSObject {
     @objc public var value: String?
