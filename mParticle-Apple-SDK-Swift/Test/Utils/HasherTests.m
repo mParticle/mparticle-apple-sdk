@@ -336,16 +336,16 @@ MPIHasher* hasher;
     XCTAssertEqualObjects(hashTestString, @"1", @"Should have been equal.");
 }
 
-//- (void)testHashConsentPurpose {
-//    NSString *hashTestString = [hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
-//    XCTAssertEqualObjects(hashTestString, @"-575335347", @"Should have been equal.");
-//    
-//    hashTestString = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
-//    XCTAssertEqualObjects(hashTestString, @"49", @"Should have been equal.");
-//    
-//    hashTestString = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"purpose1"];
-//    XCTAssertEqualObjects(hashTestString, @"-910367228", @"Should have been equal.");
-//}
+- (void)testHashConsentPurpose {
+    NSString *hashTestString = [hasher hashConsentPurpose:ConsentFilteringSwift.kMPConsentCCPARegulationType purpose:ConsentFilteringSwift.kMPConsentCCPAPurposeName];
+    XCTAssertEqualObjects(hashTestString, @"-575335347", @"Should have been equal.");
+    
+    hashTestString = [hasher hashConsentPurpose:ConsentFilteringSwift.kMPConsentGDPRRegulationType purpose:@""];
+    XCTAssertEqualObjects(hashTestString, @"49", @"Should have been equal.");
+    
+    hashTestString = [hasher hashConsentPurpose:ConsentFilteringSwift.kMPConsentGDPRRegulationType purpose:@"purpose1"];
+    XCTAssertEqualObjects(hashTestString, @"-910367228", @"Should have been equal.");
+}
 
 - (void)testHashCommerceEventAttribute {
     NSString *hashTestString = [hasher hashCommerceEventAttribute:MPEventTypeSwiftPurchase key:@"price"];
@@ -360,26 +360,13 @@ MPIHasher* hasher;
     XCTAssertEqualObjects(hashedEvent, @"431828539", @"Should have been equal.");
 }
 
-//- (void)testHashDifferences {
-//    // Creates a product object
-//    MPProduct *product = [[MPProduct alloc] initWithName:@"Awesome Book" sku:@"1234567890" quantity:@1 price:@9.99];
-//    product.brand = @"A Publisher";
-//    product.category = @"Fiction";
-//    product.couponCode = @"XYZ123";
-//    product.position = 1;
-//    product[@"custom key"] = @"custom value"; // A product may contain custom key/value pairs
-//    
-//    // Creates a commerce event object
-//    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
-//    NSString *key = @"an_extra_key";
-//    commerceEvent.customAttributes = @{key: @"an_extra_value"}; // A commerce event may contain custom key/value pairs
-//    
-//    NSString *attributeTohash = [[@(commerceEvent.type) stringValue] stringByAppendingString:key];
-//    int hashValueOldInt = [[hasher hashString:attributeTohash] intValue];
-//    
-//    NSString *hashValueNewString = [hasher hashCommerceEventAttribute:commerceEvent.type key:key];
-//    XCTAssertEqual(hashValueOldInt, [hashValueNewString intValue], @"Should have been equal.");
-//
-//}
+- (void)testHashDifferences {
+    NSString *key = @"an_extra_key";
+    NSInteger MPEventTypePurchase = 16;
+
+    NSString *attr = [@(MPEventTypePurchase).stringValue stringByAppendingString:key];
+    XCTAssertEqual([[hasher hashString:attr] intValue],
+                   [[hasher hashCommerceEventAttribute:MPEventTypePurchase key:key] intValue]);
+}
 
 @end
