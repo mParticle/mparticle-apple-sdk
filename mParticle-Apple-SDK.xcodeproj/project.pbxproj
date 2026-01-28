@@ -28,9 +28,9 @@
 		359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
 		359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
 		35C3DE702F2919B40077C0FD /* MPCCPAConsent.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C3DE6F2F2919B40077C0FD /* MPCCPAConsent.m */; };
-		35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */; };
+		35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35C3DE732F291DA40077C0FD /* MPGDPRConsent.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C3DE722F291DA40077C0FD /* MPGDPRConsent.m */; };
-		35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C3DE742F291DAF0077C0FD /* MPGDPRConsent.h */; };
+		35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C3DE742F291DAF0077C0FD /* MPGDPRConsent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35DBFDD12F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35DBFDC82F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework */; };
 		35DBFDEC2F2105F600E872F5 /* mParticle_Apple_SDK_Swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 35DBFDC82F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework */; platformFilter = ios; };
 		35DBFDED2F2105F600E872F5 /* mParticle_Apple_SDK_Swift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 35DBFDC82F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1238,6 +1238,8 @@
 				53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */,
 				7E0387812DB913D2003B7D5E /* MPRokt.h in Headers */,
 				351308432E6B28F5002A3AD6 /* Executor.h in Headers */,
+				35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */,
+				35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */,
 				35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */,
 				53A79D3029CE23F700E7489F /* MPConnectorResponseProtocol.h in Headers */,
 				53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */,
@@ -1281,8 +1283,6 @@
 				53A79D5B29CE23F700E7489F /* MPKitContainer.h in Headers */,
 				53A79D5D29CE23F700E7489F /* MPNotificationController.h in Headers */,
 				53A79D5E29CE23F700E7489F /* MPURLConnectionAssociate.h in Headers */,
-				35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */,
-				35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */,
 				53A79D5F29CE23F700E7489F /* MPSession.h in Headers */,
 				53A79D6029CE23F700E7489F /* MPUploadBuilder.h in Headers */,
 				53A79D6129CE23F700E7489F /* MPKitActivity.h in Headers */,
