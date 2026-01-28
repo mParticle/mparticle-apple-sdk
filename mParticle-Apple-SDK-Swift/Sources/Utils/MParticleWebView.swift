@@ -3,7 +3,7 @@ import Foundation
 import WebKit
 #endif
 
-@objc internal class MParticleWebViewPRIVATE: NSObject {
+@objc public class MParticleWebViewPRIVATE: NSObject {
     @objc public var userAgent: String? { resolvedUserAgent ?? defaultUserAgent }
     @objc public var originalDefaultUserAgent: String? { "mParticle Apple SDK/\(skdVersion)" }
 
