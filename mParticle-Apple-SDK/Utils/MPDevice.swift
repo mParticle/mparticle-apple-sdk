@@ -2,13 +2,24 @@ internal import mParticle_Apple_SDK_Swift
 import MachO
 import QuartzCore
 
+@objc
+public protocol MPStateMachineMPDeviceProtocol {
+    var deviceTokenType: String? { get }
+    var attAuthorizationStatus: NSNumber? { get }
+    var attAuthorizationTimestamp: NSNumber? { get }
+}
+
 @objc(MPDevice)
 public class MPDevice: NSObject, NSCopying {
-    private var stateMachine: MPStateMachine_PRIVATE
+    private var stateMachine: MPStateMachineMPDeviceProtocol
     private var userDefaults: MPUserDefaults
     private var identity: MPIdentityApi
 
-    @objc public required init(stateMachine: MPStateMachine_PRIVATE, userDefaults: MPUserDefaults, identity: MPIdentityApi) {
+    @objc public required init(
+        stateMachine: MPStateMachineMPDeviceProtocol,
+        userDefaults: MPUserDefaults,
+        identity: MPIdentityApi
+    ) {
         self.stateMachine = stateMachine
         self.userDefaults = userDefaults
         self.identity = identity

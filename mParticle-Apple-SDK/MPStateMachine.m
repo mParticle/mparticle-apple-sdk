@@ -43,7 +43,7 @@ static BOOL runningInBackground = NO;
 
 @end
 
-@interface MPStateMachine_PRIVATE() {
+@interface MPStateMachine_PRIVATE()<MPStateMachineMPDeviceProtocol> {
     BOOL optOutSet;
     dispatch_queue_t messageQueue;
 }

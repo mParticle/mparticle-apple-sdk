@@ -159,7 +159,8 @@
     } else {
         // If the info wasn't saved in the session, use the old behavior and grab it now
         // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:mparticle.identity];
         NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
         _uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentationWithMpid:mpid];
     }

@@ -58,8 +58,8 @@
         if (mpid.longLongValue != 0) {
             _previousMPID = [MPPersistenceController_PRIVATE mpId].stringValue;
         }
-        
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:mparticle.identity];
 
         NSString *vendorId = device.vendorId;
         if (vendorId) {
