@@ -448,7 +448,7 @@
     MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
     NSString *result = builder.url.defaultURL.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
     XCTAssertEqualObjects(result, @"https://identity.mp.example.com/v1/12/modify");
     
@@ -458,7 +458,7 @@
     builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
     result = builder.url.defaultURL.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
     XCTAssertTrue([result isEqualToString:@"https://https://example.com/12/modify"] || [result isEqualToString:@"https://https//example.com/12/modify"]);
     
@@ -467,18 +467,18 @@
     builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
     result = builder.url.defaultURL.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/12/modify");
     
     networkOptions = nil;
     baseURL = [networkCommunication modifyURL];
     builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
     result = builder.url.defaultURL.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/12/modify");
 }
 
 @end

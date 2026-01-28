@@ -3,7 +3,6 @@
 import Foundation
 import mParticle_Apple_SDK_NoLocation
 
-@discardableResult
 func wait(timeout: UInt32 = 5) {
     mparticle.upload()
     sleep(timeout)
