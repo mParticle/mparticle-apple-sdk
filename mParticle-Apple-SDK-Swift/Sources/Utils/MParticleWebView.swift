@@ -50,7 +50,7 @@ import WebKit
             resolvedUserAgent = defaultUserAgent
         }
 
-        guard let resolvedUserAgent else {
+        if resolvedUserAgent == nil {
             return
         }
 
