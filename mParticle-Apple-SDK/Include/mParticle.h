@@ -26,6 +26,8 @@
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
 #import "MPRokt.h"
+#import "MPCCPAConsent.h"
+#import "MPGDPRConsent.h"
 
 #if TARGET_OS_IOS == 1
     #import <WebKit/WebKit.h>

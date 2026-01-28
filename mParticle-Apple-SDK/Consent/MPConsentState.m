@@ -1,4 +1,6 @@
 #import "MPConsentState.h"
+#import "MPCCPAConsent.h"
+#import "MPGDPRConsent.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "mParticle.h"

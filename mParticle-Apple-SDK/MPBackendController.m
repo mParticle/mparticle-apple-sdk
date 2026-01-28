@@ -51,7 +51,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 + (dispatch_queue_t)messageQueue;
@@ -300,7 +300,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     [self saveMessage:message updateSession:YES];
 }
 
-- (void)logUserIdentityChange:(MPUserIdentityChange_PRIVATE *)userIdentityChange {
+- (void)logUserIdentityChange:(MPUserIdentityChangePRIVATE *)userIdentityChange {
     if (!userIdentityChange) {
         return;
     }
@@ -1667,10 +1667,10 @@ static BOOL skipNextUpload = NO;
         identityString = nil;
     }
     
-    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:identityType
+    MPUserIdentityInstancePRIVATE *newUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:(MPUserIdentitySwift)identityType
                                                                                                      value:identityString];
     
-    MPUserIdentityChange_PRIVATE *userIdentityChange = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity
+    MPUserIdentityChangePRIVATE *userIdentityChange = [[MPUserIdentityChangePRIVATE alloc] initWithNewUserIdentity:newUserIdentity
                                                                                                       userIdentities:[self identitiesForUserId:[MPPersistenceController_PRIVATE mpId]]];
     
     userIdentityChange.timestamp = timestamp;
@@ -1712,7 +1712,7 @@ static BOOL skipNextUpload = NO;
         
         if (existingEntryIndex != NSNotFound) {
             identityDictionary = [userIdentities[existingEntryIndex] mutableCopy];
-            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithUserIdentityDictionary:identityDictionary];
+            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:identityDictionary];
             userIdentityChange.newUserIdentity = nil;
             
             [userIdentities removeObjectAtIndex:existingEntryIndex];
@@ -1730,7 +1730,7 @@ static BOOL skipNextUpload = NO;
             [userIdentities addObject:identityDictionary];
         } else {
             currentIdentities = userIdentities[existingEntryIndex];
-            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithUserIdentityDictionary:currentIdentities];
+            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:currentIdentities];
             
             NSNumber *timeIntervalMilliseconds = currentIdentities[kMPDateUserIdentityWasFirstSet];
             userIdentityChange.newUserIdentity.dateFirstSet = timeIntervalMilliseconds != nil ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
@@ -1754,7 +1754,7 @@ static BOOL skipNextUpload = NO;
         }
     }
     
-    completionHandler(userIdentityChange.newUserIdentity.value, userIdentityChange.newUserIdentity.type, MPExecStatusSuccess);
+    completionHandler(userIdentityChange.newUserIdentity.value, (MPUserIdentity)userIdentityChange.newUserIdentity.type, MPExecStatusSuccess);
 }
 
 - (void)clearUserAttributes {
