@@ -826,10 +826,9 @@ static BOOL skipNextUpload = NO;
             _session.appInfo = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
         }
         if (!_session.deviceInfo) {
-            MParticle* mparticle = MParticle.sharedInstance;
-            
+            MParticle* mparticle = MParticle.sharedInstance;            
             MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
-                                                         userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:mparticle.identity];
+                                                         userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity];
 
             _session.deviceInfo = [device dictionaryRepresentationWithMpid:mpId];
         }

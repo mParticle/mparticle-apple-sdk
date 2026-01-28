@@ -30,7 +30,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @end
 
-@interface MPIdentityApi ()
+@interface MPIdentityApi ()<MPIdentityApiMPDeviceProtocol>
 
 @property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @property(nonatomic, strong, readwrite, nonnull) MParticleUser *currentUser;
@@ -494,6 +494,14 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     });
     
     return YES;
+}
+
+- (NSDictionary<NSNumber *, NSString *>*)currentUserIdentities {
+    return self.currentUser.identities;
+}
+
+- (NSDictionary<NSNumber *, NSString *>*)userIdentitiesWithMpId:(NSNumber * _Nonnull)mpId {
+    return [self getUser:mpId].identities;
 }
 
 @end

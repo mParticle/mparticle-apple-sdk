@@ -9,16 +9,22 @@ public protocol MPStateMachineMPDeviceProtocol {
     var attAuthorizationTimestamp: NSNumber? { get }
 }
 
+@objc
+public protocol MPIdentityApiMPDeviceProtocol {
+    func currentUserIdentities() -> [NSNumber: String]?
+    func userIdentities(mpId: NSNumber) -> [NSNumber: String]?
+}
+
 @objc(MPDevice)
 public class MPDevice: NSObject, NSCopying {
     private var stateMachine: MPStateMachineMPDeviceProtocol
     private var userDefaults: MPUserDefaults
-    private var identity: MPIdentityApi
+    private var identity: MPIdentityApiMPDeviceProtocol
 
     @objc public required init(
         stateMachine: MPStateMachineMPDeviceProtocol,
         userDefaults: MPUserDefaults,
-        identity: MPIdentityApi
+        identity: MPIdentityApiMPDeviceProtocol
     ) {
         self.stateMachine = stateMachine
         self.userDefaults = userDefaults
@@ -47,7 +53,7 @@ public class MPDevice: NSObject, NSCopying {
             if let adID = _advertiserId {
                 return adID
             } else {
-                if let userIdentities = identity.currentUser?.identities as? [NSNumber: String] {
+                if let userIdentities = identity.currentUserIdentities() {
                     return userIdentities[NSNumber(value: MPIdentity.iosAdvertiserId.rawValue)]
                 } else {
                     return nil
@@ -375,7 +381,7 @@ public class MPDevice: NSObject, NSCopying {
         var deviceDictionary: [AnyHashable: Any] = dictionaryRepresentation()
 
         if let mpid = mpid {
-            if let userIdentities = identity.getUser(mpid)?.identities {
+            if let userIdentities = identity.userIdentities(mpId: mpid) {
                 if let advertiserId = userIdentities[MPIdentity.iosAdvertiserId.rawValue as NSNumber],
                    let currentStatus = stateMachine.attAuthorizationStatus,
                    currentStatus.intValue == MPATTAuthorizationStatusSwift.authorized.rawValue {
