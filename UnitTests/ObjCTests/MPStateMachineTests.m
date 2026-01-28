@@ -56,9 +56,12 @@
 
 - (void)testConfigureTriggers {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    NSString *hashEvent1 = [MPIHasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
-    NSString *hashEvent2 = [MPIHasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *hashEvent1 = [hasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
+    NSString *hashEvent2 = [hasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
     
     NSDictionary *triggerDictionary = @{@"tri":@{@"dts":@[@"e", @"pm"],
                                                  @"evts":@[hashEvent1, hashEvent2]
@@ -81,9 +84,12 @@
 
 - (void)testNullConfigureTriggers {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    NSString *hashEvent1 = [MPIHasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
-    NSString *hashEvent2 = [MPIHasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *hashEvent1 = [hasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
+    NSString *hashEvent2 = [hasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
     
     NSDictionary *triggerDictionary = @{@"tri":[NSNull null]
                                         };
