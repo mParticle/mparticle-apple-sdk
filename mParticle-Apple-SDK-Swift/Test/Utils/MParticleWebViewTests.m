@@ -22,7 +22,7 @@
 - (void)setUp {
     dispatch_queue_t messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
     MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
-    _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:messageQueue logger:logger skdVersion:@"sdk version"];
+    _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:messageQueue logger:logger sdkVersion:@"sdk version"];
 }
 
 - (void)tearDown {

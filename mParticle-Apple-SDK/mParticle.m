@@ -158,7 +158,7 @@ MPLog* logger;
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
     [_sceneDelegateHandler setLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
 
-    _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger skdVersion:kMParticleSDKVersion];
+    _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger sdkVersion:kMParticleSDKVersion];
     return self;
 }
 

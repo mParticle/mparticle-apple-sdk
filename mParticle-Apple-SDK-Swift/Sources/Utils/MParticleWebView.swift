@@ -5,14 +5,14 @@ import WebKit
 
 @objc public class MParticleWebViewPRIVATE: NSObject {
     @objc public var userAgent: String? { resolvedUserAgent ?? defaultUserAgent }
-    @objc public var originalDefaultUserAgent: String? { "mParticle Apple SDK/\(skdVersion)" }
+    @objc public var originalDefaultUserAgent: String? { "mParticle Apple SDK/\(sdkVersion)" }
 
     private var messageQueue: DispatchQueue
 
     private var customUserAgent: String?
     private var shouldCollect = false
     private var defaultUserAgent: String?
-    private var skdVersion: String
+    private var sdkVersion: String
 
     @objc private var initializedDate: Date?
     @objc private var resolvedUserAgent: String? // final result
@@ -25,10 +25,10 @@ import WebKit
 
     private var logger: MPLog
 
-    @objc public init(messageQueue: DispatchQueue, logger: MPLog, skdVersion: String) {
+    @objc public init(messageQueue: DispatchQueue, logger: MPLog, sdkVersion: String) {
         self.messageQueue = messageQueue
         self.logger = logger
-        self.skdVersion = skdVersion
+        self.sdkVersion = sdkVersion
         super.init()
     }
 
@@ -50,7 +50,7 @@ import WebKit
             resolvedUserAgent = defaultUserAgent
         }
 
-        if resolvedUserAgent == nil {
+        if resolvedUserAgent != nil {
             return
         }
 
