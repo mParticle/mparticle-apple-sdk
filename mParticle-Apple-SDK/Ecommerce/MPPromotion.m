@@ -110,6 +110,18 @@ static NSArray *actionNames;
     }
 }
 
+MPIHasher* _hasher;
+
+- (MPIHasher*)hasher {
+    if (_hasher == nil) {
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        _hasher = [[MPIHasher alloc] initWithLogger:logger];
+    }
+    return _hasher;
+}
+
 - (id)initWithCoder:(NSCoder *)coder {
     self = [self init];
     if (self) {
@@ -145,11 +157,7 @@ static NSArray *actionNames;
     NSNumber *const zero = @0;
     
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        MParticle* mparticle = MParticle.sharedInstance;
-        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-        logger.customLogger = mparticle.customLogger;
-        MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
-        NSString *hashedKey = [hasher hashString:key];
+        NSString *hashedKey = [[self hasher] hashString:key];
         id hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {
