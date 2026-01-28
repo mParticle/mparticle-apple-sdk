@@ -1,5 +1,7 @@
 import Foundation
+#if os(iOS)
 import WebKit
+#endif
 
 @objc internal class MParticleWebViewPRIVATE: NSObject {
     @objc public var userAgent: String? { resolvedUserAgent ?? defaultUserAgent }

@@ -1,5 +1,7 @@
 @import XCTest;
+#if TARGET_OS_IOS == 1
 @import WebKit;
+#endif
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticleWebViewPRIVATE ()
