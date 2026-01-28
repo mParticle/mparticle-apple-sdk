@@ -1413,11 +1413,11 @@
     session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
     [persistence saveSession:session];
     
-    // Update the session
-    session.endTime = [[NSDate date] timeIntervalSince1970] + 100;
+    // Update the session (only mutable properties)
+    NSTimeInterval newEndTime = [[NSDate date] timeIntervalSince1970] + 100;
+    session.endTime = newEndTime;
     session.attributesDictionary[@"key2"] = @"value2";
-    session.eventCounter = 5;
-    session.numberOfInterruptions = 2;
+    session.length = 500.0;
     [persistence updateSession:session];
     
     // Fetch and verify
@@ -1431,8 +1431,8 @@
     }
     
     XCTAssertNotNil(fetchedSession, @"Fetched session should not be nil");
-    XCTAssertEqual(fetchedSession.eventCounter, 5, @"Event counter should be updated");
-    XCTAssertEqual(fetchedSession.numberOfInterruptions, 2, @"Number of interruptions should be updated");
+    XCTAssertEqualWithAccuracy(fetchedSession.endTime, newEndTime, 1.0, @"End time should be updated");
+    XCTAssertEqualWithAccuracy(fetchedSession.length, 500.0, 0.1, @"Length should be updated");
     XCTAssertEqualObjects(fetchedSession.attributesDictionary[@"key2"], @"value2", @"New attribute should be present");
     
     // Cleanup
