@@ -100,13 +100,17 @@ API requests now route directly to regional endpoints based on your API key pref
 **Before:**
 
 - `nativesdks.mparticle.com`
+- `tracking-nativesdks.mparticle.com`
 - `identity.mparticle.com`
+- `tracking-identity.mparticle.com`
 - `config2.mparticle.com`
 
 **After:**
 
 - `nativesdks.[pod].mparticle.com`
+- `tracking-nativesdks.[pod].mparticle.com`
 - `identity.[pod].mparticle.com`
+- `tracking-identity.[pod].mparticle.com`
 - `config2.mparticle.com`
 
 > [!NOTE]
@@ -114,13 +118,16 @@ API requests now route directly to regional endpoints based on your API key pref
 
 Examples:
 
-| API Key Format              | Endpoint Example               |
-| --------------------------- | ------------------------------ |
-| `xxxxx` (legacy, no prefix) | `nativesdks.us1.mparticle.com` |
-| `us1-xxxxx`                 | `nativesdks.us1.mparticle.com` |
-| `us2-xxxxx`                 | `nativesdks.us2.mparticle.com` |
-| `eu1-xxxxx`                 | `nativesdks.eu1.mparticle.com` |
-| `au1-xxxxx`                 | `nativesdks.au1.mparticle.com` |
+| API Key Format              | Events Endpoint                | Events Tracking Endpoint                | Identity Endpoint            | Identity Tracking Endpoint            |
+| --------------------------- | ------------------------------ | --------------------------------------- | ---------------------------- | ------------------------------------- |
+| `xxxxx` (legacy, no prefix) | `nativesdks.us1.mparticle.com` | `tracking-nativesdks.us1.mparticle.com` | `identity.us1.mparticle.com` | `tracking-identity.us1.mparticle.com` |
+| `us1-xxxxx`                 | `nativesdks.us1.mparticle.com` | `tracking-nativesdks.us1.mparticle.com` | `identity.us1.mparticle.com` | `tracking-identity.us1.mparticle.com` |
+| `us2-xxxxx`                 | `nativesdks.us2.mparticle.com` | `tracking-nativesdks.us2.mparticle.com` | `identity.us2.mparticle.com` | `tracking-identity.us2.mparticle.com` |
+| `eu1-xxxxx`                 | `nativesdks.eu1.mparticle.com` | `tracking-nativesdks.eu1.mparticle.com` | `identity.eu1.mparticle.com` | `tracking-identity.eu1.mparticle.com` |
+| `au1-xxxxx`                 | `nativesdks.au1.mparticle.com` | `tracking-nativesdks.au1.mparticle.com` | `identity.au1.mparticle.com` | `tracking-identity.au1.mparticle.com` |
+
+> [!NOTE]
+> If your app has strict App Transport Security (ATS) settings, you may need to add `NSIncludesSubdomains` set to `YES` for the `mparticle.com` domain in your Info.plist to allow connections to regional subdomains.
 
 ### Removed Deprecated UIApplicationDelegate Methods
 
