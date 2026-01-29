@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The kit instance that conforms to MPKitProtocol.
  */
-@property (nonatomic, strong, readonly) id<MPKitProtocol> kitInstance;
+@property (nonatomic, strong, readwrite) id<MPKitProtocol> kitInstance;
 
 /**
  Initializes a new sideloaded kit wrapper with the given kit instance.
