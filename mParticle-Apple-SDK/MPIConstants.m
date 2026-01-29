@@ -228,7 +228,6 @@ NSString *const kMPRemoteConfigRestrictIDFA = @"rdlat";
 NSString *const kMPRemoteConfigAliasMaxWindow = @"alias_max_window";
 NSString *const kMPRemoteConfigAllowASR = @"iasr";
 NSString *const kMPRemoteConfigExcludeAnonymousUsersKey = @"eau";
-NSString *const kMPRemoteConfigDirectURLRouting = @"dur";
 NSString *const kMPRemoteConfigDataPlanningResults = @"dpr";
 NSString *const kMPRemoteConfigDataPlanning = @"dtpn";
 NSString *const kMPRemoteConfigDataPlanningBlock = @"blok";

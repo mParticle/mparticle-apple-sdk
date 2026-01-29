@@ -93,6 +93,42 @@ This change only affects users who:
 
 The `MPListenerController` class has been removed. The SDK no longer invokes any listener callbacks.
 
+### Direct Routing Enabled by Default
+
+API requests now route directly to regional endpoints based on your API key prefix:
+
+**Before:**
+
+- `nativesdks.mparticle.com`
+- `tracking-nativesdks.mparticle.com`
+- `identity.mparticle.com`
+- `tracking-identity.mparticle.com`
+- `config2.mparticle.com`
+
+**After:**
+
+- `nativesdks.[pod].mparticle.com`
+- `tracking-nativesdks.[pod].mparticle.com`
+- `identity.[pod].mparticle.com`
+- `tracking-identity.[pod].mparticle.com`
+- `config2.mparticle.com`
+
+> [!NOTE]
+> The `config2.mparticle.com` subdomain is used to fetch SDK configuration and will not change.
+
+Examples:
+
+| API Key Format              | Events Endpoint                | Events Tracking Endpoint                | Identity Endpoint            | Identity Tracking Endpoint            |
+| --------------------------- | ------------------------------ | --------------------------------------- | ---------------------------- | ------------------------------------- |
+| `xxxxx` (legacy, no prefix) | `nativesdks.us1.mparticle.com` | `tracking-nativesdks.us1.mparticle.com` | `identity.us1.mparticle.com` | `tracking-identity.us1.mparticle.com` |
+| `us1-xxxxx`                 | `nativesdks.us1.mparticle.com` | `tracking-nativesdks.us1.mparticle.com` | `identity.us1.mparticle.com` | `tracking-identity.us1.mparticle.com` |
+| `us2-xxxxx`                 | `nativesdks.us2.mparticle.com` | `tracking-nativesdks.us2.mparticle.com` | `identity.us2.mparticle.com` | `tracking-identity.us2.mparticle.com` |
+| `eu1-xxxxx`                 | `nativesdks.eu1.mparticle.com` | `tracking-nativesdks.eu1.mparticle.com` | `identity.eu1.mparticle.com` | `tracking-identity.eu1.mparticle.com` |
+| `au1-xxxxx`                 | `nativesdks.au1.mparticle.com` | `tracking-nativesdks.au1.mparticle.com` | `identity.au1.mparticle.com` | `tracking-identity.au1.mparticle.com` |
+
+> [!NOTE]
+> If your app has strict App Transport Security (ATS) settings, you may need to add `NSIncludesSubdomains` set to `YES` for the `mparticle.com` domain in your Info.plist to allow connections to regional subdomains.
+
 ### Removed Deprecated UIApplicationDelegate Methods
 
 Apple has deprecated several `UIApplicationDelegate` protocol methods in favor of the modern `UIScene` lifecycle introduced in iOS 13. The mParticle SDK previously provided wrapper methods for these deprecated delegate methods, but these have been removed as they are scheduled for removal by Apple in iOS 27.
