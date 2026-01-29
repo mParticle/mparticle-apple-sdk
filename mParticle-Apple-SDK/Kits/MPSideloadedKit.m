@@ -4,8 +4,6 @@
 
 @interface MPSideloadedKit ()
 
-@property (nonatomic, strong, readwrite) id<MPKitProtocol> kitInstance;
-
 // Filter dictionaries
 @property (nonatomic, strong) NSMutableDictionary<NSString *, id> *eventTypeFilters;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, id> *eventNameFilters;
