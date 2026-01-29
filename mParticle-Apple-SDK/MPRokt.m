@@ -70,6 +70,8 @@ static const NSInteger kMPRoktKitId = 181;
     [self confirmUser:attributes user:currentUser completion:^(MParticleUser *_Nullable resolvedUser) {
         NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
 
+        MPILogVerbose(@"MParticle.Rokt selectPlacements called with attributes: %@", attributes);
+
         // If attributeMap is nil the kit hasn't been initialized
         if (attributeMap) {
             NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
