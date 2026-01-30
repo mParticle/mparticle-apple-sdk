@@ -5,6 +5,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Record of consent under the CCPA.
  */
+__attribute__((objc_subclassing_restricted))
 @interface MPCCPAConsent : NSObject <NSCopying>
 
 /**
