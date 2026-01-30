@@ -132,13 +132,3 @@ enum Notifications {
     static let kMPRemoteNotificationDeviceTokenKey = Notification.Name("MPRemoteNotificationDeviceTokenKey")
     static let kMPRemoteNotificationOldDeviceTokenKey = Notification.Name("MPRemoteNotificationOldDeviceTokenKey")
 }
-
-/**
- @see https://developer.apple.com/documentation/apptrackingtransparency/attrackingmanager/authorizationstatus
- */
-@objc public enum MPATTAuthorizationStatusSwift: Int {
-    case notDetermined = 0
-    case restricted
-    case denied
-    case authorized
-}
