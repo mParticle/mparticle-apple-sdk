@@ -302,7 +302,7 @@
                 return;
             }
             
-            if (!identityTypeNumber || ![identityTypeNumber isKindOfClass:[NSNumber class]]) {
+            if (identityTypeNumber == nil || ![identityTypeNumber isKindOfClass:[NSNumber class]]) {
                 allSuccess = NO;
                 *stop = YES;
                 return;
