@@ -15,6 +15,7 @@
 #import "MPKitContainer.h"
 #import "MPUpload.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -357,7 +358,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 - (NSString *)deviceApplicationStamp {
     MParticle* mparticle = MParticle.sharedInstance;
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:mparticle.identity];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:mparticle.identity logger:logger];
 
     return device.deviceIdentifier;
 }

@@ -1,4 +1,4 @@
-internal import mParticle_Apple_SDK_Swift
+import UIKit
 import MachO
 import QuartzCore
 
@@ -58,20 +58,24 @@ public class MPDevice: NSObject, NSCopying {
     private var stateMachine: MPStateMachineMPDeviceProtocol
     private var userDefaults: MPIdentityApiMPUserDefaultsProtocol
     private var identity: MPIdentityApiMPDeviceProtocol
+    private let logger: MPLog
 
     @objc public required init(
         stateMachine: MPStateMachineMPDeviceProtocol,
         userDefaults: MPIdentityApiMPUserDefaultsProtocol,
-        identity: MPIdentityApiMPDeviceProtocol
+        identity: MPIdentityApiMPDeviceProtocol,
+        logger: MPLog
     ) {
         self.stateMachine = stateMachine
         self.userDefaults = userDefaults
         self.identity = identity
+        self.logger = logger
+        
         super.init()
     }
 
     @objc public func copy(with _: NSZone? = nil) -> Any {
-        let copyObject = MPDevice(stateMachine: stateMachine, userDefaults: userDefaults, identity: identity)
+        let copyObject = MPDevice(stateMachine: stateMachine, userDefaults: userDefaults, identity: identity, logger: logger)
 
         copyObject.advertiserId = advertiserId
         copyObject.architecture = architecture
@@ -92,7 +96,7 @@ public class MPDevice: NSObject, NSCopying {
                 return adID
             } else {
                 if let userIdentities = identity.currentUserIdentities() {
-                    return userIdentities[NSNumber(value: MPIdentity.iosAdvertiserId.rawValue)]
+                    return userIdentities[NSNumber(value: MPIdentitySwift.iosAdvertiserId.rawValue)]
                 } else {
                     return nil
                 }
@@ -262,7 +266,7 @@ public class MPDevice: NSObject, NSCopying {
         return isTablet
     }
 
-    @objc public class func jailbrokenInfo() -> [AnyHashable: Any] {
+    @objc public func jailbrokenInfo() -> [AnyHashable: Any] {
         var jailbroken = false
 
         #if targetEnvironment(simulator)
@@ -318,10 +322,6 @@ public class MPDevice: NSObject, NSCopying {
                 }
 
                 if !jailbroken {
-                    let mparticle = MParticle.sharedInstance()
-                    let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-                    logger.customLogger = mparticle.customLogger
-
                     // Valid test only if running as root on a jailbroken device
                     let jailbrokenTestData = Data("Jailbroken filesystem test.".utf8)
                     let filePath = "/private/mpjailbrokentest.txt"
@@ -364,7 +364,7 @@ public class MPDevice: NSObject, NSCopying {
                                                     Device.kMPDeviceManufacturerKey: manufacturer,
                                                     Device.kMPTimezoneOffsetKey: timezoneOffset,
                                                     Device.kMPTimezoneDescriptionKey: timezoneDescription,
-                                                    Device.kMPDeviceJailbrokenKey: MPDevice.jailbrokenInfo(),
+                                                    Device.kMPDeviceJailbrokenKey: jailbrokenInfo(),
                                                     Device.kMPDeviceIsTabletKey: NSNumber(value: isTablet),
                                                     Device.kMPDeviceIsDaylightSavingTime: NSNumber(value: isDaylightSavingTime),
                                                     Device.kMPDeviceLimitAdTrackingKey: NSNumber(value: false)]
@@ -420,13 +420,13 @@ public class MPDevice: NSObject, NSCopying {
 
         if let mpid = mpid {
             if let userIdentities = identity.userIdentities(mpId: mpid) {
-                if let advertiserId = userIdentities[MPIdentity.iosAdvertiserId.rawValue as NSNumber],
+                if let advertiserId = userIdentities[MPIdentitySwift.iosAdvertiserId.rawValue as NSNumber],
                    let currentStatus = stateMachine.attAuthorizationStatus,
                    currentStatus.intValue == MPATTAuthorizationStatusSwift.authorized.rawValue {
                     deviceDictionary[Device.kMPDeviceAdvertiserIdKey] = advertiserId
                 }
 
-                if let vendorId = userIdentities[MPIdentity.iosVendorId.rawValue as NSNumber] {
+                if let vendorId = userIdentities[MPIdentitySwift.iosVendorId.rawValue as NSNumber] {
                     deviceDictionary[Device.kMPDeviceAppVendorIdKey] = vendorId
                 }
             }

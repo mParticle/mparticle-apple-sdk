@@ -8,6 +8,7 @@
 #import "MPPersistenceController.h"
 #import "MPConsumerInfo.h"
 #import "mParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -59,7 +60,9 @@
             _previousMPID = [MPPersistenceController_PRIVATE mpId].stringValue;
         }
         MParticle* mparticle = MParticle.sharedInstance;
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity];
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:logger];
 
         NSString *vendorId = device.vendorId;
         if (vendorId) {

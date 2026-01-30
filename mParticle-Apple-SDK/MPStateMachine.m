@@ -608,10 +608,11 @@ static BOOL runningInBackground = NO;
     BOOL dataRamped = YES;
     if (rampPercentage.integerValue != 0) {
         MParticle* mparticle = MParticle.sharedInstance;
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:mparticle.stateMachine userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity];
-        NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
         MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
         logger.customLogger = mparticle.customLogger;
+        
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:mparticle.stateMachine userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:logger];
+        NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
         MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
         uint64_t rampHash = [hasher hashFNV1a:rampData];
         NSUInteger modRampHash = rampHash % 100;

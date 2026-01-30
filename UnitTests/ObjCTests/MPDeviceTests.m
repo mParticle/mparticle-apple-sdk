@@ -3,6 +3,7 @@
 #import "mParticle.h"
 #import "MPIConstants.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 #if TARGET_OS_IOS == 1
     #import <CoreTelephony/CTTelephonyNetworkInfo.h>
     #import <CoreTelephony/CTCarrier.h>
@@ -31,9 +32,13 @@
     
     NSString *testCountry = [[NSLocale currentLocale] objectForKey:NSLocaleCountryCode];
 
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine: mparticle.stateMachine
-                                                 userDefaults: userDefaults
-                                                     identity: mparticle.identity];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
+
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                       logger:logger];
+
     NSDictionary *testDictionary = device.dictionaryRepresentation;
     XCTAssertEqualObjects(testDictionary[@"dll"], @"en");
     XCTAssertEqualObjects(testDictionary[@"dlc"], testCountry);
