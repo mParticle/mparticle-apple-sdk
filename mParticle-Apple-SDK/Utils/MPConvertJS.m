@@ -6,8 +6,6 @@
 @implementation MPConvertJS_PRIVATE
 
 + (MPCommerceEventAction)commerceEventAction:(NSNumber *)json {
-    MPCommerceEventAction action;
-    
     int actionInt = [json intValue];
     switch (actionInt) {
         case MPJSCommerceEventActionAddToCart:
