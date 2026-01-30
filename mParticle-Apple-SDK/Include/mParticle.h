@@ -20,6 +20,7 @@
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
+#import "MPSideloadedKit.h"
 #import "MPBackendController.h"
 #import "MPApplication.h"
 #import "MPNotificationController.h"
@@ -39,7 +40,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class MPSideloadedKit;
 @class MPKitContainer;
 
 /**

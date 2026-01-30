@@ -724,7 +724,7 @@ static NSArray *actionNames;
             break;
     }
     
-    return expansionInstructions;
+    return [expansionInstructions copy];
 }
 
 - (NSArray<MPProduct *> *const)addedProducts {

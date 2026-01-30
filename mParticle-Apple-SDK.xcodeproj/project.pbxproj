@@ -238,7 +238,6 @@
 		53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */; };
 		53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5329CDFB1F00E7489F /* MPBaseProjection.m */; };
 		53A79DBF29CE23F700E7489F /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */; };
-		53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */; };
 		7231B80E2EB3C4AC001565E5 /* MPKitMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B80C2EB3C4AC001565E5 /* MPKitMock.swift */; };
 		7231B81A2EB94DCD001565E5 /* MParticleTestBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8192EB94DCD001565E5 /* MParticleTestBase.swift */; };
 		7231B81D2EB94EAA001565E5 /* MParticleConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B81C2EB94EAA001565E5 /* MParticleConfigurationTests.swift */; };
@@ -264,6 +263,8 @@
 		729721762EAC2AD60045E55C /* AppEnvironmentProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */; };
 		729721792EAC2B750045E55C /* AppEnvironmentProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 729721782EAC2B750045E55C /* AppEnvironmentProvider.m */; };
 		72D356542E84601A0012A0C2 /* MPEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72D356522E8460020012A0C2 /* MPEventTests.swift */; };
+		72E8785A2F2AB23600F355F2 /* MPSideloadedKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 72E878592F2AB23600F355F2 /* MPSideloadedKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		72E8785C2F2AB29A00F355F2 /* MPSideloadedKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 72E8785B2F2AB29A00F355F2 /* MPSideloadedKit.m */; };
 		72FEBD182E86FE3B00B8341F /* MPIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */; };
 		7E0387812DB913D2003B7D5E /* MPRokt.h in Headers */ = {isa = PBXBuildFile; fileRef = 7E03877F2DB913D2003B7D5E /* MPRokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E0387802DB913D2003B7D5E /* MPRokt.m */; };
@@ -564,7 +565,6 @@
 		53A79CFE29CE12AB00E7489F /* mParticle-Apple-SDK.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK.modulemap"; path = "Framework/mParticle-Apple-SDK.modulemap"; sourceTree = "<group>"; };
 		53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK-NoLocation.modulemap"; path = "Framework/mParticle-Apple-SDK-NoLocation.modulemap"; sourceTree = "<group>"; };
 		53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_NoLocation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSideloadedKit.swift; sourceTree = "<group>"; };
 		7231B80C2EB3C4AC001565E5 /* MPKitMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPKitMock.swift; sourceTree = "<group>"; };
 		7231B8192EB94DCD001565E5 /* MParticleTestBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleTestBase.swift; sourceTree = "<group>"; };
 		7231B81C2EB94EAA001565E5 /* MParticleConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleConfigurationTests.swift; sourceTree = "<group>"; };
@@ -590,6 +590,8 @@
 		729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppEnvironmentProvider.h; sourceTree = "<group>"; };
 		729721782EAC2B750045E55C /* AppEnvironmentProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppEnvironmentProvider.m; sourceTree = "<group>"; };
 		72D356522E8460020012A0C2 /* MPEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPEventTests.swift; sourceTree = "<group>"; };
+		72E878592F2AB23600F355F2 /* MPSideloadedKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPSideloadedKit.h; sourceTree = "<group>"; };
+		72E8785B2F2AB29A00F355F2 /* MPSideloadedKit.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPSideloadedKit.m; sourceTree = "<group>"; };
 		72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIdentityTests.swift; sourceTree = "<group>"; };
 		7E03877F2DB913D2003B7D5E /* MPRokt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPRokt.h; sourceTree = "<group>"; };
 		7E0387802DB913D2003B7D5E /* MPRokt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRokt.m; sourceTree = "<group>"; };
@@ -987,7 +989,7 @@
 				53A79B5E29CDFB1F00E7489F /* MPKitActivity.h */,
 				53A79B6029CDFB1F00E7489F /* MPKitFilter.h */,
 				53A79B6129CDFB1F00E7489F /* MPBaseProjection.h */,
-				53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */,
+				72E8785B2F2AB29A00F355F2 /* MPSideloadedKit.m */,
 			);
 			path = Kits;
 			sourceTree = "<group>";
@@ -1028,6 +1030,7 @@
 				53A79B0629CDFB1F00E7489F /* MPStateMachine.h */,
 				53A79C4429CDFB4800E7489F /* MPTransactionAttributes+Dictionary.h */,
 				53A79B5B29CDFB1F00E7489F /* MPKitContainer.h */,
+				72E878592F2AB23600F355F2 /* MPSideloadedKit.h */,
 				53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */,
 				53A79B2429CDFB1F00E7489F /* MPApplication.h */,
 				53A79B3429CDFB1F00E7489F /* MPNotificationController.h */,
@@ -1265,6 +1268,7 @@
 				53A79D4829CE23F700E7489F /* MPConsentSerialization.h in Headers */,
 				53A79D4929CE23F700E7489F /* MPConsentKitFilter.h in Headers */,
 				53A79D4A29CE23F700E7489F /* MPAppNotificationHandler.h in Headers */,
+				72E8785A2F2AB23600F355F2 /* MPSideloadedKit.h in Headers */,
 				53A79D4B29CE23F700E7489F /* MPKitFilter.h in Headers */,
 				53A79D4C29CE23F700E7489F /* MPDataPlanFilter.h in Headers */,
 				531BCF352B28A23400F5C573 /* MPIdentityCaching.h in Headers */,
@@ -1612,7 +1616,6 @@
 				53A79D9629CE23F700E7489F /* MPEnums.m in Sources */,
 				53A79D9729CE23F700E7489F /* MPNetworkPerformance.m in Sources */,
 				53A79D9929CE23F700E7489F /* MPDataPlanFilter.m in Sources */,
-				53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */,
 				53A79D9A29CE23F700E7489F /* MPSession.m in Sources */,
 				53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */,
 				53A79D9C29CE23F700E7489F /* MPAliasRequest.m in Sources */,
@@ -1637,6 +1640,7 @@
 				53A79DAD29CE23F700E7489F /* MPAliasResponse.m in Sources */,
 				B3D778622E02F55F00D887A4 /* MPRoktEvent.swift in Sources */,
 				53A79DAE29CE23F700E7489F /* MPKitFilter.m in Sources */,
+				72E8785C2F2AB29A00F355F2 /* MPSideloadedKit.m in Sources */,
 				53A79DAF29CE23F700E7489F /* MPURLConnectionAssociate.m in Sources */,
 				53A79DB129CE23F700E7489F /* MPTransactionAttributes.m in Sources */,
 				53A79DB329CE23F700E7489F /* MPCommerceEventInstruction.m in Sources */,

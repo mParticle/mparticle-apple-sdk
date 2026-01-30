@@ -51,7 +51,6 @@
 @property (nonatomic) BOOL automaticSessionTracking;
 @property (nonatomic) BOOL allowASR;
 @property (nonatomic, nullable) MPDataPlanOptions *dataPlanOptions;
-@property (nonatomic) BOOL enableDirectRouting;
 @property (nonatomic) BOOL enableAudienceAPI;
 @property (nonatomic) BOOL enableIdentityCaching;
 
