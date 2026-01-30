@@ -810,7 +810,9 @@
     XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusNotDetermined);
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine backendController:instance.backendController identity:instance.identity];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine
+                                                                      backendController:instance.backendController
+                                                                               identity:instance.identity];
     MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
                                                  userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
                                                      identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
@@ -843,7 +845,9 @@
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     
     MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine backendController:instance.backendController identity:instance.identity];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine
+                                                                      backendController:instance.backendController
+                                                                               identity:instance.identity];
     MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
                                                  userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
                                                      identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
@@ -876,7 +880,9 @@
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     
     MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine backendController:instance.backendController identity:instance.identity];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine
+                                                                      backendController:instance.backendController
+                                                                               identity:instance.identity];
     MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
                                                  userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
                                                      identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
@@ -909,7 +915,9 @@
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     
     MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine backendController:instance.backendController identity:instance.identity];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine
+                                                                      backendController:instance.backendController
+                                                                               identity:instance.identity];
     MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
                                                  userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
                                                      identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
@@ -976,7 +984,9 @@
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     
     MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine backendController:instance.backendController identity:instance.identity];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:instance.stateMachine
+                                                                      backendController:instance.backendController
+                                                                               identity:instance.identity];
     MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
                                                  userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
                                                      identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity

@@ -56,9 +56,9 @@ enum Device {
 
 @objc(MPDevice)
 public class MPDevice: NSObject, NSCopying {
-    private var stateMachine: MPStateMachineMPDeviceProtocol
-    private var userDefaults: MPIdentityApiMPUserDefaultsProtocol
-    private var identity: MPIdentityApiMPDeviceProtocol
+    private let stateMachine: MPStateMachineMPDeviceProtocol
+    private let userDefaults: MPIdentityApiMPUserDefaultsProtocol
+    private let identity: MPIdentityApiMPDeviceProtocol
     private let logger: MPLog
 
     @objc public required init(

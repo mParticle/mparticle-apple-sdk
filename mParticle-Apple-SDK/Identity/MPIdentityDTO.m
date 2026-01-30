@@ -62,7 +62,13 @@
         MParticle* mparticle = MParticle.sharedInstance;
         MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
         logger.customLogger = mparticle.customLogger;
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:logger];
+        MPUserDefaults* userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine
+                                                                          backendController:mparticle.backendController
+                                                                                   identity:mparticle.identity];
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                                                     userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                         identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                           logger:logger];
 
         NSString *vendorId = device.vendorId;
         if (vendorId) {
