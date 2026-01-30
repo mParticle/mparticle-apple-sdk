@@ -8,6 +8,21 @@
 #import "MParticleSwift.h"
 #import "MPIConstants.h"
 
+// Rokt kit identifier for testing
+static NSNumber * const kTestRoktKitId = @181;
+
+// Test helper class that simulates a kit with getSessionId method
+@interface MPRoktTestKitInstance : NSObject
+@property (nonatomic, copy) NSString *sessionIdToReturn;
+- (NSString *)getSessionId;
+@end
+
+@implementation MPRoktTestKitInstance
+- (NSString *)getSessionId {
+    return self.sessionIdToReturn;
+}
+@end
+
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
 - (NSNumber *)getRoktHashedEmailUserIdentityType;
@@ -293,7 +308,7 @@
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     NSArray *kitConfig = @[@{
-        @"id": @181,
+        @"id": kTestRoktKitId,
         kMPRemoteConfigKitConfigurationKey: @{
             @"AllowJavaScriptResponse": @"True",
             @"accountId": @12345,
@@ -322,7 +337,7 @@
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     NSArray *kitConfig = @[@{
-        @"id": @181,
+        @"id": kTestRoktKitId,
         kMPRemoteConfigKitConfigurationKey: @{
             @"AllowJavaScriptResponse": @"True",
             @"accountId": @12345,
@@ -344,7 +359,7 @@
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     NSArray *kitConfig = @[@{
-        @"id": @181,
+        @"id": kTestRoktKitId,
         kMPRemoteConfigKitConfigurationKey: @{
             @"AllowJavaScriptResponse": @"True",
             @"accountId": @12345,
@@ -743,6 +758,95 @@
 
     // Verify
     OCMVerifyAll(self.mockContainer);
+}
+
+#pragma mark - setSessionId Tests
+
+- (void)testSetSessionIdForwardsToKitContainer {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // Set up test parameters
+    NSString *sessionId = @"test-session-id-12345";
+
+    // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(setSessionId:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], sessionId);
+        return true;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    // Execute method
+    [self.rokt setSessionId:sessionId];
+
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    // Verify
+    OCMVerifyAll(self.mockContainer);
+}
+
+#pragma mark - getSessionId Tests
+
+- (void)testGetSessionIdReturnsSessionIdFromKit {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // Create a mock kit register with Rokt kit code
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+
+    // Create a real kit instance that responds to getSessionId
+    NSString *expectedSessionId = @"mock-session-id-67890";
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+    kitInstance.sessionIdToReturn = expectedSessionId;
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+
+    // Return the mock kit register from activeKitsRegistry
+    NSArray *activeKits = @[mockKitRegister];
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(activeKits);
+
+    // Execute method
+    NSString *result = [self.rokt getSessionId];
+
+    // Verify
+    XCTAssertEqualObjects(result, expectedSessionId, @"Should return the session id from the kit");
+}
+
+- (void)testGetSessionIdReturnsNilWhenKitInstanceIsNil {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // Create a mock kit register with Rokt kit code but nil wrapperInstance
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(nil);
+
+    // Return the mock kit register from activeKitsRegistry
+    NSArray *activeKits = @[mockKitRegister];
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(activeKits);
+
+    // Execute method
+    NSString *result = [self.rokt getSessionId];
+
+    // Verify
+    XCTAssertNil(result, @"Should return nil when kit wrapper instance is nil");
 }
 
 @end 
