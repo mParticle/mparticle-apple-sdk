@@ -19,6 +19,40 @@ public protocol MPIdentityApiMPDeviceProtocol {
     @objc subscript(key: String) -> Any? { get set }
 }
 
+enum Device {
+    static let kMPDeviceInformationKey = "di"
+    static let kMPDeviceBrandKey = "b"
+    static let kMPDeviceProductKey = "p"
+    static let kMPDeviceNameKey = "dn"
+    static let kMPDeviceAdvertiserIdKey = "aid"
+    static let kMPDeviceAppVendorIdKey = "vid"
+    static let kMPDeviceBuildIdKey = "bid"
+    static let kMPDeviceManufacturerKey = "dma"
+    static let kMPDevicePlatformKey = "dp"
+    static let kMPDeviceOSKey = "dosv"
+    static let kMPDeviceModelKey = "dmdl"
+    static let kMPScreenHeightKey = "dsh"
+    static let kMPScreenWidthKey = "dsw"
+    static let kMPDeviceLocaleCountryKey = "dlc"
+    static let kMPDeviceLocaleLanguageKey = "dll"
+    static let kMPNetworkCountryKey = "nc"
+    static let kMPNetworkCarrierKey = "nca"
+    static let kMPMobileNetworkCodeKey = "mnc"
+    static let kMPMobileCountryCodeKey = "mcc"
+    static let kMPTimezoneOffsetKey = "tz"
+    static let kMPTimezoneDescriptionKey = "tzn"
+    static let kMPDeviceJailbrokenKey = "jb"
+    static let kMPDeviceArchitectureKey = "arc"
+    static let kMPDeviceRadioKey = "dr"
+    static let kMPDeviceFloatingPointFormat = "%0.0f"
+    static let kMPDeviceSignerIdentityString = "signeridentity"
+    static let kMPDeviceIsTabletKey = "it"
+    static let kMPDeviceIdentifierKey = "deviceIdentifier"
+    static let kMPDeviceLimitAdTrackingKey = "lat"
+    static let kMPDeviceIsDaylightSavingTime = "idst"
+    static let kMPDeviceInvalidVendorId = "00000000-0000-0000-0000-000000000000"
+}
+
 @objc(MPDevice)
 public class MPDevice: NSObject, NSCopying {
     private var stateMachine: MPStateMachineMPDeviceProtocol
