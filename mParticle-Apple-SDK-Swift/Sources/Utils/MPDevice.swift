@@ -19,6 +19,7 @@ public protocol MPIdentityApiMPDeviceProtocol {
     @objc subscript(key: String) -> Any? { get set }
 }
 
+public
 enum Device {
     static let kMPDeviceInformationKey = "di"
     static let kMPDeviceBrandKey = "b"
