@@ -1,11 +1,9 @@
 #import <Foundation/Foundation.h>
-
-@class MPCommerceEvent;
-@class MPPromotionContainer;
-@class MPPromotion;
-@class MPTransactionAttributes;
-@class MPProduct;
-@class MPIdentityApiRequest;
+#import "MPCommerceEvent.h"
+#import "MPPromotion.h"
+#import "MPTransactionAttributes.h"
+#import "MPProduct.h"
+#import "MPIdentityApiRequest.h"
 
 typedef NS_ENUM(NSUInteger, MPJSCommerceEventAction) {
     MPJSCommerceEventActionUnknown = 0,

@@ -1,12 +1,7 @@
 #import "MPConvertJS.h"
-#import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPProduct.h"
-#import "MPPromotion.h"
-#import "MPTransactionAttributes.h"
 #import "mParticle.h"
 #import "MPILogger.h"
-#import "MPIdentityApiRequest.h"
 
 @implementation MPConvertJS_PRIVATE
 
