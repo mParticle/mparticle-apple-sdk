@@ -15,6 +15,7 @@
 #import "MPKitContainer.h"
 #import "MPUpload.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -30,7 +31,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @end
 
-@interface MPIdentityApi ()
+@interface MPIdentityApi ()<MPIdentityApiMPDeviceProtocol>
 
 @property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @property(nonatomic, strong, readwrite, nonnull) MParticleUser *currentUser;
@@ -356,7 +357,16 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (NSString *)deviceApplicationStamp {
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPUserDefaults* userDefaults =[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine
+                                                                     backendController:mparticle.backendController
+                                                                              identity:mparticle.identity];
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                       logger:logger];
 
     return device.deviceIdentifier;
 }
@@ -493,6 +503,14 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     });
     
     return YES;
+}
+
+- (NSDictionary<NSNumber *, NSString *>*)currentUserIdentities {
+    return self.currentUser.identities;
+}
+
+- (NSDictionary<NSNumber *, NSString *>*)userIdentitiesWithMpId:(NSNumber * _Nonnull)mpId {
+    return [self getUser:mpId].identities;
 }
 
 @end
