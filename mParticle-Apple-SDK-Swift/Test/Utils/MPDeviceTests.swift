@@ -3,43 +3,38 @@ import XCTest
 
 class MPStateMachineMPDeviceMock: MPStateMachineMPDeviceProtocol {
     var deviceTokenType: String?
-    
     var attAuthorizationStatus: NSNumber?
-    
     var attAuthorizationTimestamp: NSNumber?
-    
 }
 
 class MPIdentityApiMPUserDefaultsMock: MPIdentityApiMPUserDefaultsProtocol {
     var map: [String: Any] = [:]
-    
+
     subscript(key: String) -> Any? {
         get {
             return map[key]
         }
         set(newValue) {
-            map[key] = newValue;
+            map[key] = newValue
         }
     }
-    
 }
 
 class MPIdentityApiMPDeviceMock: MPIdentityApiMPDeviceProtocol {
     func currentUserIdentities() -> [NSNumber: String]? {
         return nil
     }
-    
+
     func userIdentities(mpId: NSNumber) -> [NSNumber: String]? {
         return nil
     }
-    
 }
 
 final class MPDeviceTests: XCTestCase {
 
     func testDictionaryDescription() {
         let kMPDeviceTokenKey = "to"
-        let testDeviceToken = "<000000000000000000000000000000>".data(using: .utf8)!
+        let testDeviceToken = Data("<000000000000000000000000000000>".utf8)
         let userDefaults = MPIdentityApiMPUserDefaultsMock()
         userDefaults[kMPDeviceTokenKey] = testDeviceToken
 

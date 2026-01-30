@@ -71,7 +71,7 @@ public class MPDevice: NSObject, NSCopying {
         self.userDefaults = userDefaults
         self.identity = identity
         self.logger = logger
-        
+
         super.init()
     }
 
@@ -89,9 +89,6 @@ public class MPDevice: NSObject, NSCopying {
 
     private var _advertiserId: String?
     @objc public private(set) var advertiserId: String? {
-        set {
-            _advertiserId = newValue
-        }
         get {
             if let adID = _advertiserId {
                 return adID
@@ -103,13 +100,13 @@ public class MPDevice: NSObject, NSCopying {
                 }
             }
         }
+        set {
+            _advertiserId = newValue
+        }
     }
 
     private var _architecture: String?
     @objc public private(set) var architecture: String {
-        set {
-            _architecture = newValue
-        }
         get {
             if let arch = _architecture {
                 return arch
@@ -119,6 +116,9 @@ public class MPDevice: NSObject, NSCopying {
                 }
                 return String(cString: archRaw)
             }
+        }
+        set {
+            _architecture = newValue
         }
     }
 
@@ -158,9 +158,6 @@ public class MPDevice: NSObject, NSCopying {
 
     private var _model: String?
     @objc public private(set) var model: String {
-        set {
-            _model = newValue
-        }
         get {
             if _model == nil {
                 var size = 0
@@ -175,6 +172,9 @@ public class MPDevice: NSObject, NSCopying {
             } else {
                 return "Not available."
             }
+        }
+        set {
+            _model = newValue
         }
     }
 
@@ -214,9 +214,6 @@ public class MPDevice: NSObject, NSCopying {
 
     private var _vendorId: String?
     @objc public private(set) var vendorId: String? {
-        set {
-            _vendorId = newValue
-        }
         get {
             if _vendorId == nil {
                 if let vendor = userDefaults[Device.kMPDeviceAppVendorIdKey] as? String,
@@ -228,6 +225,9 @@ public class MPDevice: NSObject, NSCopying {
                 }
             }
             return _vendorId
+        }
+        set {
+            _vendorId = newValue
         }
     }
 
@@ -241,11 +241,8 @@ public class MPDevice: NSObject, NSCopying {
 
     private var _screenSize: CGSize?
     @objc public private(set) var screenSize: CGSize {
-        set {
-            _screenSize = newValue
-        }
         get {
-            if let screenSize = _screenSize, !CGSizeEqualToSize(screenSize, CGSizeZero) {
+            if let screenSize = _screenSize, !CGSizeEqualToSize(screenSize, .zero) {
                 return screenSize
             } else {
                 let bounds = UIScreen.main.bounds
@@ -254,6 +251,9 @@ public class MPDevice: NSObject, NSCopying {
                 _screenSize = screenSize
                 return screenSize
             }
+        }
+        set {
+            _screenSize = newValue
         }
     }
 
