@@ -19,6 +19,7 @@
 #import "SettingsProvider.h"
 #import "Executor.h"
 #import "AppEnvironmentProvider.h"
+#import "MPConvertJS.h"
 @import mParticle_Apple_SDK_Swift;
 
 static NSArray *eventTypeStrings = nil;
