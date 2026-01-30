@@ -25,7 +25,7 @@ public protocol MPUserDefaultsProtocol {
     func synchronize()
 }
 
-@objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
+@objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol, MPIdentityApiMPUserDefaultsProtocol {
     private var stateMachine: MPStateMachine_PRIVATE?
     private var backendController: MPBackendController_PRIVATE?
     private var identity: MPIdentityApi?

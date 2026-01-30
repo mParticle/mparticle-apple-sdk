@@ -357,7 +357,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 - (NSString *)deviceApplicationStamp {
     MParticle* mparticle = MParticle.sharedInstance;
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:mparticle.identity];
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)[MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine backendController:mparticle.backendController identity:mparticle.identity] identity:mparticle.identity];
 
     return device.deviceIdentifier;
 }

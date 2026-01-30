@@ -15,15 +15,19 @@ public protocol MPIdentityApiMPDeviceProtocol {
     func userIdentities(mpId: NSNumber) -> [NSNumber: String]?
 }
 
+@objc public protocol MPIdentityApiMPUserDefaultsProtocol {
+    @objc subscript(key: String) -> Any? { get set }
+}
+
 @objc(MPDevice)
 public class MPDevice: NSObject, NSCopying {
     private var stateMachine: MPStateMachineMPDeviceProtocol
-    private var userDefaults: MPUserDefaults
+    private var userDefaults: MPIdentityApiMPUserDefaultsProtocol
     private var identity: MPIdentityApiMPDeviceProtocol
 
     @objc public required init(
         stateMachine: MPStateMachineMPDeviceProtocol,
-        userDefaults: MPUserDefaults,
+        userDefaults: MPIdentityApiMPUserDefaultsProtocol,
         identity: MPIdentityApiMPDeviceProtocol
     ) {
         self.stateMachine = stateMachine
