@@ -35,10 +35,6 @@
 }
 
 + (MPCommerceEvent *)commerceEvent:(NSDictionary *)json {
-    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
-        MPILogError(@"Unexpected commerce event data received from webview");
-        return nil;
-    }
     if (json[@"ProductAction"] != nil && ![json[@"ProductAction"] isKindOfClass:[NSDictionary class]]) {
         MPILogError(@"Unexpected commerce event data received from webview");
         return nil;
@@ -72,73 +68,110 @@
     else {
         commerceEvent = [[MPCommerceEvent alloc] initWithImpressionName:nil product:nil];
     }
+    
+    id eventAttributes = json[@"EventAttributes"];
+    if ([eventAttributes isKindOfClass:[NSDictionary class]]) {
+        commerceEvent.customAttributes = (NSDictionary *)eventAttributes;
+    }
+    
+    id checkoutOptionsObj = json[@"CheckoutOptions"];
+    if ([checkoutOptionsObj isKindOfClass:[NSString class]]) {
+        commerceEvent.checkoutOptions = (NSString *)checkoutOptionsObj;
+    }
 
-    if ((NSNull *)json[@"EventAttributes"] != [NSNull null]) {
-        commerceEvent.customAttributes = json[@"EventAttributes"];
+    id productActionListNameObj = json[@"productActionListName"];
+    if ([productActionListNameObj isKindOfClass:[NSString class]]) {
+        commerceEvent.productListName = (NSString *)productActionListNameObj;
     }
-    if ((NSNull *)json[@"CheckoutOptions"] != [NSNull null]) {
-        commerceEvent.checkoutOptions = json[@"CheckoutOptions"];
+
+    id productActionListSourceObj = json[@"productActionListSource"];
+    if ([productActionListSourceObj isKindOfClass:[NSString class]]) {
+        commerceEvent.productListSource = (NSString *)productActionListSourceObj;
     }
-    if ((NSNull *)json[@"productActionListName"] != [NSNull null]) {
-        commerceEvent.productListName = json[@"productActionListName"];
+
+    id currencyCodeObj = json[@"CurrencyCode"];
+    if ([currencyCodeObj isKindOfClass:[NSString class]]) {
+        commerceEvent.currency = (NSString *)currencyCodeObj;
     }
-    if ((NSNull *)json[@"productActionListSource"] != [NSNull null]) {
-        commerceEvent.productListSource = json[@"productActionListSource"];
+    
+    if (productAction != nil) {
+        commerceEvent.transactionAttributes = [self transactionAttributes:productAction];
     }
-    if ((NSNull *)json[@"CurrencyCode"] != [NSNull null]) {
-        commerceEvent.currency = json[@"CurrencyCode"];
+    
+    id checkoutStepObj = json[@"CheckoutStep"];
+    if ([checkoutStepObj isKindOfClass:[NSNumber class]]) {
+        commerceEvent.checkoutStep = [(NSNumber *)checkoutStepObj intValue];
     }
-    if ((NSNull *)productAction != [NSNull null]) {
-        commerceEvent.transactionAttributes = [MPConvertJS_PRIVATE transactionAttributes:productAction];
-    }
-    if ([json[@"CheckoutStep"] isKindOfClass:[NSNumber class]]) {
-        commerceEvent.checkoutStep = [json[@"CheckoutStep"] intValue];
-    }
-    if ((NSNull *)json[@"CustomFlags"] != [NSNull null]) {
-        NSDictionary *customFlags = json[@"CustomFlags"];
-        for (NSString *key in customFlags.allKeys) {
+    
+    id customFlagsObj = json[@"CustomFlags"];
+    if ([customFlagsObj isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *customFlags = (NSDictionary *)customFlagsObj;
+
+        for (id key in customFlags) {
             id value = customFlags[key];
+
             if ([value isKindOfClass:[NSArray class]]) {
-                [commerceEvent addCustomFlags:(NSArray *)value withKey:key];
+                BOOL allStrings = YES;
+                for (id item in (NSArray *)value) {
+                    if (![item isKindOfClass:[NSString class]]) { allStrings = NO; break; }
+                }
+                if (allStrings && [key isKindOfClass:[NSString class]]) {
+                    [commerceEvent addCustomFlags:(NSArray<NSString *> *)value withKey:(NSString *)key];
+                }
+
             } else if ([value isKindOfClass:[NSString class]]) {
-                [commerceEvent addCustomFlag:(NSString *)value withKey:key];
+                if ([key isKindOfClass:[NSString class]]) {
+                    [commerceEvent addCustomFlag:(NSString *)value withKey:(NSString *)key];
+                }
             }
         }
     }
 
-    NSArray *jsonProducts = productAction[@"ProductList"];
-    if ((NSNull *)jsonProducts != [NSNull null] && [jsonProducts isKindOfClass:[NSArray class]]) {
-        NSMutableArray *products = [NSMutableArray array];
-        [jsonProducts enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            MPProduct *product = [MPConvertJS_PRIVATE product:obj];
-            [products addObject:product];
-        }];
+    id productListObj = productAction[@"ProductList"];
+    if ([productListObj isKindOfClass:[NSArray class]]) {
+        NSArray *jsonProducts = (NSArray *)productListObj;
+
+        NSMutableArray<MPProduct *> *products = [NSMutableArray arrayWithCapacity:jsonProducts.count];
+        for (id item in jsonProducts) {
+            if (![item isKindOfClass:[NSDictionary class]]) { continue; }
+
+            MPProduct *p = [self product:(NSDictionary *)item];
+            if (p) { [products addObject:p]; }
+        }
         [commerceEvent addProducts:products];
     }
 
-    NSArray *jsonImpressions = json[@"ProductImpressions"];
-    if ((NSNull *)jsonImpressions != [NSNull null] && [jsonImpressions isKindOfClass:[NSArray class]]) {
-        [jsonImpressions enumerateObjectsUsingBlock:^(NSDictionary *jsonImpression, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSString *listName = jsonImpression[@"ProductImpressionList"];
-            NSArray *jsonProducts = jsonImpression[@"ProductList"];
-            if ((NSNull *)jsonProducts != [NSNull null] && [jsonProducts isKindOfClass:[NSArray class]]) {
-                [jsonProducts enumerateObjectsUsingBlock:^(id  _Nonnull jsonProduct, NSUInteger idx, BOOL * _Nonnull stop) {
-                    MPProduct *product = [MPConvertJS_PRIVATE product:jsonProduct];
+    id impressionsObj = json[@"ProductImpressions"];
+    if ([impressionsObj isKindOfClass:[NSArray class]]) {
+        NSArray *jsonImpressions = (NSArray *)impressionsObj;
+
+        for (id impressionItem in jsonImpressions) {
+            if (![impressionItem isKindOfClass:[NSDictionary class]]) { continue; }
+
+            NSDictionary *jsonImpression = (NSDictionary *)impressionItem;
+            id listNameObj = jsonImpression[@"ProductImpressionList"];
+            id impressionProductsObj = jsonImpression[@"ProductList"];
+
+            if ([listNameObj isKindOfClass:[NSString class]] &&
+                [impressionProductsObj isKindOfClass:[NSArray class]]) {
+
+                NSString *listName = (NSString *)listNameObj;
+                NSArray *impressionProducts = (NSArray *)impressionProductsObj;
+
+                for (id prodItem in impressionProducts) {
+                    if (![prodItem isKindOfClass:[NSDictionary class]]) { continue; }
+
+                    MPProduct *product = [MPConvertJS_PRIVATE product:(NSDictionary *)prodItem];
                     [commerceEvent addImpression:product listName:listName];
-                }];
+                }
             }
-        }];
+        }
     }
 
     return commerceEvent;
 }
 
 + (MPPromotionContainer *)promotionContainer:(NSDictionary *)json {
-    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
-        MPILogError(@"Unexpected promotion container data received from webview");
-        return nil;
-    }
-    
     NSDictionary *promotionActionDictionary = json[@"PromotionAction"];
     if (!promotionActionDictionary || ![promotionActionDictionary isKindOfClass:[NSDictionary class]]) {
         MPILogError(@"Unexpected promotion container action data received from webview");
@@ -170,118 +203,132 @@
 }
 
 + (MPPromotion *)promotion:(NSDictionary *)json {
-    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
-        MPILogError(@"Unexpected promotion data received from webview");
-        return nil;
-    }
     MPPromotion *promotion = [[MPPromotion alloc] init];
     
-    if ((NSNull *)json[@"Creative"] != [NSNull null]) {
-        promotion.creative = json[@"Creative"];
+    id creative = json[@"Creative"];
+    if ([creative isKindOfClass:[NSString class]]) {
+        promotion.creative = (NSString *)creative;
     }
-    
-    if ((NSNull *)json[@"Name"] != [NSNull null]) {
-        promotion.name = json[@"Name"];
+
+    id name = json[@"Name"];
+    if ([name isKindOfClass:[NSString class]]) {
+        promotion.name = (NSString *)name;
     }
-    
-    if ((NSNull *)json[@"Position"] != [NSNull null]) {
-        promotion.position = json[@"Position"];
+
+    id position = json[@"Position"];
+    if ([position isKindOfClass:[NSString class]]) {
+        promotion.position = (NSString *)position;
     }
-    
-    if ((NSNull *)json[@"Id"] != [NSNull null]) {
-        promotion.promotionId = json[@"Id"];
+
+    id promoId = json[@"Id"];
+    if ([promoId isKindOfClass:[NSString class]]) {
+        promotion.promotionId = (NSString *)promoId;
     }
     
     return promotion;
 }
 
 + (MPTransactionAttributes *)transactionAttributes:(NSDictionary *)json {
-    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
-        json = @{};
-    }
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
     
-    if ((NSNull *)json[@"Affiliation"] != [NSNull null]) {
-        transactionAttributes.affiliation = json[@"Affiliation"];
+    id affiliation = json[@"Affiliation"];
+    if ([affiliation isKindOfClass:[NSString class]]) {
+        transactionAttributes.affiliation = (NSString *)affiliation;
     }
-    if ((NSNull *)json[@"CouponCode"] != [NSNull null]) {
-        transactionAttributes.couponCode = json[@"CouponCode"];
+
+    id couponCode = json[@"CouponCode"];
+    if ([couponCode isKindOfClass:[NSString class]]) {
+        transactionAttributes.couponCode = (NSString *)couponCode;
     }
-    if ((NSNull *)json[@"ShippingAmount"] != [NSNull null]) {
-        transactionAttributes.shipping = json[@"ShippingAmount"];
+
+    id shippingAmount = json[@"ShippingAmount"];
+    if ([shippingAmount isKindOfClass:[NSNumber class]]) {
+        transactionAttributes.shipping = (NSNumber *)shippingAmount;
     }
-    if ((NSNull *)json[@"TaxAmount"] != [NSNull null]) {
-        transactionAttributes.tax = json[@"TaxAmount"];
+
+    id taxAmount = json[@"TaxAmount"];
+    if ([taxAmount isKindOfClass:[NSNumber class]]) {
+        transactionAttributes.tax = (NSNumber *)taxAmount;
     }
-    if ((NSNull *)json[@"TotalAmount"] != [NSNull null]) {
-        transactionAttributes.revenue = json[@"TotalAmount"];
+
+    id totalAmount = json[@"TotalAmount"];
+    if ([totalAmount isKindOfClass:[NSNumber class]]) {
+        transactionAttributes.revenue = (NSNumber *)totalAmount;
     }
-    if ((NSNull *)json[@"TransactionId"] != [NSNull null]) {
-        transactionAttributes.transactionId = json[@"TransactionId"];
+
+    id transactionId = json[@"TransactionId"];
+    if ([transactionId isKindOfClass:[NSString class]]) {
+        transactionAttributes.transactionId = (NSString *)transactionId;
     }
-    
+
     return transactionAttributes;
 }
 
 + (MPProduct *)product:(NSDictionary *)json {
-    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
-        MPILogError(@"Unexpected product data received from webview");
-        return nil;
-    }
     MPProduct *product = [[MPProduct alloc] init];
-    
-    if ((NSNull *)json[@"Brand"] != [NSNull null]) {
-        product.brand = json[@"Brand"];
-    }
-    if ((NSNull *)json[@"Category"] != [NSNull null]) {
-        product.category = json[@"Category"];
-    }
-    if ((NSNull *)json[@"CouponCode"] != [NSNull null]) {
-        product.couponCode = json[@"CouponCode"];
-    }
-    if ((NSNull *)json[@"Name"] != [NSNull null]) {
-        product.name = json[@"Name"];
-    }
-    
-    // Handle price as NSNumber or String
-    if (!json[@"Price"] || [json[@"Price"] isKindOfClass:[NSNumber class]]) {
-        product.price = json[@"Price"];
-    } else if ([json[@"Price"] isKindOfClass:[NSString class]]) {
-        product.price = [NSNumber numberWithDouble:[(NSString *)json[@"Price"] doubleValue]];
-    }
-    
-    if ((NSNull *)json[@"Sku"] != [NSNull null]) {
-        product.sku = json[@"Sku"];
-    }
-    if ((NSNull *)json[@"Variant"] != [NSNull null]) {
-        product.variant = json[@"Variant"];
-    }
-    if ((NSNull *)json[@"Position"] != [NSNull null]) {
-        product.position = [json[@"Position"] unsignedIntValue];
-    }
-    if (!json[@"Quantity"] || [json[@"Quantity"] isKindOfClass:[NSNumber class]]) {
-        product.quantity = json[@"Quantity"];
+
+    id brand = json[@"Brand"];
+    if ([brand isKindOfClass:[NSString class]]) {
+        product.brand = (NSString *)brand;
     }
 
-    NSDictionary *jsonAttributes = json[@"Attributes"];
-    if ((NSNull *)jsonAttributes != [NSNull null] && [jsonAttributes isKindOfClass:[NSDictionary class]]) {
-        for (NSString *key in jsonAttributes) {
-            NSString *value = jsonAttributes[key];
-            if ((NSNull *)value != [NSNull null]) {
-                [product setObject:value forKeyedSubscript:key];
-            }
-        }
+    id category = json[@"Category"];
+    if ([category isKindOfClass:[NSString class]]) {
+        product.category = (NSString *)category;
     }
+
+    id couponCode = json[@"CouponCode"];
+    if ([couponCode isKindOfClass:[NSString class]]) {
+        product.couponCode = (NSString *)couponCode;
+    }
+
+    id name = json[@"Name"];
+    if ([name isKindOfClass:[NSString class]]) {
+        product.name = (NSString *)name;
+    }
+
+    id price = json[@"Price"];
+    if ([price isKindOfClass:[NSNumber class]]) {
+        product.price = (NSNumber *)price;
+    } else if ([price isKindOfClass:[NSString class]]) {
+        product.price = @([(NSString *)price doubleValue]);
+    }
+
+    id sku = json[@"Sku"];
+    if ([sku isKindOfClass:[NSString class]]) {
+        product.sku = (NSString *)sku;
+    }
+
+    id variant = json[@"Variant"];
+    if ([variant isKindOfClass:[NSString class]]) {
+        product.variant = (NSString *)variant;
+    }
+
+    id position = json[@"Position"];
+    if ([position isKindOfClass:[NSNumber class]]) {
+        product.position = [(NSNumber *)position unsignedIntValue];
+    }
+
+    id quantity = json[@"Quantity"];
+    if ([quantity isKindOfClass:[NSNumber class]]) {
+        product.quantity = (NSNumber *)quantity;
+    }
+
+    id attributes = json[@"Attributes"];
+    if ([attributes isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *jsonAttributes = (NSDictionary *)attributes;
+        [jsonAttributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+            if ([key isKindOfClass:[NSString class]] && [obj isKindOfClass:[NSString class]]) {
+                [product setValue:obj forKey:key];
+            }
+        }];
+    }
+
     return product;
 }
 
 + (MPIdentityApiRequest *)identityApiRequest:(NSDictionary *)json {
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
-    
-    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
-        MPILogError(@"Unexpected identity api request data received from webview");
-        return nil;
-    }
     
     NSArray *userIdentities = json[@"UserIdentities"];
     if (!userIdentities || ![userIdentities isKindOfClass:[NSArray class]]) {
