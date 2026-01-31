@@ -22,6 +22,7 @@
 #import "MPKitContainer.h"
 #import "MPURLRequestBuilder.h"
 #import "MPIdentityCaching.h"
+#import "mParticle.h"
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
 #if TARGET_OS_IOS == 1

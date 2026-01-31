@@ -1,4 +1,4 @@
-#import "MParticleSwift.h"
+#import "mParticle.h"
 #import "MParticleSession+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 
