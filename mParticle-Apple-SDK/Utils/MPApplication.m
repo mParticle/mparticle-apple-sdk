@@ -9,6 +9,7 @@
 #import "mParticle.h"
 #import "mParticleSwift.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
 
 NSString *const kMPApplicationInformationKey = @"ai";
 NSString *const kMPApplicationNameKey = @"an";
@@ -99,7 +100,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         return nil;
     }
     
-    userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    userDefaults = MPUserDefaultsConnector.userDefaults;
 
     
     return self;
@@ -279,7 +280,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSNumber *)sideloadedKitsCount {
-    NSNumber *sideloadedKitsCount = @([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] sideloadedKitsCount]);
+    NSNumber *sideloadedKitsCount = @([MPUserDefaultsConnector.userDefaults sideloadedKitsCount]);
     return sideloadedKitsCount;
 }
 
@@ -328,7 +329,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 + (void)markInitialLaunchTime {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *initialLaunchTime = userDefaults[kMPAppInitialLaunchTimeKey];
     
     if (initialLaunchTime == nil) {

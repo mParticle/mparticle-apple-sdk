@@ -34,18 +34,13 @@ public protocol MPUserDefaultsConnectorProtocol {
 }
 
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
-    private var connector: MPUserDefaultsConnectorProtocol
-    
-    public init(
-        connector: MPUserDefaultsConnectorProtocol
-    ) {
+    private let connector: MPUserDefaultsConnectorProtocol
+
+    @objc public init(connector: MPUserDefaultsConnectorProtocol) {
         self.connector = connector
-        super.init()
     }
 
-    @objc public class func standardUserDefaults(
-        connector: MPUserDefaultsConnectorProtocol
-    ) -> MPUserDefaults {
+    @objc public class func standardUserDefaults(connector: MPUserDefaultsConnectorProtocol) -> MPUserDefaults {
         if userDefaults == nil {
             userDefaults = MPUserDefaults(connector: connector)
         }

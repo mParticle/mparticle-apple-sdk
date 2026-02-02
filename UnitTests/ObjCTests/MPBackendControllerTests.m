@@ -17,6 +17,7 @@
 #import "MPKitConfiguration.h"
 #import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
+#import "MPUserDefaultsConnector.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -550,7 +551,7 @@
 }
 
 - (void)testUploadWithDifferentUser {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     //Set up Identity to exist
     [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:@1];
@@ -1298,7 +1299,7 @@
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     }
     
     [self.backendController setUserAttribute:@"foo attribute 3" value:@"foo value 3" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
@@ -2173,7 +2174,7 @@
     NSArray *userIdentities = @[validUserId];
     
     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     
     NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];
@@ -2197,7 +2198,7 @@
     NSArray *userIdentities = @[validUserId, invalidUserId];
     
     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     
     NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];
@@ -2226,7 +2227,7 @@
     NSArray *userIdentities = @[validUserId, invalidUserId, invalidUserId2];
     
     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     
     NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];

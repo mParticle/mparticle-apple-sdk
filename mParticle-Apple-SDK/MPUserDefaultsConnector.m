@@ -15,10 +15,6 @@
 
 @implementation MPUserDefaultsConnector
 
-+ (MPUserDefaultsConnector *)defaultConnector {
-    return [[MPUserDefaultsConnector alloc] init];
-}
-
 - (MPStateMachine_PRIVATE*)stateMachine {
     return MParticle.sharedInstance.stateMachine;
 }
@@ -33,6 +29,11 @@
 
 - (MParticle*)mparticle {
     return MParticle.sharedInstance;
+}
+
++ (MPUserDefaults*)userDefaults {
+    MPUserDefaultsConnector* connector = [[MPUserDefaultsConnector alloc] init];
+    return [MPUserDefaults standardUserDefaultsWithConnector:connector];
 }
 
 @end

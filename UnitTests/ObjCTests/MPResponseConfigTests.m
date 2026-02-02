@@ -4,6 +4,7 @@
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPBaseTestCase.h"
+#import "MPUserDefaultsConnector.h"
 
 @interface MParticle ()
 
@@ -88,7 +89,7 @@
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
 
         configuration = @{kMPRemoteConfigRampKey:@100,
                           kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
@@ -117,10 +118,10 @@
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
         XCTAssertFalse([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 10000.0) currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 10000.0) currentAge:0 maxAge:nil];
         XCTAssertFalse([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         
         [expectation fulfill];
@@ -142,10 +143,10 @@
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
         XCTAssertFalse([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 100.0) currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 100.0) currentAge:0 maxAge:nil];
         XCTAssertTrue([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         
         [expectation fulfill];
@@ -166,16 +167,16 @@
                                         kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
-        XCTAssertNil([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+        XCTAssertNil([MPUserDefaultsConnector.userDefaults getConfiguration]);
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970] - 100.0;
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
-        XCTAssertNotNil([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        XCTAssertNotNil([MPUserDefaultsConnector.userDefaults getConfiguration]);
         
         XCTAssertTrue([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         if ([MPUserDefaults isOlderThanConfigMaxAgeSeconds]) {
             [MPUserDefaults deleteConfig];
         }
-        XCTAssertNil([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+        XCTAssertNil([MPUserDefaultsConnector.userDefaults getConfiguration]);
         
         [expectation fulfill];
     });

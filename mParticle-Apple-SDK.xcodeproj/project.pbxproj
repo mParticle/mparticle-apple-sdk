@@ -39,7 +39,7 @@
 		35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35E3FCCB2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h */; };
 		35E3FCCF2E54978C00DB5B18 /* MParticleSession+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCCE2E54978C00DB5B18 /* MParticleSession+MParticlePrivate.m */; };
 		35E3FCD32E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCD12E549AED00DB5B18 /* MParticleSession+MParticlePrivateTests.swift */; };
-		35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F99CF62F31345900820648 /* MPUserDefaultsConnector.h */; };
+		35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F99CF62F31345900820648 /* MPUserDefaultsConnector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35F99CF92F31346500820648 /* MPUserDefaultsConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = 35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */; };
 		530D24822CFF72D9000FE7E3 /* MPConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530D24812CFF72D4000FE7E3 /* MPConstants.swift */; };
 		531BCF352B28A23400F5C573 /* MPIdentityCaching.h in Headers */ = {isa = PBXBuildFile; fileRef = 531BCF322B28A23400F5C573 /* MPIdentityCaching.h */; };
@@ -1242,7 +1242,6 @@
 				53A79D2329CE23F700E7489F /* MPTransactionAttributes+Dictionary.h in Headers */,
 				D33C8B342B8510C20012EDFD /* MPAudience.h in Headers */,
 				53A79D2729CE23F700E7489F /* MPApplication.h in Headers */,
-				35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */,
 				53A79D2829CE23F700E7489F /* MPCustomModulePreference.h in Headers */,
 				53A79D2929CE23F700E7489F /* MPDataModelProtocol.h in Headers */,
 				53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */,
@@ -1252,6 +1251,7 @@
 				351308432E6B28F5002A3AD6 /* Executor.h in Headers */,
 				35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */,
 				35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */,
+				35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */,
 				35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */,
 				D34286122D419CB800FEC2C8 /* MPUploadSettings.h in Headers */,
 				53A79D3029CE23F700E7489F /* MPConnectorResponseProtocol.h in Headers */,

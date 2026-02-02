@@ -1,12 +1,17 @@
+#import "MPBackendController.h"
+#import "MPStateMachine.h"
+#import "MPIdentityApi.h"
 #import "mParticle.h"
 
-@interface MPUserDefaultsConnector: NSObject
+@class MPUserDefaults;
 
-+ (MPUserDefaultsConnector*)defaultConnector;
+@interface MPUserDefaultsConnector: NSObject
 
 - (MPStateMachine_PRIVATE*)stateMachine;
 - (MPBackendController_PRIVATE*)backendController;
 - (MPIdentityApi*)identity;
 - (MParticle*)mparticle;
+
++ (MPUserDefaults*)userDefaults;
 
 @end
