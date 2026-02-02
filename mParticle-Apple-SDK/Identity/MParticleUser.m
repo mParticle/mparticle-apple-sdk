@@ -61,7 +61,7 @@
     return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
 }
 
-- (NSDictionary*) identities {
+- (NSDictionary*)identities {
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
     
