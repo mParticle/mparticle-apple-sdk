@@ -22,6 +22,7 @@
 #import "MPKitContainer.h"
 #import "MPURLRequestBuilder.h"
 #import "MPIdentityCaching.h"
+#import "mParticle.h"
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
 #if TARGET_OS_IOS == 1
@@ -826,7 +827,14 @@ static BOOL skipNextUpload = NO;
             _session.appInfo = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
         }
         if (!_session.deviceInfo) {
-            MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+            MParticle* mparticle = MParticle.sharedInstance;
+            MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+            logger.customLogger = mparticle.customLogger;
+            MPUserDefaults* userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine
+                                                                              backendController:mparticle.backendController
+                                                                                       identity:mparticle.identity];
+            MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                                                         userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:logger];
 
             _session.deviceInfo = [device dictionaryRepresentationWithMpid:mpId];
         }
