@@ -30,6 +30,7 @@ class MPIdentityApiMPDeviceMock: MPIdentityApiMPDeviceProtocol {
     }
 }
 
+@available(iOS 16.0, tvOS 16.0, *)
 final class MPDeviceTests: XCTestCase {
 
     func testDictionaryDescription() {
