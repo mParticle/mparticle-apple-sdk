@@ -1221,4 +1221,242 @@
     [persistence deleteSession:recentSession];
 }
 
+#pragma mark - Breadcrumb Tests
+
+- (void)testSaveBreadcrumb {
+    [MPPersistenceController_PRIVATE setMpid:@123];
+    
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    // Create a breadcrumb message
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeBreadcrumb
+                                                                             session:session
+                                                                         messageInfo:@{@"lc":@"test_breadcrumb"}];
+    MPMessage *breadcrumbMessage = [messageBuilder build];
+    
+    [persistence saveBreadcrumb:breadcrumbMessage];
+    
+    NSArray<MPBreadcrumb *> *breadcrumbs = [persistence fetchBreadcrumbs];
+    XCTAssertNotNil(breadcrumbs, @"Breadcrumbs should not be nil after saving");
+    XCTAssertGreaterThan(breadcrumbs.count, 0, @"Should have at least one breadcrumb");
+}
+
+- (void)testBreadcrumbPruning {
+    // Test that breadcrumbs are pruned to MaxBreadcrumbs (50)
+    [MPPersistenceController_PRIVATE setMpid:@456];
+    
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    
+    // Save more than MaxBreadcrumbs (50)
+    for (int i = 0; i < 55; i++) {
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeBreadcrumb
+                                                                                 session:session
+                                                                             messageInfo:@{@"lc":[NSString stringWithFormat:@"breadcrumb_%d", i]}];
+        MPMessage *breadcrumbMessage = [messageBuilder build];
+        [persistence saveBreadcrumb:breadcrumbMessage];
+    }
+    
+    NSArray<MPBreadcrumb *> *breadcrumbs = [persistence fetchBreadcrumbs];
+    XCTAssertNotNil(breadcrumbs, @"Breadcrumbs should not be nil");
+    XCTAssertLessThanOrEqual(breadcrumbs.count, 50, @"Breadcrumbs should be pruned to MaxBreadcrumbs (50)");
+}
+
+#pragma mark - Session Archive Tests
+
+- (void)testArchiveSession {
+    [MPPersistenceController_PRIVATE setMpid:@789];
+    
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    // Create and save a session
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    session.attributesDictionary = [@{@"testKey":@"testValue"} mutableCopy];
+    [persistence saveSession:session];
+    
+    // Archive the session
+    MPSession *archivedSession = [persistence archiveSession:session];
+    XCTAssertNotNil(archivedSession, @"Archived session should not be nil");
+    
+    // Fetch the previous session
+    MPSession *previousSession = [persistence fetchPreviousSession];
+    XCTAssertNotNil(previousSession, @"Previous session should exist after archiving");
+    XCTAssertEqual(previousSession.sessionId, session.sessionId, @"Previous session ID should match");
+    XCTAssertEqualObjects(previousSession.uuid, session.uuid, @"Previous session UUID should match");
+    
+    // Cleanup
+    [persistence deletePreviousSession];
+    [persistence deleteSession:session];
+}
+
+- (void)testArchiveSameSessionTwice {
+    [MPPersistenceController_PRIVATE setMpid:@999];
+    
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    // Create and save a session
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    [persistence saveSession:session];
+    
+    // Archive the session
+    [persistence archiveSession:session];
+    
+    // Try to archive the same session again - should return nil
+    MPSession *result = [persistence archiveSession:session];
+    XCTAssertNil(result, @"Archiving the same session twice should return nil");
+    
+    // Cleanup
+    [persistence deletePreviousSession];
+    [persistence deleteSession:session];
+}
+
+#pragma mark - Database Open/Close Tests
+
+- (void)testDatabaseOpenClose {
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    XCTAssertTrue([persistence isDatabaseOpen], @"Database should be open initially");
+    
+    BOOL closedSuccessfully = [persistence closeDatabase];
+    XCTAssertTrue(closedSuccessfully, @"Database should close successfully");
+    XCTAssertFalse([persistence isDatabaseOpen], @"Database should be closed after closeDatabase");
+    
+    BOOL openedSuccessfully = [persistence openDatabase];
+    XCTAssertTrue(openedSuccessfully, @"Database should open successfully");
+    XCTAssertTrue([persistence isDatabaseOpen], @"Database should be open after openDatabase");
+}
+
+- (void)testCloseAlreadyClosedDatabase {
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    [persistence closeDatabase];
+    
+    // Closing an already closed database should return YES
+    BOOL result = [persistence closeDatabase];
+    XCTAssertTrue(result, @"Closing an already closed database should return YES");
+    
+    // Reopen for other tests
+    [persistence openDatabase];
+}
+
+#pragma mark - App and Device Info Tests
+
+- (void)testAppAndDeviceInfoForSessionId {
+    [MPPersistenceController_PRIVATE setMpid:@111];
+    
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    // Create and save a session with app/device info
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    session.appInfo = @{@"appName": @"TestApp", @"appVersion": @"1.0"};
+    session.deviceInfo = @{@"device": @"iPhone", @"os": @"iOS"};
+    [persistence saveSession:session];
+    
+    // Fetch app and device info
+    NSDictionary *info = [persistence appAndDeviceInfoForSessionId:@(session.sessionId)];
+    XCTAssertNotNil(info, @"Info dictionary should not be nil");
+    
+    NSDictionary *appInfo = info[kMPApplicationInformationKey];
+    NSDictionary *deviceInfo = info[kMPDeviceInformationKey];
+    
+    XCTAssertNotNil(appInfo, @"App info should not be nil");
+    XCTAssertNotNil(deviceInfo, @"Device info should not be nil");
+    XCTAssertEqualObjects(appInfo[@"appName"], @"TestApp", @"App name should match");
+    XCTAssertEqualObjects(deviceInfo[@"device"], @"iPhone", @"Device should match");
+    
+    // Cleanup
+    [persistence deleteSession:session];
+}
+
+#pragma mark - Delete All Sessions Except Tests
+
+- (void)testDeleteAllSessionsExcept {
+    [MPPersistenceController_PRIVATE setMpid:@222];
+    
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    // Create multiple sessions
+    MPSession *session1 = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    [persistence saveSession:session1];
+    
+    MPSession *session2 = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] + 1 userId:[MPPersistenceController_PRIVATE mpId]];
+    [persistence saveSession:session2];
+    
+    MPSession *session3 = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] + 2 userId:[MPPersistenceController_PRIVATE mpId]];
+    [persistence saveSession:session3];
+    
+    NSMutableArray<MPSession *> *sessionsBefore = [persistence fetchSessions];
+    XCTAssertEqual(sessionsBefore.count, 3, @"Should have 3 sessions before delete");
+    
+    // Delete all except session2
+    [persistence deleteAllSessionsExcept:session2];
+    
+    NSMutableArray<MPSession *> *sessionsAfter = [persistence fetchSessions];
+    XCTAssertEqual(sessionsAfter.count, 1, @"Should have 1 session after delete");
+    XCTAssertEqual(sessionsAfter.firstObject.sessionId, session2.sessionId, @"Remaining session should be session2");
+    
+    // Cleanup
+    [persistence deleteSession:session2];
+}
+
+#pragma mark - Update Session Tests
+
+- (void)testUpdateSession {
+    [MPPersistenceController_PRIVATE setMpid:@333];
+    
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    // Create and save a session
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
+    [persistence saveSession:session];
+    
+    // Update the session (only mutable properties)
+    NSTimeInterval newEndTime = [[NSDate date] timeIntervalSince1970] + 100;
+    session.endTime = newEndTime;
+    session.attributesDictionary[@"key2"] = @"value2";
+    session.length = 500.0;
+    [persistence updateSession:session];
+    
+    // Fetch and verify
+    NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
+    MPSession *fetchedSession = nil;
+    for (MPSession *s in sessions) {
+        if (s.sessionId == session.sessionId) {
+            fetchedSession = s;
+            break;
+        }
+    }
+    
+    XCTAssertNotNil(fetchedSession, @"Fetched session should not be nil");
+    XCTAssertEqualWithAccuracy(fetchedSession.endTime, newEndTime, 1.0, @"End time should be updated");
+    XCTAssertEqualWithAccuracy(fetchedSession.length, 500.0, 0.1, @"Length should be updated");
+    XCTAssertEqualObjects(fetchedSession.attributesDictionary[@"key2"], @"value2", @"New attribute should be present");
+    
+    // Cleanup
+    [persistence deleteSession:session];
+}
+
+#pragma mark - Max Bytes Tests
+
+- (void)testMaxBytesPerEvent {
+    NSInteger maxBytesNormal = [MPPersistenceController_PRIVATE maxBytesPerEvent:@"e"];
+    NSInteger maxBytesCrash = [MPPersistenceController_PRIVATE maxBytesPerEvent:kMPMessageTypeStringCrashReport];
+    
+    XCTAssertEqual(maxBytesNormal, MAX_BYTES_PER_EVENT, @"Normal event max bytes should be MAX_BYTES_PER_EVENT");
+    XCTAssertEqual(maxBytesCrash, MAX_BYTES_PER_EVENT_CRASH, @"Crash event max bytes should be MAX_BYTES_PER_EVENT_CRASH");
+    XCTAssertGreaterThan(maxBytesCrash, maxBytesNormal, @"Crash event should allow more bytes than normal events");
+}
+
+- (void)testMaxBytesPerBatch {
+    NSInteger maxBytesNormal = [MPPersistenceController_PRIVATE maxBytesPerBatch:@"e"];
+    NSInteger maxBytesCrash = [MPPersistenceController_PRIVATE maxBytesPerBatch:kMPMessageTypeStringCrashReport];
+    
+    XCTAssertEqual(maxBytesNormal, MAX_BYTES_PER_BATCH, @"Normal batch max bytes should be MAX_BYTES_PER_BATCH");
+    XCTAssertEqual(maxBytesCrash, MAX_BYTES_PER_BATCH_CRASH, @"Crash batch max bytes should be MAX_BYTES_PER_BATCH_CRASH");
+    XCTAssertGreaterThan(maxBytesCrash, maxBytesNormal, @"Crash batch should allow more bytes than normal batch");
+}
+
 @end
