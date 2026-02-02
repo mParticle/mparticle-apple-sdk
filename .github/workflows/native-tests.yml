@@ -43,7 +43,6 @@ jobs:
           os_version: ">=18.0"
           erase_before_boot: true
           wait_for_boot: true
-          shutdown_after_job: true
 
       - name: Run unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme ${{ matrix.scheme }} -destination 'id=${{ steps.simulator.outputs.UDID }}' test
