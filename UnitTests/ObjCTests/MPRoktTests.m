@@ -6,6 +6,7 @@
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
 #import "MParticleSwift.h"
+#import "MPRoktEvent.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 

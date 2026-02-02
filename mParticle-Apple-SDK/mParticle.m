@@ -21,6 +21,8 @@
 #import "AppEnvironmentProvider.h"
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
+#import "SceneDelegateHandler.h"
+
 @import mParticle_Apple_SDK_Swift;
 
 static NSArray *eventTypeStrings = nil;
@@ -158,7 +160,6 @@ MPLog* logger;
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
     logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
-    [_sceneDelegateHandler setLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
 
     _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger sdkVersion:kMParticleSDKVersion];
     return self;
