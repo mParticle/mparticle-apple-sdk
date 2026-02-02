@@ -19,30 +19,18 @@
 #import "MPApplication.h"
 #import "MParticleSwift.h"
 #import "MParticleUserNotification.h"
-#import <string>
-#import <vector>
-
-using namespace std;
 
 // Prototype declaration of the C functions
-#ifdef __cplusplus
-extern "C" {
-#endif
-    
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
-    static NSData * _Nullable dataValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
-    static bool bindDictionaryAsBlob(sqlite3_stmt * _Nonnull const preparedStatement, const int column, NSDictionary * _Nullable dict);
-    static NSDictionary * _Nullable dictionaryRepresentation(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
-    static double doubleValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
-    static int intValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
-    static int64_t int64Value(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
-    static NSString * _Nullable stringValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
+static NSData * _Nullable dataValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
+static bool bindDictionaryAsBlob(sqlite3_stmt * _Nonnull const preparedStatement, const int column, NSDictionary * _Nullable dict);
+static NSDictionary * _Nullable dictionaryRepresentation(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
+static double doubleValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
+static int intValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
+static int64_t int64Value(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
+static NSString * _Nullable stringValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
 #pragma clang diagnostic pop
-    
-#ifdef __cplusplus
-}
-#endif
 
 
 typedef NS_ENUM(NSInteger, MPDatabaseState) {
@@ -204,9 +192,9 @@ const int MaxBreadcrumbs = 50;
 #pragma mark Private methods
 - (void)deleteCookie:(MPCookie *)cookie {
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "DELETE FROM cookies WHERE _id = ?";
+    const char *sqlStatement = "DELETE FROM cookies WHERE _id = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, cookie.cookieId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -221,9 +209,9 @@ const int MaxBreadcrumbs = 50;
 
 - (void)deleteCookies {
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "DELETE FROM cookies";
+    const char *sqlStatement = "DELETE FROM cookies";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting cookies: %s", sqlite3_errmsg(mParticleDB));
         }
@@ -255,25 +243,25 @@ const int MaxBreadcrumbs = 50;
     [self openDatabase];
     
     // Delete all records except uploads
-    vector<string> sqlStatements = {
-        "DELETE FROM sessions",
-        "DELETE FROM previous_session",
-        "DELETE FROM messages",
-        "DELETE FROM breadcrumbs",
-        "DELETE FROM consumer_info",
-        "DELETE FROM cookies",
-        "DELETE FROM product_bags",
-        "DELETE FROM forwarding_records",
-        "DELETE FROM integration_attributes"
-    };
+    NSArray *sqlStatements = @[
+        @"DELETE FROM sessions",
+        @"DELETE FROM previous_session",
+        @"DELETE FROM messages",
+        @"DELETE FROM breadcrumbs",
+        @"DELETE FROM consumer_info",
+        @"DELETE FROM cookies",
+        @"DELETE FROM product_bags",
+        @"DELETE FROM forwarding_records",
+        @"DELETE FROM integration_attributes"
+    ];
     
     int status;
     char *errMsg;
-    for (const auto &sqlStatement : sqlStatements) {
-        status = sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg);
+    for (NSString *sqlStatement in sqlStatements) {
+        status = sqlite3_exec(mParticleDB, [sqlStatement UTF8String], NULL, NULL, &errMsg);
         
         if (status != SQLITE_OK) {
-            MPILogError("Problem clearing table for workspace switching: %s\n", sqlStatement.c_str());
+            MPILogError(@"Problem clearing table for workspace switching: %@", sqlStatement);
         }
     }
     
@@ -283,44 +271,44 @@ const int MaxBreadcrumbs = 50;
 - (void)saveCookie:(MPCookie *)cookie forConsumerInfo:(MPConsumerInfo *)consumerInfo {
     sqlite3_stmt *preparedStatement;
     
-    vector<string> fields;
-    vector<string> params;
+    NSMutableArray *fields = [NSMutableArray array];
+    NSMutableArray *params = [NSMutableArray array];
     
     if (cookie.content) {
-        fields.push_back("content");
-        params.push_back("'" + string([cookie.content UTF8String]) + "'");
+        [fields addObject:@"content"];
+        [params addObject:[NSString stringWithFormat:@"'%@'", cookie.content]];
     }
     
     if (cookie.domain) {
-        fields.push_back("domain");
-        params.push_back("'" + string([cookie.domain UTF8String]) + "'");
+        [fields addObject:@"domain"];
+        [params addObject:[NSString stringWithFormat:@"'%@'", cookie.domain]];
     }
     
     if (cookie.expiration) {
-        fields.push_back("expiration");
-        params.push_back("'" + string([cookie.expiration UTF8String]) + "'");
+        [fields addObject:@"expiration"];
+        [params addObject:[NSString stringWithFormat:@"'%@'", cookie.expiration]];
     }
     
-    fields.push_back("name");
-    params.push_back("'" + string([cookie.name cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
+    [fields addObject:@"name"];
+    [params addObject:[NSString stringWithFormat:@"'%@'", cookie.name]];
     
-    fields.push_back("mpid");
-    params.push_back("'" + string([[NSString stringWithFormat:@"%@", [MPPersistenceController_PRIVATE mpId]] cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
+    [fields addObject:@"mpid"];
+    [params addObject:[NSString stringWithFormat:@"'%@'", [MPPersistenceController_PRIVATE mpId]]];
     
-    string sqlStatement = "INSERT INTO cookies (consumer_info_id";
-    for (auto field : fields) {
-        sqlStatement += ", " + field;
+    NSMutableString *sqlStatement = [NSMutableString stringWithString:@"INSERT INTO cookies (consumer_info_id"];
+    for (NSString *field in fields) {
+        [sqlStatement appendFormat:@", %@", field];
     }
     
-    sqlStatement += ") VALUES (?";
+    [sqlStatement appendString:@") VALUES (?"];
     
-    for (auto param : params) {
-        sqlStatement += ", " + param;
+    for (NSString *param in params) {
+        [sqlStatement appendFormat:@", %@", param];
     }
     
-    sqlStatement += ")";
+    [sqlStatement appendString:@")"];
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, [sqlStatement UTF8String], (int)[sqlStatement length], &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, consumerInfo.consumerInfoId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -350,11 +338,11 @@ const int MaxBreadcrumbs = 50;
         sqlite3_open_v2([self.databasePath UTF8String], &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL);
     }
     
-    string sqlStatement = "PRAGMA user_version";
+    const char *sqlStatement = "PRAGMA user_version";
     sqlite3_stmt *preparedStatement;
     int userDatabaseVersion = 0;
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         while (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             userDatabaseVersion = sqlite3_column_int(preparedStatement, 0);
         }
@@ -370,8 +358,8 @@ const int MaxBreadcrumbs = 50;
         return;
     }
     
-    vector<string> sqlStatements = {
-        "CREATE TABLE IF NOT EXISTS sessions ( \
+    NSArray *sqlStatements = @[
+        @"CREATE TABLE IF NOT EXISTS sessions ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             uuid TEXT NOT NULL, \
             start_time REAL, \
@@ -388,7 +376,7 @@ const int MaxBreadcrumbs = 50;
             app_info BLOB, \
             device_info BLOB \
         )",
-        "CREATE TABLE IF NOT EXISTS previous_session ( \
+        @"CREATE TABLE IF NOT EXISTS previous_session ( \
             session_id INTEGER, \
             uuid TEXT, \
             start_time REAL, \
@@ -403,7 +391,7 @@ const int MaxBreadcrumbs = 50;
             mpid INTEGER NOT NULL, \
             session_user_ids TEXT NOT NULL \
         )",
-        "CREATE TABLE IF NOT EXISTS messages ( \
+        @"CREATE TABLE IF NOT EXISTS messages ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             session_id INTEGER, \
             message_type TEXT NOT NULL, \
@@ -415,7 +403,7 @@ const int MaxBreadcrumbs = 50;
             data_plan_version INTEGER, \
             mpid INTEGER NOT NULL \
         )",
-        "CREATE TABLE IF NOT EXISTS uploads ( \
+        @"CREATE TABLE IF NOT EXISTS uploads ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             session_id INTEGER, \
             uuid TEXT NOT NULL, \
@@ -426,7 +414,7 @@ const int MaxBreadcrumbs = 50;
             data_plan_version INTEGER, \
             upload_settings BLOB NOT NULL \
         )",
-        "CREATE TABLE IF NOT EXISTS breadcrumbs ( \
+        @"CREATE TABLE IF NOT EXISTS breadcrumbs ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             session_uuid TEXT NOT NULL, \
             uuid TEXT NOT NULL, \
@@ -435,12 +423,12 @@ const int MaxBreadcrumbs = 50;
             session_number INTEGER NOT NULL, \
             mpid INTEGER NOT NULL \
         )",
-        "CREATE TABLE IF NOT EXISTS consumer_info ( \
+        @"CREATE TABLE IF NOT EXISTS consumer_info ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             mpid INTEGER, \
             unique_identifier TEXT \
         )",
-        "CREATE TABLE IF NOT EXISTS cookies ( \
+        @"CREATE TABLE IF NOT EXISTS cookies ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             consumer_info_id INTEGER NOT NULL, \
             content TEXT, \
@@ -449,36 +437,36 @@ const int MaxBreadcrumbs = 50;
             name TEXT, \
             mpid INTEGER NOT NULL \
         )",
-        "CREATE TABLE IF NOT EXISTS product_bags ( \
+        @"CREATE TABLE IF NOT EXISTS product_bags ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             name TEXT, \
             timestamp REAL NOT NULL, \
             product_data BLOB NOT NULL \
         )",
-        "CREATE TABLE IF NOT EXISTS forwarding_records ( \
+        @"CREATE TABLE IF NOT EXISTS forwarding_records ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             forwarding_data BLOB NOT NULL, \
             mpid INTEGER NOT NULL \
         )",
-        "CREATE TABLE IF NOT EXISTS integration_attributes ( \
+        @"CREATE TABLE IF NOT EXISTS integration_attributes ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             kit_code INTEGER NOT NULL, \
             attributes_data BLOB NOT NULL \
         )"
-    };
+    ];
     
     int tableCreationStatus;
     char *errMsg;
-    for (const auto &sqlStatement : sqlStatements) {
-        tableCreationStatus = sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg);
+    for (NSString *statement in sqlStatements) {
+        tableCreationStatus = sqlite3_exec(mParticleDB, [statement UTF8String], NULL, NULL, &errMsg);
         
         if (tableCreationStatus != SQLITE_OK) {
-            MPILogError("Problem creating table: %s\n", sqlStatement.c_str());
+            MPILogError(@"Problem creating table: %@", statement);
         }
     }
     
-    sqlStatement = "PRAGMA user_version = " + to_string(latestDatabaseVersion);
-    sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, NULL);
+    NSString *pragmaStatement = [NSString stringWithFormat:@"PRAGMA user_version = %d", latestDatabaseVersion];
+    sqlite3_exec(mParticleDB, [pragmaStatement UTF8String], NULL, NULL, NULL);
     sqlite3_close(mParticleDB);
     mParticleDB = NULL;
 }
@@ -489,23 +477,23 @@ const int MaxBreadcrumbs = 50;
     }
     
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "UPDATE cookies SET ";
+    NSMutableString *sqlStatement = [NSMutableString stringWithString:@"UPDATE cookies SET "];
     
     if (cookie.content) {
-        sqlStatement += "content = '" + string([cookie.content UTF8String]) + "'";
+        [sqlStatement appendFormat:@"content = '%@'", cookie.content];
     }
     
     if (cookie.domain) {
-        sqlStatement += ", domain = '" + string([cookie.domain UTF8String]) + "'";
+        [sqlStatement appendFormat:@", domain = '%@'", cookie.domain];
     }
     
     if (cookie.expiration) {
-        sqlStatement += ", expiration = '" + string([cookie.expiration UTF8String]) + "'";
+        [sqlStatement appendFormat:@", expiration = '%@'", cookie.expiration];
     }
     
-    sqlStatement += " WHERE _id = ?";
+    [sqlStatement appendString:@" WHERE _id = ?"];
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, [sqlStatement UTF8String], (int)[sqlStatement length], &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, cookie.cookieId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -523,14 +511,14 @@ const int MaxBreadcrumbs = 50;
     
     @try {
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "PRAGMA integrity_check;";
+        const char *sqlStatement = "PRAGMA integrity_check;";
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
             int integrityResult = sqlite3_step(preparedStatement);
             
             if (integrityResult == SQLITE_ROW) {
-                string integrityString = string((const char *)sqlite3_column_text(preparedStatement, 0));
-                databaseState = integrityString == "ok" ? MPDatabaseStateOK : MPDatabaseStateCorrupted;
+                const char *integrityString = (const char *)sqlite3_column_text(preparedStatement, 0);
+                databaseState = (integrityString && strcmp(integrityString, "ok") == 0) ? MPDatabaseStateOK : MPDatabaseStateCorrupted;
             }
             
             if (databaseState == MPDatabaseStateCorrupted) {
@@ -562,13 +550,13 @@ const int MaxBreadcrumbs = 50;
     }
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "INSERT INTO previous_session (session_id, uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    const char *sqlStatement = "INSERT INTO previous_session (session_id, uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
-        string uuid = string([session.uuid UTF8String]);
-        sqlite3_bind_text(preparedStatement, 2, uuid.c_str(), (int)uuid.size(), SQLITE_STATIC);
+        const char *uuid = [session.uuid UTF8String];
+        sqlite3_bind_text(preparedStatement, 2, uuid, -1, SQLITE_TRANSIENT);
         
         sqlite3_bind_double(preparedStatement, 3, session.startTime);
         sqlite3_bind_double(preparedStatement, 4, session.endTime);
@@ -583,7 +571,7 @@ const int MaxBreadcrumbs = 50;
         sqlite3_bind_double(preparedStatement, 10, session.suspendTime);
         sqlite3_bind_double(preparedStatement, 11, session.length);
         sqlite3_bind_int64(preparedStatement, 12, session.userId.longLongValue);
-        sqlite3_bind_text(preparedStatement, 13, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_STATIC);
+        sqlite3_bind_text(preparedStatement, 13, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while archiving previous session: %s", sqlite3_errmsg(mParticleDB));
@@ -620,9 +608,9 @@ const int MaxBreadcrumbs = 50;
     [self deleteCookies];
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "DELETE FROM consumer_info";
+    const char *sqlStatement = "DELETE FROM consumer_info";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting consumer info: %s", sqlite3_errmsg(mParticleDB));
         }
@@ -638,9 +626,8 @@ const int MaxBreadcrumbs = 50;
     sqlite3_stmt *preparedStatement;
     NSString *idsString = [NSString stringWithFormat:@"%@", [forwardRecordsIds componentsJoinedByString:@","]];
     NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM forwarding_records WHERE _id IN (%@)", idsString];
-    const string sqlStatement = string([sqlString UTF8String]);
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, [sqlString UTF8String], (int)[sqlString length], &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting forwarding records: %s", sqlite3_errmsg(mParticleDB));
         }
@@ -651,9 +638,9 @@ const int MaxBreadcrumbs = 50;
 
 - (void)deleteAllIntegrationAttributes {
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "DELETE FROM integration_attributes";
+    const char *sqlStatement = "DELETE FROM integration_attributes";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting integration attributes: %s", sqlite3_errmsg(mParticleDB));
         }
@@ -668,9 +655,9 @@ const int MaxBreadcrumbs = 50;
     }
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "DELETE FROM integration_attributes WHERE kit_code = ?";
+    const char *sqlStatement = "DELETE FROM integration_attributes WHERE kit_code = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int(preparedStatement, 1, [integrationId intValue]);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -694,9 +681,8 @@ const int MaxBreadcrumbs = 50;
     NSString *idsString = [NSString stringWithFormat:@"%@", [messageIds componentsJoinedByString:@","]];
     NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", idsString];
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = string([sqlString UTF8String]);
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, [sqlString UTF8String], (int)[sqlString length], &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
         }
@@ -707,9 +693,9 @@ const int MaxBreadcrumbs = 50;
 
 - (void)deleteNetworkPerformanceMessages {
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "DELETE FROM messages WHERE message_type = '" + string([kMPMessageTypeNetworkPerformance UTF8String]) + "'";
+    NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE message_type = '%@'", kMPMessageTypeNetworkPerformance];
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, [sqlString UTF8String], (int)[sqlString length], &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting network messages from sessions");
         }
@@ -720,9 +706,9 @@ const int MaxBreadcrumbs = 50;
 
 - (void)deletePreviousSession {
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "DELETE FROM previous_session";
+    const char *sqlStatement = "DELETE FROM previous_session";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting previous session");
         }
@@ -736,7 +722,7 @@ const int MaxBreadcrumbs = 50;
     NSString *sqlStatement = @"BEGIN TRANSACTION";
     
     if (sqlite3_exec(mParticleDB, sqlStatement.UTF8String, NULL, NULL, &errMsg) != SQLITE_OK) {
-        MPILogError("Problem Beginning SQL Transaction: %@\n", sqlStatement);
+        MPILogError(@"Problem Beginning SQL Transaction: %@", sqlStatement);
     }
     
     NSArray *statements = @[
@@ -746,8 +732,8 @@ const int MaxBreadcrumbs = 50;
                             ];
     
     sqlite3_stmt *preparedStatement;
-    for (NSString *sqlStatement in statements) {
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.UTF8String, (int)[sqlStatement length], &preparedStatement, NULL) == SQLITE_OK) {
+    for (NSString *statement in statements) {
+        if (sqlite3_prepare_v2(mParticleDB, statement.UTF8String, (int)[statement length], &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_double(preparedStatement, 1, timestamp);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -762,16 +748,16 @@ const int MaxBreadcrumbs = 50;
     sqlStatement = @"END TRANSACTION";
     
     if (sqlite3_exec(mParticleDB, sqlStatement.UTF8String, NULL, NULL, &errMsg) != SQLITE_OK) {
-        MPILogError("Problem Ending SQL Transaction: %@\n", sqlStatement);
+        MPILogError(@"Problem Ending SQL Transaction: %@", sqlStatement);
     }
 }
 
 - (void)deleteAllSessionsExcept:(nullable MPSession *)session {
     // Delete sessions
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "DELETE FROM sessions WHERE _id != ?";
+    const char *sqlStatement = "DELETE FROM sessions WHERE _id != ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -787,9 +773,9 @@ const int MaxBreadcrumbs = 50;
 - (void)deleteSession:(nonnull MPSession *)session {
     // Delete messages
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "DELETE FROM messages WHERE session_id = ?";
+    const char *sqlStatement = "DELETE FROM messages WHERE session_id = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -804,7 +790,7 @@ const int MaxBreadcrumbs = 50;
     // Delete session
     sqlStatement = "DELETE FROM sessions WHERE _id = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -826,9 +812,9 @@ const int MaxBreadcrumbs = 50;
 
 - (void)deleteUploadId:(int64_t)uploadId {
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "DELETE FROM uploads WHERE _id = ?";
+    const char *sqlStatement = "DELETE FROM uploads WHERE _id = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, uploadId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -842,12 +828,12 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (nullable NSArray<MPBreadcrumb *> *)fetchBreadcrumbs {
-    vector<MPBreadcrumb *> breadcrumbsVector;
+    NSMutableArray<MPBreadcrumb *> *breadcrumbsArray = [NSMutableArray array];
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, session_uuid, uuid, breadcrumb_data, timestamp FROM breadcrumbs WHERE mpid = ? ORDER BY _id";
+    const char *sqlStatement = "SELECT _id, session_uuid, uuid, breadcrumb_data, timestamp FROM breadcrumbs WHERE mpid = ? ORDER BY _id";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
@@ -857,7 +843,7 @@ const int MaxBreadcrumbs = 50;
                                                                   breadcrumbData:dataValue(preparedStatement, 3)
                                                                        timestamp:doubleValue(preparedStatement, 4)];
             
-            breadcrumbsVector.push_back(breadcrumb);
+            [breadcrumbsArray addObject:breadcrumb];
         }
         
         sqlite3_clear_bindings(preparedStatement);
@@ -865,12 +851,11 @@ const int MaxBreadcrumbs = 50;
     
     sqlite3_finalize(preparedStatement);
     
-    if (breadcrumbsVector.empty()) {
+    if (breadcrumbsArray.count == 0) {
         return nil;
     }
     
-    NSArray<MPBreadcrumb *> *breadcrumbs = [NSArray arrayWithObjects:&breadcrumbsVector[0] count:breadcrumbsVector.size()];
-    return breadcrumbs;
+    return [breadcrumbsArray copy];
 }
 
 - (MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber *)userId {
@@ -886,12 +871,12 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (nullable NSArray<MPCookie *> *)fetchCookiesForUserId:(NSNumber *)userId {
-    vector<MPCookie *> cookiesVector;
+    NSMutableArray<MPCookie *> *cookiesArray = [NSMutableArray array];
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, content, domain, expiration, name, mpid FROM cookies WHERE mpid = ?";
+    const char *sqlStatement = "SELECT _id, content, domain, expiration, name, mpid FROM cookies WHERE mpid = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, [userId longLongValue]);
         
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
@@ -915,7 +900,7 @@ const int MaxBreadcrumbs = 50;
             
             cookie.name = stringValue(preparedStatement, 4);
             
-            cookiesVector.push_back(cookie);
+            [cookiesArray addObject:cookie];
         }
         
         sqlite3_clear_bindings(preparedStatement);
@@ -923,65 +908,62 @@ const int MaxBreadcrumbs = 50;
     
     sqlite3_finalize(preparedStatement);
     
-    if (cookiesVector.empty()) {
+    if (cookiesArray.count == 0) {
         return nil;
     }
     
-    NSArray<MPCookie *> *cookies = [NSArray arrayWithObjects:&cookiesVector[0] count:cookiesVector.size()];
-    return cookies;
+    return [cookiesArray copy];
 }
 
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords {
-    vector<MPForwardRecord *> forwardRecordsVector;
+    NSMutableArray<MPForwardRecord *> *forwardRecordsArray = [NSMutableArray array];
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, forwarding_data, mpid FROM forwarding_records ORDER BY _id";
+    const char *sqlStatement = "SELECT _id, forwarding_data, mpid FROM forwarding_records ORDER BY _id";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithId:int64Value(preparedStatement, 0)
                                                                             data:dataValue(preparedStatement, 1)
                                                                             mpid:@(int64Value(preparedStatement, 2))];
             
-            forwardRecordsVector.push_back(forwardRecord);
+            [forwardRecordsArray addObject:forwardRecord];
         }
     }
     
     sqlite3_finalize(preparedStatement);
     
-    if (forwardRecordsVector.empty()) {
+    if (forwardRecordsArray.count == 0) {
         return nil;
     }
     
-    NSArray<MPForwardRecord *> *forwardRecords = [NSArray arrayWithObjects:&forwardRecordsVector[0] count:forwardRecordsVector.size()];
-    return forwardRecords;
+    return [forwardRecordsArray copy];
 }
 
 - (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes {
-    vector<MPIntegrationAttributes *> integrationAttributesVector;
+    NSMutableArray<MPIntegrationAttributes *> *integrationAttributesArray = [NSMutableArray array];
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT kit_code, attributes_data FROM integration_attributes";
+    const char *sqlStatement = "SELECT kit_code, attributes_data FROM integration_attributes";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:@(intValue(preparedStatement, 0))
                                                                                                attributesData:dataValue(preparedStatement, 1)];
             
             if (integrationAttributes) {
-                integrationAttributesVector.push_back(integrationAttributes);
+                [integrationAttributesArray addObject:integrationAttributes];
             }
         }
     }
     
     sqlite3_finalize(preparedStatement);
     
-    if (integrationAttributesVector.empty()) {
+    if (integrationAttributesArray.count == 0) {
         return nil;
     }
     
-    NSArray<MPIntegrationAttributes *> *integrationAttributesArray = [NSArray arrayWithObjects:&integrationAttributesVector[0] count:integrationAttributesVector.size()];
-    return integrationAttributesArray;
+    return [integrationAttributesArray copy];
 }
 
 - (nullable NSDictionary*)fetchIntegrationAttributesForId:(NSNumber *)integrationId {
@@ -990,9 +972,9 @@ const int MaxBreadcrumbs = 50;
     }
     MPIntegrationAttributes *integrationAttributes;
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT attributes_data FROM integration_attributes WHERE kit_code = ?";
+    const char *sqlStatement = "SELECT attributes_data FROM integration_attributes WHERE kit_code = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, integrationId.intValue);
         if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId
@@ -1007,9 +989,9 @@ const int MaxBreadcrumbs = 50;
 - (NSMutableDictionary *)fetchMessagesForUploading {
     NSMutableDictionary *mpidMessages = [NSMutableDictionary dictionary];
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id, data_plan_id, data_plan_version FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
+    const char *sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id, data_plan_id, data_plan_version FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int(preparedStatement, 1, MPUploadStatusStream);
         sqlite3_bind_int(preparedStatement, 2, MPUploadStatusBatch);
         
@@ -1060,15 +1042,15 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash {
-    vector<MPSession *> sessionsVector;
+    NSMutableArray<MPSession *> *sessionsArray = [NSMutableArray array];
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info \
+    const char *sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info \
     FROM sessions \
     WHERE mpid = ? AND _id IN ((SELECT MAX(_id) FROM sessions WHERE mpid = ?), (SELECT (MAX(_id) - 1) FROM sessions WHERE mpid = ?)) \
     ORDER BY session_number";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
@@ -1090,7 +1072,7 @@ const int MaxBreadcrumbs = 50;
             
             crashSession.length = doubleValue(preparedStatement, 10);
             
-            sessionsVector.push_back(crashSession);
+            [sessionsArray addObject:crashSession];
         }
         
         sqlite3_clear_bindings(preparedStatement);
@@ -1098,21 +1080,20 @@ const int MaxBreadcrumbs = 50;
     
     sqlite3_finalize(preparedStatement);
     
-    if (sessionsVector.empty()) {
+    if (sessionsArray.count == 0) {
         return nil;
     }
     
-    NSArray<MPSession *> *sessions = [NSArray arrayWithObjects:&sessionsVector[0] count:sessionsVector.size()];
-    return sessions;
+    return [sessionsArray copy];
 }
 
 - (nullable MPSession *)fetchPreviousSession {
     MPSession *previousSession = nil;
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT session_id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM previous_session WHERE mpid = ?";
+    const char *sqlStatement = "SELECT session_id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM previous_session WHERE mpid = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         
         if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
@@ -1145,12 +1126,12 @@ const int MaxBreadcrumbs = 50;
     MPMessage *message = nil;
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, data_plan_id, data_plan_version FROM messages WHERE session_id = ? AND message_type = ?";
+    const char *sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, data_plan_id, data_plan_version FROM messages WHERE session_id = ? AND message_type = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         const char *sessionEndMessageType = [NSStringFromMessageType(MPMessageTypeSessionEnd) UTF8String];
-        sqlite3_bind_text(preparedStatement, 2, sessionEndMessageType, sizeof(sessionEndMessageType), SQLITE_STATIC);
+        sqlite3_bind_text(preparedStatement, 2, sessionEndMessageType, -1, SQLITE_TRANSIENT);
         
         if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
@@ -1175,11 +1156,11 @@ const int MaxBreadcrumbs = 50;
 
 - (NSMutableArray<MPSession *> *)fetchSessions {
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info FROM sessions ORDER BY _id";
+    const char *sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info FROM sessions ORDER BY _id";
     
     NSMutableArray<MPSession *> *sessions = nil;
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sessions = [[NSMutableArray alloc] initWithCapacity:1];
         
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
@@ -1216,11 +1197,11 @@ const int MaxBreadcrumbs = 50;
     NSArray<MPMessage *> *messages = nil;
     
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, data_plan_id, data_plan_version FROM messages WHERE session_id = ? AND upload_status = ? AND mpid = ? ORDER BY timestamp";
+    const char *sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, data_plan_id, data_plan_version FROM messages WHERE session_id = ? AND upload_status = ? AND mpid = ? ORDER BY timestamp";
     
-    vector<MPMessage *> messagesVector;
+    NSMutableArray<MPMessage *> *messagesArray = [NSMutableArray array];
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         sqlite3_bind_int(preparedStatement, 2, MPUploadStatusUploaded);
         sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
@@ -1237,7 +1218,7 @@ const int MaxBreadcrumbs = 50;
                                                            dataPlanId:stringValue(preparedStatement, 7)
                                                       dataPlanVersion:@(intValue(preparedStatement, 8))];
             
-            messagesVector.push_back(message);
+            [messagesArray addObject:message];
         }
         
         sqlite3_clear_bindings(preparedStatement);
@@ -1245,8 +1226,8 @@ const int MaxBreadcrumbs = 50;
     
     sqlite3_finalize(preparedStatement);
     
-    if (!messagesVector.empty()) {
-        messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
+    if (messagesArray.count > 0) {
+        messages = [messagesArray copy];
     }
     
     return messages;
@@ -1254,13 +1235,11 @@ const int MaxBreadcrumbs = 50;
 
 - (nullable NSArray<MPUpload *> *)fetchUploads {
     sqlite3_stmt *preparedStatement;
-    string sqlStatement;
+    const char *sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings FROM uploads ORDER BY timestamp, _id LIMIT 100";
     
-    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings FROM uploads ORDER BY timestamp, _id LIMIT 100";
+    NSMutableArray<MPUpload *> *uploadsArray = [NSMutableArray array];
     
-    vector<MPUpload *> uploadsVector;
-    
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             NSData *uploadSettingsData = dataValue(preparedStatement, 8);
             if (uploadSettingsData) {
@@ -1277,7 +1256,7 @@ const int MaxBreadcrumbs = 50;
                                                                 dataPlanId:stringValue(preparedStatement, 6)
                                                            dataPlanVersion:intValue(preparedStatement, 7) ? @(intValue(preparedStatement, 7)) : nil
                                                             uploadSettings:uploadSettings];
-                    uploadsVector.push_back(upload);
+                    [uploadsArray addObject:upload];
                 } else {
                     MPILogError(@"Error unarchiving upload settings: %@", error);
                 }
@@ -1289,8 +1268,8 @@ const int MaxBreadcrumbs = 50;
     sqlite3_finalize(preparedStatement);
     
     NSArray<MPUpload *> *uploads = nil;
-    if (!uploadsVector.empty()) {
-        uploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
+    if (uploadsArray.count > 0) {
+        uploads = [uploadsArray copy];
     }
     
     return uploads;
@@ -1331,9 +1310,8 @@ const int MaxBreadcrumbs = 50;
         
         sqlite3_stmt *preparedStatement;
         NSString *sqlString = [NSString stringWithFormat:@"UPDATE %@ SET mpid = ? WHERE mpid = 0", obj];
-        const string sqlStatement = string([sqlString UTF8String]);
         
-        if (sqlite3_prepare_v2(self->mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_prepare_v2(self->mParticleDB, [sqlString UTF8String], (int)[sqlString length], &preparedStatement, NULL) == SQLITE_OK) {
             
             sqlite3_bind_int64(preparedStatement, 1, [mpid longLongValue]);
             
@@ -1384,14 +1362,14 @@ const int MaxBreadcrumbs = 50;
 - (void)saveBreadcrumb:(MPMessage *)message {
     // Save breadcrumb
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "INSERT INTO breadcrumbs (session_uuid, uuid, timestamp, breadcrumb_data, session_number, mpid) VALUES (?, ?, ?, ?, ?, ?)";
+    const char *sqlStatement = "INSERT INTO breadcrumbs (session_uuid, uuid, timestamp, breadcrumb_data, session_number, mpid) VALUES (?, ?, ?, ?, ?, ?)";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        string auxString = string(""); // not used
-        sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
+        const char *emptyString = ""; // not used
+        sqlite3_bind_text(preparedStatement, 1, emptyString, -1, SQLITE_TRANSIENT);
         
-        auxString = string([message.uuid UTF8String]);
-        sqlite3_bind_text(preparedStatement, 2, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
+        const char *uuid = [message.uuid UTF8String];
+        sqlite3_bind_text(preparedStatement, 2, uuid, -1, SQLITE_TRANSIENT);
         
         sqlite3_bind_double(preparedStatement, 3, message.timestamp);
         sqlite3_bind_blob(preparedStatement, 4, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
@@ -1412,7 +1390,7 @@ const int MaxBreadcrumbs = 50;
     // Prunes breadcrumbs
     sqlStatement = "DELETE FROM breadcrumbs WHERE mpid = ? AND _id NOT IN (SELECT _id FROM breadcrumbs WHERE mpid = ? ORDER BY _id DESC LIMIT ?)";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         sqlite3_bind_int(preparedStatement, 3, MaxBreadcrumbs);
@@ -1432,28 +1410,28 @@ const int MaxBreadcrumbs = 50;
 - (void)saveConsumerInfo:(MPConsumerInfo *)consumerInfo {
     sqlite3_stmt *preparedStatement;
     
-    vector<string> fields;
-    vector<string> params;
+    NSMutableArray *fields = [NSMutableArray array];
+    NSMutableArray *params = [NSMutableArray array];
     
     if (consumerInfo.uniqueIdentifier) {
-        fields.push_back("unique_identifier");
-        params.push_back("'" + string([consumerInfo.uniqueIdentifier UTF8String]) + "'");
+        [fields addObject:@"unique_identifier"];
+        [params addObject:[NSString stringWithFormat:@"'%@'", consumerInfo.uniqueIdentifier]];
     }
     
-    string sqlStatement = "INSERT INTO consumer_info (mpid";
-    for (auto field : fields) {
-        sqlStatement += ", " + field;
+    NSMutableString *sqlStatement = [NSMutableString stringWithString:@"INSERT INTO consumer_info (mpid"];
+    for (NSString *field in fields) {
+        [sqlStatement appendFormat:@", %@", field];
     }
     
-    sqlStatement += ") VALUES (?";
+    [sqlStatement appendString:@") VALUES (?"];
     
-    for (auto param : params) {
-        sqlStatement += ", " + param;
+    for (NSString *param in params) {
+        [sqlStatement appendFormat:@", %@", param];
     }
     
-    sqlStatement += ")";
+    [sqlStatement appendString:@")"];
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, [sqlStatement UTF8String], (int)[sqlStatement length], &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while storing consumer info: %s", sqlite3_errmsg(mParticleDB));
             sqlite3_clear_bindings(preparedStatement);
@@ -1480,9 +1458,9 @@ const int MaxBreadcrumbs = 50;
 - (void)saveForwardRecord:(MPForwardRecord *)forwardRecord {
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "INSERT INTO forwarding_records (forwarding_data, mpid) VALUES (?, ?)";
+    const char *sqlStatement = "INSERT INTO forwarding_records (forwarding_data, mpid) VALUES (?, ?)";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         NSData *data = [forwardRecord dataRepresentation];
         
         if (data) {
@@ -1521,9 +1499,9 @@ const int MaxBreadcrumbs = 50;
     [self deleteIntegrationAttributesForIntegrationId:integrationAttributes.integrationId];
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "INSERT INTO integration_attributes (kit_code, attributes_data) VALUES (?, ?)";
+    const char *sqlStatement = "INSERT INTO integration_attributes (kit_code, attributes_data) VALUES (?, ?)";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         NSError *error = nil;
         NSData *attributesData = nil;
         
@@ -1568,11 +1546,11 @@ const int MaxBreadcrumbs = 50;
     }
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, data_plan_id, data_plan_version, mpid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    const char *sqlStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, data_plan_id, data_plan_version, mpid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        string auxString = string([message.messageType UTF8String]);
-        sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
+        const char *messageType = [message.messageType UTF8String];
+        sqlite3_bind_text(preparedStatement, 1, messageType, -1, SQLITE_TRANSIENT);
         
         if (message.sessionId != nil) {
             sqlite3_bind_int64(preparedStatement, 2, message.sessionId.longLongValue);
@@ -1581,16 +1559,16 @@ const int MaxBreadcrumbs = 50;
         }
         
         
-        auxString = string([message.uuid UTF8String]);
-        sqlite3_bind_text(preparedStatement, 3, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
+        const char *uuid = [message.uuid UTF8String];
+        sqlite3_bind_text(preparedStatement, 3, uuid, -1, SQLITE_TRANSIENT);
         
         sqlite3_bind_double(preparedStatement, 4, message.timestamp);
         sqlite3_bind_blob(preparedStatement, 5, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
         sqlite3_bind_int(preparedStatement, 6, (int)message.uploadStatus);
         
         if (message.dataPlanId != nil && ![message.dataPlanId isEqual:@"0"]) {
-        string dataAuxString = string([message.dataPlanId UTF8String]);
-            sqlite3_bind_text(preparedStatement, 7, dataAuxString.c_str(), (int)dataAuxString.size(), SQLITE_TRANSIENT);
+            const char *dataPlanId = [message.dataPlanId UTF8String];
+            sqlite3_bind_text(preparedStatement, 7, dataPlanId, -1, SQLITE_TRANSIENT);
             if (message.dataPlanVersion != nil && message.dataPlanVersion.intValue != 0) {
                 sqlite3_bind_int64(preparedStatement, 8, message.dataPlanVersion.intValue);
             } else {
@@ -1623,11 +1601,11 @@ const int MaxBreadcrumbs = 50;
 - (void)saveSession:(MPSession *)session {
     if (session) {
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO sessions (uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        const char *sqlStatement = "INSERT INTO sessions (uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string auxString = string([session.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
+            const char *uuid = [session.uuid UTF8String];
+            sqlite3_bind_text(preparedStatement, 1, uuid, -1, SQLITE_TRANSIENT);
             
             sqlite3_bind_double(preparedStatement, 2, session.startTime);
             sqlite3_bind_double(preparedStatement, 3, session.endTime);
@@ -1671,11 +1649,11 @@ const int MaxBreadcrumbs = 50;
     }
     
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    const char *sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        string auxString = string([upload.uuid UTF8String]);
-        sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
+        const char *uuid = [upload.uuid UTF8String];
+        sqlite3_bind_text(preparedStatement, 1, uuid, -1, SQLITE_TRANSIENT);
         
         sqlite3_bind_blob(preparedStatement, 2, [upload.uploadData bytes], (int)[upload.uploadData length], SQLITE_STATIC);
         sqlite3_bind_double(preparedStatement, 3, upload.timestamp);
@@ -1689,8 +1667,8 @@ const int MaxBreadcrumbs = 50;
         sqlite3_bind_int64(preparedStatement, 5, upload.uploadType);
         
         if (upload.dataPlanId != nil && ![upload.dataPlanId isEqual:@"0"]) {
-            string dataAuxString = string([upload.dataPlanId UTF8String]);
-            sqlite3_bind_text(preparedStatement, 6, dataAuxString.c_str(), (int)dataAuxString.size(), SQLITE_TRANSIENT);
+            const char *dataPlanId = [upload.dataPlanId UTF8String];
+            sqlite3_bind_text(preparedStatement, 6, dataPlanId, -1, SQLITE_TRANSIENT);
             if (upload.dataPlanVersion != nil &&  upload.dataPlanVersion.intValue != 0) {
                 sqlite3_bind_int64(preparedStatement, 7, upload.dataPlanVersion.intValue);
             } else {
@@ -1750,9 +1728,9 @@ const int MaxBreadcrumbs = 50;
 - (void)updateSession:(MPSession *)session {
     if (session != nil) {
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "UPDATE sessions SET end_time = ?, attributes_data = ?, background_time = ?, number_interruptions = ?, event_count = ?, suspend_time = ?, length = ?, mpid = ?, session_user_ids = ? WHERE _id = ?";
+        const char *sqlStatement = "UPDATE sessions SET end_time = ?, attributes_data = ?, background_time = ?, number_interruptions = ?, event_count = ?, suspend_time = ?, length = ?, mpid = ?, session_user_ids = ? WHERE _id = ?";
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_double(preparedStatement, 1, session.endTime);
             
             NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
@@ -1784,9 +1762,9 @@ const int MaxBreadcrumbs = 50;
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT app_info, device_info FROM sessions WHERE _id = ?";
+    const char *sqlStatement = "SELECT app_info, device_info FROM sessions WHERE _id = ?";
     
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, sessionId.longLongValue);
         
         if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
@@ -1807,10 +1785,6 @@ const int MaxBreadcrumbs = 50;
 @end
 
 // Implementation of the C functions
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 static inline NSData *dataValue(sqlite3_stmt *const preparedStatement, const int column) {
     __autoreleasing NSData *data = nil;
     const void *dataBytes = sqlite3_column_blob(preparedStatement, column);
@@ -1834,7 +1808,7 @@ static inline bool bindDictionaryAsBlob(sqlite3_stmt * _Nonnull const preparedSt
     NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
     
     if (error) {
-        MPILogError("Error serializing JSON: %@", error);
+        MPILogError(@"Error serializing JSON: %@", error);
         return false;
     }
     
@@ -1865,18 +1839,18 @@ static inline NSDictionary *dictionaryRepresentation(sqlite3_stmt *const prepare
 }
 
 static inline double doubleValue(sqlite3_stmt *const preparedStatement, const int column) {
-    double doubleValue = sqlite3_column_double(preparedStatement, column);
-    return doubleValue;
+    double doubleVal = sqlite3_column_double(preparedStatement, column);
+    return doubleVal;
 }
 
 static inline int intValue(sqlite3_stmt *const preparedStatement, const int column) {
-    int intValue = sqlite3_column_int(preparedStatement, column);
-    return intValue;
+    int intVal = sqlite3_column_int(preparedStatement, column);
+    return intVal;
 }
 
 static inline int64_t int64Value(sqlite3_stmt *const preparedStatement, const int column) {
-    int64_t int64Value = sqlite3_column_int64(preparedStatement, column);
-    return int64Value;
+    int64_t int64Val = sqlite3_column_int64(preparedStatement, column);
+    return int64Val;
 }
 
 static inline NSString *stringValue(sqlite3_stmt *const preparedStatement, const int column) {
@@ -1885,10 +1859,6 @@ static inline NSString *stringValue(sqlite3_stmt *const preparedStatement, const
         return nil;
     }
     
-    __autoreleasing NSString *stringValue = [NSString stringWithUTF8String:(const char *)columnText];
-    return stringValue;
+    __autoreleasing NSString *stringVal = [NSString stringWithUTF8String:(const char *)columnText];
+    return stringVal;
 }
-
-#ifdef __cplusplus
-}
-#endif
