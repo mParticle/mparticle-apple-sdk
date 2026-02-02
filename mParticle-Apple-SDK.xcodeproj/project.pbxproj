@@ -498,7 +498,6 @@
 		53A79C4329CDFB4800E7489F /* MPProduct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPProduct.h; sourceTree = "<group>"; };
 		53A79C4429CDFB4800E7489F /* MPTransactionAttributes+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPTransactionAttributes+Dictionary.h"; sourceTree = "<group>"; };
 		53A79C6829CE019E00E7489F /* MPPersistenceControllerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPersistenceControllerTests.m; sourceTree = "<group>"; };
-		53A79C6929CE019E00E7489F /* MParticleWebViewTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleWebViewTests.m; sourceTree = "<group>"; };
 		53A79C6A29CE019E00E7489F /* MPKitAppsFlyerTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppsFlyerTest.h; sourceTree = "<group>"; };
 		53A79C6B29CE019E00E7489F /* MPKitTestClassSideloaded.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClassSideloaded.m; sourceTree = "<group>"; };
 		53A79C6C29CE019E00E7489F /* MPCommerceEventTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCommerceEventTests.m; sourceTree = "<group>"; };
@@ -738,7 +737,6 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
-				7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */,
 				7213DE822F30F0EC0007A619 /* SceneDelegateHandler.m */,
 				3513083F2E6B28F5002A3AD6 /* Executor.h */,
 				729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */,
@@ -1042,6 +1040,7 @@
 				53A79ABB29CDFB1E00E7489F /* MPPersistenceController.h */,
 				7E03877F2DB913D2003B7D5E /* MPRokt.h */,
 				35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */,
+				7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */,
 			);
 			path = Include;
 			sourceTree = "<group>";
@@ -1582,7 +1581,6 @@
 				53A79D6F29CE23F700E7489F /* mParticle.m in Sources */,
 				53A79D7029CE23F700E7489F /* MPProduct.m in Sources */,
 				35329FF32E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m in Sources */,
-				530D247F2CFF70B0000FE7E3 /* MPUserIdentityInstance.swift in Sources */,
 				53A79D7129CE23F700E7489F /* MPPersistenceController.m in Sources */,
 				351308442E6B28F5002A3AD6 /* Executor.m in Sources */,
 				53A79D7329CE23F700E7489F /* FilteredMParticleUser.m in Sources */,
