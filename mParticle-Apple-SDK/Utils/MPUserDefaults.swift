@@ -25,29 +25,29 @@ public protocol MPUserDefaultsProtocol {
     func synchronize()
 }
 
-@objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
-    private var stateMachine: MPStateMachine_PRIVATE?
-    private var backendController: MPBackendController_PRIVATE?
-    private var identity: MPIdentityApi?
+@objc
+public protocol MPUserDefaultsConnectorProtocol {
+    var stateMachine: MPStateMachine_PRIVATE? { get }
+    var backendController: MPBackendController_PRIVATE? { get }
+    var identity: MPIdentityApi? { get }
+    var mparticle: MParticle { get }
+}
 
-    public required init(
-        stateMachine: MPStateMachineProtocol,
-        backendController: MPBackendControllerProtocol,
-        identity: MPIdentityApi
+@objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
+    private var connector: MPUserDefaultsConnectorProtocol
+    
+    public init(
+        connector: MPUserDefaultsConnectorProtocol
     ) {
-        self.stateMachine = stateMachine as? MPStateMachine_PRIVATE
-        self.backendController = backendController as? MPBackendController_PRIVATE
-        self.identity = identity
+        self.connector = connector
         super.init()
     }
 
     @objc public class func standardUserDefaults(
-        stateMachine: MPStateMachineProtocol,
-        backendController: MPBackendControllerProtocol,
-        identity: MPIdentityApi
+        connector: MPUserDefaultsConnectorProtocol
     ) -> MPUserDefaults {
         if userDefaults == nil {
-            userDefaults = self.init(stateMachine: stateMachine, backendController: backendController, identity: identity)
+            userDefaults = MPUserDefaults(connector: connector)
         }
 
         return userDefaults!
@@ -161,7 +161,7 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public func getConfiguration() -> [AnyHashable: Any]? {
-        guard let userID = identity?.currentUser?.userId else { return nil }
+        guard let userID = connector.identity?.currentUser?.userId else { return nil }
 
         if UserDefaults.standard.object(forKey: kMResponseConfigurationMigrationKey) == nil {
             migrateConfiguration()
@@ -196,9 +196,8 @@ public protocol MPUserDefaultsProtocol {
                 return swiftDict
             }
         } catch {
-            let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-            logger.customLogger = mparticle.customLogger
+            let logger = MPLog(logLevel: MPLog.from(rawValue: connector.mparticle.logLevel.rawValue))
+            logger.customLogger = connector.mparticle.customLogger
 
             logger.error("Failed to unarchive configuration: \(error)")
         }
@@ -221,7 +220,7 @@ public protocol MPUserDefaultsProtocol {
                 withRootObject: responseConfiguration,
                 requiringSecureCoding: true
             )
-            let userID = identity?.currentUser?.userId ?? 0
+            let userID = connector.identity?.currentUser?.userId ?? 0
 
             setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
             setMPObject(configurationData, forKey: kMResponseConfigurationKey, userId: userID)
@@ -237,7 +236,7 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public func migrateConfiguration() {
-        guard let userID = identity?.currentUser?.userId else { return }
+        guard let userID = connector.identity?.currentUser?.userId else { return }
         let eTag = mpObject(forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID) as? String
 
         let fileManager = FileManager.default
@@ -411,8 +410,8 @@ public protocol MPUserDefaultsProtocol {
 
     @objc public class func restore() -> MPResponseConfig? {
         if let userDefaults = userDefaults {
-            if let configuration = userDefaults.getConfiguration(), let stateMachine = userDefaults.stateMachine,
-               let backendController = userDefaults.backendController {
+            if let configuration = userDefaults.getConfiguration(), let stateMachine = userDefaults.connector.stateMachine,
+               let backendController = userDefaults.connector.backendController {
                 let responseConfig = MPResponseConfig(
                     configuration: configuration,
                     stateMachine: stateMachine,
