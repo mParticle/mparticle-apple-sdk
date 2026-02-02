@@ -27,6 +27,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
 #import "MPRokt.h"
+#import "MPRoktEvent.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
 
