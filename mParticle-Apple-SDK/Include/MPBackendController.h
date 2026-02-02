@@ -1,4 +1,5 @@
 #import "MPEnums.h"
+#import "MPUploadSettings.h"
 
 #if TARGET_OS_IOS == 1
     @class MParticleUserNotification;
@@ -13,7 +14,6 @@
 @class MPCommerceEvent;
 @class MPConsentState;
 @class MParticleSession;
-@class MPUploadSettings;
 @class MPNetworkOptions;
 @class MPNetworkCommunication_PRIVATE;
 
