@@ -2,6 +2,8 @@
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
 #import "MPConsentState.h"
+#import "MPCCPAConsent.h"
+#import "MPGDPRConsent.h"
 #import "MPConsentKitFilter.h"
 #import "MPBaseTestCase.h"
 #import "MParticleSwift.h"
