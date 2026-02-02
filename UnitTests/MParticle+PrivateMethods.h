@@ -3,6 +3,7 @@
 #import "MPDataPlanFilter.h"
 #import "AppEnvironmentProvider.h"
 #import "MPAppNotificationHandler.h"
+#import "SceneDelegateHandler.h"
 
 @interface MParticle (Tests)
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut;
