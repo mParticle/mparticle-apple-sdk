@@ -70,9 +70,64 @@ For URL handling and user activity (universal links), use the `UIScene` lifecycl
 
 ---
 
+### Removed Legacy Database Migration Support
+
+Support for migrating from SDK versions prior to **SDK 8.27.0** (internal database version < 30) has been removed. Only migration from the immediately preceding database version (v30 → v31) is now supported.
+
+#### What This Means
+
+- Apps upgrading from **SDK 8.26.x or earlier** to SDK 9.x will start with a fresh local database
+- Any pending (unsent) events from the old SDK version will be lost during this upgrade
+- User identity and session data will be re-established after the upgrade
+
+#### Affected Users
+
+This change only affects users who:
+
+1. Are upgrading directly from mParticle SDK versions **before 8.27.0** (released August 2024)
+2. Have pending events that have not yet been uploaded to mParticle
+
+---
+
 ### Removed MPListenerController
 
 The `MPListenerController` class has been removed. The SDK no longer invokes any listener callbacks.
+
+### Direct Routing Enabled by Default
+
+API requests now route directly to regional endpoints based on your API key prefix:
+
+**Before:**
+
+- `nativesdks.mparticle.com`
+- `tracking-nativesdks.mparticle.com`
+- `identity.mparticle.com`
+- `tracking-identity.mparticle.com`
+- `config2.mparticle.com`
+
+**After:**
+
+- `nativesdks.[pod].mparticle.com`
+- `tracking-nativesdks.[pod].mparticle.com`
+- `identity.[pod].mparticle.com`
+- `tracking-identity.[pod].mparticle.com`
+- `config2.mparticle.com`
+
+> [!NOTE]
+> The `config2.mparticle.com` subdomain is used to fetch SDK configuration and will not change.
+
+Examples:
+
+| API Key Format              | Events Endpoint                | Events Tracking Endpoint                | Identity Endpoint            | Identity Tracking Endpoint            |
+| --------------------------- | ------------------------------ | --------------------------------------- | ---------------------------- | ------------------------------------- |
+| `xxxxx` (legacy, no prefix) | `nativesdks.us1.mparticle.com` | `tracking-nativesdks.us1.mparticle.com` | `identity.us1.mparticle.com` | `tracking-identity.us1.mparticle.com` |
+| `us1-xxxxx`                 | `nativesdks.us1.mparticle.com` | `tracking-nativesdks.us1.mparticle.com` | `identity.us1.mparticle.com` | `tracking-identity.us1.mparticle.com` |
+| `us2-xxxxx`                 | `nativesdks.us2.mparticle.com` | `tracking-nativesdks.us2.mparticle.com` | `identity.us2.mparticle.com` | `tracking-identity.us2.mparticle.com` |
+| `eu1-xxxxx`                 | `nativesdks.eu1.mparticle.com` | `tracking-nativesdks.eu1.mparticle.com` | `identity.eu1.mparticle.com` | `tracking-identity.eu1.mparticle.com` |
+| `au1-xxxxx`                 | `nativesdks.au1.mparticle.com` | `tracking-nativesdks.au1.mparticle.com` | `identity.au1.mparticle.com` | `tracking-identity.au1.mparticle.com` |
+
+> [!NOTE]
+> If your app has strict App Transport Security (ATS) settings, you may need to add `NSIncludesSubdomains` set to `YES` for the `mparticle.com` domain in your Info.plist to allow connections to regional subdomains.
 
 ### Removed Deprecated UIApplicationDelegate Methods
 

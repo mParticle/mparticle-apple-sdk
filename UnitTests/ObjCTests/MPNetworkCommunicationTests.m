@@ -14,6 +14,8 @@
 #import "MParticleSwift.h"
 #import "MPIConstants.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 @interface MParticle ()
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
@@ -128,7 +130,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     [self deswizzle];
     
-    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://identity.mparticle.com/v1/0/modify"].location != NSNotFound);
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://identity.us1.mparticle.com/v1/0/modify"].location != NSNotFound);
     XCTAssert([modifyURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
@@ -198,7 +200,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     [self deswizzle];
     
-    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://nativesdks.mparticle.com/v1/identity/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://nativesdks.us1.mparticle.com/v1/identity/"].location != NSNotFound);
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
@@ -250,7 +252,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     [self deswizzle];
     
-    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://nativesdks.mparticle.com/v1/identity/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://nativesdks.us1.mparticle.com/v1/identity/"].location != NSNotFound);
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
@@ -333,7 +335,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     OCMStub([mockZip compressedDataFromData:OCMOCK_ANY]).andReturn(nil);
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     [networkCommunication upload:uploads completionHandler:^{
@@ -348,7 +350,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"not_determined"]);
@@ -365,7 +367,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"restricted"]);
@@ -382,7 +384,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"denied"]);
@@ -399,7 +401,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
+    id mockZip = OCMClassMock([MPZipPRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"authorized"]);
@@ -936,31 +938,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     ];
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    NSString *oldEventHost = @"nativesdks.mparticle.com";
-    NSString *oldIdentityHost = @"identity.mparticle.com";
     
-    stateMachine.enableDirectRouting = NO;
-    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusNotDetermined);
-    for (NSArray *test in testKeys) {
-        NSString *key = test[0];
-        stateMachine.apiKey = key;
-        
-        XCTAssertEqualObjects(oldEventHost, [networkCommunication defaultEventHost]);
-        XCTAssertEqualObjects(oldIdentityHost, [networkCommunication defaultIdentityHost]);
-    }
-    
-    NSString *newEventHost = @"tracking-nativesdks.mparticle.com";
-    NSString *newIdentityHost = @"tracking-identity.mparticle.com";
-    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
-    for (NSArray *test in testKeys) {
-        NSString *key = test[0];
-        stateMachine.apiKey = key;
-        
-        XCTAssertEqualObjects(newEventHost, [networkCommunication defaultEventHost]);
-        XCTAssertEqualObjects(newIdentityHost, [networkCommunication defaultIdentityHost]);
-    }
-    
-    stateMachine.enableDirectRouting = YES;
     stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusNotDetermined);
     for (NSArray *test in testKeys) {
         NSString *key = test[0];

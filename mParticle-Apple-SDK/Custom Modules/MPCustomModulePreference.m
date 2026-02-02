@@ -3,6 +3,7 @@
 #import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 

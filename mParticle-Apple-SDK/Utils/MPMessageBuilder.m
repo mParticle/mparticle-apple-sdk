@@ -13,6 +13,8 @@
 #import "mParticle.h"
 #import "MParticleSwift.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
 NSString *const kMPLatitudeKey = @"lat";
@@ -224,7 +226,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session userIdentityChange:(MPUserIdentityChange_PRIVATE *)userIdentityChange {
+- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session userIdentityChange:(MPUserIdentityChangePRIVATE *)userIdentityChange {
     self = [self initWithMessageType:messageType session:session];
     if (self && userIdentityChange) {
         [self userIdentityChange:userIdentityChange];
@@ -251,7 +253,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     _messageDictionary[kMPUserAttributeNewlyAddedKey] = oldValue ? @NO : @YES;
 }
 
-- (void)userIdentityChange:(MPUserIdentityChange_PRIVATE *)userIdentityChange {
+- (void)userIdentityChange:(MPUserIdentityChangePRIVATE *)userIdentityChange {
     NSDictionary *dictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
     if (dictionary) {
         _messageDictionary[kMPUserIdentityNewValueKey] = dictionary;

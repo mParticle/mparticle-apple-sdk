@@ -25,6 +25,8 @@
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
 
@@ -117,35 +119,30 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 #pragma mark Private accessors
 
-- (NSString *)defaultHostWithSubdomain:(NSString *)subdomain apiKey:(NSString *)apiKey enableDirectRouting:(BOOL)enableDirectRouting {
-    if (enableDirectRouting) {
-        NSArray *splitKey = [apiKey componentsSeparatedByString:@"-"];
-        if (splitKey.count <= 1) {
-            // Handle case with no prefix, default to US1 (old keys)
-            return [NSString stringWithFormat:@"%@.us1.mparticle.com", subdomain];
-        }
-        return [NSString stringWithFormat:@"%@.%@.mparticle.com", subdomain, splitKey[0]];
+- (NSString *)defaultHostWithSubdomain:(NSString *)subdomain apiKey:(NSString *)apiKey {
+    NSArray *splitKey = [apiKey componentsSeparatedByString:@"-"];
+    if (splitKey.count <= 1) {
+        // Handle case with no prefix, default to US1 (old keys)
+        return [NSString stringWithFormat:@"%@.us1.mparticle.com", subdomain];
     }
-    
-    // Handle feature flag disabled (old behavior)
-    return [NSString stringWithFormat:@"%@.mparticle.com", subdomain];
+    return [NSString stringWithFormat:@"%@.%@.mparticle.com", subdomain, splitKey[0]];
 }
 
 - (NSString *)defaultEventHost {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        return [self defaultHostWithSubdomain:kMPURLHostEventTrackingSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+        return [self defaultHostWithSubdomain:kMPURLHostEventTrackingSubdomain apiKey:stateMachine.apiKey];
     } else {
-        return [self defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+        return [self defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:stateMachine.apiKey];
     }
 }
 
 - (NSString *)defaultIdentityHost {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        return [self defaultHostWithSubdomain:kMPURLHostIdentityTrackingSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+        return [self defaultHostWithSubdomain:kMPURLHostIdentityTrackingSubdomain apiKey:stateMachine.apiKey];
     } else {
-        return [self defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+        return [self defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:stateMachine.apiKey];
     }
 }
 
@@ -681,9 +678,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         NSData *updatedData = [NSJSONSerialization dataWithJSONObject:[uploadDict copy] options:0 error:nil];
         uploadString = [[NSString alloc] initWithData:updatedData encoding:NSUTF8StringEncoding];
 
-        zipUploadData = [MPZip_PRIVATE compressedDataFromData:updatedData];
+        zipUploadData = [MPZipPRIVATE compressedDataFromData:updatedData];
     } else {
-        zipUploadData = [MPZip_PRIVATE compressedDataFromData:upload.uploadData];
+        zipUploadData = [MPZipPRIVATE compressedDataFromData:upload.uploadData];
     }
     
     if (zipUploadData == nil || zipUploadData.length <= 0) {

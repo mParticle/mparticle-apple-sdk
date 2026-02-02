@@ -1,11 +1,4 @@
-//
-//  MPUserDefaults.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 1/10/25.
-//
-
-import Foundation
+internal import mParticle_Apple_SDK_Swift
 
 private var userDefaults: MPUserDefaults?
 private var sharedGroupID: String?
@@ -119,30 +112,6 @@ public protocol MPUserDefaultsProtocol {
         }
     }
 
-    @objc public func migrateUserKeys(withUserId userId: NSNumber) {
-        for key in userSpecificKeys {
-            let globalKey = MPUserDefaults.globalKeyForKey(key)
-            let userKey = MPUserDefaults.userKeyForKey(key, userId: userId)
-            guard let value = UserDefaults.standard.object(forKey: globalKey) else { continue }
-            customUserDefaults().set(value, forKey: userKey)
-        }
-
-        synchronize()
-    }
-
-    @objc public func migrateFirstLastSeenUsers() {
-        let globalFirstSeenDateMs = mpObject(
-            forKey: Miscellaneous.kMPAppInitialLaunchTimeKey,
-            userId: MPPersistenceController_PRIVATE.mpId()
-        )
-        let globalLastSeenDateMs = NSNumber(value: Date().timeIntervalSince1970 * 1000)
-        let users: [MParticleUser] = identity?.getAllUsers() ?? []
-        for user in users {
-            setMPObject(globalFirstSeenDateMs, forKey: Miscellaneous.kMPFirstSeenUser, userId: user.userId)
-            setMPObject(globalLastSeenDateMs, forKey: Miscellaneous.kMPLastSeenUser, userId: user.userId)
-        }
-    }
-
     @objc public func setSharedGroupIdentifier(_ groupIdentifier: String?) {
         let storedGroupID = mpObject(
             forKey: kMPUserIdentitySharedGroupIdentifier,
@@ -227,7 +196,11 @@ public protocol MPUserDefaultsProtocol {
                 return swiftDict
             }
         } catch {
-            MPLog.error("Failed to unarchive configuration: \(error)")
+            let mparticle = MParticle.sharedInstance()
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+            logger.customLogger = mparticle.customLogger
+
+            logger.error("Failed to unarchive configuration: \(error)")
         }
         return nil
     }
@@ -255,7 +228,11 @@ public protocol MPUserDefaultsProtocol {
             setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
             setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
         } catch {
-            MPLog.error("Failed to archive configuration: \(error)")
+            let mparticle = MParticle.sharedInstance()
+            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+            logger.customLogger = mparticle.customLogger
+
+            logger.error("Failed to archive configuration: \(error)")
         }
     }
 
@@ -269,17 +246,21 @@ public protocol MPUserDefaultsProtocol {
         let configurationURL = stateMachineURL.appendingPathComponent("RequestConfig.cfg")
         let configuration = mpObject(forKey: kMResponseConfigurationKey, userId: userID)
 
+        let mparticle = MParticle.sharedInstance()
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+        logger.customLogger = mparticle.customLogger
+
         if fileManager.fileExists(atPath: configurationURL.path) {
             do {
                 try fileManager.removeItem(at: configurationURL)
             } catch {
-                MPLog.error("Failed to remove old configuration file: \(error)")
+                logger.error("Failed to remove old configuration file: \(error)")
             }
             deleteConfiguration()
-            MPLog.debug("Configuration Migration Complete")
+            logger.debug("Configuration Migration Complete")
         } else if (eTag != nil && configuration == nil) || (eTag == nil && configuration != nil) {
             deleteConfiguration()
-            MPLog.debug("Configuration Migration Complete")
+            logger.debug("Configuration Migration Complete")
         }
 
         UserDefaults.standard.set(1, forKey: kMResponseConfigurationMigrationKey)
@@ -292,7 +273,11 @@ public protocol MPUserDefaultsProtocol {
         removeMPObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey)
         removeMPObject(forKey: Miscellaneous.kMPConfigParameters)
 
-        MPLog.debug("Configuration Deleted")
+        let mparticle = MParticle.sharedInstance()
+        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+        logger.customLogger = mparticle.customLogger
+
+        logger.debug("Configuration Deleted")
     }
 
     @objc public func resetDefaults() {
@@ -372,7 +357,11 @@ public protocol MPUserDefaultsProtocol {
                 let data = try NSKeyedArchiver.archivedData(withRootObject: lastUploadSettings, requiringSecureCoding: true)
                 setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
             } catch {
-                MPLog.error("Failed to archive upload settings: \(error)")
+                let mparticle = MParticle.sharedInstance()
+                let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+                logger.customLogger = mparticle.customLogger
+
+                logger.error("Failed to archive upload settings: \(error)")
             }
         } else {
             removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
@@ -384,7 +373,11 @@ public protocol MPUserDefaultsProtocol {
             do {
                 return try NSKeyedUnarchiver.unarchivedObject(ofClass: MPUploadSettings.self, from: data)
             } catch {
-                MPLog.error("Failed to unarchive upload settings: \(error)")
+                let mparticle = MParticle.sharedInstance()
+                let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
+                logger.customLogger = mparticle.customLogger
+
+                logger.error("Failed to unarchive upload settings: \(error)")
             }
         }
         return nil

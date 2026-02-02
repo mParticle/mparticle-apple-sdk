@@ -1,6 +1,8 @@
 #import "MPEventProjection.h"
 #import "MPAttributeProjection.h"
+#import "mParticle.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MPProjectionMatch
 
@@ -105,7 +107,12 @@
     __block NSString *auxString;
     
     auxString = matchDictionary[@"event"];
-    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? [MPIHasher eventTypeForHash:auxString] : MPEventTypeOther;
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    
+    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? (MPEventType)[hasher eventTypeForHash:auxString] : MPEventTypeOther;
     
     _messageType = !MPIsNull(matchDictionary[@"message_type"]) ? (MPMessageType)[matchDictionary[@"message_type"] integerValue] : MPMessageTypeEvent;
     

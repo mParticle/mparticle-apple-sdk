@@ -1,11 +1,4 @@
-//
-//  MPResponseConfig.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 12/2/24.
-//
-
-import Foundation
+internal import mParticle_Apple_SDK_Swift
 
 @objc public class MPResponseConfig: NSObject {
     @objc public private(set) var configuration: [AnyHashable: Any]?
@@ -49,17 +42,18 @@ import Foundation
 
                 if let configKitDictionary = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[String: Any]] {
                     for kitDictionary in configKitDictionary {
-                        let consentKitFilter = kitDictionary[ConsentFiltering.kMPConsentKitFilter] as? [String: Any]
+                        let consentKitFilter = kitDictionary[ConsentFilteringSwift.kMPConsentKitFilter] as? [String: Any]
                         hasConsentFilters = consentKitFilter != nil && !consentKitFilter!.isEmpty
                         var hasRegulationOrPurposeFilters = false
 
                         if let hashes = kitDictionary[RemoteConfig.kMPRemoteConfigKitHashesKey] as? [String: Any],
                            !hashes.isEmpty {
-                            if let regulationFilters = hashes[ConsentFiltering.kMPConsentRegulationFilters] as? [String: Any],
+                            if let regulationFilters =
+                                hashes[ConsentFilteringSwift.kMPConsentRegulationFilters] as? [String: Any],
                                !regulationFilters.isEmpty {
                                 hasRegulationOrPurposeFilters = true
                             }
-                            if let purposeFilters = hashes[ConsentFiltering.kMPConsentPurposeFilters] as? [String: Any],
+                            if let purposeFilters = hashes[ConsentFilteringSwift.kMPConsentPurposeFilters] as? [String: Any],
                                !purposeFilters.isEmpty {
                                 hasRegulationOrPurposeFilters = true
                             }
@@ -96,7 +90,6 @@ import Foundation
             stateMachine.configureDataBlocking(config[RemoteConfig.kMPRemoteConfigDataPlanningResults] as? [AnyHashable: Any])
 
             stateMachine.allowASR = config[RemoteConfig.kMPRemoteConfigAllowASR] as? Bool ?? false
-            stateMachine.enableDirectRouting = config[RemoteConfig.kMPRemoteConfigDirectURLRouting] as? Bool ?? false
             if let remoteConfigFlags = config[RemoteConfig.kMPRemoteConfigFlagsKey] as? [AnyHashable: Any] {
                 if let audienceAPIFlag = remoteConfigFlags[RemoteConfig.kMPRemoteConfigAudienceAPIKey] as? String {
                     stateMachine.enableAudienceAPI = audienceAPIFlag == "True"

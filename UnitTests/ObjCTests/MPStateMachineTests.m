@@ -6,6 +6,7 @@
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine_PRIVATE(Tests)
@@ -55,9 +56,12 @@
 
 - (void)testConfigureTriggers {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    NSString *hashEvent1 = [MPIHasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
-    NSString *hashEvent2 = [MPIHasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *hashEvent1 = [hasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
+    NSString *hashEvent2 = [hasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
     
     NSDictionary *triggerDictionary = @{@"tri":@{@"dts":@[@"e", @"pm"],
                                                  @"evts":@[hashEvent1, hashEvent2]
@@ -80,9 +84,12 @@
 
 - (void)testNullConfigureTriggers {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    NSString *hashEvent1 = [MPIHasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
-    NSString *hashEvent2 = [MPIHasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *hashEvent1 = [hasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
+    NSString *hashEvent2 = [hasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
     
     NSDictionary *triggerDictionary = @{@"tri":[NSNull null]
                                         };
@@ -127,8 +134,12 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"State transitions"];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     MPLaunchInfo *launchInfo = [[MPLaunchInfo alloc] initWithURL:[NSURL URLWithString:@"http://mparticle.com"]
-                                                         options:@{@"Launching":@"WooHoo"}];
+                                                         options:@{@"Launching":@"WooHoo"} logger:logger];
     stateMachine.launchInfo = launchInfo;
     XCTAssertFalse(stateMachine.backgrounded, @"Should have been false.");
     XCTAssertNotNil(stateMachine.launchInfo, @"Should not have been nil.");

@@ -6,6 +6,7 @@
 #import "mParticle.h"
 #import "MPEnums.h"
 #import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPKitConfiguration()
 @property (nonatomic, strong) NSDictionary *configurationDictionary;
@@ -28,7 +29,11 @@
     }
     NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:options error:nil];
     NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
-    _configurationHash = @([[MPIHasher hashString:ekConfigString] intValue]);
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    _configurationHash = @([[hasher hashString:ekConfigString] intValue]);
     
     // Attribute value filtering
     NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];

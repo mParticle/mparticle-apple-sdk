@@ -8,51 +8,10 @@
 //       the need to make all our internal constants public during porting
 //
 
-func MPMilliseconds(timestamp: Double) -> Double {
-    return trunc(timestamp * 1000.0)
-}
-
 // NOTE: I kept the same naming here for clarity, but we should rename these
 //       after we remove them from the MPIConstants.h file
 
 let kMParticleSDKVersion = "8.41.1"
-
-enum MessageKeys {
-    static let kMPMessagesKey = "msgs"
-    static let kMPMessageIdKey = "id"
-    static let kMPMessageUserIdKey = "mpid"
-    static let kMPTimestampKey = "ct"
-    static let kMPSessionIdKey = "sid"
-    static let kMPSessionStartTimestamp = "sct"
-    static let kMPEventStartTimestamp = "est"
-    static let kMPEventLength = "el"
-    static let kMPEventNameKey = "n"
-    static let kMPEventTypeKey = "et"
-    static let kMPEventLengthKey = "el"
-    static let kMPAttributesKey = "attrs"
-    static let kMPLocationKey = "lc"
-    static let kMPUserAttributeKey = "ua"
-    static let kMPUserAttributeDeletedKey = "uad"
-    static let kMPEventTypePageView = "pageview"
-    static let kMPUserIdentityArrayKey = "ui"
-    static let kMPUserIdentityIdKey = "i"
-    static let kMPUserIdentityTypeKey = "n"
-    static let kMPUserIdentitySharedGroupIdentifier = "sgi"
-    static let kMPAppStateTransitionType = "t"
-    static let kMPEventTagsKey = "tags"
-    static let kMPLeaveBreadcrumbsKey = "l"
-    static let kMPOptOutKey = "oo"
-    static let kMPDateUserIdentityWasFirstSet = "dfs"
-    static let kMPIsFirstTimeUserIdentityHasBeenSet = "f"
-    static let kMPRemoteNotificationContentIdHistoryKey = "cntid"
-    static let kMPRemoteNotificationTimestampHistoryKey = "ts"
-    static let kMPForwardStatsRecord = "fsr"
-    static let kMPEventCustomFlags = "flags"
-    static let kMPContextKey = "ctx"
-    static let kMPDataPlanKey = "dpln"
-    static let kMPDataPlanIdKey = "id"
-    static let kMPDataPlanVersionKey = "v"
-}
 
 enum PushNotifications {
     static let kMPDeviceTokenKey = "to"
@@ -117,7 +76,6 @@ enum RemoteConfig {
     static let kMPRemoteConfigAliasMaxWindow = "alias_max_window"
     static let kMPRemoteConfigAllowASR = "iasr"
     static let kMPRemoteConfigExcludeAnonymousUsersKey = "eau"
-    static let kMPRemoteConfigDirectURLRouting = "dur"
     static let kMPRemoteConfigFlagsKey = "flags"
     static let kMPRemoteConfigAudienceAPIKey = "AudienceAPI"
     static let kMPRemoteConfigDataPlanningResults = "dpr"
@@ -165,19 +123,6 @@ enum RemoteConfig {
     static let kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionClick = "click"
 }
 
-enum ConsentFiltering {
-    static let kMPConsentKitFilter = "crvf"
-    static let kMPConsentKitFilterIncludeOnMatch = "i"
-    static let kMPConsentKitFilterItems = "v"
-    static let kMPConsentKitFilterItemConsented = "c"
-    static let kMPConsentKitFilterItemHash = "h"
-    static let kMPConsentRegulationFilters = "reg"
-    static let kMPConsentPurposeFilters = "pur"
-    static let kMPConsentGDPRRegulationType = "1"
-    static let kMPConsentCCPARegulationType = "2"
-    static let kMPConsentCCPAPurposeName = "data_sale_opt_out"
-}
-
 enum Notifications {
     static let kMPCrashReportOccurredNotification = Notification.Name("MPCrashReportOccurredNotification")
     static let kMPConfigureExceptionHandlingNotification = Notification.Name("MPConfigureExceptionHandlingNotification")
@@ -186,124 +131,4 @@ enum Notifications {
     static let kMPRemoteNotificationDeviceTokenNotification = Notification.Name("MPRemoteNotificationDeviceTokenNotification")
     static let kMPRemoteNotificationDeviceTokenKey = Notification.Name("MPRemoteNotificationDeviceTokenKey")
     static let kMPRemoteNotificationOldDeviceTokenKey = Notification.Name("MPRemoteNotificationOldDeviceTokenKey")
-}
-
-enum Device {
-    static let kMPDeviceInformationKey = "di"
-    static let kMPDeviceBrandKey = "b"
-    static let kMPDeviceProductKey = "p"
-    static let kMPDeviceNameKey = "dn"
-    static let kMPDeviceAdvertiserIdKey = "aid"
-    static let kMPDeviceAppVendorIdKey = "vid"
-    static let kMPDeviceBuildIdKey = "bid"
-    static let kMPDeviceManufacturerKey = "dma"
-    static let kMPDevicePlatformKey = "dp"
-    static let kMPDeviceOSKey = "dosv"
-    static let kMPDeviceModelKey = "dmdl"
-    static let kMPScreenHeightKey = "dsh"
-    static let kMPScreenWidthKey = "dsw"
-    static let kMPDeviceLocaleCountryKey = "dlc"
-    static let kMPDeviceLocaleLanguageKey = "dll"
-    static let kMPNetworkCountryKey = "nc"
-    static let kMPNetworkCarrierKey = "nca"
-    static let kMPMobileNetworkCodeKey = "mnc"
-    static let kMPMobileCountryCodeKey = "mcc"
-    static let kMPTimezoneOffsetKey = "tz"
-    static let kMPTimezoneDescriptionKey = "tzn"
-    static let kMPDeviceJailbrokenKey = "jb"
-    static let kMPDeviceArchitectureKey = "arc"
-    static let kMPDeviceRadioKey = "dr"
-    static let kMPDeviceFloatingPointFormat = "%0.0f"
-    static let kMPDeviceSignerIdentityString = "signeridentity"
-    static let kMPDeviceIsTabletKey = "it"
-    static let kMPDeviceIdentifierKey = "deviceIdentifier"
-    static let kMPDeviceLimitAdTrackingKey = "lat"
-    static let kMPDeviceIsDaylightSavingTime = "idst"
-    static let kMPDeviceInvalidVendorId = "00000000-0000-0000-0000-000000000000"
-}
-
-enum Miscellaneous {
-    static let kMPFirstSeenUser = "fsu"
-    static let kMPLastSeenUser = "lsu"
-    static let kMPAppInitialLaunchTimeKey = "ict"
-    static let kMPHTTPETagHeaderKey = "ETag"
-    static let kMPConfigProvisionedTimestampKey = "ConfigProvisionedTimestamp"
-    static let kMPConfigMaxAgeHeaderKey = "ConfigMaxAgeHeader"
-    static let kMPConfigParameters = "ConfigParameters"
-    static let kMPLastIdentifiedDate = "last_date_used"
-    static let MPSideloadedKitsCountUserDefaultsKey = "MPSideloadedKitsCountUserDefaultsKey"
-    static let kMPLastUploadSettingsUserDefaultsKey = "lastUploadSettings"
-    static let CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0 * 60
-    static let CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60 * 60 * 24.0
-    static let kMPDeviceTokenTypeKey = "tot"
-    static let kMPATT = "atts"
-    static let kMPATTTimestamp = "attt"
-    static let kMPDeviceCydiaJailbrokenKey = "cydia"
-}
-
-/// User Identities
-/// The identities in this enum are limited to end-user forms of identity. A new enum, MPIdentity, has been provided to cover all valid forms of identity supported by the mParticle Identity API (user identities and device identities)
-@objc public enum MPUserIdentitySwift: Int {
-    case other = 0
-    case customerId = 1
-    case facebook = 2
-    case twitter = 3
-    case google = 4
-    case microsoft = 5
-    case yahoo = 6
-    case email = 7
-    case alias = 8
-    case facebookCustomAudienceId = 9
-    case other2 = 10
-    case other3 = 11
-    case other4 = 12
-    case other5 = 13
-    case other6 = 14
-    case other7 = 15
-    case other8 = 16
-    case other9 = 17
-    case other10 = 18
-    case mobileNumber = 19
-    case phoneNumber2 = 20
-    case phoneNumber3 = 21
-}
-
-/// MP Identities
-@objc public enum MPIdentitySwift: Int {
-    case other = 0
-    case customerId = 1
-    case facebook = 2
-    case twitter = 3
-    case google = 4
-    case microsoft = 5
-    case yahoo = 6
-    case email = 7
-    case alias = 8
-    case facebookCustomAudienceId = 9
-    case other2 = 10
-    case other3 = 11
-    case other4 = 12
-    case other5 = 13
-    case other6 = 14
-    case other7 = 15
-    case other8 = 16
-    case other9 = 17
-    case other10 = 18
-    case mobileNumber = 19
-    case phoneNumber2 = 20
-    case phoneNumber3 = 21
-    case iosAdvertiserId = 22
-    case iosVendorId = 23
-    case pushToken = 24
-    case deviceApplicationStamp = 25
-}
-
-/**
- @see https://developer.apple.com/documentation/apptrackingtransparency/attrackingmanager/authorizationstatus
- */
-@objc public enum MPATTAuthorizationStatusSwift: Int {
-    case notDetermined = 0
-    case restricted
-    case denied
-    case authorized
 }

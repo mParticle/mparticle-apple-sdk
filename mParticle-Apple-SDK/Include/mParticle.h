@@ -20,12 +20,15 @@
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
+#import "MPSideloadedKit.h"
 #import "MPBackendController.h"
 #import "MPApplication.h"
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
 #import "MPRokt.h"
+#import "MPCCPAConsent.h"
+#import "MPGDPRConsent.h"
 
 #if TARGET_OS_IOS == 1
     #import <WebKit/WebKit.h>
@@ -37,7 +40,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class MPSideloadedKit;
 @class MPKitContainer;
 
 /**

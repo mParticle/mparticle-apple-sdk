@@ -19,6 +19,9 @@
 #import "SettingsProvider.h"
 #import "Executor.h"
 #import "AppEnvironmentProvider.h"
+#import "MPConvertJS.h"
+#import "SceneDelegateHandler.h"
+@import mParticle_Apple_SDK_Swift;
 
 static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
@@ -62,7 +65,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
@@ -151,12 +154,12 @@ MPLog* logger;
     _automaticSessionTracking = YES;
     _appNotificationHandler = (id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol>)[[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
-    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
-    logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
-    _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithLogger:logger appNotificationHandler:_appNotificationHandler];
-    
+    logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
+    _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
+
+    _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger sdkVersion:kMParticleSDKVersion];
     return self;
 }
 
@@ -248,7 +251,7 @@ MPLog* logger;
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    logger.logLevel = logLevel;
+    logger.logLevel = [MPLog fromRawValue: logLevel];
     self.stateMachine.logLevel = logLevel;
 }
 

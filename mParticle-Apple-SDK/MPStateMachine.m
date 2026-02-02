@@ -18,6 +18,7 @@
 #if TARGET_OS_IOS == 1
 #import <AdServices/AAAttribution.h>
 #endif
+@import mParticle_Apple_SDK_Swift;
 
 static NSString *const kCookieDateKey = @"e";
 static NSString *const kMinUploadDateKey = @"MinUploadDate";
@@ -42,7 +43,7 @@ static BOOL runningInBackground = NO;
 
 @end
 
-@interface MPStateMachine_PRIVATE() {
+@interface MPStateMachine_PRIVATE()<MPStateMachineMPDeviceProtocol> {
     BOOL optOutSet;
     dispatch_queue_t messageQueue;
 }
@@ -606,10 +607,18 @@ static BOOL runningInBackground = NO;
     
     BOOL dataRamped = YES;
     if (rampPercentage.integerValue != 0) {
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        MPUserDefaults* userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine
+                                                                          backendController:mparticle.backendController
+                                                                                   identity:mparticle.identity];
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:mparticle.stateMachine
+                                                     userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                           logger:logger];
         NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-        
-        uint64_t rampHash = [MPIHasher hashFNV1a:rampData];
+        MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+        uint64_t rampHash = [hasher hashFNV1a:rampData];
         NSUInteger modRampHash = rampHash % 100;
         
         dataRamped = modRampHash > [rampPercentage integerValue];
