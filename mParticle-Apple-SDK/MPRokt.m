@@ -11,6 +11,7 @@
 #import "MPILogger.h"
 #import "MPIConstants.h"
 #import "MPIdentityDTO.h"
+#import "MPExtensionProtocol.h"
 
 // Constants for kit configuration keys
 static NSString * const kMPKitConfigurationIdKey = @"id";
@@ -187,6 +188,45 @@ static const NSInteger kMPRoktKitId = 181;
                                                                userInfo:nil
         ];
     });
+}
+
+/// Set the session id to use for the next execute call.
+/// This is useful for cases where you have a session id from a non-native integration,
+/// e.g. WebView, and you want the session to be consistent across integrations.
+/// - Note: Empty strings are ignored and will not update the session.
+/// - Parameters:
+///   - sessionId: The session id to be set. Must be a non-empty string.
+- (void)setSessionId:(NSString * _Nonnull)sessionId {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:sessionId];
+
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setSessionId:)
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
+/// Get the session id to use within a non-native integration e.g. WebView.
+/// - Returns: The session id or nil if no session is present.
+- (NSString * _Nullable)getSessionId {
+    __block NSString *result = nil;
+
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+    for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
+        if ([kitRegister.code integerValue] == kMPRoktKitId) {
+            id kitInstance = kitRegister.wrapperInstance;
+            if (kitInstance && [kitInstance respondsToSelector:@selector(getSessionId)]) {
+                result = [kitInstance performSelector:@selector(getSessionId)];
+                break;
+            }
+        }
+    }
+
+    return result;
 }
 
 #pragma mark - Private Helper Methods
