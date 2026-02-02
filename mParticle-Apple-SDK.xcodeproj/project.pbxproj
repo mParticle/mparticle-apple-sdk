@@ -277,7 +277,8 @@
 		D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */; };
 		D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */; };
+		D3CEDACB2CB027E1001B32DE /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = D3CEDAC92CB027E1001B32DE /* MPConvertJS.h */; };
+		D3CEDACC2CB027E1001B32DF /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -605,7 +606,8 @@
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
 		D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK.h; sourceTree = "<group>"; };
 		D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConvertJS.swift; sourceTree = "<group>"; };
+		D3CEDAC92CB027E1001B32DE /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
+		D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConvertJS.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -891,7 +893,8 @@
 				D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */,
 				D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */,
 				53A79B0229CDFB1F00E7489F /* MPMessageBuilder.m */,
-				D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */,
+				D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */,
+				D3CEDAC92CB027E1001B32DE /* MPConvertJS.h */,
 				53A79B0929CDFB1F00E7489F /* NSDictionary+MPCaseInsensitive.m */,
 				D356E0232CFE08ED0020898D /* MPResponseConfig.swift */,
 				53A79B0D29CDFB1F00E7489F /* MPApplication.m */,
@@ -1279,6 +1282,7 @@
 				53A79D5529CE23F700E7489F /* MPPersistenceController.h in Headers */,
 				53A79D5829CE23F700E7489F /* MPIdentityDTO.h in Headers */,
 				53A79D5929CE23F700E7489F /* MPMessageBuilder.h in Headers */,
+				D3CEDACB2CB027E1001B32DE /* MPConvertJS.h in Headers */,
 				53A79D5A29CE23F700E7489F /* MPURLRequestBuilder.h in Headers */,
 				D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */,
 				53A79D5B29CE23F700E7489F /* MPKitContainer.h in Headers */,
@@ -1584,7 +1588,7 @@
 				53A79D7729CE23F700E7489F /* MPKitConfiguration.m in Sources */,
 				35C3DE702F2919B40077C0FD /* MPCCPAConsent.m in Sources */,
 				53A79D7829CE23F700E7489F /* MPConsentState.m in Sources */,
-				D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */,
+				D3CEDACC2CB027E1001B32DF /* MPConvertJS.m in Sources */,
 				53A79D7929CE23F700E7489F /* MPBracket.m in Sources */,
 				53A79D7A29CE23F700E7489F /* MParticleUserNotification.m in Sources */,
 				531BCF372B28A23400F5C573 /* MPIdentityCaching.m in Sources */,

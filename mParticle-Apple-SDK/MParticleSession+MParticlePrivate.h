@@ -1,3 +1,6 @@
+#import <Foundation/Foundation.h>
+#import "mParticle.h"
+
 @interface MParticleSession ()
 
 - (instancetype)initWithUUID:(NSString *)uuid;
