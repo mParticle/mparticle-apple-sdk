@@ -27,7 +27,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPUploadSettings.h"
-
+#import "UploadSettingsUtils.h"
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
@@ -1423,7 +1423,7 @@ static BOOL skipNextUpload = NO;
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
         
         // Check if we've switched workspaces on startup
-        MPUploadSettings *lastUploadSettings = [MPUserDefaultsConnector.userDefaults lastUploadSettings];
+        MPUploadSettings *lastUploadSettings = [UploadSettingsUtils lastUploadSettingsWithUserDefaults: MPUserDefaultsConnector.userDefaults];
         if (![lastUploadSettings.apiKey isEqualToString:apiKey]) {
             // Different workspace, so batch previous messages under old upload settings before starting
             [self prepareBatchesForUpload:lastUploadSettings];
@@ -1434,7 +1434,7 @@ static BOOL skipNextUpload = NO;
         
         // Cache the upload settings in case we switch workspaces on startup
         MPUploadSettings *uploadSettings = [[MPUploadSettings alloc] initWithApiKey:apiKey secret:secret networkOptions:networkOptions];
-        [MPUserDefaultsConnector.userDefaults setLastUploadSettings:uploadSettings];
+        [UploadSettingsUtils setLastUploadSettings:uploadSettings userDefaults: MPUserDefaultsConnector.userDefaults];
         
         // Restore cached config if exists
         (void)[MPUserDefaults restore];

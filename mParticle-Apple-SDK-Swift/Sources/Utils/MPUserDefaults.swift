@@ -358,7 +358,7 @@ public protocol MPUserDefaultsProtocol {
         return deviceToken.map { String(format: "%02x", $0) }.joined()
     }
 
-    @objc class func restore() -> MPResponseConfig? {
+    @objc public class func restore() -> MPResponseConfig? {
         if let userDefaults = userDefaults {
             if let configuration = userDefaults.getConfiguration(), userDefaults.connector.canCreateConfiguration() {
                 let responseConfig = MPResponseConfig(
