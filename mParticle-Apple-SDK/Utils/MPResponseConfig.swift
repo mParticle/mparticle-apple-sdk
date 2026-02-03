@@ -71,8 +71,7 @@ internal import mParticle_Apple_SDK_Swift
                         self.connector.configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]])
                     }
                 } else {
-                    MParticle.sharedInstance()
-                        .deferredKitConfiguration_PRIVATE = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]]
+                    connector.deferredKitConfiguration = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]]
                 }
             }
 

@@ -46,4 +46,13 @@
     [MParticle.sharedInstance.kitContainer_PRIVATE configureKits:kitConfigurations];
 }
 
+
+- (NSArray<NSDictionary *> *)deferredKitConfiguration {
+    return MParticle.sharedInstance.deferredKitConfiguration_PRIVATE;
+}
+
+- (void)setDeferredKitConfiguration:(NSArray<NSDictionary *> *)deferredKitConfiguration {
+    MParticle.sharedInstance.deferredKitConfiguration_PRIVATE = deferredKitConfiguration;
+}
+
 @end

@@ -33,6 +33,8 @@ protocol MPUserDefaultsConnectorProtocol {
     
     var logger: MPLog { get }
     
+    var deferredKitConfiguration: [[AnyHashable: Any]]? { get set }
+    
     func configureKits(_ kitConfigurations: [[AnyHashable: Any]]?)
 }
 
