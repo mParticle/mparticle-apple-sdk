@@ -39,6 +39,7 @@ public protocol MPUserDefaultsConnectorProtocol {
 
     func canCreateConfiguration() -> Bool
     func mpId() -> NSNumber
+    func configMaxAgeSeconds() -> NSNumber?
 }
 
 @objcMembers

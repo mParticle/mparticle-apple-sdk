@@ -351,7 +351,7 @@ public protocol MPUserDefaultsProtocol {
 
         if let userDefaults = userDefaults {
             let configProvisioned = userDefaults[Miscellaneous.kMPConfigProvisionedTimestampKey] as? NSNumber
-            let maxAgeSeconds = MParticle.sharedInstance().configMaxAgeSeconds
+            let maxAgeSeconds = userDefaults.connector.configMaxAgeSeconds()
 
             if let configProvisioned = configProvisioned, let maxAgeSeconds = maxAgeSeconds, maxAgeSeconds.doubleValue > 0 {
                 let intervalConfigProvisioned: TimeInterval = configProvisioned.doubleValue

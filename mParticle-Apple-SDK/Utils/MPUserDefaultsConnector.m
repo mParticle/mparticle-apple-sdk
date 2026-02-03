@@ -121,8 +121,12 @@
     return MParticle.sharedInstance.stateMachine != nil && MParticle.sharedInstance.backendController != nil;
 }
 
-- (NSNumber* __nonnull)mpId {
+- (nonnull NSNumber*)mpId {
     return [MPPersistenceController_PRIVATE mpId];
+}
+
+- (nullable NSNumber*)configMaxAgeSeconds {
+    return MParticle.sharedInstance.configMaxAgeSeconds;
 }
 
 @end
