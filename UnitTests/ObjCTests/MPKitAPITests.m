@@ -7,6 +7,7 @@
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MPKitContainer_PRIVATE ()
@@ -116,7 +117,7 @@
                                     @"f":@NO
                                     }
                                 ];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     [userDefaults removeMPObjectForKey:@"ua"];
     
@@ -159,7 +160,7 @@
                                 @"better data":@"ABC",
                                 @"bad data":@"12345"
                                 };
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userAttributes forKey:kMPUserAttributeKey userId:currentUser.userId];
     MParticle* mparticle = MParticle.sharedInstance;
     MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];

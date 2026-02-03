@@ -38,6 +38,8 @@
 		35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35E3FCCB2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h */; };
 		35E3FCCF2E54978C00DB5B18 /* MParticleSession+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCCE2E54978C00DB5B18 /* MParticleSession+MParticlePrivate.m */; };
 		35E3FCD32E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCD12E549AED00DB5B18 /* MParticleSession+MParticlePrivateTests.swift */; };
+		35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F99CF62F31345900820648 /* MPUserDefaultsConnector.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		35F99CF92F31346500820648 /* MPUserDefaultsConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = 35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */; };
 		530D24822CFF72D9000FE7E3 /* MPConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530D24812CFF72D4000FE7E3 /* MPConstants.swift */; };
 		531BCF352B28A23400F5C573 /* MPIdentityCaching.h in Headers */ = {isa = PBXBuildFile; fileRef = 531BCF322B28A23400F5C573 /* MPIdentityCaching.h */; };
 		531BCF372B28A23400F5C573 /* MPIdentityCaching.m in Sources */ = {isa = PBXBuildFile; fileRef = 531BCF332B28A23400F5C573 /* MPIdentityCaching.m */; };
@@ -272,13 +274,13 @@
 		7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		7E15B2072D94617900C1FF3F /* MPRoktEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2082D94617900C1FF3F /* MPRoktEventTests.m */; };
 		7E573D2A2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */; };
-		7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */; };
 		B3D778622E02F55F00D887A4 /* MPRoktEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.m */; };
 		B3D778632E02F55F00D887A5 /* MPRoktEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = B31360F82E012760000DFBC9 /* MPRoktEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D33C8B342B8510C20012EDFD /* MPAudience.h in Headers */ = {isa = PBXBuildFile; fileRef = D33C8B312B8510C20012EDFD /* MPAudience.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */ = {isa = PBXBuildFile; fileRef = D33C8B322B8510C20012EDFD /* MPAudience.m */; };
 		D342860A2D3806E600FEC2C8 /* MPUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */; };
-		D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */; };
+		D34286122D419CB800FEC2C8 /* MPUploadSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D34286132D419CB800FEC2C8 /* MPUploadSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = D34286112D419CA700FEC2C8 /* MPUploadSettings.m */; };
 		D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D3CEDACB2CB027E1001B32DE /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = D3CEDAC92CB027E1001B32DE /* MPConvertJS.h */; };
@@ -355,6 +357,8 @@
 		35E3FCCB2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleSession+MParticlePrivate.h"; sourceTree = "<group>"; };
 		35E3FCCE2E54978C00DB5B18 /* MParticleSession+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MParticleSession+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35E3FCD12E549AED00DB5B18 /* MParticleSession+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MParticleSession+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
+		35F99CF62F31345900820648 /* MPUserDefaultsConnector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPUserDefaultsConnector.h; sourceTree = "<group>"; };
+		35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPUserDefaultsConnector.m; sourceTree = "<group>"; };
 		530D24812CFF72D4000FE7E3 /* MPConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConstants.swift; sourceTree = "<group>"; };
 		531BCF322B28A23400F5C573 /* MPIdentityCaching.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPIdentityCaching.h; sourceTree = "<group>"; };
 		531BCF332B28A23400F5C573 /* MPIdentityCaching.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPIdentityCaching.m; sourceTree = "<group>"; };
@@ -602,13 +606,13 @@
 		7E15B2052D94617900C1FF3E /* MPRoktTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktTests.m; sourceTree = "<group>"; };
 		7E15B2082D94617900C1FF3F /* MPRoktEventTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktEventTests.m; sourceTree = "<group>"; };
 		7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleSceneDelegateTests.swift; sourceTree = "<group>"; };
-		7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegateHandlerMock.swift; path = UnitTests/Mocks/SceneDelegateHandlerMock.swift; sourceTree = "<group>"; };
 		B31360F72E012760000DFBC9 /* MPRoktEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktEvent.m; sourceTree = "<group>"; };
 		B31360F82E012760000DFBC9 /* MPRoktEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPRoktEvent.h; sourceTree = "<group>"; };
 		D33C8B312B8510C20012EDFD /* MPAudience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAudience.h; sourceTree = "<group>"; };
 		D33C8B322B8510C20012EDFD /* MPAudience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAudience.m; sourceTree = "<group>"; };
 		D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserDefaults.swift; sourceTree = "<group>"; };
-		D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUploadSettings.swift; sourceTree = "<group>"; };
+		D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUploadSettings.h; sourceTree = "<group>"; };
+		D34286112D419CA700FEC2C8 /* MPUploadSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUploadSettings.m; sourceTree = "<group>"; };
 		D356E0232CFE08ED0020898D /* MPResponseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPResponseConfig.swift; sourceTree = "<group>"; };
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
 		D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK.h; sourceTree = "<group>"; };
@@ -743,6 +747,7 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
+				35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */,
 				7213DE822F30F0EC0007A619 /* SceneDelegateHandler.m */,
 				3513083F2E6B28F5002A3AD6 /* Executor.h */,
 				729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */,
@@ -898,7 +903,7 @@
 			isa = PBXGroup;
 			children = (
 				D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */,
-				D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */,
+				D34286112D419CA700FEC2C8 /* MPUploadSettings.m */,
 				53A79B0229CDFB1F00E7489F /* MPMessageBuilder.m */,
 				D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */,
 				D3CEDAC92CB027E1001B32DE /* MPConvertJS.h */,
@@ -1005,6 +1010,7 @@
 		53A79C2229CDFB4800E7489F /* Include */ = {
 			isa = PBXGroup;
 			children = (
+				35F99CF62F31345900820648 /* MPUserDefaultsConnector.h */,
 				35C3DE742F291DAF0077C0FD /* MPGDPRConsent.h */,
 				53A79C2329CDFB4800E7489F /* MPEvent.h */,
 				53A79C2429CDFB4800E7489F /* MPBaseEvent.h */,
@@ -1048,6 +1054,7 @@
 				B31360F82E012760000DFBC9 /* MPRoktEvent.h */,
 				35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */,
 				7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */,
+				D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */,
 			);
 			path = Include;
 			sourceTree = "<group>";
@@ -1255,7 +1262,9 @@
 				351308432E6B28F5002A3AD6 /* Executor.h in Headers */,
 				35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */,
 				35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */,
+				35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */,
 				35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */,
+				D34286122D419CB800FEC2C8 /* MPUploadSettings.h in Headers */,
 				53A79D3029CE23F700E7489F /* MPConnectorResponseProtocol.h in Headers */,
 				53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */,
 				53A79D3329CE23F700E7489F /* MPNetworkCommunication.h in Headers */,
@@ -1589,6 +1598,7 @@
 				53A79D6D29CE23F700E7489F /* MPCustomModulePreference.m in Sources */,
 				53A79D6E29CE23F700E7489F /* FilteredMPIdentityApiRequest.m in Sources */,
 				53A79D6F29CE23F700E7489F /* mParticle.m in Sources */,
+				35F99CF92F31346500820648 /* MPUserDefaultsConnector.m in Sources */,
 				53A79D7029CE23F700E7489F /* MPProduct.m in Sources */,
 				35329FF32E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m in Sources */,
 				53A79D7129CE23F700E7489F /* MPPersistenceController.m in Sources */,
@@ -1650,7 +1660,7 @@
 				53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */,
 				7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */,
 				35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */,
-				D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */,
+				D34286132D419CB800FEC2C8 /* MPUploadSettings.m in Sources */,
 				53A79DAD29CE23F700E7489F /* MPAliasResponse.m in Sources */,
 				B3D778622E02F55F00D887A4 /* MPRoktEvent.m in Sources */,
 				53A79DAE29CE23F700E7489F /* MPKitFilter.m in Sources */,
