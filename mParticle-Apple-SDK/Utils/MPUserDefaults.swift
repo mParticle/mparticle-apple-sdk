@@ -36,6 +36,12 @@ protocol MPUserDefaultsConnectorProtocol {
     var deferredKitConfiguration: [[AnyHashable: Any]]? { get set }
     
     func configureKits(_ kitConfigurations: [[AnyHashable: Any]]?)
+    
+    func configureCustomModules(_ customModuleSettings: [[AnyHashable: Any]]?)
+    func configureRampPercentage(_ rampPercentage: NSNumber?)
+    func configureTriggers(_ triggerDictionary: [AnyHashable: Any]?)
+    func configureAliasMaxWindow(_ aliasMaxWindow: NSNumber?)
+    func configureDataBlocking(_ blockSettings: [AnyHashable: Any]?)    
 }
 
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {

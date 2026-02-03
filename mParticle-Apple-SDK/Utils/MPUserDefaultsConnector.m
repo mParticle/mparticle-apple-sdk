@@ -55,4 +55,24 @@
     MParticle.sharedInstance.deferredKitConfiguration_PRIVATE = deferredKitConfiguration;
 }
 
+- (void)configureCustomModules:(nullable NSArray<NSDictionary *> *)customModuleSettings {
+    [MParticle.sharedInstance.stateMachine configureCustomModules:customModuleSettings];
+}
+
+- (void)configureRampPercentage:(nullable NSNumber *)rampPercentage {
+    [MParticle.sharedInstance.stateMachine configureRampPercentage:rampPercentage];
+}
+
+- (void)configureTriggers:(nullable NSDictionary *)triggerDictionary {
+    [MParticle.sharedInstance.stateMachine configureTriggers:triggerDictionary];
+}
+
+- (void)configureAliasMaxWindow:(nullable NSNumber *)aliasMaxWindow {
+    [MParticle.sharedInstance.stateMachine configureAliasMaxWindow:aliasMaxWindow];
+}
+
+- (void)configureDataBlocking:(nullable NSDictionary *)blockSettings {
+    [MParticle.sharedInstance.stateMachine configureDataBlocking:blockSettings];
+}
+
 @end

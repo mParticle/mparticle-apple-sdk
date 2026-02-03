@@ -75,13 +75,11 @@ internal import mParticle_Apple_SDK_Swift
                 }
             }
 
-            connector.stateMachine?
-                .configureCustomModules(config[RemoteConfig.kMPRemoteConfigCustomModuleSettingsKey] as? [[AnyHashable: Any]])
-            connector.stateMachine?.configureRampPercentage(config[RemoteConfig.kMPRemoteConfigRampKey] as? NSNumber)
-            connector.stateMachine?.configureTriggers(config[RemoteConfig.kMPRemoteConfigTriggerKey] as? [AnyHashable: Any])
-            connector.stateMachine?.configureAliasMaxWindow(config[RemoteConfig.kMPRemoteConfigAliasMaxWindow] as? NSNumber)
-            connector.stateMachine?
-                .configureDataBlocking(config[RemoteConfig.kMPRemoteConfigDataPlanningResults] as? [AnyHashable: Any])
+            connector.configureCustomModules(config[RemoteConfig.kMPRemoteConfigCustomModuleSettingsKey] as? [[AnyHashable: Any]])
+            connector.configureRampPercentage(config[RemoteConfig.kMPRemoteConfigRampKey] as? NSNumber)
+            connector.configureTriggers(config[RemoteConfig.kMPRemoteConfigTriggerKey] as? [AnyHashable: Any])
+            connector.configureAliasMaxWindow(config[RemoteConfig.kMPRemoteConfigAliasMaxWindow] as? NSNumber)
+            connector.configureDataBlocking(config[RemoteConfig.kMPRemoteConfigDataPlanningResults] as? [AnyHashable: Any])
 
             connector.stateMachine?.allowASR = config[RemoteConfig.kMPRemoteConfigAllowASR] as? Bool ?? false
             if let remoteConfigFlags = config[RemoteConfig.kMPRemoteConfigFlagsKey] as? [AnyHashable: Any] {
