@@ -12,7 +12,6 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
-#import "MParticleSwift.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
 #import "MPEnums.h"
@@ -22,7 +21,6 @@
 #import "MPURL.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIdentityCaching.h"
-#import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;

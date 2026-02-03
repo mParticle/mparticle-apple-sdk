@@ -13,7 +13,6 @@
 #import "MPDataPlanFilter.h"
 #import "MPUpload.h"
 #import "MPKitContainer.h"
-#import "MParticleSwift.h"
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"

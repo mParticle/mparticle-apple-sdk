@@ -23,7 +23,6 @@
 #import "MPURLRequestBuilder.h"
 #import "MPIdentityCaching.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPUploadSettings.h"

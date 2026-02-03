@@ -11,7 +11,6 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 #if TARGET_OS_IOS == 1
 
 #import "MPIConstants.h"
-#import "MParticleSwift.h"
 #import <UIKit/UIKit.h>
 #import "MPILogger.h"
 

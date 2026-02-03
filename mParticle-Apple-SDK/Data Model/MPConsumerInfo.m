@@ -1,7 +1,6 @@
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPUserDefaultsConnector.h"

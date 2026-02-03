@@ -17,7 +17,6 @@
 #import <sqlite3.h>
 #import "MPKitFilter.h"
 #import "MPApplication.h"
-#import "MParticleSwift.h"
 #import "MParticleUserNotification.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;

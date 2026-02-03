@@ -11,7 +11,6 @@
 #import <UIKit/UIKit.h>
 #import "MPForwardQueueParameters.h"
 #import "MPDataPlanFilter.h"
-#import "MParticleSwift.h"
 #import "MParticleReachability.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"

@@ -2,7 +2,6 @@
 #import "MPConvertJS.h"
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
-#import "MParticleSwift.h"
 
 @interface MPConvertJSTests : MPBaseTestCase
 

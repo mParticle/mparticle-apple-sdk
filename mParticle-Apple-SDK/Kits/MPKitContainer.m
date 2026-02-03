@@ -30,7 +30,6 @@
 #import "MPDataPlanFilter.h"
 #import <objc/message.h>
 #import "MPBracket.h"
-#import "MParticleSwift.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
 #import "MPUserDefaultsConnector.h"

@@ -3,7 +3,6 @@
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
-#import "MParticleSwift.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 

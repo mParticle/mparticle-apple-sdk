@@ -10,7 +10,6 @@
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
 #import "MPKitContainer.h"
-#import "mParticleSwift.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 

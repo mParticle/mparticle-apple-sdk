@@ -7,7 +7,6 @@
 #import "MPNotificationController.h"
 #import "MPPersistenceController.h"
 #import "MPConsumerInfo.h"
-#import "mParticleSwift.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 

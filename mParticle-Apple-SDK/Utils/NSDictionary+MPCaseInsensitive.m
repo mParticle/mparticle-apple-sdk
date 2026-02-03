@@ -1,5 +1,4 @@
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MParticleSwift.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 @import mParticle_Apple_SDK_Swift;

@@ -6,7 +6,6 @@
 #import "MPIConstants.h"
 #import "MPConsentKitFilter.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
 
 @implementation MPConsentSerialization
 
