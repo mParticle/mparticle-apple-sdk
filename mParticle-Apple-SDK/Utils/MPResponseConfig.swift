@@ -68,8 +68,7 @@ internal import mParticle_Apple_SDK_Swift
                 let shouldDefer = hasConsentFilters && !hasInitialIdentity
                 if !shouldDefer {
                     DispatchQueue.main.async {
-                        MParticle.sharedInstance().kitContainer_PRIVATE
-                            .configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]])
+                        self.connector.configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]])
                     }
                 } else {
                     MParticle.sharedInstance()

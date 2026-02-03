@@ -32,6 +32,8 @@ protocol MPUserDefaultsConnectorProtocol {
     var identity: MPIdentityApi? { get }
     
     var logger: MPLog { get }
+    
+    func configureKits(_ kitConfigurations: [[AnyHashable: Any]]?)
 }
 
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {

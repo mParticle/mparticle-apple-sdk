@@ -42,4 +42,8 @@
     return logger;
 }
 
+- (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
+    [MParticle.sharedInstance.kitContainer_PRIVATE configureKits:kitConfigurations];
+}
+
 @end
