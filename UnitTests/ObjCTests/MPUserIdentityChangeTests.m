@@ -6,6 +6,7 @@
 #import "MPBackendController.h"
 #import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
@@ -28,7 +29,7 @@
     
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPIdentityEmail], @"i" : @"test@example.com"}, @{@"n" : [NSNumber numberWithLong:MPIdentityIOSAdvertiserId], @"i" : @"exampleIDFA"}];
     
     [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
@@ -46,7 +47,7 @@
     NSNumber *selectedUserID = [NSNumber numberWithInteger:58591];
 
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     //Set up Identity to exist
     [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:selectedUserID];

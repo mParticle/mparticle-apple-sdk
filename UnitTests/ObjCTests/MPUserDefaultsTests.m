@@ -6,6 +6,7 @@
 #import "MPKitContainer.h"
 #import "MPStateMachine.h"
 #import "MParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
 
 @interface MParticle ()
 
@@ -42,15 +43,15 @@
     }
     kitContainer = nil;
 
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setSharedGroupIdentifier:nil];
+    [MPUserDefaultsConnector.userDefaults setSharedGroupIdentifier:nil];
 
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
+    [MPUserDefaultsConnector.userDefaults resetDefaults];
 
     [super tearDown];
 }
 
 - (void)testUserIDsInUserDefaults {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:@1];
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MAX]];
@@ -65,7 +66,7 @@
 }
 
 - (void)testResetDefaults {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:@1];
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MAX]];
@@ -85,7 +86,7 @@
 }
 
 - (void)testMigrate {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     [userDefaults setObject:@"test" forKeyedSubscript:@"mparticleKey"];
     
@@ -98,7 +99,7 @@
 }
 
 - (void)testMigrateGroupDoesNotMigrateClientDefaults {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     [[NSUserDefaults standardUserDefaults] setObject:@"clientSetting" forKey:@"clientKey"];
     
@@ -109,7 +110,7 @@
 }
 
 - (void)testMigrateGroupWithMultipleUsers {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:@1];
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MAX]];
@@ -150,9 +151,9 @@
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+    [MPUserDefaultsConnector.userDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     
-    XCTAssertEqualObjects(responseConfiguration, [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+    XCTAssertEqualObjects(responseConfiguration, [MPUserDefaultsConnector.userDefaults getConfiguration]);
 }
 
 - (void)testUpdateConfigurations {
@@ -172,10 +173,10 @@
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+    [MPUserDefaultsConnector.userDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     
-    XCTAssertNotEqualObjects(nil, [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
-    XCTAssertEqualObjects(responseConfiguration, [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+    XCTAssertNotEqualObjects(nil, [MPUserDefaultsConnector.userDefaults getConfiguration]);
+    XCTAssertEqualObjects(responseConfiguration, [MPUserDefaultsConnector.userDefaults getConfiguration]);
 
     NSDictionary *configuration2 = @{
                                      @"id":@312,
@@ -190,10 +191,10 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:responseConfiguration2 eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+    [MPUserDefaultsConnector.userDefaults setConfiguration:responseConfiguration2 eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     
-    XCTAssertNotEqualObjects(responseConfiguration, [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
-    XCTAssertEqualObjects(responseConfiguration2, [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+    XCTAssertNotEqualObjects(responseConfiguration, [MPUserDefaultsConnector.userDefaults getConfiguration]);
+    XCTAssertEqualObjects(responseConfiguration2, [MPUserDefaultsConnector.userDefaults getConfiguration]);
 }
 
 - (void)testValidExpandedConfiguration {
@@ -221,7 +222,7 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    MPUserDefaults *standardDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *standardDefaults = MPUserDefaultsConnector.userDefaults;
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
     [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:4000 maxAge:@90000];
     
@@ -255,7 +256,7 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    MPUserDefaults *standardDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *standardDefaults = MPUserDefaultsConnector.userDefaults;
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
     NSString *currentAge;
     [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:currentAge.doubleValue maxAge:@90000];
@@ -290,7 +291,7 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    MPUserDefaults *standardDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *standardDefaults = MPUserDefaultsConnector.userDefaults;
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
     [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:4000 maxAge:@90000];
     
@@ -305,30 +306,30 @@
 }
 
 - (void)testDeleteConfiguration {
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] deleteConfiguration];
+    [MPUserDefaultsConnector.userDefaults deleteConfiguration];
     
-    XCTAssertNil([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+    XCTAssertNil([MPUserDefaultsConnector.userDefaults getConfiguration]);
 }
 
 - (void)testBadDataConfiguration {
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] deleteConfiguration];
+    [MPUserDefaultsConnector.userDefaults deleteConfiguration];
     NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
 
     unsigned char ch1[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x04, 0x01, 0x00, 0x0F };
     NSData *badData = [[NSData alloc] initWithBytes:ch1
                                            length:sizeof(ch1)];
     
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setMPObject:badData forKey:kMResponseConfigurationKey userId:userID];
+    [MPUserDefaultsConnector.userDefaults setMPObject:badData forKey:kMResponseConfigurationKey userId:userID];
 
-    XCTAssertNil([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+    XCTAssertNil([MPUserDefaultsConnector.userDefaults getConfiguration]);
 }
 
 - (void)testMigrateConfiguration {
     NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
 
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:kMResponseConfigurationMigrationKey];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] removeMPObjectForKey:kMPHTTPETagHeaderKey userId:userID];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration];
+    [MPUserDefaultsConnector.userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey userId:userID];
+    [MPUserDefaultsConnector.userDefaults getConfiguration];
     
     XCTAssertNotNil([[NSUserDefaults standardUserDefaults] objectForKey:kMResponseConfigurationMigrationKey]);
 }
@@ -342,13 +343,13 @@
                                              }
                                      };
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration1 eTag:@"bar" requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+    [MPUserDefaultsConnector.userDefaults setConfiguration:configuration1 eTag:@"bar" requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     
-    XCTAssertEqualObjects(configuration1, [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+    XCTAssertEqualObjects(configuration1, [MPUserDefaultsConnector.userDefaults getConfiguration]);
 }
 
 - (void)testSetConfigurationWhenNil {
-    XCTAssertEqualObjects(nil, [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+    XCTAssertEqualObjects(nil, [MPUserDefaultsConnector.userDefaults getConfiguration]);
     
     [MPPersistenceController_PRIVATE setMpid:@12];
     
@@ -375,9 +376,9 @@
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+    [MPUserDefaultsConnector.userDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     
-    XCTAssertEqualObjects(responseConfiguration, [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
+    XCTAssertEqualObjects(responseConfiguration, [MPUserDefaultsConnector.userDefaults getConfiguration]);
 }
 
 - (void)testStringFromDeviceToken {

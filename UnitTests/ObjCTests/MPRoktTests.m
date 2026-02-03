@@ -8,6 +8,7 @@
 #import "MParticleSwift.h"
 #import "MPRoktEvent.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
 
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
@@ -416,7 +417,7 @@
 - (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@yahoo.com"}];
     
@@ -486,7 +487,7 @@
 - (void)hashedIdentityTest: (MPIdentity)mpIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:mpIdentity], @"i" : @"test@yahoo.com"}];
     
@@ -518,7 +519,7 @@
 - (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityType {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
     
@@ -550,7 +551,7 @@
 - (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityType {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
     

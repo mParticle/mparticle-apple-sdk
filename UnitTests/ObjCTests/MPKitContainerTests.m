@@ -31,6 +31,7 @@
 #import "MParticleSwift.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
+#import "MPUserDefaultsConnector.h"
 
 @interface MParticle ()
 
@@ -136,7 +137,7 @@
 }
 
 - (void)setUserAttributesAndIdentities {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSDictionary *userAttributes = @{@"Dinosaur":@"T-Rex",
                                      @"Arm length":@"Short",
                                      @"Height":@20,
@@ -193,11 +194,11 @@
     MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
 
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+    [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     
     XCTAssertEqualObjects(responseConfig.configuration, [MPUserDefaults restore].configuration);
     
-    NSArray *directoryContents = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getKitConfigurations];
+    NSArray *directoryContents = [MPUserDefaultsConnector.userDefaults getKitConfigurations];
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
         if ([[kitConfiguration integrationId] isEqual:@(42)]){
@@ -214,7 +215,7 @@
 - (void)testRemoveKitConfiguration {
     static NSString *const kTestAppId1 = @"cool app key";
     static NSString *const kTestAppId2 = @"cool app key 2";
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
+    [MPUserDefaultsConnector.userDefaults resetDefaults];
     [self setUserAttributesAndIdentities];
     
     NSDictionary *configuration1 = @{
@@ -247,7 +248,7 @@
         MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
 
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
         
         XCTAssertEqualObjects(responseConfig.configuration, [MPUserDefaults restore].configuration);
         
@@ -258,7 +259,7 @@
         }
         XCTAssertEqualObjects(kTestAppId1, appId);
         
-        NSArray *directoryContents = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getKitConfigurations];
+        NSArray *directoryContents = [MPUserDefaultsConnector.userDefaults getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
             MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             if ([[kitConfiguration integrationId] isEqual:@(42)]){
@@ -290,7 +291,7 @@
         responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
 
         requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
         
         XCTAssertEqualObjects(responseConfig.configuration, [MPUserDefaults restore].configuration);
         
@@ -300,7 +301,7 @@
         }
         XCTAssertEqualObjects(kTestAppId1, appId2);
         
-        directoryContents = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getKitConfigurations];
+        directoryContents = [MPUserDefaultsConnector.userDefaults getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
             MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             if ([[kitConfiguration integrationId] isEqual:@(42)]){
@@ -321,7 +322,7 @@
 }
 
 - (void)testIsDisabledByBracketConfiguration {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[@"mpid"] = @2;
     
     NSDictionary *bracketConfig = @{@"hi":@(0),@"lo":@(0)};
@@ -2867,7 +2868,7 @@
 }
 
 - (void)testAppInfoContainsSideloadKitsFlag {
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setSideloadedKitsCount:3];
+    [MPUserDefaultsConnector.userDefaults setSideloadedKitsCount:3];
     
     NSDictionary *dict = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
     
