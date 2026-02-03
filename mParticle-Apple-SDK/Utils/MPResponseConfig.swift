@@ -2,31 +2,26 @@ internal import mParticle_Apple_SDK_Swift
 
 @objc public class MPResponseConfig: NSObject {
     @objc public private(set) var configuration: [AnyHashable: Any]?
-    private var stateMachine: MPStateMachine_PRIVATE
-    private var backendController: MPBackendController_PRIVATE
+    private let connector: MPUserDefaultsConnectorProtocol
 
-    @objc public convenience init?(
+    @objc convenience init?(
         configuration: [AnyHashable: Any],
-        stateMachine: MPStateMachine_PRIVATE,
-        backendController: MPBackendController_PRIVATE
+        connector: MPUserDefaultsConnectorProtocol
     ) {
         self.init(
             configuration: configuration,
             dataReceivedFromServer: true,
-            stateMachine: stateMachine,
-            backendController: backendController
+            connector: connector
         )
     }
 
-    @objc public init?(
+    @objc init?(
         configuration: [AnyHashable: Any],
         dataReceivedFromServer: Bool,
-        stateMachine: MPStateMachine_PRIVATE,
-        backendController: MPBackendController_PRIVATE
+        connector: MPUserDefaultsConnectorProtocol
     ) {
         self.configuration = configuration
-        self.stateMachine = stateMachine
-        self.backendController = backendController
+        self.connector = connector
         super.init()
 
         if self.configuration == nil || self.configuration?.isEmpty == true {
@@ -82,34 +77,35 @@ internal import mParticle_Apple_SDK_Swift
                 }
             }
 
-            stateMachine
+            connector.stateMachine?
                 .configureCustomModules(config[RemoteConfig.kMPRemoteConfigCustomModuleSettingsKey] as? [[AnyHashable: Any]])
-            stateMachine.configureRampPercentage(config[RemoteConfig.kMPRemoteConfigRampKey] as? NSNumber)
-            stateMachine.configureTriggers(config[RemoteConfig.kMPRemoteConfigTriggerKey] as? [AnyHashable: Any])
-            stateMachine.configureAliasMaxWindow(config[RemoteConfig.kMPRemoteConfigAliasMaxWindow] as? NSNumber)
-            stateMachine.configureDataBlocking(config[RemoteConfig.kMPRemoteConfigDataPlanningResults] as? [AnyHashable: Any])
+            connector.stateMachine?.configureRampPercentage(config[RemoteConfig.kMPRemoteConfigRampKey] as? NSNumber)
+            connector.stateMachine?.configureTriggers(config[RemoteConfig.kMPRemoteConfigTriggerKey] as? [AnyHashable: Any])
+            connector.stateMachine?.configureAliasMaxWindow(config[RemoteConfig.kMPRemoteConfigAliasMaxWindow] as? NSNumber)
+            connector.stateMachine?
+                .configureDataBlocking(config[RemoteConfig.kMPRemoteConfigDataPlanningResults] as? [AnyHashable: Any])
 
-            stateMachine.allowASR = config[RemoteConfig.kMPRemoteConfigAllowASR] as? Bool ?? false
+            connector.stateMachine?.allowASR = config[RemoteConfig.kMPRemoteConfigAllowASR] as? Bool ?? false
             if let remoteConfigFlags = config[RemoteConfig.kMPRemoteConfigFlagsKey] as? [AnyHashable: Any] {
                 if let audienceAPIFlag = remoteConfigFlags[RemoteConfig.kMPRemoteConfigAudienceAPIKey] as? String {
-                    stateMachine.enableAudienceAPI = audienceAPIFlag == "True"
+                    connector.stateMachine?.enableAudienceAPI = audienceAPIFlag == "True"
                 }
             }
 
             // Exception handling
             if let auxString = config[RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey] as? String {
-                stateMachine.exceptionHandlingMode = auxString
+                connector.stateMachine?.exceptionHandlingMode = auxString
                 NotificationCenter.default.post(Notification(name: Notifications.kMPConfigureExceptionHandlingNotification))
             }
 
             // Crash size limiting
             if let crashMaxReportLength = config[RemoteConfig.kMPRemoteConfigCrashMaxPLReportLength] as? NSNumber {
-                stateMachine.crashMaxPLReportLength = crashMaxReportLength
+                connector.stateMachine?.crashMaxPLReportLength = crashMaxReportLength
             }
 
             // Session timeout
             if let sessionTimeout = config[RemoteConfig.kMPRemoteConfigSessionTimeoutKey] as? NSNumber {
-                backendController.sessionTimeout = sessionTimeout.doubleValue
+                connector.backendController?.sessionTimeout = sessionTimeout.doubleValue
             }
 
             #if os(iOS)
@@ -125,7 +121,7 @@ internal import mParticle_Apple_SDK_Swift
         @objc public func configurePushNotifications(_ pushNotificationDictionary: [AnyHashable: Any]) {
             if let pushNotificationMode =
                 pushNotificationDictionary[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] as? String {
-                stateMachine.pushNotificationMode = pushNotificationMode
+                connector.stateMachine?.pushNotificationMode = pushNotificationMode
                 if !MPStateMachine_PRIVATE.isAppExtension() {
                     let app = MPApplication_PRIVATE.sharedUIApplication()
 

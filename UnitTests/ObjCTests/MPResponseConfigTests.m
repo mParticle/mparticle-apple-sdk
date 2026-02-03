@@ -37,7 +37,8 @@
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeIgnore,
                                     kMPRemoteConfigSessionTimeoutKey:@112};
     
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration connector:connector];
 
     XCTAssertNotNil(responseConfig, @"Should not have been nil.");
 }
@@ -46,7 +47,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
     dispatch_async([MParticle messageQueue], ^{
         NSDictionary *configuration = nil;
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+        id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration connector:connector];
         XCTAssertNil(responseConfig, @"Should have been nil.");
         [expectation fulfill];
     });
@@ -70,7 +72,8 @@
                                     kMPRemoteConfigSessionTimeoutKey:@112};
     
     XCTAssertNil(stateMachine.customModules);
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration connector:connector];
     XCTAssertNotNil(responseConfig);
     XCTAssertNotNil(stateMachine.customModules);
     XCTAssertEqual(1, [stateMachine.customModules count]);
@@ -194,10 +197,8 @@
         kMPRemoteConfigSessionTimeoutKey: @112,
         @"dur": @NO
     };
-    
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration 
-                                                                          stateMachine:[MParticle sharedInstance].stateMachine 
-                                                                     backendController:[MParticle sharedInstance].backendController];
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration connector: connector];
     
     XCTAssertNotNil(responseConfig, @"Config should parse successfully even with legacy dur key");
 }

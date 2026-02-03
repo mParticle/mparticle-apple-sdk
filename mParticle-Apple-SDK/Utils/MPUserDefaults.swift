@@ -383,12 +383,11 @@ protocol MPUserDefaultsConnectorProtocol {
 
     @objc public class func restore() -> MPResponseConfig? {
         if let userDefaults = userDefaults {
-            if let configuration = userDefaults.getConfiguration(), let stateMachine = userDefaults.connector.stateMachine,
-               let backendController = userDefaults.connector.backendController {
+            if let configuration = userDefaults.getConfiguration(), userDefaults.connector.stateMachine != nil,
+               userDefaults.connector.backendController != nil {
                 let responseConfig = MPResponseConfig(
                     configuration: configuration,
-                    stateMachine: stateMachine,
-                    backendController: backendController
+                    connector: userDefaults.connector
                 )
 
                 return responseConfig
