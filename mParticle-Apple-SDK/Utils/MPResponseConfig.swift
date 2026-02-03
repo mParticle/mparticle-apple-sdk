@@ -96,7 +96,7 @@ internal import mParticle_Apple_SDK_Swift
 
             // Crash size limiting
             if let crashMaxReportLength = config[RemoteConfig.kMPRemoteConfigCrashMaxPLReportLength] as? NSNumber {
-                connector.stateMachine?.crashMaxPLReportLength = crashMaxReportLength
+                connector.setCrashMaxPLReportLength(crashMaxReportLength)
             }
 
             // Session timeout

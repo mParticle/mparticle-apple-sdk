@@ -99,6 +99,10 @@
     MParticle.sharedInstance.stateMachine.pushNotificationMode = pushNotificationMode;
 }
 
+- (void)setCrashMaxPLReportLength:(nonnull NSNumber*)crashMaxPLReportLength {
+    MParticle.sharedInstance.stateMachine.crashMaxPLReportLength = crashMaxPLReportLength;
+}
+
 - (BOOL)isAppExtension {
     return [MPStateMachine_PRIVATE isAppExtension];
 }
@@ -111,6 +115,10 @@
 - (void)unregisterForRemoteNotifications {
     UIApplication* app = [MPApplication_PRIVATE sharedUIApplication];
     [app unregisterForRemoteNotifications];
+}
+
+- (BOOL)canCreateConfiguration {
+    return MParticle.sharedInstance.stateMachine != nil && MParticle.sharedInstance.backendController != nil;
 }
 
 @end

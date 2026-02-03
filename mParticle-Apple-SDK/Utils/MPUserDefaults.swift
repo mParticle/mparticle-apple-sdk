@@ -26,11 +26,7 @@ public protocol MPUserDefaultsProtocol {
 }
 
 @objc
-protocol MPUserDefaultsConnectorProtocol {
-    var stateMachine: MPStateMachine_PRIVATE? { get }
-    var backendController: MPBackendController_PRIVATE? { get }
-    var identity: MPIdentityApi? { get }
-    
+protocol MPUserDefaultsConnectorProtocol {    
     var logger: MPLog { get }
     
     var deferredKitConfiguration: [[AnyHashable: Any]]? { get set }
@@ -48,11 +44,14 @@ protocol MPUserDefaultsConnectorProtocol {
     func setExceptionHandlingMode(_ exceptionHandlingMode: String?)
     func setSessionTimeout(_ sessionTimeout: TimeInterval)
     func setPushNotificationMode(_ pushNotificationMode: String)
+    func setCrashMaxPLReportLength(_ crashMaxPLReportLength: NSNumber)
     
     func isAppExtension() -> Bool
     
     func registerForRemoteNotifications()
     func unregisterForRemoteNotifications()
+    
+    func canCreateConfiguration() -> Bool
 }
 
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
@@ -178,7 +177,7 @@ protocol MPUserDefaultsConnectorProtocol {
     }
 
     @objc public func getConfiguration() -> [AnyHashable: Any]? {
-        guard let userID = connector.identity?.currentUser?.userId else { return nil }
+        guard let userID = connector.userId() else { return nil }
 
         if UserDefaults.standard.object(forKey: kMResponseConfigurationMigrationKey) == nil {
             migrateConfiguration()
@@ -234,7 +233,7 @@ protocol MPUserDefaultsConnectorProtocol {
                 withRootObject: responseConfiguration,
                 requiringSecureCoding: true
             )
-            let userID = connector.identity?.currentUser?.userId ?? 0
+            let userID = connector.userId() ?? 0
 
             setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
             setMPObject(configurationData, forKey: kMResponseConfigurationKey, userId: userID)
@@ -246,7 +245,7 @@ protocol MPUserDefaultsConnectorProtocol {
     }
 
     @objc public func migrateConfiguration() {
-        guard let userID = connector.identity?.currentUser?.userId else { return }
+        guard let userID = connector.userId() else { return }
         let eTag = mpObject(forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID) as? String
 
         let fileManager = FileManager.default
@@ -404,8 +403,7 @@ protocol MPUserDefaultsConnectorProtocol {
 
     @objc public class func restore() -> MPResponseConfig? {
         if let userDefaults = userDefaults {
-            if let configuration = userDefaults.getConfiguration(), userDefaults.connector.stateMachine != nil,
-               userDefaults.connector.backendController != nil {
+            if let configuration = userDefaults.getConfiguration(), userDefaults.connector.canCreateConfiguration() {
                 let responseConfig = MPResponseConfig(
                     configuration: configuration,
                     connector: userDefaults.connector
