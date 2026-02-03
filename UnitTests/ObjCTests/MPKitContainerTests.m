@@ -32,6 +32,7 @@
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
 #import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -191,7 +192,8 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration connector:connector];
 
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
     [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
@@ -245,7 +247,8 @@
                                                 kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                                 kMPRemoteConfigSessionTimeoutKey:@112};
         
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+        id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration connector:connector];
 
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
         [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
@@ -288,7 +291,7 @@
                           kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                           kMPRemoteConfigSessionTimeoutKey:@112};
         
-        responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+        responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration connector:connector];
 
         requestTimestamp = [[NSDate date] timeIntervalSince1970];
         [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];

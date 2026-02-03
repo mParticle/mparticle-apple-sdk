@@ -10,6 +10,7 @@
 #import "mParticleSwift.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 NSString *const kMPApplicationInformationKey = @"ai";
 NSString *const kMPApplicationNameKey = @"an";
