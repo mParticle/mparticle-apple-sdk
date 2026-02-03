@@ -18,7 +18,7 @@ jobs:
       max-parallel: 4
       matrix:
         platform: [iOS, tvOS]
-        scheme: [mParticle-Apple-SDK-NoLocation]
+        scheme: [mParticle-Apple-SDK-NoLocation, mParticle-Apple-SDK-Swift]
         include:
           - platform: iOS
             device: iPhone 16 Pro
@@ -43,7 +43,7 @@ jobs:
           os_version: ">=18.0"
           erase_before_boot: true
           wait_for_boot: true
-          shutdown_after_job: true
+          shutdown_after_job: false
 
       - name: Run unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme ${{ matrix.scheme }} -destination 'id=${{ steps.simulator.outputs.UDID }}' test
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme ${{ matrix.scheme }} -destination 'id=${{ steps.simulator.outputs.udid }}' test
