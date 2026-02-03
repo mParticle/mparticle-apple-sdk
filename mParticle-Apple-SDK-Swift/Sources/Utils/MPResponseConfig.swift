@@ -38,6 +38,7 @@ public protocol MPUserDefaultsConnectorProtocol {
     func unregisterForRemoteNotifications()
     
     func canCreateConfiguration() -> Bool
+    func mpId() -> NSNumber
 }
 
 @objcMembers

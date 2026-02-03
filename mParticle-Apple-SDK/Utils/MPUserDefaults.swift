@@ -69,7 +69,7 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public func removeMPObject(forKey key: String) {
-        removeMPObject(forKey: key, userId: MPPersistenceController_PRIVATE.mpId())
+        removeMPObject(forKey: key, userId: connector.mpId())
     }
 
     @objc public subscript(key: String) -> Any? {
@@ -77,17 +77,17 @@ public protocol MPUserDefaultsProtocol {
             if key == "mpid" {
                 return mpObject(forKey: key, userId: 0)
             }
-            return mpObject(forKey: key, userId: MPPersistenceController_PRIVATE.mpId())
+            return mpObject(forKey: key, userId: connector.mpId())
         }
         set {
             if let obj = newValue {
                 if key == "mpid" {
                     setMPObject(obj, forKey: key, userId: 0)
                 } else {
-                    setMPObject(obj, forKey: key, userId: MPPersistenceController_PRIVATE.mpId())
+                    setMPObject(obj, forKey: key, userId: connector.mpId())
                 }
             } else {
-                removeMPObject(forKey: key, userId: MPPersistenceController_PRIVATE.mpId())
+                removeMPObject(forKey: key, userId: connector.mpId())
             }
         }
     }
@@ -102,7 +102,7 @@ public protocol MPUserDefaultsProtocol {
     @objc public func setSharedGroupIdentifier(_ groupIdentifier: String?) {
         let storedGroupID = mpObject(
             forKey: kMPUserIdentitySharedGroupIdentifier,
-            userId: MPPersistenceController_PRIVATE.mpId()
+            userId: connector.mpId()
         ) as? String
 
         if storedGroupID == groupIdentifier {
@@ -118,7 +118,7 @@ public protocol MPUserDefaultsProtocol {
         let groupUserDefaults = UserDefaults(suiteName: groupIdentifier)
 
         let prefixedKey =
-            MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: MPPersistenceController_PRIVATE.mpId())
+            MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: connector.mpId())
         standardUserDefaults.set(groupIdentifier, forKey: prefixedKey)
         groupUserDefaults?.set(groupIdentifier, forKey: prefixedKey)
 
@@ -142,7 +142,7 @@ public protocol MPUserDefaultsProtocol {
         }
 
         let prefixedKey =
-            MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: MPPersistenceController_PRIVATE.mpId())
+            MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: connector.mpId())
         standardUserDefaults.removeObject(forKey: prefixedKey)
         groupUserDefaults?.removeObject(forKey: prefixedKey)
     }
@@ -296,9 +296,9 @@ public protocol MPUserDefaultsProtocol {
 
         let configProvisioned = mpObject(
             forKey: Miscellaneous.kMPConfigProvisionedTimestampKey,
-            userId: MPPersistenceController_PRIVATE.mpId()
+            userId: connector.mpId()
         ) as? NSNumber
-        let maxAge = mpObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: MPPersistenceController_PRIVATE.mpId())
+        let maxAge = mpObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: connector.mpId())
 
         if let configProvisioned = configProvisioned {
             let intervalConfigProvisioned = configProvisioned.doubleValue

@@ -121,4 +121,8 @@
     return MParticle.sharedInstance.stateMachine != nil && MParticle.sharedInstance.backendController != nil;
 }
 
+- (NSNumber* __nonnull)mpId {
+    return [MPPersistenceController_PRIVATE mpId];
+}
+
 @end
