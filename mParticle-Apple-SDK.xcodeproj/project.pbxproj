@@ -75,7 +75,6 @@
 		534CD28929CE2CE1008452B3 /* MPKitRegisterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CB629CE019F00E7489F /* MPKitRegisterTests.m */; };
 		534CD28A29CE2CE1008452B3 /* MPStateMachineTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9129CE019F00E7489F /* MPStateMachineTests.m */; };
 		534CD28B29CE2CE1008452B3 /* MPCCPAConsentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8C29CE019F00E7489F /* MPCCPAConsentTests.m */; };
-		534CD28C29CE2CE1008452B3 /* MPUserDefaultsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9929CE019F00E7489F /* MPUserDefaultsTests.m */; };
 		534CD28D29CE2CE1008452B3 /* MPUploadBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8129CE019E00E7489F /* MPUploadBuilderTests.m */; };
 		534CD28E29CE2CE1008452B3 /* MPBaseTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CA229CE019F00E7489F /* MPBaseTestCase.m */; };
 		534CD28F29CE2CE1008452B3 /* MPIdentityApiRequestTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7229CE019E00E7489F /* MPIdentityApiRequestTests.m */; };
@@ -541,7 +540,6 @@
 		53A79C9429CE019F00E7489F /* MPKitSecondTestClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitSecondTestClass.h; sourceTree = "<group>"; };
 		53A79C9529CE019F00E7489F /* MPForwardQueueItemTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardQueueItemTests.m; sourceTree = "<group>"; };
 		53A79C9829CE019F00E7489F /* sample_dataplan2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = sample_dataplan2.json; sourceTree = "<group>"; };
-		53A79C9929CE019F00E7489F /* MPUserDefaultsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserDefaultsTests.m; sourceTree = "<group>"; };
 		53A79C9B29CE019F00E7489F /* MPKitTestClassSideloaded.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTestClassSideloaded.h; sourceTree = "<group>"; };
 		53A79C9C29CE019F00E7489F /* MPKitAppsFlyerTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAppsFlyerTest.m; sourceTree = "<group>"; };
 		53A79C9D29CE019F00E7489F /* MPConsentSerializationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsentSerializationTests.m; sourceTree = "<group>"; };
@@ -628,6 +626,8 @@
 				Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPUserAttributeChangeTests.m,
+				Test/Utils/MPUserDefaultsTests.m,
+				Test/Utils/MPUserDefaultsTests.swift,
 				Test/Utils/MPZipTests.m,
 				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
 				"Test/Utils/NSNumber+MPFormatterTests.m",
@@ -645,6 +645,8 @@
 				Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPUserAttributeChangeTests.m,
+				Test/Utils/MPUserDefaultsTests.m,
+				Test/Utils/MPUserDefaultsTests.swift,
 				Test/Utils/MPZipTests.m,
 				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
 				"Test/Utils/NSNumber+MPFormatterTests.m",
@@ -1130,7 +1132,6 @@
 				53A79C9329CE019F00E7489F /* MPURLRequestBuilderTests.m */,
 				53A79C9429CE019F00E7489F /* MPKitSecondTestClass.h */,
 				53A79C9529CE019F00E7489F /* MPForwardQueueItemTests.m */,
-				53A79C9929CE019F00E7489F /* MPUserDefaultsTests.m */,
 				53A79C9B29CE019F00E7489F /* MPKitTestClassSideloaded.h */,
 				53A79C9C29CE019F00E7489F /* MPKitAppsFlyerTest.m */,
 				53A79C9D29CE019F00E7489F /* MPConsentSerializationTests.m */,
@@ -1544,7 +1545,6 @@
 				7231B81D2EB94EAA001565E5 /* MParticleConfigurationTests.swift in Sources */,
 				534CD28A29CE2CE1008452B3 /* MPStateMachineTests.m in Sources */,
 				534CD28B29CE2CE1008452B3 /* MPCCPAConsentTests.m in Sources */,
-				534CD28C29CE2CE1008452B3 /* MPUserDefaultsTests.m in Sources */,
 				7231B82F2EB95D96001565E5 /* MParticleEventTests.swift in Sources */,
 				534CD28D29CE2CE1008452B3 /* MPUploadBuilderTests.m in Sources */,
 				534CD28E29CE2CE1008452B3 /* MPBaseTestCase.m in Sources */,
