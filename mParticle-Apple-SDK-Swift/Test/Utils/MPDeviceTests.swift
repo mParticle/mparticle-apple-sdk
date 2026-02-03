@@ -30,7 +30,6 @@ class MPIdentityApiMPDeviceMock: MPIdentityApiMPDeviceProtocol {
     }
 }
 
-@available(iOS 16, tvOS 16, *)
 final class MPDeviceTests: XCTestCase {
 
     func testDictionaryDescription() {
@@ -39,7 +38,7 @@ final class MPDeviceTests: XCTestCase {
         let userDefaults = MPIdentityApiMPUserDefaultsMock()
         userDefaults[kMPDeviceTokenKey] = testDeviceToken
 
-        let testCountry = Locale.current.region?.identifier
+        let testCountry = Locale.current.regionCode
 
         let logger = MPLog(logLevel: .debug)
 
