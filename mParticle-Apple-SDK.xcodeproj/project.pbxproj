@@ -274,7 +274,6 @@
 		7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		7E15B2072D94617900C1FF3F /* MPRoktEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2082D94617900C1FF3F /* MPRoktEventTests.m */; };
 		7E573D2A2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */; };
-		7E87E0C22EE093E100A18E3A /* SceneDelegateHandlerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */; };
 		B3D778622E02F55F00D887A4 /* MPRoktEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.m */; };
 		B3D778632E02F55F00D887A5 /* MPRoktEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = B31360F82E012760000DFBC9 /* MPRoktEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D33C8B342B8510C20012EDFD /* MPAudience.h in Headers */ = {isa = PBXBuildFile; fileRef = D33C8B312B8510C20012EDFD /* MPAudience.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -607,7 +606,6 @@
 		7E15B2052D94617900C1FF3E /* MPRoktTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktTests.m; sourceTree = "<group>"; };
 		7E15B2082D94617900C1FF3F /* MPRoktEventTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktEventTests.m; sourceTree = "<group>"; };
 		7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleSceneDelegateTests.swift; sourceTree = "<group>"; };
-		7E87E0BE2EE093E100A18E3A /* SceneDelegateHandlerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegateHandlerMock.swift; path = UnitTests/Mocks/SceneDelegateHandlerMock.swift; sourceTree = "<group>"; };
 		B31360F72E012760000DFBC9 /* MPRoktEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktEvent.m; sourceTree = "<group>"; };
 		B31360F82E012760000DFBC9 /* MPRoktEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPRoktEvent.h; sourceTree = "<group>"; };
 		D33C8B312B8510C20012EDFD /* MPAudience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAudience.h; sourceTree = "<group>"; };
@@ -749,7 +747,6 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
-
 				35F99CF62F31345900820648 /* MPUserDefaultsConnector.h */,
 				35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */,
 				7213DE822F30F0EC0007A619 /* SceneDelegateHandler.m */,
@@ -907,7 +904,6 @@
 			isa = PBXGroup;
 			children = (
 				D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */,
-				D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */,
 				D34286112D419CA700FEC2C8 /* MPUploadSettings.m */,
 				53A79B0229CDFB1F00E7489F /* MPMessageBuilder.m */,
 				D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */,
@@ -1058,6 +1054,7 @@
 				B31360F82E012760000DFBC9 /* MPRoktEvent.h */,
 				35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */,
 				7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */,
+				D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */,
 			);
 			path = Include;
 			sourceTree = "<group>";
