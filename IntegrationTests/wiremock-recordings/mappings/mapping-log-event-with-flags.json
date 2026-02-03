@@ -65,7 +65,7 @@
           ],
           "uitl": 60,
           "oo": false,
-          "sdk": "8.41.1",
+          "sdk": "${json-unit.ignore}",
           "di": {
             "tz": "${json-unit.ignore}",
             "p": "arm64",

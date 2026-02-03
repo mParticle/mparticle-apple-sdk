@@ -8,7 +8,7 @@
         "equalToJson": {
           "client_sdk": {
             "platform": "ios",
-            "sdk_version": "8.41.1",
+            "sdk_version": "${json-unit.ignore}",
             "sdk_vendor": "mparticle"
           },
           "environment": "development",
