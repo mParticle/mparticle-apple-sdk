@@ -59,7 +59,7 @@
           ],
           "uitl": 60,
           "oo": false,
-          "sdk": "8.41.1",
+          "sdk": "8.42.0",
           "di": {
             "tz": "${json-unit.ignore}",
             "bid": "${json-unit.ignore}",
