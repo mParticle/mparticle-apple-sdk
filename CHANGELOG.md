@@ -1,3 +1,10 @@
+# [8.42.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.41.1...v8.42.0) (2026-02-03)
+
+### Features
+
+- feat: Add support for Get / Set SessionId on Rokt (#536) ([30d24940](https://github.com/mParticle/mparticle-apple-sdk/commit/30d2494088397b272efe8d90836c8fdce3bcffa5))
+- feat: Update mappings during the release process (#497) ([2698a7a1](https://github.com/mParticle/mparticle-apple-sdk/commit/2698a7a1c2b7bb3fdb1a74e5d1ab5ee3c681e260))
+
 # [8.41.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.41.0...v8.41.1) (2026-01-20)
 
 # [8.41.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.40.0...v8.41.0) (2026-01-20)
