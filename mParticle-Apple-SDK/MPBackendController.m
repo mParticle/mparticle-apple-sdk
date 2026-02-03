@@ -26,6 +26,8 @@
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPUploadSettings.h"
+
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
