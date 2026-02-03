@@ -4,7 +4,6 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
 
 @interface MPConsentState () {
     NSMutableDictionary<NSString *, MPGDPRConsent *> *_gdprConsentState;

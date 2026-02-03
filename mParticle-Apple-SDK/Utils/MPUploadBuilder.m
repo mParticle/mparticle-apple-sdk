@@ -14,7 +14,6 @@
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPILogger.h"
-#import "MParticleSwift.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 

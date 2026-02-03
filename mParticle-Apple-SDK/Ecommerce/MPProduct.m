@@ -1,5 +1,4 @@
 #import "MPProduct.h"
-#import "MParticleSwift.h"
 #import "MPIConstants.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPILogger.h"

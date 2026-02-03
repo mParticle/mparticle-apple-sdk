@@ -5,7 +5,6 @@
 #import "MPBaseTestCase.h"
 #import "MPKitContainer.h"
 #import "MPStateMachine.h"
-#import "MParticleSwift.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 

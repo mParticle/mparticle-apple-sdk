@@ -1,6 +1,5 @@
 #import "MPCustomModulePreference.h"
 #import "MPILogger.h"
-#import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPUserDefaultsConnector.h"

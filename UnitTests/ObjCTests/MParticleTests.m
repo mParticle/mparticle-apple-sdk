@@ -12,7 +12,6 @@
 #import "MPKitTestClassSideloaded.h"
 #import "MPKitTestClassNoStartImmediately.h"
 #import "MPKitConfiguration.h"
-#import "MParticleSwift.h"
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
 #import "MPForwardQueueParameters.h"
