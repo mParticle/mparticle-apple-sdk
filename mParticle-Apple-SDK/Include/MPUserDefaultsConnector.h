@@ -1,9 +1,9 @@
 #import "MPBackendController.h"
 #import "MPStateMachine.h"
 #import "MPIdentityApi.h"
-#import "mParticle.h"
 
 @class MPUserDefaults;
+@class MParticle;
 
 @interface MPUserDefaultsConnector: NSObject
 

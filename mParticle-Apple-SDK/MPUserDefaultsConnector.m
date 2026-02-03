@@ -1,5 +1,6 @@
 #import "MPUserDefaultsConnector.h"
 #import "MParticleSwift.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 
