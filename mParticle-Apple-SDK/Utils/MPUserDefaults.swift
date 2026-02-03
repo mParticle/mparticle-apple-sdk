@@ -25,35 +25,6 @@ public protocol MPUserDefaultsProtocol {
     func synchronize()
 }
 
-@objc
-protocol MPUserDefaultsConnectorProtocol {    
-    var logger: MPLog { get }
-    
-    var deferredKitConfiguration: [[AnyHashable: Any]]? { get set }
-    
-    func configureKits(_ kitConfigurations: [[AnyHashable: Any]]?)
-    
-    func configureCustomModules(_ customModuleSettings: [[AnyHashable: Any]]?)
-    func configureRampPercentage(_ rampPercentage: NSNumber?)
-    func configureTriggers(_ triggerDictionary: [AnyHashable: Any]?)
-    func configureAliasMaxWindow(_ aliasMaxWindow: NSNumber?)
-    func configureDataBlocking(_ blockSettings: [AnyHashable: Any]?)
-    func userId() -> NSNumber?
-    func setAllowASR(_ allowASR: Bool)
-    func setEnableAudienceAPI(_ enableAudienceAPI: Bool)
-    func setExceptionHandlingMode(_ exceptionHandlingMode: String?)
-    func setSessionTimeout(_ sessionTimeout: TimeInterval)
-    func setPushNotificationMode(_ pushNotificationMode: String)
-    func setCrashMaxPLReportLength(_ crashMaxPLReportLength: NSNumber)
-    
-    func isAppExtension() -> Bool
-    
-    func registerForRemoteNotifications()
-    func unregisterForRemoteNotifications()
-    
-    func canCreateConfiguration() -> Bool
-}
-
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
     private let connector: MPUserDefaultsConnectorProtocol
 
@@ -401,7 +372,7 @@ protocol MPUserDefaultsConnectorProtocol {
         return deviceToken.map { String(format: "%02x", $0) }.joined()
     }
 
-    @objc public class func restore() -> MPResponseConfig? {
+    @objc class func restore() -> MPResponseConfig? {
         if let userDefaults = userDefaults {
             if let configuration = userDefaults.getConfiguration(), userDefaults.connector.canCreateConfiguration() {
                 let responseConfig = MPResponseConfig(
