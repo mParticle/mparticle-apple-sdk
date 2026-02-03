@@ -61,7 +61,7 @@ internal import mParticle_Apple_SDK_Swift
                 }
 
                 var hasInitialIdentity = false
-                if let mpid = MParticle.sharedInstance().identity.currentUser?.userId, mpid != 0 {
+                if let mpid = connector.userId(), mpid != 0 {
                     hasInitialIdentity = true
                 }
 
@@ -81,16 +81,16 @@ internal import mParticle_Apple_SDK_Swift
             connector.configureAliasMaxWindow(config[RemoteConfig.kMPRemoteConfigAliasMaxWindow] as? NSNumber)
             connector.configureDataBlocking(config[RemoteConfig.kMPRemoteConfigDataPlanningResults] as? [AnyHashable: Any])
 
-            connector.stateMachine?.allowASR = config[RemoteConfig.kMPRemoteConfigAllowASR] as? Bool ?? false
+            connector.setAllowASR(config[RemoteConfig.kMPRemoteConfigAllowASR] as? Bool ?? false)
             if let remoteConfigFlags = config[RemoteConfig.kMPRemoteConfigFlagsKey] as? [AnyHashable: Any] {
                 if let audienceAPIFlag = remoteConfigFlags[RemoteConfig.kMPRemoteConfigAudienceAPIKey] as? String {
-                    connector.stateMachine?.enableAudienceAPI = audienceAPIFlag == "True"
+                    connector.setEnableAudienceAPI(audienceAPIFlag == "True")
                 }
             }
 
             // Exception handling
             if let auxString = config[RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey] as? String {
-                connector.stateMachine?.exceptionHandlingMode = auxString
+                connector.setExceptionHandlingMode(auxString)
                 NotificationCenter.default.post(Notification(name: Notifications.kMPConfigureExceptionHandlingNotification))
             }
 

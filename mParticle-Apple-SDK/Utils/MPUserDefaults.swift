@@ -41,7 +41,11 @@ protocol MPUserDefaultsConnectorProtocol {
     func configureRampPercentage(_ rampPercentage: NSNumber?)
     func configureTriggers(_ triggerDictionary: [AnyHashable: Any]?)
     func configureAliasMaxWindow(_ aliasMaxWindow: NSNumber?)
-    func configureDataBlocking(_ blockSettings: [AnyHashable: Any]?)    
+    func configureDataBlocking(_ blockSettings: [AnyHashable: Any]?)
+    func userId() -> NSNumber?
+    func setAllowASR(_ allowASR: Bool)
+    func setEnableAudienceAPI(_ enableAudienceAPI: Bool)
+    func setExceptionHandlingMode(_ exceptionHandlingMode: String?)
 }
 
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {

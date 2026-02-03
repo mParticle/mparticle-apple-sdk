@@ -75,4 +75,20 @@
     [MParticle.sharedInstance.stateMachine configureDataBlocking:blockSettings];
 }
 
+- (NSNumber* __nullable)userId {
+    return MParticle.sharedInstance.identity.currentUser.userId;
+}
+
+- (void)setAllowASR:(BOOL)allowASR {
+    MParticle.sharedInstance.stateMachine.allowASR = allowASR;
+}
+
+- (void)setEnableAudienceAPI:(BOOL)enableAudienceAPI {
+    MParticle.sharedInstance.stateMachine.enableAudienceAPI = enableAudienceAPI;
+}
+
+- (void)setExceptionHandlingMode:(NSString* __nullable)exceptionHandlingMode {
+    MParticle.sharedInstance.stateMachine.exceptionHandlingMode = exceptionHandlingMode;
+}
+
 @end
