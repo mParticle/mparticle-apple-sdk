@@ -469,8 +469,7 @@ MPLog* logger;
     BOOL startKitsAsync = options.startKitsAsync;
     
     __weak MParticle *weakSelf = self;
-    MPUserDefaultsConnector* connector = [[MPUserDefaultsConnector alloc] init];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithConnector:(id<MPUserDefaultsConnectorProtocol>)connector];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]] == nil;
     if (firstRun) {
         NSDate *firstSeen = [NSDate date];
