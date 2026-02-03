@@ -41,7 +41,6 @@
 		35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */ = {isa = PBXBuildFile; fileRef = 35F99CF62F31345900820648 /* MPUserDefaultsConnector.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35F99CF92F31346500820648 /* MPUserDefaultsConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = 35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */; };
 		35F9A39F2F326E3F00820648 /* MPUserDefaults+Helper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F9A39E2F326E3700820648 /* MPUserDefaults+Helper.swift */; };
-		530D24822CFF72D9000FE7E3 /* MPConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530D24812CFF72D4000FE7E3 /* MPConstants.swift */; };
 		531BCF352B28A23400F5C573 /* MPIdentityCaching.h in Headers */ = {isa = PBXBuildFile; fileRef = 531BCF322B28A23400F5C573 /* MPIdentityCaching.h */; };
 		531BCF372B28A23400F5C573 /* MPIdentityCaching.m in Sources */ = {isa = PBXBuildFile; fileRef = 531BCF332B28A23400F5C573 /* MPIdentityCaching.m */; };
 		531BCF3B2B28A83E00F5C573 /* MPIdentityCachingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 531BCF392B28A83E00F5C573 /* MPIdentityCachingTests.m */; };
@@ -359,7 +358,6 @@
 		35F99CF62F31345900820648 /* MPUserDefaultsConnector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPUserDefaultsConnector.h; sourceTree = "<group>"; };
 		35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPUserDefaultsConnector.m; sourceTree = "<group>"; };
 		35F9A39E2F326E3700820648 /* MPUserDefaults+Helper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPUserDefaults+Helper.swift"; sourceTree = "<group>"; };
-		530D24812CFF72D4000FE7E3 /* MPConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConstants.swift; sourceTree = "<group>"; };
 		531BCF322B28A23400F5C573 /* MPIdentityCaching.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPIdentityCaching.h; sourceTree = "<group>"; };
 		531BCF332B28A23400F5C573 /* MPIdentityCaching.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPIdentityCaching.m; sourceTree = "<group>"; };
 		531BCF392B28A83E00F5C573 /* MPIdentityCachingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPIdentityCachingTests.m; sourceTree = "<group>"; };
@@ -768,7 +766,6 @@
 				53A79ACF29CDFB1F00E7489F /* MPIConstants.h */,
 				53A79B6429CDFB1F00E7489F /* MPIConstants.m */,
 				53A79B0329CDFB1F00E7489F /* MPStateMachine.m */,
-				530D24812CFF72D4000FE7E3 /* MPConstants.swift */,
 				534CD25D29CE2BF1008452B3 /* MParticleSwift.h */,
 				53A79B3729CDFB1F00E7489F /* AppNotifications */,
 				53A79AF529CDFB1F00E7489F /* Consent */,
@@ -1613,7 +1610,6 @@
 				531BCF372B28A23400F5C573 /* MPIdentityCaching.m in Sources */,
 				35C3DE732F291DA40077C0FD /* MPGDPRConsent.m in Sources */,
 				53A79D7B29CE23F700E7489F /* MPIConstants.m in Sources */,
-				530D24822CFF72D9000FE7E3 /* MPConstants.swift in Sources */,
 				53A79D7D29CE23F700E7489F /* MPPromotion.m in Sources */,
 				53A79D8129CE23F700E7489F /* MPIdentityApiRequest.m in Sources */,
 				53A79D8229CE23F700E7489F /* MPCommerceEvent.m in Sources */,
