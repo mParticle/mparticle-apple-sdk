@@ -101,7 +101,7 @@ internal import mParticle_Apple_SDK_Swift
 
             // Session timeout
             if let sessionTimeout = config[RemoteConfig.kMPRemoteConfigSessionTimeoutKey] as? NSNumber {
-                connector.backendController?.sessionTimeout = sessionTimeout.doubleValue
+                connector.setSessionTimeout(sessionTimeout.doubleValue)
             }
 
             #if os(iOS)
@@ -117,14 +117,12 @@ internal import mParticle_Apple_SDK_Swift
         @objc public func configurePushNotifications(_ pushNotificationDictionary: [AnyHashable: Any]) {
             if let pushNotificationMode =
                 pushNotificationDictionary[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] as? String {
-                connector.stateMachine?.pushNotificationMode = pushNotificationMode
-                if !MPStateMachine_PRIVATE.isAppExtension() {
-                    let app = MPApplication_PRIVATE.sharedUIApplication()
-
+                connector.setPushNotificationMode(pushNotificationMode)
+                if !connector.isAppExtension() {
                     if pushNotificationMode == RemoteConfig.kMPRemoteConfigForceTrue {
-                        app?.registerForRemoteNotifications()
+                        connector.registerForRemoteNotifications()
                     } else if pushNotificationMode == RemoteConfig.kMPRemoteConfigForceFalse {
-                        app?.unregisterForRemoteNotifications()
+                        connector.unregisterForRemoteNotifications()
                     }
                 }
             }

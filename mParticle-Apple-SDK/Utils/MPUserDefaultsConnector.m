@@ -87,8 +87,30 @@
     MParticle.sharedInstance.stateMachine.enableAudienceAPI = enableAudienceAPI;
 }
 
-- (void)setExceptionHandlingMode:(NSString* __nullable)exceptionHandlingMode {
+- (void)setExceptionHandlingMode:(nullable NSString*)exceptionHandlingMode {
     MParticle.sharedInstance.stateMachine.exceptionHandlingMode = exceptionHandlingMode;
+}
+
+- (void)setSessionTimeout: (NSTimeInterval)sessionTimeout {
+    MParticle.sharedInstance.backendController.sessionTimeout = sessionTimeout;
+}
+
+- (void)setPushNotificationMode:(nonnull NSString*)pushNotificationMode {
+    MParticle.sharedInstance.stateMachine.pushNotificationMode = pushNotificationMode;
+}
+
+- (BOOL)isAppExtension {
+    return [MPStateMachine_PRIVATE isAppExtension];
+}
+
+- (void)registerForRemoteNotifications {
+    UIApplication* app = [MPApplication_PRIVATE sharedUIApplication];
+    [app registerForRemoteNotifications];
+}
+
+- (void)unregisterForRemoteNotifications {
+    UIApplication* app = [MPApplication_PRIVATE sharedUIApplication];
+    [app unregisterForRemoteNotifications];
 }
 
 @end

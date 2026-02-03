@@ -46,6 +46,13 @@ protocol MPUserDefaultsConnectorProtocol {
     func setAllowASR(_ allowASR: Bool)
     func setEnableAudienceAPI(_ enableAudienceAPI: Bool)
     func setExceptionHandlingMode(_ exceptionHandlingMode: String?)
+    func setSessionTimeout(_ sessionTimeout: TimeInterval)
+    func setPushNotificationMode(_ pushNotificationMode: String)
+    
+    func isAppExtension() -> Bool
+    
+    func registerForRemoteNotifications()
+    func unregisterForRemoteNotifications()
 }
 
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
