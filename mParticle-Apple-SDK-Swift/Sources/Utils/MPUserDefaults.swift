@@ -278,13 +278,11 @@ public protocol MPUserDefaultsProtocol {
         let keyArray = customUserDefaults().dictionaryRepresentation().keys
 
         var uniqueUserIDs: [NSNumber] = []
-        for key in keyArray {
-            if let _ = customUserDefaults().object(forKey: key) {
-                let keyComponents = key.components(separatedBy: "::")
-                if keyComponents.count == 3 {
-                    let UserID = NSNumber(value: Int64(keyComponents[1]) ?? 0)
-                    uniqueUserIDs.append(UserID)
-                }
+        for key in keyArray where customUserDefaults().object(forKey: key) != nil {
+            let keyComponents = key.components(separatedBy: "::")
+            if keyComponents.count == 3 {
+                let UserID = NSNumber(value: Int64(keyComponents[1]) ?? 0)
+                uniqueUserIDs.append(UserID)
             }
         }
 
@@ -321,11 +319,11 @@ public protocol MPUserDefaultsProtocol {
     @objc public func sideloadedKitsCount() -> UInt {
         mpObject(forKey: Miscellaneous.MPSideloadedKitsCountUserDefaultsKey, userId: 0) as? UInt ?? 0
     }
-    
+
     @objc public func lastUploadSettingsData() -> Data? {
         return mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data
     }
-    
+
     @objc public func setLastUploadSettingsData(_ lastUploadSettingsData: Data) {
         setMPObject(lastUploadSettingsData, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
     }

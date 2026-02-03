@@ -1,4 +1,4 @@
-internal import mParticle_Apple_SDK_Swift;
+internal import mParticle_Apple_SDK_Swift
 
 extension MPUserDefaults {
     @objc func setLastUploadSettings(_ lastUploadSettings: MPUploadSettings?) {
