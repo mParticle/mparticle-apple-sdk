@@ -191,6 +191,10 @@ jobs:
         run: |
           sed -i '' "s/s.version          = \"[^\"]*\"/s.version          = \"${VERSION}\"/" mParticle-Apple-SDK.podspec
 
+      - name: Update SDK version in integration test mappings
+        run: |
+          ./Scripts/update_mapping_versions.sh "${VERSION}"
+
       - name: Update Carthage JSON manifest
         run: |
           jq --arg version "${VERSION}" \
@@ -244,7 +248,8 @@ jobs:
             mParticle-Apple-SDK.podspec \
             mParticle-Apple-SDK/MPConstants.swift \
             mParticle-Apple-SDK/MPIConstants.m \
-            mParticle_Apple_SDK.json
+            mParticle_Apple_SDK.json \
+            IntegrationTests/wiremock-recordings/mappings/*.json
 
           git commit -m "chore(release): ${VERSION}
 
@@ -255,7 +260,8 @@ jobs:
           - mParticle-Apple-SDK.podspec
           - mParticle-Apple-SDK/MPConstants.swift
           - mParticle-Apple-SDK/MPIConstants.m
-          - mParticle_Apple_SDK.json"
+          - mParticle_Apple_SDK.json
+          - IntegrationTests/wiremock-recordings/mappings/*.json"
 
       - name: Push release branch
         run: |
