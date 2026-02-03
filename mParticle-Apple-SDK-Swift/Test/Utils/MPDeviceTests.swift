@@ -38,7 +38,7 @@ final class MPDeviceTests: XCTestCase {
         let userDefaults = MPIdentityApiMPUserDefaultsMock()
         userDefaults[kMPDeviceTokenKey] = testDeviceToken
 
-        let testCountry = Locale.current.region?.identifier
+        let testCountry = Locale.current.regionCode
 
         let logger = MPLog(logLevel: .debug)
 
