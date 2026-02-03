@@ -747,7 +747,6 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
-				35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */,
 				7213DE822F30F0EC0007A619 /* SceneDelegateHandler.m */,
 				3513083F2E6B28F5002A3AD6 /* Executor.h */,
 				729721752EAC2AD60045E55C /* AppEnvironmentProvider.h */,
@@ -903,6 +902,7 @@
 			isa = PBXGroup;
 			children = (
 				D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */,
+				35F99CF82F31346200820648 /* MPUserDefaultsConnector.m */,
 				D34286112D419CA700FEC2C8 /* MPUploadSettings.m */,
 				53A79B0229CDFB1F00E7489F /* MPMessageBuilder.m */,
 				D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */,

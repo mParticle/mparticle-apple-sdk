@@ -26,21 +26,22 @@ public protocol MPUserDefaultsProtocol {
 }
 
 @objc
-public protocol MPUserDefaultsConnectorProtocol {
+protocol MPUserDefaultsConnectorProtocol {
     var stateMachine: MPStateMachine_PRIVATE? { get }
     var backendController: MPBackendController_PRIVATE? { get }
     var identity: MPIdentityApi? { get }
-    var mparticle: MParticle { get }
+    
+    var logger: MPLog { get }
 }
 
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
     private let connector: MPUserDefaultsConnectorProtocol
 
-    @objc public init(connector: MPUserDefaultsConnectorProtocol) {
+    @objc init(connector: MPUserDefaultsConnectorProtocol) {
         self.connector = connector
     }
 
-    @objc public class func standardUserDefaults(connector: MPUserDefaultsConnectorProtocol) -> MPUserDefaults {
+    @objc class func standardUserDefaults(connector: MPUserDefaultsConnectorProtocol) -> MPUserDefaults {
         if userDefaults == nil {
             userDefaults = MPUserDefaults(connector: connector)
         }
@@ -191,10 +192,7 @@ public protocol MPUserDefaultsConnectorProtocol {
                 return swiftDict
             }
         } catch {
-            let logger = MPLog(logLevel: MPLog.from(rawValue: connector.mparticle.logLevel.rawValue))
-            logger.customLogger = connector.mparticle.customLogger
-
-            logger.error("Failed to unarchive configuration: \(error)")
+            connector.logger.error("Failed to unarchive configuration: \(error)")
         }
         return nil
     }
@@ -222,11 +220,7 @@ public protocol MPUserDefaultsConnectorProtocol {
             setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
             setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
         } catch {
-            let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-            logger.customLogger = mparticle.customLogger
-
-            logger.error("Failed to archive configuration: \(error)")
+            connector.logger.error("Failed to archive configuration: \(error)")
         }
     }
 
@@ -240,21 +234,17 @@ public protocol MPUserDefaultsConnectorProtocol {
         let configurationURL = stateMachineURL.appendingPathComponent("RequestConfig.cfg")
         let configuration = mpObject(forKey: kMResponseConfigurationKey, userId: userID)
 
-        let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-        logger.customLogger = mparticle.customLogger
-
         if fileManager.fileExists(atPath: configurationURL.path) {
             do {
                 try fileManager.removeItem(at: configurationURL)
             } catch {
-                logger.error("Failed to remove old configuration file: \(error)")
+                connector.logger.error("Failed to remove old configuration file: \(error)")
             }
             deleteConfiguration()
-            logger.debug("Configuration Migration Complete")
+            connector.logger.debug("Configuration Migration Complete")
         } else if (eTag != nil && configuration == nil) || (eTag == nil && configuration != nil) {
             deleteConfiguration()
-            logger.debug("Configuration Migration Complete")
+            connector.logger.debug("Configuration Migration Complete")
         }
 
         UserDefaults.standard.set(1, forKey: kMResponseConfigurationMigrationKey)
@@ -267,11 +257,7 @@ public protocol MPUserDefaultsConnectorProtocol {
         removeMPObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey)
         removeMPObject(forKey: Miscellaneous.kMPConfigParameters)
 
-        let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-        logger.customLogger = mparticle.customLogger
-
-        logger.debug("Configuration Deleted")
+        connector.logger.debug("Configuration Deleted")
     }
 
     @objc public func resetDefaults() {
@@ -351,11 +337,7 @@ public protocol MPUserDefaultsConnectorProtocol {
                 let data = try NSKeyedArchiver.archivedData(withRootObject: lastUploadSettings, requiringSecureCoding: true)
                 setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
             } catch {
-                let mparticle = MParticle.sharedInstance()
-                let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-                logger.customLogger = mparticle.customLogger
-
-                logger.error("Failed to archive upload settings: \(error)")
+                connector.logger.error("Failed to archive upload settings: \(error)")
             }
         } else {
             removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
@@ -367,11 +349,7 @@ public protocol MPUserDefaultsConnectorProtocol {
             do {
                 return try NSKeyedUnarchiver.unarchivedObject(ofClass: MPUploadSettings.self, from: data)
             } catch {
-                let mparticle = MParticle.sharedInstance()
-                let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-                logger.customLogger = mparticle.customLogger
-
-                logger.error("Failed to unarchive upload settings: \(error)")
+                connector.logger.error("Failed to unarchive upload settings: \(error)")
             }
         }
         return nil

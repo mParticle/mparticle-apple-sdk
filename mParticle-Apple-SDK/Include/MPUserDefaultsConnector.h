@@ -10,7 +10,6 @@
 - (MPStateMachine_PRIVATE*)stateMachine;
 - (MPBackendController_PRIVATE*)backendController;
 - (MPIdentityApi*)identity;
-- (MParticle*)mparticle;
 
 + (MPUserDefaults*)userDefaults;
 

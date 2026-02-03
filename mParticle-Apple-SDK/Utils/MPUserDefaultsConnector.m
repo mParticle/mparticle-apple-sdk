@@ -2,6 +2,8 @@
 #import "MParticleSwift.h"
 #import "mParticle.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 @interface MParticle ()
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
@@ -28,13 +30,16 @@
     return MParticle.sharedInstance.identity;
 }
 
-- (MParticle*)mparticle {
-    return MParticle.sharedInstance;
-}
-
 + (MPUserDefaults*)userDefaults {
     MPUserDefaultsConnector* connector = [[MPUserDefaultsConnector alloc] init];
     return [MPUserDefaults standardUserDefaultsWithConnector:connector];
+}
+
+- (MPLog*)logger {
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    return logger;
 }
 
 @end
