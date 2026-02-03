@@ -1,4 +1,4 @@
-internal import mParticle_Apple_SDK_Swift
+import Foundation
 
 private var userDefaults: MPUserDefaults?
 private var sharedGroupID: String?
@@ -321,29 +321,17 @@ public protocol MPUserDefaultsProtocol {
     @objc public func sideloadedKitsCount() -> UInt {
         mpObject(forKey: Miscellaneous.MPSideloadedKitsCountUserDefaultsKey, userId: 0) as? UInt ?? 0
     }
-
-    @objc public func setLastUploadSettings(_ lastUploadSettings: MPUploadSettings?) {
-        if let lastUploadSettings = lastUploadSettings {
-            do {
-                let data = try NSKeyedArchiver.archivedData(withRootObject: lastUploadSettings, requiringSecureCoding: true)
-                setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
-            } catch {
-                connector.logger.error("Failed to archive upload settings: \(error)")
-            }
-        } else {
-            removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
-        }
+    
+    @objc public func lastUploadSettingsData() -> Data? {
+        return mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data
+    }
+    
+    @objc public func setLastUploadSettingsData(_ lastUploadSettingsData: Data) {
+        setMPObject(lastUploadSettingsData, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
     }
 
-    @objc public func lastUploadSettings() -> MPUploadSettings? {
-        if let data = mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data {
-            do {
-                return try NSKeyedUnarchiver.unarchivedObject(ofClass: MPUploadSettings.self, from: data)
-            } catch {
-                connector.logger.error("Failed to unarchive upload settings: \(error)")
-            }
-        }
-        return nil
+    @objc public func removeLastUploadSettings() {
+        removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
     }
 
     @objc public class func isOlderThanConfigMaxAgeSeconds() -> Bool {
