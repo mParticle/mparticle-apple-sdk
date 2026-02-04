@@ -187,7 +187,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     _kitsInitialized = kitsInitialized;
     
     if (_kitsInitialized) {
-        [self replayQueuedItems];
+        // Dispatch to main queue to ensure thread safety with forwardQueue access.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self replayQueuedItems];
+        });
         [[MParticle sharedInstance] executeKitsInitializedBlocks];
     }
 }
@@ -347,12 +350,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (void)replayQueuedItems {
-    if (!_forwardQueue) {
+    if (!_forwardQueue || _forwardQueue.count == 0) {
         return;
     }
-    
-    NSMutableArray<MPForwardQueueItem *> *forwardQueueCopy = _forwardQueue;
-    _forwardQueue = nil;
+
+    NSArray<MPForwardQueueItem *> *forwardQueueCopy = [_forwardQueue copy];
+    [_forwardQueue removeAllObjects];
     
     for (MPForwardQueueItem *forwardQueueItem in forwardQueueCopy) {
         switch (forwardQueueItem.queueItemType) {
