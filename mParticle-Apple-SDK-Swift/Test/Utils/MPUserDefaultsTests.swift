@@ -44,6 +44,12 @@ class MPUserDefaultsTests: XCTestCase {
         userDefaults = MPUserDefaults(connector: connector)
     }
 
+    override func tearDown() {
+        userDefaults.setSharedGroupIdentifier(nil)
+        userDefaults.resetDefaults()
+        super.tearDown()
+    }
+
     func testUserIDsInUserDefaults() {
         userDefaults.setMPObject(Date(), forKey: "lud", userId: 1)
         userDefaults.setMPObject(Date(), forKey: "lud", userId: NSNumber(value: Int64.max))
