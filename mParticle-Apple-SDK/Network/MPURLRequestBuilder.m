@@ -8,7 +8,6 @@
 #import "MPApplication.h"
 #import "MPURL.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 

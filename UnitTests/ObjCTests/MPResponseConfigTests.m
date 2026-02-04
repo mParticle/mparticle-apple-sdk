@@ -1,6 +1,5 @@
 #import <XCTest/XCTest.h>
 #import "mParticle.h"
-#import "MParticleSwift.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPBaseTestCase.h"

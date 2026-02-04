@@ -15,7 +15,6 @@
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
-#import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 #import "MPUserDefaultsConnector.h"
 

@@ -17,7 +17,6 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitFilter.h"
-#import "MParticleSwift.h"
 
 @interface MParticle ()
 

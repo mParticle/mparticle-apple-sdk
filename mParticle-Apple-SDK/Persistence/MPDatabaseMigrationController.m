@@ -8,7 +8,6 @@
 #import "MPILogger.h"
 #import "MPStateMachine.h"
 #import "MPUpload.h"
-#import "MParticleSwift.h"
 
 @interface MParticle ()
 

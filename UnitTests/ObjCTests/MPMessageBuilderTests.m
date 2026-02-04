@@ -14,7 +14,6 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"

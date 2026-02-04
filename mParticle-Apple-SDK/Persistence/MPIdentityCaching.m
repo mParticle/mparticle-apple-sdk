@@ -9,7 +9,6 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import <CommonCrypto/CommonCrypto.h>
-#import "MParticleSwift.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
