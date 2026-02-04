@@ -391,7 +391,7 @@ class MPUserDefaultsTests: XCTestCase {
         let userDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
         userDefaults.deleteConfiguration()
         connector.configMaxAgeSecondsReturnValue = 60
-        
+
         let configuration: [String: Any] = [
             RemoteConfig.kMPRemoteConfigRampKey: 100,
             RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
@@ -405,9 +405,9 @@ class MPUserDefaultsTests: XCTestCase {
             currentAge: 0,
             maxAge: nil
         )
-        
+
         XCTAssertFalse(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
-        
+
         userDefaults.setConfiguration(
             configuration,
             eTag: eTag,
@@ -415,12 +415,12 @@ class MPUserDefaultsTests: XCTestCase {
             currentAge: 0,
             maxAge: nil
         )
-        
+
         XCTAssertTrue(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
     }
 
     func testShouldDeleteDueToMaxConfigAgeWhenNil() {
-        connector.configMaxAgeSecondsReturnValue = nil;
+        connector.configMaxAgeSecondsReturnValue = nil
 
         let configuration: [String: Any] = [
             RemoteConfig.kMPRemoteConfigRampKey: 100,
@@ -448,18 +448,18 @@ class MPUserDefaultsTests: XCTestCase {
         )
         XCTAssertFalse(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
     }
-    
+
     func testSaveRestore() {
         let userDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
         userDefaults.deleteConfiguration()
         connector.canCreateConfigurationReturnValue = true
-        
+
         var configuration: [String: Any] = [
             RemoteConfig.kMPRemoteConfigRampKey: 100,
             RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
             RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
         ]
-        
+
         let requestTimestamp = Date().timeIntervalSince1970
         userDefaults.setConfiguration(
             configuration,
@@ -474,7 +474,7 @@ class MPUserDefaultsTests: XCTestCase {
             RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
             RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
         ]
-        
+
         let restoredResponseConfig = MPUserDefaults.restore()
         XCTAssertNotNil(restoredResponseConfig)
         XCTAssertEqual(

@@ -58,7 +58,7 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     }
 
     var canCreateConfigurationReturnValue = false
-    
+
     func canCreateConfiguration() -> Bool {
         return canCreateConfigurationReturnValue
     }
@@ -66,7 +66,7 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func mpId() -> NSNumber {
         1
     }
-    
+
     var configMaxAgeSecondsReturnValue: NSNumber?
 
     func configMaxAgeSeconds() -> NSNumber? {
