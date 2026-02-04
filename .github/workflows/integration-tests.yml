@@ -1,8 +1,8 @@
 name: Integration Tests
 
 on:
-  # Run for all PRs
-  pull_request:
+  workflow_call:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}

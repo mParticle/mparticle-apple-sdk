@@ -1,8 +1,7 @@
 name: SDK Size Report
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_call:
   workflow_dispatch:
 
 concurrency:
