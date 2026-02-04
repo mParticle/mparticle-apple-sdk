@@ -96,7 +96,7 @@ class MPUserDefaultsTests: XCTestCase {
 
         userDefaults.setSharedGroupIdentifier("groupID")
 
-        let array: [NSNumber] = userDefaults.userIDsInUserDefaults()
+        let array = userDefaults.userIDsInUserDefaults()
 
         XCTAssert(array.contains(NSNumber(value: 1)))
         XCTAssert(array.contains(NSNumber(value: Int64.max)))
@@ -129,7 +129,13 @@ class MPUserDefaultsTests: XCTestCase {
             ]
         ]
         let requestTimestamp = Date().timeIntervalSince1970
-        userDefaults.setConfiguration(configuration1, eTag: "bar", requestTimestamp: requestTimestamp, currentAge: 0, maxAge: nil)
+        userDefaults.setConfiguration(
+            configuration1,
+            eTag: "bar",
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
 
         XCTAssertEqual(
             configuration1 as NSDictionary,
@@ -168,9 +174,9 @@ class MPUserDefaultsTests: XCTestCase {
     }
     
     func testMigrateConfiguration() {
-        let userID: NSNumber = 1234;
+        let userID: NSNumber = 1234
         let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated"
-        let kMPHTTPETagHeaderKey = "ETag";
+        let kMPHTTPETagHeaderKey = "ETag"
         UserDefaults.standard.removeObject(forKey: kMResponseConfigurationMigrationKey)
     
         userDefaults.removeMPObject(forKey: kMPHTTPETagHeaderKey, userId: userID)
@@ -251,14 +257,11 @@ class MPUserDefaultsTests: XCTestCase {
     func testValidExpandedConfigurationWithNilCurrentAge() {
         let requestTimestamp = Date().timeIntervalSince1970
 
-        let currentAge: String? = nil
-        let currentAgeValue = currentAge.flatMap { Double($0) } ?? 0
-
         userDefaults.setConfiguration(
             responseConfiguration,
             eTag: eTag,
             requestTimestamp: requestTimestamp,
-            currentAge: currentAgeValue,
+            currentAge: 0.0,
             maxAge: NSNumber(value: 90000)
         )
 
@@ -309,67 +312,60 @@ class MPUserDefaultsTests: XCTestCase {
         let configuration1: [String: Any] = [
             "id": 42,
             "as": [
-                    "appId": "cool app key Update Test"
-                ]
+                "appId": "cool app key Update Test"
+            ]
         ]
 
-            var kitConfigs: [[String: Any]] = [configuration1]
+        var kitConfigs: [[String: Any]] = [configuration1]
 
-            let responseConfiguration: [String: Any] = [
-                RemoteConfig.kMPRemoteConfigKitsKey: kitConfigs,
-                RemoteConfig.kMPRemoteConfigRampKey: 100,
-                RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
-                RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
-            ]
+        let responseConfiguration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigKitsKey: kitConfigs,
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
 
-            let requestTimestamp = Date().timeIntervalSince1970
+        let requestTimestamp = Date().timeIntervalSince1970
 
-            userDefaults.setConfiguration(
-                responseConfiguration,
-                eTag: eTag,
-                requestTimestamp: requestTimestamp,
-                currentAge: 0,
-                maxAge: nil
-            )
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
 
-            XCTAssertNotNil(userDefaults.getConfiguration())
-            XCTAssertEqual(
-                responseConfiguration as NSDictionary,
-                userDefaults.getConfiguration() as? NSDictionary
-            )
+        XCTAssertNotNil(userDefaults.getConfiguration())
+        XCTAssertEqual(
+            responseConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as? NSDictionary
+        )
 
-            let configuration2: [String: Any] = [
-                "id": 312,
-                "as": [
-                    "appId": "cool app key 2"
-                ]
-            ]
+        kitConfigs = [configuration1, configuration2]
 
-            kitConfigs = [configuration1, configuration2]
+        let responseConfiguration2: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigKitsKey: kitConfigs,
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
 
-            let responseConfiguration2: [String: Any] = [
-                RemoteConfig.kMPRemoteConfigKitsKey: kitConfigs,
-                RemoteConfig.kMPRemoteConfigRampKey: 100,
-                RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
-                RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
-            ]
+        userDefaults.setConfiguration(
+            responseConfiguration2,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
 
-            userDefaults.setConfiguration(
-                responseConfiguration2,
-                eTag: eTag,
-                requestTimestamp: requestTimestamp,
-                currentAge: 0,
-                maxAge: nil
-            )
+        XCTAssertNotEqual(
+            responseConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as? NSDictionary
+        )
 
-            XCTAssertNotEqual(
-                responseConfiguration as NSDictionary,
-                userDefaults.getConfiguration() as? NSDictionary
-            )
-
-            XCTAssertEqual(
-                responseConfiguration2 as NSDictionary,
-                userDefaults.getConfiguration() as? NSDictionary
-            )
+        XCTAssertEqual(
+            responseConfiguration2 as NSDictionary,
+            userDefaults.getConfiguration() as? NSDictionary
+        )
     }
 }
