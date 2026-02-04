@@ -133,29 +133,4 @@
 //    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 //}
 //
-//- (void)testShouldDeleteDueToMaxConfigAge {
-//    MParticleOptions *options = [MParticleOptions optionsWithKey:@"test" secret:@"test"];
-//    options.configMaxAgeSeconds = @60;
-//    [MParticle sharedInstance].options = options;
-//    
-//    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
-//    dispatch_async([MParticle messageQueue], ^{
-//        NSString *eTag = @"1.618-2.718-3.141-42";
-//        NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
-//                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-//                                        kMPRemoteConfigSessionTimeoutKey:@112};
-//        
-//        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-//        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
-//        XCTAssertFalse([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
-//        
-//        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 100.0) currentAge:0 maxAge:nil];
-//        XCTAssertTrue([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
-//        
-//        [expectation fulfill];
-//    });
-//    
-//    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-//}
-//
 //@end

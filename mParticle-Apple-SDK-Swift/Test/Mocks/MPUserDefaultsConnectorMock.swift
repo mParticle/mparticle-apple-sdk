@@ -62,8 +62,10 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func mpId() -> NSNumber {
         1
     }
+    
+    var configMaxAgeSecondsReturnValue: NSNumber?
 
     func configMaxAgeSeconds() -> NSNumber? {
-        1
+        configMaxAgeSecondsReturnValue
     }
 }
