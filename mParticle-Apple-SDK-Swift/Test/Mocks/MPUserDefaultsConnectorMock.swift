@@ -8,7 +8,9 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func configureKits(_ kitConfigurations: [[AnyHashable: Any]]?) {
     }
 
+    var configureCustomModulesCustomModuleSettingsPrarams: [[AnyHashable: Any]]?
     func configureCustomModules(_ customModuleSettings: [[AnyHashable: Any]]?) {
+        configureCustomModulesCustomModuleSettingsPrarams = customModuleSettings
     }
 
     func configureRampPercentage(_ rampPercentage: NSNumber?) {
