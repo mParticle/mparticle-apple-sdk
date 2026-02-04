@@ -1,5 +1,5 @@
 import XCTest
-@testable import mParticle_Apple_SDK_Swift;
+@testable import mParticle_Apple_SDK_Swift
 
 class MPUserDefaultsTests: XCTestCase {
     private let configuration1: [String: Any] = [
@@ -8,21 +8,21 @@ class MPUserDefaultsTests: XCTestCase {
             "appId": "cool app key"
         ]
     ]
-    
+
     private let configuration2: [String: Any] = [
         "id": 312,
         "as": [
             "appId": "cool app key 2"
         ]
     ]
-    
+
     private let eTag = "1.618-2.718-3.141-42"
-    
+
     private var kitConfigs: [[String: Any]] {
         return [configuration1, configuration2]
     }
 
-    private var responseConfiguration: [String: Any] {
+    private func buildResponseConfiguration(for kitConfigs: [[String: Any]]) -> [String: Any] {
         return [
             RemoteConfig.kMPRemoteConfigKitsKey: kitConfigs,
             RemoteConfig.kMPRemoteConfigRampKey: 100,
@@ -30,16 +30,20 @@ class MPUserDefaultsTests: XCTestCase {
             RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
         ]
     }
-    
+
+    private var responseConfiguration: [String: Any] {
+        return buildResponseConfiguration(for: kitConfigs)
+    }
+
     var connector: MPUserDefaultsConnectorMock!
     var userDefaults: MPUserDefaults!
-    
+
     override func setUp() {
         super.setUp()
         connector = MPUserDefaultsConnectorMock()
         userDefaults = MPUserDefaults(connector: connector)
     }
-    
+
     func testUserIDsInUserDefaults() {
         userDefaults.setMPObject(Date(), forKey: "lud", userId: 1)
         userDefaults.setMPObject(Date(), forKey: "lud", userId: NSNumber(value: Int64.max))
@@ -52,7 +56,7 @@ class MPUserDefaultsTests: XCTestCase {
         XCTAssert(array.contains(NSNumber(value: Int64.max)))
         XCTAssert(array.contains(NSNumber(value: Int64.min)))
     }
-    
+
     func testResetDefaults() {
         userDefaults.setMPObject(Date(), forKey: "lud", userId: 1)
         userDefaults.setMPObject(Date(), forKey: "lud", userId: NSNumber(value: Int64.max))
@@ -70,7 +74,7 @@ class MPUserDefaultsTests: XCTestCase {
 
         XCTAssertNotNil(UserDefaults.standard.object(forKey: "userKey"))
     }
-    
+
     func testMigrate() {
         userDefaults["mparticleKey"] = "test"
         userDefaults.synchronize()
@@ -79,7 +83,7 @@ class MPUserDefaultsTests: XCTestCase {
         let groupDefaults = UserDefaults(suiteName: "groupID")
         XCTAssertEqual(groupDefaults?.object(forKey: "mParticle::mparticleKey") as? String, "test")
     }
-    
+
     func testMigrateGroupDoesNotMigrateClientDefaults() {
         UserDefaults.standard.set("clientSetting", forKey: "clientKey")
 
@@ -88,7 +92,7 @@ class MPUserDefaultsTests: XCTestCase {
         XCTAssertNotNil(UserDefaults.standard.object(forKey: "clientKey"))
         XCTAssertNil(UserDefaults(suiteName: "groupID")?.object(forKey: "clientKey"))
     }
-    
+
     func testMigrateGroupWithMultipleUsers() {
         userDefaults.setMPObject(Date(), forKey: "lud", userId: 1)
         userDefaults.setMPObject(Date(), forKey: "lud", userId: NSNumber(value: Int64.max))
@@ -102,7 +106,7 @@ class MPUserDefaultsTests: XCTestCase {
         XCTAssert(array.contains(NSNumber(value: Int64.max)))
         XCTAssert(array.contains(NSNumber(value: Int64.min)))
     }
-    
+
     func testValidConfiguration() {
         let requestTimestamp = Date().timeIntervalSince1970
 
@@ -119,7 +123,7 @@ class MPUserDefaultsTests: XCTestCase {
             userDefaults.getConfiguration() as NSDictionary?
         )
     }
-    
+
     func testNullConfig() {
         let configuration1: [String: Any] = [
             "id": 42,
@@ -131,7 +135,7 @@ class MPUserDefaultsTests: XCTestCase {
         let requestTimestamp = Date().timeIntervalSince1970
         userDefaults.setConfiguration(
             configuration1,
-            eTag: "bar",
+            eTag: eTag,
             requestTimestamp: requestTimestamp,
             currentAge: 0,
             maxAge: nil
@@ -142,7 +146,7 @@ class MPUserDefaultsTests: XCTestCase {
             userDefaults.getConfiguration() as NSDictionary?
         )
     }
-    
+
     func testSetConfigurationWhenNil() {
         XCTAssertNil(userDefaults.getConfiguration())
 
@@ -160,7 +164,7 @@ class MPUserDefaultsTests: XCTestCase {
             userDefaults.getConfiguration() as NSDictionary?
         )
     }
-    
+
     func testStringFromDeviceToken() {
         var data = Data()
         var tokenString = MPUserDefaults.stringFromDeviceToken(data)
@@ -172,19 +176,19 @@ class MPUserDefaultsTests: XCTestCase {
 
         XCTAssertEqual(tokenString, "0f")
     }
-    
+
     func testMigrateConfiguration() {
         let userID: NSNumber = 1234
         let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated"
         let kMPHTTPETagHeaderKey = "ETag"
         UserDefaults.standard.removeObject(forKey: kMResponseConfigurationMigrationKey)
-    
+
         userDefaults.removeMPObject(forKey: kMPHTTPETagHeaderKey, userId: userID)
         XCTAssertNil(userDefaults.getConfiguration())
-        
-        XCTAssertNotNil(UserDefaults.standard.object(forKey: kMResponseConfigurationMigrationKey));
+
+        XCTAssertNotNil(UserDefaults.standard.object(forKey: kMResponseConfigurationMigrationKey))
     }
-    
+
     func testBadDataConfiguration() {
         userDefaults.deleteConfiguration()
         let kMResponseConfigurationKey = "responseConfiguration"
@@ -201,12 +205,12 @@ class MPUserDefaultsTests: XCTestCase {
 
         XCTAssertNil(userDefaults.getConfiguration())
     }
-    
+
     func testDeleteConfiguration() {
         userDefaults.deleteConfiguration()
         XCTAssertNil(userDefaults.getConfiguration())
     }
-    
+
     func testValidExpandedConfigurationNoMaxAge() {
         let requestTimestamp = Date().timeIntervalSince1970
 
@@ -253,7 +257,7 @@ class MPUserDefaultsTests: XCTestCase {
 
         XCTAssertNil(userDefaults[Miscellaneous.kMPConfigMaxAgeHeaderKey])
     }
-    
+
     func testValidExpandedConfigurationWithNilCurrentAge() {
         let requestTimestamp = Date().timeIntervalSince1970
 
@@ -280,7 +284,7 @@ class MPUserDefaultsTests: XCTestCase {
             NSNumber(value: 90000)
         )
     }
-    
+
     func testValidExpandedConfiguration() {
         let requestTimestamp = Date().timeIntervalSince1970
 
@@ -307,24 +311,9 @@ class MPUserDefaultsTests: XCTestCase {
             NSNumber(value: 90000)
         )
     }
-    
+
     func testUpdateConfigurations() {
-        let configuration1: [String: Any] = [
-            "id": 42,
-            "as": [
-                "appId": "cool app key Update Test"
-            ]
-        ]
-
-        var kitConfigs: [[String: Any]] = [configuration1]
-
-        let responseConfiguration: [String: Any] = [
-            RemoteConfig.kMPRemoteConfigKitsKey: kitConfigs,
-            RemoteConfig.kMPRemoteConfigRampKey: 100,
-            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
-            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
-        ]
-
+        let responseConfiguration: [String: Any] = buildResponseConfiguration(for: [configuration1])
         let requestTimestamp = Date().timeIntervalSince1970
 
         userDefaults.setConfiguration(
@@ -341,14 +330,7 @@ class MPUserDefaultsTests: XCTestCase {
             userDefaults.getConfiguration() as? NSDictionary
         )
 
-        kitConfigs = [configuration1, configuration2]
-
-        let responseConfiguration2: [String: Any] = [
-            RemoteConfig.kMPRemoteConfigKitsKey: kitConfigs,
-            RemoteConfig.kMPRemoteConfigRampKey: 100,
-            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
-            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
-        ]
+        let responseConfiguration2: [String: Any] = buildResponseConfiguration(for: [configuration1, configuration2])
 
         userDefaults.setConfiguration(
             responseConfiguration2,
