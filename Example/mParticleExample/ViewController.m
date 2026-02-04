@@ -3,17 +3,16 @@
 #import <mParticle_Apple_Media_SDK-Swift.h>
 #import <AdSupport/AdSupport.h>
 #import "AdSupport/ASIdentifierManager.h"
-#import <Rokt_Widget/Rokt_Widget-Swift.h>
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
     #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #endif
 
 
-@interface ViewController () <UITableViewDataSource, UITableViewDelegate> {
-    NSArray *selectorNames;
-}
+@interface ViewController () <UITableViewDataSource, UITableViewDelegate>
 
-@property (nonatomic, strong) NSArray *cellTitles;
+@property (nonatomic, strong) NSArray<NSString *> *sectionTitles;
+@property (nonatomic, strong) NSArray<NSArray<NSString *> *> *sectionCellTitles;
+@property (nonatomic, strong) NSArray<NSArray<NSString *> *> *sectionSelectorNames;
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UITextField *emailField;
 @property (nonatomic, strong) UITextField *customerIDField;
@@ -28,7 +27,8 @@
     // Do any additional setup after loading the view, typically from a nib.
     [self setupUI:0];
     
-    self.view.backgroundColor = [UIColor lightGrayColor];
+    self.view.backgroundColor = [UIColor systemGroupedBackgroundColor];
+    self.title = @"mParticle Example";
 }
 
 - (void)setupUI:(CGFloat)roktHeight {
@@ -65,39 +65,91 @@
     CGRect screenFrame = self.view.frame;
     screenFrame.origin.y = roktFrame.origin.y + roktFrame.size.height;
     screenFrame.size.height = screenFrame.size.height - screenFrame.origin.y;
-    _tableView = [[UITableView alloc] initWithFrame:screenFrame];
+    _tableView = [[UITableView alloc] initWithFrame:screenFrame style:UITableViewStyleInsetGrouped];
     _tableView.delegate = self;
     _tableView.dataSource = self;
     [self.view addSubview:_tableView];
 }
 
 #pragma mark Private accessors
-- (NSArray *)cellTitles {
-    if (_cellTitles) {
-        return _cellTitles;
+
+- (void)setupSectionData {
+    if (_sectionTitles) {
+        return;
     }
     
-    _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
-                    @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Get Audience", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer", @"Display Rokt Overlay Placement", @"Display Rokt Dark Mode Overlay Placement", @"Display Rokt Embedded Placement", @"Display Rokt Overlay (auto close)"];
-
-    selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
-                      @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"getAudience", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval", @"selectOverlayPlacement", @"selectDarkOverlayPlacement", @"selectEmbeddedPlacement",  @"selectOverlayPlacementAutoClose"];
-
-    return _cellTitles;
+    _sectionTitles = @[
+        @"Events",
+        @"User Attributes",
+        @"Session Attributes",
+        @"Identity",
+        @"Consent",
+        @"Other",
+        @"Debug & Info",
+        @"Rokt"
+    ];
+    
+    _sectionCellTitles = @[
+        // Events
+        @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
+          @"Log Error", @"Log Exception"],
+        // User Attributes
+        @[@"Set User Attribute", @"Increment User Attribute", @"Set User Attribute List", @"Remove User Attribute"],
+        // Session Attributes
+        @[@"Set Session Attribute", @"Increment Session Attribute"],
+        // Identity
+        @[@"Login", @"Logout", @"Set IDFA", @"Request & Set IDFA"],
+        // Consent
+        @[@"Toggle CCPA Consent", @"Toggle GDPR Consent"],
+        // Other
+        @[@"Register Remote", @"Get Audience", @"Log Media Events", @"Decrease Upload Timer", @"Increase Upload Timer"],
+        // Debug & Info
+        @[@"Display Current User", @"Force Upload", @"Check Kit Status"],
+        // Rokt
+        @[@"Display Rokt Overlay Placement", @"Display Rokt Dark Mode Overlay", @"Display Rokt Embedded Placement", @"Display Rokt Overlay (auto close)"]
+    ];
+    
+    _sectionSelectorNames = @[
+        // Events
+        @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
+          @"logError", @"logException"],
+        // User Attributes
+        @[@"setUserAttribute", @"incrementUserAttribute", @"setUserAttributeList", @"removeUserAttribute"],
+        // Session Attributes
+        @[@"setSessionAttribute", @"incrementSessionAttribute"],
+        // Identity
+        @[@"login", @"logout", @"modify", @"requestIDFA"],
+        // Consent
+        @[@"toggleCCPAConsent", @"toggleGDPRConsent"],
+        // Other
+        @[@"registerRemote", @"getAudience", @"logCustomMediaEvents", @"decreaseUploadInterval", @"increaseUploadInterval"],
+        // Debug & Info
+        @[@"displayCurrentUser", @"forceUpload", @"checkKitStatus"],
+        // Rokt
+        @[@"selectOverlayPlacement", @"selectDarkOverlayPlacement", @"selectEmbeddedPlacement", @"selectOverlayPlacementAutoClose"]
+    ];
 }
 
 #pragma mark UITableViewDataSource and UITableViewDelegate
+
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    return 1;
+    [self setupSectionData];
+    return self.sectionTitles.count;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.cellTitles.count;
+    [self setupSectionData];
+    return self.sectionCellTitles[section].count;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    [self setupSectionData];
+    return self.sectionTitles[section];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    [self setupSectionData];
+    
     static NSString *cellIdentifier = @"mParticleCell";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     if (!cell) {
@@ -105,17 +157,19 @@
     }
     
     cell.textLabel.minimumScaleFactor = 0.5;
-    cell.textLabel.text = self.cellTitles[indexPath.row];
+    cell.textLabel.text = self.sectionCellTitles[indexPath.section][indexPath.row];
     
     return cell;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [self setupSectionData];
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    SEL selector = NSSelectorFromString(selectorNames[indexPath.row]);
+    NSString *selectorName = self.sectionSelectorNames[indexPath.section][indexPath.row];
+    SEL selector = NSSelectorFromString(selectorName);
     [self performSelector:selector];
 #pragma clang diagnostic pop
 }
@@ -338,6 +392,29 @@
     [[MParticle sharedInstance].identity.currentUser incrementUserAttribute:@"Achieved Level" byValue:@1];
 }
 
+- (void)setUserAttributeList {
+    MParticle *mParticle = [MParticle sharedInstance];
+    
+    // Set a user attribute with an array/list value
+    NSArray *favoriteColors = @[@"Blue", @"Green", @"Red"];
+    [mParticle.identity.currentUser setUserAttributeList:@"Favorite Colors" values:favoriteColors];
+    
+    // Set another list attribute
+    NSArray *interests = @[@"Gaming", @"Music", @"Travel", @"Technology"];
+    [mParticle.identity.currentUser setUserAttributeList:@"Interests" values:interests];
+    
+    NSLog(@"Set user attribute lists: Favorite Colors and Interests");
+}
+
+- (void)removeUserAttribute {
+    MParticle *mParticle = [MParticle sharedInstance];
+    
+    // Remove a specific user attribute
+    [mParticle.identity.currentUser removeUserAttribute:@"Achieved Level"];
+    
+    NSLog(@"Removed user attribute: Achieved Level");
+}
+
 - (void)setSessionAttribute {
     MParticle *mParticle = [MParticle sharedInstance];
     
@@ -518,5 +595,181 @@
     [MParticle sharedInstance].uploadInterval = 1200.0;
 }
 
+#pragma mark Debug & Info Actions
+
+- (void)displayCurrentUser {
+    MParticle *mParticle = [MParticle sharedInstance];
+    MParticleUser *currentUser = mParticle.identity.currentUser;
+    
+    if (!currentUser) {
+        [self showAlertWithTitle:@"Current User Info" message:@"No current user found"];
+        return;
+    }
+    
+    NSMutableString *info = [NSMutableString stringWithString:@"=== CURRENT USER INFO ===\n\n"];
+    
+    // MPID
+    [info appendFormat:@"MPID: %@\n\n", currentUser.userId];
+    
+    // Device Application Stamp
+    [info appendFormat:@"Device App Stamp: %@\n\n", mParticle.identity.deviceApplicationStamp];
+    
+    // User Identities
+    [info appendString:@"--- IDENTITIES ---\n"];
+    NSDictionary *identities = currentUser.identities;
+    if (identities.count == 0) {
+        [info appendString:@"(none)\n"];
+    } else {
+        for (NSNumber *typeNum in identities) {
+            NSString *value = identities[typeNum];
+            NSString *typeName = [self identityTypeNameForType:typeNum.unsignedIntegerValue];
+            [info appendFormat:@"%@: %@\n", typeName, value];
+        }
+    }
+    
+    [info appendString:@"\n"];
+    
+    // User Attributes
+    [info appendString:@"--- USER ATTRIBUTES ---\n"];
+    NSDictionary *attributes = currentUser.userAttributes;
+    if (attributes.count == 0) {
+        [info appendString:@"(none)\n"];
+    } else {
+        NSArray *sortedKeys = [[attributes allKeys] sortedArrayUsingSelector:@selector(compare:)];
+        for (NSString *key in sortedKeys) {
+            id value = attributes[key];
+            if ([value isKindOfClass:[NSArray class]]) {
+                [info appendFormat:@"%@: %@\n", key, value];
+            } else {
+                [info appendFormat:@"%@: %@\n", key, value];
+            }
+        }
+    }
+    [info appendString:@"\n"];
+    
+    // Consent State
+    [info appendString:@"--- CONSENT STATE ---\n"];
+    MPConsentState *consentState = currentUser.consentState;
+    if (consentState) {
+        MPCCPAConsent *ccpa = consentState.ccpaConsentState;
+        if (ccpa) {
+            [info appendFormat:@"CCPA Consented: %@\n", ccpa.consented ? @"YES" : @"NO"];
+        } else {
+            [info appendString:@"CCPA: (not set)\n"];
+        }
+        
+        NSDictionary *gdpr = consentState.gdprConsentState;
+        if (gdpr && gdpr.count > 0) {
+            for (NSString *purpose in gdpr) {
+                MPGDPRConsent *consent = gdpr[purpose];
+                [info appendFormat:@"GDPR [%@]: %@\n", purpose, consent.consented ? @"YES" : @"NO"];
+            }
+        } else {
+            [info appendString:@"GDPR: (not set)\n"];
+        }
+    } else {
+        [info appendString:@"(no consent state)\n"];
+    }
+    
+    [self showAlertWithTitle:@"Current User Info" message:info];
+}
+
+- (NSString *)identityTypeNameForType:(MPIdentity)type {
+    switch (type) {
+        case MPIdentityOther: return @"Other";
+        case MPIdentityCustomerId: return @"Customer ID";
+        case MPIdentityFacebook: return @"Facebook";
+        case MPIdentityTwitter: return @"Twitter";
+        case MPIdentityGoogle: return @"Google";
+        case MPIdentityMicrosoft: return @"Microsoft";
+        case MPIdentityYahoo: return @"Yahoo";
+        case MPIdentityEmail: return @"Email";
+        case MPIdentityAlias: return @"Alias";
+        case MPIdentityFacebookCustomAudienceId: return @"Facebook Custom Audience ID";
+        case MPIdentityOther2: return @"Other 2";
+        case MPIdentityOther3: return @"Other 3";
+        case MPIdentityOther4: return @"Other 4";
+        case MPIdentityOther5: return @"Other 5";
+        case MPIdentityOther6: return @"Other 6";
+        case MPIdentityOther7: return @"Other 7";
+        case MPIdentityOther8: return @"Other 8";
+        case MPIdentityOther9: return @"Other 9";
+        case MPIdentityOther10: return @"Other 10";
+        case MPIdentityMobileNumber: return @"Mobile Number";
+        case MPIdentityPhoneNumber2: return @"Phone Number 2";
+        case MPIdentityPhoneNumber3: return @"Phone Number 3";
+        case MPIdentityIOSAdvertiserId: return @"iOS Advertiser ID (IDFA)";
+        case MPIdentityIOSVendorId: return @"iOS Vendor ID (IDFV)";
+        case MPIdentityPushToken: return @"Push Token";
+        case MPIdentityDeviceApplicationStamp: return @"Device Application Stamp";
+        default: return [NSString stringWithFormat:@"Unknown (%lu)", (unsigned long)type];
+    }
+}
+
+- (void)forceUpload {
+    [[MParticle sharedInstance] upload];
+    NSLog(@"Force upload triggered");
+}
+
+- (void)checkKitStatus {
+    MParticle *mParticle = [MParticle sharedInstance];
+    
+    NSMutableString *status = [NSMutableString stringWithString:@"=== KIT STATUS ===\n\n"];
+    
+    // Common kit codes
+    NSArray *commonKits = @[
+        @{@"code": @20, @"name": @"Adjust"},
+        @{@"code": @119, @"name": @"Adobe Analytics"},
+        @{@"code": @28, @"name": @"Appboy/Braze"},
+        @{@"code": @92, @"name": @"AppsFlyer"},
+        @{@"code": @31, @"name": @"Amplitude"},
+        @{@"code": @39, @"name": @"Branch"},
+        @{@"code": @134, @"name": @"Facebook"},
+        @{@"code": @64, @"name": @"Firebase"},
+        @{@"code": @160, @"name": @"Google Analytics 4"},
+        @{@"code": @37, @"name": @"Kochava"},
+        @{@"code": @49, @"name": @"Leanplum"},
+        @{@"code": @128, @"name": @"Segment"},
+        @{@"code": @170, @"name": @"Singular"},
+    ];
+    
+    [status appendString:@"--- COMMON KITS ---\n"];
+    NSMutableArray *activeKits = [NSMutableArray array];
+    
+    for (NSDictionary *kit in commonKits) {
+        NSNumber *code = kit[@"code"];
+        NSString *name = kit[@"name"];
+        BOOL isActive = [mParticle isKitActive:code];
+        NSString *statusEmoji = isActive ? @"✅" : @"❌";
+        [status appendFormat:@"%@ %@ (%@): %@\n", statusEmoji, name, code, isActive ? @"Active" : @"Inactive"];
+        
+        if (isActive) {
+            [activeKits addObject:name];
+        }
+    }
+    
+    [status appendString:@"\n--- ACTIVE KITS ---\n"];
+    if (activeKits.count == 0) {
+        [status appendString:@"(no kits currently active)\n"];
+    } else {
+        for (NSString *kitName in activeKits) {
+            [status appendFormat:@"• %@\n", kitName];
+        }
+    }
+    
+    [status appendString:@"\n--- NOTE ---\n"];
+    [status appendString:@"Kits become active after receiving\nconfiguration from mParticle server.\n"];
+    [status appendString:@"Ensure you have kits enabled in\nyour mParticle workspace."];
+    
+    [self showAlertWithTitle:@"Kit Status" message:status];
+}
+
+- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
+}
 
 @end

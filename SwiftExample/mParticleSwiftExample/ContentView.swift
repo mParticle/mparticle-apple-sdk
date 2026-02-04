@@ -8,8 +8,8 @@ struct ContentView: View {
     @State private var email: String = ""
     @State private var customerId: String = ""
     @State private var roktViewHeight: CGFloat = 0
-
-    private let actions: [(title: String, action: () -> Void)] = []
+    @State private var showingUserInfo: Bool = false
+    @State private var showingKitStatus: Bool = false
 
     var body: some View {
         NavigationView {
@@ -48,6 +48,8 @@ struct ContentView: View {
                     Section(header: Text("User Attributes")) {
                         ActionButton(title: "Set User Attribute", action: setUserAttribute)
                         ActionButton(title: "Increment User Attribute", action: incrementUserAttribute)
+                        ActionButton(title: "Set User Attribute List", action: setUserAttributeList)
+                        ActionButton(title: "Remove User Attribute", action: removeUserAttribute)
                     }
 
                     Section(header: Text("Session Attributes")) {
@@ -74,6 +76,16 @@ struct ContentView: View {
                         ActionButton(title: "Increase Upload Timer", action: increaseUploadInterval)
                     }
 
+                    Section(header: Text("Debug & Info")) {
+                        ActionButton(title: "Display Current User") {
+                            showingUserInfo = true
+                        }
+                        ActionButton(title: "Force Upload", action: forceUpload)
+                        ActionButton(title: "Check Kit Status") {
+                            showingKitStatus = true
+                        }
+                    }
+
                     Section(header: Text("Rokt")) {
                         ActionButton(title: "Display Rokt Overlay Placement", action: selectOverlayPlacement)
                         ActionButton(title: "Display Rokt Dark Mode Overlay", action: selectDarkOverlayPlacement)
@@ -89,6 +101,79 @@ struct ContentView: View {
             }
             .navigationTitle("mParticle Swift Example")
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showingUserInfo) {
+                UserInfoSheet()
+            }
+            .sheet(isPresented: $showingKitStatus) {
+                KitStatusSheet()
+            }
+        }
+    }
+}
+
+struct UserInfoSheet: View {
+    @State private var infoText: String = "Loading..."
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                Text(infoText)
+                    .font(.system(.body, design: .monospaced))
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .navigationTitle("Current User Info")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Refresh") {
+                        infoText = getCurrentUserInfo()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .onAppear {
+                // Small delay to ensure SDK data is loaded
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    infoText = getCurrentUserInfo()
+                }
+            }
+        }
+    }
+}
+
+struct KitStatusSheet: View {
+    @State private var statusText: String = "Loading..."
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                Text(statusText)
+                    .font(.system(.body, design: .monospaced))
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .navigationTitle("Kit Status")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Refresh") {
+                        statusText = getKitStatus()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+            .onAppear {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    statusText = getKitStatus()
+                }
+            }
         }
     }
 }
@@ -218,6 +303,29 @@ func setUserAttribute() {
 
 func incrementUserAttribute() {
     MParticle.sharedInstance().identity.currentUser?.incrementUserAttribute("Achieved Level", byValue: 1)
+}
+
+func setUserAttributeList() {
+    let mParticle = MParticle.sharedInstance()
+
+    // Set a user attribute with an array/list value
+    let favoriteColors = ["Blue", "Green", "Red"]
+    mParticle.identity.currentUser?.setUserAttributeList("Favorite Colors", values: favoriteColors)
+
+    // Set another list attribute
+    let interests = ["Gaming", "Music", "Travel", "Technology"]
+    mParticle.identity.currentUser?.setUserAttributeList("Interests", values: interests)
+
+    print("Set user attribute lists: Favorite Colors and Interests")
+}
+
+func removeUserAttribute() {
+    let mParticle = MParticle.sharedInstance()
+
+    // Remove a specific user attribute
+    mParticle.identity.currentUser?.removeAttribute("Achieved Level")
+
+    print("Removed user attribute: Achieved Level")
 }
 
 func setSessionAttribute() {
@@ -373,6 +481,158 @@ func decreaseUploadInterval() {
 
 func increaseUploadInterval() {
     MParticle.sharedInstance().uploadInterval = 1200.0
+}
+
+// MARK: - Debug & Info Actions
+
+func getCurrentUserInfo() -> String {
+    let mParticle = MParticle.sharedInstance()
+    guard let currentUser = mParticle.identity.currentUser else {
+        return "No current user found"
+    }
+
+    var info = "=== CURRENT USER INFO ===\n\n"
+
+    // MPID
+    info += "MPID: \(currentUser.userId)\n\n"
+
+    // Device Application Stamp
+    info += "Device App Stamp: \(mParticle.identity.deviceApplicationStamp)\n\n"
+
+    // User Identities
+    info += "--- IDENTITIES ---\n"
+    if currentUser.identities.isEmpty {
+        info += "(none)\n"
+    } else {
+        for (typeNum, value) in currentUser.identities {
+            let typeName = identityTypeName(for: MPIdentity(rawValue: typeNum.uintValue) ?? .other)
+            info += "\(typeName): \(value)\n"
+        }
+    }
+
+    info += "\n"
+
+    // User Attributes
+    info += "--- USER ATTRIBUTES ---\n"
+    if currentUser.userAttributes.isEmpty {
+        info += "(none)\n"
+    } else {
+        for (key, value) in currentUser.userAttributes.sorted(by: { $0.key < $1.key }) {
+            if let arrayValue = value as? [Any] {
+                info += "\(key): \(arrayValue)\n"
+            } else {
+                info += "\(key): \(value)\n"
+            }
+        }
+    }
+    info += "\n"
+
+    // Consent State
+    info += "--- CONSENT STATE ---\n"
+    if let consentState = currentUser.consentState() {
+        if let ccpa = consentState.ccpaConsentState() {
+            info += "CCPA Consented: \(ccpa.consented)\n"
+        } else {
+            info += "CCPA: (not set)\n"
+        }
+
+        if let gdpr = consentState.gdprConsentState(), !gdpr.isEmpty {
+            for (purpose, consent) in gdpr {
+                info += "GDPR [\(purpose)]: \(consent.consented)\n"
+            }
+        } else {
+            info += "GDPR: (not set)\n"
+        }
+    } else {
+        info += "(no consent state)\n"
+    }
+
+    return info
+}
+
+func identityTypeName(for type: MPIdentity) -> String {
+    switch type {
+    case .other: return "Other"
+    case .customerId: return "Customer ID"
+    case .facebook: return "Facebook"
+    case .twitter: return "Twitter"
+    case .google: return "Google"
+    case .microsoft: return "Microsoft"
+    case .yahoo: return "Yahoo"
+    case .email: return "Email"
+    case .alias: return "Alias"
+    case .facebookCustomAudienceId: return "Facebook Custom Audience ID"
+    case .other2: return "Other 2"
+    case .other3: return "Other 3"
+    case .other4: return "Other 4"
+    case .other5: return "Other 5"
+    case .other6: return "Other 6"
+    case .other7: return "Other 7"
+    case .other8: return "Other 8"
+    case .other9: return "Other 9"
+    case .other10: return "Other 10"
+    case .mobileNumber: return "Mobile Number"
+    case .phoneNumber2: return "Phone Number 2"
+    case .phoneNumber3: return "Phone Number 3"
+    case .iosAdvertiserId: return "iOS Advertiser ID (IDFA)"
+    case .iosVendorId: return "iOS Vendor ID (IDFV)"
+    case .pushToken: return "Push Token"
+    case .deviceApplicationStamp: return "Device Application Stamp"
+    @unknown default: return "Unknown (\(type.rawValue))"
+    }
+}
+
+func forceUpload() {
+    MParticle.sharedInstance().upload()
+    print("Force upload triggered")
+}
+
+func getKitStatus() -> String {
+    let mParticle = MParticle.sharedInstance()
+
+    var status = "=== KIT STATUS ===\n\n"
+
+    // Common kit codes - add more as needed
+    let commonKits: [(code: NSNumber, name: String)] = [
+        (NSNumber(value: 20), "Adjust"),
+        (NSNumber(value: 119), "Adobe Analytics"),
+        (NSNumber(value: 28), "Appboy/Braze"),
+        (NSNumber(value: 92), "AppsFlyer"),
+        (NSNumber(value: 31), "Amplitude"),
+        (NSNumber(value: 39), "Branch"),
+        (NSNumber(value: 134), "Facebook"),
+        (NSNumber(value: 64), "Firebase"),
+        (NSNumber(value: 160), "Google Analytics 4"),
+        (NSNumber(value: 37), "Kochava"),
+        (NSNumber(value: 49), "Leanplum"),
+        (NSNumber(value: 128), "Segment"),
+        (NSNumber(value: 170), "Singular")
+    ]
+
+    status += "--- COMMON KITS ---\n"
+    for kit in commonKits {
+        let isActive = mParticle.isKitActive(kit.code)
+        let statusEmoji = isActive ? "✅" : "❌"
+        status += "\(statusEmoji) \(kit.name) (\(kit.code)): \(isActive ? "Active" : "Inactive")\n"
+    }
+
+    status += "\n--- ACTIVE KITS ---\n"
+    // Get all active kits
+    var hasActiveKits = false
+    for kit in commonKits where mParticle.isKitActive(kit.code) {
+        hasActiveKits = true
+        status += "• \(kit.name)\n"
+    }
+
+    if !hasActiveKits {
+        status += "(no kits currently active)\n"
+    }
+
+    status += "\n--- NOTE ---\n"
+    status += "Kits become active after receiving\nconfiguration from mParticle server.\n"
+    status += "Ensure you have kits enabled in\nyour mParticle workspace."
+
+    return status
 }
 
 // MARK: - Rokt Actions
