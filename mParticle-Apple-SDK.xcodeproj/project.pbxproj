@@ -87,7 +87,6 @@
 		534CD29629CE2CE1008452B3 /* MPConsumerInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CA529CE019F00E7489F /* MPConsumerInfoTests.m */; };
 		534CD29729CE2CE1008452B3 /* MPURLRequestBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9329CE019F00E7489F /* MPURLRequestBuilderTests.m */; };
 		534CD29829CE2CE1008452B3 /* MPForwardQueueItemTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9529CE019F00E7489F /* MPForwardQueueItemTests.m */; };
-		534CD29A29CE2CE1008452B3 /* MPResponseConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8D29CE019F00E7489F /* MPResponseConfigTests.m */; };
 		534CD29B29CE2CE1008452B3 /* MPCommerceEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C6C29CE019E00E7489F /* MPCommerceEventTests.m */; };
 		534CD29C29CE2CE1008452B3 /* MParticleUserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CA729CE019F00E7489F /* MParticleUserTests.m */; };
 		534CD29E29CE2CE1008452B3 /* MPConvertJSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8A29CE019F00E7489F /* MPConvertJSTests.m */; };
@@ -531,7 +530,6 @@
 		53A79C8A29CE019F00E7489F /* MPConvertJSTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConvertJSTests.m; sourceTree = "<group>"; };
 		53A79C8B29CE019F00E7489F /* MPKitContainerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitContainerTests.m; sourceTree = "<group>"; };
 		53A79C8C29CE019F00E7489F /* MPCCPAConsentTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCCPAConsentTests.m; sourceTree = "<group>"; };
-		53A79C8D29CE019F00E7489F /* MPResponseConfigTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseConfigTests.m; sourceTree = "<group>"; };
 		53A79C8E29CE019F00E7489F /* MParticleTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleTests.m; sourceTree = "<group>"; };
 		53A79C8F29CE019F00E7489F /* MPResponseEventsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseEventsTest.m; sourceTree = "<group>"; };
 		53A79C9029CE019F00E7489F /* MPDataPlanFilterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDataPlanFilterTests.m; sourceTree = "<group>"; };
@@ -625,6 +623,7 @@
 				Test/Utils/MPDateFormatterTests.m,
 				Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
+				Test/Utils/MPResponseConfigTests.m,
 				Test/Utils/MPUserAttributeChangeTests.m,
 				Test/Utils/MPUserDefaultsTests.swift,
 				Test/Utils/MPZipTests.m,
@@ -643,6 +642,7 @@
 				Test/Utils/MPDateFormatterTests.m,
 				Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
+				Test/Utils/MPResponseConfigTests.m,
 				Test/Utils/MPUserAttributeChangeTests.m,
 				Test/Utils/MPUserDefaultsTests.swift,
 				Test/Utils/MPZipTests.m,
@@ -1122,7 +1122,6 @@
 				53A79C8A29CE019F00E7489F /* MPConvertJSTests.m */,
 				53A79C8B29CE019F00E7489F /* MPKitContainerTests.m */,
 				53A79C8C29CE019F00E7489F /* MPCCPAConsentTests.m */,
-				53A79C8D29CE019F00E7489F /* MPResponseConfigTests.m */,
 				53A79C8E29CE019F00E7489F /* MParticleTests.m */,
 				53A79C8F29CE019F00E7489F /* MPResponseEventsTest.m */,
 				53A79C9029CE019F00E7489F /* MPDataPlanFilterTests.m */,
@@ -1567,7 +1566,6 @@
 				7231B8212EB958DC001565E5 /* MParticleIdentityTests.swift in Sources */,
 				727801DE2EB0FE8400BDAD98 /* MPNotificationControllerMock.swift in Sources */,
 				534CD29829CE2CE1008452B3 /* MPForwardQueueItemTests.m in Sources */,
-				534CD29A29CE2CE1008452B3 /* MPResponseConfigTests.m in Sources */,
 				534CD29B29CE2CE1008452B3 /* MPCommerceEventTests.m in Sources */,
 				534CD29C29CE2CE1008452B3 /* MParticleUserTests.m in Sources */,
 				7231B8272EB95991001565E5 /* MParticleSessionTests.swift in Sources */,
