@@ -55,8 +55,10 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func unregisterForRemoteNotifications() {
     }
 
+    var canCreateConfigurationReturnValue = false
+    
     func canCreateConfiguration() -> Bool {
-        return false
+        return canCreateConfigurationReturnValue
     }
 
     func mpId() -> NSNumber {

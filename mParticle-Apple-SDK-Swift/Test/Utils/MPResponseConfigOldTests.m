@@ -83,29 +83,4 @@
 //    XCTAssertNotNil([customModule objectForKey: @"vid"]);
 //}
 //
-//- (void)testSaveRestore {    
-//    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
-//    dispatch_async([MParticle messageQueue], ^{
-//        NSString *eTag = @"1.618-2.718-3.141-42";
-//        NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
-//                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-//                                        kMPRemoteConfigSessionTimeoutKey:@112};
-//        
-//        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-//        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
-//
-//        configuration = @{kMPRemoteConfigRampKey:@100,
-//                          kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-//                          kMPRemoteConfigSessionTimeoutKey:@112};
-//        
-//        MPResponseConfig *restoredResponseConfig = [MPUserDefaults restore];
-//        XCTAssertNotNil(restoredResponseConfig);
-//        XCTAssertEqualObjects(restoredResponseConfig.configuration, configuration);
-//        
-//        [expectation fulfill];
-//    });
-//    
-//    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-//}
-//
 //@end

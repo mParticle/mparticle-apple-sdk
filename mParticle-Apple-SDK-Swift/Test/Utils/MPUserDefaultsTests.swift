@@ -448,4 +448,38 @@ class MPUserDefaultsTests: XCTestCase {
         )
         XCTAssertFalse(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
     }
+    
+    func testSaveRestore() {
+        let userDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
+        userDefaults.deleteConfiguration()
+        connector.canCreateConfigurationReturnValue = true
+        
+        var configuration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+        
+        let requestTimestamp = Date().timeIntervalSince1970
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        configuration = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+        
+        let restoredResponseConfig = MPUserDefaults.restore()
+        XCTAssertNotNil(restoredResponseConfig)
+        XCTAssertEqual(
+            (restoredResponseConfig?.configuration as! [String: Any]) as NSDictionary,
+            configuration as NSDictionary
+        )
+    }
 }
