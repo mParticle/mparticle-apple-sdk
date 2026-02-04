@@ -2,7 +2,6 @@ import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 class MPResponseConfigTests: XCTestCase {
-    
     func testIgnoresLegacyDirectRoutingConfig() {
         let configuration: [String: Any] = [
             RemoteConfig.kMPRemoteConfigKitsKey: NSNull(),

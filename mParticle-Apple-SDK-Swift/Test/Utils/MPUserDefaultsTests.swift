@@ -356,4 +356,34 @@ class MPUserDefaultsTests: XCTestCase {
             userDefaults.getConfiguration() as? NSDictionary
         )
     }
+    
+    func testDeleteDueToMaxConfigAge() {
+        let userDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
+        userDefaults.deleteConfiguration()
+
+        let eTag = "1.618-2.718-3.141-42"
+        let configuration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+
+        XCTAssertNil(userDefaults.getConfiguration())
+        let requestTimestamp = Date().timeIntervalSince1970 - 100
+
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        XCTAssertNotNil(userDefaults.getConfiguration())
+
+        XCTAssertTrue(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
+        if MPUserDefaults.isOlderThanConfigMaxAgeSeconds() {
+            MPUserDefaults.deleteConfig()
+        }
+        XCTAssertNil(userDefaults.getConfiguration())
+    }
 }

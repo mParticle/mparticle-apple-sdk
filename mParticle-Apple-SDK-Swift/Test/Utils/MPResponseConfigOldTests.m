@@ -158,33 +158,4 @@
 //    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 //}
 //
-//- (void)testDeleteDueToMaxConfigAge {
-//    MParticleOptions *options = [MParticleOptions optionsWithKey:@"test" secret:@"test"];
-//    options.configMaxAgeSeconds = @60;
-//    [MParticle sharedInstance].options = options;
-//    
-//    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
-//    dispatch_async([MParticle messageQueue], ^{
-//        NSString *eTag = @"1.618-2.718-3.141-42";
-//        NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
-//                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-//                                        kMPRemoteConfigSessionTimeoutKey:@112};
-//        
-//        XCTAssertNil([MPUserDefaultsConnector.userDefaults getConfiguration]);
-//        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970] - 100.0;
-//        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
-//        XCTAssertNotNil([MPUserDefaultsConnector.userDefaults getConfiguration]);
-//        
-//        XCTAssertTrue([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
-//        if ([MPUserDefaults isOlderThanConfigMaxAgeSeconds]) {
-//            [MPUserDefaults deleteConfig];
-//        }
-//        XCTAssertNil([MPUserDefaultsConnector.userDefaults getConfiguration]);
-//        
-//        [expectation fulfill];
-//    });
-//    
-//    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-//}
-//
 //@end
