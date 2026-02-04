@@ -2,6 +2,13 @@ import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 class MPResponseConfigTests: XCTestCase {
+    var connector: MPUserDefaultsConnectorMock!
+
+    override func setUp() {
+        super.setUp()
+        connector = MPUserDefaultsConnectorMock()
+    }
+
     func testIgnoresLegacyDirectRoutingConfig() {
         let configuration: [String: Any] = [
             RemoteConfig.kMPRemoteConfigKitsKey: NSNull(),
@@ -19,8 +26,6 @@ class MPResponseConfigTests: XCTestCase {
     }
 
     func testUpdateCustomModuleSettingsOnRestore() {
-        let connector = MPUserDefaultsConnectorMock()
-
         let cmsDictionary: [[String: Any]] = [
             [
                 "id": 11,
@@ -93,7 +98,6 @@ class MPResponseConfigTests: XCTestCase {
     }
 
     func testInvalidConfigurations() {
-        let connector = MPUserDefaultsConnectorMock()
         let configuration = [String: Any]()
         let responseConfig = MPResponseConfig(configuration: configuration, connector: connector)
         XCTAssertNil(responseConfig, "Should have been nil.")
@@ -108,7 +112,6 @@ class MPResponseConfigTests: XCTestCase {
             RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeIgnore,
             RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
         ]
-        let connector = MPUserDefaultsConnectorMock()
         let responseConfig = MPResponseConfig(configuration: configuration, connector: connector)
 
         XCTAssertNotNil(responseConfig, "Should not have been nil.")
