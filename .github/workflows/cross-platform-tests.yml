@@ -5,9 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  # Kotlin/Native 1.9.0 cinterop breaks on Xcode 16.3+ (modulemap feature gate).
-  # Pin to 16.2 as a CI-only workaround.
-  XCODE_VERSION: "16.2"
+  XCODE_VERSION: 16.4
 
 jobs:
   run-ios-tests:
