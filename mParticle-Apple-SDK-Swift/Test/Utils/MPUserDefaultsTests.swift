@@ -362,7 +362,6 @@ class MPUserDefaultsTests: XCTestCase {
         userDefaults.deleteConfiguration()
         connector.configMaxAgeSecondsReturnValue = 1
 
-        let eTag = "1.618-2.718-3.141-42"
         let configuration: [String: Any] = [
             RemoteConfig.kMPRemoteConfigRampKey: 100,
             RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
@@ -387,13 +386,12 @@ class MPUserDefaultsTests: XCTestCase {
         }
         XCTAssertNil(userDefaults.getConfiguration())
     }
-    
+
     func testShouldDeleteDueToMaxConfigAge() {
         let userDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
         userDefaults.deleteConfiguration()
         connector.configMaxAgeSecondsReturnValue = 60
         
-        let eTag = "1.618-2.718-3.141-42"
         let configuration: [String: Any] = [
             RemoteConfig.kMPRemoteConfigRampKey: 100,
             RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
@@ -419,5 +417,35 @@ class MPUserDefaultsTests: XCTestCase {
         )
         
         XCTAssertTrue(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
+    }
+
+    func testShouldDeleteDueToMaxConfigAgeWhenNil() {
+        connector.configMaxAgeSecondsReturnValue = nil;
+
+        let configuration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+
+        let requestTimestamp = Date().timeIntervalSince1970
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        XCTAssertFalse(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
+
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp - 1000.0,
+            currentAge: 0,
+            maxAge: nil
+        )
+        XCTAssertFalse(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
     }
 }
