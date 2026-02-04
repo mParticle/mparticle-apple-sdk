@@ -56,4 +56,19 @@ class MPResponseConfigTests: XCTestCase {
         let responseConfig = MPResponseConfig(configuration: configuration, connector: connector)
         XCTAssertNil(responseConfig, "Should have been nil.");
     }
+    
+    func testInstance() {
+        let configuration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigKitsKey: NSNull(),
+            RemoteConfig.kMPRemoteConfigCustomModuleSettingsKey: NSNull(),
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigTriggerKey: NSNull(),
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeIgnore,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+        let connector = MPUserDefaultsConnectorMock()
+        let responseConfig = MPResponseConfig(configuration: configuration, connector: connector)
+
+        XCTAssertNotNil(responseConfig, "Should not have been nil.")
+    }
 }
