@@ -1,11 +1,8 @@
 name: iOS SDK Build and Lint
 
 on:
-  pull_request:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -76,16 +73,3 @@ jobs:
       - name: Run static analyzer
         run: |
           bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -v "warning: Metadata extraction skipped" | grep -F -v "Repeated use of MParticle sharedInstance in one method; assign to a local variable once." | grep -F -v "warning: Run script build phase '"'"'Run Script'"'"' will be run during every build" | grep -B3 "warning")'
-
-  pr-notify:
-    if: >
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.draft == false
-    needs:
-      - pod-lint
-      - xcode-build
-      - run-analyzer
-    name: Notify GChat
-    uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main
-    secrets:
-      gchat_webhook: ${{ secrets.GCHAT_PRS_WEBHOOK }}
