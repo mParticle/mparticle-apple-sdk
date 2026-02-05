@@ -25,13 +25,6 @@ let package = Package(
         .target(
             name: "mParticle_Apple_SDK_Swift",
             path: "mParticle-Apple-SDK-Swift/Sources",
-            exclude: [],
-            sources: nil,
-            publicHeadersPath: nil,
-            cSettings: nil,
-            cxxSettings: nil,
-            swiftSettings: nil,
-            linkerSettings: nil
         ),
         // Objective-C SDK (NoLocation variant) - source-based distribution
         .target(
@@ -59,13 +52,13 @@ let package = Package(
                 .headerSearchPath("Custom Modules"),
                 .headerSearchPath("AppNotifications"),
                 .headerSearchPath("Data Model"),
-                .headerSearchPath("Libraries/Reachability"),
+                .headerSearchPath("Libraries/Reachability")
             ],
             linkerSettings: [
                 .linkedFramework("Foundation"),
                 .linkedFramework("UIKit", .when(platforms: [.iOS])),
                 .linkedFramework("WebKit", .when(platforms: [.iOS])),
-                .linkedFramework("UserNotifications", .when(platforms: [.iOS])),
+                .linkedFramework("UserNotifications", .when(platforms: [.iOS]))
             ]
         ),
         // Binary target (kept for backward compatibility or as alternative)
