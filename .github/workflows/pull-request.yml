@@ -1,0 +1,54 @@
+name: Pull request
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release*
+      - workstation*
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-lint:
+    uses: ./.github/workflows/build-and-lint.yml
+    secrets: inherit
+
+  native-tests:
+    uses: ./.github/workflows/native-tests.yml
+    secrets: inherit
+
+  build-secondary-platforms:
+    uses: ./.github/workflows/build-secondary-platforms.yml
+    secrets: inherit
+
+  integration-tests:
+    uses: ./.github/workflows/integration-tests.yml
+    secrets: inherit
+
+  size-report:
+    uses: ./.github/workflows/size-report.yml
+    secrets: inherit
+
+  pr-notify:
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    needs:
+      - build-and-lint
+      - native-tests
+      - build-secondary-platforms
+      - integration-tests
+      - size-report
+    name: Notify GChat
+    uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main
+    secrets:
+      gchat_webhook: ${{ secrets.GCHAT_PRS_WEBHOOK }}
