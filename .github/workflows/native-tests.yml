@@ -1,11 +1,8 @@
 name: Xcode Tests
 
 on:
-  pull_request:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  workflow_call:
+  workflow_dispatch:
 
 env:
   XCODE_VERSION: "16.4"
