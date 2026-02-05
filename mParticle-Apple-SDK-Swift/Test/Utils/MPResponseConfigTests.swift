@@ -88,7 +88,7 @@ class MPResponseConfigTests: XCTestCase {
         let responseConfig = MPResponseConfig(configuration: configuration, connector: connector)
         XCTAssertNotNil(responseConfig)
         XCTAssertNotNil(connector. configureCustomModulesCustomModuleSettingsParams)
-        XCTAssertEqual(1, connector.configureCustomModulesCustomModuleSettingsPrarams?.count)
+        XCTAssertEqual(1, connector. configureCustomModulesCustomModuleSettingsParams?.count)
         let customModules = connector.configureCustomModulesCustomModuleSettingsPrarams
         let customModule = customModules?[0] as? NSDictionary
         let prArray = customModule?["pr"] as! NSArray
