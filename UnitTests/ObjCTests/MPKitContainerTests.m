@@ -442,8 +442,15 @@
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce, @"Should have been equal.");
     XCTAssertEqualObjects(forwardQueueItem.commerceEvent, commerceEvent, @"Should have been equal.");
 
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Queue cleared after kits initialized"];
     kitContainer.kitsInitialized = YES;
-    XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
+        [expectation fulfill];
+    });
+
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testForwardQueueEvent {
@@ -461,8 +468,15 @@
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent, @"Should have been equal.");
     XCTAssertEqualObjects(forwardQueueItem.event, event, @"Should have been equal.");
     
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Queue cleared after kits initialized"];
     kitContainer.kitsInitialized = YES;
-    XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
+        [expectation fulfill];
+    });
+
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testForwardQueueInvalid {
@@ -503,8 +517,15 @@
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeGeneralPurpose);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters, queueParameters);
     
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Queue cleared after kits initialized"];
     kitContainer.kitsInitialized = YES;
-    XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
+        [expectation fulfill];
+    });
+
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testFilterEventType {
