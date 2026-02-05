@@ -365,8 +365,8 @@ static const NSInteger kMPRoktKitId = 181;
     NSString *hashedEmail = attributes[@"emailsha256"];
     NSNumber *hashedEmailIdentity = [self getRoktHashedEmailUserIdentityType];
     
-    BOOL shouldIdentifyFromEmail = (email && ![email isEqualToString:user.identities[@(MPIdentityEmail)]]);
-    BOOL shouldIdentifyFromHash = (hashedEmail && hashedEmailIdentity && ![hashedEmail isEqualToString: user.identities[hashedEmailIdentity]]);
+    BOOL shouldIdentifyFromEmail = (email && ![email isEqual:user.identities[@(MPIdentityEmail)]]);
+    BOOL shouldIdentifyFromHash = (hashedEmail && hashedEmailIdentity && ![hashedEmail isEqual:user.identities[hashedEmailIdentity]]);
 
     MPILogDebug(@"MPRokt confirmUser decision - shouldIdentifyFromEmail: %@, shouldIdentifyFromHash: %@",
                 shouldIdentifyFromEmail ? @"YES" : @"NO",
