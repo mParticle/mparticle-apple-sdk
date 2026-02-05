@@ -14,10 +14,6 @@ let package = Package(
     platforms: [.iOS(.v9), .tvOS(.v9)],
     products: [
         .library(
-            name: "mParticle-Apple-SDK",
-            targets: ["mParticle_Apple_SDK"]
-        ),
-        .library(
             name: "mParticle-Apple-SDK-NoLocation",
             targets: ["mParticle_Apple_SDK_NoLocation"]
         ),
@@ -25,13 +21,43 @@ let package = Package(
     dependencies: [
     ],
     targets: [
-        .binaryTarget(
-            name: "mParticle_Apple_SDK",
-            url: mParticle_Apple_SDK_URL,
-            checksum: mParticle_Apple_SDK_Checksum
+        // Swift-only components
+        .target(
+            name: "mParticle_Apple_SDK_Swift",
+            path: "mParticle-Apple-SDK-Swift/Sources",
+            exclude: [],
+            sources: nil,
+            publicHeadersPath: nil,
+            cSettings: nil,
+            cxxSettings: nil,
+            swiftSettings: nil,
+            linkerSettings: nil
         ),
-        .binaryTarget(
+        // Objective-C SDK (NoLocation variant) - source-based distribution
+        .target(
             name: "mParticle_Apple_SDK_NoLocation",
+            dependencies: ["mParticle_Apple_SDK_Swift"],
+            path: "mParticle-Apple-SDK",
+            exclude: ["Include/mParticle_Apple_SDK.h"],
+            sources: nil,
+            resources: [
+                .process("../PrivacyInfo.xcprivacy")
+            ],
+            publicHeadersPath: "Include",
+            cSettings: [
+                .headerSearchPath("."),
+                .headerSearchPath("Include"),
+            ],
+            linkerSettings: [
+                .linkedFramework("Foundation"),
+                .linkedFramework("UIKit", .when(platforms: [.iOS])),
+                .linkedFramework("WebKit", .when(platforms: [.iOS])),
+                .linkedFramework("UserNotifications", .when(platforms: [.iOS])),
+            ]
+        ),
+        // Binary target (kept for backward compatibility or as alternative)
+        .binaryTarget(
+            name: "mParticle_Apple_SDK_NoLocation_Binary",
             url: mParticle_Apple_SDK_NoLocation_URL,
             checksum: mParticle_Apple_SDK_NoLocation_Checksum
         ),
