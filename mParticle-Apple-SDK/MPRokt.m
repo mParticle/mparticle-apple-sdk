@@ -45,6 +45,8 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - attributes: Optional dictionary of user attributes to pass to Rokt (e.g., email, firstName, etc.)
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
+    MPILogDebug(@"MPRokt selectPlacements called - identifier: %@, attributes count: %lu",
+                identifier, (unsigned long)attributes.count);
     [self selectPlacements:identifier attributes:attributes embeddedViews:nil config:nil onEvent:nil];
 }
 
@@ -62,10 +64,25 @@ static const NSInteger kMPRoktKitId = 181;
            embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
                   config:(MPRoktConfig * _Nullable)config
                  onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
+                     MPILogDebug(@"MPRokt selectPlacements (full) - identifier: %@, attributes: %lu, embeddedViews: %lu, config: %@, onEvent: %@",
+                                 identifier,
+                                 (unsigned long)attributes.count,
+                                 (unsigned long)embeddedViews.count,
+                                 config ? @"present" : @"nil",
+                                 onEvent ? @"present" : @"nil");
+                     
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    if (!currentUser) {
+        MPILogWarning(@"MPRokt selectPlacements - currentUser is nil, identity sync may not work as expected");
+    } else {
+        MPILogDebug(@"MPRokt current user present - userId: %@", currentUser.userId);
+    }
     
     // If email is passed in as an attribute and it's different than the existing identity, identify with it
     [self confirmUser:attributes user:currentUser completion:^(MParticleUser *_Nullable resolvedUser) {
+        MPILogDebug(@"MPRokt confirmUser completed - resolvedUser: %@, userId: %@",
+                    resolvedUser ? @"present" : @"nil", resolvedUser.userId);
+        
         NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
 
         MPILogVerbose(@"MParticle.Rokt selectPlacements called with attributes: %@", attributes);
@@ -89,6 +106,8 @@ static const NSInteger kMPRoktKitId = 181;
             }
             
             dispatch_async([MParticle messageQueue], ^{
+                MPILogDebug(@"MPRokt forwarding to kit - identifier: %@, mappedAttributes count: %lu",
+                            identifier, (unsigned long)mappedAttributes.count);
                 // Forwarding call to kits
                 MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
                 [queueParameters addParameter:identifier];
@@ -106,7 +125,7 @@ static const NSInteger kMPRoktKitId = 181;
                 ];
             });
         } else {
-            MPILogVerbose(@"[MParticle.Rokt selectPlacements: not performed since Kit not configured");
+            MPILogWarning(@"MPRokt selectPlacements not performed - Rokt Kit not configured. Ensure Rokt Kit is enabled in mParticle dashboard.");
         }
     }];
 }
@@ -118,6 +137,8 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - catalogItemId: The identifier of the catalog item that was purchased
 ///   - success: Whether the purchase was successful (YES) or failed (NO)
 - (void)purchaseFinalized:(NSString * _Nonnull)identifier catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
+    MPILogDebug(@"MPRokt purchaseFinalized - identifier: %@, catalogItemId: %@, success: %@",
+                identifier, catalogItemId, success ? @"YES" : @"NO");
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -140,6 +161,8 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - identifier: The Rokt placement identifier to listen for events from
 ///   - onEvent: Callback block that receives MPRoktEvent objects when placement events occur
 - (void)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
+    MPILogDebug(@"MPRokt events called - identifier: %@, onEvent: %@",
+                identifier, onEvent ? @"present" : @"nil");
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -179,6 +202,7 @@ static const NSInteger kMPRoktKitId = 181;
 /// Closes any currently displayed Rokt placement.
 /// Call this method to programmatically dismiss an active Rokt overlay or embedded placement.
 - (void)close {
+    MPILogDebug(@"MPRokt close called");
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(close)
@@ -197,6 +221,7 @@ static const NSInteger kMPRoktKitId = 181;
 /// - Parameters:
 ///   - sessionId: The session id to be set. Must be a non-empty string.
 - (void)setSessionId:(NSString * _Nonnull)sessionId {
+    MPILogDebug(@"MPRokt setSessionId called - sessionId: %@", sessionId ? @"present" : @"nil");
     dispatch_async(dispatch_get_main_queue(), ^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:sessionId];
@@ -213,17 +238,31 @@ static const NSInteger kMPRoktKitId = 181;
 /// Get the session id to use within a non-native integration e.g. WebView.
 /// - Returns: The session id or nil if no session is present.
 - (NSString * _Nullable)getSessionId {
+    MPILogDebug(@"MPRokt getSessionId called");
     __block NSString *result = nil;
 
     NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+    
+    if (!activeKits || activeKits.count == 0) {
+        MPILogDebug(@"MPRokt getSessionId - no active kits found");
+        return nil;
+    }
+    
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
         if ([kitRegister.code integerValue] == kMPRoktKitId) {
             id kitInstance = kitRegister.wrapperInstance;
             if (kitInstance && [kitInstance respondsToSelector:@selector(getSessionId)]) {
                 result = [kitInstance performSelector:@selector(getSessionId)];
+                MPILogDebug(@"MPRokt getSessionId returning: %@", result ? @"session present" : @"nil");
                 break;
+            } else {
+                MPILogDebug(@"MPRokt getSessionId - kit found but doesn't respond to getSessionId");
             }
         }
+    }
+    
+    if (!result) {
+        MPILogDebug(@"MPRokt getSessionId - Rokt Kit not found in active kits");
     }
 
     return result;
@@ -254,7 +293,7 @@ static const NSInteger kMPRoktKitId = 181;
     
     // Return nil if no Rokt Kit configuration found
     if (!roktKitConfig) {
-        MPILogVerbose(@"Rokt kit configuration not found");
+        MPILogWarning(@"MPRokt kit configuration not found");
         return nil;
     }
     
@@ -276,13 +315,13 @@ static const NSInteger kMPRoktKitId = 181;
         @try {
             attributeMap = [NSJSONSerialization JSONObjectWithData:dataAttributeMap options:kNilOptions error:&error];
         } @catch (NSException *exception) {
-            MPILogVerbose(@"Exception parsing placement attribute map: %@", exception);
+            MPILogError(@"MPRokt exception parsing placement attribute map: %@", exception);
         }
         
         if (attributeMap && !error) {
-            MPILogVerbose(@"Successfully parsed placement attribute map with %lu entries", (unsigned long)attributeMap.count);
+            MPILogDebug(@"MPRokt successfully parsed placement attribute map with %lu entries", (unsigned long)attributeMap.count);
         } else {
-            MPILogVerbose(@"Failed to parse placement attribute map: %@", error);
+            MPILogError(@"MPRokt failed to parse placement attribute map: %@", error);
         }
     }
     
@@ -334,12 +373,21 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - user: The current mParticle user
 ///   - completion: Completion handler called with the resolved (possibly updated) user
 - (void)confirmUser:(NSDictionary<NSString *, NSString *> * _Nullable)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion {
+    MPILogDebug(@"MPRokt confirmUser - user: %@, email in attributes: %@, hashedEmail in attributes: %@",
+                user.userId,
+                attributes[@"email"] ? @"present" : @"nil",
+                attributes[@"emailsha256"] ? @"present" : @"nil");
+    
     NSString *email = attributes[@"email"];
     NSString *hashedEmail = attributes[@"emailsha256"];
     NSNumber *hashedEmailIdentity = [self getRoktHashedEmailUserIdentityType];
     
-    BOOL shouldIdentifyFromEmail = (email && ![email isEqualToString:user.identities[@(MPIdentityEmail)]]);
-    BOOL shouldIdentifyFromHash = (hashedEmail && hashedEmailIdentity && ![hashedEmail isEqualToString: user.identities[hashedEmailIdentity]]);
+    BOOL shouldIdentifyFromEmail = (email && ![email isEqual:user.identities[@(MPIdentityEmail)]]);
+    BOOL shouldIdentifyFromHash = (hashedEmail && hashedEmailIdentity && ![hashedEmail isEqual:user.identities[hashedEmailIdentity]]);
+
+    MPILogDebug(@"MPRokt confirmUser decision - shouldIdentifyFromEmail: %@, shouldIdentifyFromHash: %@",
+                shouldIdentifyFromEmail ? @"YES" : @"NO",
+                shouldIdentifyFromHash ? @"YES" : @"NO");
 
     if (shouldIdentifyFromEmail || shouldIdentifyFromHash) {
         // Identify the user with the new identity information
@@ -349,21 +397,22 @@ static const NSInteger kMPRoktKitId = 181;
             [identityRequest setIdentity:hashedEmail identityType:hashedEmailIdentity.unsignedIntegerValue];
         }
         
+        MPILogDebug(@"MPRokt confirmUser - calling identity API to sync user");
         [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
             if (error) {
-                MPILogVerbose(@"Failed to sync email from selectPlacement to user: %@", error);
+                MPILogError(@"MPRokt failed to sync email from selectPlacement to user: %@", error);
                 completion(user);
             } else {
-                MPILogVerbose(@"Updated user identity based off selectPlacement's attributes: %@", apiResult.user.identities);
+                MPILogVerbose(@"MPRokt updated user identity based off selectPlacement's attributes: %@", apiResult.user.identities);
                 completion(apiResult.user);
             }
         }];
         
         // Warn the customer if we had to identify and therefore delay their Rokt placement.
         if (shouldIdentifyFromEmail) {
-            MPILogVerbose(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+            MPILogWarning(@"MPRokt the existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
         } else if (shouldIdentifyFromHash) {
-            MPILogVerbose(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
+            MPILogWarning(@"MPRokt the existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
         }
     } else {
         completion(user);
