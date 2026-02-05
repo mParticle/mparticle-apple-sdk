@@ -10,7 +10,7 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
 
     var configureCustomModulesCustomModuleSettingsParams: [[AnyHashable: Any]]?
     func configureCustomModules(_ customModuleSettings: [[AnyHashable: Any]]?) {
-        configureCustomModulesCustomModuleSettingsPrarams = customModuleSettings
+        configureCustomModulesCustomModuleSettingsParams = customModuleSettings
     }
 
     func configureRampPercentage(_ rampPercentage: NSNumber?) {
