@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 
 import PackageDescription
 
@@ -11,7 +11,7 @@ let mParticle_Apple_SDK_NoLocation_Checksum = "c9aeeb511c407604dd31137e5c7141204
 
 let package = Package(
     name: "mParticle-Apple-SDK",
-    platforms: [.iOS(.v9), .tvOS(.v9)],
+    platforms: [.iOS(.v15), .tvOS(.v15)],
     products: [
         .library(
             name: "mParticle-Apple-SDK-NoLocation",
