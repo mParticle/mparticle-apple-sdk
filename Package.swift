@@ -31,7 +31,6 @@ let package = Package(
             name: "mParticle_Apple_SDK_NoLocation",
             dependencies: ["mParticle_Apple_SDK_Swift"],
             path: "mParticle-Apple-SDK",
-            exclude: ["Include/mParticle_Apple_SDK.h"],
             sources: nil,
             resources: [
                 .process("../PrivacyInfo.xcprivacy")
