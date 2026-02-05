@@ -255,6 +255,10 @@
 		7231B83D2EB961F2001565E5 /* MParticleLTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */; };
 		7231B83F2EB9627D001565E5 /* MParticleErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */; };
 		7231B8452EB9630E001565E5 /* MParticleCommerceEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8442EB9630E001565E5 /* MParticleCommerceEventTests.swift */; };
+		AAAA00012F3D000100000001 /* MParticleAPIRemovalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00022F3D000100000002 /* MParticleAPIRemovalTests.swift */; };
+		AAAA00032F3D000100000003 /* MPRoktEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00042F3D000100000004 /* MPRoktEventTests.swift */; };
+		AAAA00052F3D000100000005 /* DeprecatedAPIRemovalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00062F3D000100000006 /* DeprecatedAPIRemovalTests.swift */; };
+		AAAA00072F3D000100000007 /* SwiftToObjCMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00082F3D000100000008 /* SwiftToObjCMigrationTests.swift */; };
 		7231B84D2EB963B3001565E5 /* MParticleKitBatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */; };
 		7231B8552EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8542EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift */; };
 		7231B8582EB96598001565E5 /* MParticleRemoteNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */; };
@@ -584,6 +588,10 @@
 		7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleLTVTests.swift; sourceTree = "<group>"; };
 		7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleErrorTests.swift; sourceTree = "<group>"; };
 		7231B8442EB9630E001565E5 /* MParticleCommerceEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleCommerceEventTests.swift; sourceTree = "<group>"; };
+		AAAA00022F3D000100000002 /* MParticleAPIRemovalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleAPIRemovalTests.swift; sourceTree = "<group>"; };
+		AAAA00042F3D000100000004 /* MPRoktEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPRoktEventTests.swift; sourceTree = "<group>"; };
+		AAAA00062F3D000100000006 /* DeprecatedAPIRemovalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeprecatedAPIRemovalTests.swift; sourceTree = "<group>"; };
+		AAAA00082F3D000100000008 /* SwiftToObjCMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftToObjCMigrationTests.swift; sourceTree = "<group>"; };
 		7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleKitBatchTests.swift; sourceTree = "<group>"; };
 		7231B8542EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticlePushNotificationTokenTests.swift; sourceTree = "<group>"; };
 		7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleRemoteNotificationTests.swift; sourceTree = "<group>"; };
@@ -1163,6 +1171,9 @@
 			isa = PBXGroup;
 			children = (
 				72ACF6452EBA71A300F8EE5B /* MParticle */,
+				AAAA00062F3D000100000006 /* DeprecatedAPIRemovalTests.swift */,
+				AAAA00042F3D000100000004 /* MPRoktEventTests.swift */,
+				AAAA00082F3D000100000008 /* SwiftToObjCMigrationTests.swift */,
 				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
 				35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */,
 				35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */,
@@ -1177,6 +1188,7 @@
 		72ACF6452EBA71A300F8EE5B /* MParticle */ = {
 			isa = PBXGroup;
 			children = (
+				AAAA00022F3D000100000002 /* MParticleAPIRemovalTests.swift */,
 				7231B8342EB95F9F001565E5 /* MParticleBreadcrumbTests.swift */,
 				7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */,
 				7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */,
@@ -1577,6 +1589,10 @@
 				531BCF3B2B28A83E00F5C573 /* MPIdentityCachingTests.m in Sources */,
 				534CD2A029CE2CE1008452B3 /* MParticleTests.m in Sources */,
 				7231B8452EB9630E001565E5 /* MParticleCommerceEventTests.swift in Sources */,
+				AAAA00012F3D000100000001 /* MParticleAPIRemovalTests.swift in Sources */,
+				AAAA00032F3D000100000003 /* MPRoktEventTests.swift in Sources */,
+				AAAA00052F3D000100000005 /* DeprecatedAPIRemovalTests.swift in Sources */,
+				AAAA00072F3D000100000007 /* SwiftToObjCMigrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
