@@ -609,7 +609,6 @@
 		D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUploadSettings.h; sourceTree = "<group>"; };
 		D34286112D419CA700FEC2C8 /* MPUploadSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUploadSettings.m; sourceTree = "<group>"; };
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
-		D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK.h; sourceTree = "<group>"; };
 		D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D3CEDAC92CB027E1001B32DE /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
 		D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConvertJS.m; sourceTree = "<group>"; };
@@ -1008,7 +1007,6 @@
 				35C3DE742F291DAF0077C0FD /* MPGDPRConsent.h */,
 				53A79C2329CDFB4800E7489F /* MPEvent.h */,
 				53A79C2429CDFB4800E7489F /* MPBaseEvent.h */,
-				D3B3E2062AE028EC001AB58C /* mParticle_Apple_SDK.h */,
 				D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */,
 				53A79C2529CDFB4800E7489F /* MPForwardRecord.h */,
 				53A79C2629CDFB4800E7489F /* MPKitProtocol.h */,

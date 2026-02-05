@@ -31,6 +31,7 @@
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
 #import "MPUserDefaultsConnector.h"
+#import "SceneDelegateHandler.h"
 
 #if TARGET_OS_IOS == 1
     #import <WebKit/WebKit.h>
