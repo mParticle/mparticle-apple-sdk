@@ -5,12 +5,12 @@ on:
   workflow_dispatch:
 
 env:
-  XCODE_VERSION: 15.4
+  XCODE_VERSION: 16.4
 
 jobs:
   run-ios-tests:
     timeout-minutes: 30
-    runs-on: macOS-14
+    runs-on: macOS-15
 
     steps:
       - name: "Checkout Cross Platform Tests"
@@ -23,7 +23,7 @@ jobs:
       - name: "Checkout iOS SDK"
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: .sdks/apple
 
       - name: "Install JDK 17"
