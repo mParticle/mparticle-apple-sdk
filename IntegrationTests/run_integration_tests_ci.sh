@@ -21,9 +21,7 @@ WIREMOCK_JAR="${WIREMOCK_JAR:-../wiremock.jar}"
 WIREMOCK_PID_FILE="${SCRIPT_DIR}/wiremock.pid"
 WIREMOCK_LOG_FILE="${SCRIPT_DIR}/wiremock.log"
 
-# === Build framework and generate project ===
-build_framework
-
+# === Generate project with Tuist (using source-based distribution) ===
 echo "🔄 Generating project with Tuist..."
 tuist generate --no-open
 
