@@ -8,7 +8,7 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func configureKits(_ kitConfigurations: [[AnyHashable: Any]]?) {
     }
 
-    var configureCustomModulesCustomModuleSettingsPrarams: [[AnyHashable: Any]]?
+    var configureCustomModulesCustomModuleSettingsParams: [[AnyHashable: Any]]?
     func configureCustomModules(_ customModuleSettings: [[AnyHashable: Any]]?) {
         configureCustomModulesCustomModuleSettingsPrarams = customModuleSettings
     }
