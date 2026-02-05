@@ -28,10 +28,6 @@ jobs:
     uses: ./.github/workflows/native-tests.yml
     secrets: inherit
 
-  cross-platform-tests:
-    uses: ./.github/workflows/cross-platform-tests.yml
-    secrets: inherit
-
   build-secondary-platforms:
     uses: ./.github/workflows/build-secondary-platforms.yml
     secrets: inherit
@@ -49,7 +45,6 @@ jobs:
     needs:
       - build-and-lint
       - native-tests
-      - cross-platform-tests
       - build-secondary-platforms
       - integration-tests
       - size-report

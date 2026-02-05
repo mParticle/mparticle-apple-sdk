@@ -1,17 +1,19 @@
 name: Cross Platform Tests
 
 on:
-  workflow_call:
-  workflow_dispatch:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
-  XCODE_VERSION: 16.4
+  XCODE_VERSION: "16.4"
 
 jobs:
   run-ios-tests:
     timeout-minutes: 30
     runs-on: macOS-15
-
     steps:
       - name: "Checkout Cross Platform Tests"
         uses: actions/checkout@v6
@@ -19,52 +21,26 @@ jobs:
           submodules: "true"
           repository: mParticle/crossplatform-sdk-tests
           fetch-depth: 1
-
       - name: "Checkout iOS SDK"
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.head_ref }}
           path: .sdks/apple
-
       - name: "Install JDK 17"
         uses: actions/setup-java@v5
         with:
           distribution: "zulu"
           java-version: "17"
           cache: "gradle"
-
       - name: "Install Cocoapods"
-        run: |
-          sudo gem install cocoapods
-          sudo gem install cocoapods-generate
-
-      - name: Show installed Xcodes
-        run: |
-          ls -la /Applications | sed -n '1,200p'
-          ls -la /Applications/Xcode*.app || true
-
-      - name: Select Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ env.XCODE_VERSION }}
-
-      - name: Confirm Xcode toolchain
-        run: |
-          xcode-select -p
-          xcodebuild -version
-          sudo xcodebuild -runFirstLaunch
-
+        run: sudo gem install cocoapods; sudo gem install cocoapods-generate
+      - name: Choose Xcode version
+        run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer; xcode-select -p
       - name: Run Tests
-        env:
-          DEVELOPER_DIR: /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
-        run: |
-          # Reduce flakiness from cached Konan/Gradle state when runner images change
-          rm -rf ~/.konan || true
-          ./gradlew --no-daemon runIos
-
+        run: ./gradlew runIos
       - name: Archive Test Results
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: ios-test-results
-          path: /Users/runner/Library/Developer/Xcode/DerivedData
+          path: Users/runner/Library/Developer/Xcode/DerivedData
