@@ -386,7 +386,7 @@ static const NSInteger kMPRoktKitId = 181;
 
     if (shouldIdentifyFromEmail || shouldIdentifyFromHash) {
         // Identify the user with the new identity information
-        MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
+        MPIdentityApiRequest *identityRequest = user ? [MPIdentityApiRequest requestWithUser:user] : [MPIdentityApiRequest requestWithEmptyUser];
         [identityRequest setIdentity:email identityType:MPIdentityEmail];
         if (hashedEmailIdentity != nil) {
             [identityRequest setIdentity:hashedEmail identityType:hashedEmailIdentity.unsignedIntegerValue];
