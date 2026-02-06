@@ -1,0 +1,6 @@
+framework module mParticle_Apple_SDK {
+    umbrella header "mParticle_Apple_SDK.h"
+
+    export *
+    module * { export * }
+}

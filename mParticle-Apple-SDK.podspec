@@ -27,30 +27,11 @@ Pod::Spec.new do |s|
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
     s.swift_versions = ["5.0"]
-    
-    s.subspec 'mParticleNoLocation' do |ss|
-        ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ss.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
-        ss.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
-    end
 
     s.subspec 'AppExtension' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ext.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
-    end
-    
-    s.subspec 'AppExtensionNoLocation' do |ext|
-        ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ext.pod_target_xcconfig  = {
-            'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
-            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
-        }
         ext.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
     end
 end
