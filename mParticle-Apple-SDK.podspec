@@ -22,11 +22,19 @@ Pod::Spec.new do |s|
     s.documentation_url = "https://docs.mparticle.com/developers/sdk/ios/"
     s.social_media_url  = "https://twitter.com/mparticle"
     s.requires_arc      = true
-    s.default_subspec   = 'mParticleNoLocation'
     s.module_name       = 'mParticle_Apple_SDK'
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
     s.swift_versions = ["5.0"]
+
+    s.default_subspecs = 'mParticle'
+
+    s.subspec 'mParticle' do |mp|
+        mp.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
+        mp.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
+        mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
+        mp.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
+    end
 
     s.subspec 'AppExtension' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'

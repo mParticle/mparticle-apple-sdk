@@ -202,7 +202,6 @@ jobs:
         run: |
           # Update URLs to point to new version (checksums will be updated after building)
           sed -i '' "s|https://static.mparticle.com/sdk/ios/v[^/]*/mParticle_Apple_SDK.xcframework.zip|https://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip|g" Package.swift
-          sed -i '' "s|https://static.mparticle.com/sdk/ios/v[^/]*/mParticle_Apple_SDK_NoLocation.xcframework.zip|https://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK_NoLocation.xcframework.zip|g" Package.swift
 
       - name: Build framework artifacts
         run: |
@@ -215,14 +214,11 @@ jobs:
         run: |
           # Compute checksums for the built xcframeworks
           SDK_CHECKSUM=$(swift package compute-checksum mParticle_Apple_SDK.xcframework.zip)
-          SDK_NOLOCATION_CHECKSUM=$(swift package compute-checksum mParticle_Apple_SDK_NoLocation.xcframework.zip)
 
           echo "SDK Checksum: $SDK_CHECKSUM"
-          echo "SDK NoLocation Checksum: $SDK_NOLOCATION_CHECKSUM"
 
           # Update Package.swift with the correct checksums
           sed -i '' "s/let mParticle_Apple_SDK_Checksum = \"[^\"]*\"/let mParticle_Apple_SDK_Checksum = \"${SDK_CHECKSUM}\"/" Package.swift
-          sed -i '' "s/let mParticle_Apple_SDK_NoLocation_Checksum = \"[^\"]*\"/let mParticle_Apple_SDK_NoLocation_Checksum = \"${SDK_NOLOCATION_CHECKSUM}\"/" Package.swift
 
           echo "Updated Package.swift:"
           head -15 Package.swift
@@ -234,11 +230,9 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.MP_IOS_SDK_S3_REGION }}
         run: |
           aws s3 cp mParticle_Apple_SDK.xcframework.zip s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip
-          aws s3 cp mParticle_Apple_SDK_NoLocation.xcframework.zip s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK_NoLocation.xcframework.zip
 
           echo "Uploaded xcframeworks to S3:"
           echo "  - s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip"
-          echo "  - s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK_NoLocation.xcframework.zip"
 
       - name: Commit version changes
         run: |
@@ -277,7 +271,6 @@ jobs:
 
           ### XCFrameworks uploaded to S3
           - \`s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip\`
-          - \`s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK_NoLocation.xcframework.zip\`
 
           ### Files Updated
           - \`CHANGELOG.md\`
@@ -310,8 +303,6 @@ jobs:
           - Attach the following artifacts (download from S3 or build locally):
             - \`mParticle_Apple_SDK.framework.zip\`
             - \`mParticle_Apple_SDK.xcframework.zip\`
-            - \`mParticle_Apple_SDK_NoLocation.framework.zip\`
-            - \`mParticle_Apple_SDK_NoLocation.xcframework.zip\`
             - \`generated-docs.zip\`
 
           Or use the GitHub CLI:
