@@ -41,7 +41,7 @@ jobs:
         run: find . -path '*.podspec' -exec perl -pi -e 's/.+\.social_media_url.+//' {} \;
 
       - name: Lint with CocoaPods
-        run: pod lib lint --subspec=mParticleNoLocation --include-podspecs=mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
+        run: pod lib lint --include-podspecs=mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
 
       - name: Undo twitter change to podspec
         run: git checkout *.podspec
@@ -55,12 +55,12 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Build SDK NoLocation
+      - name: Build SDK
         run: |
           set -o pipefail
           xcodebuild \
             -project "mParticle-Apple-SDK.xcodeproj" \
-            -scheme "mParticle-Apple-SDK-NoLocation" \
+            -scheme "mParticle-Apple-SDK" \
             -destination "generic/platform=iOS" \
             clean build | xcpretty
 
@@ -75,7 +75,7 @@ jobs:
 
       - name: Run static analyzer
         run: |
-          bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK-NoLocation" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -v "warning: Metadata extraction skipped" | grep -F -v "Repeated use of MParticle sharedInstance in one method; assign to a local variable once." | grep -F -v "warning: Run script build phase '"'"'Run Script'"'"' will be run during every build" | grep -B3 "warning")'
+          bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -v "warning: Metadata extraction skipped" | grep -F -v "Repeated use of MParticle sharedInstance in one method; assign to a local variable once." | grep -F -v "warning: Run script build phase '"'"'Run Script'"'"' will be run during every build" | grep -B3 "warning")'
 
   pr-notify:
     if: >

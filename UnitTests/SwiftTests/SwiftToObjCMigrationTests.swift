@@ -1,5 +1,5 @@
 import XCTest
-@testable import mParticle_Apple_SDK_NoLocation
+@testable import mParticle_Apple_SDK
 
 /// Tests to verify Swift classes migrated to Objective-C work correctly in SDK 9.0
 final class SwiftToObjCMigrationTests: XCTestCase {

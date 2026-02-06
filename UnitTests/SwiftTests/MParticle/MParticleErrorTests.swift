@@ -1,6 +1,6 @@
 
 import XCTest
-import mParticle_Apple_SDK_NoLocation
+import mParticle_Apple_SDK
 
 final class MParticleErrorTests: MParticleTestBase {
     

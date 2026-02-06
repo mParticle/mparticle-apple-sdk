@@ -1,5 +1,5 @@
 import XCTest
-@testable import mParticle_Apple_SDK_NoLocation
+@testable import mParticle_Apple_SDK
 
 /// Tests to verify Rokt event classes are now top-level (not nested) in SDK 9.0
 final class MPRoktEventTests: XCTestCase {

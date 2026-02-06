@@ -1,5 +1,5 @@
 import XCTest
-import mParticle_Apple_SDK_NoLocation
+import mParticle_Apple_SDK
 
 @available(*, deprecated, message: "Used only for testing deprecated APIs")
 final class MParticleCommerceEventTests: MParticleTestBase {

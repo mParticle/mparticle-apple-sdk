@@ -55,7 +55,7 @@ build_sdk_from_source() {
 	echo "  Archiving for iOS device..." >&2
 	xcodebuild archive \
 		-project "${SDK_PROJECT}" \
-		-scheme "mParticle-Apple-SDK-NoLocation" \
+		-scheme "mParticle-Apple-SDK" \
 		-destination "generic/platform=iOS" \
 		-archivePath "${ARCHIVES_DIR}/mParticle-Apple-SDK-iOS" \
 		SKIP_INSTALL=NO \
@@ -63,11 +63,9 @@ build_sdk_from_source() {
 		-quiet >&2 2>&1
 
 	# Create xcframework from the archive
-	# Note: NoLocation scheme produces mParticle_Apple_SDK_NoLocation.framework but we output
-	# to mParticle_Apple_SDK.xcframework for compatibility with LocalSDK/Package.swift
 	echo "  Creating xcframework..." >&2
 	xcodebuild -create-xcframework \
-		-archive "${ARCHIVES_DIR}/mParticle-Apple-SDK-iOS.xcarchive" -framework mParticle_Apple_SDK_NoLocation.framework \
+		-archive "${ARCHIVES_DIR}/mParticle-Apple-SDK-iOS.xcarchive" -framework mParticle_Apple_SDK.framework \
 		-output "${BUILD_DIR}/mParticle_Apple_SDK.xcframework" \
 		>&2 2>&1 || true
 
