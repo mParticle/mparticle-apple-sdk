@@ -321,8 +321,6 @@ jobs:
             --notes-file <(awk '/^# \\[${VERSION}\\]/{flag=1; next} /^# \\[/{flag=0} flag' CHANGELOG.md) \\
             mParticle_Apple_SDK.framework.zip \\
             mParticle_Apple_SDK.xcframework.zip \\
-            mParticle_Apple_SDK_NoLocation.framework.zip \\
-            mParticle_Apple_SDK_NoLocation.xcframework.zip \\
             generated-docs.zip
           \`\`\`
 
