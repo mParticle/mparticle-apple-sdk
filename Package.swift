@@ -3,7 +3,7 @@
 import PackageDescription
 
 let mParticle_Apple_SDK_URL =
-    "https://static.mparticle.com/sdk/ios/v8.41.1/mParticle_Apple_SDK_.xcframework.zip"
+    "https://static.mparticle.com/sdk/ios/v8.41.1/mParticle_Apple_SDK.xcframework.zip"
 let mParticle_Apple_SDK_Checksum = "c9aeeb511c407604dd31137e5c714120404ca8d884fd965c4e919b0060d52e12"
 
 let package = Package(
@@ -23,7 +23,7 @@ let package = Package(
             name: "mParticle_Apple_SDK_Swift",
             path: "mParticle-Apple-SDK-Swift/Sources",
         ),
-        // Objective-C SDK (NoLocation variant) - source-based distribution
+        // Objective-C SDK - source-based distribution
         .target(
             name: "mParticle_Apple_SDK",
             dependencies: ["mParticle_Apple_SDK_Swift"],
