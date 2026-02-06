@@ -431,6 +431,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler {
+    MPILogDebug(@"Requesting SDK configuration from server");
     [self.networkCommunication requestConfig:nil withCompletionHandler:^(BOOL success) {
         if (completionHandler) {
             completionHandler(success);
@@ -1393,6 +1394,8 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
+    MPILogDebug(@"Backend controller starting - firstRun: %@, startKitsAsync: %@",
+                firstRun ? @"YES" : @"NO", startKitsAsync ? @"YES" : @"NO");
     
     MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
     if (consentState != nil && storedConsentState == nil) {
@@ -1400,9 +1403,12 @@ static BOOL skipNextUpload = NO;
     }
     
     if (![MParticle sharedInstance].stateMachine.optOut) {
+        MPILogDebug(@"Dispatching kit initialization to message queue");
         dispatch_async([MParticle messageQueue], ^{
             [[MParticle sharedInstance].kitContainer_PRIVATE initializeKits];
         });
+    } else {
+        MPILogWarning(@"Skipping kit initialization - SDK is opted out");
     }
 
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
@@ -1419,6 +1425,7 @@ static BOOL skipNextUpload = NO;
     }
     
     dispatch_async([MParticle messageQueue], ^{
+        MPILogDebug(@"Creating persistence controller");
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
         
         // Check if we've switched workspaces on startup
@@ -1459,6 +1466,7 @@ static BOOL skipNextUpload = NO;
         
         void (^searchAdsCompletion)(void) = ^{
             [self processDidFinishLaunching:self.didFinishLaunchingNotification];
+            MPILogDebug(@"Initiating config request and upload cycle");
             [self waitForKitsAndUploadWithCompletionHandler:nil];
         };
         
@@ -1546,6 +1554,7 @@ static BOOL skipNextUpload = NO;
                 completionHandler();
             }
         } else {
+            MPILogVerbose(@"Kits not ready, retrying upload check in 1 second");
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), [MParticle messageQueue], ^{
                 [self waitForKitsAndUploadWithCompletionHandler:completionHandler];
             });
@@ -1557,6 +1566,7 @@ static BOOL skipNextUpload = NO;
 - (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler {
     [self requestConfig:^(BOOL uploadBatch) {
         if (!uploadBatch) {
+            MPILogDebug(@"Config request returned uploadBatch: NO, skipping upload");
             if (completionHandler) {
                 completionHandler(NO);
             }
@@ -1567,6 +1577,7 @@ static BOOL skipNextUpload = NO;
         BOOL shouldDelayUploadForKits = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
         BOOL shouldDelayUpload = shouldDelayUploadForKits || [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
         if (shouldDelayUpload) {
+            MPILogWarning(@"Delaying upload - kits still initializing (shouldDelayForKits: %@)", shouldDelayUploadForKits ? @"YES" : @"NO");
             if (completionHandler) {
                 completionHandler(YES);
             }

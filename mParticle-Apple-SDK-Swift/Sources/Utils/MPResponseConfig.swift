@@ -157,6 +157,7 @@ public class RemoteConfig: NSObject {
         super.init()
 
         if self.configuration == nil || self.configuration?.isEmpty == true {
+            connector.logger.warning("MPResponseConfig init - configuration is nil or empty, config processing skipped")
             return nil
         }
         setUp(dataReceivedFromServer: dataReceivedFromServer)
@@ -199,10 +200,15 @@ public class RemoteConfig: NSObject {
 
                 let shouldDefer = hasConsentFilters && !hasInitialIdentity
                 if !shouldDefer {
+                    connector.logger.debug("MPResponseConfig - dispatching configureKits to main queue (immediate)")
                     DispatchQueue.main.async {
                         self.connector.configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]])
                     }
                 } else {
+                    connector.logger
+                        .debug(
+                            "MPResponseConfig - deferring kit configuration (hasConsentFilters: true, hasInitialIdentity: false)"
+                        )
                     connector.deferredKitConfiguration = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]]
                 }
             }
