@@ -1,5 +1,5 @@
 import XCTest
-@testable import mParticle_Apple_SDK_NoLocation
+@testable import mParticle_Apple_SDK
 
 /// Tests to verify that deprecated/removed APIs are no longer accessible in SDK 9.0
 final class MParticleAPIRemovalTests: XCTestCase {
