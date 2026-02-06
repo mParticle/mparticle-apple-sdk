@@ -294,6 +294,32 @@ func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
 
 ---
 
+### Removed Location Support
+
+In version 9.0.0, Location support has been removed from the SDK. This change simplifies the SDK distribution and affects the available build targets.
+
+#### What Has Changed
+
+- Location-related functionality has been removed
+- The SDK now provides a single target without Location support
+- The target name has been simplified to match the base target name (the Location suffix has been removed)
+
+#### Migration Steps
+
+If you were previously using a target with Location support, you should:
+
+1. Update your project configuration to use the standard target (without Location suffix)
+2. Remove any Location-related dependencies or imports
+3. Update any build scripts or CI/CD configurations that reference the Location-specific target name
+
+#### Notes
+
+- The simplified target name now matches the base SDK target name
+- All core SDK functionality remains available through the standard target
+- Location-related features are no longer available in the SDK
+
+---
+
 ## Migrating from versions < 8.0.0
 
 For migration guidance from SDK 7.x to SDK 8.x, please see [migration-guide-v8.md](migration-guide-v8.md).
