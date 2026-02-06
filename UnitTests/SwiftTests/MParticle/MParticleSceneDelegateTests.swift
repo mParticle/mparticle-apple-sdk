@@ -1,5 +1,5 @@
 import XCTest
-@testable import mParticle_Apple_SDK_NoLocation
+@testable import mParticle_Apple_SDK
 internal import mParticle_Apple_SDK_Swift
 
 final class MParticleSceneDelegateTests: XCTestCase {
