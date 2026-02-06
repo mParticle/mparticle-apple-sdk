@@ -400,14 +400,14 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                     retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
                     retryAfter = retryAfter > 0 ? retryAfter : 7200;
                 } else {
-                    MPILogError(@"Invalid 'Retry-After' date: %@", suggestedRetryAfter);
+                    MPILogError(@"Invalid 'Retry-After' date: %@ - using default retry interval", suggestedRetryAfter);
                 }
             } else { // Number of seconds
                 @try {
                     retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
                 } @catch (NSException *exception) {
                     retryAfter = 7200;
-                    MPILogError(@"Invalid 'Retry-After' value: %@", suggestedRetryAfter);
+                    MPILogError(@"Invalid 'Retry-After' value: %@ - using default retry interval", suggestedRetryAfter);
                 }
             }
         } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
@@ -495,6 +495,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
         
     if (responseCode == HTTPStatusCodeNotModified) {
+        MPILogDebug(@"Config response 304 Not Modified - using cached config");
         MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
         [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
         
@@ -507,7 +508,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     if (!data && success) {
         completionHandler(NO);
-        MPILogWarning(@"Failed config request");
+        MPILogError(@"Config request failed - no data received (responseCode: %ld). Kits may not initialize.", (long)responseCode);
         [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.url.absoluteString body:[NSDictionary dictionary] responseCode:HTTPStatusCodeNoContent];
         return;
     }
@@ -540,6 +541,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         
         completionHandler(success);
     } else {
+        MPILogError(@"Config request failed - could not parse response or wrong message type (responseCode: %ld). Kits may not initialize.", (long)responseCode);
         completionHandler(NO);
     }
 }
@@ -884,6 +886,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 - (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion {
     
     if (self.identifying) {
+        MPILogWarning(@"Identity API request blocked - another identity request is already in progress");
         if (completion) {
             completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeRequestInProgress userInfo:@{mParticleIdentityErrorKey:@"Identity API request in progress."}]);
         }
@@ -891,6 +894,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     if ([MParticle sharedInstance].stateMachine.optOut) {
+        MPILogWarning(@"Identity API request blocked - SDK is opted out");
         if (completion) {
             completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeOptOut userInfo:@{mParticleIdentityErrorKey:@"Opt Out Enabled."}]);
         }
@@ -1063,13 +1067,17 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             MPIdentityHTTPErrorResponse *errorResponse;
             if (error) {
                 if (error.code == MPConnectivityErrorCodeNoConnection) {
+                    MPILogError(@"Identity request failed - no network connectivity");
                     errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeClientNoConnection message:@"Device has no network connectivity." error:error];
                 } else if ([error.domain isEqualToString: NSURLErrorDomain] ){
+                    MPILogError(@"Identity request failed - SSL error: %@ (code: %ld)", error.localizedDescription, (long)error.code);
                     errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeSSLError message:@"Failed to establish SSL connection." error:error];
                 } else {
+                    MPILogError(@"Identity request failed - unknown error: %@ (domain: %@, code: %ld)", error.localizedDescription, error.domain, (long)error.code);
                     errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeUnknown message:@"An unknown client-side error has occured" error:error];
                 }
             } else {
+                MPILogError(@"Identity request failed - HTTP error (code: %ld)", (long)responseCode);
                 errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];
             }
             completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:errorResponse.code userInfo:@{mParticleIdentityErrorKey:errorResponse}]);

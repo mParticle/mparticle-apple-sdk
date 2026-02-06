@@ -1,4 +1,5 @@
 #import "mParticle.h"
+#import "MPILogger.h"
 #import "MPAppNotificationHandler.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardQueueParameters.h"
@@ -358,13 +359,18 @@ MPLog* logger;
     NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
     
     if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
+        MPILogDebug(@"Processing deferred kit configuration with %lu kit(s)", (unsigned long)deferredKitConfiguration.count);
         [executor executeOnMain: ^{
             [self.kitContainer configureKits:deferredKitConfiguration];
             self.deferredKitConfiguration_PRIVATE = nil;
         }];
+    } else {
+        MPILogDebug(@"No deferred kit configuration to process");
     }
     
     if (options.onIdentifyComplete) {
+        MPILogDebug(@"Invoking onIdentifyComplete callback - result: %@, error: %@",
+                    apiResult ? @"present" : @"nil", error ? error.localizedDescription : @"none");
         [executor executeOnMain: ^{
             options.onIdentifyComplete(apiResult, error);
         }];
@@ -373,6 +379,7 @@ MPLog* logger;
 
 - (void)configureWithOptions:(MParticleOptions * _Nonnull)options {
     NSMutableDictionary* settings = self.settingsProvider.configSettings;
+    MPILogDebug(@"configureWithOptions - settings present: %@", settings ? @"YES" : @"NO");
     if (settings) {
         if (settings[kMPConfigSessionTimeout] && !options.isSessionTimeoutSet) {
             self.backendController.sessionTimeout = [settings[kMPConfigSessionTimeout] doubleValue];
@@ -408,6 +415,7 @@ MPLog* logger;
 - (void)startWithKeyCallback:(BOOL)firstRun
                      options:(MParticleOptions * _Nonnull)options
                 userDefaults:(id<MPUserDefaultsProtocol>)userDefaults {
+    MPILogDebug(@"SDK startWithKeyCallback - firstRun: %@", firstRun ? @"YES" : @"NO");
 
     MPIdentityApiRequest *identifyRequest = nil;
     if (options.identifyRequest) {
@@ -428,9 +436,11 @@ MPLog* logger;
     
     self->_optOut = self.stateMachine.optOut;
     
+    MPILogDebug(@"Applying SDK configuration from options");
     [self configureWithOptions:options];
     
     self.initialized = YES;
+    MPILogDebug(@"SDK initialization complete - initialized: YES");
     self.settingsProvider.configSettings = nil;
     [executor executeOnMain: ^{
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleDidFinishInitializing
@@ -445,6 +455,9 @@ MPLog* logger;
     }
     sdkInitialized = YES;
     
+    MPILogDebug(@"SDK initialization starting - environment: %ld, logLevel: %lu",
+                (long)options.environment, (unsigned long)options.logLevel);
+    
     [self.listenerController onAPICalled:_cmd parameter1:options];
     
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultUserAgentOverride:options.defaultAgent];
@@ -453,6 +466,10 @@ MPLog* logger;
     
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;
+        MPILogDebug(@"Network options configured - pinningDisabled: %@, pinningDisabledInDevelopment: %@, configHost: %@",
+                    options.networkOptions.pinningDisabled ? @"YES" : @"NO",
+                    options.networkOptions.pinningDisabledInDevelopment ? @"YES" : @"NO",
+                    options.networkOptions.configHost ?: @"default");
     }
     
     NSString *apiKey = options.apiKey;
@@ -527,6 +544,8 @@ MPLog* logger;
     _kitContainer = _kitContainer_PRIVATE;
     
     NSUInteger sideLoadedKitsCount = _kitContainer_PRIVATE.sideloadedKits.count;
+    MPILogDebug(@"Kit container created - sideloadedKits: %lu, disabledKits: %lu",
+                (unsigned long)sideLoadedKitsCount, (unsigned long)options.disabledKits.count);
     [userDefaults setSideloadedKitsCount:sideLoadedKitsCount];
 
     [self.backendController startWithKey:apiKey
