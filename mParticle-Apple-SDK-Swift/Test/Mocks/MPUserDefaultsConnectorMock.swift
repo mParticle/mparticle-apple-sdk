@@ -8,7 +8,9 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func configureKits(_ kitConfigurations: [[AnyHashable: Any]]?) {
     }
 
+    var configureCustomModulesCustomModuleSettingsParams: [[AnyHashable: Any]]?
     func configureCustomModules(_ customModuleSettings: [[AnyHashable: Any]]?) {
+        configureCustomModulesCustomModuleSettingsParams = customModuleSettings
     }
 
     func configureRampPercentage(_ rampPercentage: NSNumber?) {
@@ -55,15 +57,19 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func unregisterForRemoteNotifications() {
     }
 
+    var canCreateConfigurationReturnValue = false
+
     func canCreateConfiguration() -> Bool {
-        return false
+        return canCreateConfigurationReturnValue
     }
 
     func mpId() -> NSNumber {
         1
     }
 
+    var configMaxAgeSecondsReturnValue: NSNumber?
+
     func configMaxAgeSeconds() -> NSNumber? {
-        1
+        configMaxAgeSecondsReturnValue
     }
 }

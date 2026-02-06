@@ -356,4 +356,130 @@ class MPUserDefaultsTests: XCTestCase {
             userDefaults.getConfiguration() as? NSDictionary
         )
     }
+
+    func testDeleteDueToMaxConfigAge() {
+        let userDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
+        userDefaults.deleteConfiguration()
+        connector.configMaxAgeSecondsReturnValue = 1
+
+        let configuration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+
+        XCTAssertNil(userDefaults.getConfiguration())
+        let requestTimestamp = Date().timeIntervalSince1970 - 100
+
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        XCTAssertNotNil(userDefaults.getConfiguration())
+
+        XCTAssertTrue(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
+        if MPUserDefaults.isOlderThanConfigMaxAgeSeconds() {
+            MPUserDefaults.deleteConfig()
+        }
+        XCTAssertNil(userDefaults.getConfiguration())
+    }
+
+    func testShouldDeleteDueToMaxConfigAge() {
+        let userDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
+        userDefaults.deleteConfiguration()
+        connector.configMaxAgeSecondsReturnValue = 60
+
+        let configuration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+        let requestTimestamp = Date().timeIntervalSince1970
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        XCTAssertFalse(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
+
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp - 100.0,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        XCTAssertTrue(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
+    }
+
+    func testShouldDeleteDueToMaxConfigAgeWhenNil() {
+        connector.configMaxAgeSecondsReturnValue = nil
+
+        let configuration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+
+        let requestTimestamp = Date().timeIntervalSince1970
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        XCTAssertFalse(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
+
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp - 1000.0,
+            currentAge: 0,
+            maxAge: nil
+        )
+        XCTAssertFalse(MPUserDefaults.isOlderThanConfigMaxAgeSeconds())
+    }
+
+    func testSaveRestore() {
+        let userDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
+        userDefaults.deleteConfiguration()
+        connector.canCreateConfigurationReturnValue = true
+
+        var configuration: [String: Any] = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+
+        let requestTimestamp = Date().timeIntervalSince1970
+        userDefaults.setConfiguration(
+            configuration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        configuration = [
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeForce,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+
+        let restoredResponseConfig = MPUserDefaults.restore()
+        XCTAssertNotNil(restoredResponseConfig)
+        XCTAssertEqual(
+            (restoredResponseConfig?.configuration as! [String: Any]) as NSDictionary,
+            configuration as NSDictionary
+        )
+    }
 }
