@@ -84,3 +84,5 @@ vendor/
 # Integration Tests - Build Artifacts
 archives/
 IntegrationTests/temp_artifacts/
+
+*.xcframework

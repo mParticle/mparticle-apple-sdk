@@ -125,7 +125,7 @@ static const NSInteger kMPRoktKitId = 181;
                 ];
             });
         } else {
-            MPILogWarning(@"MPRokt selectPlacements not performed - Rokt Kit not configured. Ensure Rokt Kit is enabled in mParticle dashboard.");
+            MPILogWarning(@"MPRokt selectPlacements not performed - Rokt Kit not configured. Check with your Rokt representative to ensure the kit is enabled.");
         }
     }];
 }
@@ -274,11 +274,18 @@ static const NSInteger kMPRoktKitId = 181;
 /// @return The Rokt Kit configuration dictionary, or nil if Rokt Kit is not configured.
 - (NSDictionary * _Nullable)getRoktKitConfiguration {
     NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
+    MPILogDebug(@"MPRokt getRoktKitConfiguration - examining %lu kit config(s)", (unsigned long)kitConfigs.count);
     for (NSDictionary *kitConfig in kitConfigs) {
         if ([kitConfig[kMPKitConfigurationIdKey] integerValue] == kMPRoktKitId) {
             return kitConfig;
         }
     }
+    NSMutableArray *kitIds = [NSMutableArray array];
+    for (NSDictionary *kitConfig in kitConfigs) {
+        [kitIds addObject:kitConfig[kMPKitConfigurationIdKey] ?: @"nil"];
+    }
+    MPILogWarning(@"MPRokt kit (ID %ld) not found in configurations. Available kit IDs: %@",
+                  (long)kMPRoktKitId, kitIds);
     return nil;
 }
 
@@ -339,6 +346,9 @@ static const NSInteger kMPRoktKitId = 181;
     NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPHashedEmailUserIdentityType];
     NSNumber *hashedIdentityTypeNumber = [MPIdentityHTTPIdentities identityTypeForString:hashedIdentityTypeString.lowercaseString];
     
+    MPILogDebug(@"MPRokt getRoktHashedEmailUserIdentityType - typeString: %@, typeNumber: %@",
+                hashedIdentityTypeString ?: @"nil", hashedIdentityTypeNumber ?: @"nil");
+    
     return hashedIdentityTypeNumber;
 }
 
@@ -351,7 +361,9 @@ static const NSInteger kMPRoktKitId = 181;
     NSMutableDictionary<NSString *, NSString *> *finalAttributes = attributes.mutableCopy;
     
     // Determine the value of the sandbox attribute based off the current environment
-    NSString *sandboxValue = ([[MParticle sharedInstance] environment] == MPEnvironmentDevelopment) ? @"true" : @"false";
+    MPEnvironment currentEnvironment = [[MParticle sharedInstance] environment];
+    NSString *sandboxValue = (currentEnvironment == MPEnvironmentDevelopment) ? @"true" : @"false";
+    MPILogDebug(@"MPRokt confirmSandboxAttribute - environment: %ld, sandbox: %@", (long)currentEnvironment, sandboxValue);
     
     if (finalAttributes != nil) {
         // Only set sandbox if it`s not set by the client
@@ -391,7 +403,7 @@ static const NSInteger kMPRoktKitId = 181;
 
     if (shouldIdentifyFromEmail || shouldIdentifyFromHash) {
         // Identify the user with the new identity information
-        MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
+        MPIdentityApiRequest *identityRequest = user ? [MPIdentityApiRequest requestWithUser:user] : [MPIdentityApiRequest requestWithEmptyUser];
         [identityRequest setIdentity:email identityType:MPIdentityEmail];
         if (hashedEmailIdentity != nil) {
             [identityRequest setIdentity:hashedEmail identityType:hashedEmailIdentity.unsignedIntegerValue];
@@ -410,9 +422,9 @@ static const NSInteger kMPRoktKitId = 181;
         
         // Warn the customer if we had to identify and therefore delay their Rokt placement.
         if (shouldIdentifyFromEmail) {
-            MPILogWarning(@"MPRokt the existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+            MPILogWarning(@"MPRokt the existing email on the user does not match the email passed in to `selectPlacements:`. Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`");
         } else if (shouldIdentifyFromHash) {
-            MPILogWarning(@"MPRokt the existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
+            MPILogWarning(@"MPRokt the existing hashed email on the user does not match the hashed email passed in to `selectPlacements:`. Please remember to sync the hashed email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`");
         }
     } else {
         completion(user);

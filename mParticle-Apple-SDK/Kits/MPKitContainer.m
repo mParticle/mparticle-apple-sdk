@@ -189,6 +189,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (void)setKitsInitialized:(BOOL)kitsInitialized {
     _kitsInitialized = kitsInitialized;
+    MPILogDebug(@"kitsInitialized set to: %@", kitsInitialized ? @"YES" : @"NO");
     
     if (_kitsInitialized) {
         // Dispatch to main queue to ensure thread safety with forwardQueue access.
@@ -278,6 +279,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (void)initializeKits {
     if (self.kitsInitialized) {
+        MPILogDebug(@"initializeKits - already initialized, skipping");
         return;
     }
     
@@ -286,7 +288,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
     BOOL anyKitsIncluded = supportedKits != nil && supportedKits.count > 0;
     
+    MPILogDebug(@"initializeKits - supportedKits: %lu", (unsigned long)(supportedKits ? supportedKits.count : 0));
+    
     if (!anyKitsIncluded) {
+        MPILogDebug(@"initializeKits - no kits included, marking as initialized");
         self.kitsInitialized = YES;
         return;
     }
@@ -294,6 +299,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *directoryContents = [userDefaults getKitConfigurations];
+    
+    MPILogDebug(@"initializeKits - cached kit configurations: %lu", (unsigned long)directoryContents.count);
     
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
@@ -304,13 +311,19 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         }
     }
     if (self.kitConfigurations.count > 0) {
+        MPILogDebug(@"initializeKits - loaded %lu kit(s) from cache", (unsigned long)self.kitConfigurations.count);
         self.kitsInitialized = YES;
     }
     
     if (self.sideloadedKits.count > 0) {
         self.kitsInitialized = YES;
     }
-    if ([MParticle sharedInstance].stateMachine.logLevel >= MPILogLevelDebug) {
+    
+    if (!self.kitsInitialized) {
+        MPILogWarning(@"initializeKits - kits registered (%lu) but no cached configurations found, waiting for server config",
+                      (unsigned long)supportedKits.count);
+    }
+    if ([MParticle sharedInstance].stateMachine.logLevel >= MPILogLevelVerbose) {
         if (anyKitsIncluded) {
             NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
             for (NSNumber *supportedKit in supportedKits) {
@@ -320,7 +333,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
             [listOfKits appendString:@"}"];
             
-            MPILogDebug(@"%@", listOfKits);
+            MPILogVerbose(@"%@", listOfKits);
         }
     }
 }
@@ -355,9 +368,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (void)replayQueuedItems {
     if (!_forwardQueue || _forwardQueue.count == 0) {
+        MPILogDebug(@"replayQueuedItems - no items to replay");
         return;
     }
 
+    MPILogDebug(@"replayQueuedItems - replaying %lu queued item(s)", (unsigned long)_forwardQueue.count);
     NSArray<MPForwardQueueItem *> *forwardQueueCopy = [_forwardQueue copy];
     [_forwardQueue removeAllObjects];
     
@@ -492,6 +507,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     
     if (!kitRegister) {
+        MPILogWarning(@"startKit - kit register not found for integrationId: %@", integrationId);
         return nil;
     }
     
@@ -505,13 +521,17 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration {
+    MPILogDebug(@"startKitRegister - kit: %@ (code: %@)", kitRegister.name, kitRegister.code);
+    
     BOOL disabled = [self isDisabledByBracketConfiguration:kitConfiguration.bracketConfiguration];
     if (disabled) {
+        MPILogDebug(@"startKitRegister - kit %@ disabled by bracket configuration", kitRegister.code);
         return;
     }
     
     disabled = [self isKitDisabled:kitRegister.code];
     if (disabled) {
+        MPILogDebug(@"startKitRegister - kit %@ disabled by disabledKits list", kitRegister.code);
         kitRegister.wrapperInstance = nil;
         return;
     }
@@ -520,6 +540,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     if (configuration.count > 0) {
         if (!kitRegister.wrapperInstance) {
             kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
+            if (!kitRegister.wrapperInstance) {
+                MPILogWarning(@"startKitRegister - failed to create instance for kit %@ (class: %@)", kitRegister.code, kitRegister.className);
+            }
         }
         
         MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
@@ -528,6 +551,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         }
         
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
+            MPILogDebug(@"startKitRegister - launching kit %@ with configuration", kitRegister.code);
             if ([NSThread isMainThread]) {
                 [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
             } else {
@@ -1988,7 +2012,10 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 - (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
+    MPILogDebug(@"configureKits - received %lu kit configuration(s) from server", (unsigned long)kitConfigurations.count);
+    
     if (MPIsNull(kitConfigurations) || stateMachine.optOut) {
+        MPILogDebug(@"configureKits - null config or opted out, flushing kits");
         [self flushSerializedKits];
         self.kitsInitialized = YES;
         
@@ -2033,6 +2060,8 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             self.kitConfigurations[integrationId] = kitConfiguration;
             
+            MPILogDebug(@"configureKits - configuring kit %@ (existing instance: %@)", integrationId, kitInstance ? @"YES" : @"NO");
+            
             if (kitInstance) {
                 
                 BOOL disabled = [self isKitDisabled:kitRegister.code];
@@ -2048,6 +2077,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                 }
                 
             } else {
+                MPILogDebug(@"configureKits - starting new kit instance for kit %@", integrationId);
                 [self startKitRegister:kitRegister configuration:kitConfiguration];
                 kitInstance = kitRegister.wrapperInstance;
                 
@@ -2138,6 +2168,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         }
     }
     
+    MPILogDebug(@"configureKits complete - marking kitsInitialized = YES, configured %lu kit(s)", (unsigned long)self.kitConfigurations.count);
     self.kitsInitialized = YES;
     
     dispatch_semaphore_signal(kitsSemaphore);
@@ -2159,6 +2190,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 #pragma mark Forward methods
 - (void)forwardCommerceEventCall:(MPCommerceEvent *)commerceEvent {
     if (!self.kitsInitialized) {
+        MPILogWarning(@"Kits not initialized - queueing commerce event");
         MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithCommerceEvent:commerceEvent];
         
         if (forwardQueueItem) {
@@ -2224,9 +2256,9 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 #pragma clang diagnostic pop
             
             if (execStatus.success) {
-                MPILogDebug(@"Successfully Forwarded to Kit");
+                MPILogDebug(@"Successfully forwarded commerce event to kit: %@ (code: %@)", kitRegister.name, kitRegister.code);
             } else {
-                MPILogError(@"Failed to Forward to Kit");
+                MPILogError(@"Failed to forward commerce event to kit: %@ (code: %@)", kitRegister.name, kitRegister.code);
             }
             
             NSNumber *currentKit = kitRegister.code;
@@ -2249,10 +2281,10 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         MPForwardQueueItem *forwardQueueItem;
         if (event) {
             forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:messageType];
-            MPILogVerbose(@"Queueing event message for kits: %@", event);
+            MPILogVerbose(@"Kits not initialized - queueing event message: %@", event);
         } else if (selector != @selector(logEvent:)) {
             forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:messageType];
-            MPILogVerbose(@"Queueing message for kits with selector: %@", NSStringFromSelector(selector));
+            MPILogVerbose(@"Kits not initialized - queueing message with selector: %@", NSStringFromSelector(selector));
         }
         
         if (forwardQueueItem) {
@@ -2263,6 +2295,8 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     }
     
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+    
+    MPILogDebug(@"forwardSDKCall - selector: %@, activeKits: %lu", NSStringFromSelector(selector), (unsigned long)activeKitsRegistry.count);
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if (event && [event isMemberOfClass:[MPEvent class]]) {
@@ -2308,9 +2342,11 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                     execStatus = [kitRegister.wrapperInstance logEvent:((MPEvent *)kitFilter.forwardEvent)];
                 } else if (selector == @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:)) {
                     if (kitFilter.shouldFilter) {
+                        MPILogDebug(@"executeWithIdentifier filtered out for kit: %@ - shouldFilter: YES", kitRegister.name);
                         return;
                     }
                     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+                    MPILogVerbose(@"executeWithIdentifier - kit: %@, currentUser: %@", kitRegister.name, currentUser ? currentUser.userId : @"nil");
                     FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser kitConfiguration:self.kitConfigurations[kitRegister.code]];
                     execStatus = [kitRegister.wrapperInstance executeWithIdentifier:parameters[0]
                                                                          attributes:parameters[1]
@@ -2357,9 +2393,9 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             }
             
             if (execStatus.success) {
-                MPILogDebug(@"Successfully Forwarded to Kit");
+                MPILogDebug(@"Successfully forwarded SDK call to kit: %@ (code: %@)", kitRegister.name, kitRegister.code);
             } else {
-                MPILogError(@"Failed to Forward to Kit");
+                MPILogError(@"Failed to forward SDK call to kit: %@ (code: %@)", kitRegister.name, kitRegister.code);
             }
         } @catch (NSException *e) {
             MPILogError(@"Kit handler threw an exception: %@", e);
