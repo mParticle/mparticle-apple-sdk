@@ -2,7 +2,7 @@
 
 ### Bug Fixes
 
-- fix:  race condition in forwardQueue causing crash during SDK init (#553) ([a24f1555](https://github.com/mParticle/mparticle-apple-sdk/commit/a24f15559a810a84b457427bab247eab0ad0aa66))
+- fix: race condition in forwardQueue causing crash during SDK init (#553) ([a24f1555](https://github.com/mParticle/mparticle-apple-sdk/commit/a24f15559a810a84b457427bab247eab0ad0aa66))
 
 ### Features
 

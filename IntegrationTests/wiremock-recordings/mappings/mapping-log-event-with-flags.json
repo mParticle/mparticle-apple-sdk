@@ -14,9 +14,7 @@
               "vc": "off_thread",
               "dt": "e",
               "flags": {
-                "Not_forwarded_to_providers": [
-                  "Top Secret"
-                ]
+                "Not_forwarded_to_providers": ["Top Secret"]
               },
               "ct": "${json-unit.ignore}",
               "el": 0,
