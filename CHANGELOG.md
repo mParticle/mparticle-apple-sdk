@@ -1,3 +1,14 @@
+# [8.42.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.0...v8.42.1) (2026-02-06)
+
+### Bug Fixes
+
+- fix: race condition in forwardQueue causing crash during SDK init (#553) ([a24f1555](https://github.com/mParticle/mparticle-apple-sdk/commit/a24f15559a810a84b457427bab247eab0ad0aa66))
+
+### Features
+
+- feat: Add and align logging (#559) ([94bdc46e](https://github.com/mParticle/mparticle-apple-sdk/commit/94bdc46ea3e53030feb9b888c69b3a9fde33a4e4))
+- feat: Update logging and provide guidelines (#558) ([1cb0379a](https://github.com/mParticle/mparticle-apple-sdk/commit/1cb0379a5bd146ac84f0ae4f7c6e452f40a6fe59))
+
 # [8.42.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.41.1...v8.42.0) (2026-02-03)
 
 ### Features
