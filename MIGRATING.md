@@ -289,16 +289,16 @@ callbacks.onEmbeddedSizeChange = ^(NSString *placementId, CGFloat height) {
                                     embeddedViews:embeddedViews
                                            config:config
                                           onEvent:^(MPRoktEvent * _Nonnull event) {
-    if ([event isKindOfClass:[MPRoktEvent.MPRoktShowLoadingIndicator class]]) {
+    if ([event isKindOfClass:[MPRoktShowLoadingIndicator class]]) {
         // Show loading indicator
-    } else if ([event isKindOfClass:[MPRoktEvent.MPRoktHideLoadingIndicator class]]) {
+    } else if ([event isKindOfClass:[MPRoktHideLoadingIndicator class]]) {
         // Hide loading indicator
-    } else if ([event isKindOfClass:[MPRoktEvent.MPRoktPlacementReady class]]) {
+    } else if ([event isKindOfClass:[MPRoktPlacementReady class]]) {
         // Handle load/ready
-    } else if ([event isKindOfClass:[MPRoktEvent.MPRoktPlacementClosed class]]) {
+    } else if ([event isKindOfClass:[MPRoktPlacementClosed class]]) {
         // Handle unload/closed
-    } else if ([event isKindOfClass:[MPRoktEvent.MPRoktEmbeddedSizeChanged class]]) {
-        MPRoktEvent.MPRoktEmbeddedSizeChanged *sizeEvent = (MPRoktEvent.MPRoktEmbeddedSizeChanged *)event;
+    } else if ([event isKindOfClass:[MPRoktEmbeddedSizeChanged class]]) {
+        MPRoktEmbeddedSizeChanged *sizeEvent = (MPRoktEmbeddedSizeChanged *)event;
         // Handle size change with sizeEvent.placementId and sizeEvent.updatedHeight
     }
 }];
@@ -375,8 +375,8 @@ The new `globalEvents:` method allows you to subscribe to global Rokt events fro
 
 ```objective-c
 [[MParticle sharedInstance].rokt globalEvents:^(MPRoktEvent * _Nonnull event) {
-    if ([event isKindOfClass:[MPRoktEvent.MPRoktInitComplete class]]) {
-        MPRoktEvent.MPRoktInitComplete *initEvent = (MPRoktEvent.MPRoktInitComplete *)event;
+    if ([event isKindOfClass:[MPRoktInitComplete class]]) {
+        MPRoktInitComplete *initEvent = (MPRoktInitComplete *)event;
         if (initEvent.success) {
             // Rokt SDK initialized successfully
         }
