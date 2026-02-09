@@ -238,6 +238,96 @@ func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
 
 ---
 
+### Removed Location Support
+
+In version 9.0.0, Location support has been removed from the SDK. This change simplifies the SDK distribution and affects the available build targets.
+
+#### What Has Changed
+
+- Location-related functionality has been removed
+- The SDK now provides a single target without Location support
+- The target name has been simplified to match the base target name (the Location suffix has been removed)
+
+#### Migration Steps
+
+If you were previously using a target with Location support, you should:
+
+1. Update your project configuration to use the standard target (without Location suffix)
+2. Remove any Location-related dependencies or imports
+3. Update any build scripts or CI/CD configurations that reference the Location-specific target name
+
+**If you were using the `NoLocation` variant** (e.g., `mParticle-Apple-SDK-NoLocation`), you should:
+
+1. Replace the `NoLocation` import/product with the standard import/product name (`mParticle-Apple-SDK`)
+2. The standard target now provides the same functionality as the previous `NoLocation` variant (no location support)
+3. Update your `Package.swift` or `Podfile` to use the standard target name instead of the `-NoLocation` suffix
+
+**Example - Swift Package Manager:**
+
+Before (using `NoLocation` variant):
+
+```swift
+.target(
+    name: "MyTarget",
+    dependencies: [
+        .product(name: "mParticle-Apple-SDK-NoLocation", package: "mParticle-Apple-SDK")
+    ]
+)
+```
+
+After (using standard target):
+
+```swift
+.target(
+    name: "MyTarget",
+    dependencies: [
+        .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK")
+    ]
+)
+```
+
+**Example - Direct dependency:**
+
+Before:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/mParticle/mparticle-apple-sdk", from: "8.0.0")
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [
+            .product(name: "mParticle-Apple-SDK-NoLocation", package: "mParticle-Apple-SDK")
+        ]
+    )
+]
+```
+
+After:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/mParticle/mparticle-apple-sdk", from: "9.0.0")
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [
+            .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK")
+        ]
+    )
+]
+```
+
+#### Notes
+
+- The simplified target name now matches the base SDK target name
+- All core SDK functionality remains available through the standard target
+- Location-related features are no longer available in the SDK
+
+---
+
 ### MPRokt API Changes
 
 The `MPRokt` interface has been updated to align with the Rokt SDK 5.0.x API. These changes consolidate multiple callback parameters into a unified event-based callback pattern and standardize parameter naming.
@@ -412,8 +502,6 @@ MParticle.sharedInstance().rokt.globalEvents { event in
 - The `onEvent` callback receives all event types, so use type checking to handle specific events
 - The `MPRoktEmbeddedSizeChanged` event provides both `placementId` and `updatedHeight` properties
 - Remove any references to `MPRoktEventCallback` from your code
-
----
 
 ## Migrating from versions < 8.0.0
 

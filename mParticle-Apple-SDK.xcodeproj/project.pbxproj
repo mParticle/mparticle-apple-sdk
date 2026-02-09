@@ -95,7 +95,7 @@
 		534CD2A229CE2CE1008452B3 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79CFB29CE046800E7489F /* libsqlite3.tbd */; };
 		534CD2A429CE2CE1008452B3 /* OCMock.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79C8829CE019F00E7489F /* OCMock.xcframework */; };
 		534CD2A629CE2CE1008452B3 /* sample_dataplan2.json in Resources */ = {isa = PBXBuildFile; fileRef = 53A79C9829CE019F00E7489F /* sample_dataplan2.json */; };
-		534CD2AC29CE2CF1008452B3 /* mParticle_Apple_SDK_NoLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */; };
+		534CD2AC29CE2CF1008452B3 /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */; };
 		53A6A9ED2B88EDD9007ABD7A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */; };
 		53A79D0229CE23F700E7489F /* mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2729CDFB4800E7489F /* mParticle.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D0329CE23F700E7489F /* FilteredMPIdentityApiRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C3C29CDFB4800E7489F /* FilteredMPIdentityApiRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -282,7 +282,7 @@
 		D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */ = {isa = PBXBuildFile; fileRef = D33C8B322B8510C20012EDFD /* MPAudience.m */; };
 		D34286122D419CB800FEC2C8 /* MPUploadSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D34286132D419CB800FEC2C8 /* MPUploadSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = D34286112D419CA700FEC2C8 /* MPUploadSettings.m */; };
-		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D3CEDACB2CB027E1001B32DE /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = D3CEDAC92CB027E1001B32DE /* MPConvertJS.h */; };
 		D3CEDACC2CB027E1001B32DF /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */; };
 /* End PBXBuildFile section */
@@ -364,7 +364,7 @@
 		531BCF322B28A23400F5C573 /* MPIdentityCaching.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPIdentityCaching.h; sourceTree = "<group>"; };
 		531BCF332B28A23400F5C573 /* MPIdentityCaching.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPIdentityCaching.m; sourceTree = "<group>"; };
 		531BCF392B28A83E00F5C573 /* MPIdentityCachingTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPIdentityCachingTests.m; sourceTree = "<group>"; };
-		534CD2AA29CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-Apple-SDK-NoLocationTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		534CD2AA29CE2CE1008452B3 /* mParticle-Apple-SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-Apple-SDKTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		53A79A9829CDFB1E00E7489F /* MPIdentityApiRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityApiRequest.m; sourceTree = "<group>"; };
 		53A79A9929CDFB1E00E7489F /* MPAliasResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAliasResponse.m; sourceTree = "<group>"; };
 		53A79A9A29CDFB1E00E7489F /* MParticleUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleUser.m; sourceTree = "<group>"; };
@@ -565,8 +565,8 @@
 		53A79CB529CE019F00E7489F /* MPAppNotificationHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppNotificationHandlerTests.m; sourceTree = "<group>"; };
 		53A79CB629CE019F00E7489F /* MPKitRegisterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitRegisterTests.m; sourceTree = "<group>"; };
 		53A79CFB29CE046800E7489F /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
-		53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK-NoLocation.modulemap"; path = "Framework/mParticle-Apple-SDK-NoLocation.modulemap"; sourceTree = "<group>"; };
-		53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_NoLocation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK.modulemap"; path = "Framework/mParticle-Apple-SDK.modulemap"; sourceTree = "<group>"; };
+		53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7213DE7E2F2D85980007A619 /* SceneDelegateHandlerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegateHandlerMock.swift; sourceTree = "<group>"; };
 		7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegateHandler.h; sourceTree = "<group>"; };
 		7213DE822F30F0EC0007A619 /* SceneDelegateHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegateHandler.m; sourceTree = "<group>"; };
@@ -613,21 +613,21 @@
 		D33C8B322B8510C20012EDFD /* MPAudience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAudience.m; sourceTree = "<group>"; };
 		D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUploadSettings.h; sourceTree = "<group>"; };
 		D34286112D419CA700FEC2C8 /* MPUploadSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUploadSettings.m; sourceTree = "<group>"; };
-		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
+		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK.h; sourceTree = "<group>"; };
 		D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D3CEDAC92CB027E1001B32DE /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
 		D3CEDACA2CB027E1001B32DF /* MPConvertJS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConvertJS.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Test/Identity/MPUserIdentityChangeTests.m,
-				Test/Utils/HasherTests.m,
-				Test/Utils/MParticleWebViewTests.m,
-				Test/Utils/MPDateFormatterTests.m,
-				Test/Utils/MPDeviceTests.swift,
+	35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+		membershipExceptions = (
+			Test/Identity/MPUserIdentityChangeTests.m,
+			Test/Utils/HasherTests.m,
+			Test/Utils/MParticleWebViewTests.m,
+			Test/Utils/MPDateFormatterTests.swift,
+			Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPUserAttributeChangeTests.m,
@@ -639,14 +639,14 @@
 			);
 			target = 35DBFDC72F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */;
 		};
-		35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Test/Identity/MPUserIdentityChangeTests.m,
-				Test/Utils/HasherTests.m,
-				Test/Utils/MParticleWebViewTests.m,
-				Test/Utils/MPDateFormatterTests.m,
-				Test/Utils/MPDeviceTests.swift,
+	35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+		membershipExceptions = (
+			Test/Identity/MPUserIdentityChangeTests.m,
+			Test/Utils/HasherTests.m,
+			Test/Utils/MParticleWebViewTests.m,
+			Test/Utils/MPDateFormatterTests.swift,
+			Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPUserAttributeChangeTests.m,
@@ -685,7 +685,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				534CD2A229CE2CE1008452B3 /* libsqlite3.tbd in Frameworks */,
-				534CD2AC29CE2CF1008452B3 /* mParticle_Apple_SDK_NoLocation.framework in Frameworks */,
+				534CD2AC29CE2CF1008452B3 /* mParticle_Apple_SDK.framework in Frameworks */,
 				534CD2A429CE2CE1008452B3 /* OCMock.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -725,7 +725,7 @@
 			isa = PBXGroup;
 			children = (
 				D3BA75152B614E3D008C3C65 /* PrivacyInfo.xcprivacy */,
-				53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */,
+				53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK.modulemap */,
 				53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */,
 				53A79C6729CE019E00E7489F /* UnitTests */,
 				35DBFDC92F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */,
@@ -737,8 +737,8 @@
 		53A79A7A29CCCD6400E7489F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */,
-				534CD2AA29CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests.xctest */,
+				53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */,
+				534CD2AA29CE2CE1008452B3 /* mParticle-Apple-SDKTests.xctest */,
 				35DBFDC82F2103FD00E872F5 /* mParticle_Apple_SDK_Swift.framework */,
 				35DBFDD02F2103FD00E872F5 /* mParticle-Apple-SDK-SwiftTests.xctest */,
 			);
@@ -1013,7 +1013,7 @@
 				35C3DE742F291DAF0077C0FD /* MPGDPRConsent.h */,
 				53A79C2329CDFB4800E7489F /* MPEvent.h */,
 				53A79C2429CDFB4800E7489F /* MPBaseEvent.h */,
-				D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */,
+				D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK.h */,
 				53A79C2529CDFB4800E7489F /* MPForwardRecord.h */,
 				53A79C2629CDFB4800E7489F /* MPKitProtocol.h */,
 				53A79C2729CDFB4800E7489F /* mParticle.h */,
@@ -1305,7 +1305,7 @@
 				53A79D5929CE23F700E7489F /* MPMessageBuilder.h in Headers */,
 				D3CEDACB2CB027E1001B32DE /* MPConvertJS.h in Headers */,
 				53A79D5A29CE23F700E7489F /* MPURLRequestBuilder.h in Headers */,
-				D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */,
+				D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK.h in Headers */,
 				53A79D5B29CE23F700E7489F /* MPKitContainer.h in Headers */,
 				53A79D5D29CE23F700E7489F /* MPNotificationController.h in Headers */,
 				53A79D5E29CE23F700E7489F /* MPURLConnectionAssociate.h in Headers */,
@@ -1364,9 +1364,9 @@
 			productReference = 35DBFDD02F2103FD00E872F5 /* mParticle-Apple-SDK-SwiftTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		534CD26029CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests */ = {
+		534CD26029CE2CE1008452B3 /* mParticle-Apple-SDKTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 534CD2A729CE2CE1008452B3 /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-NoLocationTests" */;
+			buildConfigurationList = 534CD2A729CE2CE1008452B3 /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDKTests" */;
 			buildPhases = (
 				534CD26329CE2CE1008452B3 /* Sources */,
 				534CD2A129CE2CE1008452B3 /* Frameworks */,
@@ -1377,14 +1377,14 @@
 			dependencies = (
 				53FE85E929CE2F330005FDF0 /* PBXTargetDependency */,
 			);
-			name = "mParticle-Apple-SDK-NoLocationTests";
+			name = "mParticle-Apple-SDKTests";
 			productName = "mParticle-Apple-SDKTests";
-			productReference = 534CD2AA29CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests.xctest */;
+			productReference = 534CD2AA29CE2CE1008452B3 /* mParticle-Apple-SDKTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		53A79D0029CE23F700E7489F /* mParticle-Apple-SDK-NoLocation */ = {
+		53A79D0029CE23F700E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 53A79DC329CE23F700E7489F /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-NoLocation" */;
+			buildConfigurationList = 53A79DC329CE23F700E7489F /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK" */;
 			buildPhases = (
 				53A79D0129CE23F700E7489F /* Headers */,
 				53A79D6629CE23F700E7489F /* Sources */,
@@ -1397,9 +1397,9 @@
 			dependencies = (
 				35DBFDEF2F2105F600E872F5 /* PBXTargetDependency */,
 			);
-			name = "mParticle-Apple-SDK-NoLocation";
+			name = "mParticle-Apple-SDK";
 			productName = "mParticle-Apple-SDK";
-			productReference = 53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */;
+			productReference = 53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -1434,8 +1434,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				53A79D0029CE23F700E7489F /* mParticle-Apple-SDK-NoLocation */,
-				534CD26029CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests */,
+				53A79D0029CE23F700E7489F /* mParticle-Apple-SDK */,
+				534CD26029CE2CE1008452B3 /* mParticle-Apple-SDKTests */,
 				35DBFDC72F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */,
 				35DBFDCF2F2103FD00E872F5 /* mParticle-Apple-SDK-SwiftTests */,
 			);
@@ -1696,7 +1696,7 @@
 		};
 		53FE85E929CE2F330005FDF0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 53A79D0029CE23F700E7489F /* mParticle-Apple-SDK-NoLocation */;
+			target = 53A79D0029CE23F700E7489F /* mParticle-Apple-SDK */;
 			targetProxy = 53FE85E829CE2F330005FDF0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1858,7 +1858,7 @@
 				INFOPLIST_FILE = ./UnitTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK-NoLocationTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDKTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
@@ -1884,7 +1884,7 @@
 				INFOPLIST_FILE = ./UnitTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK-NoLocationTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDKTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
@@ -2054,9 +2054,9 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK-NoLocation.modulemap";
+				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK.modulemap";
 				OTHER_CFLAGS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK-NoLocation";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
@@ -2096,9 +2096,9 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK-NoLocation.modulemap";
+				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK.modulemap";
 				OTHER_CFLAGS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK-NoLocation";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator iphoneos iphonesimulator";
@@ -2135,7 +2135,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		534CD2A729CE2CE1008452B3 /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-NoLocationTests" */ = {
+		534CD2A729CE2CE1008452B3 /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDKTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				534CD2A829CE2CE1008452B3 /* Debug */,
@@ -2153,7 +2153,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		53A79DC329CE23F700E7489F /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK-NoLocation" */ = {
+		53A79DC329CE23F700E7489F /* Build configuration list for PBXNativeTarget "mParticle-Apple-SDK" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				53A79DC429CE23F700E7489F /* Debug */,

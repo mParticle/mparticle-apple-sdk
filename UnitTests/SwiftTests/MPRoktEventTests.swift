@@ -1,5 +1,5 @@
 import XCTest
-@testable import mParticle_Apple_SDK_NoLocation
+@testable import mParticle_Apple_SDK
 
 /// Tests to verify Rokt event classes use nested access via NS_SWIFT_NAME
 final class MPRoktEventTests: XCTestCase {

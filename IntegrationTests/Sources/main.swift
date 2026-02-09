@@ -1,7 +1,7 @@
 // trunk-ignore-all(mparticle-api-key-check): To be removed and set via
 // env vars in the integration tests CI job
 import Foundation
-import mParticle_Apple_SDK_NoLocation
+import mParticle_Apple_SDK
 
 func wait(timeout: UInt32 = 5) {
     mparticle.upload()

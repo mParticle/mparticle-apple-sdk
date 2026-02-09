@@ -33,9 +33,6 @@ To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guide
 ```ruby
 target '<Your Target>' do
     pod 'mParticle-Apple-SDK', '~> 8'
-
-    # If you'd like to use a version of the SDK that doesn't include any location tracking nor links the CoreLocation framework, use this subspec:
-    # pod 'mParticle-Apple-SDK/mParticleNoLocation', '~> 8'
 end
 ```
 
@@ -90,9 +87,7 @@ To integrate the SDK using Swift Package Manager, open your Xcode project and cl
 
 Enter the repository URL `https://github.com/mParticle/mparticle-apple-sdk` in the search box on the top right, choose `mparticle-apple-sdk` from the list of pacakges, and change "Dependency Rule" to "Up to Next Major Version". Then click the "Add Package" button on the bottom right.
 
-Then choose either the "Package Product" called `mParticle-Apple-SDK`, or if you'd like to use a version of the SDK that doesn't include any location tracking nor links the CoreLocation framework choose `mParticle-Apple-SDK-NoLocation`.
-
-**IMPORTANT:** If you choose the `mParticle-Apple-SDK-NoLocation` package product, you will need to import the SDK using `import mParticle_Apple_SDK_NoLocation` instead of `import mParticle_Apple_SDK` as shown in the rest of the documentation and this README.
+Then choose the "Package Product" called `mParticle-Apple-SDK`.
 
 #### Currently Supported Kits
 

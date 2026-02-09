@@ -5,6 +5,7 @@
 #import "MPILogger.h"
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -166,6 +167,12 @@
     MParticleUser *selectedUser = [[[MParticle sharedInstance] identity] getUser:filteredUser.userId];
     
     [selectedUser removeUserAttribute:key];
+}
+
+#pragma mark - Date Formatting
+
++ (NSString *)stringFromDateRFC3339:(NSDate *)date {
+    return [MPDateFormatter stringFromDateRFC3339:date];
 }
 
 @end
