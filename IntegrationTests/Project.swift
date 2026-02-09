@@ -14,7 +14,7 @@ let project = Project(
             deploymentTargets: .iOS("15.6"),
             sources: ["Sources/**"],
             dependencies: [
-                .package(product: "mParticle-Apple-SDK-NoLocation", type: .runtime)
+                .package(product: "mParticle-Apple-SDK", type: .runtime)
             ]
         )
     ],

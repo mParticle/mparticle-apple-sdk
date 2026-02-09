@@ -29,11 +29,11 @@ build_framework() {
 	echo "🧹 Cleaning previous builds..."
 	rm -rf "$SDK_DIR/archives" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
 
-	# Build main target (mParticle-Apple-SDK-NoLocation) which depends on Swift target
+	# Build main target (mParticle-Apple-SDK) which depends on Swift target
 	echo "📱 Building archive for iOS Simulator..."
 	xcodebuild archive \
 		-project "$SDK_DIR/mParticle-Apple-SDK.xcodeproj" \
-		-scheme mParticle-Apple-SDK-NoLocation \
+		-scheme mParticle-Apple-SDK \
 		-destination "generic/platform=iOS Simulator" \
 		-archivePath "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator" \
 		SKIP_INSTALL=NO \
@@ -46,7 +46,7 @@ build_framework() {
 	# Create xcframework from simulator archive only
 	echo "📦 Creating xcframework..."
 	xcodebuild -create-xcframework \
-		-archive "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive" -framework mParticle_Apple_SDK_NoLocation.framework \
+		-archive "$SDK_DIR/archives/mParticle-Apple-SDK-iOS_Simulator.xcarchive" -framework mParticle_Apple_SDK.framework \
 		-output "$SDK_DIR/mParticle_Apple_SDK.xcframework" \
 		2>&1 | grep -v "note:" || true
 

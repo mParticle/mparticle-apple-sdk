@@ -1,5 +1,5 @@
 import XCTest
-import mParticle_Apple_SDK_NoLocation
+import mParticle_Apple_SDK
 
 class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var sessionTimeout: TimeInterval = 0.0
