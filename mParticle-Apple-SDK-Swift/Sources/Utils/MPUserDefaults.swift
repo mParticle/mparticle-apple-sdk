@@ -1,4 +1,4 @@
-internal import mParticle_Apple_SDK_Swift
+import Foundation
 
 private var userDefaults: MPUserDefaults?
 private var sharedGroupID: String?
@@ -26,28 +26,15 @@ public protocol MPUserDefaultsProtocol {
 }
 
 @objc public class MPUserDefaults: NSObject, MPUserDefaultsProtocol {
-    private var stateMachine: MPStateMachine_PRIVATE?
-    private var backendController: MPBackendController_PRIVATE?
-    private var identity: MPIdentityApi?
+    private let connector: MPUserDefaultsConnectorProtocol
 
-    public required init(
-        stateMachine: MPStateMachineProtocol,
-        backendController: MPBackendControllerProtocol,
-        identity: MPIdentityApi
-    ) {
-        self.stateMachine = stateMachine as? MPStateMachine_PRIVATE
-        self.backendController = backendController as? MPBackendController_PRIVATE
-        self.identity = identity
-        super.init()
+    @objc public init(connector: MPUserDefaultsConnectorProtocol) {
+        self.connector = connector
     }
 
-    @objc public class func standardUserDefaults(
-        stateMachine: MPStateMachineProtocol,
-        backendController: MPBackendControllerProtocol,
-        identity: MPIdentityApi
-    ) -> MPUserDefaults {
+    @objc public class func standardUserDefaults(connector: MPUserDefaultsConnectorProtocol) -> MPUserDefaults {
         if userDefaults == nil {
-            userDefaults = self.init(stateMachine: stateMachine, backendController: backendController, identity: identity)
+            userDefaults = MPUserDefaults(connector: connector)
         }
 
         return userDefaults!
@@ -82,7 +69,7 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public func removeMPObject(forKey key: String) {
-        removeMPObject(forKey: key, userId: MPPersistenceController_PRIVATE.mpId())
+        removeMPObject(forKey: key, userId: connector.mpId())
     }
 
     @objc public subscript(key: String) -> Any? {
@@ -90,17 +77,17 @@ public protocol MPUserDefaultsProtocol {
             if key == "mpid" {
                 return mpObject(forKey: key, userId: 0)
             }
-            return mpObject(forKey: key, userId: MPPersistenceController_PRIVATE.mpId())
+            return mpObject(forKey: key, userId: connector.mpId())
         }
         set {
             if let obj = newValue {
                 if key == "mpid" {
                     setMPObject(obj, forKey: key, userId: 0)
                 } else {
-                    setMPObject(obj, forKey: key, userId: MPPersistenceController_PRIVATE.mpId())
+                    setMPObject(obj, forKey: key, userId: connector.mpId())
                 }
             } else {
-                removeMPObject(forKey: key, userId: MPPersistenceController_PRIVATE.mpId())
+                removeMPObject(forKey: key, userId: connector.mpId())
             }
         }
     }
@@ -115,7 +102,7 @@ public protocol MPUserDefaultsProtocol {
     @objc public func setSharedGroupIdentifier(_ groupIdentifier: String?) {
         let storedGroupID = mpObject(
             forKey: kMPUserIdentitySharedGroupIdentifier,
-            userId: MPPersistenceController_PRIVATE.mpId()
+            userId: connector.mpId()
         ) as? String
 
         if storedGroupID == groupIdentifier {
@@ -131,7 +118,7 @@ public protocol MPUserDefaultsProtocol {
         let groupUserDefaults = UserDefaults(suiteName: groupIdentifier)
 
         let prefixedKey =
-            MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: MPPersistenceController_PRIVATE.mpId())
+            MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: connector.mpId())
         standardUserDefaults.set(groupIdentifier, forKey: prefixedKey)
         groupUserDefaults?.set(groupIdentifier, forKey: prefixedKey)
 
@@ -155,13 +142,13 @@ public protocol MPUserDefaultsProtocol {
         }
 
         let prefixedKey =
-            MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: MPPersistenceController_PRIVATE.mpId())
+            MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: connector.mpId())
         standardUserDefaults.removeObject(forKey: prefixedKey)
         groupUserDefaults?.removeObject(forKey: prefixedKey)
     }
 
     @objc public func getConfiguration() -> [AnyHashable: Any]? {
-        guard let userID = identity?.currentUser?.userId else { return nil }
+        guard let userID = connector.userId() else { return nil }
 
         if UserDefaults.standard.object(forKey: kMResponseConfigurationMigrationKey) == nil {
             migrateConfiguration()
@@ -196,11 +183,7 @@ public protocol MPUserDefaultsProtocol {
                 return swiftDict
             }
         } catch {
-            let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-            logger.customLogger = mparticle.customLogger
-
-            logger.error("Failed to unarchive configuration: \(error)")
+            connector.logger.error("Failed to unarchive configuration: \(error)")
         }
         return nil
     }
@@ -221,23 +204,19 @@ public protocol MPUserDefaultsProtocol {
                 withRootObject: responseConfiguration,
                 requiringSecureCoding: true
             )
-            let userID = identity?.currentUser?.userId ?? 0
+            let userID = connector.userId() ?? 0
 
             setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
             setMPObject(configurationData, forKey: kMResponseConfigurationKey, userId: userID)
             setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
             setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
         } catch {
-            let mparticle = MParticle.sharedInstance()
-            let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-            logger.customLogger = mparticle.customLogger
-
-            logger.error("Failed to archive configuration: \(error)")
+            connector.logger.error("Failed to archive configuration: \(error)")
         }
     }
 
     @objc public func migrateConfiguration() {
-        guard let userID = identity?.currentUser?.userId else { return }
+        guard let userID = connector.userId() else { return }
         let eTag = mpObject(forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID) as? String
 
         let fileManager = FileManager.default
@@ -246,21 +225,17 @@ public protocol MPUserDefaultsProtocol {
         let configurationURL = stateMachineURL.appendingPathComponent("RequestConfig.cfg")
         let configuration = mpObject(forKey: kMResponseConfigurationKey, userId: userID)
 
-        let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-        logger.customLogger = mparticle.customLogger
-
         if fileManager.fileExists(atPath: configurationURL.path) {
             do {
                 try fileManager.removeItem(at: configurationURL)
             } catch {
-                logger.error("Failed to remove old configuration file: \(error)")
+                connector.logger.error("Failed to remove old configuration file: \(error)")
             }
             deleteConfiguration()
-            logger.debug("Configuration Migration Complete")
+            connector.logger.debug("Configuration Migration Complete")
         } else if (eTag != nil && configuration == nil) || (eTag == nil && configuration != nil) {
             deleteConfiguration()
-            logger.debug("Configuration Migration Complete")
+            connector.logger.debug("Configuration Migration Complete")
         }
 
         UserDefaults.standard.set(1, forKey: kMResponseConfigurationMigrationKey)
@@ -273,11 +248,7 @@ public protocol MPUserDefaultsProtocol {
         removeMPObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey)
         removeMPObject(forKey: Miscellaneous.kMPConfigParameters)
 
-        let mparticle = MParticle.sharedInstance()
-        let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-        logger.customLogger = mparticle.customLogger
-
-        logger.debug("Configuration Deleted")
+        connector.logger.debug("Configuration Deleted")
     }
 
     @objc public func resetDefaults() {
@@ -307,13 +278,11 @@ public protocol MPUserDefaultsProtocol {
         let keyArray = customUserDefaults().dictionaryRepresentation().keys
 
         var uniqueUserIDs: [NSNumber] = []
-        for key in keyArray {
-            if let _ = customUserDefaults().object(forKey: key) {
-                let keyComponents = key.components(separatedBy: "::")
-                if keyComponents.count == 3 {
-                    let UserID = NSNumber(value: Int64(keyComponents[1]) ?? 0)
-                    uniqueUserIDs.append(UserID)
-                }
+        for key in keyArray where customUserDefaults().object(forKey: key) != nil {
+            let keyComponents = key.components(separatedBy: "::")
+            if keyComponents.count == 3 {
+                let UserID = NSNumber(value: Int64(keyComponents[1]) ?? 0)
+                uniqueUserIDs.append(UserID)
             }
         }
 
@@ -325,9 +294,9 @@ public protocol MPUserDefaultsProtocol {
 
         let configProvisioned = mpObject(
             forKey: Miscellaneous.kMPConfigProvisionedTimestampKey,
-            userId: MPPersistenceController_PRIVATE.mpId()
+            userId: connector.mpId()
         ) as? NSNumber
-        let maxAge = mpObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: MPPersistenceController_PRIVATE.mpId())
+        let maxAge = mpObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: connector.mpId())
 
         if let configProvisioned = configProvisioned {
             let intervalConfigProvisioned = configProvisioned.doubleValue
@@ -351,36 +320,16 @@ public protocol MPUserDefaultsProtocol {
         mpObject(forKey: Miscellaneous.MPSideloadedKitsCountUserDefaultsKey, userId: 0) as? UInt ?? 0
     }
 
-    @objc public func setLastUploadSettings(_ lastUploadSettings: MPUploadSettings?) {
-        if let lastUploadSettings = lastUploadSettings {
-            do {
-                let data = try NSKeyedArchiver.archivedData(withRootObject: lastUploadSettings, requiringSecureCoding: true)
-                setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
-            } catch {
-                let mparticle = MParticle.sharedInstance()
-                let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-                logger.customLogger = mparticle.customLogger
-
-                logger.error("Failed to archive upload settings: \(error)")
-            }
-        } else {
-            removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
-        }
+    @objc public func lastUploadSettingsData() -> Data? {
+        return mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data
     }
 
-    @objc public func lastUploadSettings() -> MPUploadSettings? {
-        if let data = mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data {
-            do {
-                return try NSKeyedUnarchiver.unarchivedObject(ofClass: MPUploadSettings.self, from: data)
-            } catch {
-                let mparticle = MParticle.sharedInstance()
-                let logger = MPLog(logLevel: MPLog.from(rawValue: mparticle.logLevel.rawValue))
-                logger.customLogger = mparticle.customLogger
+    @objc public func setLastUploadSettingsData(_ lastUploadSettingsData: Data) {
+        setMPObject(lastUploadSettingsData, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
+    }
 
-                logger.error("Failed to unarchive upload settings: \(error)")
-            }
-        }
-        return nil
+    @objc public func removeLastUploadSettings() {
+        removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
     }
 
     @objc public class func isOlderThanConfigMaxAgeSeconds() -> Bool {
@@ -388,7 +337,7 @@ public protocol MPUserDefaultsProtocol {
 
         if let userDefaults = userDefaults {
             let configProvisioned = userDefaults[Miscellaneous.kMPConfigProvisionedTimestampKey] as? NSNumber
-            let maxAgeSeconds = MParticle.sharedInstance().configMaxAgeSeconds
+            let maxAgeSeconds = userDefaults.connector.configMaxAgeSeconds()
 
             if let configProvisioned = configProvisioned, let maxAgeSeconds = maxAgeSeconds, maxAgeSeconds.doubleValue > 0 {
                 let intervalConfigProvisioned: TimeInterval = configProvisioned.doubleValue
@@ -411,12 +360,10 @@ public protocol MPUserDefaultsProtocol {
 
     @objc public class func restore() -> MPResponseConfig? {
         if let userDefaults = userDefaults {
-            if let configuration = userDefaults.getConfiguration(), let stateMachine = userDefaults.stateMachine,
-               let backendController = userDefaults.backendController {
+            if let configuration = userDefaults.getConfiguration(), userDefaults.connector.canCreateConfiguration() {
                 let responseConfig = MPResponseConfig(
                     configuration: configuration,
-                    stateMachine: stateMachine,
-                    backendController: backendController
+                    connector: userDefaults.connector
                 )
 
                 return responseConfig

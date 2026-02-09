@@ -1,9 +1,10 @@
 #import "SettingsProvider.h"
-#import "MParticleSwift.h"
 #import "MPDataPlanFilter.h"
 #import "AppEnvironmentProvider.h"
 #import "MPAppNotificationHandler.h"
 #import "SceneDelegateHandler.h"
+
+@protocol MPUserDefaultsProtocol;
 
 @interface MParticle (Tests)
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut;

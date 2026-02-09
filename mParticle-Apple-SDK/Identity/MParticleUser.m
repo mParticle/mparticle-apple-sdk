@@ -10,7 +10,8 @@
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
 #import "MPKitContainer.h"
-#import "mParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticleUser ()
 
@@ -47,7 +48,7 @@
 }
 
 - (NSDate *)firstSeen {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *firstSeenMs = [userDefaults mpObjectForKey:kMPFirstSeenUser userId:self.userId];
     return [NSDate dateWithTimeIntervalSince1970:firstSeenMs.doubleValue/1000.0];
 }
@@ -56,13 +57,13 @@
     if ([MParticle.sharedInstance.identity.currentUser.userId isEqual:self.userId]) {
         return [NSDate date];
     }
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *lastSeenMs = [userDefaults mpObjectForKey:kMPLastSeenUser userId:self.userId];
     return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
 }
 
 - (NSDictionary*)identities {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
     
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
@@ -157,7 +158,7 @@
         return foundMatch;
     };
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController_PRIVATE mpId]] mutableCopy];
     if (!identities) {
         identities = [[NSMutableArray alloc] init];

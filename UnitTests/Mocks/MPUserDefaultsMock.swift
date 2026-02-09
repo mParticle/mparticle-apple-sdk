@@ -1,5 +1,6 @@
 import XCTest
 import mParticle_Apple_SDK_NoLocation
+internal import mParticle_Apple_SDK_Swift
 
 class MPUserDefaultsMock: MPUserDefaultsProtocol {
     var setMPObjectCalled = false

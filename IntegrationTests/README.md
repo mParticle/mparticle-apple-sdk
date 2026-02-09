@@ -53,12 +53,12 @@ tuist generate
 
 This project provides tools for recording mParticle SDK API requests by:
 
-- Building mParticle SDK as an xcframework for iOS Simulator
-- Generating a test iOS app using Tuist that links to the built framework
+- Using mParticle SDK via source-based distribution (Swift Package Manager)
+- Generating a test iOS app using Tuist that links to the SDK package
 - Running the app in iOS Simulator
 - Recording all API traffic with WireMock for later use in testing
 
-The project builds the SDK into an xcframework stored in `temp_artifacts/` before each test run, ensuring tests always use your latest code changes. The framework is built for iOS Simulator only for faster compilation times during testing.
+The project uses the SDK directly from source via Swift Package Manager, ensuring tests always use your latest code changes without requiring a separate build step.
 
 ## Available Scripts
 
@@ -72,27 +72,22 @@ Records all mParticle SDK API requests using WireMock for later use in integrati
 
 **What it does:**
 
-1. Builds mParticle SDK as xcframework for iOS Simulator
-2. Generates Tuist project linked to the built framework
-3. Builds the integration test application
-4. Finds and resets iOS Simulators
-5. Automatically selects available iPhone simulator (iPhone 17/16/15 priority)
-6. Starts simulator
-7. Installs test application
-8. Starts WireMock in recording mode
-9. Launches test application
-10. Records all API traffic to mapping files
-11. Waits for application completion
-12. Stops WireMock and shows results
+1. Generates Tuist project linked to mParticle SDK via Swift Package Manager (source-based)
+2. Builds the integration test application
+3. Finds and resets iOS Simulators
+4. Automatically selects available iPhone simulator (iPhone 17/16/15 priority)
+5. Starts simulator
+6. Installs test application
+7. Starts WireMock in recording mode
+8. Launches test application
+9. Records all API traffic to mapping files
+10. Waits for application completion
+11. Stops WireMock and shows results
 
 **Recorded Files:**
 
 - `wiremock-recordings/mappings/*.json` - API request/response mappings
 - `wiremock-recordings/__files/*` - Response body files
-
-**Build Artifacts:**
-
-- `temp_artifacts/mParticle_Apple_SDK.xcframework` - Compiled SDK framework (auto-generated, not committed to git)
 
 ### `sanitize_mapping.py` - Remove API Keys and Rename WireMock Mappings
 
@@ -285,13 +280,12 @@ Use the verification script to run full end-to-end integration tests:
 
 **What the verification script does:**
 
-1. **Rebuilds SDK:** Compiles mParticle SDK as xcframework for iOS Simulator from latest source code
-2. **Regenerates project:** Runs Tuist to regenerate project linked to the new xcframework
-3. **Resets environment:** Cleans simulators and builds test app
-4. **📝 Prepares mappings:** Escapes request body JSON in WireMock mappings for proper matching
-5. **Starts WireMock:** Launches WireMock container in verification mode with updated mappings
-6. **Runs tests:** Executes test app in simulator
-7. **Verifies results:** Checks that all requests matched mappings and all mappings were invoked
-8. **Returns exit code:** Exits with code 1 if any verification fails (CI/CD compatible)
+1. **Regenerates project:** Runs Tuist to regenerate project linked to mParticle SDK via Swift Package Manager (source-based)
+2. **Resets environment:** Cleans simulators and builds test app
+3. **📝 Prepares mappings:** Escapes request body JSON in WireMock mappings for proper matching
+4. **Starts WireMock:** Launches WireMock container in verification mode with updated mappings
+5. **Runs tests:** Executes test app in simulator
+6. **Verifies results:** Checks that all requests matched mappings and all mappings were invoked
+7. **Returns exit code:** Exits with code 1 if any verification fails (CI/CD compatible)
 
-**Note:** The SDK xcframework is built fresh on each run, stored in `temp_artifacts/mParticle_Apple_SDK.xcframework`. This ensures tests always use your latest code changes.
+**Note:** The SDK is used directly from source via Swift Package Manager, ensuring tests always use your latest code changes without requiring a separate build step.

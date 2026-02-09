@@ -13,14 +13,15 @@
 #import "MPDataPlanFilter.h"
 #import "MPUpload.h"
 #import "MPKitContainer.h"
-#import "MParticleSwift.h"
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"
 #import "Executor.h"
 #import "AppEnvironmentProvider.h"
 #import "MPConvertJS.h"
+#import "MPUserDefaultsConnector.h"
 #import "SceneDelegateHandler.h"
+
 @import mParticle_Apple_SDK_Swift;
 
 static NSArray *eventTypeStrings = nil;
@@ -467,7 +468,7 @@ MPLog* logger;
     BOOL startKitsAsync = options.startKitsAsync;
     
     __weak MParticle *weakSelf = self;
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:_stateMachine backendController:_backendController identity:self.identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]] == nil;
     if (firstRun) {
         NSDate *firstSeen = [NSDate date];
@@ -552,7 +553,7 @@ MPLog* logger;
         [self.kitContainer removeAllSideloadedKits];
         
         // Clean up persistence
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:self.stateMachine backendController:[MParticle sharedInstance].backendController identity:self.identity] resetDefaults];
+        [MPUserDefaultsConnector.userDefaults resetDefaults];
         [self.persistenceController resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
@@ -651,9 +652,7 @@ MPLog* logger;
     [executor executeOnMessage:^{
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:self.stateMachine
-                                            backendController:self.backendController
-                                                     identity:self.identity] resetDefaults];
+        [MPUserDefaultsConnector.userDefaults resetDefaults];
         [self.persistenceController resetDatabase];
         [executor executeOnMain:^{
             predicate = 0;
@@ -667,7 +666,7 @@ MPLog* logger;
 
 - (void)reset {
     [executor executeOnMessageSync:^{
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
+        [MPUserDefaultsConnector.userDefaults resetDefaults];
         [[MParticle sharedInstance].persistenceController resetDatabase];
         [MParticle setSharedInstance:nil];
     }];
@@ -1348,7 +1347,7 @@ MPLog* logger;
 #pragma mark Surveys
 - (NSString *)surveyURL:(MPSurveyProvider)surveyProvider {
     NSMutableDictionary *userAttributes = nil;
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSDictionary *savedUserAttributes = userDefaults[kMPUserAttributeKey];
     if (savedUserAttributes) {
         userAttributes = [[NSMutableDictionary alloc] initWithCapacity:savedUserAttributes.count];
@@ -1422,7 +1421,7 @@ MPLog* logger;
     }
     
     NSString *kWorkspaceTokenKey = @"wst";
-    NSString *serverProvidedValue = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration][kWorkspaceTokenKey];
+    NSString *serverProvidedValue = [MPUserDefaultsConnector.userDefaults getConfiguration][kWorkspaceTokenKey];
     if ([self isValidBridgeName:serverProvidedValue]) {
         return serverProvidedValue;
     }
@@ -1727,7 +1726,7 @@ MPLog* logger;
 + (BOOL)isOlderThanConfigMaxAgeSeconds {
     BOOL shouldConfigurationBeDeleted = NO;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
     NSNumber *maxAgeSeconds = [[MParticle sharedInstance] configMaxAgeSeconds];
 

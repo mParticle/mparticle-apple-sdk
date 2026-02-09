@@ -17,8 +17,9 @@
 #import <sqlite3.h>
 #import "MPKitFilter.h"
 #import "MPApplication.h"
-#import "MParticleSwift.h"
 #import "MParticleUserNotification.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 // Prototype declaration of the C functions
 #pragma clang diagnostic push
@@ -108,7 +109,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 + (NSNumber *)mpId {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *mpId = userDefaults[@"mpid"];
     if (mpId == nil) {
         mpId = @0;
@@ -118,13 +119,13 @@ const int MaxBreadcrumbs = 50;
 }
 
 + (void)setMpid:(NSNumber *)mpId {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[@"mpid"] = mpId;
     [userDefaults synchronize];
 }
 
 + (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSString *string = [userDefaults mpObjectForKey:kMPConsentStateKey userId:mpid];
     if (!string) {
         return nil;
@@ -139,7 +140,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 + (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     if (!state) {
         [userDefaults removeMPObjectForKey:kMPConsentStateKey userId:mpid];
         [userDefaults synchronize];

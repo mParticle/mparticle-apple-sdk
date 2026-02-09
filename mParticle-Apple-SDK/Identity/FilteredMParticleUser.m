@@ -4,7 +4,6 @@
 #import "MPStateMachine.h"
 #import "MPKitConfiguration.h"
 #import "MPDataPlanFilter.h"
-#import "MParticleSwift.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()

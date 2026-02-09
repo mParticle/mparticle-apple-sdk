@@ -5,7 +5,6 @@
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPEnums.h"
-#import "MParticleSwift.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MPKitConfiguration()

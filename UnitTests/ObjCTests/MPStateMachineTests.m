@@ -5,7 +5,6 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
-#import "MParticleSwift.h"
 @import mParticle_Apple_SDK_Swift;
 
 #pragma mark - MPStateMachine category

@@ -2,7 +2,6 @@
 #import "MPIConstants.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
 @import mParticle_Apple_SDK_Swift;
 
 // Internal keys

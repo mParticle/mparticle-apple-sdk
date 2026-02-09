@@ -1,9 +1,9 @@
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
+#import "MPUserDefaultsConnector.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -241,7 +241,7 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (NSDictionary *)localCookiesDictionary {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSDictionary *localCookies = [userDefaults mpObjectForKey:kMPRemoteConfigCookiesKey userId:[MPPersistenceController_PRIVATE mpId]];
     
     if (!localCookies) {
@@ -267,7 +267,7 @@ NSString *const kMPCKExpiration = @"e";
         return _uniqueIdentifier;
     }
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     if (userDefaults[kMPRemoteConfigUniqueIdentifierKey]) {
         _uniqueIdentifier = userDefaults[kMPRemoteConfigUniqueIdentifierKey];
         [userDefaults removeMPObjectForKey:kMPRemoteConfigUniqueIdentifierKey];
@@ -291,7 +291,7 @@ NSString *const kMPCKExpiration = @"e";
 - (NSString *)deviceApplicationStamp {
     __block NSString *value = nil;
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     value = userDefaults[kMPDeviceApplicationStampStorageKey];
     
     if (!value) {

@@ -17,7 +17,7 @@
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
 #import "MPUpload.h"
-#import "MParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 
@@ -250,7 +250,7 @@
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+    [MPUserDefaultsConnector.userDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
 
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];

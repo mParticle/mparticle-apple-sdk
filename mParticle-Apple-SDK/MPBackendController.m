@@ -23,8 +23,10 @@
 #import "MPURLRequestBuilder.h"
 #import "MPIdentityCaching.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
+#import "MPUserDefaultsConnector.h"
+#import "MPUploadSettings.h"
+#import "UploadSettingsUtils.h"
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
@@ -168,7 +170,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSMutableDictionary *userAttributes = [[userDefaults mpObjectForKey:kMPUserAttributeKey userId:userId] mutableCopy];
     if (userAttributes) {
         Class NSStringClass = [NSString class];
@@ -186,7 +188,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)identitiesForUserId:(NSNumber *)userId {
     
     NSMutableArray *userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:userId];
     if (userIdentityArray) {
         [userIdentities addObjectsFromArray:userIdentityArray];
@@ -215,7 +217,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
 
     NSMutableArray *identities = [[NSMutableArray alloc] initWithCapacity:10];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSArray *identityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:userId];
     if (identityArray) {
         [identities addObjectsFromArray:identityArray];
@@ -509,7 +511,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         [self logUserAttributeChange:userAttributeChange];
     }
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPUserAttributeKey] = userAttributesCopy;
     [userDefaults synchronize];
     
@@ -830,9 +832,7 @@ static BOOL skipNextUpload = NO;
             MParticle* mparticle = MParticle.sharedInstance;
             MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
             logger.customLogger = mparticle.customLogger;
-            MPUserDefaults* userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine
-                                                                              backendController:mparticle.backendController
-                                                                                       identity:mparticle.identity];
+            MPUserDefaults* userDefaults = MPUserDefaultsConnector.userDefaults;
             MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
                                                          userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:logger];
 
@@ -1094,7 +1094,7 @@ static BOOL skipNextUpload = NO;
     userAttributeChange.timestamp = timestamp;
     [self setUserAttributeChange:userAttributeChange completionHandler:nil];
  
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPUserAttributeKey] = userAttributesCopy;
     [userDefaults synchronize];
     
@@ -1422,7 +1422,7 @@ static BOOL skipNextUpload = NO;
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
         
         // Check if we've switched workspaces on startup
-        MPUploadSettings *lastUploadSettings = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] lastUploadSettings];
+        MPUploadSettings *lastUploadSettings = [UploadSettingsUtils lastUploadSettingsWithUserDefaults: MPUserDefaultsConnector.userDefaults];
         if (![lastUploadSettings.apiKey isEqualToString:apiKey]) {
             // Different workspace, so batch previous messages under old upload settings before starting
             [self prepareBatchesForUpload:lastUploadSettings];
@@ -1433,7 +1433,7 @@ static BOOL skipNextUpload = NO;
         
         // Cache the upload settings in case we switch workspaces on startup
         MPUploadSettings *uploadSettings = [[MPUploadSettings alloc] initWithApiKey:apiKey secret:secret networkOptions:networkOptions];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setLastUploadSettings:uploadSettings];
+        [UploadSettingsUtils setLastUploadSettings:uploadSettings userDefaults: MPUserDefaultsConnector.userDefaults];
         
         // Restore cached config if exists
         (void)[MPUserDefaults restore];
@@ -1756,7 +1756,7 @@ static BOOL skipNextUpload = NO;
         if (userIdentityChange.changed) {
             [self logUserIdentityChange:userIdentityChange];
             
-            MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+            MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
             [userDefaults setObject:userIdentities forKeyedSubscript:kMPUserIdentityArrayKey];
             [userDefaults synchronize];
         }
@@ -1766,7 +1766,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)clearUserAttributes {
-    MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *defaults = MPUserDefaultsConnector.userDefaults;
     [defaults removeMPObjectForKey:@"ua"];
     [defaults synchronize];
 }

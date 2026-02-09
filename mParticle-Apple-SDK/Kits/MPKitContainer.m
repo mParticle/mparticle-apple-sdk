@@ -30,9 +30,9 @@
 #import "MPDataPlanFilter.h"
 #import <objc/message.h>
 #import "MPBracket.h"
-#import "MParticleSwift.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
+#import "MPUserDefaultsConnector.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -288,7 +288,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *directoryContents = [userDefaults getKitConfigurations];
     
@@ -1997,7 +1997,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     self.originalConfig = kitConfigurations;
     
     NSPredicate *predicate;
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
@@ -2564,7 +2564,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         return nil;
     }
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     __block NSMutableArray *forwardUserIdentities = [[NSMutableArray alloc] initWithCapacity:userIdentities.count];
     

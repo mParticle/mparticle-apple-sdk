@@ -11,8 +11,8 @@
 #import "MPPersistenceController.h"
 #import "MPURL.h"
 #import "MPStateMachine.h"
-#import "MParticleSwift.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -596,7 +596,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 }
 
 - (void)testRequestConfigWithDefaultMaxAge {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
     NSNumber *maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
     
@@ -656,7 +656,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 }
 
 - (void)testRequestConfigWithManualMaxAge {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
     
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
@@ -760,7 +760,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         XCTAssert(success);
     }];
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults synchronize];
     
     NSNumber *provisionedInterval = userDefaults[kMPConfigProvisionedTimestampKey];
@@ -771,7 +771,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 }
 
 - (void)testRequestConfigWithManualMaxAgeOverMaxAllowed {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
     
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
@@ -828,7 +828,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 }
 
 - (void)testRequestConfigWithComplexCacheControlHeader {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
     
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];

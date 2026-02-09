@@ -2,16 +2,19 @@ import ProjectDescription
 
 let project = Project(
     name: "IntegrationTests",
+    packages: [
+        .package(path: "../")
+    ],
     targets: [
         .target(
             name: "IntegrationTests",
             destinations: .iOS,
             product: .app,
             bundleId: "com.mparticle.IntegrationTests",
-            deploymentTargets: .iOS("14.0"),
+            deploymentTargets: .iOS("15.6"),
             sources: ["Sources/**"],
             dependencies: [
-                .xcframework(path: "temp_artifacts/mParticle_Apple_SDK.xcframework")
+                .package(product: "mParticle-Apple-SDK-NoLocation", type: .runtime)
             ]
         )
     ],

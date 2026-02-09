@@ -8,7 +8,7 @@
 #import "MPApplication.h"
 #import "MPURL.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 static NSDateFormatter *RFC1123DateFormatter;
@@ -213,7 +213,7 @@ static NSDateFormatter *RFC1123DateFormatter;
             NSString *environment = [NSString stringWithFormat:@"%d", (int)[MPStateMachine_PRIVATE environment]];
             [urlRequest setValue:environment forHTTPHeaderField:@"x-mp-env"];
             
-            MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+            MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
             NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
             NSDictionary *config = [userDefaults getConfiguration];
             if (eTag && config) {

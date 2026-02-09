@@ -1,8 +1,8 @@
 #import "MPCustomModulePreference.h"
 #import "MPILogger.h"
-#import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
@@ -175,7 +175,7 @@
 
 #pragma mark Public methods
 - (id)value {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSString *deprecatedKey = [NSString stringWithFormat:@"cms::%@", self.writeKey];
     NSString *customModuleKey = [NSString stringWithFormat:@"cms::%@::%@", self.moduleId, self.writeKey];

@@ -7,7 +7,7 @@
 #import "MPNotificationController.h"
 #import "MPPersistenceController.h"
 #import "MPConsumerInfo.h"
-#import "mParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
@@ -62,9 +62,7 @@
         MParticle* mparticle = MParticle.sharedInstance;
         MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
         logger.customLogger = mparticle.customLogger;
-        MPUserDefaults* userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:mparticle.stateMachine
-                                                                          backendController:mparticle.backendController
-                                                                                   identity:mparticle.identity];
+        MPUserDefaults* userDefaults = MPUserDefaultsConnector.userDefaults;
         MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
                                                      userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
                                                          identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
