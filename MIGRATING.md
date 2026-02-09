@@ -241,6 +241,7 @@ func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
 ### MPRokt API Changes
 
 The `MPRokt` interface has been updated to align with the Rokt SDK 5.0.x API. These changes consolidate multiple callback parameters into a unified event-based callback pattern and standardize parameter naming.
+
 #### What Has Changed
 
 - The `MPRoktEventCallback` class has been removed and replaced with MPRoktEvent
