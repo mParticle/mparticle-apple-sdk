@@ -354,15 +354,7 @@ MParticle.sharedInstance().rokt.selectPlacements("checkout",
 
 ##### purchaseFinalized Method
 
-**Before (Objective-C):**
-
-```objective-c
-[[MParticle sharedInstance].rokt purchaseFinalized:@"checkout"
-                                     catalogItemId:@"item123"
-                                           success:YES];
-```
-
-**After (Objective-C):**
+**(Objective-C):**
 
 ```objective-c
 [[MParticle sharedInstance].rokt purchaseFinalized:@"checkout"
