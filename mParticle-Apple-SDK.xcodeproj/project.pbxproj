@@ -620,14 +620,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Test/Identity/MPUserIdentityChangeTests.m,
-				Test/Utils/HasherTests.m,
-				Test/Utils/MParticleWebViewTests.m,
-				Test/Utils/MPDateFormatterTests.m,
-				Test/Utils/MPDeviceTests.swift,
+	35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+		membershipExceptions = (
+			Test/Identity/MPUserIdentityChangeTests.m,
+			Test/Utils/HasherTests.m,
+			Test/Utils/MParticleWebViewTests.m,
+			Test/Utils/MPDateFormatterTests.swift,
+			Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPUserAttributeChangeTests.m,
@@ -639,14 +639,14 @@
 			);
 			target = 35DBFDC72F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */;
 		};
-		35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Test/Identity/MPUserIdentityChangeTests.m,
-				Test/Utils/HasherTests.m,
-				Test/Utils/MParticleWebViewTests.m,
-				Test/Utils/MPDateFormatterTests.m,
-				Test/Utils/MPDeviceTests.swift,
+	35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+		membershipExceptions = (
+			Test/Identity/MPUserIdentityChangeTests.m,
+			Test/Utils/HasherTests.m,
+			Test/Utils/MParticleWebViewTests.m,
+			Test/Utils/MPDateFormatterTests.swift,
+			Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPUserAttributeChangeTests.m,
