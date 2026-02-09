@@ -33,6 +33,7 @@ Pod::Spec.new do |s|
         mp.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         mp.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
+        mp.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
         mp.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
     end
 
