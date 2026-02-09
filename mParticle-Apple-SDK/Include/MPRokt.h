@@ -114,4 +114,22 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  */
 - (void)close;
 
+/**
+ * Set the session id to use for the next execute call.
+ * This is useful for cases where you have a session id from a non-native integration,
+ * e.g. WebView, and you want the session to be consistent across integrations.
+ *
+ * @note Empty strings are ignored and will not update the session.
+ *
+ * @param sessionId The session id to be set. Must be a non-empty string.
+ */
+- (void)setSessionId:(NSString * _Nonnull)sessionId;
+
+/**
+ * Get the session id to use within a non-native integration e.g. WebView.
+ *
+ * @return The session id or nil if no session is present.
+ */
+- (NSString * _Nullable)getSessionId;
+
 @end

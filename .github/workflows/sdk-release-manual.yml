@@ -1,0 +1,344 @@
+name: iOS SDK Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump-type:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  XCODE_VERSION: "16.4"
+
+jobs:
+  # SDK release is done from main branch.
+  confirm-main-branch:
+    name: Confirm release is run from main branch
+    uses: mParticle/mparticle-workflows/.github/workflows/sdk-release-repo-branch-check.yml@stable
+
+  release:
+    name: Perform manual release
+    runs-on: macOS-15
+    needs: confirm-main-branch
+    env:
+      GITHUB_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          repository: ${{ github.repository }}
+          token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          ref: main
+
+      - name: Get current version from latest tag
+        id: current-version
+        run: |
+          # Get the latest tag and strip the 'v' prefix (fallback to 0.0.0 if no tags)
+          CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Bump version
+        id: bump-version
+        uses: actions-ecosystem/action-bump-semver@v1
+        with:
+          current_version: ${{ steps.current-version.outputs.version }}
+          level: ${{ github.event.inputs.bump-type }}
+
+      - name: Set VERSION environment variable
+        run: |
+          # Strip 'v' prefix if present from bumped version
+          VERSION=$(echo "${{ steps.bump-version.outputs.new_version }}" | sed 's/^v//')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "New version: $VERSION"
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Validate environment
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.MP_IOS_SDK_S3_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MP_IOS_SDK_S3_SECRET }}
+          AWS_DEFAULT_REGION: ${{ secrets.MP_IOS_SDK_S3_REGION }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+        run: |
+          env | grep -q '^GITHUB_TOKEN=' || (echo "Required environment variable GITHUB_TOKEN is not set" && exit 1)
+          env | grep -q '^AWS_ACCESS_KEY_ID=' || (echo "Required environment variable AWS_ACCESS_KEY_ID is not set" && exit 1)
+          env | grep -q '^AWS_SECRET_ACCESS_KEY=' || (echo "Required environment variable AWS_SECRET_ACCESS_KEY is not set" && exit 1)
+          env | grep -q '^AWS_DEFAULT_REGION=' || (echo "Required environment variable AWS_DEFAULT_REGION is not set" && exit 1)
+          env | grep -q '^BUILD_CERTIFICATE_BASE64=' || (echo "Required environment variable BUILD_CERTIFICATE_BASE64 is not set" && exit 1)
+          env | grep -q '^P12_PASSWORD=' || (echo "Required environment variable P12_PASSWORD is not set" && exit 1)
+          env | grep -q '^KEYCHAIN_PASSWORD=' || (echo "Required environment variable KEYCHAIN_PASSWORD is not set" && exit 1)
+
+      - name: Setup git config
+        run: |
+          git config user.email "developers@mparticle.com"
+          git config user.name "mParticle Automation"
+
+      - name: Delete existing release branch if present
+        run: |
+          # Delete remote branch if it exists (ignore errors if it doesn't)
+          git push origin --delete chore/release-v${VERSION} 2>/dev/null || true
+          # Delete local branch if it exists
+          git branch -D chore/release-v${VERSION} 2>/dev/null || true
+
+      - name: Create release branch
+        run: |
+          git checkout -b chore/release-v${VERSION}
+
+      - name: Install the signing certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+        run: |
+          # Create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Import certificate from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+      - name: Generate changelog entry
+        run: |
+          PREV_TAG="v${{ steps.current-version.outputs.version }}"
+          # Handle case where there's no previous version
+          if [ "$PREV_TAG" = "v0.0.0" ]; then
+            PREV_TAG=""
+          fi
+          DATE=$(date +%Y-%m-%d)
+
+          # Create temp file for new changelog entry
+          echo "# [${VERSION}](https://github.com/mParticle/mparticle-apple-sdk/compare/${PREV_TAG}...v${VERSION}) (${DATE})" > /tmp/changelog_entry.md
+          echo "" >> /tmp/changelog_entry.md
+
+          # Get commits since last tag, grouped by type
+          if [ -n "$PREV_TAG" ]; then
+            # Bug Fixes
+            FIXES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" --grep="^fix" --regexp-ignore-case 2>/dev/null || true)
+            if [ -n "$FIXES" ]; then
+              echo "### Bug Fixes" >> /tmp/changelog_entry.md
+              echo "" >> /tmp/changelog_entry.md
+              echo "$FIXES" >> /tmp/changelog_entry.md
+              echo "" >> /tmp/changelog_entry.md
+            fi
+            
+            # Features
+            FEATURES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" --grep="^feat" --regexp-ignore-case 2>/dev/null || true)
+            if [ -n "$FEATURES" ]; then
+              echo "### Features" >> /tmp/changelog_entry.md
+              echo "" >> /tmp/changelog_entry.md
+              echo "$FEATURES" >> /tmp/changelog_entry.md
+              echo "" >> /tmp/changelog_entry.md
+            fi
+            
+            # Other changes (if no fixes or features found, include all commits)
+            if [ -z "$FIXES" ] && [ -z "$FEATURES" ]; then
+              OTHER=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" 2>/dev/null || true)
+              if [ -n "$OTHER" ]; then
+                echo "### Changes" >> /tmp/changelog_entry.md
+                echo "" >> /tmp/changelog_entry.md
+                echo "$OTHER" >> /tmp/changelog_entry.md
+                echo "" >> /tmp/changelog_entry.md
+              fi
+            fi
+          else
+            echo "### Initial Release" >> /tmp/changelog_entry.md
+            echo "" >> /tmp/changelog_entry.md
+          fi
+
+          # Prepend new entry to existing CHANGELOG.md
+          if [ -f CHANGELOG.md ]; then
+            cat /tmp/changelog_entry.md CHANGELOG.md > /tmp/new_changelog.md
+            mv /tmp/new_changelog.md CHANGELOG.md
+          else
+            mv /tmp/changelog_entry.md CHANGELOG.md
+          fi
+
+          echo "Generated changelog entry:"
+          head -50 CHANGELOG.md
+
+      - name: Update version in MPIConstants.m
+        run: |
+          sed -i '' "s/kMParticleSDKVersion = @\"[^\"]*\"/kMParticleSDKVersion = @\"${VERSION}\"/" mParticle-Apple-SDK/MPIConstants.m
+
+      - name: Update version in MPConstants.swift
+        run: |
+          sed -i '' "s/let kMParticleSDKVersion = \"[^\"]*\"/let kMParticleSDKVersion = \"${VERSION}\"/" mParticle-Apple-SDK/MPConstants.swift
+
+      - name: Update version in Info.plist
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" Framework/Info.plist
+
+      - name: Update version in podspec
+        run: |
+          sed -i '' "s/s.version          = \"[^\"]*\"/s.version          = \"${VERSION}\"/" mParticle-Apple-SDK.podspec
+
+      - name: Update Carthage JSON manifest
+        run: |
+          jq --arg version "${VERSION}" \
+             --arg url "https://github.com/mParticle/mparticle-apple-sdk/releases/download/v${VERSION}/mParticle_Apple_SDK.framework.zip?alt=https://github.com/mParticle/mparticle-apple-sdk/releases/download/v${VERSION}/mParticle_Apple_SDK.xcframework.zip" \
+             '. + {($version): $url}' mParticle_Apple_SDK.json > /tmp/mParticle_Apple_SDK.json.tmp && \
+          mv /tmp/mParticle_Apple_SDK.json.tmp mParticle_Apple_SDK.json
+
+      - name: Update Package.swift URLs (before building)
+        run: |
+          # Update URLs to point to new version (checksums will be updated after building)
+          sed -i '' "s|https://static.mparticle.com/sdk/ios/v[^/]*/mParticle_Apple_SDK.xcframework.zip|https://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip|g" Package.swift
+          sed -i '' "s|https://static.mparticle.com/sdk/ios/v[^/]*/mParticle_Apple_SDK_NoLocation.xcframework.zip|https://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK_NoLocation.xcframework.zip|g" Package.swift
+
+      - name: Build framework artifacts
+        run: |
+          chmod +x ./Scripts/make_artifacts.sh
+          chmod +x ./Scripts/carthage.sh
+          chmod +x ./Scripts/xcframework.sh
+          ./Scripts/make_artifacts.sh
+
+      - name: Compute checksums and update Package.swift
+        run: |
+          # Compute checksums for the built xcframeworks
+          SDK_CHECKSUM=$(swift package compute-checksum mParticle_Apple_SDK.xcframework.zip)
+          SDK_NOLOCATION_CHECKSUM=$(swift package compute-checksum mParticle_Apple_SDK_NoLocation.xcframework.zip)
+
+          echo "SDK Checksum: $SDK_CHECKSUM"
+          echo "SDK NoLocation Checksum: $SDK_NOLOCATION_CHECKSUM"
+
+          # Update Package.swift with the correct checksums
+          sed -i '' "s/let mParticle_Apple_SDK_Checksum = \"[^\"]*\"/let mParticle_Apple_SDK_Checksum = \"${SDK_CHECKSUM}\"/" Package.swift
+          sed -i '' "s/let mParticle_Apple_SDK_NoLocation_Checksum = \"[^\"]*\"/let mParticle_Apple_SDK_NoLocation_Checksum = \"${SDK_NOLOCATION_CHECKSUM}\"/" Package.swift
+
+          echo "Updated Package.swift:"
+          head -15 Package.swift
+
+      - name: Upload xcframeworks to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.MP_IOS_SDK_S3_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MP_IOS_SDK_S3_SECRET }}
+          AWS_DEFAULT_REGION: ${{ secrets.MP_IOS_SDK_S3_REGION }}
+        run: |
+          aws s3 cp mParticle_Apple_SDK.xcframework.zip s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip
+          aws s3 cp mParticle_Apple_SDK_NoLocation.xcframework.zip s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK_NoLocation.xcframework.zip
+
+          echo "Uploaded xcframeworks to S3:"
+          echo "  - s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip"
+          echo "  - s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK_NoLocation.xcframework.zip"
+
+      - name: Commit version changes
+        run: |
+          # Only add the version-related files, exclude build artifacts
+          git add \
+            CHANGELOG.md \
+            Framework/Info.plist \
+            Package.swift \
+            mParticle-Apple-SDK.podspec \
+            mParticle-Apple-SDK/MPConstants.swift \
+            mParticle-Apple-SDK/MPIConstants.m \
+            mParticle_Apple_SDK.json
+
+          git commit -m "chore(release): ${VERSION}
+
+          Updates version to ${VERSION} in:
+          - CHANGELOG.md
+          - Framework/Info.plist
+          - Package.swift
+          - mParticle-Apple-SDK.podspec
+          - mParticle-Apple-SDK/MPConstants.swift
+          - mParticle-Apple-SDK/MPIConstants.m
+          - mParticle_Apple_SDK.json"
+
+      - name: Push release branch
+        run: |
+          git push origin chore/release-v${VERSION}
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+        run: |
+          PR_BODY="## Release v${VERSION}
+
+          This PR contains the version bump and changelog updates for release ${VERSION}.
+
+          ### XCFrameworks uploaded to S3
+          - \`s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip\`
+          - \`s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK_NoLocation.xcframework.zip\`
+
+          ### Files Updated
+          - \`CHANGELOG.md\`
+          - \`Framework/Info.plist\`
+          - \`Package.swift\`
+          - \`mParticle-Apple-SDK.podspec\`
+          - \`mParticle-Apple-SDK/MPConstants.swift\`
+          - \`mParticle-Apple-SDK/MPIConstants.m\`
+          - \`mParticle_Apple_SDK.json\`
+
+          ---
+
+          ## Post-Merge Instructions
+
+          After merging this PR to main, complete the release with these steps:
+
+          ### 1. Create and push the git tag
+          \`\`\`bash
+          git checkout main
+          git pull origin main
+          git tag v${VERSION}
+          git push origin v${VERSION}
+          \`\`\`
+
+          ### 2. Create GitHub Release
+          Go to [Releases](https://github.com/mParticle/mparticle-apple-sdk/releases/new) and:
+          - Select tag: \`v${VERSION}\`
+          - Title: \`v${VERSION}\`
+          - Copy release notes from CHANGELOG.md
+          - Attach the following artifacts (download from S3 or build locally):
+            - \`mParticle_Apple_SDK.framework.zip\`
+            - \`mParticle_Apple_SDK.xcframework.zip\`
+            - \`mParticle_Apple_SDK_NoLocation.framework.zip\`
+            - \`mParticle_Apple_SDK_NoLocation.xcframework.zip\`
+            - \`generated-docs.zip\`
+
+          Or use the GitHub CLI:
+          \`\`\`bash
+          gh release create v${VERSION} \\
+            --title \"v${VERSION}\" \\
+            --notes-file <(awk '/^# \\[${VERSION}\\]/{flag=1; next} /^# \\[/{flag=0} flag' CHANGELOG.md) \\
+            mParticle_Apple_SDK.framework.zip \\
+            mParticle_Apple_SDK.xcframework.zip \\
+            mParticle_Apple_SDK_NoLocation.framework.zip \\
+            mParticle_Apple_SDK_NoLocation.xcframework.zip \\
+            generated-docs.zip
+          \`\`\`
+
+          ### 3. Release to CocoaPods
+          \`\`\`bash
+          COCOAPODS_TRUNK_TOKEN={from 1Password}
+          pod trunk push --allow-warnings
+          \`\`\`
+
+          ---
+
+          **Note:** The xcframeworks have already been uploaded to S3 for SPM binary targets."
+
+          gh pr create \
+            --base main \
+            --head chore/release-v${VERSION} \
+            --title "chore: Release v${VERSION}" \
+            --body "$PR_BODY" \
+            --reviewer mParticle/sdk-team
