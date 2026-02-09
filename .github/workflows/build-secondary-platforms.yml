@@ -1,6 +1,7 @@
 name: Secondary Platforms iOS Build
 
 on:
+  workflow_call:
   workflow_dispatch:
 
 concurrency:

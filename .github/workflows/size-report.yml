@@ -1,13 +1,8 @@
 name: SDK Size Report
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  workflow_call:
   workflow_dispatch:
-
-concurrency:
-  group: size-report-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
 
 permissions:
   contents: read
