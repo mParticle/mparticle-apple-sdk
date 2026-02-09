@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -11,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating Rokt initialization completed.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktInitComplete)
 @interface MPRoktInitComplete : MPRoktEvent
 
 /**
@@ -30,18 +32,21 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating the loading indicator should be shown.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktShowLoadingIndicator)
 @interface MPRoktShowLoadingIndicator : MPRoktEvent
 @end
 
 /**
  Event indicating the loading indicator should be hidden.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktHideLoadingIndicator)
 @interface MPRoktHideLoadingIndicator : MPRoktEvent
 @end
 
 /**
  Event indicating a placement became interactive.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktPlacementInteractive)
 @interface MPRoktPlacementInteractive : MPRoktEvent
 
 /**
@@ -61,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating a placement is ready.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktPlacementReady)
 @interface MPRoktPlacementReady : MPRoktEvent
 
 /**
@@ -80,6 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating an offer engagement occurred.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktOfferEngagement)
 @interface MPRoktOfferEngagement : MPRoktEvent
 
 /**
@@ -99,6 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating a URL should be opened.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktOpenUrl)
 @interface MPRoktOpenUrl : MPRoktEvent
 
 /**
@@ -124,6 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating a positive engagement occurred.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktPositiveEngagement)
 @interface MPRoktPositiveEngagement : MPRoktEvent
 
 /**
@@ -143,6 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating a placement was closed.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktPlacementClosed)
 @interface MPRoktPlacementClosed : MPRoktEvent
 
 /**
@@ -162,6 +172,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating a placement was completed.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktPlacementCompleted)
 @interface MPRoktPlacementCompleted : MPRoktEvent
 
 /**
@@ -181,6 +192,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating a placement failure occurred.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktPlacementFailure)
 @interface MPRoktPlacementFailure : MPRoktEvent
 
 /**
@@ -200,6 +212,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating the first positive engagement occurred.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktFirstPositiveEngagement)
 @interface MPRoktFirstPositiveEngagement : MPRoktEvent
 
 /**
@@ -219,6 +232,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Event indicating a cart item instant purchase occurred.
  */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktCartItemInstantPurchase)
 @interface MPRoktCartItemInstantPurchase : MPRoktEvent
 
 /**
@@ -297,6 +311,33 @@ NS_ASSUME_NONNULL_BEGIN
                            quantity:(nullable NSDecimalNumber *)quantity
                          totalPrice:(nullable NSDecimalNumber *)totalPrice
                           unitPrice:(nullable NSDecimalNumber *)unitPrice;
+
+@end
+
+/**
+ Event indicating the height of an embedded placement changed.
+ This event is only emitted for embedded placements.
+ */
+NS_SWIFT_NAME(MPRoktEvent.MPRoktEmbeddedSizeChanged)
+@interface MPRoktEmbeddedSizeChanged : MPRoktEvent
+
+/**
+ The placement identifier.
+ */
+@property (nonatomic, readonly) NSString *placementId;
+
+/**
+ The new height of the placement.
+ */
+@property (nonatomic, readonly) CGFloat updatedHeight;
+
+/**
+ Initializes a new embedded size changed event.
+ @param placementId The placement identifier
+ @param updatedHeight The new height of the placement
+ @return A new MPRoktEmbeddedSizeChanged instance
+ */
+- (instancetype)initWithPlacementId:(NSString *)placementId updatedHeight:(CGFloat)updatedHeight;
 
 @end
 
