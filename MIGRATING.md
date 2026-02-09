@@ -240,8 +240,7 @@ func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
 
 ### MPRokt API Changes
 
-The `MPRokt` interface has been updated to align with the Rokt SDK 4.14.x API. These changes consolidate multiple callback parameters into a unified event-based callback pattern and standardize parameter naming.
-
+The `MPRokt` interface has been updated to align with the Rokt SDK 5.0.x API. These changes consolidate multiple callback parameters into a unified event-based callback pattern and standardize parameter naming.
 #### What Has Changed
 
 - The `MPRoktEventCallback` class has been removed and replaced with MPRoktEvent
@@ -357,15 +356,7 @@ MParticle.sharedInstance().rokt.selectPlacements("checkout",
 
 ##### purchaseFinalized Method
 
-**Before (Objective-C):**
-
-```objective-c
-[[MParticle sharedInstance].rokt purchaseFinalized:@"checkout"
-                                     catalogItemId:@"item123"
-                                           success:YES];
-```
-
-**After (Objective-C):**
+**(Objective-C):**
 
 ```objective-c
 [[MParticle sharedInstance].rokt purchaseFinalized:@"checkout"
