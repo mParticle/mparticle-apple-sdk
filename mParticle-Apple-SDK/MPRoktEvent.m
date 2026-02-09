@@ -248,3 +248,23 @@
 }
 
 @end
+
+#pragma mark - MPRoktEmbeddedSizeChanged
+
+@interface MPRoktEmbeddedSizeChanged ()
+@property (nonatomic, readwrite) NSString *placementId;
+@property (nonatomic, readwrite) CGFloat updatedHeight;
+@end
+
+@implementation MPRoktEmbeddedSizeChanged
+
+- (instancetype)initWithPlacementId:(NSString *)placementId updatedHeight:(CGFloat)updatedHeight {
+    self = [super init];
+    if (self) {
+        _placementId = placementId;
+        _updatedHeight = updatedHeight;
+    }
+    return self;
+}
+
+@end

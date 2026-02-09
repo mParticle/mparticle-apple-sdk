@@ -247,6 +247,24 @@
     XCTAssertEqualObjects(event.description, customDescription);
 }
 
+#pragma mark - MPRoktEmbeddedSizeChanged Tests
+
+- (void)testEmbeddedSizeChangedWithPlacementIdAndHeight {
+    NSString *placementId = @"embed-placement-123";
+    CGFloat updatedHeight = 250.5;
+    MPRoktEmbeddedSizeChanged *event = [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:placementId updatedHeight:updatedHeight];
+    XCTAssertNotNil(event);
+    XCTAssertEqualObjects(event.placementId, placementId);
+    XCTAssertEqualWithAccuracy(event.updatedHeight, updatedHeight, 0.001);
+    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+}
+
+- (void)testEmbeddedSizeChangedWithZeroHeight {
+    MPRoktEmbeddedSizeChanged *event = [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:@"placement" updatedHeight:0];
+    XCTAssertNotNil(event);
+    XCTAssertEqualWithAccuracy(event.updatedHeight, 0, 0.001);
+}
+
 #pragma mark - Inheritance Tests
 
 - (void)testAllEventTypesInheritFromMPRoktEvent {
@@ -264,6 +282,7 @@
     XCTAssertTrue([[[MPRoktPlacementFailure alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
     XCTAssertTrue([[[MPRoktFirstPositiveEngagement alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
     XCTAssertTrue([[[MPRoktCartItemInstantPurchase alloc] initWithPlacementId:@"p" name:nil cartItemId:@"c" catalogItemId:@"cat" currency:@"USD" description:@"d" linkedProductId:nil providerData:@"prov" quantity:nil totalPrice:nil unitPrice:nil] isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([[[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:@"p" updatedHeight:100] isKindOfClass:[MPRoktEvent class]]);
 }
 
 @end

@@ -88,7 +88,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -96,6 +96,7 @@
         XCTAssertEqualObjects(params[1], attributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -128,12 +129,11 @@
     NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
     MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement": exampleView};
-    MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
-    exampleCallbacks.onLoad = ^{};
-    exampleCallbacks.onUnLoad = ^{};
-    exampleCallbacks.onShouldShowLoadingIndicator = ^{};
-    exampleCallbacks.onShouldHideLoadingIndicator = ^{};
-    exampleCallbacks.onEmbeddedSizeChange = ^(NSString *p, CGFloat s){};
+    
+    // Create onEvent callback block
+    void (^exampleOnEvent)(MPRoktEvent * _Nonnull) = ^(MPRoktEvent * _Nonnull event) {
+        // Handle event
+    };
     
     MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
     roktConfig.colorMode = MPColorModeDark;
@@ -142,7 +142,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -150,12 +150,7 @@
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertEqualObjects(params[2], embeddedViews);
         XCTAssertEqualObjects(params[3], roktConfig);
-        MPRoktEventCallback *resultCallbacks = params[4];
-        XCTAssertEqualObjects(resultCallbacks.onLoad, exampleCallbacks.onLoad);
-        XCTAssertEqualObjects(resultCallbacks.onUnLoad, exampleCallbacks.onUnLoad);
-        XCTAssertEqualObjects(resultCallbacks.onShouldShowLoadingIndicator, exampleCallbacks.onShouldShowLoadingIndicator);
-        XCTAssertEqualObjects(resultCallbacks.onShouldHideLoadingIndicator, exampleCallbacks.onShouldHideLoadingIndicator);
-        XCTAssertEqualObjects(resultCallbacks.onEmbeddedSizeChange, exampleCallbacks.onEmbeddedSizeChange);
+        XCTAssertNotNil(params[4]); // onEvent callback should be set
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -168,7 +163,7 @@
                      attributes:attributes
                   embeddedViews:embeddedViews
                          config:roktConfig
-                      callbacks:exampleCallbacks];
+                        onEvent:exampleOnEvent];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
@@ -193,12 +188,12 @@
                      attributes:nil
                   embeddedViews:nil
                          config:nil
-                      callbacks:nil];
+                        onEvent:nil];
     
     // Wait for async operation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
     NSDictionary *finalAttributes = @{@"sandbox": @"true"};
 
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
@@ -208,6 +203,7 @@
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -237,7 +233,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -245,6 +241,7 @@
         XCTAssertEqualObjects(params[1], mappedAttributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -271,7 +268,7 @@
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
     OCMReject([self.mockContainer forwardSDKCall:roktSelector
                                       event:[OCMArg any]
                                  parameters:[OCMArg any]
@@ -588,7 +585,7 @@
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
     // Set up test parameters
-    NSString *placementId = @"testonversion";
+    NSString *identifier = @"testonversion";
     NSString *catalogItemId = @"testcatalogItemId";
     BOOL success = YES;
     
@@ -598,7 +595,7 @@
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        XCTAssertEqualObjects(params[0], placementId);
+        XCTAssertEqualObjects(params[0], identifier);
         XCTAssertEqualObjects(params[1], catalogItemId);
         XCTAssertEqualObjects(params[2], @(success));
         return true;
@@ -609,7 +606,7 @@
     });
     
     // Execute method
-    [[MParticle sharedInstance].rokt purchaseFinalized:placementId catalogItemId:catalogItemId success:success];
+    [[MParticle sharedInstance].rokt purchaseFinalized:identifier catalogItemId:catalogItemId success:success];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
@@ -742,6 +739,93 @@
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
     XCTAssertNotNil(receivedEvent, @"Should have received an event");
     XCTAssertTrue([receivedEvent isKindOfClass:[MPRoktPlacementReady class]], @"Should receive the correct event type");
+
+    // Verify
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testGlobalEvents {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // Set up test parameters
+    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
+        // Handle global event
+    };
+
+    // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(globalEvents:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertNotNil(params[0]);
+        return true;
+    }]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    // Execute method
+    [self.rokt globalEvents:onEventCallback];
+
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    // Verify
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testGlobalEventsCallbackInvocation {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // Set up test parameters
+    __block BOOL callbackInvoked = NO;
+    __block MPRoktEvent *receivedEvent = nil;
+
+    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
+        callbackInvoked = YES;
+        receivedEvent = event;
+    };
+
+    // Set up expectations for kit container to simulate callback invocation
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(globalEvents:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        // Simulate the kit calling the callback with InitComplete event
+        void (^capturedCallback)(MPRoktEvent *) = params[0];
+        if (capturedCallback) {
+            MPRoktInitComplete *testEvent = [[MPRoktInitComplete alloc] initWithSuccess:YES];
+            capturedCallback(testEvent);
+        }
+        return true;
+    }]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    // Execute method
+    [self.rokt globalEvents:onEventCallback];
+
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    // Verify callback was invoked
+    XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
+    XCTAssertNotNil(receivedEvent, @"Should have received an event");
+    XCTAssertTrue([receivedEvent isKindOfClass:[MPRoktInitComplete class]], @"Should receive the correct event type");
+    XCTAssertTrue(((MPRoktInitComplete *)receivedEvent).success, @"InitComplete event should indicate success");
 
     // Verify
     OCMVerifyAll(self.mockContainer);

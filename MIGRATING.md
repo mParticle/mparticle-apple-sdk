@@ -95,62 +95,6 @@ The `MPListenerController` class has been removed. The SDK no longer invokes any
 
 ---
 
-### Source-Based Distribution Changes
-
-As part of the transition from binary (XCFramework) to source-based distribution, several public Swift classes have been converted to Objective-C. This improves compatibility with Swift Package Manager and reduces integration complexity, but may require code changes for Swift users who were referencing Swift-specific type hierarchies.
-
-#### MPRoktEvent Classes Moved to Top-Level
-
-The `MPRoktEvent` subclasses have been converted from Swift nested classes to Objective-C top-level classes. This changes how Swift users reference these types.
-
-**Before (Swift):**
-
-```swift
-let initEvent = MPRoktEvent.MPRoktInitComplete(success: true)
-let readyEvent = MPRoktEvent.MPRoktPlacementReady(placementId: "abc")
-let purchaseEvent = MPRoktEvent.MPRoktCartItemInstantPurchase(...)
-```
-
-**After (Swift):**
-
-```swift
-let initEvent = MPRoktInitComplete(success: true)
-let readyEvent = MPRoktPlacementReady(placementId: "abc")
-let purchaseEvent = MPRoktCartItemInstantPurchase(...)
-```
-
-**Affected Classes:**
-
-| Before (Swift)                              | After (Swift)                   |
-| ------------------------------------------- | ------------------------------- |
-| `MPRoktEvent.MPRoktInitComplete`            | `MPRoktInitComplete`            |
-| `MPRoktEvent.MPRoktShowLoadingIndicator`    | `MPRoktShowLoadingIndicator`    |
-| `MPRoktEvent.MPRoktHideLoadingIndicator`    | `MPRoktHideLoadingIndicator`    |
-| `MPRoktEvent.MPRoktPlacementInteractive`    | `MPRoktPlacementInteractive`    |
-| `MPRoktEvent.MPRoktPlacementReady`          | `MPRoktPlacementReady`          |
-| `MPRoktEvent.MPRoktOfferEngagement`         | `MPRoktOfferEngagement`         |
-| `MPRoktEvent.MPRoktOpenUrl`                 | `MPRoktOpenUrl`                 |
-| `MPRoktEvent.MPRoktPositiveEngagement`      | `MPRoktPositiveEngagement`      |
-| `MPRoktEvent.MPRoktPlacementClosed`         | `MPRoktPlacementClosed`         |
-| `MPRoktEvent.MPRoktPlacementCompleted`      | `MPRoktPlacementCompleted`      |
-| `MPRoktEvent.MPRoktPlacementFailure`        | `MPRoktPlacementFailure`        |
-| `MPRoktEvent.MPRoktFirstPositiveEngagement` | `MPRoktFirstPositiveEngagement` |
-| `MPRoktEvent.MPRoktCartItemInstantPurchase` | `MPRoktCartItemInstantPurchase` |
-
-**Migration Steps:**
-
-1. Find all usages of `MPRoktEvent.MPRokt*` in your Swift code
-2. Remove the `MPRoktEvent.` prefix
-3. Type checking with `is` remains unchanged since they still inherit from `MPRoktEvent`
-
-**Notes:**
-
-- Objective-C users are not affected by this change
-- The `MPRoktEvent` base class still exists and can be used for type checking
-- All initializers and properties remain the same
-
----
-
 ### Direct Routing Enabled by Default
 
 API requests now route directly to regional endpoints based on your API key prefix:
@@ -383,6 +327,181 @@ targets: [
 - Location-related features are no longer available in the SDK
 
 ---
+
+### MPRokt API Changes
+
+The `MPRokt` interface has been updated to align with the Rokt SDK 5.0.x API. These changes consolidate multiple callback parameters into a unified event-based callback pattern and standardize parameter naming.
+
+#### What Has Changed
+
+- The `MPRoktEventCallback` class has been removed and replaced with MPRoktEvent
+- The `selectPlacements:` method's `callbacks:` parameter has been replaced with `onEvent:`
+- The `purchaseFinalized:` method's `placementId:` parameter has been renamed to `identifier:`
+- A new `globalEvents:` method has been added for subscribing to global Rokt events
+- A new `MPRoktEmbeddedSizeChanged` event class has been added
+
+#### Migration Steps
+
+##### selectPlacements Method
+
+**Before (Objective-C):**
+
+```objective-c
+MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
+callbacks.onLoad = ^{
+    // Handle load
+};
+callbacks.onUnLoad = ^{
+    // Handle unload
+};
+callbacks.onShouldShowLoadingIndicator = ^{
+    // Show loading indicator
+};
+callbacks.onShouldHideLoadingIndicator = ^{
+    // Hide loading indicator
+};
+callbacks.onEmbeddedSizeChange = ^(NSString *placementId, CGFloat height) {
+    // Handle size change
+};
+
+[[MParticle sharedInstance].rokt selectPlacements:@"checkout"
+                                       attributes:attributes
+                                    embeddedViews:embeddedViews
+                                           config:config
+                                        callbacks:callbacks];
+```
+
+**After (Objective-C):**
+
+```objective-c
+[[MParticle sharedInstance].rokt selectPlacements:@"checkout"
+                                       attributes:attributes
+                                    embeddedViews:embeddedViews
+                                           config:config
+                                          onEvent:^(MPRoktEvent * _Nonnull event) {
+    if ([event isKindOfClass:[MPRoktShowLoadingIndicator class]]) {
+        // Show loading indicator
+    } else if ([event isKindOfClass:[MPRoktHideLoadingIndicator class]]) {
+        // Hide loading indicator
+    } else if ([event isKindOfClass:[MPRoktPlacementReady class]]) {
+        // Handle load/ready
+    } else if ([event isKindOfClass:[MPRoktPlacementClosed class]]) {
+        // Handle unload/closed
+    } else if ([event isKindOfClass:[MPRoktEmbeddedSizeChanged class]]) {
+        MPRoktEmbeddedSizeChanged *sizeEvent = (MPRoktEmbeddedSizeChanged *)event;
+        // Handle size change with sizeEvent.placementId and sizeEvent.updatedHeight
+    }
+}];
+```
+
+**Before (Swift):**
+
+```swift
+let callbacks = MPRoktEventCallback()
+callbacks.onLoad = {
+    // Handle load
+}
+callbacks.onUnLoad = {
+    // Handle unload
+}
+callbacks.onShouldShowLoadingIndicator = {
+    // Show loading indicator
+}
+callbacks.onShouldHideLoadingIndicator = {
+    // Hide loading indicator
+}
+callbacks.onEmbeddedSizeChange = { placementId, height in
+    // Handle size change
+}
+
+MParticle.sharedInstance().rokt.selectPlacements("checkout",
+                                                  attributes: attributes,
+                                                  embeddedViews: embeddedViews,
+                                                  config: config,
+                                                  callbacks: callbacks)
+```
+
+**After (Swift):**
+
+```swift
+MParticle.sharedInstance().rokt.selectPlacements("checkout",
+                                                  attributes: attributes,
+                                                  embeddedViews: embeddedViews,
+                                                  config: config) { event in
+    switch event {
+    case is MPRoktEvent.MPRoktShowLoadingIndicator:
+        // Show loading indicator
+    case is MPRoktEvent.MPRoktHideLoadingIndicator:
+        // Hide loading indicator
+    case is MPRoktEvent.MPRoktPlacementReady:
+        // Handle load/ready
+    case is MPRoktEvent.MPRoktPlacementClosed:
+        // Handle unload/closed
+    case let sizeEvent as MPRoktEvent.MPRoktEmbeddedSizeChanged:
+        // Handle size change with sizeEvent.placementId and sizeEvent.updatedHeight
+    default:
+        break
+    }
+}
+```
+
+##### purchaseFinalized Method
+
+**(Objective-C):**
+
+```objective-c
+[[MParticle sharedInstance].rokt purchaseFinalized:@"checkout"
+                                     catalogItemId:@"item123"
+                                           success:YES];
+```
+
+Note: The method signature remains the same, but the parameter name has changed from `placementId:` to `identifier:`. If you're using named parameters, update accordingly.
+
+##### New globalEvents Method
+
+The new `globalEvents:` method allows you to subscribe to global Rokt events from all sources, including events not associated with a specific view (such as `InitComplete`).
+
+**Objective-C:**
+
+```objective-c
+[[MParticle sharedInstance].rokt globalEvents:^(MPRoktEvent * _Nonnull event) {
+    if ([event isKindOfClass:[MPRoktInitComplete class]]) {
+        MPRoktInitComplete *initEvent = (MPRoktInitComplete *)event;
+        if (initEvent.success) {
+            // Rokt SDK initialized successfully
+        }
+    }
+}];
+```
+
+**Swift:**
+
+```swift
+MParticle.sharedInstance().rokt.globalEvents { event in
+    if let initEvent = event as? MPRoktEvent.MPRoktInitComplete {
+        if initEvent.success {
+            // Rokt SDK initialized successfully
+        }
+    }
+}
+```
+
+#### Event Mapping Reference
+
+| Old Callback                   | New Event Class              |
+| ------------------------------ | ---------------------------- |
+| `onLoad`                       | `MPRoktPlacementReady`       |
+| `onUnLoad`                     | `MPRoktPlacementClosed`      |
+| `onShouldShowLoadingIndicator` | `MPRoktShowLoadingIndicator` |
+| `onShouldHideLoadingIndicator` | `MPRoktHideLoadingIndicator` |
+| `onEmbeddedSizeChange`         | `MPRoktEmbeddedSizeChanged`  |
+
+#### Notes
+
+- All `MPRoktEvent` subclasses are nested classes within `MPRoktEvent`
+- The `onEvent` callback receives all event types, so use type checking to handle specific events
+- The `MPRoktEmbeddedSizeChanged` event provides both `placementId` and `updatedHeight` properties
+- Remove any references to `MPRoktEventCallback` from your code
 
 ## Migrating from versions < 8.0.0
 
