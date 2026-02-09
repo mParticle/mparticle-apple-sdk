@@ -87,7 +87,7 @@ To integrate the SDK using Swift Package Manager, open your Xcode project and cl
 
 Enter the repository URL `https://github.com/mParticle/mparticle-apple-sdk` in the search box on the top right, choose `mparticle-apple-sdk` from the list of pacakges, and change "Dependency Rule" to "Up to Next Major Version". Then click the "Add Package" button on the bottom right.
 
-Then choose the "Package Product" called `mParticle-Apple-SDK`. Note that the SDK does not include location tracking nor links the CoreLocation framework.
+Then choose the "Package Product" called `mParticle-Apple-SDK`.
 
 #### Currently Supported Kits
 
