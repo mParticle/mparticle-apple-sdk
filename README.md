@@ -32,7 +32,6 @@ To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guide
 
 ```ruby
 target '<Your Target>' do
-    # The SDK does not include location tracking nor links the CoreLocation framework
     pod 'mParticle-Apple-SDK', '~> 8'
 end
 ```
