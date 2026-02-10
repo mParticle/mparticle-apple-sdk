@@ -12,10 +12,12 @@
 #import "MPKitTestClassSideloaded.h"
 #import "MPKitTestClassNoStartImmediately.h"
 #import "MPKitConfiguration.h"
-#import "MParticleSwift.h"
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
 #import "MPForwardQueueParameters.h"
+#import "MPCCPAConsent.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
@@ -25,7 +27,7 @@
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @end
 
 @interface MParticleUser ()
@@ -201,7 +203,7 @@
 
 #if TARGET_OS_IOS == 1
 - (void)testAutoTrackingContentAvail {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
     userDefaults[kMPDeviceTokenKey] = testDeviceToken;
     
@@ -209,7 +211,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -227,7 +228,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -247,7 +247,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -268,7 +267,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -288,7 +286,6 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
-    options.proxyAppDelegate = NO;
     [instance startWithOptions:options];
     [instance endSession];
     
@@ -812,8 +809,12 @@
     
     XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusNotDetermined);
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
-    
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
+                                                       logger:logger];
     NSDictionary *deviceDict = [device dictionaryRepresentation];
     
     XCTAssertEqualObjects(deviceDict[kMPATT], @"not_determined");
@@ -841,7 +842,12 @@
     XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusRestricted);
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
+                                                       logger:logger];
     NSDictionary *deviceDict = [device dictionaryRepresentation];
     
     XCTAssertEqualObjects(deviceDict[kMPATT], @"restricted");
@@ -869,7 +875,12 @@
     XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusDenied);
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
+                                                       logger:logger];
     NSDictionary *deviceDict = [device dictionaryRepresentation];
     
     XCTAssertEqualObjects(deviceDict[kMPATT], @"denied");
@@ -897,7 +908,12 @@
     XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusAuthorized);
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
+                                                       logger:logger];
     NSDictionary *deviceDict = [device dictionaryRepresentation];
     
     XCTAssertEqualObjects(deviceDict[kMPATT], @"authorized");
@@ -926,7 +942,12 @@
     XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusAuthorized);
     XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
     
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
+                                                       logger:logger];
     NSDictionary *deviceDict = [device dictionaryRepresentation];
     
     XCTAssertEqualObjects(deviceDict[kMPATT], @"authorized");
@@ -954,7 +975,12 @@
     XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusDenied);
     XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
     
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:MPILogLevelSwiftDebug];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)instance.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)instance.identity
+                                                       logger:logger];
     NSDictionary *deviceDict = [device dictionaryRepresentation];
     
     XCTAssertEqualObjects(deviceDict[kMPATT], @"denied");
@@ -965,7 +991,7 @@
 }
 
 - (void)testUserAgentDefault {
-    id mockWebView = OCMClassMock([MParticleWebView_PRIVATE class]);
+    id mockWebView = OCMClassMock([MParticleWebViewPRIVATE class]);
 #if TARGET_OS_IOS == 1
     [[[mockWebView stub] andReturn:@"Example resolved agent"] userAgent];
 #else
@@ -988,7 +1014,7 @@
 
 - (void)testUserAgentCustom {
     NSString *customAgent = @"Foo 1.2.3 Like Bar";
-    id mockWebView = OCMClassMock([MParticleWebView_PRIVATE class]);
+    id mockWebView = OCMClassMock([MParticleWebViewPRIVATE class]);
     [[[mockWebView stub] andReturn:customAgent] userAgent];
     id mockMParticle = OCMPartialMock([MParticle sharedInstance]);
     [[[mockMParticle stub] andReturn:mockWebView] webView];

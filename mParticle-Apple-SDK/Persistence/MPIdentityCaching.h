@@ -6,7 +6,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MPListenerProtocol.h"
 #import "MPIdentityDTO.h"
 
 @interface MPIdentityCachedResponse : NSObject

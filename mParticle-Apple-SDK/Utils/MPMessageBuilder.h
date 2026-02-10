@@ -1,16 +1,10 @@
 #import "MPEnums.h"
 #import "MPIConstants.h"
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    #import <CoreLocation/CoreLocation.h>
-#endif
-#endif
-
 @class MPSession;
 @class MPCommerceEvent;
 @class MPUserAttributeChange;
-@class MPUserIdentityChange_PRIVATE;
+@class MPUserIdentityChangePRIVATE;
 @class MPMessage;
 
 @interface MPMessageBuilder : NSObject
@@ -31,7 +25,7 @@
                                 messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
 - (nullable instancetype)initWithMessageType:(MPMessageType)messageType
                                      session:(nullable MPSession *)session
-                          userIdentityChange:(nonnull MPUserIdentityChange_PRIVATE *)userIdentityChange;
+                          userIdentityChange:(nonnull MPUserIdentityChangePRIVATE *)userIdentityChange;
 - (nullable instancetype)initWithMessageType:(MPMessageType)messageType
                                      session:(nonnull MPSession *)session
                          userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
@@ -40,12 +34,6 @@
 - (void)timestamp:(NSTimeInterval)timestamp;
 - (void)stateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
 - (nonnull MPMessage *)build;
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (void)location:(nonnull CLLocation *)location;
-#endif
-#endif
 
 @end
 

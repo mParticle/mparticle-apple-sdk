@@ -1,16 +1,5 @@
-//
-//  MParticleCustomEventTests.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Nick Dimitrakas on 11/3/25.
-//
-
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
 final class MParticleCustomEventTests: MParticleTestBase {
     
@@ -26,10 +15,6 @@ final class MParticleCustomEventTests: MParticleTestBase {
         
         // Verify event timing ended
         XCTAssertNil(event.endTime)
-        
-        // Verify listener was called
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
         
         // Verify backend was called
         XCTAssertTrue(backendController.logEventCalled)
@@ -54,10 +39,6 @@ final class MParticleCustomEventTests: MParticleTestBase {
         
         // Verify event timing ended
         XCTAssertNil(event.endTime)
-        
-        // Verify listener was called
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
         
         // Verify backend was called
         XCTAssertTrue(backendController.logEventCalled)

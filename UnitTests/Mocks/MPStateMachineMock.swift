@@ -1,17 +1,7 @@
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import CoreLocation
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
 class MPStateMachineMock: MPStateMachineProtocol {
-    #if !MPARTICLE_LOCATION_DISABLE
-        var location: CLLocation?
-
-        var locationManager: mParticle_Apple_SDK.MPLocationManager_PRIVATE?
-    #endif
     var optOut: Bool = false
 
     var logLevel: MPILogLevel = .none

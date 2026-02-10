@@ -14,12 +14,16 @@
 #import "MPDataPlanFilter.h"
 #import "MPUpload.h"
 #import "MPKitContainer.h"
-#import "MParticleSwift.h"
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"
 #import "Executor.h"
 #import "AppEnvironmentProvider.h"
+#import "MPConvertJS.h"
+#import "MPUserDefaultsConnector.h"
+#import "SceneDelegateHandler.h"
+
+@import mParticle_Apple_SDK_Swift;
 
 static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
@@ -63,14 +67,13 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) NSArray<NSNumber *> *disabledKits;
 
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
-@property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
 @property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
 @end
@@ -97,7 +100,6 @@ static NSString *const kMPStateKey = @"state";
 @synthesize kitContainer = _kitContainer;
 @synthesize appNotificationHandler = _appNotificationHandler;
 @synthesize settingsProvider = _settingsProvider;
-@synthesize listenerController = _listenerController;
 static id<ExecutorProtocol> executor;
 MPLog* logger;
 @synthesize sceneDelegateHandler = _sceneDelegateHandler;
@@ -154,13 +156,12 @@ MPLog* logger;
     _automaticSessionTracking = YES;
     _appNotificationHandler = (id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol>)[[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
-    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
-    _listenerController = MPListenerController.sharedInstance;
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
-    logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
-    _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithLogger:logger appNotificationHandler:_appNotificationHandler];
-    
+    logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
+    _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
+
+    _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger sdkVersion:kMParticleSDKVersion];
     return self;
 }
 
@@ -252,7 +253,7 @@ MPLog* logger;
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    logger.logLevel = logLevel;
+    logger.logLevel = [MPLog fromRawValue: logLevel];
     self.stateMachine.logLevel = logLevel;
 }
 
@@ -344,8 +345,6 @@ MPLog* logger;
 + (void)setSharedInstance:(MParticle *)instance {
     predicate = 0; // resets the once_token so dispatch_once will run again
     _sharedInstance = instance;
-    
-    [instance.listenerController onAPICalled:_cmd parameter1:instance];
 }
 
 - (void)identifyNoDispatchCallback:(MPIdentityApiResult * _Nullable)apiResult
@@ -400,15 +399,6 @@ MPLog* logger;
         if (settings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
             self->_trackNotifications = [settings[kMPConfigTrackNotifications] boolValue];
         }
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-        if ([settings[kMPConfigLocationTracking] boolValue]) {
-            CLLocationAccuracy accuracy = [settings[kMPConfigLocationAccuracy] doubleValue];
-            CLLocationDistance distanceFilter = [settings[kMPConfigLocationDistanceFilter] doubleValue];
-            [self beginLocationTracking:accuracy minDistance:distanceFilter];
-        }
-#endif
-#endif
     }
 }
 
@@ -457,9 +447,7 @@ MPLog* logger;
     
     MPILogDebug(@"SDK initialization starting - environment: %ld, logLevel: %lu",
                 (long)options.environment, (unsigned long)options.logLevel);
-    
-    [self.listenerController onAPICalled:_cmd parameter1:options];
-    
+
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultUserAgentOverride:options.defaultAgent];
     
     _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self];
@@ -494,11 +482,10 @@ MPLog* logger;
     
     MPInstallationType installationType = options.installType;
     MPEnvironment environment = options.environment;
-    BOOL proxyAppDelegate = options.proxyAppDelegate;
     BOOL startKitsAsync = options.startKitsAsync;
     
     __weak MParticle *weakSelf = self;
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:_stateMachine backendController:_backendController identity:self.identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]] == nil;
     if (firstRun) {
         NSDate *firstSeen = [NSDate date];
@@ -506,7 +493,6 @@ MPLog* logger;
         [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceController_PRIVATE mpId]];
     }
     
-    _proxiedAppDelegate = proxyAppDelegate;
     _automaticSessionTracking = self.options.automaticSessionTracking;
     _shouldBeginSession = self.options.shouldBeginSession;
     _customUserAgent = self.options.customUserAgent;
@@ -553,7 +539,6 @@ MPLog* logger;
                           networkOptions:options.networkOptions
                                 firstRun:firstRun
                         installationType:installationType
-                        proxyAppDelegate:proxyAppDelegate
                           startKitsAsync:startKitsAsync
                             consentState:consentState
                        completionHandler:^{
@@ -587,12 +572,11 @@ MPLog* logger;
         [self.kitContainer removeAllSideloadedKits];
         
         // Clean up persistence
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:self.stateMachine backendController:[MParticle sharedInstance].backendController identity:self.identity] resetDefaults];
+        [MPUserDefaultsConnector.userDefaults resetDefaults];
         [self.persistenceController resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
         [executor executeOnMain:^{
-            [self.backendController unproxyOriginalAppDelegate];
             [MParticle setSharedInstance:nil];
             if (completion) {
                 completion();
@@ -645,57 +629,35 @@ MPLog* logger;
 }
 
 - (void)didReceiveRemoteNotification:(NSDictionary *)userInfo {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didReceiveRemoteNotification:userInfo];
     }
 }
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     }
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     }
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
     }
 }
 
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo {
-    if (self.proxiedAppDelegate) {
-        return;
-    }
-    
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
 }
-#endif
 
-#if TARGET_OS_IOS == 1
 - (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
     [self.sceneDelegateHandler handleWithUrlContext:urlContext];
 }
@@ -719,12 +681,9 @@ MPLog* logger;
     [executor executeOnMessage:^{
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:self.stateMachine
-                                            backendController:self.backendController
-                                                     identity:self.identity] resetDefaults];
+        [MPUserDefaultsConnector.userDefaults resetDefaults];
         [self.persistenceController resetDatabase];
         [executor executeOnMain:^{
-            [self.backendController unproxyOriginalAppDelegate];
             predicate = 0;
             _sharedInstance = nil;
             if (completion) {
@@ -736,9 +695,8 @@ MPLog* logger;
 
 - (void)reset {
     [executor executeOnMessageSync:^{
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
+        [MPUserDefaultsConnector.userDefaults resetDefaults];
         [[MParticle sharedInstance].persistenceController resetDatabase];
-        [[MParticle sharedInstance].backendController unproxyOriginalAppDelegate];
         [MParticle setSharedInstance:nil];
     }];
 }
@@ -772,8 +730,6 @@ MPLog* logger;
 }
 
 - (void)beginTimedEvent:(MPEvent *)event {
-    [self.listenerController onAPICalled:_cmd parameter1:event];
-    
     [self.backendController beginTimedEvent:event
                           completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                               [self beginTimedEventCompletionHandler:event execStatus:execStatus];
@@ -810,8 +766,6 @@ MPLog* logger;
 - (void)endTimedEvent:(MPEvent *)event {
     [event endTiming];
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:event];
-        
         [self.backendController logEvent:event
                        completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                             [self logEventCallback:event execStatus:execStatus];
@@ -833,8 +787,6 @@ MPLog* logger;
 #pragma clang diagnostic pop
     } else {
         [executor executeOnMessage: ^{
-            [self.listenerController onAPICalled:_cmd parameter1:event];
-            
             [self.backendController logBaseEvent:event
                                completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {
                                }];
@@ -866,8 +818,6 @@ MPLog* logger;
     [event endTiming];
     
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:event];
-
         [self.backendController logEvent:event
                        completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                        }];
@@ -972,8 +922,6 @@ MPLog* logger;
 
 - (void)logScreenEvent:(MPEvent *)event {
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:event];
-
         [self.backendController logScreen:event
                         completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                             [self logScreenCallback:event execStatus:execStatus];
@@ -1076,8 +1024,6 @@ MPLog* logger;
     }
     
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:breadcrumbName parameter2:eventInfo];
-
         [self.backendController leaveBreadcrumb:event
                               completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                                 [self leaveBreadcrumbCallback:event execStatus:execStatus];
@@ -1116,8 +1062,6 @@ MPLog* logger;
     }
     
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:message];
-
         [self.backendController logError:message
                                exception:nil
                           topmostContext:nil
@@ -1152,8 +1096,6 @@ MPLog* logger;
 
 - (void)logException:(NSException *)exception topmostContext:(id)topmostContext {
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:exception];
-
         [self.backendController logError:nil
                                exception:exception
                           topmostContext:topmostContext
@@ -1182,8 +1124,6 @@ MPLog* logger;
     }
     
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:message];
-
         [self.backendController logCrash:message
                               stackTrace:stackTrace
                            plCrashReport:plCrashReport
@@ -1208,8 +1148,6 @@ MPLog* logger;
     }
     
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:commerceEvent];
-
         [self.backendController logCommerceEvent:commerceEvent
                                completionHandler:^(MPCommerceEvent *commerceEvent, MPExecStatus execStatus) {
             [self logCommerceEventCallback:commerceEvent execStatus:execStatus];
@@ -1262,8 +1200,6 @@ MPLog* logger;
     MPEvent *event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
     event.customAttributes = eventDictionary;
     
-    [self.listenerController onAPICalled:_cmd parameter1:@(increaseAmount) parameter2:eventName parameter3:eventInfo];
-    
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
         [self logLTVIncreaseCallback:event execStatus:execStatus];
@@ -1272,8 +1208,6 @@ MPLog* logger;
 
 #pragma mark Extensions
 + (BOOL)registerExtension:(nonnull id<MPExtensionProtocol>)extension {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:extension];
-    
     NSAssert(extension != nil, @"Required parameter. It cannot be nil.");
     BOOL registrationSuccessful = NO;
     
@@ -1286,16 +1220,12 @@ MPLog* logger;
 
 #pragma mark Integration attributes
 - (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)integrationId {
-    NSDictionary *attributesCopy = [attributes copy];
     __block MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
 
     MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     
     if (integrationAttributes) {
         [executor executeOnMessage: ^{
-            
-            [self.listenerController onAPICalled:_cmd parameter1:attributesCopy parameter2:integrationId];
-            
             [[MParticle sharedInstance].persistenceController saveIntegrationAttributes:integrationAttributes];
         }];
         
@@ -1308,8 +1238,6 @@ MPLog* logger;
 
 - (nonnull MPKitExecStatus *)clearIntegrationAttributesForKit:(nonnull NSNumber *)integrationId {
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:integrationId];
-        
         [[MParticle sharedInstance].persistenceController deleteIntegrationAttributesForIntegrationId:integrationId];
     }];
 
@@ -1323,8 +1251,6 @@ MPLog* logger;
 #pragma mark Kits
 
 - (void)onKitsInitialized:(void(^)(void))block {
-    [self.listenerController onAPICalled:_cmd parameter1:block];
-    
     BOOL kitsInitialized = self.kitContainer.kitsInitialized;
     if (kitsInitialized) {
         block();
@@ -1334,8 +1260,6 @@ MPLog* logger;
 }
 
 - (void)executeKitsInitializedBlocks {
-    [self.listenerController onAPICalled:_cmd];
-    
     [self.kitsInitializedBlocks enumerateObjectsUsingBlock:^(void (^block)(void), NSUInteger idx, BOOL * _Nonnull stop) {
         block();
     }];
@@ -1343,20 +1267,14 @@ MPLog* logger;
 }
 
 - (BOOL)isKitActive:(nonnull NSNumber *)kitCode {
-    [self.listenerController onAPICalled:_cmd parameter1:kitCode];
-    
     return [self.kitActivity isKitActive:kitCode];
 }
 
 - (nullable id const)kitInstance:(nonnull NSNumber *)kitCode {
-    [self.listenerController onAPICalled:_cmd parameter1:kitCode];
-
     return [self.kitActivity kitInstance:kitCode];
 }
 
 - (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler {
-    [self.listenerController onAPICalled:_cmd parameter1:kitCode parameter2:completionHandler];
-
     BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]];
     BOOL isValidCompletionHandler = completionHandler != nil;
     NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
@@ -1368,93 +1286,6 @@ MPLog* logger;
     
     [self.kitActivity kitInstance:kitCode withHandler:completionHandler];
 }
-
-#pragma mark Location
-#if TARGET_OS_IOS == 1
-- (BOOL)backgroundLocationTracking {
-    [self.listenerController onAPICalled:_cmd];
-    
-#ifndef MPARTICLE_LOCATION_DISABLE
-    return self.stateMachine.locationManager.backgroundLocationTracking;
-#else
-    return false;
-#endif
-}
-
-- (void)setBackgroundLocationTracking:(BOOL)backgroundLocationTracking {
-    [self.listenerController onAPICalled:_cmd parameter1:@(backgroundLocationTracking)];
-    
-#ifndef MPARTICLE_LOCATION_DISABLE
-    [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking = backgroundLocationTracking;
-#else
-    [logger debug:@"Automatic background tracking has been disabled to support users excluding location services from their applications."];
-#endif
-}
-
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (CLLocation *)location {
-    [self.listenerController onAPICalled:_cmd];
-    
-    return self.stateMachine.location;
-}
-
-- (void)setLocation:(CLLocation *)location {
-    if (![self.stateMachine.location isEqual:location]) {
-        self.stateMachine.location = location;
-        NSString *message = [NSString stringWithFormat:@"Set location %@", location];
-        [logger debug:message];
-        
-        [executor executeOnMain: ^{
-            [self.listenerController onAPICalled:_cmd parameter1:location];
-            
-            // Forwarding calls to kits
-            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-            [queueParameters addParameter:location];
-            
-            [self.kitContainer forwardSDKCall:_cmd
-                                        event:nil
-                                   parameters:queueParameters
-                                  messageType:MPMessageTypeEvent
-                                     userInfo:nil
-            ];
-        }];
-    }
-}
-
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter {
-    [self beginLocationTracking:accuracy minDistance:distanceFilter authorizationRequest:MPLocationAuthorizationRequestAlways];
-}
-
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest {
-    [self.listenerController onAPICalled:_cmd parameter1:@(accuracy) parameter2:@(distanceFilter)];
-    
-    if (self.stateMachine.optOut) {
-        return;
-    }
-    
-    MPExecStatus execStatus = [_backendController beginLocationTrackingWithAccuracy:accuracy distanceFilter:distanceFilter authorizationRequest:authorizationRequest];
-    if (execStatus == MPExecStatusSuccess) {
-        NSString *message = [NSString stringWithFormat:@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter];
-        [logger debug:message];
-    } else {
-        NSString *message = [NSString stringWithFormat:@"Could not begin location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-        [logger error:message];
-    }
-}
-
-- (void)endLocationTracking {
-    [self.listenerController onAPICalled:_cmd];
-    
-    MPExecStatus execStatus = [_backendController endLocationTracking];
-    if (execStatus == MPExecStatusSuccess) {
-        [logger debug:@"Ended location tracking"];
-    } else {
-        NSString *message = [NSString stringWithFormat:@"Could not end location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-        [logger error:message];
-    }
-}
-#endif // MPARTICLE_LOCATION_DISABLE
-#endif // TARGET_OS_IOS
 
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
@@ -1473,8 +1304,6 @@ MPLog* logger;
     networkPerformance.bytesIn = bytesReceived;
     
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:networkPerformance];
-        
         [self.backendController logNetworkPerformanceMeasurement:networkPerformance
                                                completionHandler:^(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus) {
                                                     [self logNetworkPerformanceCallback:execStatus];
@@ -1486,8 +1315,6 @@ MPLog* logger;
 #pragma mark Session management
 - (NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value {
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:key parameter2:value];
-        
         NSNumber *newValue = [self.backendController incrementSessionAttribute:[MParticle sharedInstance].stateMachine.currentSession key:key byValue:value];
         NSString *message = [NSString stringWithFormat:@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue];
         [logger debug:message];
@@ -1498,8 +1325,6 @@ MPLog* logger;
 
 - (void)setSessionAttribute:(NSString *)key value:(id)value {
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd parameter1:key parameter2:value];
-
         MPExecStatus execStatus = [self.backendController setSessionAttribute:[MParticle sharedInstance].stateMachine.currentSession key:key value:value];
         if (execStatus == MPExecStatusSuccess) {
             NSString *message = [NSString stringWithFormat:@"Set session attribute - %@:%@", key, value];
@@ -1535,8 +1360,6 @@ MPLog* logger;
     __weak MParticle *weakSelf = self;
     
     [executor executeOnMessage: ^{
-        [self.listenerController onAPICalled:_cmd];
-        
         __strong MParticle *strongSelf = weakSelf;
         
         MPExecStatus execStatus = [strongSelf.backendController waitForKitsAndUploadWithCompletionHandler:nil];
@@ -1553,7 +1376,7 @@ MPLog* logger;
 #pragma mark Surveys
 - (NSString *)surveyURL:(MPSurveyProvider)surveyProvider {
     NSMutableDictionary *userAttributes = nil;
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSDictionary *savedUserAttributes = userDefaults[kMPUserAttributeKey];
     if (savedUserAttributes) {
         userAttributes = [[NSMutableDictionary alloc] initWithCapacity:savedUserAttributes.count];
@@ -1608,8 +1431,6 @@ MPLog* logger;
 
 #pragma mark Web Views
 - (BOOL)isValidBridgeName:(NSString *)bridgeName {
-    [self.listenerController onAPICalled:_cmd parameter1:bridgeName];
-    
     if (bridgeName == nil || ![bridgeName isKindOfClass:[NSString class]] || bridgeName.length == 0) {
         return NO;
     }
@@ -1624,14 +1445,12 @@ MPLog* logger;
 }
 
 - (NSString *)webviewBridgeValueWithCustomerBridgeName:(NSString *)customerBridgeName {
-    [self.listenerController onAPICalled:_cmd parameter1:customerBridgeName];
-    
     if ([self isValidBridgeName:customerBridgeName]) {
         return customerBridgeName;
     }
     
     NSString *kWorkspaceTokenKey = @"wst";
-    NSString *serverProvidedValue = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration][kWorkspaceTokenKey];
+    NSString *serverProvidedValue = [MPUserDefaultsConnector.userDefaults getConfiguration][kWorkspaceTokenKey];
     if ([self isValidBridgeName:serverProvidedValue]) {
         return serverProvidedValue;
     }
@@ -1646,8 +1465,6 @@ MPLog* logger;
 
 #if TARGET_OS_IOS == 1
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(NSString *)bridgeName {
-    [self.listenerController onAPICalled:_cmd parameter1:webView parameter2:bridgeName];
-
     NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
     if (bridgeValue == nil) {
         [logger error:@"Unable to initialize webview due to missing or invalid bridgeName"];
@@ -1666,8 +1483,6 @@ MPLog* logger;
 
 // Process web log event that is raised in iOS hybrid apps that are using WKWebView
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
-    [self.listenerController onAPICalled:_cmd parameter1:userContentController parameter2:message];
-    
     NSString *body = message.body;
     if (body == nil || ![body isKindOfClass:[NSString class]]) {
         [logger error:@"Unexpected non-string body received from webview bridge"];
@@ -1711,8 +1526,6 @@ MPLog* logger;
 }
 
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary {
-    [self.listenerController onAPICalled:_cmd parameter1:command parameter2:dictionary];
-    
     if (!command || ![command isKindOfClass:[NSString class]] || (dictionary && ![dictionary isKindOfClass:[NSDictionary class]])) {
         [logger error:@"Unexpected data received from embedded webview"];
         return;
@@ -1887,8 +1700,6 @@ MPLog* logger;
  Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
  */
 - (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo andActionIdentifier:(nullable NSString *)actionIdentifier {
-    [self.listenerController onAPICalled:_cmd parameter1:userInfo];
-    
     if (userInfo == nil) {
         return;
     }
@@ -1899,8 +1710,6 @@ MPLog* logger;
  Logs a Notification event. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only submit Notification events manually:
  */
 - (void)logNotificationWithUserInfo:(nonnull NSDictionary *)userInfo behavior:(MPUserNotificationBehavior)behavior andActionIdentifier:(nullable NSString *)actionIdentifier {
-    [self.listenerController onAPICalled:_cmd parameter1:userInfo parameter2:@(behavior)];
-    
     UIApplicationState state = [MPApplication_PRIVATE sharedUIApplication].applicationState;
     
     NSString *stateString = state == UIApplicationStateActive ? kMPPushNotificationStateForeground : kMPPushNotificationStateBackground;
@@ -1946,7 +1755,7 @@ MPLog* logger;
 + (BOOL)isOlderThanConfigMaxAgeSeconds {
     BOOL shouldConfigurationBeDeleted = NO;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
     NSNumber *maxAgeSeconds = [[MParticle sharedInstance] configMaxAgeSeconds];
 

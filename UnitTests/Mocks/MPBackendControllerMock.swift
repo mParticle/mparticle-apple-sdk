@@ -1,9 +1,5 @@
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
 class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var sessionTimeout: TimeInterval = 0.0
@@ -43,7 +39,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var startNetworkOptionsParam: MPNetworkOptions?
     var startFirstRunParam: Bool?
     var startInstallationTypeParam: MPInstallationType?
-    var startProxyAppDelegateParam: Bool?
     var startStartKitsAsyncParam: Bool?
     var startConsentStateParam: MPConsentState?
     var startCompletionHandler: (() -> Void)?
@@ -54,7 +49,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         networkOptions: MPNetworkOptions?,
         firstRun: Bool,
         installationType: MPInstallationType,
-        proxyAppDelegate: Bool,
         startKitsAsync: Bool,
         consentState: MPConsentState?,
         completionHandler: @escaping () -> Void
@@ -65,7 +59,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         startNetworkOptionsParam = networkOptions
         startFirstRunParam = firstRun
         startInstallationTypeParam = installationType
-        startProxyAppDelegateParam = proxyAppDelegate
         startStartKitsAsyncParam = startKitsAsync
         startConsentStateParam = consentState
         startCompletionHandler = completionHandler
@@ -89,14 +82,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     func tempSession() -> MParticleSession? {
         tempSessionCalled = true
         return tempSessionReturnValue
-    }
-
-    // MARK: - App delegate proxying
-
-    var unproxyOriginalAppDelegateCalled = false
-
-    func unproxyOriginalAppDelegate() {
-        unproxyOriginalAppDelegateCalled = true
     }
 
     // MARK: - Session lifecycle
@@ -319,36 +304,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     }
 
     #if os(iOS)
-        #if !MPARTICLE_LOCATION_DISABLE
-
-            // MARK: - Location
-
-            var beginLocationTrackingCalled = false
-            var beginLocationTrackingAccuracyParam: CLLocationAccuracy?
-            var beginLocationTrackingDistanceParam: CLLocationDistance?
-            var beginLocationTrackingAuthParam: MPLocationAuthorizationRequest?
-            var beginLocationTrackingReturnValue: MPExecStatus = .success
-
-            func beginLocationTracking(
-                withAccuracy accuracy: CLLocationAccuracy,
-                distanceFilter distance: CLLocationDistance,
-                authorizationRequest: MPLocationAuthorizationRequest
-            ) -> MPExecStatus {
-                beginLocationTrackingCalled = true
-                beginLocationTrackingAccuracyParam = accuracy
-                beginLocationTrackingDistanceParam = distance
-                beginLocationTrackingAuthParam = authorizationRequest
-                return beginLocationTrackingReturnValue
-            }
-
-            var endLocationTrackingCalled = false
-            var endLocationTrackingReturnValue: MPExecStatus = .success
-
-            func endLocationTracking() -> MPExecStatus {
-                endLocationTrackingCalled = true
-                return endLocationTrackingReturnValue
-            }
-        #endif
 
         // MARK: - Notifications
 

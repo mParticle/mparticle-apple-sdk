@@ -30,9 +30,6 @@ static const NSInteger kMPRoktKitId = 181;
 
 @end
 
-@implementation MPRoktEventCallback
-@end
-
 @implementation MPRoktEmbeddedView
 @end
 
@@ -50,7 +47,8 @@ static const NSInteger kMPRoktKitId = 181;
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
     MPILogDebug(@"MPRokt selectPlacements called - identifier: %@, attributes count: %lu",
                 identifier, (unsigned long)attributes.count);
-    [self selectPlacements:identifier attributes:attributes embeddedViews:nil config:nil callbacks:nil];
+    
+    [self selectPlacements:identifier attributes:attributes embeddedViews:nil config:nil onEvent:nil];
 }
 
 /// Displays a Rokt ad placement with full configuration options.
@@ -61,19 +59,19 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - attributes: Optional dictionary of user attributes (email, firstName, etc.). Attributes will be mapped according to dashboard configuration.
 ///   - embeddedViews: Optional dictionary mapping placement identifiers to embedded view containers for inline placements
 ///   - config: Optional Rokt configuration object (e.g., for dark mode or custom styling)
-///   - callbacks: Optional callback handlers for Rokt events (selection, display, completion, etc.)
+///   - onEvent: Optional callback block to handle Rokt events
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
            embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
                   config:(MPRoktConfig * _Nullable)config
-               callbacks:(MPRoktEventCallback * _Nullable)callbacks {
+                 onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
     MPILogDebug(@"MPRokt selectPlacements (full) - identifier: %@, attributes: %lu, embeddedViews: %lu, config: %@, callbacks: %@",
                 identifier,
                 (unsigned long)attributes.count,
                 (unsigned long)embeddedViews.count,
                 config ? @"present" : @"nil",
                 callbacks ? @"present" : @"nil");
-    
+
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     if (!currentUser) {
         MPILogWarning(@"MPRokt selectPlacements - currentUser is nil, identity sync may not work as expected");
@@ -117,9 +115,9 @@ static const NSInteger kMPRoktKitId = 181;
                 [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
                 [queueParameters addParameter:embeddedViews];
                 [queueParameters addParameter:config];
-                [queueParameters addParameter:callbacks];
+                [queueParameters addParameter:onEvent];
                 
-                SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
+                SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
                 [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                           event:nil
                                                                      parameters:queueParameters
@@ -136,16 +134,17 @@ static const NSInteger kMPRoktKitId = 181;
 /// Notifies Rokt that a purchase from a placement offer has been finalized.
 /// Call this method to inform Rokt about the completion status of an offer purchase initiated from a placement.
 /// - Parameters:
-///   - placementId: The identifier of the placement where the offer was displayed
+///   - identifier: The identifier of the placement where the offer was displayed
 ///   - catalogItemId: The identifier of the catalog item that was purchased
 ///   - success: Whether the purchase was successful (YES) or failed (NO)
-- (void)purchaseFinalized:(NSString * _Nonnull)placementId catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
+- (void)purchaseFinalized:(NSString * _Nonnull)identifier catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
     MPILogDebug(@"MPRokt purchaseFinalized - placementId: %@, catalogItemId: %@, success: %@",
                 placementId, catalogItemId, success ? @"YES" : @"NO");
+
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-        [queueParameters addParameter:placementId];
+        [queueParameters addParameter:identifier];
         [queueParameters addParameter:catalogItemId];
         [queueParameters addParameter:@(success)];
         
@@ -176,6 +175,26 @@ static const NSInteger kMPRoktKitId = 181;
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                   event:nil
                                                                  parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
+/// Registers a callback to receive global events from all Rokt sources.
+/// Additional events that are not associated with a view (such as InitComplete) will also be delivered.
+/// - Parameters:
+///   - onEvent: Callback block that receives MPRoktEvent objects when events occur
+- (void)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:onEvent];
+
+        SEL roktSelector = @selector(globalEvents:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                             parameters:queueParameters
                                                             messageType:MPMessageTypeEvent
                                                                userInfo:nil
         ];

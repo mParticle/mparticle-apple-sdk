@@ -5,12 +5,7 @@
 #import "MPEnums.h"
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    #import <CoreLocation/CoreLocation.h>
-#endif
-#endif
+#import <CoreLocation/CoreLocation.h>
 
 @class MPCommerceEvent;
 @class MPBaseEvent;
@@ -22,7 +17,6 @@
 @class FilteredMPIdentityApiRequest;
 @class MPRoktEmbeddedView;
 @class MPRoktConfig;
-@class MPRoktEventCallback;
 @class MPRoktEvent;
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
@@ -75,13 +69,11 @@
 #endif
 
 #pragma mark Location tracking
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
+// We shouldn't remove this methods it is part of kit interface so MParticle will never send any event and data
+// And these methods will be required when we reimplement location support as separate module
 - (nonnull MPKitExecStatus *)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
 - (nonnull MPKitExecStatus *)endLocationTracking;
 - (nonnull MPKitExecStatus *)setLocation:(nonnull CLLocation *)location;
-#endif
-#endif
 
 #pragma mark Session management
 - (nonnull MPKitExecStatus *)beginSession;
@@ -139,17 +131,18 @@
 
 #pragma mark First Party Kits
 - (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
-                                      attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                                      embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                                          config:(MPRoktConfig * _Nullable)config
-                                       callbacks:(MPRoktEventCallback * _Nullable)callbacks
-                                    filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
+                                        attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                                     embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
+                                            config:(MPRoktConfig * _Nullable)config
+                                           onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent
+                                      filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 - (nonnull MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk
                                    version:(nonnull NSString *)wrapperSdkVersion;
-- (nonnull MPKitExecStatus *)purchaseFinalized:(nonnull NSString *)placementId
+- (nonnull MPKitExecStatus *)purchaseFinalized:(nonnull NSString *)identifier
                                  catalogItemId:(nonnull NSString *)catalogItemId
                                        success:(nonnull NSNumber *)success;
 - (nonnull MPKitExecStatus *)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
+- (nonnull MPKitExecStatus *)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent;
 
 @end
 

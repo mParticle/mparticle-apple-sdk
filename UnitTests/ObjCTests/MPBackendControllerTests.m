@@ -15,12 +15,13 @@
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
-#import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
+#import "MPUserDefaultsConnector.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
 #endif
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPMessage ()
 
@@ -549,7 +550,7 @@
 }
 
 - (void)testUploadWithDifferentUser {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     //Set up Identity to exist
     [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:@1];
@@ -758,9 +759,6 @@
                 XCTAssert([deviceInfo[kMPDeviceNameKey] isKindOfClass:[NSString class]], @"Device name should be a NSString.");
                 XCTAssert([deviceInfo[kMPDeviceOSKey] isKindOfClass:[NSString class]], @"Device OS version should be a NSString.");
                 XCTAssert([deviceInfo[kMPDevicePlatformKey] isKindOfClass:[NSString class]], @"Device platform should be a NSString.");
-#if TARGET_OS_IOS == 1 && !MPARTICLE_LOCATION_DISABLE
-                XCTAssert([deviceInfo[kMPDeviceRadioKey] isKindOfClass:[NSString class]], @"Device radio should be a NSString.");
-#endif
                 XCTAssert([deviceInfo[kMPScreenHeightKey] integerValue] != 0, @"Device screen height should be a NSNumber.");
                 XCTAssert([deviceInfo[kMPScreenWidthKey] integerValue] != 0, @"Device screen width should be a NSNumber.");
                 XCTAssert([deviceInfo[kMPDeviceIsDaylightSavingTime] isKindOfClass:[NSNumber class]], @"Identity status should be a NSNumber.");
@@ -907,9 +905,14 @@
     NSString *sourceApplication = @"com.mParticle.UnitTest";
     NSDictionary *annotation = @{@"foo":@"bar"};
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     
@@ -1017,9 +1020,14 @@
     NSString *sourceApplication = @"com.mParticle.UnitTest";
     NSDictionary *annotation = @{@"key1":@1, @"key2":[NSDate date]};
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     
@@ -1064,9 +1072,14 @@
     NSString *sourceApplication = @"com.mParticle.UnitTest";
     NSDictionary *annotation = @{@"key1":@1, @"key2":[NSDate date]};
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     [self.backendController handleApplicationDidBecomeActive:nil];
@@ -1110,9 +1123,13 @@
     NSString *sourceApplication = @"com.mParticle.UnitTest";
     NSDictionary *annotation = @{@"key1":@1, @"key2":[NSDate date]};
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     [self.backendController handleApplicationDidBecomeActive:nil];
@@ -1281,7 +1298,7 @@
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     }
     
     [self.backendController setUserAttribute:@"foo attribute 3" value:@"foo value 3" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
@@ -1515,45 +1532,6 @@
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-}
-
-- (void)testSetLocation {
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    CLLocation *location = [[CLLocation alloc] initWithLatitude:40.738526 longitude:-73.98738];
-    [MParticle sharedInstance].stateMachine.location = location;
-    
-    MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
-    event.shouldBeginSession = NO;
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Set location"];
-    
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
-    
-    [self.backendController logEvent:event
-                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
-    
-    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
-    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
-    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
-    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
-    
-    MPMessage *message = messages.lastObject;
-    NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-    NSRange range = [messageString rangeOfString:@"\"lat\":40.738526"];
-    XCTAssertNotEqual(range.location, NSNotFound);
-    range = [messageString rangeOfString:@"\"lng\":-73.98738"];
-    XCTAssertNotEqual(range.location, NSNotFound);
-    
-    [persistence deleteMessages:messages];
-    
-    [expectation fulfill];
-    
-    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-#endif
-#endif
 }
 
 - (void)testSessionAttributesAndIncrement {
@@ -2195,7 +2173,7 @@
     NSArray *userIdentities = @[validUserId];
     
     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     
     NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];
@@ -2219,7 +2197,7 @@
     NSArray *userIdentities = @[validUserId, invalidUserId];
     
     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     
     NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];
@@ -2248,7 +2226,7 @@
     NSArray *userIdentities = @[validUserId, invalidUserId, invalidUserId2];
     
     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     
     NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];

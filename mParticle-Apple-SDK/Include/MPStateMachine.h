@@ -3,12 +3,6 @@
 @class MPSession;
 @class MPNotificationController_PRIVATE;
 @class MPConsumerInfo;
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    @class CLLocation;
-    @class MPLocationManager_PRIVATE;
-#endif
-#endif
 @class MPCustomModule;
 @class MPDataPlanOptions;
 @class MPLaunchInfo;
@@ -24,12 +18,6 @@
 @property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
 @property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-@property (nonatomic, strong, nullable) CLLocation *location;
-@property (nonatomic, strong, nullable) MPLocationManager_PRIVATE *locationManager;
-#endif
-#endif
 @end
 
 @interface MPStateMachine_PRIVATE : NSObject<MPStateMachineProtocol>
@@ -40,14 +28,7 @@
 @property (nonatomic, strong, nullable) NSArray<MPCustomModule *> *customModules;
 @property (nonatomic, strong, nullable) NSString *exceptionHandlingMode;
 @property (nonatomic, strong, nullable) NSNumber *crashMaxPLReportLength;
-@property (nonatomic, strong, nullable) NSString *locationTrackingMode;
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-@property (nonatomic, strong, nullable) CLLocation *location;
-@property (nonatomic, strong, nullable) MPLocationManager_PRIVATE *locationManager;
-#endif
-#endif
 @property (nonatomic, strong, nullable) NSString *networkPerformanceMeasuringMode;
 @property (nonatomic, strong, nullable) NSString *pushNotificationMode;
 @property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));
@@ -70,7 +51,6 @@
 @property (nonatomic) BOOL automaticSessionTracking;
 @property (nonatomic) BOOL allowASR;
 @property (nonatomic, nullable) MPDataPlanOptions *dataPlanOptions;
-@property (nonatomic) BOOL enableDirectRouting;
 @property (nonatomic) BOOL enableAudienceAPI;
 @property (nonatomic) BOOL enableIdentityCaching;
 

@@ -1,16 +1,5 @@
-//
-//  MParticleTimedEventTests.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Nick Dimitrakas on 11/3/25.
-//
-
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
 final class MParticleTimedEventTests: MParticleTestBase {
     
@@ -31,8 +20,6 @@ final class MParticleTimedEventTests: MParticleTestBase {
     
     func test_beginTimedEvent_invokesDependencies_andExecutesCompletionHandler() {
         mparticle.beginTimedEvent(event)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginTimedEvent:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1, event)
         XCTAssertTrue(backendController.beginTimedEventCalled)
         XCTAssertEqual(backendController.beginTimedEventEventParam, event)
         XCTAssertNotNil(backendController.beginTimedEventCompletionHandler)
@@ -45,14 +32,10 @@ final class MParticleTimedEventTests: MParticleTestBase {
 
         mparticle.endTimedEvent(event)
 
-        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
-
         XCTAssertNil(event.duration)
         XCTAssertNil(event.endTime)
 
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
 
         XCTAssertTrue(backendController.logEventCalled)
         XCTAssertTrue(backendController.logEventEventParam === event)
@@ -64,15 +47,11 @@ final class MParticleTimedEventTests: MParticleTestBase {
         dataPlanFilter.transformEventReturnValue = nil
         
         mparticle.endTimedEvent(event)
-
-        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         
         XCTAssertNil(event.duration)
         XCTAssertNil(event.endTime)
 
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
         
         XCTAssertTrue(backendController.logEventCalled)
         XCTAssertTrue(backendController.logEventEventParam === event)
@@ -85,15 +64,9 @@ final class MParticleTimedEventTests: MParticleTestBase {
         mparticle.dataPlanFilter = dataPlanFilter
         
         mparticle.endTimedEvent(event)
-
-        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         
         XCTAssertNil(event.duration)
         XCTAssertNil(event.endTime)
-
-        XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
         
         XCTAssertTrue(backendController.logEventCalled)
         XCTAssertTrue(backendController.logEventEventParam === event)

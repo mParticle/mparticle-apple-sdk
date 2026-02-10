@@ -17,7 +17,8 @@
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
 #import "MPUpload.h"
-#import "MParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 
 @interface MParticle ()
@@ -26,7 +27,7 @@
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 
 @end
 
@@ -249,7 +250,7 @@
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+    [MPUserDefaultsConnector.userDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
 
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
@@ -371,7 +372,7 @@
 
 - (void)testEventRequest {
     MParticle *sharedInstance = [MParticle sharedInstance];
-    MParticleWebView_PRIVATE *webview = sharedInstance.webView;
+    MParticleWebViewPRIVATE *webview = sharedInstance.webView;
     NSString *agent = @"Example resolved agent";
     
     id mockWebView = OCMPartialMock(webview);
@@ -448,7 +449,7 @@
     MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
     NSString *result = builder.url.defaultURL.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
     XCTAssertEqualObjects(result, @"https://identity.mp.example.com/v1/12/modify");
     
@@ -458,7 +459,7 @@
     builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
     result = builder.url.defaultURL.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
     XCTAssertTrue([result isEqualToString:@"https://https://example.com/12/modify"] || [result isEqualToString:@"https://https//example.com/12/modify"]);
     
@@ -467,18 +468,18 @@
     builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
     result = builder.url.defaultURL.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/12/modify");
     
     networkOptions = nil;
     baseURL = [networkCommunication modifyURL];
     builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
     result = builder.url.defaultURL.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
-    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/12/modify");
+    XCTAssertEqualObjects(result, @"https://identity.us1.mparticle.com/12/modify");
 }
 
 @end

@@ -1,11 +1,7 @@
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
-class OpenURLHandlerProtocolMock: OpenURLHandlerProtocol {
+class OpenURLHandlerProtocolMock: NSObject, OpenURLHandlerProtocol {
     
     var openURLWithOptionsCalled = false
     var openURLWithOptionsURLParam: URL?
@@ -22,7 +18,7 @@ class OpenURLHandlerProtocolMock: OpenURLHandlerProtocol {
     var continueUserActivityRestorationHandlerParam: (([UIUserActivityRestoring]?) -> Void)?
     var continueUserActivityReturnValue: Bool = false
     
-    func continueUserActivity(
+    func `continue`(
         _ userActivity: NSUserActivity,
         restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void
     ) -> Bool {

@@ -1,5 +1,4 @@
 #import "MPAppNotificationHandler.h"
-#import "MParticleSwift.h"
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
 #import "MPILogger.h"
@@ -18,6 +17,7 @@
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
     #import <UserNotifications/UserNotifications.h>
 #endif
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -283,11 +283,15 @@
         return NO;
     }
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     if (userActivity.webpageURL != nil) {
-        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil logger:logger];
     } else {
         NSURL *defaultURL = [[NSURL alloc] initWithString:@""];
-        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:defaultURL options:nil];
+        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:defaultURL options:nil logger:logger];
     }
     
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
@@ -322,8 +326,11 @@
     if (stateMachine.optOut) {
         return;
     }
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
     
-    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options];
+    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options logger:logger];
     
     SEL openURLOptionsSelector = @selector(openURL:options:);
     
@@ -346,10 +353,14 @@
     if (stateMachine.optOut) {
         return;
     }
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
     
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
                                               sourceApplication:sourceApplication
-                                                     annotation:annotation];
+                                                     annotation:annotation
+                                                         logger:logger];
     
     SEL openURLSourceAppAnnotationSelector = @selector(openURL:sourceApplication:annotation:);
     

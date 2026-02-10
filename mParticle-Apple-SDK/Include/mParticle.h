@@ -16,22 +16,24 @@
 #import "MPIdentityApi.h"
 #import "MPKitAPI.h"
 #import "MPConsentState.h"
-#import "MPListenerController.h"
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
+#import "MPSideloadedKit.h"
 #import "MPBackendController.h"
 #import "MPApplication.h"
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
 #import "MPRokt.h"
+#import "MPRoktEvent.h"
+#import "MPCCPAConsent.h"
+#import "MPGDPRConsent.h"
+#import "MPUserDefaultsConnector.h"
+#import "SceneDelegateHandler.h"
 
 #if TARGET_OS_IOS == 1
-    #ifndef MPARTICLE_LOCATION_DISABLE
-        #import <CoreLocation/CoreLocation.h>
-    #endif
     #import <WebKit/WebKit.h>
 #endif
 
@@ -41,7 +43,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class MPSideloadedKit;
 @class MPKitContainer;
 
 /**
@@ -238,16 +239,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  SDK Environment. Autodetected as development or production, you can also override.
  */
 @property (nonatomic, readwrite) MPEnvironment environment;
-
-/**
- Whether the SDK should automatically collect UIApplicationDelegate information.
- 
- If set to NO, you will need to manually add some calls to the SDK within certain AppDelegate methods.
- If set to YES (the default), the SDK will intercept app delegate messages before forwarding them to your app.
- 
- This mechanism is acheived using NSProxy and without introducing dangerous swizzling.
- */
-@property (nonatomic, readwrite) BOOL proxyAppDelegate;
 
 /**
  Whether the SDK should automatically attempt to measure sessions. Ignored in App Extensions.
@@ -534,13 +525,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, readwrite) BOOL optOut;
 
 /**
- A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
- application notifications automatically.
- @see startWithOptions:
- */
-@property (nonatomic, readonly) BOOL proxiedAppDelegate;
-
-/**
  A flag indicating whether the mParticle Apple SDK is using
  automated Session tracking.
  @see MParticleOptions
@@ -702,50 +686,42 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 #if TARGET_OS_IOS == 1
 
 /**
- Informs the mParticle SDK a remote notification has been received. This method should be called only if proxiedAppDelegate is disabled.
+ Informs the mParticle SDK a remote notification has been received.
  @param userInfo A dictionary containing information related to the remote notification
- @see proxiedAppDelegate
  */
 - (void)didReceiveRemoteNotification:(NSDictionary *)userInfo;
 
 /**
- Informs the mParticle SDK the push notification service could not complete the registration process. This method should be called only if proxiedAppDelegate is disabled.
+ Informs the mParticle SDK the push notification service could not complete the registration process.
  @param error An NSError object encapsulating the information why registration did not succeed
- @see proxiedAppDelegate
  */
 - (void)didFailToRegisterForRemoteNotificationsWithError:(nullable NSError *)error;
 
 /**
- Informs the mParticle SDK the app successfully registered with the push notification service. This method should be called only if proxiedAppDelegate is disabled.
+ Informs the mParticle SDK the app successfully registered with the push notification service.
  @param deviceToken A token that identifies the device+App to APNS
- @see proxiedAppDelegate
  */
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
 
 /**
  Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
- This method should be called only if proxiedAppDelegate is disabled.
  @param identifier The identifier associated with the custom action
  @param userInfo A dictionary that contains information related to the remote notification
- @see proxiedAppDelegate
  */
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 
 /**
  Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
- This method should be called only if proxiedAppDelegate is disabled.
  @param identifier The identifier associated with the custom action
  @param userInfo A dictionary that contains information related to the remote notification
  @param responseInfo The data dictionary sent by the action
- @see proxiedAppDelegate
  */
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo;
 
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
- This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 13 and above.
+ This method is only available for iOS 13 and above.
  @param urlContext The UIOpenURLContext provided by the SceneDelegate
- @see proxiedAppDelegate
  */
 - (void)handleURLContext:(UIOpenURLContext *)urlContext NS_SWIFT_NAME(handleURLContext(_:)) API_AVAILABLE(ios(13.0));
 #endif
@@ -801,9 +777,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 /**
  Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
- This method should be called only if proxiedAppDelegate is disabled.
  @param userActivity The NSUserActivity that caused the app to be opened
- @see proxiedAppDelegate
  */
 - (void)handleUserActivity:(NSUserActivity *)userActivity NS_SWIFT_NAME(handleUserActivity(_:));
 
@@ -1101,55 +1075,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MPKitInstance
  */
 - (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;
-
-#pragma mark - Location
-#if TARGET_OS_IOS == 1
-/**
- Enables or disables the inclusion of location information to messages when your app is running on the
- background. The default value is YES. Setting it to NO will cause the SDK to include location
- information only when your app is running on the foreground.
- @see beginLocationTracking:minDistance:
- */
-@property (nonatomic) BOOL backgroundLocationTracking;
-
-#ifndef MPARTICLE_LOCATION_DISABLE
-/**
- Gets/Sets the current location of the active session.
- @see beginLocationTracking:minDistance:
- */
-@property (nonatomic, strong, nullable) CLLocation *location;
-
-/**
- Begins geographic location tracking.
- 
- The desired accuracy of the location is determined by a passed in constant for accuracy.
- Choices are kCLLocationAccuracyBestForNavigation, kCLLocationAccuracyBest,
- kCLLocationAccuracyNearestTenMeters, kCLLocationAccuracyHundredMeters,
- kCLLocationAccuracyKilometer, and kCLLocationAccuracyThreeKilometers.
- @param accuracy The desired accuracy
- @param distanceFilter The minimum distance (measured in meters) a device must move before an update event is generated.
- */
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
-
-/**
- Begins geographic location tracking.
- 
- The desired accuracy of the location is determined by a passed in constant for accuracy.
- Choices are kCLLocationAccuracyBestForNavigation, kCLLocationAccuracyBest,
- kCLLocationAccuracyNearestTenMeters, kCLLocationAccuracyHundredMeters,
- kCLLocationAccuracyKilometer, and kCLLocationAccuracyThreeKilometers.
- @param accuracy The desired accuracy
- @param distanceFilter The minimum distance (measured in meters) a device must move before an update event is generated.
- @param authorizationRequest Type of authorization requested to use location services
- */
-- (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
-
-/**
- Ends geographic location tracking.
- */
-- (void)endLocationTracking;
-#endif
-#endif
 
 #pragma mark - Network Performance
 /**

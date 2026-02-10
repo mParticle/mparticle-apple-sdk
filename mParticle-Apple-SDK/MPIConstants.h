@@ -45,6 +45,26 @@ typedef NS_ENUM(NSInteger, MPDataType) {
     MPDataTypeLong = 5
 };
 
+typedef NS_ENUM(NSInteger, MPEndpoint) {
+    MPEndpointIdentityLogin = 0,
+    MPEndpointIdentityLogout,
+    MPEndpointIdentityIdentify,
+    MPEndpointIdentityModify,
+    MPEndpointEvents,
+    MPEndpointConfig,
+    MPEndpointAlias
+};
+
+typedef NS_ENUM(NSInteger, MPDatabaseTable) {
+    MPDatabaseTableAttributes = 0,
+    MPDatabaseTableBreadcrumbs,
+    MPDatabaseTableMessages,
+    MPDatabaseTableReporting,
+    MPDatabaseTableSessions,
+    MPDatabaseTableUploads,
+    MPDatabaseTableUnknown
+};
+
 // mParticle SDK Version
 extern NSString * _Nonnull const kMParticleSDKVersion;
 
@@ -275,7 +295,6 @@ extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
 extern NSString * _Nonnull const kMPRemoteConfigAliasMaxWindow;
 extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
 extern NSString * _Nonnull const kMPRemoteConfigExcludeAnonymousUsersKey;
-extern NSString * _Nonnull const kMPRemoteConfigDirectURLRouting;
 
 extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEvents;
 extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEventAttributes;

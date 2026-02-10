@@ -38,7 +38,7 @@ jobs:
         run: find . -path '*.podspec' -exec perl -pi -e 's/.+\.social_media_url.+//' {} \;
 
       - name: Lint with CocoaPods
-        run: pod lib lint
+        run: pod lib lint --include-podspecs=mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
 
       - name: Undo twitter change to podspec
         run: git checkout *.podspec
@@ -58,15 +58,6 @@ jobs:
           xcodebuild \
             -project "mParticle-Apple-SDK.xcodeproj" \
             -scheme "mParticle-Apple-SDK" \
-            -destination "generic/platform=iOS" \
-            clean build | xcpretty
-
-      - name: Build SDK NoLocation
-        run: |
-          set -o pipefail
-          xcodebuild \
-            -project "mParticle-Apple-SDK.xcodeproj" \
-            -scheme "mParticle-Apple-SDK-NoLocation" \
             -destination "generic/platform=iOS" \
             clean build | xcpretty
 

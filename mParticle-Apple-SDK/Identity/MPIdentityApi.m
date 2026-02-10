@@ -14,7 +14,8 @@
 #import "MPILogger.h"
 #import "MPKitContainer.h"
 #import "MPUpload.h"
-#import "MParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -30,7 +31,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @end
 
-@interface MPIdentityApi ()
+@interface MPIdentityApi ()<MPIdentityApiMPDeviceProtocol>
 
 @property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @property(nonatomic, strong, readwrite, nonnull) MParticleUser *currentUser;
@@ -168,7 +169,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     NSString *userIdsString = session.sessionUserIds;
     NSMutableArray *userIds = [[userIdsString componentsSeparatedByString:@","] mutableCopy];
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
 
     if (user.userId.longLongValue != 0) {
         [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:user.userId];
@@ -215,7 +216,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 - (void)onMPIDChange:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse previousUser:(MParticleUser *)previousUser newUser:(MParticleUser *)newUser {
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
 
     NSDate *date = [NSDate date];
     NSNumber *dateMs = @([date timeIntervalSince1970] * 1000.0);
@@ -311,7 +312,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (MParticleUser *)getUser:(NSNumber *)mpId {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     if ([userDefaults isExistingUserId:mpId]) {
         MParticleUser *user = [[MParticleUser alloc] init];
         user.userId = mpId;
@@ -342,7 +343,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (NSArray<MParticleUser *> *)getAllUsers {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSMutableArray<MParticleUser *> *userArray = [[NSMutableArray alloc] init];
     
     for (NSNumber *userID in [userDefaults userIDsInUserDefaults]) {
@@ -356,7 +357,14 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (NSString *)deviceApplicationStamp {
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPUserDefaults* userDefaults = MPUserDefaultsConnector.userDefaults;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                       logger:logger];
 
     return device.deviceIdentifier;
 }
@@ -493,6 +501,14 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     });
     
     return YES;
+}
+
+- (NSDictionary<NSNumber *, NSString *>*)currentUserIdentities {
+    return self.currentUser.identities;
+}
+
+- (NSDictionary<NSNumber *, NSString *>*)userIdentitiesWithMpId:(NSNumber * _Nonnull)mpId {
+    return [self getUser:mpId].identities;
 }
 
 @end

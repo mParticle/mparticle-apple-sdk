@@ -1,7 +1,8 @@
 #import "MPPromotion.h"
 #import "MPIConstants.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MParticleSwift.h"
+#import "mParticle.h"
+@import mParticle_Apple_SDK_Swift;
 
 // Internal keys
 NSString *const kMPPMAction = @"an";
@@ -109,6 +110,18 @@ static NSArray *actionNames;
     }
 }
 
+MPIHasher* _hasher;
+
+- (MPIHasher*)hasher {
+    if (_hasher == nil) {
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        _hasher = [[MPIHasher alloc] initWithLogger:logger];
+    }
+    return _hasher;
+}
+
 - (id)initWithCoder:(NSCoder *)coder {
     self = [self init];
     if (self) {
@@ -144,7 +157,7 @@ static NSArray *actionNames;
     NSNumber *const zero = @0;
     
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        NSString *hashedKey = [MPIHasher hashString:key];
+        NSString *hashedKey = [[self hasher] hashString:key];
         id hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {

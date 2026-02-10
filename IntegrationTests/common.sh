@@ -29,7 +29,7 @@ build_framework() {
 	echo "🧹 Cleaning previous builds..."
 	rm -rf "$SDK_DIR/archives" "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
 
-	# Build for iOS Simulator only (faster for integration tests)
+	# Build main target (mParticle-Apple-SDK) which depends on Swift target
 	echo "📱 Building archive for iOS Simulator..."
 	xcodebuild archive \
 		-project "$SDK_DIR/mParticle-Apple-SDK.xcodeproj" \
@@ -50,8 +50,8 @@ build_framework() {
 		-output "$SDK_DIR/mParticle_Apple_SDK.xcframework" \
 		2>&1 | grep -v "note:" || true
 
-	# Move xcframework to temp artifacts directory
-	echo "📁 Moving xcframework to temp directory..."
+	# Move xcframeworks to temp artifacts directory
+	echo "📁 Moving xcframeworks to temp directory..."
 	mkdir -p "$TEMP_ARTIFACTS_DIR"
 	rm -rf "$TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
 	mv "$SDK_DIR/mParticle_Apple_SDK.xcframework" "$TEMP_ARTIFACTS_DIR/"
@@ -59,7 +59,7 @@ build_framework() {
 	# Clean up archives
 	rm -rf "$SDK_DIR/archives"
 
-	echo "✅ SDK built successfully at: $TEMP_ARTIFACTS_DIR/mParticle_Apple_SDK.xcframework"
+	echo "✅ SDK built successfully at: ${TEMP_ARTIFACTS_DIR}/mParticle_Apple_SDK.xcframework"
 }
 
 build_application() {
@@ -211,7 +211,7 @@ wait_for_wiremock() {
 	local MAX_RETRIES=30
 	local RETRY_COUNT=0
 	while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-		if curl -k -s -o /dev/null -w "%{http_code}" https://localhost:${HTTPS_PORT}/__admin/mappings | grep -q "200"; then
+		if curl -k -s -o /dev/null -w "%{http_code}" "https://localhost:${HTTPS_PORT}/__admin/mappings" | grep -q "200"; then
 			echo "✅ WireMock is ready!"
 			break
 		fi

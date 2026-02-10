@@ -1,22 +1,9 @@
-//
-//  MParticleOpenURLTests.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Nick Dimitrakas on 11/3/25.
-//
-
 import XCTest
 import ObjectiveC.runtime
-
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
 #if os(iOS)
 final class MParticleOpenURLTests: MParticleTestBase {
-    
     func test_openURLWithSourceApplication_doesNotCallHandler_whenProxiedDelegateExists() {
         mparticle.setValue(NSNumber(value: true), forKey: "proxiedAppDelegate")
 
@@ -28,7 +15,7 @@ final class MParticleOpenURLTests: MParticleTestBase {
         XCTAssertFalse(appNotificationHandler.openURLWithSourceApplicationAndAnnotationCalled)
     }
     
-    func test_openURLWithSourceApplication_callsHandler_whenNoProxiedDelegate() {
+    func test_openURLWithSourceApplication_callsHandler() {
         let sourceApp = "com.example.app"
         let annotation = "annotation"
 
@@ -40,7 +27,7 @@ final class MParticleOpenURLTests: MParticleTestBase {
         XCTAssertEqual(appNotificationHandler.openURLWithSourceApplicationAndAnnotationAnnotationParam as! String, annotation)
     }
     
-    func test_openURLOptions_callsHandler_whenNoProxiedDelegate_andSystemVersion9OrHigher() {
+    func test_openURLOptions_callsHandler_whenSystemVersion9OrHigher() {
         let options = ["UIApplicationOpenURLOptionsSourceApplicationKey": "com.example.app"]
         
         mparticle.open(url, options: options)
