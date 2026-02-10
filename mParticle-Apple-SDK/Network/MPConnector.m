@@ -134,7 +134,8 @@ static NSArray *mpStoredCertificates = nil;
 
                     SecCertificateRef certificate = (SecCertificateRef)CFArrayGetValueAtIndex(certificateChain, certIdx);
                     CFDataRef certificateDataRef = SecCertificateCopyData(certificate);
-                
+                    MPILogVerbose(@"SSL trust evaluation - trustResult: %u, certificateCount: %ld", trustResult, (long)certificateCount);
+
                     if (certificateDataRef != NULL) {
                         NSData *certificateData = (__bridge NSData *)certificateDataRef;
                         
@@ -145,12 +146,18 @@ static NSArray *mpStoredCertificates = nil;
                             if (!trustChallenge && networkOptions.certificates.count > 0) {
                                 trustChallenge = [networkOptions.certificates containsObject:certificateData];
                             }
+                            
+                            MPILogVerbose(@"SSL certificate match - storedCertMatch: %@, customCertCount: %lu",
+                                          trustChallenge ? @"YES" : @"NO", (unsigned long)networkOptions.certificates.count);
+
                         }
 
                         CFRelease(certificateDataRef);
                     }
                     
                     CFRelease(certificateChain);
+                } else {
+                    MPILogVerbose(@"SSL trust evaluation failed - trustResult: %u (not Unspecified or Proceed)", trustResult);
                 }
             } else {
                 MPILogVerbose(@"SSL trust evaluation failed - trustResult: %u (not Unspecified or Proceed)", trustResult);
@@ -163,13 +170,30 @@ static NSArray *mpStoredCertificates = nil;
             BOOL shouldDisablePinning = (networkOptions.pinningDisabledInDevelopment && [MParticle sharedInstance].environment == MPEnvironmentDevelopment) || networkOptions.pinningDisabled;
             
             if (trustChallenge || shouldDisablePinning) {
+                if (shouldDisablePinning) {
+                    MPILogWarning(@"SSL pinning disabled - pinningDisabledInDevelopment: %@, environment: %ld, pinningDisabled: %@",
+                                  networkOptions.pinningDisabledInDevelopment ? @"YES" : @"NO",
+                                  (long)[MParticle sharedInstance].environment,
+                                  networkOptions.pinningDisabled ? @"YES" : @"NO");
+                }
+                MPILogDebug(@"SSL challenge accepted for host: %@", host);
+
                 NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:serverTrust];
                 completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
             } else {
                 MPILogError(@"SSL certificate pinning rejected - host: %@, trustChallenge: NO, shouldDisablePinning: NO, environment: %ld",
                             host, (long)[MParticle sharedInstance].environment);
                 completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+            } else if (isPinningHost && [authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
+                MPILogError(@"SSL challenge for pinning host could not be fully validated - rejecting. host: %@, protocol: %@, receivesCredentialSecurely: %@, serverTrust: %@",
+                            host, protocol, [protectionSpace receivesCredentialSecurely] ? @"YES" : @"NO", serverTrust ? @"present" : @"nil");
+                completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+            } else {
+                MPILogDebug(@"Non-pinning SSL challenge - using default handling. host: %@, authMethod: %@, isPinningHost: %@",
+                            host, authenticationMethod, isPinningHost ? @"YES" : @"NO");
+                completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, nil);
             }
+
         });
     }
 }
