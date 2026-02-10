@@ -180,10 +180,6 @@ static NSArray *mpStoredCertificates = nil;
 
                 NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:serverTrust];
                 completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
-            } else {
-                MPILogError(@"SSL certificate pinning rejected - host: %@, trustChallenge: NO, shouldDisablePinning: NO, environment: %ld",
-                            host, (long)[MParticle sharedInstance].environment);
-                completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
             } else if (isPinningHost && [authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust]) {
                 MPILogError(@"SSL challenge for pinning host could not be fully validated - rejecting. host: %@, protocol: %@, receivesCredentialSecurely: %@, serverTrust: %@",
                             host, protocol, [protectionSpace receivesCredentialSecurely] ? @"YES" : @"NO", serverTrust ? @"present" : @"nil");

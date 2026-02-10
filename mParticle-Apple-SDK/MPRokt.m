@@ -70,7 +70,7 @@ static const NSInteger kMPRoktKitId = 181;
                 (unsigned long)attributes.count,
                 (unsigned long)embeddedViews.count,
                 config ? @"present" : @"nil",
-                callbacks ? @"present" : @"nil");
+                onEvent ? @"present" : @"nil");
 
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     if (!currentUser) {
@@ -139,7 +139,7 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - success: Whether the purchase was successful (YES) or failed (NO)
 - (void)purchaseFinalized:(NSString * _Nonnull)identifier catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
     MPILogDebug(@"MPRokt purchaseFinalized - placementId: %@, catalogItemId: %@, success: %@",
-                placementId, catalogItemId, success ? @"YES" : @"NO");
+                identifier, catalogItemId, success ? @"YES" : @"NO");
 
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits

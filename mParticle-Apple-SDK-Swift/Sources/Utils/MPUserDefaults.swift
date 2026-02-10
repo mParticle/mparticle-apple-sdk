@@ -321,10 +321,6 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public func lastUploadSettingsData() -> Data? {
-        NSKeyedUnarchiver.setClass(MPUploadSettings.self,
-                                   forClassName: "mParticle_Apple_SDK.MPUploadSettings")
-        NSKeyedUnarchiver.setClass(MPUploadSettings.self,
-                                   forClassName: "mParticle_Apple_SDK_NoLocation.MPUploadSettings")
         return mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data
     }
 

@@ -31,6 +31,11 @@
     }
 
     NSError *error = nil;
+    [NSKeyedUnarchiver setClass: [MPUploadSettings class]
+                   forClassName: @"mParticle_Apple_SDK.MPUploadSettings"];
+    [NSKeyedUnarchiver setClass: [MPUploadSettings class]
+                   forClassName: @"mParticle_Apple_SDK_NoLocation"];
+    
     MPUploadSettings *settings =
         [NSKeyedUnarchiver unarchivedObjectOfClass:[MPUploadSettings class]
                                           fromData:(NSData *)obj
