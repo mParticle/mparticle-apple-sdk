@@ -87,6 +87,16 @@ To notify our team about an issue, please submit a ticket through our [mParticle
 - Include console output and stack traces if applicable
 - Include your SDK version and iOS/macOS version
 
+### Log levels guidance
+
+| Level   | When to Use                                                                               |
+| ------- | ----------------------------------------------------------------------------------------- |
+| VERBOSE | Detailed diagnostic info for deep debugging (network payloads, full state dumps)          |
+| DEBUG   | Development-time information (method entry/exit, state changes)                           |
+| WARNING | Recoverable issues that don't prevent operation (deprecated API usage, fallback behavior) |
+| ERROR   | Failures that prevent expected behavior (network failures, parsing errors)                |
+| NONE    | No logging (default for production)                                                       |
+
 ## License
 
 By contributing to the mParticle Apple SDK, you agree that your contributions will be licensed under its [Apache License 2.0](LICENSE).

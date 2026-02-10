@@ -37,6 +37,7 @@ import Foundation
         super.init()
 
         if self.configuration == nil || self.configuration?.isEmpty == true {
+            MPLog.warning("MPResponseConfig init - configuration is nil or empty, config processing skipped")
             return nil
         }
         setUp(dataReceivedFromServer: dataReceivedFromServer)
@@ -78,11 +79,16 @@ import Foundation
 
                 let shouldDefer = hasConsentFilters && !hasInitialIdentity
                 if !shouldDefer {
+                    MPLog.debug("MPResponseConfig - dispatching configureKits to main queue (immediate)")
                     DispatchQueue.main.async {
                         MParticle.sharedInstance().kitContainer_PRIVATE
                             .configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]])
                     }
                 } else {
+                    MPLog
+                        .debug(
+                            "MPResponseConfig - deferring kit configuration (hasConsentFilters: true, hasInitialIdentity: false)"
+                        )
                     MParticle.sharedInstance()
                         .deferredKitConfiguration_PRIVATE = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable: Any]]
                 }

@@ -84,6 +84,11 @@ static NSArray *mpStoredCertificates = nil;
 
 #pragma mark NSURLSessionDelegate
 - (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error {
+    if (error) {
+        MPILogError(@"URL session invalidated with error: %@", error.localizedDescription);
+    } else {
+        MPILogDebug(@"URL session invalidated");
+    }
     _urlSession = nil;
 }
 
@@ -103,6 +108,9 @@ static NSArray *mpStoredCertificates = nil;
                             (networkOptions.eventsHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.eventsHost.pathComponents[0]]) ||
                             (networkOptions.aliasHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.aliasHost.pathComponents[0]]);
     
+    MPILogVerbose(@"SSL challenge received - host: %@, authMethod: %@, protocol: %@, isPinningHost: %@, serverTrust: %@",
+                  host, authenticationMethod, protocol, isPinningHost ? @"YES" : @"NO", serverTrust ? @"present" : @"nil");
+    
     if ([authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust] &&
         isPinningHost &&
         [protocol isEqualToString:kMPURLScheme] &&
@@ -119,11 +127,11 @@ static NSArray *mpStoredCertificates = nil;
             if (trustResult) {
                 // Get certificate chain (iOS 15+)
                 CFArrayRef certificateChain = SecTrustCopyCertificateChain(serverTrust);
-                
+
                 if (certificateChain != NULL) {
                     CFIndex certificateCount = CFArrayGetCount(certificateChain);
                     CFIndex certIdx = certificateCount - 1; //The Root Cert is always the last Cert in the chain
-                    
+
                     SecCertificateRef certificate = (SecCertificateRef)CFArrayGetValueAtIndex(certificateChain, certIdx);
                     CFDataRef certificateDataRef = SecCertificateCopyData(certificate);
                 
@@ -138,12 +146,14 @@ static NSArray *mpStoredCertificates = nil;
                                 trustChallenge = [networkOptions.certificates containsObject:certificateData];
                             }
                         }
-                        
+
                         CFRelease(certificateDataRef);
                     }
                     
                     CFRelease(certificateChain);
                 }
+            } else {
+                MPILogVerbose(@"SSL trust evaluation failed - trustResult: %u (not Unspecified or Proceed)", trustResult);
             }
             
             if (error) {
@@ -156,6 +166,8 @@ static NSArray *mpStoredCertificates = nil;
                 NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:serverTrust];
                 completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
             } else {
+                MPILogError(@"SSL certificate pinning rejected - host: %@, trustChallenge: NO, shouldDisablePinning: NO, environment: %ld",
+                            host, (long)[MParticle sharedInstance].environment);
                 completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
             }
         });
@@ -166,6 +178,8 @@ static NSArray *mpStoredCertificates = nil;
     
     httpURLResponse = (NSHTTPURLResponse *)response;
     NSInteger responseCode = [httpURLResponse statusCode];
+    
+    MPILogVerbose(@"HTTP response received - statusCode: %ld, expectedContentLength: %lld", (long)responseCode, httpURLResponse.expectedContentLength);
     
     if (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) {
         if (httpURLResponse.expectedContentLength != NSURLResponseUnknownLength && httpURLResponse.expectedContentLength > 0) {
@@ -189,20 +203,24 @@ static NSArray *mpStoredCertificates = nil;
     if (!error) {
         NSDate *endTime = [NSDate date];
         NSTimeInterval downloadTime = [endTime timeIntervalSinceDate:requestStartTime];
+        MPILogDebug(@"Network task completed - downloadTime: %.2fms, dataSize: %lu bytes",
+                    downloadTime * 1000.0, (unsigned long)receivedData.length);
         
         if (self.completionHandler != nil && self.completionHandler != NULL) {
             @try {
                 self.completionHandler(receivedData, nil, downloadTime, httpURLResponse);
             } @catch (NSException *exception) {
-                MPILogError(@"Error invoking the completion handler of a data download task.");
+                MPILogError(@"Exception invoking completion handler of a data download task: %@", exception);
             }
         }
     } else {
+        MPILogError(@"Network task failed - error: %@ (domain: %@, code: %ld)",
+                    error.localizedDescription, error.domain, (long)error.code);
         if (self.completionHandler != nil && self.completionHandler != NULL) {
             @try {
                 self.completionHandler(nil, error, 0, nil);
             } @catch (NSException *exception) {
-                MPILogError(@"Error invoking the completion handler of a data download task with error: %@.", [error localizedDescription]);
+                MPILogError(@"Exception invoking completion handler of a data download task: %@", exception);
             }
         }
     }
@@ -213,6 +231,8 @@ static NSArray *mpStoredCertificates = nil;
 #pragma mark Public methods
 - (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromGetRequestToURL:(nonnull MPURL *)url {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    
+    MPILogDebug(@"Starting GET request to: %@", url.url.host);
     
     NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
     
@@ -239,12 +259,16 @@ static NSArray *mpStoredCertificates = nil;
             response.error = completionError;
             response.downloadTime = completionDownloadTime;
             response.httpResponse = completionHttpResponse;
+            MPILogVerbose(@"GET request completed - statusCode: %ld, dataSize: %lu bytes",
+                          (long)completionHttpResponse.statusCode, (unsigned long)completionData.length);
         } else {
+            MPILogError(@"GET request timed out after %ld seconds - host: %@", (long)(NETWORK_REQUEST_MAX_WAIT_SECONDS + 1), url.url.host);
             response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
             [_urlSession invalidateAndCancel];
         }
         
     } else {
+        MPILogError(@"GET request failed - could not build URL request for: %@", url.url.host);
         response.error = [NSError errorWithDomain:@"MPConnector" code:1 userInfo:nil];
     }
     
@@ -253,6 +277,8 @@ static NSArray *mpStoredCertificates = nil;
 
 - (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams secret:(nullable NSString *)secret {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    
+    MPILogDebug(@"Starting POST request to: %@", url.url.host);
     
     NSMutableURLRequest *urlRequest = [[[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost] withPostData:serializedParams] withSecret:secret] build];
     
@@ -278,11 +304,15 @@ static NSArray *mpStoredCertificates = nil;
             response.error = completionError;
             response.downloadTime = completionDownloadTime;
             response.httpResponse = completionHttpResponse;
+            MPILogVerbose(@"POST request completed - statusCode: %ld, dataSize: %lu bytes",
+                          (long)completionHttpResponse.statusCode, (unsigned long)completionData.length);
         } else {
+            MPILogError(@"POST request timed out after %ld seconds - host: %@", (long)(NETWORK_REQUEST_MAX_WAIT_SECONDS + 1), url.url.host);
             response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
             [_urlSession invalidateAndCancel];
         }
     } else {
+        MPILogError(@"POST request failed - could not build URL request for: %@", url.url.host);
         response.error = [NSError errorWithDomain:@"MPConnector" code:1 userInfo:nil];
     }
     return response;
