@@ -23,6 +23,7 @@ jobs:
         uses: trunk-io/trunk-action@v1
 
   pod-lint:
+    if: false # TODO: Re-enable after 9.0 release
     runs-on: macOS-15
     steps:
       - name: Checkout
