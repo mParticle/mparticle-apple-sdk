@@ -25,6 +25,29 @@
 @class MPRoktEventCallback;
 @class MPRoktEvent;
 
+/**
+ * Internal class for configuring placement options passed to the Rokt Kit.
+ * Contains timing information for performance tracking.
+ *
+ * This class is for internal SDK-Kit communication only and should not be
+ * used by customers directly.
+ */
+@interface MPRoktPlacementOptions : NSObject
+
+/** Timestamp (in milliseconds since epoch) when selectPlacements was called */
+@property (nonatomic, readonly) long long jointSdkSelectPlacements;
+
+/** Optional dynamic performance markers for additional timing data */
+@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSNumber *> *dynamicPerformanceMarkers;
+
+/**
+ * Initialize with the current timestamp.
+ * @param timestamp The timestamp in milliseconds since epoch
+ */
+- (nonnull instancetype)initWithTimestamp:(long long)timestamp;
+
+@end
+
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
     @class UNUserNotificationCenter;
     @class UNNotification;
@@ -144,6 +167,13 @@
                                           config:(MPRoktConfig * _Nullable)config
                                        callbacks:(MPRoktEventCallback * _Nullable)callbacks
                                     filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
+- (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
+                                      attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                                      embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
+                                          config:(MPRoktConfig * _Nullable)config
+                                       callbacks:(MPRoktEventCallback * _Nullable)callbacks
+                                    filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser
+                                         options:(MPRoktPlacementOptions * _Nullable)options;
 - (nonnull MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk
                                    version:(nonnull NSString *)wrapperSdkVersion;
 - (nonnull MPKitExecStatus *)purchaseFinalized:(nonnull NSString *)placementId

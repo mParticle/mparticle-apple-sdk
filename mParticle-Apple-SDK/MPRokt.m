@@ -39,6 +39,19 @@ static const NSInteger kMPRoktKitId = 181;
 @implementation MPRoktConfig
 @end
 
+@implementation MPRoktPlacementOptions
+
+- (nonnull instancetype)initWithTimestamp:(long long)timestamp {
+    self = [super init];
+    if (self) {
+        _jointSdkSelectPlacements = timestamp;
+        _dynamicPerformanceMarkers = [[NSMutableDictionary alloc] init];
+    }
+    return self;
+}
+
+@end
+
 @implementation MPRokt
 
 /// Displays a Rokt ad placement with the specified identifier and user attributes.
@@ -73,6 +86,10 @@ static const NSInteger kMPRoktKitId = 181;
                 (unsigned long)embeddedViews.count,
                 config ? @"present" : @"nil",
                 callbacks ? @"present" : @"nil");
+    
+    // Capture the timestamp immediately when selectPlacements is called (in milliseconds)
+    long long jointSdkSelectPlacementsTimestamp = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
+    MPRoktPlacementOptions *placementOptions = [[MPRoktPlacementOptions alloc] initWithTimestamp:jointSdkSelectPlacementsTimestamp];
     
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     if (!currentUser) {
@@ -118,8 +135,9 @@ static const NSInteger kMPRoktKitId = 181;
                 [queueParameters addParameter:embeddedViews];
                 [queueParameters addParameter:config];
                 [queueParameters addParameter:callbacks];
+                [queueParameters addParameter:placementOptions];
                 
-                SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
+                SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
                 [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                           event:nil
                                                                      parameters:queueParameters
