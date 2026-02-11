@@ -39,15 +39,29 @@ static const NSInteger kMPRoktKitId = 181;
 @implementation MPRoktConfig
 @end
 
+@interface MPRoktPlacementOptions ()
+
+@property (nonatomic, strong, nonnull) NSMutableDictionary<NSString *, NSNumber *> *mutablePerformanceMarkers;
+
+@end
+
 @implementation MPRoktPlacementOptions
 
 - (nonnull instancetype)initWithTimestamp:(long long)timestamp {
     self = [super init];
     if (self) {
         _jointSdkSelectPlacements = timestamp;
-        _dynamicPerformanceMarkers = [[NSMutableDictionary alloc] init];
+        _mutablePerformanceMarkers = [[NSMutableDictionary alloc] init];
     }
     return self;
+}
+
+- (nonnull NSDictionary<NSString *, NSNumber *> *)dynamicPerformanceMarkers {
+    return [self.mutablePerformanceMarkers copy];
+}
+
+- (void)setDynamicPerformanceMarkerValue:(nonnull NSNumber *)value forKey:(nonnull NSString *)key {
+    self.mutablePerformanceMarkers[key] = value;
 }
 
 @end

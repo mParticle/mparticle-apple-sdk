@@ -37,14 +37,21 @@
 /** Timestamp (in milliseconds since epoch) when selectPlacements was called */
 @property (nonatomic, readonly) long long jointSdkSelectPlacements;
 
-/** Optional dynamic performance markers for additional timing data */
-@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, NSNumber *> *dynamicPerformanceMarkers;
+/** Dynamic performance markers for additional timing data (immutable snapshot) */
+@property (nonatomic, copy, readonly, nonnull) NSDictionary<NSString *, NSNumber *> *dynamicPerformanceMarkers;
 
 /**
  * Initialize with the current timestamp.
  * @param timestamp The timestamp in milliseconds since epoch
  */
 - (nonnull instancetype)initWithTimestamp:(long long)timestamp;
+
+/**
+ * Add a dynamic performance marker. For internal SDK use only.
+ * @param value The timestamp value in milliseconds since epoch
+ * @param key The marker name
+ */
+- (void)setDynamicPerformanceMarkerValue:(nonnull NSNumber *)value forKey:(nonnull NSString *)key;
 
 @end
 
@@ -167,6 +174,7 @@
                                           config:(MPRoktConfig * _Nullable)config
                                        callbacks:(MPRoktEventCallback * _Nullable)callbacks
                                     filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
+
 - (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
                                       attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                                       embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
