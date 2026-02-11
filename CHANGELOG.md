@@ -1,3 +1,9 @@
+# [8.42.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.1...v8.42.2) (2026-02-11)
+
+### Features
+
+- feat: Add placement options and update method signatures (#566) ([189ff1fe](https://github.com/mParticle/mparticle-apple-sdk/commit/189ff1fe4169f8b2d8084935fae86604c069d210))
+
 # [8.42.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.0...v8.42.1) (2026-02-06)
 
 ### Bug Fixes
