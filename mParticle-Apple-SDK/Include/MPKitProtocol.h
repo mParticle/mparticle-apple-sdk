@@ -19,6 +19,36 @@
 @class MPRoktConfig;
 @class MPRoktEvent;
 
+/**
+ * Internal class for configuring placement options passed to the Rokt Kit.
+ * Contains timing information for performance tracking.
+ *
+ * This class is for internal SDK-Kit communication only and should not be
+ * used by customers directly.
+ */
+@interface MPRoktPlacementOptions : NSObject
+
+/** Timestamp (in milliseconds since epoch) when selectPlacements was called */
+@property (nonatomic, readonly) long long jointSdkSelectPlacements;
+
+/** Dynamic performance markers for additional timing data (immutable snapshot) */
+@property (nonatomic, copy, readonly, nonnull) NSDictionary<NSString *, NSNumber *> *dynamicPerformanceMarkers;
+
+/**
+ * Initialize with the current timestamp.
+ * @param timestamp The timestamp in milliseconds since epoch
+ */
+- (nonnull instancetype)initWithTimestamp:(long long)timestamp;
+
+/**
+ * Add a dynamic performance marker. For internal SDK use only.
+ * @param value The timestamp value in milliseconds since epoch
+ * @param key The marker name
+ */
+- (void)setDynamicPerformanceMarkerValue:(nonnull NSNumber *)value forKey:(nonnull NSString *)key;
+
+@end
+
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
     @class UNUserNotificationCenter;
     @class UNNotification;
@@ -136,6 +166,14 @@
                                             config:(MPRoktConfig * _Nullable)config
                                            onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent
                                       filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
+
+- (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
+                                        attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                                     embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
+                                            config:(MPRoktConfig * _Nullable)config
+                                           onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent
+                                      filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser
+                                           options:(MPRoktPlacementOptions * _Nullable)options;
 - (nonnull MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk
                                    version:(nonnull NSString *)wrapperSdkVersion;
 - (nonnull MPKitExecStatus *)purchaseFinalized:(nonnull NSString *)identifier

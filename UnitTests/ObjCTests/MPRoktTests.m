@@ -101,9 +101,12 @@ static NSNumber * const kTestRoktKitId = @181;
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
     
+    // Capture time before calling selectPlacements
+    long long timeBeforeCall = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
+    
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -112,6 +115,10 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
         XCTAssertNil(params[4]);
+        // Verify placement options
+        MPRoktPlacementOptions *options = params[5];
+        XCTAssertNotNil(options);
+        XCTAssertTrue(options.jointSdkSelectPlacements >= timeBeforeCall);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -155,9 +162,12 @@ static NSNumber * const kTestRoktKitId = @181;
     roktConfig.cacheDuration = @(60*10);
     roktConfig.cacheAttributes = @{@"test": @"test"};
     
+    // Capture time before calling selectPlacements
+    long long timeBeforeCall = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
+    
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -166,6 +176,10 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertEqualObjects(params[2], embeddedViews);
         XCTAssertEqualObjects(params[3], roktConfig);
         XCTAssertNotNil(params[4]); // onEvent callback should be set
+        // Verify placement options
+        MPRoktPlacementOptions *options = params[5];
+        XCTAssertNotNil(options);
+        XCTAssertTrue(options.jointSdkSelectPlacements >= timeBeforeCall);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -198,17 +212,10 @@ static NSNumber * const kTestRoktKitId = @181;
     // Set up test parameters
     NSString *identifier = @"testView";
     
-    // Execute method with nil parameters
-    [self.rokt selectPlacements:identifier
-                     attributes:nil
-                  embeddedViews:nil
-                         config:nil
-                        onEvent:nil];
-    
-    // Wait for async operation
+    // Set up expectations BEFORE calling selectPlacements
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     NSDictionary *finalAttributes = @{@"sandbox": @"true"};
 
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
@@ -219,6 +226,9 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
         XCTAssertNil(params[4]);
+        // Verify placement options exists
+        MPRoktPlacementOptions *options = params[5];
+        XCTAssertNotNil(options);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -226,6 +236,13 @@ static NSNumber * const kTestRoktKitId = @181;
         [expectation fulfill];
     });
     
+    // Execute method with nil parameters
+    [self.rokt selectPlacements:identifier
+                     attributes:nil
+                  embeddedViews:nil
+                         config:nil
+                        onEvent:nil];
+
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
     
@@ -248,7 +265,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -257,6 +274,9 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
         XCTAssertNil(params[4]);
+        // Verify placement options exists
+        MPRoktPlacementOptions *options = params[5];
+        XCTAssertNotNil(options);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -282,8 +302,8 @@ static NSNumber * const kTestRoktKitId = @181;
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
+
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMReject([self.mockContainer forwardSDKCall:roktSelector
                                       event:[OCMArg any]
                                  parameters:[OCMArg any]
