@@ -246,6 +246,8 @@ jobs:
 
       - name: Commit version changes
         run: |
+          # trunk format the files before committing
+          trunk fmt
           # Only add the version-related files, exclude build artifacts
           git add \
             CHANGELOG.md \
@@ -257,7 +259,7 @@ jobs:
             mParticle_Apple_SDK.json \
             IntegrationTests/wiremock-recordings/mappings/*.json
 
-          git commit -m "chore(release): ${VERSION}
+          git commit -m "chore: (release) ${VERSION}
 
           Updates version to ${VERSION} in:
           - CHANGELOG.md
