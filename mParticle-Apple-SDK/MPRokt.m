@@ -36,6 +36,33 @@ static const NSInteger kMPRoktKitId = 181;
 @implementation MPRoktConfig
 @end
 
+@interface MPRoktPlacementOptions ()
+
+@property (nonatomic, strong, nonnull) NSMutableDictionary<NSString *, NSNumber *> *mutablePerformanceMarkers;
+
+@end
+
+@implementation MPRoktPlacementOptions
+
+- (nonnull instancetype)initWithTimestamp:(long long)timestamp {
+    self = [super init];
+    if (self) {
+        _jointSdkSelectPlacements = timestamp;
+        _mutablePerformanceMarkers = [[NSMutableDictionary alloc] init];
+    }
+    return self;
+}
+
+- (nonnull NSDictionary<NSString *, NSNumber *> *)dynamicPerformanceMarkers {
+    return [self.mutablePerformanceMarkers copy];
+}
+
+- (void)setDynamicPerformanceMarkerValue:(nonnull NSNumber *)value forKey:(nonnull NSString *)key {
+    self.mutablePerformanceMarkers[key] = value;
+}
+
+@end
+
 @implementation MPRokt
 
 /// Displays a Rokt ad placement with the specified identifier and user attributes.
@@ -64,13 +91,17 @@ static const NSInteger kMPRoktKitId = 181;
            embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
                   config:(MPRoktConfig * _Nullable)config
                  onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
-                     MPILogDebug(@"MPRokt selectPlacements (full) - identifier: %@, attributes: %lu, embeddedViews: %lu, config: %@, onEvent: %@",
-                                 identifier,
-                                 (unsigned long)attributes.count,
-                                 (unsigned long)embeddedViews.count,
-                                 config ? @"present" : @"nil",
-                                 onEvent ? @"present" : @"nil");
-                     
+    MPILogDebug(@"MPRokt selectPlacements (full) - identifier: %@, attributes: %lu, embeddedViews: %lu, config: %@, onEvent: %@",
+                identifier,
+                (unsigned long)attributes.count,
+                (unsigned long)embeddedViews.count,
+                config ? @"present" : @"nil",
+                onEvent ? @"present" : @"nil");
+    
+    // Capture the timestamp immediately when selectPlacements is called (in milliseconds)
+    long long jointSdkSelectPlacementsTimestamp = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
+    MPRoktPlacementOptions *placementOptions = [[MPRoktPlacementOptions alloc] initWithTimestamp:jointSdkSelectPlacementsTimestamp];
+    
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     if (!currentUser) {
         MPILogWarning(@"MPRokt selectPlacements - currentUser is nil, identity sync may not work as expected");
@@ -115,8 +146,9 @@ static const NSInteger kMPRoktKitId = 181;
                 [queueParameters addParameter:embeddedViews];
                 [queueParameters addParameter:config];
                 [queueParameters addParameter:onEvent];
+                [queueParameters addParameter:placementOptions];
                 
-                SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:);
+                SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
                 [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                           event:nil
                                                                      parameters:queueParameters
