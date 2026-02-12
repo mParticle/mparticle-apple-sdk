@@ -42,15 +42,9 @@
 }
 
 - (NSString *)description {
-    NSString *content = [self serializedString] ?: @"<nil>";
+    NSDictionary *dictionaryRepresentation = [self dictionaryRepresentation];
     
-    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n Data Plan: %@ %@\n",
-            self.uploadId,
-            self.uuid ?: @"<nil>",
-            content,
-            self.timestamp,
-            self.dataPlanId ?: @"<nil>",
-            self.dataPlanVersion ?: @"<nil>"];
+    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n Data Plan: %@ %@\n", self.uploadId, self.uuid, dictionaryRepresentation, self.timestamp, self.dataPlanId, self.dataPlanVersion];
 }
 
 - (BOOL)isEqual:(MPUpload *)object {
