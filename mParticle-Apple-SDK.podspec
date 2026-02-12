@@ -34,14 +34,14 @@ Pod::Spec.new do |s|
         mp.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
         mp.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
-        mp.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
+        mp.dependency 'mParticle-Apple-SDK-Swift'
     end
 
     s.subspec 'AppExtension' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ext.dependency 'mParticle-Apple-SDK-Swift', "~> #{s.version}"
+        ext.dependency 'mParticle-Apple-SDK-Swift'
     end
 end
 
