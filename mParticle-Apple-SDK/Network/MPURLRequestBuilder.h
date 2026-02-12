@@ -16,6 +16,6 @@
 - (nonnull MPURLRequestBuilder *)withHttpMethod:(nonnull NSString *)httpMethod;
 - (nonnull MPURLRequestBuilder *)withPostData:(nullable NSData *)postData;
 - (nonnull MPURLRequestBuilder *)withSecret:(nullable NSString *)secret;
-- (nonnull NSMutableURLRequest *)build;
+- (nullable NSMutableURLRequest *)build;
 
 @end
