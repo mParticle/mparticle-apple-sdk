@@ -436,6 +436,158 @@
     }
 }
 
+- (void)testBuildReturnsNilWhenURLPropertyIsNil {
+    NSURL *validURL = [NSURL URLWithString:@"https://config2.mparticle.com/v4/key/config?av=1.0&sv=1.0"];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:validURL defaultURL:validURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"GET"];
+    XCTAssertNotNil(builder);
+
+    mpURL.url = (NSURL * _Nonnull)nil;
+
+    NSMutableURLRequest *request;
+    XCTAssertNoThrow(request = [builder build], @"build should not throw when URL is nil");
+    XCTAssertNil(request, @"build should return nil when URL is nil");
+}
+
+- (void)testBuildReturnsNilWhenDefaultURLIsNil {
+    NSURL *validURL = [NSURL URLWithString:@"https://config2.mparticle.com/v4/key/config?av=1.0&sv=1.0"];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:validURL defaultURL:validURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"GET"];
+    XCTAssertNotNil(builder);
+
+    mpURL.defaultURL = (NSURL * _Nonnull)nil;
+
+    NSMutableURLRequest *request;
+    XCTAssertNoThrow(request = [builder build], @"build should not throw when defaultURL is nil");
+    XCTAssertNil(request, @"build should return nil when defaultURL is nil");
+}
+
+- (void)testBuildConfigRequestWithQuerylessURL {
+    NSURL *noQueryURL = [NSURL URLWithString:@"https://config2.mparticle.com/v4/key/config"];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:noQueryURL defaultURL:noQueryURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"GET"];
+    XCTAssertNotNil(builder);
+
+    NSMutableURLRequest *request;
+    XCTAssertNoThrow(request = [builder build], @"build should not throw for a URL without query parameters");
+    XCTAssertNotNil(request);
+
+    NSString *signature = request.allHTTPHeaderFields[@"x-mp-signature"];
+    XCTAssertNotNil(signature, @"Signature should still be generated for queryless URL");
+    XCTAssertTrue(signature.length > 0);
+}
+
+- (void)testDateHeaderIsValidRFC1123 {
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
+    NSMutableURLRequest *request = [builder build];
+    XCTAssertNotNil(request);
+
+    NSString *dateHeader = request.allHTTPHeaderFields[@"Date"];
+    XCTAssertNotNil(dateHeader, @"Date header should be present");
+    XCTAssertTrue(dateHeader.length > 0, @"Date header should not be empty");
+
+    NSDate *parsedDate = [MPDateFormatter dateFromStringRFC1123:dateHeader];
+    XCTAssertNotNil(parsedDate, @"Date header should be parseable as RFC1123 by MPDateFormatter");
+}
+
+- (void)testConfigSignatureOmitsQuestionMarkForQuerylessURL {
+    NSURL *noQueryURL = [NSURL URLWithString:@"https://config2.mparticle.com/v4/key/config"];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:noQueryURL defaultURL:noQueryURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"GET"];
+    XCTAssertNotNil(builder);
+
+    __block NSString *capturedSignature = nil;
+    id partialMock = OCMPartialMock(builder);
+    OCMStub([partialMock hmacSha256Encode:[OCMArg any] key:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
+        __unsafe_unretained NSString *sig;
+        [invocation getArgument:&sig atIndex:2];
+        capturedSignature = sig;
+    });
+
+    [builder build];
+
+    XCTAssertNotNil(capturedSignature, @"Signature message should have been captured");
+    XCTAssertTrue([capturedSignature rangeOfString:@"(null)"].location == NSNotFound,
+                  @"Signature should not contain (null): %@", capturedSignature);
+    XCTAssertFalse([capturedSignature hasSuffix:@"?"],
+                   @"Signature should not end with a trailing ? for queryless URL: %@", capturedSignature);
+}
+
+- (void)testAudienceSignatureOmitsQuestionMarkForQuerylessURL {
+    NSURL *audienceURL = [NSURL URLWithString:@"https://nativesdks.mparticle.com/v2/audience"];
+    audienceURL.accessibilityHint = @"audience";
+    MPURL *mpURL = [[MPURL alloc] initWithURL:audienceURL defaultURL:audienceURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"GET"];
+    XCTAssertNotNil(builder);
+
+    __block NSString *capturedSignature = nil;
+    id partialMock = OCMPartialMock(builder);
+    OCMStub([partialMock hmacSha256Encode:[OCMArg any] key:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
+        __unsafe_unretained NSString *sig;
+        [invocation getArgument:&sig atIndex:2];
+        capturedSignature = sig;
+    });
+
+    [builder build];
+
+    XCTAssertNotNil(capturedSignature, @"Signature message should have been captured");
+    XCTAssertTrue([capturedSignature rangeOfString:@"(null)"].location == NSNotFound,
+                  @"Signature should not contain (null): %@", capturedSignature);
+    XCTAssertFalse([capturedSignature hasSuffix:@"?"],
+                   @"Signature should not end with a trailing ? for queryless URL: %@", capturedSignature);
+}
+
+- (void)testBuildReturnsNilForIdentityRequestWithNilPostData {
+    NSURL *identityURL = [NSURL URLWithString:@"https://identity.mparticle.com/v1/identify"];
+    identityURL.accessibilityHint = @"identity";
+    MPURL *mpURL = [[MPURL alloc] initWithURL:identityURL defaultURL:identityURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"POST"];
+    XCTAssertNotNil(builder);
+
+    NSMutableURLRequest *request;
+    XCTAssertNoThrow(request = [builder build], @"build should not throw for identity request with nil post data");
+    XCTAssertNil(request, @"build should return nil for identity request with nil post data");
+}
+
+- (void)testSecondsFromGMTHeaderIsValidSignedInteger {
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
+    NSMutableURLRequest *request = [builder build];
+    XCTAssertNotNil(request);
+
+    NSString *secondsHeader = request.allHTTPHeaderFields[@"secondsFromGMT"];
+    XCTAssertNotNil(secondsHeader, @"secondsFromGMT header should be present");
+    XCTAssertTrue(secondsHeader.length > 0, @"secondsFromGMT header should not be empty");
+
+    NSInteger parsedValue = [secondsHeader integerValue];
+    NSString *reformatted = [NSString stringWithFormat:@"%ld", (long)parsedValue];
+    XCTAssertEqualObjects(secondsHeader, reformatted,
+                          @"secondsFromGMT should be a valid signed integer, got: %@", secondsHeader);
+
+    XCTAssertTrue(parsedValue >= -43200 && parsedValue <= 50400,
+                  @"secondsFromGMT should be within valid UTC offset range (-43200 to 50400), got: %ld", (long)parsedValue);
+}
+
+- (void)testBuildWithNilSecretProducesRequestWithoutSignature {
+    NSURL *validURL = [NSURL URLWithString:@"https://config2.mparticle.com/v4/key/config?av=1.0&sv=1.0"];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:validURL defaultURL:validURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"GET"];
+    XCTAssertNotNil(builder);
+
+    NSString *originalSecret = [MParticle sharedInstance].stateMachine.secret;
+    [MParticle sharedInstance].stateMachine.secret = nil;
+
+    NSMutableURLRequest *request;
+    XCTAssertNoThrow(request = [builder build], @"build should not throw when secret is nil");
+    XCTAssertNotNil(request, @"build should still return a request when secret is nil");
+
+    NSString *signature = request.allHTTPHeaderFields[@"x-mp-signature"];
+    XCTAssertNil(signature, @"x-mp-signature should be absent when secret is nil");
+
+    [MParticle sharedInstance].stateMachine.secret = originalSecret;
+}
+
 - (void)testSignatureRelativePath {
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
