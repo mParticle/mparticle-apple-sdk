@@ -1969,9 +1969,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return nil;
     }
     
-    NSMutableArray <id<MPExtensionKitProtocol>> *activeKitsRegistry = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
+    // Copy the registry to avoid race conditions with concurrent modifications
+    NSSet *kitsRegistryCopy = [kitsRegistry copy];
+    NSMutableArray <id<MPExtensionKitProtocol>> *activeKitsRegistry = [[NSMutableArray alloc] initWithCapacity:kitsRegistryCopy.count];
     
-    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistryCopy) {
         if ([self isActiveAndNotDisabled:kitRegister]) {
             [activeKitsRegistry addObject:kitRegister];
         }
