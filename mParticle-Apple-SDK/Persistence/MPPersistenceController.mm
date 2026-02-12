@@ -1727,7 +1727,13 @@ const int MaxBreadcrumbs = 50;
         
         upload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
         
-        [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableUploads primaryKey:@(upload.uploadId) message:upload.description];
+        @try {
+            NSString *desc = upload.description ?: @"<unavailable>";
+            [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableUploads primaryKey:@(upload.uploadId) message:desc];
+        } @catch (NSException *exception) {
+            MPILogError(@"Error generating upload description: %@", exception);
+            [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableUploads primaryKey:@(upload.uploadId) message:@"<description unavailable>"];
+        }
 
         sqlite3_clear_bindings(preparedStatement);
     } else {

@@ -227,6 +227,81 @@
     XCTAssertNotEqualObjects(uploadCopy, upload, @"Should not have been equal.");
 }
 
+- (void)testUploadDescriptionUsesSerializedString {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = [messageBuilder build];
+
+    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
+                                       kMPSessionTimeoutKey:@120,
+                                       kMPUploadIntervalKey:@10,
+                                       kMPLifeTimeValueKey:@0,
+                                       kMPMessagesKey:@[[message dictionaryRepresentation]],
+                                       kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+
+    NSString *description = [upload description];
+    XCTAssertNotNil(description, @"Description should not have been nil.");
+
+    NSString *serialized = [upload serializedString];
+    XCTAssertNotNil(serialized, @"Serialized string should not have been nil.");
+    XCTAssertTrue([description containsString:serialized], @"Description should contain the raw JSON serialized string.");
+}
+
+- (void)testUploadDescriptionWithNilDataPlan {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = [messageBuilder build];
+
+    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
+                                       kMPSessionTimeoutKey:@120,
+                                       kMPUploadIntervalKey:@10,
+                                       kMPLifeTimeValueKey:@0,
+                                       kMPMessagesKey:@[[message dictionaryRepresentation]],
+                                       kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+
+    NSString *description = [upload description];
+    XCTAssertNotNil(description, @"Description should not have been nil even with nil data plan fields.");
+    XCTAssertTrue([description containsString:@"<nil>"], @"Description should contain '<nil>' placeholder for nil data plan fields.");
+}
+
+- (void)testUploadDescriptionWithNestedDictionary {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = [messageBuilder build];
+
+    // Build an upload dictionary with deeply nested content to simulate
+    // the kind of data that could come from kits like Rokt
+    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
+                                       kMPSessionTimeoutKey:@120,
+                                       kMPUploadIntervalKey:@10,
+                                       kMPLifeTimeValueKey:@0,
+                                       kMPMessagesKey:@[[message dictionaryRepresentation]],
+                                       kMPMessageIdKey:[[NSUUID UUID] UUIDString],
+                                       kMPUserAttributeKey:@{
+                                           @"email":@"test@example.com",
+                                           @"nested":@{@"key1":@"val1", @"key2":@"val2"},
+                                           @"list":@[@"a", @"b", @"c"]
+                                       }};
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+
+    NSString *description = [upload description];
+    XCTAssertNotNil(description, @"Description should not crash with nested dictionary data.");
+}
+
 - (void)testBreadcrumbInstance {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
     

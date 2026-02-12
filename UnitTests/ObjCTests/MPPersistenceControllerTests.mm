@@ -551,6 +551,70 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+- (void)testSaveUploadDoesNotCrashOnDescription {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = [messageBuilder build];
+
+    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
+                                       kMPSessionTimeoutKey:@120,
+                                       kMPUploadIntervalKey:@10,
+                                       kMPLifeTimeValueKey:@0,
+                                       kMPMessagesKey:@[[message dictionaryRepresentation]],
+                                       kMPMessageIdKey:[[NSUUID UUID] UUIDString],
+                                       kMPUserAttributeKey:@{
+                                           @"email":@"test@example.com",
+                                           @"nested":@{@"key1":@"val1"},
+                                           @"list":@[@"item1", @"item2"]
+                                       }};
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+
+    [persistence saveUpload:upload];
+
+    XCTAssertTrue(upload.uploadId > 0, @"Upload id not greater than zero: %lld", upload.uploadId);
+
+    NSArray<MPUpload *> *uploads = [persistence fetchUploads];
+    MPUpload *fetchedUpload = [uploads lastObject];
+    XCTAssertEqualObjects(upload, fetchedUpload, @"Upload and fetchedUpload are not equal.");
+
+    NSString *description = [fetchedUpload description];
+    XCTAssertNotNil(description, @"Fetched upload description should not be nil.");
+
+    [persistence deleteUpload:upload];
+}
+
+- (void)testSaveUploadWithNilFieldsDoesNotCrash {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = [messageBuilder build];
+
+    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
+                                       kMPSessionTimeoutKey:@120,
+                                       kMPUploadIntervalKey:@10,
+                                       kMPLifeTimeValueKey:@0,
+                                       kMPMessagesKey:@[[message dictionaryRepresentation]],
+                                       kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+
+    [persistence saveUpload:upload];
+
+    XCTAssertTrue(upload.uploadId > 0, @"Upload id not greater than zero: %lld", upload.uploadId);
+
+    [persistence deleteUpload:upload];
+}
+
 - (void)testAudiences {
     MPAudience *audience = [[MPAudience alloc] initWithAudienceId:@2];
     XCTAssertTrue(audience.audienceId.intValue == 2);
