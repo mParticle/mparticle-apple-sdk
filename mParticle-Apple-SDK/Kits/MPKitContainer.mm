@@ -638,12 +638,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
-    // Synchronize access to avoid race conditions with concurrent reads
-    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    // Note: This method is called from within configureKits: which already holds kitsSemaphore.
+    // Do NOT add semaphore synchronization here as it would cause a deadlock.
+    // The brackets dictionary is protected by the caller holding the semaphore.
     
     if (!configuration) {
         [brackets removeObjectForKey:integrationId];
-        dispatch_semaphore_signal(kitsSemaphore);
         return;
     }
     
@@ -659,8 +659,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     } else {
         brackets[integrationId] = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
     }
-    
-    dispatch_semaphore_signal(kitsSemaphore);
 }
 
 #pragma mark Public class methods
