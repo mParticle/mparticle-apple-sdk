@@ -93,6 +93,7 @@
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
 - (void)cleanUp:(NSTimeInterval)currentTime;
 - (void)processDidFinishLaunching:(NSNotification *)notification;
+- (void)beginBackgroundTask;
 - (void)beginBackgroundTimeCheckLoop;
 - (void)cancelBackgroundTimeCheckLoop;
 @property NSOperationQueue *backgroundCheckQueue;
@@ -102,6 +103,54 @@
 
 @interface MPApplication_PRIVATE(Tests)
 + (void)setMockApplication:(id)mockApplication;
+@end
+
+@interface MPTestApplicationMock : NSObject
+@property (nonatomic) UIBackgroundTaskIdentifier nextBackgroundTaskIdentifier;
+@property (nonatomic, strong) void (^expirationHandler)(void);
+@property (nonatomic, strong) NSArray<NSNumber *> *applicationStateSequence;
+@property (nonatomic) NSInteger applicationStateReadCount;
+@property (nonatomic) NSTimeInterval fixedBackgroundTimeRemaining;
+@property (nonatomic) NSInteger backgroundTimeRemainingCallCount;
+@property (nonatomic) UIBackgroundTaskIdentifier lastEndedBackgroundTaskIdentifier;
+@end
+
+@implementation MPTestApplicationMock
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _nextBackgroundTaskIdentifier = 42;
+        _applicationStateSequence = @[@(UIApplicationStateBackground)];
+        _fixedBackgroundTimeRemaining = 25.0;
+        _lastEndedBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    }
+    return self;
+}
+
+- (UIApplicationState)applicationState {
+    if (self.applicationStateSequence.count == 0) {
+        return UIApplicationStateBackground;
+    }
+    NSInteger index = MIN(self.applicationStateReadCount, self.applicationStateSequence.count - 1);
+    self.applicationStateReadCount += 1;
+    return (UIApplicationState)self.applicationStateSequence[index].integerValue;
+}
+
+- (NSTimeInterval)backgroundTimeRemaining {
+    self.backgroundTimeRemainingCallCount += 1;
+    return self.fixedBackgroundTimeRemaining;
+}
+
+- (UIBackgroundTaskIdentifier)beginBackgroundTaskWithExpirationHandler:(void (^)(void))handler {
+    self.expirationHandler = [handler copy];
+    return self.nextBackgroundTaskIdentifier;
+}
+
+- (void)endBackgroundTask:(UIBackgroundTaskIdentifier)identifier {
+    self.lastEndedBackgroundTaskIdentifier = identifier;
+}
+
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
@@ -2343,23 +2392,9 @@
     // so that backgroundTimeRemaining is not called after the OS begins suspension.
     
     // 1. Set up a mock UIApplication that tracks backgroundTimeRemaining calls
-    __block NSInteger backgroundTimeRemainingCallCount = 0;
-    __block BOOL expirationHandlerCalled = NO;
-    __block void (^capturedExpirationHandler)(void) = nil;
-    
-    id mockApplication = OCMClassMock([UIApplication class]);
-    OCMStub([mockApplication applicationState]).andReturn(UIApplicationStateBackground);
-    OCMStub([mockApplication backgroundTimeRemaining]).andDo(^(NSInvocation *invocation) {
-        backgroundTimeRemainingCallCount++;
-        // Always return plenty of time so the loop keeps running
-        NSTimeInterval remaining = 25.0;
-        [invocation setReturnValue:&remaining];
-    });
-    OCMStub([mockApplication beginBackgroundTaskWithExpirationHandler:([OCMArg checkWithBlock:^BOOL(id obj) {
-        capturedExpirationHandler = [obj copy];
-        return YES;
-    }])]).andReturn(42); // Return a valid task identifier
-    OCMStub([mockApplication endBackgroundTask:42]);
+    MPTestApplicationMock *mockApplication = [[MPTestApplicationMock alloc] init];
+    mockApplication.applicationStateSequence = @[@(UIApplicationStateBackground)];
+    mockApplication.fixedBackgroundTimeRemaining = 25.0;
     
     [MPApplication_PRIVATE setMockApplication:mockApplication];
     
@@ -2373,28 +2408,46 @@
     });
     [self waitForExpectations:@[taskStarted] timeout:2.0];
     
-    XCTAssertNotNil(capturedExpirationHandler, @"Expiration handler should have been captured");
+    XCTAssertNotNil(mockApplication.expirationHandler, @"Expiration handler should have been captured");
     
     // 3. Start the background time check loop
     dispatch_sync(messageQueue, ^{
         [self.backendController beginBackgroundTimeCheckLoop];
     });
     
-    // Let the loop run a few iterations
-    [NSThread sleepForTimeInterval:0.5];
-    NSInteger callsBeforeExpiration = backgroundTimeRemainingCallCount;
+    // Let the loop run and wait until we observe at least one call
+    XCTestExpectation *loopCalledBackgroundTimeRemaining = [self expectationWithDescription:@"Loop called backgroundTimeRemaining"];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        for (NSInteger i = 0; i < 100; i += 1) {
+            if (mockApplication.backgroundTimeRemainingCallCount > 0) {
+                [loopCalledBackgroundTimeRemaining fulfill];
+                return;
+            }
+            [NSThread sleepForTimeInterval:0.01];
+        }
+    });
+    [self waitForExpectations:@[loopCalledBackgroundTimeRemaining] timeout:2.0];
+    NSInteger callsBeforeExpiration = mockApplication.backgroundTimeRemainingCallCount;
     XCTAssertGreaterThan(callsBeforeExpiration, 0, @"Loop should have called backgroundTimeRemaining at least once");
     
     // 4. Simulate the OS firing the expiration handler
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        capturedExpirationHandler();
-        expirationHandlerCalled = YES;
-    });
+    void (^fireExpiration)(void) = ^{
+        mockApplication.expirationHandler();
+    };
+    if ([NSThread isMainThread]) {
+        fireExpiration();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), fireExpiration);
+    }
     
     // 5. Record calls right after expiration and wait to see if any new calls arrive
-    NSInteger callsAtExpiration = backgroundTimeRemainingCallCount;
-    [NSThread sleepForTimeInterval:1.5];
-    NSInteger callsAfterExpiration = backgroundTimeRemainingCallCount;
+    NSInteger callsAtExpiration = mockApplication.backgroundTimeRemainingCallCount;
+    XCTestExpectation *postExpirationWindowElapsed = [self expectationWithDescription:@"Post-expiration observation window"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)), dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        [postExpirationWindowElapsed fulfill];
+    });
+    [self waitForExpectations:@[postExpirationWindowElapsed] timeout:2.0];
+    NSInteger callsAfterExpiration = mockApplication.backgroundTimeRemainingCallCount;
     
     // 6. Assert: no new backgroundTimeRemaining calls after expiration
     XCTAssertEqual(callsAfterExpiration, callsAtExpiration,
@@ -2414,27 +2467,9 @@
     // Verify that backgroundTimeRemaining is called only once per loop iteration
     // (not twice as in the original code that called it again for logging).
     
-    __block NSInteger backgroundTimeRemainingCallCount = 0;
-    __block NSTimeInterval simulatedTime = 15.0;
-    
-    id mockApplication = OCMClassMock([UIApplication class]);
-    
-    // First call returns background, subsequent calls return foreground to exit loop after one iteration
-    __block NSInteger stateCallCount = 0;
-    OCMStub([mockApplication applicationState]).andDo(^(NSInvocation *invocation) {
-        UIApplicationState state = (stateCallCount == 0)
-            ? UIApplicationStateBackground
-            : UIApplicationStateForeground;
-        stateCallCount++;
-        [invocation setReturnValue:&state];
-    });
-    
-    OCMStub([mockApplication backgroundTimeRemaining]).andDo(^(NSInvocation *invocation) {
-        backgroundTimeRemainingCallCount++;
-        [invocation setReturnValue:&simulatedTime];
-    });
-    OCMStub([mockApplication beginBackgroundTaskWithExpirationHandler:OCMOCK_ANY]).andReturn(42);
-    OCMStub([mockApplication endBackgroundTask:42]);
+    MPTestApplicationMock *mockApplication = [[MPTestApplicationMock alloc] init];
+    mockApplication.applicationStateSequence = @[@(UIApplicationStateBackground), @(UIApplicationStateActive)];
+    mockApplication.fixedBackgroundTimeRemaining = 15.0;
     
     [MPApplication_PRIVATE setMockApplication:mockApplication];
     
@@ -2443,12 +2478,22 @@
     });
     
     // Wait for the loop to run one iteration and exit
-    [NSThread sleepForTimeInterval:2.0];
+    XCTestExpectation *loopFinished = [self expectationWithDescription:@"Background loop finished"];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        for (NSInteger i = 0; i < 200; i += 1) {
+            if (self.backendController.backgroundCheckQueue.operationCount == 0) {
+                [loopFinished fulfill];
+                return;
+            }
+            [NSThread sleepForTimeInterval:0.01];
+        }
+    });
+    [self waitForExpectations:@[loopFinished] timeout:3.0];
     
     // Should be called exactly once per iteration (not twice like the old code)
-    XCTAssertEqual(backgroundTimeRemainingCallCount, 1,
+    XCTAssertEqual(mockApplication.backgroundTimeRemainingCallCount, 1,
                    @"backgroundTimeRemaining should be called exactly once per loop iteration, got %ld",
-                   (long)backgroundTimeRemainingCallCount);
+                   (long)mockApplication.backgroundTimeRemainingCallCount);
     
     [MPApplication_PRIVATE setMockApplication:nil];
 }
