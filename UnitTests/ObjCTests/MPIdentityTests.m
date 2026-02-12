@@ -35,7 +35,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @interface MPIdentityApi ()
 @property (nonatomic, strong) MPIdentityApiManager *apiManager;
-@property(nonatomic, strong, readwrite, nonnull) MParticleUser *currentUser;
+@property(strong, readwrite, nonnull) MParticleUser *currentUser;
 
 - (void)onIdentityRequestComplete:(MPIdentityApiRequest *)request identityRequestType:(MPIdentityRequestType)identityRequestType httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion error: (NSError *) error;
 - (void)onModifyRequestComplete:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPModifyApiResultCallback)completion error: (NSError *) error;
