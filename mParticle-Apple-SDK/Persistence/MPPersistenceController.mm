@@ -1726,8 +1726,6 @@ const int MaxBreadcrumbs = 50;
         }
         
         upload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
-        
-        [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableUploads primaryKey:@(upload.uploadId) message:upload.description];
 
         sqlite3_clear_bindings(preparedStatement);
     } else {
