@@ -205,7 +205,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 - (MPBracket *)bracketForKit:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
-    return brackets[integrationId];
+    // Synchronize access to avoid race conditions with concurrent modifications
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    MPBracket *bracket = brackets[integrationId];
+    dispatch_semaphore_signal(kitsSemaphore);
+    
+    return bracket;
 }
 
 - (void)flushSerializedKits {
@@ -633,8 +638,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
+    // Synchronize access to avoid race conditions with concurrent reads
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    
     if (!configuration) {
         [brackets removeObjectForKey:integrationId];
+        dispatch_semaphore_signal(kitsSemaphore);
         return;
     }
     
@@ -650,6 +659,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     } else {
         brackets[integrationId] = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
     }
+    
+    dispatch_semaphore_signal(kitsSemaphore);
 }
 
 #pragma mark Public class methods
