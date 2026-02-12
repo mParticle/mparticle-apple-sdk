@@ -3360,4 +3360,80 @@
 
 #endif
 
+#pragma mark - Thread Safety Tests
+
+- (void)testActiveKitsRegistryThreadSafety {
+    // This stress test verifies that activeKitsRegistry doesn't crash when
+    // called concurrently with configureKits: modifications.
+    // Race conditions are non-deterministic, so this test increases the
+    // likelihood of catching issues but cannot guarantee detection.
+    
+    MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    
+    NSArray *configurations = @[
+        @{
+            @"id": @42,
+            @"as": @{
+                @"appId": @"MyAppId"
+            }
+        },
+        @{
+            @"id": @314,
+            @"as": @{
+                @"appId": @"MyAppId"
+            }
+        }
+    ];
+    
+    // Initial configuration
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Thread safety stress test"];
+    
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.concurrent", DISPATCH_QUEUE_CONCURRENT);
+    
+    NSInteger iterations = 100;
+    __block BOOL encounteredError = NO;
+    
+    // Multiple threads reading activeKitsRegistry
+    for (NSInteger i = 0; i < 3; i++) {
+        dispatch_group_async(group, concurrentQueue, ^{
+            for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+                @try {
+                    NSArray *activeKits = [kitContainer activeKitsRegistry];
+                    // Access the returned array to ensure objects are valid
+                    for (id<MPExtensionKitProtocol> kit in activeKits) {
+                        (void)kit.code;
+                    }
+                } @catch (NSException *exception) {
+                    encounteredError = YES;
+                    XCTFail(@"Exception in activeKitsRegistry: %@", exception);
+                }
+            }
+        });
+    }
+    
+    // Thread modifying kits configuration
+    dispatch_group_async(group, concurrentQueue, ^{
+        for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+            @try {
+                [kitContainer configureKits:nil];
+                [kitContainer configureKits:configurations];
+            } @catch (NSException *exception) {
+                encounteredError = YES;
+                XCTFail(@"Exception in configureKits: %@", exception);
+            }
+        }
+    });
+    
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        XCTAssertFalse(encounteredError, @"Thread safety test should complete without errors");
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:30 handler:nil];
+}
+
 @end
