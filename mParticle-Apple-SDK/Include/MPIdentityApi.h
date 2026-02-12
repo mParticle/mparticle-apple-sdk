@@ -79,7 +79,7 @@ typedef void (^MPModifyApiResultCallback)(MPModifyApiResult *_Nullable apiResult
 /**
  The current user. All actions taken in the SDK will be associated with this user (e.g. logging events, setting attributes, etc.)
  */
-@property(nonatomic, strong, readonly, nullable) MParticleUser *currentUser;
+@property(strong, readonly, nullable) MParticleUser *currentUser;
 
 /**
  The device application stamp. This is a random identifier associated with this particular app as installed on this particular device.
