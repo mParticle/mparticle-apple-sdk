@@ -9,7 +9,6 @@ env:
 
 jobs:
   build-react-native:
-    if: false # TODO: Re-enable after 9.0 release
     runs-on: macOS-15
     defaults:
       run:
