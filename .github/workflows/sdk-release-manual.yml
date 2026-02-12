@@ -348,5 +348,4 @@ jobs:
             --base main \
             --head chore/release-v${VERSION} \
             --title "chore: Release v${VERSION}" \
-            --body "$PR_BODY" \
-            --reviewer mParticle/sdk-team
+            --body "$PR_BODY"

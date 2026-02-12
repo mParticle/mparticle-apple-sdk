@@ -1,4 +1,4 @@
-name: iOS SDK Release
+name: iOS SDK Release (Deprecated)
 
 on:
   workflow_dispatch:
