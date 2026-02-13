@@ -98,8 +98,11 @@
 - (void)endBackgroundTask;
 - (void)beginBackgroundTimeCheckLoop;
 - (void)cancelBackgroundTimeCheckLoop;
+- (void)endSessionIfTimedOut;
 @property NSOperationQueue *backgroundCheckQueue;
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
+@property NSTimeInterval timeOfLastEventInBackground;
+@property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 
 @end
 
@@ -2456,6 +2459,101 @@
     
     [self.backendController cancelBackgroundTimeCheckLoop];
     [MPApplication_PRIVATE setMockApplication:nil];
+}
+
+- (void)testEndSessionIfTimedOutDispatchesToMessageQueue {
+    // Verify that endSessionIfTimedOut called from a non-message-queue thread
+    // does not mutate session properties directly on that thread, but instead
+    // dispatches the work to the message queue.
+    
+    // 1. Set up a session and make it eligible for timeout
+    dispatch_sync(messageQueue, ^{
+        [self.backendController beginSessionWithIsManual:NO date:[NSDate date]];
+    });
+    XCTAssertNotNil(self.backendController.session, @"Session should exist");
+    
+    NSTimeInterval pastTime = [[NSDate date] timeIntervalSince1970] - 200;
+    dispatch_sync(messageQueue, ^{
+        self.backendController.sessionTimeout = 30;
+        self.backendController.timeOfLastEventInBackground = pastTime;
+        self.backendController.timeAppWentToBackgroundInCurrentSession = pastTime;
+    });
+    
+    // 2. Capture the session's endTime before the call
+    __block NSTimeInterval endTimeBefore;
+    dispatch_sync(messageQueue, ^{
+        endTimeBefore = self.backendController.session.endTime;
+    });
+    
+    // 3. Call endSessionIfTimedOut from a background thread (not the message queue)
+    XCTestExpectation *bgCallDone = [self expectationWithDescription:@"Background call completed"];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self.backendController endSessionIfTimedOut];
+        [bgCallDone fulfill];
+    });
+    [self waitForExpectations:@[bgCallDone] timeout:2.0];
+    
+    // 4. Wait for the message queue to drain and process the dispatched block
+    XCTestExpectation *mqDrained = [self expectationWithDescription:@"Message queue drained"];
+    dispatch_async(messageQueue, ^{
+        [mqDrained fulfill];
+    });
+    [self waitForExpectations:@[mqDrained] timeout:5.0];
+    
+    // 5. Verify the session was ended (set to nil by processOpenSessionsEndingCurrent:YES)
+    __block MPSession *sessionAfter;
+    dispatch_sync(messageQueue, ^{
+        sessionAfter = self.backendController.session;
+    });
+    XCTAssertNil(sessionAfter, @"Session should be nil after endSessionIfTimedOut processes on the message queue");
+}
+
+- (void)testConcurrentEndSessionIfTimedOutDoesNotCrash {
+    // Verify that calling endSessionIfTimedOut simultaneously from a background
+    // thread and the message queue does not crash.
+    
+    // 1. Set up a session eligible for timeout
+    dispatch_sync(messageQueue, ^{
+        [self.backendController beginSessionWithIsManual:NO date:[NSDate date]];
+    });
+    XCTAssertNotNil(self.backendController.session, @"Session should exist");
+    
+    NSTimeInterval pastTime = [[NSDate date] timeIntervalSince1970] - 200;
+    dispatch_sync(messageQueue, ^{
+        self.backendController.sessionTimeout = 30;
+        self.backendController.timeOfLastEventInBackground = pastTime;
+        self.backendController.timeAppWentToBackgroundInCurrentSession = pastTime;
+    });
+    
+    // 2. Call from both a background thread and the message queue simultaneously
+    XCTestExpectation *bgDone = [self expectationWithDescription:@"Background thread done"];
+    XCTestExpectation *mqDone = [self expectationWithDescription:@"Message queue done"];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        [self.backendController endSessionIfTimedOut];
+        [bgDone fulfill];
+    });
+    
+    dispatch_async(messageQueue, ^{
+        [self.backendController endSessionIfTimedOut];
+        [mqDone fulfill];
+    });
+    
+    [self waitForExpectations:@[bgDone, mqDone] timeout:5.0];
+    
+    // 3. Wait for the message queue to fully drain
+    XCTestExpectation *drained = [self expectationWithDescription:@"Queue drained"];
+    dispatch_async(messageQueue, ^{
+        [drained fulfill];
+    });
+    [self waitForExpectations:@[drained] timeout:5.0];
+    
+    // 4. Verify session ended exactly once (session is nil, no crash)
+    __block MPSession *sessionAfter;
+    dispatch_sync(messageQueue, ^{
+        sessionAfter = self.backendController.session;
+    });
+    XCTAssertNil(sessionAfter, @"Session should be nil after concurrent endSessionIfTimedOut calls");
 }
 
 @end
