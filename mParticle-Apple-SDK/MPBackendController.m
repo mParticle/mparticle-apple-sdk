@@ -347,13 +347,25 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     NSString *previousSessionStateFile = [stateMachineDirectoryPath stringByAppendingPathComponent:kMPPreviousSessionStateFileName];
     NSDictionary *previousSessionStateDictionary = @{kMPASTPreviousSessionSuccessfullyClosedKey:previousSessionSuccessfullyClosed};
     
-    if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-    } else if ([fileManager fileExistsAtPath:previousSessionStateFile]) {
-        [fileManager removeItemAtPath:previousSessionStateFile error:nil];
+    @try {
+        if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+            NSError *dirError = nil;
+            [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:&dirError];
+            if (dirError) {
+                MPILogError(@"Failed to create state machine directory: %@", dirError);
+                return;
+            }
+        } else if ([fileManager fileExistsAtPath:previousSessionStateFile]) {
+            [fileManager removeItemAtPath:previousSessionStateFile error:nil];
+        }
+        
+        BOOL success = [previousSessionStateDictionary writeToFile:previousSessionStateFile atomically:YES];
+        if (!success) {
+            MPILogError(@"Failed to write previous session state to file");
+        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception writing previous session state: %@", exception);
     }
-    
-    [previousSessionStateDictionary writeToFile:previousSessionStateFile atomically:YES];
 }
 
 - (void)processDidFinishLaunching:(NSNotification *)notification {
