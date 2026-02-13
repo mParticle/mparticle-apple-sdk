@@ -154,11 +154,6 @@
     NSString *secret = _secret ?: [MParticle sharedInstance].stateMachine.secret;
     NSString *apiKey = [MParticle sharedInstance].stateMachine.apiKey;
 
-    if (!secret || !apiKey) {
-        MPILogError(@"Cannot build URL request — API key or secret is nil");
-        return nil;
-    }
-
     if (isAudienceRequest) {
         NSString *audienceRelativePath = [urlRequest.URL relativePath];
         if (!audienceRelativePath) {
