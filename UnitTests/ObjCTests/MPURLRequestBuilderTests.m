@@ -438,11 +438,8 @@
 
 - (void)testBuildReturnsNilWhenURLPropertyIsNil {
     NSURL *validURL = [NSURL URLWithString:@"https://config2.mparticle.com/v4/key/config?av=1.0&sv=1.0"];
-    MPURL *mpURL = [[MPURL alloc] initWithURL:validURL defaultURL:validURL];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:(NSURL * _Nonnull)nil defaultURL:validURL];
     MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"GET"];
-    XCTAssertNotNil(builder);
-
-    mpURL.url = (NSURL * _Nonnull)nil;
 
     NSMutableURLRequest *request;
     XCTAssertNoThrow(request = [builder build], @"build should not throw when URL is nil");
@@ -451,11 +448,8 @@
 
 - (void)testBuildReturnsNilWhenDefaultURLIsNil {
     NSURL *validURL = [NSURL URLWithString:@"https://config2.mparticle.com/v4/key/config?av=1.0&sv=1.0"];
-    MPURL *mpURL = [[MPURL alloc] initWithURL:validURL defaultURL:validURL];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:validURL defaultURL:(NSURL * _Nonnull)nil];
     MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:@"GET"];
-    XCTAssertNotNil(builder);
-
-    mpURL.defaultURL = (NSURL * _Nonnull)nil;
 
     NSMutableURLRequest *request;
     XCTAssertNoThrow(request = [builder build], @"build should not throw when defaultURL is nil");

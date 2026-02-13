@@ -153,6 +153,7 @@
     
     NSString *date = [MPDateFormatter stringFromDateRFC1123:[NSDate date]] ?: @"";
     NSString *secret = _secret ?: [MParticle sharedInstance].stateMachine.secret;
+    NSString *apiKey = [MParticle sharedInstance].stateMachine.apiKey;
 
     if (isAudienceRequest) {
         NSString *audienceRelativePath = [urlRequest.URL relativePath];
@@ -173,7 +174,7 @@
             [urlRequest setValue:hmacSha256Encode forHTTPHeaderField:@"x-mp-signature"];
         }
         [urlRequest setValue:date forHTTPHeaderField:@"Date"];
-        [urlRequest setValue:[MParticle sharedInstance].stateMachine.apiKey forHTTPHeaderField:@"x-mp-key"];
+        [urlRequest setValue:apiKey forHTTPHeaderField:@"x-mp-key"];
         NSString *userAgent = [self userAgent];
         if (userAgent) {
             [urlRequest setValue:userAgent forHTTPHeaderField:@"User-Agent"];
@@ -197,7 +198,7 @@
                 
         if (isIdentityRequest) { // /identify, /login, /logout, /<mpid>/modify
             contentType = @"application/json";
-            [urlRequest setValue:[MParticle sharedInstance].stateMachine.apiKey forHTTPHeaderField:@"x-mp-key"];
+            [urlRequest setValue:apiKey forHTTPHeaderField:@"x-mp-key"];
             if (!_postData) {
                 MPILogError(@"Cannot build URL request — post data is nil for identity request");
                 return nil;

@@ -213,4 +213,62 @@
 }
 #endif
 
+#pragma mark - Thread Safety Tests
+
+- (void)testApiKeySecretThreadSafety {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+
+    NSString *originalApiKey = stateMachine.apiKey;
+    NSString *originalSecret = stateMachine.secret;
+    [self addTeardownBlock:^{
+        stateMachine.apiKey = originalApiKey;
+        stateMachine.secret = originalSecret;
+    }];
+
+    stateMachine.apiKey = @"initial_api_key_value_that_is_long_enough_to_force_heap_allocation";
+    stateMachine.secret = @"initial_secret_value_that_is_long_enough_to_force_heap_allocation";
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Thread safety stress test"];
+
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.statemachine.concurrent", DISPATCH_QUEUE_CONCURRENT);
+
+    NSInteger iterations = 10000;
+    __block BOOL encounteredError = NO;
+
+    for (NSInteger i = 0; i < 4; i++) {
+        dispatch_group_async(group, concurrentQueue, ^{
+            for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+                @try {
+                    NSString *key = stateMachine.apiKey;
+                    NSString *sec = stateMachine.secret;
+                    (void)[key length];
+                    (void)[sec length];
+                } @catch (NSException *exception) {
+                    encounteredError = YES;
+                }
+            }
+        });
+    }
+
+    dispatch_group_async(group, concurrentQueue, ^{
+        for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+            @try {
+                // Use long format strings to force heap-allocated NSString (not tagged pointers)
+                stateMachine.apiKey = [NSString stringWithFormat:@"api_key_value_for_thread_safety_test_iteration_%ld", (long)j];
+                stateMachine.secret = [NSString stringWithFormat:@"secret_value_for_thread_safety_test_iteration_%ld", (long)j];
+            } @catch (NSException *exception) {
+                encounteredError = YES;
+            }
+        }
+    });
+
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        XCTAssertFalse(encounteredError, @"Thread safety test should complete without errors");
+        [expectation fulfill];
+    });
+
+    [self waitForExpectationsWithTimeout:30 handler:nil];
+}
+
 @end
