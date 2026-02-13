@@ -227,6 +227,61 @@
     XCTAssertNotEqualObjects(uploadCopy, upload, @"Should not have been equal.");
 }
 
+- (void)testUploadSerializationSanitizesValues {
+    double four = 4.0;
+    double zed = 0.0;
+    NSMutableString *mutableString = [NSMutableString stringWithString:@"mutable"];
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:1700000000];
+    NSURL *url = [NSURL URLWithString:@"https://example.com"];
+    NSUUID *uuid = [NSUUID UUID];
+    NSSet *set = [NSSet setWithObjects:@"a", @"b", nil];
+
+    NSDictionary *uploadDictionary = @{
+        kMPMessageIdKey:[[NSUUID UUID] UUIDString],
+        kMPTimestampKey:@(123456789),
+        @"nan":@(four/zed),
+        @"date":date,
+        @"url":url,
+        @"uuid":uuid,
+        @"set":set,
+        @"array":@[@"ok", @(four/zed)],
+        @"dict":@{@"nested":@(four/zed), @1:@"badKey"},
+        @1:@"badKey",
+        @"mutable":mutableString,
+        kMPMessagesKey:@[]
+    };
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1
+                                         uploadDictionary:uploadDictionary
+                                               dataPlanId:@"test"
+                                          dataPlanVersion:@(1)
+                                           uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    XCTAssertNotNil(upload, @"Should not have been nil.");
+
+    NSDictionary *serialized = [upload dictionaryRepresentation];
+    XCTAssertNotNil(serialized, @"Should not have been nil.");
+
+    XCTAssertNil(serialized[@"nan"]);
+    XCTAssertNil(serialized[@1]);
+    XCTAssertTrue([serialized[@"date"] isKindOfClass:[NSNumber class]]);
+    XCTAssertEqualObjects(serialized[@"url"], [url absoluteString]);
+    XCTAssertEqualObjects(serialized[@"uuid"], [uuid UUIDString]);
+
+    NSArray *setArray = serialized[@"set"];
+    XCTAssertTrue([setArray isKindOfClass:[NSArray class]]);
+    XCTAssertTrue([setArray containsObject:@"a"]);
+
+    NSArray *array = serialized[@"array"];
+    XCTAssertEqual(array.count, 1);
+    XCTAssertEqualObjects(array[0], @"ok");
+
+    NSDictionary *nested = serialized[@"dict"];
+    XCTAssertNil(nested[@"nested"]);
+    XCTAssertNil(nested[@1]);
+
+    XCTAssertEqualObjects(serialized[@"mutable"], @"mutable");
+}
+
 - (void)testBreadcrumbInstance {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
     
