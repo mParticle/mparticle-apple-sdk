@@ -598,8 +598,10 @@ static BOOL skipNextUpload = NO;
                             [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self.deletedUserAttributes];
                             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
                             [uploadBuilder build:^(MPUpload *upload) {
-                                //Save the Upload to the Database (3)
-                                [persistence saveUpload:upload];
+                                if (upload) {
+                                    //Save the Upload to the Database (3)
+                                    [persistence saveUpload:upload];
+                                }
                             }];
                         }
                         
