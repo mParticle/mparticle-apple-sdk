@@ -2017,6 +2017,7 @@ static BOOL skipNextUpload = NO;
         if (self.backendBackgroundTaskIdentifier == UIBackgroundTaskInvalid) {
             self.backendBackgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
                 MPILogDebug(@"SDK has ended background activity together with the app.");
+                [self cancelBackgroundTimeCheckLoop];
                 [self endBackgroundTask];
             }];
         }
@@ -2173,14 +2174,17 @@ static BOOL skipNextUpload = NO;
         
         // Loop to check the background state and time remaining to decide when to upload
         while (applicationState == UIApplicationStateBackground) {
-            // Handle edge case where app leaves and re-enters background during while the thread is asleep
+            [self endSessionIfTimedOut];
+            
+            // Check cancellation immediately before accessing backgroundTimeRemaining
+            // to avoid calling it after the OS has begun tearing down XPC connections
             if (!weakBlockOperation || weakBlockOperation.isCancelled) {
                 return;
             }
             
-            [self endSessionIfTimedOut];
+            NSTimeInterval timeRemaining = sharedApplication.backgroundTimeRemaining;
             
-            if (sharedApplication.backgroundTimeRemaining <= kMPRemainingBackgroundTimeMinimumThreshold) {
+            if (timeRemaining <= kMPRemainingBackgroundTimeMinimumThreshold) {
                 // Less than kMPRemainingBackgroundTimeMinimumThreshold seconds left in the background, upload the batch
                 MPILogVerbose(@"Less than %f time remaining in background, uploading batch and ending background task", kMPRemainingBackgroundTimeMinimumThreshold);
                 [MParticle executeOnMessage:^{
@@ -2192,7 +2196,7 @@ static BOOL skipNextUpload = NO;
                 }];
                 return;
             }
-            MPILogVerbose(@"Background time remaining %f", sharedApplication.backgroundTimeRemaining);
+            MPILogVerbose(@"Background time remaining %f", timeRemaining);
             
             // Short sleep to prevent burning CPU cycles
             [NSThread sleepForTimeInterval:1.0];
