@@ -9,180 +9,63 @@
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @end
 
-// Creates a JSON-safe snapshot of an object tree.
-// Copies containers to reduce concurrent mutation risk, sanitizes non-JSON types,
-// and handles edge cases (NaN/Inf, cycles) before NSJSONSerialization.
-static id MPJSONSafeObject(id object, NSHashTable *stack, BOOL *didSanitize) {
-    if (object == nil || object == [NSNull null]) {
-        return object;
-    }
-
-    if ([object isKindOfClass:[NSString class]]) {
-        return [object copy];
-    }
-
-    if ([object isKindOfClass:[NSNumber class]]) {
-        double value = [object doubleValue];
-        if (isnan(value) || isinf(value)) {
-            if (didSanitize) {
-                *didSanitize = YES;
-            }
-            return nil;
-        }
-        return object;
-    }
+// Recursively deep-copies a JSON-compatible object tree, producing new immutable
+// containers at every level. Snapshots each collection before enumerating it,
+// breaking shared references with mutable data that other threads may mutate.
+// Non-JSON-compatible values are silently dropped.
+static id MPDeepCopyJSONObject(id object) {
+    if (object == nil || object == [NSNull null]) return object;
+    if ([object isKindOfClass:[NSString class]])  return [object copy];
+    if ([object isKindOfClass:[NSNumber class]])  return object;
 
     if ([object isKindOfClass:[NSDictionary class]]) {
-        if ([stack containsObject:object]) {
-            if (didSanitize) {
-                *didSanitize = YES;
-            }
-            return nil;
+        NSDictionary *snapshot = [((NSDictionary *)object) copy];
+        NSMutableDictionary *result = [[NSMutableDictionary alloc] initWithCapacity:snapshot.count];
+        for (id key in snapshot) {
+            if (![key isKindOfClass:[NSString class]]) continue;
+            id value = MPDeepCopyJSONObject(snapshot[key]);
+            if (value) result[key] = value;
         }
-        [stack addObject:object];
-
-        NSDictionary *dictionary = nil;
-        @try {
-            dictionary = [((NSDictionary *)object) copy];
-        } @catch (NSException *exception) {
-            if (didSanitize) {
-                *didSanitize = YES;
-            }
-            [stack removeObject:object];
-            return nil;
-        }
-        NSMutableDictionary *sanitized = [[NSMutableDictionary alloc] initWithCapacity:dictionary.count];
-        [dictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            if (![key isKindOfClass:[NSString class]]) {
-                if (didSanitize) {
-                    *didSanitize = YES;
-                }
-                return;
-            }
-            id safeValue = MPJSONSafeObject(obj, stack, didSanitize);
-            if (safeValue) {
-                sanitized[key] = safeValue;
-            }
-        }];
-
-        [stack removeObject:object];
-        return [sanitized copy];
+        return [result copy];
     }
 
     if ([object isKindOfClass:[NSArray class]]) {
-        if ([stack containsObject:object]) {
-            if (didSanitize) {
-                *didSanitize = YES;
-            }
-            return nil;
+        NSArray *snapshot = [((NSArray *)object) copy];
+        NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity:snapshot.count];
+        for (id item in snapshot) {
+            id value = MPDeepCopyJSONObject(item);
+            if (value) [result addObject:value];
         }
-        [stack addObject:object];
-
-        NSArray *array = nil;
-        @try {
-            array = [((NSArray *)object) copy];
-        } @catch (NSException *exception) {
-            if (didSanitize) {
-                *didSanitize = YES;
-            }
-            [stack removeObject:object];
-            return nil;
-        }
-        NSMutableArray *sanitized = [[NSMutableArray alloc] initWithCapacity:array.count];
-        for (id item in array) {
-            id safeItem = MPJSONSafeObject(item, stack, didSanitize);
-            if (safeItem) {
-                [sanitized addObject:safeItem];
-            }
-        }
-
-        [stack removeObject:object];
-        return [sanitized copy];
+        return [result copy];
     }
 
-    if ([object isKindOfClass:[NSSet class]]) {
-        if (didSanitize) {
-            *didSanitize = YES;
-        }
-        NSSet *setSnapshot = [((NSSet *)object) copy];
-        return MPJSONSafeObject([setSnapshot allObjects], stack, didSanitize);
-    }
-
-    if ([object isKindOfClass:[NSDate class]]) {
-        if (didSanitize) {
-            *didSanitize = YES;
-        }
-        return @([(NSDate *)object timeIntervalSince1970] * 1000);
-    }
-
-    if ([object isKindOfClass:[NSURL class]]) {
-        if (didSanitize) {
-            *didSanitize = YES;
-        }
-        return [(NSURL *)object absoluteString];
-    }
-
-    if ([object isKindOfClass:[NSUUID class]]) {
-        if (didSanitize) {
-            *didSanitize = YES;
-        }
-        return [(NSUUID *)object UUIDString];
-    }
-
-    if (didSanitize) {
-        *didSanitize = YES;
-    }
-    return nil;
-}
-
-static NSDictionary *MPJSONSafeDictionary(NSDictionary *dictionary, BOOL *didSanitize) {
-    if (dictionary == nil || dictionary == (id)[NSNull null]) {
-        if (didSanitize) {
-            *didSanitize = YES;
-        }
-        return nil;
-    }
-
-    NSHashTable *stack = [NSHashTable hashTableWithOptions:NSHashTableObjectPointerPersonality];
-    id safeObject = MPJSONSafeObject(dictionary, stack, didSanitize);
-    if ([safeObject isKindOfClass:[NSDictionary class]]) {
-        return (NSDictionary *)safeObject;
-    }
-
-    if (didSanitize) {
-        *didSanitize = YES;
-    }
     return nil;
 }
 
 @implementation MPUpload
 
 - (instancetype)initWithSessionId:(NSNumber *)sessionId uploadDictionary:(NSDictionary *)uploadDictionary dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion uploadSettings:(nonnull MPUploadSettings *)uploadSettings {
-    BOOL didSanitize = NO;
-    NSDictionary *safeDictionary = MPJSONSafeDictionary(uploadDictionary, &didSanitize);
-    if (didSanitize) {
-        MPILogWarning(@"Upload dictionary contained non-JSON-safe values or required normalization; sanitizing before serialization.");
-    }
-
-    NSError *error = nil;
+    NSDictionary *safeDictionary = nil;
     NSData *uploadData = nil;
 
     @try {
-        uploadData = [NSJSONSerialization dataWithJSONObject:(safeDictionary ?: @{}) options:0 error:&error];
+        safeDictionary = (NSDictionary *)MPDeepCopyJSONObject(uploadDictionary);
+        if (safeDictionary) {
+            uploadData = [NSJSONSerialization dataWithJSONObject:safeDictionary options:0 error:nil];
+        }
     } @catch (NSException *exception) {
         MPILogError(@"Exception serializing upload dictionary: %@", exception);
     }
 
-    if (uploadData == nil || error != nil) {
-        MPILogError(@"Failed to serialize upload dictionary: %@", error);
-        uploadData = [NSJSONSerialization dataWithJSONObject:@{} options:0 error:nil];
+    if (!uploadData) {
+        return nil;
     }
-    NSDictionary *identifierSource = safeDictionary ?: uploadDictionary;
+
     return [self initWithSessionId:sessionId
                           uploadId:0
-                              UUID:identifierSource[kMPMessageIdKey]
+                              UUID:safeDictionary[kMPMessageIdKey]
                         uploadData:uploadData
-                         timestamp:[identifierSource[kMPTimestampKey] doubleValue]
+                         timestamp:[safeDictionary[kMPTimestampKey] doubleValue]
                         uploadType:MPUploadTypeMessage
                         dataPlanId:dataPlanId
                    dataPlanVersion:dataPlanVersion

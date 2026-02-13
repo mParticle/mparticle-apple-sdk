@@ -227,27 +227,20 @@
     XCTAssertNotEqualObjects(uploadCopy, upload, @"Should not have been equal.");
 }
 
-- (void)testUploadSerializationSanitizesValues {
-    double four = 4.0;
-    double zed = 0.0;
+- (void)testUploadSerializationDeepCopiesValues {
+    // Verify that deep copy produces correct, independent data
     NSMutableString *mutableString = [NSMutableString stringWithString:@"mutable"];
-    NSDate *date = [NSDate dateWithTimeIntervalSince1970:1700000000];
-    NSURL *url = [NSURL URLWithString:@"https://example.com"];
-    NSUUID *uuid = [NSUUID UUID];
-    NSSet *set = [NSSet setWithObjects:@"a", @"b", nil];
+    NSMutableArray *mutableArray = [NSMutableArray arrayWithObjects:@"a", @"b", nil];
+    NSMutableDictionary *mutableNested = [NSMutableDictionary dictionaryWithDictionary:@{@"key":@"value"}];
 
     NSDictionary *uploadDictionary = @{
         kMPMessageIdKey:[[NSUUID UUID] UUIDString],
         kMPTimestampKey:@(123456789),
-        @"nan":@(four/zed),
-        @"date":date,
-        @"url":url,
-        @"uuid":uuid,
-        @"set":set,
-        @"array":@[@"ok", @(four/zed)],
-        @"dict":@{@"nested":@(four/zed), @1:@"badKey"},
-        @1:@"badKey",
-        @"mutable":mutableString,
+        @"string":mutableString,
+        @"array":mutableArray,
+        @"nested":mutableNested,
+        @"number":@(42),
+        @"null":[NSNull null],
         kMPMessagesKey:@[]
     };
 
@@ -256,30 +249,63 @@
                                                dataPlanId:@"test"
                                           dataPlanVersion:@(1)
                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
-    XCTAssertNotNil(upload, @"Should not have been nil.");
+    XCTAssertNotNil(upload, @"Upload should succeed with valid JSON data.");
+
+    // Mutate originals after creation -- upload should be unaffected
+    [mutableString appendString:@"_changed"];
+    [mutableArray addObject:@"c"];
+    mutableNested[@"key"] = @"changed";
 
     NSDictionary *serialized = [upload dictionaryRepresentation];
-    XCTAssertNotNil(serialized, @"Should not have been nil.");
+    XCTAssertNotNil(serialized);
+    XCTAssertEqualObjects(serialized[@"string"], @"mutable");
+    XCTAssertEqual([serialized[@"array"] count], 2);
+    XCTAssertEqualObjects(serialized[@"nested"][@"key"], @"value");
+    XCTAssertEqualObjects(serialized[@"number"], @(42));
+    XCTAssertEqualObjects(serialized[@"null"], [NSNull null]);
+}
 
-    XCTAssertNil(serialized[@"nan"]);
-    XCTAssertNil(serialized[@1]);
-    XCTAssertTrue([serialized[@"date"] isKindOfClass:[NSNumber class]]);
-    XCTAssertEqualObjects(serialized[@"url"], [url absoluteString]);
-    XCTAssertEqualObjects(serialized[@"uuid"], [uuid UUIDString]);
+- (void)testUploadSerializationDropsNonJSONTypes {
+    // Non-JSON-compatible types (NSDate, NSURL, etc.) are dropped by deep copy.
+    // If the remaining data is still valid JSON, the upload succeeds with those keys missing.
+    NSDictionary *uploadDictionary = @{
+        kMPMessageIdKey:[[NSUUID UUID] UUIDString],
+        kMPTimestampKey:@(123456789),
+        @"valid":@"ok",
+        @"date":[NSDate date],
+        @"url":[NSURL URLWithString:@"https://example.com"],
+        kMPMessagesKey:@[]
+    };
 
-    NSArray *setArray = serialized[@"set"];
-    XCTAssertTrue([setArray isKindOfClass:[NSArray class]]);
-    XCTAssertTrue([setArray containsObject:@"a"]);
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1
+                                         uploadDictionary:uploadDictionary
+                                               dataPlanId:@"test"
+                                          dataPlanVersion:@(1)
+                                           uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    XCTAssertNotNil(upload, @"Upload should succeed; non-JSON values are dropped.");
 
-    NSArray *array = serialized[@"array"];
-    XCTAssertEqual(array.count, 1);
-    XCTAssertEqualObjects(array[0], @"ok");
+    NSDictionary *serialized = [upload dictionaryRepresentation];
+    XCTAssertEqualObjects(serialized[@"valid"], @"ok");
+    XCTAssertNil(serialized[@"date"]);
+    XCTAssertNil(serialized[@"url"]);
+}
 
-    NSDictionary *nested = serialized[@"dict"];
-    XCTAssertNil(nested[@"nested"]);
-    XCTAssertNil(nested[@1]);
+- (void)testUploadSerializationReturnsNilForInvalidData {
+    // An upload dictionary that cannot produce valid JSON should return nil
+    double four = 4.0;
+    double zed = 0.0;
+    NSDictionary *uploadDictionary = @{
+        kMPMessageIdKey:[[NSUUID UUID] UUIDString],
+        kMPTimestampKey:@(four/zed), // NaN timestamp makes the whole upload invalid
+        kMPMessagesKey:@[]
+    };
 
-    XCTAssertEqualObjects(serialized[@"mutable"], @"mutable");
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1
+                                         uploadDictionary:uploadDictionary
+                                               dataPlanId:@"test"
+                                          dataPlanVersion:@(1)
+                                           uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    XCTAssertNil(upload, @"Upload should be nil when JSON serialization fails.");
 }
 
 - (void)testBreadcrumbInstance {

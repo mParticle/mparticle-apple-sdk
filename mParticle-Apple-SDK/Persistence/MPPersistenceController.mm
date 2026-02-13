@@ -1709,7 +1709,8 @@ const int MaxBreadcrumbs = 50;
         }
         
         @try {
-            NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:upload.uploadSettings];
+            MPUploadSettings *settingsCopy = [upload.uploadSettings copy];
+            NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:settingsCopy];
             sqlite3_bind_blob(preparedStatement, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
         } @catch(NSException *exception) {
             MPILogError(@"Error while storing upload: %@: %@", exception.name, exception.reason);
