@@ -2078,31 +2078,31 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    if (self.session != nil && [self shouldEndSession]) {
-        NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-        NSTimeInterval lastEventTime = self.timeOfLastEventInBackground;
-        self.session.endTime = lastEventTime;
-        
-        [self updateSessionBackgroundTime];
-        
-        // Since we use the timeAppWentToBackground to calculate background time, but timeOfLastEventInBackground as the endTime,
-        // this can result in incorrectly calculated foreground time when ending a session in the background. So subtract the additional
-        // time since timeOfLastEventInBackground from the background time to correct this.
-        self.session.backgroundTime -= currentTime - self.timeOfLastEventInBackground;
-                
-        // Reset time of last event to reset the session timeout
-        self.timeOfLastEventInBackground = currentTime;
-        
-        // Reset the time app went to background so that it's correctly calculated in the new session
-        self.timeAppWentToBackgroundInCurrentSession = currentTime;
-        
-        [MParticle executeOnMessage:^{
+    [MParticle executeOnMessage:^{
+        if (self.session != nil && [self shouldEndSession]) {
+            NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+            NSTimeInterval lastEventTime = self.timeOfLastEventInBackground;
+            self.session.endTime = lastEventTime;
+            
+            [self updateSessionBackgroundTime];
+            
+            // Since we use the timeAppWentToBackground to calculate background time, but timeOfLastEventInBackground as the endTime,
+            // this can result in incorrectly calculated foreground time when ending a session in the background. So subtract the additional
+            // time since timeOfLastEventInBackground from the background time to correct this.
+            self.session.backgroundTime -= currentTime - self.timeOfLastEventInBackground;
+                    
+            // Reset time of last event to reset the session timeout
+            self.timeOfLastEventInBackground = currentTime;
+            
+            // Reset the time app went to background so that it's correctly calculated in the new session
+            self.timeAppWentToBackgroundInCurrentSession = currentTime;
+            
             [[MParticle sharedInstance].persistenceController updateSession:self.session];
             [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
                 MPILogVerbose(@"Session ended in the background. New session will begin if an mParticle event is logged or app enters foreground.");
             }];
-        }];
-    }
+        }
+    }];
 }
 
 #pragma mark Application Lifecycle
