@@ -9,6 +9,7 @@ import Foundation
 
 private var userDefaults: MPUserDefaults?
 private var sharedGroupID: String?
+private let userDefaultsQueue = DispatchQueue(label: "com.mparticle.userdefaults")
 private let NSUserDefaultsPrefix = "mParticle::"
 private let userSpecificKeys = ["lud", /* kMPAppLastUseDateKey */
                                 "lc", /* kMPAppLaunchCountKey */
@@ -53,11 +54,12 @@ public protocol MPUserDefaultsProtocol {
         backendController: MPBackendControllerProtocol,
         identity: MPIdentityApi
     ) -> MPUserDefaults {
-        if userDefaults == nil {
-            userDefaults = self.init(stateMachine: stateMachine, backendController: backendController, identity: identity)
+        return userDefaultsQueue.sync {
+            if userDefaults == nil {
+                userDefaults = self.init(stateMachine: stateMachine, backendController: backendController, identity: identity)
+            }
+            return userDefaults!
         }
-
-        return userDefaults!
     }
 
     @objc public func mpObject(forKey key: String, userId: NSNumber) -> Any? {
@@ -274,7 +276,10 @@ public protocol MPUserDefaultsProtocol {
         for key in mParticleKeys {
             UserDefaults.standard.removeObject(forKey: key)
         }
-        userDefaults = nil
+
+        userDefaultsQueue.sync {
+            userDefaults = nil
+        }
 
         UserDefaults.standard.synchronize()
     }
@@ -359,8 +364,10 @@ public protocol MPUserDefaultsProtocol {
     @objc public class func isOlderThanConfigMaxAgeSeconds() -> Bool {
         var shouldConfigurationBeDeleted = false
 
-        if let userDefaults = userDefaults {
-            let configProvisioned = userDefaults[Miscellaneous.kMPConfigProvisionedTimestampKey] as? NSNumber
+        let defaults = userDefaultsQueue.sync { userDefaults }
+
+        if let defaults = defaults {
+            let configProvisioned = defaults[Miscellaneous.kMPConfigProvisionedTimestampKey] as? NSNumber
             let maxAgeSeconds = MParticle.sharedInstance().configMaxAgeSeconds
 
             if let configProvisioned = configProvisioned, let maxAgeSeconds = maxAgeSeconds, maxAgeSeconds.doubleValue > 0 {
@@ -370,7 +377,7 @@ public protocol MPUserDefaultsProtocol {
             }
 
             if shouldConfigurationBeDeleted {
-                userDefaults.deleteConfiguration()
+                defaults.deleteConfiguration()
             }
         }
         return shouldConfigurationBeDeleted
@@ -383,9 +390,11 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public class func restore() -> MPResponseConfig? {
-        if let userDefaults = userDefaults {
-            if let configuration = userDefaults.getConfiguration(), let stateMachine = userDefaults.stateMachine,
-               let backendController = userDefaults.backendController {
+        let defaults = userDefaultsQueue.sync { userDefaults }
+
+        if let defaults = defaults {
+            if let configuration = defaults.getConfiguration(), let stateMachine = defaults.stateMachine,
+               let backendController = defaults.backendController {
                 let responseConfig = MPResponseConfig(
                     configuration: configuration,
                     stateMachine: stateMachine,
@@ -400,9 +409,8 @@ public protocol MPUserDefaultsProtocol {
     }
 
     @objc public class func deleteConfig() {
-        if let userDefaults = userDefaults {
-            userDefaults.deleteConfiguration()
-        }
+        let defaults = userDefaultsQueue.sync { userDefaults }
+        defaults?.deleteConfiguration()
     }
 
     // Private Methods
