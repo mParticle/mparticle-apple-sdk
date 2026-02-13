@@ -21,8 +21,8 @@
 @property (nonatomic, weak, nullable) MPSession *currentSession;
 @property (nonatomic) NSNumber * _Nullable attAuthorizationStatus;
 @property (nonatomic) NSNumber * _Nullable attAuthorizationTimestamp;
-@property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
-@property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));
+@property (atomic, strong, nonnull) NSString *apiKey;
+@property (atomic, strong, nonnull) NSString *secret;
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
@@ -34,7 +34,7 @@
 
 @interface MPStateMachine_PRIVATE : NSObject<MPStateMachineProtocol>
 
-@property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
+@property (atomic, strong, nonnull) NSString *apiKey;
 @property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 @property (nonatomic, weak, nullable) MPSession *currentSession;
 @property (nonatomic, strong, nullable) NSArray<MPCustomModule *> *customModules;
@@ -50,7 +50,7 @@
 #endif
 @property (nonatomic, strong, nullable) NSString *networkPerformanceMeasuringMode;
 @property (nonatomic, strong, nullable) NSString *pushNotificationMode;
-@property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));
+@property (atomic, strong, nonnull) NSString *secret;
 @property (nonatomic, strong, nonnull) NSDate *startTime;
 @property (nonatomic, strong, nullable) MPLaunchInfo *launchInfo;
 @property (nonatomic, strong, readonly, nullable) NSString *deviceTokenType;
