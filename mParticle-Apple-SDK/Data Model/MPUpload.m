@@ -2,21 +2,70 @@
 #import "MPSession.h"
 #import "MPIConstants.h"
 #import "mParticle.h"
+#import "MPILogger.h"
 #import "MParticleSwift.h"
 
 @interface MParticle()
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @end
 
+// Recursively deep-copies a JSON-compatible object tree, producing new immutable
+// containers at every level. Snapshots each collection before enumerating it,
+// breaking shared references with mutable data that other threads may mutate.
+// Non-JSON-compatible values are silently dropped.
+static id MPDeepCopyJSONObject(id object) {
+    if (object == nil || object == [NSNull null]) return object;
+    if ([object isKindOfClass:[NSString class]])  return [object copy];
+    if ([object isKindOfClass:[NSNumber class]])  return object;
+
+    if ([object isKindOfClass:[NSDictionary class]]) {
+        NSDictionary *snapshot = [((NSDictionary *)object) copy];
+        NSMutableDictionary *result = [[NSMutableDictionary alloc] initWithCapacity:snapshot.count];
+        for (id key in snapshot) {
+            if (![key isKindOfClass:[NSString class]]) continue;
+            id value = MPDeepCopyJSONObject(snapshot[key]);
+            if (value) result[key] = value;
+        }
+        return [result copy];
+    }
+
+    if ([object isKindOfClass:[NSArray class]]) {
+        NSArray *snapshot = [((NSArray *)object) copy];
+        NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity:snapshot.count];
+        for (id item in snapshot) {
+            id value = MPDeepCopyJSONObject(item);
+            if (value) [result addObject:value];
+        }
+        return [result copy];
+    }
+
+    return nil;
+}
+
 @implementation MPUpload
 
 - (instancetype)initWithSessionId:(NSNumber *)sessionId uploadDictionary:(NSDictionary *)uploadDictionary dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion uploadSettings:(nonnull MPUploadSettings *)uploadSettings {
-    NSData *uploadData = [NSJSONSerialization dataWithJSONObject:uploadDictionary options:0 error:nil];
+    NSDictionary *safeDictionary = nil;
+    NSData *uploadData = nil;
+
+    @try {
+        safeDictionary = (NSDictionary *)MPDeepCopyJSONObject(uploadDictionary);
+        if (safeDictionary) {
+            uploadData = [NSJSONSerialization dataWithJSONObject:safeDictionary options:0 error:nil];
+        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception serializing upload dictionary: %@", exception);
+    }
+
+    if (!uploadData) {
+        return nil;
+    }
+
     return [self initWithSessionId:sessionId
                           uploadId:0
-                              UUID:uploadDictionary[kMPMessageIdKey]
+                              UUID:safeDictionary[kMPMessageIdKey]
                         uploadData:uploadData
-                         timestamp:[uploadDictionary[kMPTimestampKey] doubleValue]
+                         timestamp:[safeDictionary[kMPTimestampKey] doubleValue]
                         uploadType:MPUploadTypeMessage
                         dataPlanId:dataPlanId
                    dataPlanVersion:dataPlanVersion

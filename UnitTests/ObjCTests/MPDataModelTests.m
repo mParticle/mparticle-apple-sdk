@@ -227,6 +227,87 @@
     XCTAssertNotEqualObjects(uploadCopy, upload, @"Should not have been equal.");
 }
 
+- (void)testUploadSerializationDeepCopiesValues {
+    // Verify that deep copy produces correct, independent data
+    NSMutableString *mutableString = [NSMutableString stringWithString:@"mutable"];
+    NSMutableArray *mutableArray = [NSMutableArray arrayWithObjects:@"a", @"b", nil];
+    NSMutableDictionary *mutableNested = [NSMutableDictionary dictionaryWithDictionary:@{@"key":@"value"}];
+
+    NSDictionary *uploadDictionary = @{
+        kMPMessageIdKey:[[NSUUID UUID] UUIDString],
+        kMPTimestampKey:@(123456789),
+        @"string":mutableString,
+        @"array":mutableArray,
+        @"nested":mutableNested,
+        @"number":@(42),
+        @"null":[NSNull null],
+        kMPMessagesKey:@[]
+    };
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1
+                                         uploadDictionary:uploadDictionary
+                                               dataPlanId:@"test"
+                                          dataPlanVersion:@(1)
+                                           uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    XCTAssertNotNil(upload, @"Upload should succeed with valid JSON data.");
+
+    // Mutate originals after creation -- upload should be unaffected
+    [mutableString appendString:@"_changed"];
+    [mutableArray addObject:@"c"];
+    mutableNested[@"key"] = @"changed";
+
+    NSDictionary *serialized = [upload dictionaryRepresentation];
+    XCTAssertNotNil(serialized);
+    XCTAssertEqualObjects(serialized[@"string"], @"mutable");
+    XCTAssertEqual([serialized[@"array"] count], 2);
+    XCTAssertEqualObjects(serialized[@"nested"][@"key"], @"value");
+    XCTAssertEqualObjects(serialized[@"number"], @(42));
+    XCTAssertEqualObjects(serialized[@"null"], [NSNull null]);
+}
+
+- (void)testUploadSerializationDropsNonJSONTypes {
+    // Non-JSON-compatible types (NSDate, NSURL, etc.) are dropped by deep copy.
+    // If the remaining data is still valid JSON, the upload succeeds with those keys missing.
+    NSDictionary *uploadDictionary = @{
+        kMPMessageIdKey:[[NSUUID UUID] UUIDString],
+        kMPTimestampKey:@(123456789),
+        @"valid":@"ok",
+        @"date":[NSDate date],
+        @"url":[NSURL URLWithString:@"https://example.com"],
+        kMPMessagesKey:@[]
+    };
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1
+                                         uploadDictionary:uploadDictionary
+                                               dataPlanId:@"test"
+                                          dataPlanVersion:@(1)
+                                           uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    XCTAssertNotNil(upload, @"Upload should succeed; non-JSON values are dropped.");
+
+    NSDictionary *serialized = [upload dictionaryRepresentation];
+    XCTAssertEqualObjects(serialized[@"valid"], @"ok");
+    XCTAssertNil(serialized[@"date"]);
+    XCTAssertNil(serialized[@"url"]);
+}
+
+- (void)testUploadSerializationReturnsNilForInvalidData {
+    // An upload dictionary that cannot produce valid JSON should return nil
+    double four = 4.0;
+    double zed = 0.0;
+    NSDictionary *uploadDictionary = @{
+        kMPMessageIdKey:[[NSUUID UUID] UUIDString],
+        kMPTimestampKey:@(four/zed), // NaN timestamp makes the whole upload invalid
+        kMPMessagesKey:@[]
+    };
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1
+                                         uploadDictionary:uploadDictionary
+                                               dataPlanId:@"test"
+                                          dataPlanVersion:@(1)
+                                           uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    XCTAssertNil(upload, @"Upload should be nil when JSON serialization fails.");
+}
+
 - (void)testBreadcrumbInstance {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
     
