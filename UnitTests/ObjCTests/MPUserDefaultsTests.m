@@ -392,4 +392,52 @@
     XCTAssertEqualObjects(tokenString, @"0f");
 }
 
+- (void)testUserDefaultsSingletonThreadSafety {
+    // Stress test to verify the singleton accessor is thread-safe
+    // This tests the fix for the race condition in standardUserDefaults()
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Thread safety test completed"];
+    
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.userdefaults.concurrent", DISPATCH_QUEUE_CONCURRENT);
+    
+    NSInteger iterations = 1000;
+    
+    for (NSInteger i = 0; i < iterations; i++) {
+        dispatch_group_async(group, concurrentQueue, ^{
+            // Concurrent reads of the singleton
+            MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                                          backendController:[MParticle sharedInstance].backendController
+                                                                                   identity:[MParticle sharedInstance].identity];
+            XCTAssertNotNil(defaults);
+            
+            // Concurrent reads/writes to user defaults
+            NSString *key = [NSString stringWithFormat:@"testKey_%ld", (long)(i % 10)];
+            [defaults setMPObject:@(i) forKey:key userId:@1];
+            id value = [defaults mpObjectForKey:key userId:@1];
+            // Value may or may not match due to concurrent writes - that's expected
+            (void)value;
+        });
+        
+        // Also test static class methods concurrently
+        dispatch_group_async(group, concurrentQueue, ^{
+            [MPUserDefaults isOlderThanConfigMaxAgeSeconds];
+        });
+        
+        dispatch_group_async(group, concurrentQueue, ^{
+            [MPUserDefaults restore];
+        });
+        
+        dispatch_group_async(group, concurrentQueue, ^{
+            [MPUserDefaults deleteConfig];
+        });
+    }
+    
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:30 handler:nil];
+}
+
 @end
