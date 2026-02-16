@@ -96,10 +96,18 @@ jobs:
           echo "   Branch: main"
           echo ""
 
-          # Fetch into temp ref, then reset and push
+          # Fetch into temp ref, then reset
           git -C dest fetch "$GITHUB_WORKSPACE" ${{ steps.split.outputs.split_branch }}:refs/heads/incoming
           git -C dest reset --hard incoming
-          git -C dest push origin main --force --verbose
+
+          # Use --force only on first push (no common history); otherwise normal push
+          if git -C dest merge-base --is-ancestor origin/main incoming 2>/dev/null; then
+            echo "   Mode: fast-forward (subsequent push)"
+            git -C dest push origin main --verbose
+          else
+            echo "   Mode: force (first push or unrelated history)"
+            git -C dest push origin main --force --verbose
+          fi
 
           echo ""
           echo "✅ Successfully pushed to ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}"
