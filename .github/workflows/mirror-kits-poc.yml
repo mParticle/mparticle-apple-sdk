@@ -96,8 +96,9 @@ jobs:
           echo "   Branch: main"
           echo ""
 
-          # Fetch split branch from monorepo into dest's main, then push
-          git -C dest fetch "$GITHUB_WORKSPACE" ${{ steps.split.outputs.split_branch }}:refs/heads/main
+          # Fetch into temp ref, then reset and push
+          git -C dest fetch "$GITHUB_WORKSPACE" ${{ steps.split.outputs.split_branch }}:refs/heads/incoming
+          git -C dest reset --hard incoming
           git -C dest push origin main --force --verbose
 
           echo ""
