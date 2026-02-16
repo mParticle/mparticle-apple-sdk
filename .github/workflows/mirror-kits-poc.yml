@@ -65,6 +65,15 @@ jobs:
           echo "Directory contents:"
           ls -la ${{ matrix.kit.local_path }}
 
+      - name: Get mP ecosystem version
+        id: version
+        run: |
+          # Ecosystem version from core SDK podspec (source of truth)
+          VERSION=$(grep 's.version' mParticle-Apple-SDK.podspec | sed 's/.*"\([^"]*\)".*/\1/')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "📌 Ecosystem version: ${VERSION} (tag: v${VERSION})"
+
       - name: Split kit directory into branch
         id: split
         run: |
@@ -94,6 +103,7 @@ jobs:
           echo "🚀 Pushing to destination repository"
           echo "   Repo: ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}"
           echo "   Branch: main"
+          echo "   Tag: ${{ steps.version.outputs.tag }}"
           echo ""
 
           # Fetch into temp ref, then reset and push
@@ -101,8 +111,13 @@ jobs:
           git -C dest reset --hard incoming
           git -C dest push origin main --force
 
+          # Tag with mP ecosystem version
+          git -C dest tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git -C dest push origin "${{ steps.version.outputs.tag }}"
+
           echo ""
           echo "✅ Successfully pushed to ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}"
+          echo "✅ Tagged: ${{ steps.version.outputs.tag }}"
 
       - name: Cleanup split branch
         if: always()
@@ -121,4 +136,5 @@ jobs:
           echo "| **Source** | \`${{ matrix.kit.local_path }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Destination** | https://github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Branch** | \`main\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Tag** | \`${{ steps.version.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Kit** | ${{ matrix.kit.name }} |" >> $GITHUB_STEP_SUMMARY
