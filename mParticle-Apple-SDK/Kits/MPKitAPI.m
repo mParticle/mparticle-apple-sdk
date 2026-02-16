@@ -5,6 +5,7 @@
 #import "MPILogger.h"
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
+
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
