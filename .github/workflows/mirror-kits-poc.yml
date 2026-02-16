@@ -1,0 +1,127 @@
+name: Mirror Kits to mparticle-integrations (PoC)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  mirror-kits:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kit:
+          - name: braze-12
+            local_path: kits/braze/braze-12
+            dest_repo: mparticle-integrations/mparticle-apple-integration-braze-12
+    #          - name: braze-13
+    #            local_path: kits/braze/braze-13
+    #            dest_repo: mparticle-integrations/mparticle-apple-integration-braze-13
+    #          - name: braze-14
+    #            local_path: kits/braze/braze-14
+    #            dest_repo: mparticle-integrations/mparticle-apple-integration-braze-14
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history required for git subtree split
+          ref: ${{ github.ref }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "mParticle Bot"
+          git config user.email "developers@mparticle.com"
+
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
+          owner: mparticle-integrations
+
+      - name: Verify kit directory exists
+        run: |
+          if [ ! -d "${{ matrix.kit.local_path }}" ]; then
+            echo "❌ Error: Kit directory ${{ matrix.kit.local_path }} does not exist"
+            echo "This kit has not been imported yet. Please run git subtree add first."
+            exit 1
+          fi
+
+          echo "✅ Kit directory exists: ${{ matrix.kit.local_path }}"
+          echo ""
+          echo "Directory contents:"
+          ls -la ${{ matrix.kit.local_path }}
+
+      - name: Split kit directory into branch
+        id: split
+        run: |
+          SPLIT_BRANCH="split/${{ matrix.kit.name }}-$(date +%s)"
+          echo "split_branch=${SPLIT_BRANCH}" >> $GITHUB_OUTPUT
+
+          echo "📦 Creating split branch: ${SPLIT_BRANCH}"
+          echo "   from: ${{ matrix.kit.local_path }}"
+
+          git subtree split --prefix ${{ matrix.kit.local_path }} -b ${SPLIT_BRANCH}
+
+          echo ""
+          echo "✅ Split branch created successfully"
+          echo ""
+          echo "Recent commits in split branch:"
+          git log ${SPLIT_BRANCH} --oneline | head -10
+
+      - name: Push to destination repository
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          DEST_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ matrix.kit.dest_repo }}.git"
+
+          echo "🚀 Pushing to destination repository"
+          echo "   Repo: ${{ matrix.kit.dest_repo }}"
+          echo "   Branch: ${{ github.ref_name }}"
+          echo ""
+
+          git remote add dest-${{ matrix.kit.name }} "${DEST_URL}"
+
+          git push dest-${{ matrix.kit.name }} \
+            ${{ steps.split.outputs.split_branch }}:${{ github.ref_name }} \
+            --force
+
+          echo ""
+          echo "✅ Successfully pushed to ${{ matrix.kit.dest_repo }}"
+
+      - name: Cleanup split branch
+        if: always()
+        run: |
+          echo "🧹 Cleaning up split branch"
+          git branch -D ${{ steps.split.outputs.split_branch }} || true
+          echo "✅ Cleanup complete"
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "## ✅ Mirror Complete: ${{ matrix.kit.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Source** | \`${{ matrix.kit.local_path }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Destination** | https://github.com/${{ matrix.kit.dest_repo }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Kit** | ${{ matrix.kit.name }} |" >> $GITHUB_STEP_SUMMARY
+
+  summary:
+    name: Mirror Summary
+    runs-on: ubuntu-latest
+    needs: mirror-kits
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          echo "## 🎉 Kit Mirroring Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All Braze kit tracks have been mirrored to mparticle-integrations." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Verify the mirrored code in each destination repo" >> $GITHUB_STEP_SUMMARY
+          echo "2. Test SPM package resolution" >> $GITHUB_STEP_SUMMARY
+          echo "3. Test CocoaPods spec lint" >> $GITHUB_STEP_SUMMARY
