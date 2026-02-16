@@ -23,5 +23,7 @@
 
 #pragma mark - Date Formatting
 + (NSString *_Nullable)stringFromDateRFC3339:(NSDate *_Nonnull)date;
++ (NSDate *_Nullable)dateFromStringRFC3339:(NSString * _Nonnull)string;
++ (NSString *_Nullable)hashString:(NSString * _Nonnull)string;
 
 @end
