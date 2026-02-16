@@ -49,6 +49,14 @@ jobs:
           owner: ${{ env.DEST_ORG }}
           repositories: ${{ matrix.kit.dest_repo }}
 
+      - name: Debug - Test API access
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          curl -s -w "\nHTTP_CODE:%{http_code}" \
+            -H "Authorization: token ${GITHUB_TOKEN}" \
+            https://api.github.com/repos/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}
+
       - name: Verify kit directory exists
         run: |
           if [ ! -d "${{ matrix.kit.local_path }}" ]; then
