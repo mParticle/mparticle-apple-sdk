@@ -68,11 +68,19 @@ jobs:
       - name: Get mP ecosystem version
         id: version
         run: |
-          # Ecosystem version from core SDK podspec (source of truth)
-          VERSION=$(grep 's.version' mParticle-Apple-SDK.podspec | sed 's/.*"\([^"]*\)".*/\1/')
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
-          echo "📌 Ecosystem version: ${VERSION} (tag: v${VERSION})"
+          # TODO: Extract from core SDK podspec when ready for production
+          # VERSION=$(grep 's.version' mParticle-Apple-SDK.podspec | head -1 | sed 's/.*"\([^"]*\)".*/\1/' | tr -d '\r\n ')
+          VERSION="9.0.0"
+          TAG="v${VERSION}"
+          {
+            echo "version<<EOF"
+            echo "$VERSION"
+            echo "EOF"
+            echo "tag<<EOF"
+            echo "$TAG"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          echo "📌 Ecosystem version: ${VERSION} (tag: ${TAG})"
 
       - name: Split kit directory into branch
         id: split
