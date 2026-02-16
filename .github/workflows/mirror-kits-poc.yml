@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout monorepo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0 # Full history required for git subtree split
           ref: ${{ github.ref }}
@@ -39,6 +39,8 @@ jobs:
         run: |
           git config user.name "mParticle Bot"
           git config user.email "developers@mparticle.com"
+          # Required for git fetch from local path (monorepo) when pushing from dest/
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Generate GitHub App Token
         id: generate-token
@@ -48,14 +50,7 @@ jobs:
           private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ env.DEST_ORG }}
           repositories: ${{ matrix.kit.dest_repo }}
-
-      - name: Debug - Test API access
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-        run: |
-          curl -s -w "\nHTTP_CODE:%{http_code}" \
-            -H "Authorization: token ${GITHUB_TOKEN}" \
-            https://api.github.com/repos/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}
+          permission-contents: write
 
       - name: Verify kit directory exists
         run: |
@@ -87,22 +82,23 @@ jobs:
           echo "Recent commits in split branch:"
           git log ${SPLIT_BRANCH} --oneline | head -10
 
-      - name: Push to destination repository
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-        run: |
-          DEST_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
+      - name: Checkout destination repository
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}
+          token: ${{ steps.generate-token.outputs.token }}
+          path: dest
 
+      - name: Push split branch to destination
+        run: |
           echo "🚀 Pushing to destination repository"
           echo "   Repo: ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}"
           echo "   Branch: main"
           echo ""
 
-          git remote add dest-${{ matrix.kit.name }} "${DEST_URL}"
-
-          git push dest-${{ matrix.kit.name }} \
-            ${{ steps.split.outputs.split_branch }}:main \
-            --force
+          # Fetch split branch from monorepo into dest's main, then push
+          git -C dest fetch "$GITHUB_WORKSPACE" ${{ steps.split.outputs.split_branch }}:refs/heads/main
+          git -C dest push origin main --force --verbose
 
           echo ""
           echo "✅ Successfully pushed to ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}"
