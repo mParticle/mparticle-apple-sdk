@@ -227,21 +227,8 @@ jobs:
           echo "Updated Package.swift:"
           head -15 Package.swift
 
-      - name: Upload xcframeworks to S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.MP_IOS_SDK_S3_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.MP_IOS_SDK_S3_SECRET }}
-          AWS_DEFAULT_REGION: ${{ secrets.MP_IOS_SDK_S3_REGION }}
-        run: |
-          aws s3 cp mParticle_Apple_SDK.xcframework.zip s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip
-
-          echo "Uploaded xcframeworks to S3:"
-          echo "  - s3://static.mparticle.com/sdk/ios/v${VERSION}/mParticle_Apple_SDK.xcframework.zip"
-
       - name: Commit version changes
         run: |
-          # trunk format the files before committing
-          trunk fmt
           # Only add the version-related files, exclude build artifacts
           git add \
             CHANGELOG.md \
