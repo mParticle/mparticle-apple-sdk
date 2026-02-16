@@ -1,4 +1,5 @@
 #!/bin/bash
+
 VERSION="$1"
 NOTES="$2"
 
