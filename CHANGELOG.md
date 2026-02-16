@@ -1,3 +1,22 @@
+# [8.43.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.2...v8.43.1) (2026-02-16)
+
+### Bug Fixes
+
+- fix: MPNetworkCommunication background task (#584) ([dfab795e](https://github.com/mParticle/mparticle-apple-sdk/commit/dfab795e2bd68b6eb51f5cb0e5bcf1f551ae1182))
+- fix: PreferredLanguages may be empty (#583) ([5a538c3b](https://github.com/mParticle/mparticle-apple-sdk/commit/5a538c3b3fc67444b76b8e3e756ec3f520c1d23c))
+- fix: endSessionIfTimedOut race condition (#582) ([b2eb508c](https://github.com/mParticle/mparticle-apple-sdk/commit/b2eb508c401c3b189f9f4abcb149066f5959cbea))
+- fix: Potential MPURLRequestBuilder crash (#578) ([70c0076c](https://github.com/mParticle/mparticle-apple-sdk/commit/70c0076c3e4d0f32a1ff4c0ad9c5518d8a1a5fb8))
+- fix: Add Try/Catch to File Write (#581) ([18045c9e](https://github.com/mParticle/mparticle-apple-sdk/commit/18045c9e32c1a01cb954e08dd9a5ee590e6eb096))
+- fix: App crash when JSON serialization of upload dictionary (#579) ([a5e19600](https://github.com/mParticle/mparticle-apple-sdk/commit/a5e196005cbcda92889f4f032498646a5108b58e))
+- fix: Guarantee UserDefaults Thread Safety (#580) ([7baa7b41](https://github.com/mParticle/mparticle-apple-sdk/commit/7baa7b41a3d38b7bbc5afa4364b948b5de09f6f3))
+- fix: background expiration race (#577) ([9d97bd32](https://github.com/mParticle/mparticle-apple-sdk/commit/9d97bd32fee29e25cb748c1ade4af1c933fa949a))
+- fix: Add Brackets Thread Safety Tests (#573) ([0d831cc5](https://github.com/mParticle/mparticle-apple-sdk/commit/0d831cc522c38834081483dce8428a1737ce8b1e))
+- fix: Thread-safe access to currentUser to prevent crash during kit replay (#576) ([a3ba57e8](https://github.com/mParticle/mparticle-apple-sdk/commit/a3ba57e860c68552c2d6297f7b8deb04ac09fe95))
+- fix: app crash from [MPUpload description] (#572) ([91c0c5d4](https://github.com/mParticle/mparticle-apple-sdk/commit/91c0c5d4880e064fcb07569283fddb886ce1eb33))
+- fix: MPURLRequestBuilder build crash (#575) ([604afeef](https://github.com/mParticle/mparticle-apple-sdk/commit/604afeefdfe32e5c2785cc3404c64941fcfda847))
+- fix: Mitigate Thread-safety of DateFormatter (#574) ([7b36691d](https://github.com/mParticle/mparticle-apple-sdk/commit/7b36691d5fb50739da8e17b76cdba127caefaa19))
+- fix: Use Defensive Copy for ActiveKitsRegistry (#571) ([e5d5e273](https://github.com/mParticle/mparticle-apple-sdk/commit/e5d5e27313bd6445ff491590168ab9718f05b86e))
+
 # [8.42.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.1...v8.42.2) (2026-02-11)
 
 ### Features
