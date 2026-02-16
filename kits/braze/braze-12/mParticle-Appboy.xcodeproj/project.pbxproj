@@ -1,0 +1,981 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		351557782F43A6AF006096E1 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = 351557772F43A6AF006096E1 /* mParticle-Apple-SDK */; };
+		3515577A2F43A6CA006096E1 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = 351557792F43A6CA006096E1 /* mParticle-Apple-SDK */; };
+		531861FF2A13E147006FFE90 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531861FE2A13E147006FFE90 /* AppDelegate.swift */; };
+		531862032A13E147006FFE90 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531862022A13E147006FFE90 /* ViewController.swift */; };
+		531862062A13E147006FFE90 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 531862042A13E147006FFE90 /* Main.storyboard */; };
+		531862082A13E14A006FFE90 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 531862072A13E14A006FFE90 /* Assets.xcassets */; };
+		5318620B2A13E14A006FFE90 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 531862092A13E14A006FFE90 /* LaunchScreen.storyboard */; };
+		5387EC002A18050500219E89 /* BrazeKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5387EBFF2A18050500219E89 /* BrazeKit */; };
+		5387EC022A18051200219E89 /* BrazeKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5387EC012A18051200219E89 /* BrazeKit */; };
+		539B2E952A13D62200C8339D /* OCMock in Frameworks */ = {isa = PBXBuildFile; productRef = 539B2E942A13D62200C8339D /* OCMock */; };
+		539B2E9D2A13D69F00C8339D /* BrazeKitCompat in Frameworks */ = {isa = PBXBuildFile; productRef = 539B2E9C2A13D69F00C8339D /* BrazeKitCompat */; };
+		539B2E9F2A13D69F00C8339D /* BrazeUI in Frameworks */ = {isa = PBXBuildFile; productRef = 539B2E9E2A13D69F00C8339D /* BrazeUI */; };
+		539B2EA12A13D6AB00C8339D /* BrazeKitCompat in Frameworks */ = {isa = PBXBuildFile; productRef = 539B2EA02A13D6AB00C8339D /* BrazeKitCompat */; };
+		D31A98A92153F73400358293 /* mParticle_AppboyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D31A98A82153F73400358293 /* mParticle_AppboyTests.m */; };
+		D31A98AB2153F73400358293 /* mParticle_Appboy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB94016C1CB703F2007ABB18 /* mParticle_Appboy.framework */; };
+		D34423302B960F44006CD046 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D344232F2B960F44006CD046 /* PrivacyInfo.xcprivacy */; };
+		D34423312B960F44006CD046 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D344232F2B960F44006CD046 /* PrivacyInfo.xcprivacy */; };
+		DB76F1CF25D2E71D00CAB3EB /* MPKitAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CB25D2E71D00CAB3EB /* MPKitAppboy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB76F1D025D2E71D00CAB3EB /* mParticle_Appboy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CC25D2E71D00CAB3EB /* mParticle_Appboy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB76F1D125D2E71D00CAB3EB /* MPKitAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */; };
+		DB76F1D225D2E71D00CAB3EB /* MPKitAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */; };
+		DB76F1DB25D2E73700CAB3EB /* MPKitAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */; };
+		DB76F1DF25D2E74900CAB3EB /* MPKitAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CB25D2E71D00CAB3EB /* MPKitAppboy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DBDEDD9C209B8FD600DD3B9B /* mParticle_Appboy_tvOS.h in Headers */ = {isa = PBXBuildFile; fileRef = DBDEDD9A209B8FD600DD3B9B /* mParticle_Appboy_tvOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		531862102A13E17D006FFE90 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DB9401631CB703F2007ABB18 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 531861FB2A13E147006FFE90;
+			remoteInfo = AppboyTestHost;
+		};
+		D31A98AC2153F73400358293 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DB9401631CB703F2007ABB18 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DB94016B1CB703F2007ABB18;
+			remoteInfo = "mParticle-Appboy";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		531861FC2A13E147006FFE90 /* AppboyTestHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppboyTestHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		531861FE2A13E147006FFE90 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		531862022A13E147006FFE90 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		531862052A13E147006FFE90 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		531862072A13E14A006FFE90 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5318620A2A13E14A006FFE90 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		5318620C2A13E14A006FFE90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D31A98A62153F73400358293 /* mParticle_AppboyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_AppboyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D31A98A82153F73400358293 /* mParticle_AppboyTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mParticle_AppboyTests.m; sourceTree = "<group>"; };
+		D31A98AA2153F73400358293 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D344232F2B960F44006CD046 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DB76F1CB25D2E71D00CAB3EB /* MPKitAppboy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppboy.h; sourceTree = "<group>"; };
+		DB76F1CC25D2E71D00CAB3EB /* mParticle_Appboy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle_Appboy.h; sourceTree = "<group>"; };
+		DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAppboy.m; sourceTree = "<group>"; };
+		DB76F1CE25D2E71D00CAB3EB /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DB94016C1CB703F2007ABB18 /* mParticle_Appboy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Appboy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBDEDD98209B8FD600DD3B9B /* mParticle_Appboy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Appboy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBDEDD9A209B8FD600DD3B9B /* mParticle_Appboy_tvOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Appboy_tvOS.h; sourceTree = "<group>"; };
+		DBDEDD9B209B8FD600DD3B9B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DBDEDDA5209BA36900DD3B9B /* mParticle_Apple_SDK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = mParticle_Apple_SDK.framework; path = Carthage/Build/tvOS/mParticle_Apple_SDK.framework; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		531861F92A13E147006FFE90 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D31A98A32153F73400358293 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				539B2E952A13D62200C8339D /* OCMock in Frameworks */,
+				D31A98AB2153F73400358293 /* mParticle_Appboy.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB9401681CB703F2007ABB18 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5387EC022A18051200219E89 /* BrazeKit in Frameworks */,
+				539B2E9F2A13D69F00C8339D /* BrazeUI in Frameworks */,
+				351557782F43A6AF006096E1 /* mParticle-Apple-SDK in Frameworks */,
+				539B2E9D2A13D69F00C8339D /* BrazeKitCompat in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDD94209B8FD600DD3B9B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				539B2EA12A13D6AB00C8339D /* BrazeKitCompat in Frameworks */,
+				3515577A2F43A6CA006096E1 /* mParticle-Apple-SDK in Frameworks */,
+				5387EC002A18050500219E89 /* BrazeKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		531861FD2A13E147006FFE90 /* AppboyTestHost */ = {
+			isa = PBXGroup;
+			children = (
+				531861FE2A13E147006FFE90 /* AppDelegate.swift */,
+				531862022A13E147006FFE90 /* ViewController.swift */,
+				531862042A13E147006FFE90 /* Main.storyboard */,
+				531862072A13E14A006FFE90 /* Assets.xcassets */,
+				531862092A13E14A006FFE90 /* LaunchScreen.storyboard */,
+				5318620C2A13E14A006FFE90 /* Info.plist */,
+			);
+			path = AppboyTestHost;
+			sourceTree = "<group>";
+		};
+		D31A98A72153F73400358293 /* mParticle_AppboyTests */ = {
+			isa = PBXGroup;
+			children = (
+				D31A98A82153F73400358293 /* mParticle_AppboyTests.m */,
+				D31A98AA2153F73400358293 /* Info.plist */,
+			);
+			path = mParticle_AppboyTests;
+			sourceTree = "<group>";
+		};
+		DB76F1C825D2E71D00CAB3EB /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				DB76F1C925D2E71D00CAB3EB /* mParticle-Appboy */,
+				DB76F1CE25D2E71D00CAB3EB /* Info.plist */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		DB76F1C925D2E71D00CAB3EB /* mParticle-Appboy */ = {
+			isa = PBXGroup;
+			children = (
+				DB76F1CA25D2E71D00CAB3EB /* include */,
+				DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */,
+				D344232F2B960F44006CD046 /* PrivacyInfo.xcprivacy */,
+			);
+			path = "mParticle-Appboy";
+			sourceTree = "<group>";
+		};
+		DB76F1CA25D2E71D00CAB3EB /* include */ = {
+			isa = PBXGroup;
+			children = (
+				DB76F1CB25D2E71D00CAB3EB /* MPKitAppboy.h */,
+				DB76F1CC25D2E71D00CAB3EB /* mParticle_Appboy.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		DB9401621CB703F2007ABB18 = {
+			isa = PBXGroup;
+			children = (
+				DB76F1C825D2E71D00CAB3EB /* Sources */,
+				DBDEDD99209B8FD600DD3B9B /* mParticle-Appboy-tvOS */,
+				D31A98A72153F73400358293 /* mParticle_AppboyTests */,
+				531861FD2A13E147006FFE90 /* AppboyTestHost */,
+				DB94016D1CB703F2007ABB18 /* Products */,
+				DBDEDDA3209BA34E00DD3B9B /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		DB94016D1CB703F2007ABB18 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DB94016C1CB703F2007ABB18 /* mParticle_Appboy.framework */,
+				DBDEDD98209B8FD600DD3B9B /* mParticle_Appboy.framework */,
+				D31A98A62153F73400358293 /* mParticle_AppboyTests.xctest */,
+				531861FC2A13E147006FFE90 /* AppboyTestHost.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DBDEDD99209B8FD600DD3B9B /* mParticle-Appboy-tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				DBDEDD9A209B8FD600DD3B9B /* mParticle_Appboy_tvOS.h */,
+				DBDEDD9B209B8FD600DD3B9B /* Info.plist */,
+			);
+			path = "mParticle-Appboy-tvOS";
+			sourceTree = "<group>";
+		};
+		DBDEDDA3209BA34E00DD3B9B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DBDEDDA5209BA36900DD3B9B /* mParticle_Apple_SDK.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		DB9401691CB703F2007ABB18 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB76F1CF25D2E71D00CAB3EB /* MPKitAppboy.h in Headers */,
+				DB76F1D025D2E71D00CAB3EB /* mParticle_Appboy.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDD95209B8FD600DD3B9B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB76F1DF25D2E74900CAB3EB /* MPKitAppboy.h in Headers */,
+				DBDEDD9C209B8FD600DD3B9B /* mParticle_Appboy_tvOS.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		531861FB2A13E147006FFE90 /* AppboyTestHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5318620D2A13E14A006FFE90 /* Build configuration list for PBXNativeTarget "AppboyTestHost" */;
+			buildPhases = (
+				531861F82A13E147006FFE90 /* Sources */,
+				531861F92A13E147006FFE90 /* Frameworks */,
+				531861FA2A13E147006FFE90 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AppboyTestHost;
+			productName = AppboyTestHost;
+			productReference = 531861FC2A13E147006FFE90 /* AppboyTestHost.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D31A98A52153F73400358293 /* mParticle_AppboyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D31A98B02153F73400358293 /* Build configuration list for PBXNativeTarget "mParticle_AppboyTests" */;
+			buildPhases = (
+				D31A98A22153F73400358293 /* Sources */,
+				D31A98A32153F73400358293 /* Frameworks */,
+				D31A98A42153F73400358293 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				539B2EA52A13D95200C8339D /* PBXTargetDependency */,
+				539B2EA32A13D94E00C8339D /* PBXTargetDependency */,
+				D31A98AD2153F73400358293 /* PBXTargetDependency */,
+				531862112A13E17D006FFE90 /* PBXTargetDependency */,
+			);
+			name = mParticle_AppboyTests;
+			packageProductDependencies = (
+				539B2E942A13D62200C8339D /* OCMock */,
+			);
+			productName = mParticle_AppboyTests;
+			productReference = D31A98A62153F73400358293 /* mParticle_AppboyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DB94016B1CB703F2007ABB18 /* mParticle-Appboy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DB9401741CB703F2007ABB18 /* Build configuration list for PBXNativeTarget "mParticle-Appboy" */;
+			buildPhases = (
+				DB9401671CB703F2007ABB18 /* Sources */,
+				DB9401681CB703F2007ABB18 /* Frameworks */,
+				DB9401691CB703F2007ABB18 /* Headers */,
+				DB94016A1CB703F2007ABB18 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-Appboy";
+			packageProductDependencies = (
+				539B2E9C2A13D69F00C8339D /* BrazeKitCompat */,
+				539B2E9E2A13D69F00C8339D /* BrazeUI */,
+				5387EC012A18051200219E89 /* BrazeKit */,
+				351557772F43A6AF006096E1 /* mParticle-Apple-SDK */,
+			);
+			productName = "mParticle-Appboy";
+			productReference = DB94016C1CB703F2007ABB18 /* mParticle_Appboy.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		DBDEDD97209B8FD600DD3B9B /* mParticle-Appboy-tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DBDEDD9F209B8FD600DD3B9B /* Build configuration list for PBXNativeTarget "mParticle-Appboy-tvOS" */;
+			buildPhases = (
+				DBDEDD93209B8FD600DD3B9B /* Sources */,
+				DBDEDD94209B8FD600DD3B9B /* Frameworks */,
+				DBDEDD95209B8FD600DD3B9B /* Headers */,
+				DBDEDD96209B8FD600DD3B9B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-Appboy-tvOS";
+			packageProductDependencies = (
+				539B2EA02A13D6AB00C8339D /* BrazeKitCompat */,
+				5387EBFF2A18050500219E89 /* BrazeKit */,
+				351557792F43A6CA006096E1 /* mParticle-Apple-SDK */,
+			);
+			productName = "mParticle-Appboy-tvOS";
+			productReference = DBDEDD98209B8FD600DD3B9B /* mParticle_Appboy.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DB9401631CB703F2007ABB18 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1430;
+				LastUpgradeCheck = 1200;
+				ORGANIZATIONNAME = mParticle;
+				TargetAttributes = {
+					531861FB2A13E147006FFE90 = {
+						CreatedOnToolsVersion = 14.3;
+					};
+					D31A98A52153F73400358293 = {
+						CreatedOnToolsVersion = 10.0;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 531861FB2A13E147006FFE90;
+					};
+					DB94016B1CB703F2007ABB18 = {
+						CreatedOnToolsVersion = 7.3;
+						DevelopmentTeam = Q948K5LXGZ;
+					};
+					DBDEDD97209B8FD600DD3B9B = {
+						CreatedOnToolsVersion = 9.3;
+						DevelopmentTeam = DLD43Y3TRP;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = DB9401661CB703F2007ABB18 /* Build configuration list for PBXProject "mParticle-Appboy" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DB9401621CB703F2007ABB18;
+			packageReferences = (
+				539B2E932A13D62200C8339D /* XCRemoteSwiftPackageReference "ocmock" */,
+				539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */,
+				351557762F43A6AF006096E1 /* XCLocalSwiftPackageReference "../../../../mparticle-apple-sdk" */,
+			);
+			productRefGroup = DB94016D1CB703F2007ABB18 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DB94016B1CB703F2007ABB18 /* mParticle-Appboy */,
+				DBDEDD97209B8FD600DD3B9B /* mParticle-Appboy-tvOS */,
+				D31A98A52153F73400358293 /* mParticle_AppboyTests */,
+				531861FB2A13E147006FFE90 /* AppboyTestHost */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		531861FA2A13E147006FFE90 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5318620B2A13E14A006FFE90 /* LaunchScreen.storyboard in Resources */,
+				531862082A13E14A006FFE90 /* Assets.xcassets in Resources */,
+				531862062A13E147006FFE90 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D31A98A42153F73400358293 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB94016A1CB703F2007ABB18 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D34423302B960F44006CD046 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDD96209B8FD600DD3B9B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D34423312B960F44006CD046 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		531861F82A13E147006FFE90 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				531862032A13E147006FFE90 /* ViewController.swift in Sources */,
+				531861FF2A13E147006FFE90 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D31A98A22153F73400358293 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB76F1D225D2E71D00CAB3EB /* MPKitAppboy.m in Sources */,
+				D31A98A92153F73400358293 /* mParticle_AppboyTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB9401671CB703F2007ABB18 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB76F1D125D2E71D00CAB3EB /* MPKitAppboy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDD93209B8FD600DD3B9B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB76F1DB25D2E73700CAB3EB /* MPKitAppboy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		531862112A13E17D006FFE90 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 531861FB2A13E147006FFE90 /* AppboyTestHost */;
+			targetProxy = 531862102A13E17D006FFE90 /* PBXContainerItemProxy */;
+		};
+		539B2EA32A13D94E00C8339D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 539B2EA22A13D94E00C8339D /* BrazeKitCompat */;
+		};
+		539B2EA52A13D95200C8339D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 539B2EA42A13D95200C8339D /* BrazeUI */;
+		};
+		D31A98AD2153F73400358293 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DB94016B1CB703F2007ABB18 /* mParticle-Appboy */;
+			targetProxy = D31A98AC2153F73400358293 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		531862042A13E147006FFE90 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				531862052A13E147006FFE90 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		531862092A13E14A006FFE90 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5318620A2A13E14A006FFE90 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		5318620E2A13E14A006FFE90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AppboyTestHost/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mparticle.AppboyTestHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Debug;
+		};
+		5318620F2A13E14A006FFE90 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AppboyTestHost/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				MARKETING_VERSION = 1.0;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mparticle.AppboyTestHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Release;
+		};
+		D31A98AE2153F73400358293 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = mParticle_AppboyTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-AppboyTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AppboyTestHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AppboyTestHost";
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Debug;
+		};
+		D31A98AF2153F73400358293 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = mParticle_AppboyTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-AppboyTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AppboyTestHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/AppboyTestHost";
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Release;
+		};
+		DB9401721CB703F2007ABB18 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 11.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		DB9401731CB703F2007ABB18 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 11.0;
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		DB9401751CB703F2007ABB18 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Debug;
+		};
+		DB9401761CB703F2007ABB18 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Release;
+		};
+		DBDEDD9D209B8FD600DD3B9B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = DLD43Y3TRP;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "mParticle-Appboy-tvOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-all_load",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy-tvOS";
+				PRODUCT_NAME = mParticle_Appboy;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
+			};
+			name = Debug;
+		};
+		DBDEDD9E209B8FD600DD3B9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = DLD43Y3TRP;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "mParticle-Appboy-tvOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-all_load",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy-tvOS";
+				PRODUCT_NAME = mParticle_Appboy;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5318620D2A13E14A006FFE90 /* Build configuration list for PBXNativeTarget "AppboyTestHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5318620E2A13E14A006FFE90 /* Debug */,
+				5318620F2A13E14A006FFE90 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D31A98B02153F73400358293 /* Build configuration list for PBXNativeTarget "mParticle_AppboyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D31A98AE2153F73400358293 /* Debug */,
+				D31A98AF2153F73400358293 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DB9401661CB703F2007ABB18 /* Build configuration list for PBXProject "mParticle-Appboy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB9401721CB703F2007ABB18 /* Debug */,
+				DB9401731CB703F2007ABB18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DB9401741CB703F2007ABB18 /* Build configuration list for PBXNativeTarget "mParticle-Appboy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB9401751CB703F2007ABB18 /* Debug */,
+				DB9401761CB703F2007ABB18 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DBDEDD9F209B8FD600DD3B9B /* Build configuration list for PBXNativeTarget "mParticle-Appboy-tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DBDEDD9D209B8FD600DD3B9B /* Debug */,
+				DBDEDD9E209B8FD600DD3B9B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		351557762F43A6AF006096E1 /* XCLocalSwiftPackageReference "../../../../mparticle-apple-sdk" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../../mparticle-apple-sdk";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		539B2E932A13D62200C8339D /* XCRemoteSwiftPackageReference "ocmock" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/erikdoe/ocmock";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/braze-inc/braze-swift-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		351557772F43A6AF006096E1 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "mParticle-Apple-SDK";
+		};
+		351557792F43A6CA006096E1 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 351557762F43A6AF006096E1 /* XCLocalSwiftPackageReference "../../../../mparticle-apple-sdk" */;
+			productName = "mParticle-Apple-SDK";
+		};
+		5387EBFF2A18050500219E89 /* BrazeKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */;
+			productName = BrazeKit;
+		};
+		5387EC012A18051200219E89 /* BrazeKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */;
+			productName = BrazeKit;
+		};
+		539B2E942A13D62200C8339D /* OCMock */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 539B2E932A13D62200C8339D /* XCRemoteSwiftPackageReference "ocmock" */;
+			productName = OCMock;
+		};
+		539B2E9C2A13D69F00C8339D /* BrazeKitCompat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */;
+			productName = BrazeKitCompat;
+		};
+		539B2E9E2A13D69F00C8339D /* BrazeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */;
+			productName = BrazeUI;
+		};
+		539B2EA02A13D6AB00C8339D /* BrazeKitCompat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */;
+			productName = BrazeKitCompat;
+		};
+		539B2EA22A13D94E00C8339D /* BrazeKitCompat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */;
+			productName = BrazeKitCompat;
+		};
+		539B2EA42A13D95200C8339D /* BrazeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 539B2E9B2A13D69F00C8339D /* XCRemoteSwiftPackageReference "braze-swift-sdk" */;
+			productName = BrazeUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = DB9401631CB703F2007ABB18 /* Project object */;
+}

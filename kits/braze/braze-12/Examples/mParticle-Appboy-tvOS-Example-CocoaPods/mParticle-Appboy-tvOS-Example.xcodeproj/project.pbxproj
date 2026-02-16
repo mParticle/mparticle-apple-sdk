@@ -1,0 +1,673 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		17535475A2413657C2C1E785 /* libPods-mParticle-Appboy-tvOS-ExampleTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0C82FBA52E1027516742AD /* libPods-mParticle-Appboy-tvOS-ExampleTests.a */; };
+		B577EC88F9901EAC4D5558DE /* libPods-mParticle-Appboy-tvOS-ExampleUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B7870024D5801479AF064BAA /* libPods-mParticle-Appboy-tvOS-ExampleUITests.a */; };
+		DBDEDDB6209BAAC000DD3B9B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DBDEDDB5209BAAC000DD3B9B /* AppDelegate.m */; };
+		DBDEDDB9209BAAC000DD3B9B /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DBDEDDB8209BAAC000DD3B9B /* ViewController.m */; };
+		DBDEDDBC209BAAC000DD3B9B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DBDEDDBA209BAAC000DD3B9B /* Main.storyboard */; };
+		DBDEDDBE209BAAC200DD3B9B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DBDEDDBD209BAAC200DD3B9B /* Assets.xcassets */; };
+		DBDEDDC1209BAAC200DD3B9B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DBDEDDC0209BAAC200DD3B9B /* main.m */; };
+		DBDEDDCB209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBDEDDCA209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleTests.m */; };
+		DBDEDDD6209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBDEDDD5209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleUITests.m */; };
+		E16C876314712579B07EFBDE /* libPods-mParticle-Appboy-tvOS-Example.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 10B9F0B06F3654507683F9D3 /* libPods-mParticle-Appboy-tvOS-Example.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DBDEDDC7209BAAC200DD3B9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DBDEDDA9209BAAC000DD3B9B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DBDEDDB0209BAAC000DD3B9B;
+			remoteInfo = "mParticle-Appboy-tvOS-Example";
+		};
+		DBDEDDD2209BAAC200DD3B9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DBDEDDA9209BAAC000DD3B9B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DBDEDDB0209BAAC000DD3B9B;
+			remoteInfo = "mParticle-Appboy-tvOS-Example";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0A5A1A7877715F30E127818E /* Pods-mParticle-Appboy-tvOS-ExampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticle-Appboy-tvOS-ExampleTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-mParticle-Appboy-tvOS-ExampleTests/Pods-mParticle-Appboy-tvOS-ExampleTests.release.xcconfig"; sourceTree = "<group>"; };
+		10B9F0B06F3654507683F9D3 /* libPods-mParticle-Appboy-tvOS-Example.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-mParticle-Appboy-tvOS-Example.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		23DACD9BFFDB7DB5EB8C3840 /* Pods-mParticle-Appboy-tvOS-ExampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticle-Appboy-tvOS-ExampleTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-mParticle-Appboy-tvOS-ExampleTests/Pods-mParticle-Appboy-tvOS-ExampleTests.debug.xcconfig"; sourceTree = "<group>"; };
+		38243F334A614C276053E3E9 /* Pods-mParticle-Appboy-tvOS-ExampleUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticle-Appboy-tvOS-ExampleUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-mParticle-Appboy-tvOS-ExampleUITests/Pods-mParticle-Appboy-tvOS-ExampleUITests.release.xcconfig"; sourceTree = "<group>"; };
+		4550D0252B2DED98A6F071B5 /* Pods-mParticle-Appboy-tvOS-Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticle-Appboy-tvOS-Example.debug.xcconfig"; path = "Pods/Target Support Files/Pods-mParticle-Appboy-tvOS-Example/Pods-mParticle-Appboy-tvOS-Example.debug.xcconfig"; sourceTree = "<group>"; };
+		9A0C82FBA52E1027516742AD /* libPods-mParticle-Appboy-tvOS-ExampleTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-mParticle-Appboy-tvOS-ExampleTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A09B15360B87FF411E2ACE43 /* Pods-mParticle-Appboy-tvOS-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticle-Appboy-tvOS-Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-mParticle-Appboy-tvOS-Example/Pods-mParticle-Appboy-tvOS-Example.release.xcconfig"; sourceTree = "<group>"; };
+		A2C8A5663E5E53DDF96C3294 /* Pods-mParticle-Appboy-tvOS-ExampleUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticle-Appboy-tvOS-ExampleUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-mParticle-Appboy-tvOS-ExampleUITests/Pods-mParticle-Appboy-tvOS-ExampleUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		B7870024D5801479AF064BAA /* libPods-mParticle-Appboy-tvOS-ExampleUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-mParticle-Appboy-tvOS-ExampleUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBDEDDB1209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "mParticle-Appboy-tvOS-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBDEDDB4209BAAC000DD3B9B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		DBDEDDB5209BAAC000DD3B9B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		DBDEDDB7209BAAC000DD3B9B /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		DBDEDDB8209BAAC000DD3B9B /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		DBDEDDBB209BAAC000DD3B9B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		DBDEDDBD209BAAC200DD3B9B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DBDEDDBF209BAAC200DD3B9B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DBDEDDC0209BAAC200DD3B9B /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		DBDEDDC6209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-Appboy-tvOS-ExampleTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBDEDDCA209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mParticle_Appboy_tvOS_ExampleTests.m; sourceTree = "<group>"; };
+		DBDEDDCC209BAAC200DD3B9B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DBDEDDD1209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-Appboy-tvOS-ExampleUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBDEDDD5209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mParticle_Appboy_tvOS_ExampleUITests.m; sourceTree = "<group>"; };
+		DBDEDDD7209BAAC200DD3B9B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DBDEDDAE209BAAC000DD3B9B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E16C876314712579B07EFBDE /* libPods-mParticle-Appboy-tvOS-Example.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDDC3209BAAC200DD3B9B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17535475A2413657C2C1E785 /* libPods-mParticle-Appboy-tvOS-ExampleTests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDDCE209BAAC200DD3B9B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B577EC88F9901EAC4D5558DE /* libPods-mParticle-Appboy-tvOS-ExampleUITests.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1EA442DBF7A01F2FB0710150 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				4550D0252B2DED98A6F071B5 /* Pods-mParticle-Appboy-tvOS-Example.debug.xcconfig */,
+				A09B15360B87FF411E2ACE43 /* Pods-mParticle-Appboy-tvOS-Example.release.xcconfig */,
+				23DACD9BFFDB7DB5EB8C3840 /* Pods-mParticle-Appboy-tvOS-ExampleTests.debug.xcconfig */,
+				0A5A1A7877715F30E127818E /* Pods-mParticle-Appboy-tvOS-ExampleTests.release.xcconfig */,
+				A2C8A5663E5E53DDF96C3294 /* Pods-mParticle-Appboy-tvOS-ExampleUITests.debug.xcconfig */,
+				38243F334A614C276053E3E9 /* Pods-mParticle-Appboy-tvOS-ExampleUITests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		4292DB86733A67864F4E47AE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				10B9F0B06F3654507683F9D3 /* libPods-mParticle-Appboy-tvOS-Example.a */,
+				9A0C82FBA52E1027516742AD /* libPods-mParticle-Appboy-tvOS-ExampleTests.a */,
+				B7870024D5801479AF064BAA /* libPods-mParticle-Appboy-tvOS-ExampleUITests.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DBDEDDA8209BAAC000DD3B9B = {
+			isa = PBXGroup;
+			children = (
+				DBDEDDB3209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example */,
+				DBDEDDC9209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleTests */,
+				DBDEDDD4209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleUITests */,
+				DBDEDDB2209BAAC000DD3B9B /* Products */,
+				1EA442DBF7A01F2FB0710150 /* Pods */,
+				4292DB86733A67864F4E47AE /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		DBDEDDB2209BAAC000DD3B9B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DBDEDDB1209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example.app */,
+				DBDEDDC6209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleTests.xctest */,
+				DBDEDDD1209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DBDEDDB3209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example */ = {
+			isa = PBXGroup;
+			children = (
+				DBDEDDB4209BAAC000DD3B9B /* AppDelegate.h */,
+				DBDEDDB5209BAAC000DD3B9B /* AppDelegate.m */,
+				DBDEDDB7209BAAC000DD3B9B /* ViewController.h */,
+				DBDEDDB8209BAAC000DD3B9B /* ViewController.m */,
+				DBDEDDBA209BAAC000DD3B9B /* Main.storyboard */,
+				DBDEDDBD209BAAC200DD3B9B /* Assets.xcassets */,
+				DBDEDDBF209BAAC200DD3B9B /* Info.plist */,
+				DBDEDDC0209BAAC200DD3B9B /* main.m */,
+			);
+			path = "mParticle-Appboy-tvOS-Example";
+			sourceTree = "<group>";
+		};
+		DBDEDDC9209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleTests */ = {
+			isa = PBXGroup;
+			children = (
+				DBDEDDCA209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleTests.m */,
+				DBDEDDCC209BAAC200DD3B9B /* Info.plist */,
+			);
+			path = "mParticle-Appboy-tvOS-ExampleTests";
+			sourceTree = "<group>";
+		};
+		DBDEDDD4209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleUITests */ = {
+			isa = PBXGroup;
+			children = (
+				DBDEDDD5209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleUITests.m */,
+				DBDEDDD7209BAAC200DD3B9B /* Info.plist */,
+			);
+			path = "mParticle-Appboy-tvOS-ExampleUITests";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DBDEDDB0209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DBDEDDDA209BAAC200DD3B9B /* Build configuration list for PBXNativeTarget "mParticle-Appboy-tvOS-Example" */;
+			buildPhases = (
+				1716C4EADAF842D0634982C9 /* [CP] Check Pods Manifest.lock */,
+				DBDEDDAD209BAAC000DD3B9B /* Sources */,
+				DBDEDDAE209BAAC000DD3B9B /* Frameworks */,
+				DBDEDDAF209BAAC000DD3B9B /* Resources */,
+				872CFDFE9BF7619112AADFB1 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-Appboy-tvOS-Example";
+			productName = "mParticle-Appboy-tvOS-Example";
+			productReference = DBDEDDB1209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DBDEDDC5209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DBDEDDDD209BAAC200DD3B9B /* Build configuration list for PBXNativeTarget "mParticle-Appboy-tvOS-ExampleTests" */;
+			buildPhases = (
+				29D5CFFE2FC2EB1A86219020 /* [CP] Check Pods Manifest.lock */,
+				DBDEDDC2209BAAC200DD3B9B /* Sources */,
+				DBDEDDC3209BAAC200DD3B9B /* Frameworks */,
+				DBDEDDC4209BAAC200DD3B9B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DBDEDDC8209BAAC200DD3B9B /* PBXTargetDependency */,
+			);
+			name = "mParticle-Appboy-tvOS-ExampleTests";
+			productName = "mParticle-Appboy-tvOS-ExampleTests";
+			productReference = DBDEDDC6209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DBDEDDD0209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DBDEDDE0209BAAC200DD3B9B /* Build configuration list for PBXNativeTarget "mParticle-Appboy-tvOS-ExampleUITests" */;
+			buildPhases = (
+				D5DBAE90505F00E3A3FC886B /* [CP] Check Pods Manifest.lock */,
+				DBDEDDCD209BAAC200DD3B9B /* Sources */,
+				DBDEDDCE209BAAC200DD3B9B /* Frameworks */,
+				DBDEDDCF209BAAC200DD3B9B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DBDEDDD3209BAAC200DD3B9B /* PBXTargetDependency */,
+			);
+			name = "mParticle-Appboy-tvOS-ExampleUITests";
+			productName = "mParticle-Appboy-tvOS-ExampleUITests";
+			productReference = DBDEDDD1209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DBDEDDA9209BAAC000DD3B9B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0930;
+				ORGANIZATIONNAME = mParticle;
+				TargetAttributes = {
+					DBDEDDB0209BAAC000DD3B9B = {
+						CreatedOnToolsVersion = 9.3;
+					};
+					DBDEDDC5209BAAC200DD3B9B = {
+						CreatedOnToolsVersion = 9.3;
+						TestTargetID = DBDEDDB0209BAAC000DD3B9B;
+					};
+					DBDEDDD0209BAAC200DD3B9B = {
+						CreatedOnToolsVersion = 9.3;
+						TestTargetID = DBDEDDB0209BAAC000DD3B9B;
+					};
+				};
+			};
+			buildConfigurationList = DBDEDDAC209BAAC000DD3B9B /* Build configuration list for PBXProject "mParticle-Appboy-tvOS-Example" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DBDEDDA8209BAAC000DD3B9B;
+			productRefGroup = DBDEDDB2209BAAC000DD3B9B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DBDEDDB0209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example */,
+				DBDEDDC5209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleTests */,
+				DBDEDDD0209BAAC200DD3B9B /* mParticle-Appboy-tvOS-ExampleUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DBDEDDAF209BAAC000DD3B9B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DBDEDDBE209BAAC200DD3B9B /* Assets.xcassets in Resources */,
+				DBDEDDBC209BAAC000DD3B9B /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDDC4209BAAC200DD3B9B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDDCF209BAAC200DD3B9B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		1716C4EADAF842D0634982C9 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-mParticle-Appboy-tvOS-Example-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		29D5CFFE2FC2EB1A86219020 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-mParticle-Appboy-tvOS-ExampleTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		872CFDFE9BF7619112AADFB1 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/Pods/Target Support Files/Pods-mParticle-Appboy-tvOS-Example/Pods-mParticle-Appboy-tvOS-Example-frameworks.sh",
+				"${PODS_ROOT}/Appboy-tvOS-SDK/Appboy-tvOS-SDK/AppboyTVOSKit.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AppboyTVOSKit.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-mParticle-Appboy-tvOS-Example/Pods-mParticle-Appboy-tvOS-Example-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D5DBAE90505F00E3A3FC886B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-mParticle-Appboy-tvOS-ExampleUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DBDEDDAD209BAAC000DD3B9B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DBDEDDB9209BAAC000DD3B9B /* ViewController.m in Sources */,
+				DBDEDDC1209BAAC200DD3B9B /* main.m in Sources */,
+				DBDEDDB6209BAAC000DD3B9B /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDDC2209BAAC200DD3B9B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DBDEDDCB209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBDEDDCD209BAAC200DD3B9B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DBDEDDD6209BAAC200DD3B9B /* mParticle_Appboy_tvOS_ExampleUITests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DBDEDDC8209BAAC200DD3B9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DBDEDDB0209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example */;
+			targetProxy = DBDEDDC7209BAAC200DD3B9B /* PBXContainerItemProxy */;
+		};
+		DBDEDDD3209BAAC200DD3B9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DBDEDDB0209BAAC000DD3B9B /* mParticle-Appboy-tvOS-Example */;
+			targetProxy = DBDEDDD2209BAAC200DD3B9B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		DBDEDDBA209BAAC000DD3B9B /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DBDEDDBB209BAAC000DD3B9B /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		DBDEDDD8209BAAC200DD3B9B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = appletvos;
+				TVOS_DEPLOYMENT_TARGET = 11.3;
+			};
+			name = Debug;
+		};
+		DBDEDDD9209BAAC200DD3B9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = appletvos;
+				TVOS_DEPLOYMENT_TARGET = 11.3;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		DBDEDDDB209BAAC200DD3B9B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 4550D0252B2DED98A6F071B5 /* Pods-mParticle-Appboy-tvOS-Example.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Q948K5LXGZ;
+				INFOPLIST_FILE = "mParticle-Appboy-tvOS-Example/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy-tvOS-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
+		};
+		DBDEDDDC209BAAC200DD3B9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A09B15360B87FF411E2ACE43 /* Pods-mParticle-Appboy-tvOS-Example.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Q948K5LXGZ;
+				INFOPLIST_FILE = "mParticle-Appboy-tvOS-Example/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy-tvOS-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Release;
+		};
+		DBDEDDDE209BAAC200DD3B9B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 23DACD9BFFDB7DB5EB8C3840 /* Pods-mParticle-Appboy-tvOS-ExampleTests.debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DLD43Y3TRP;
+				INFOPLIST_FILE = "mParticle-Appboy-tvOS-ExampleTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy-tvOS-ExampleTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mParticle-Appboy-tvOS-Example.app/mParticle-Appboy-tvOS-Example";
+			};
+			name = Debug;
+		};
+		DBDEDDDF209BAAC200DD3B9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0A5A1A7877715F30E127818E /* Pods-mParticle-Appboy-tvOS-ExampleTests.release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DLD43Y3TRP;
+				INFOPLIST_FILE = "mParticle-Appboy-tvOS-ExampleTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy-tvOS-ExampleTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mParticle-Appboy-tvOS-Example.app/mParticle-Appboy-tvOS-Example";
+			};
+			name = Release;
+		};
+		DBDEDDE1209BAAC200DD3B9B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A2C8A5663E5E53DDF96C3294 /* Pods-mParticle-Appboy-tvOS-ExampleUITests.debug.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DLD43Y3TRP;
+				INFOPLIST_FILE = "mParticle-Appboy-tvOS-ExampleUITests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy-tvOS-ExampleUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_TARGET_NAME = "mParticle-Appboy-tvOS-Example";
+			};
+			name = Debug;
+		};
+		DBDEDDE2209BAAC200DD3B9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 38243F334A614C276053E3E9 /* Pods-mParticle-Appboy-tvOS-ExampleUITests.release.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = DLD43Y3TRP;
+				INFOPLIST_FILE = "mParticle-Appboy-tvOS-ExampleUITests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Appboy-tvOS-ExampleUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = 3;
+				TEST_TARGET_NAME = "mParticle-Appboy-tvOS-Example";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DBDEDDAC209BAAC000DD3B9B /* Build configuration list for PBXProject "mParticle-Appboy-tvOS-Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DBDEDDD8209BAAC200DD3B9B /* Debug */,
+				DBDEDDD9209BAAC200DD3B9B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DBDEDDDA209BAAC200DD3B9B /* Build configuration list for PBXNativeTarget "mParticle-Appboy-tvOS-Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DBDEDDDB209BAAC200DD3B9B /* Debug */,
+				DBDEDDDC209BAAC200DD3B9B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DBDEDDDD209BAAC200DD3B9B /* Build configuration list for PBXNativeTarget "mParticle-Appboy-tvOS-ExampleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DBDEDDDE209BAAC200DD3B9B /* Debug */,
+				DBDEDDDF209BAAC200DD3B9B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DBDEDDE0209BAAC200DD3B9B /* Build configuration list for PBXNativeTarget "mParticle-Appboy-tvOS-ExampleUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DBDEDDE1209BAAC200DD3B9B /* Debug */,
+				DBDEDDE2209BAAC200DD3B9B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DBDEDDA9209BAAC000DD3B9B /* Project object */;
+}
