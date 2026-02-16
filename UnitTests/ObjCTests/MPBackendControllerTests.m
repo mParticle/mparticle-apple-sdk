@@ -2466,6 +2466,15 @@
     // does not mutate session properties directly on that thread, but instead
     // dispatches the work to the message queue.
     
+    // Enable automatic session tracking (required for endSessionIfTimedOut to execute).
+    // Must use startWithOptions because MParticle.sharedInstance.automaticSessionTracking
+    // reads from the instance ivar, not stateMachine.
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    options.automaticSessionTracking = YES;
+    options.shouldBeginSession = NO;
+    options.proxyAppDelegate = NO;
+    [[MParticle sharedInstance] startWithOptions:options];
+    
     // 1. Set up a session and make it eligible for timeout
     dispatch_sync(messageQueue, ^{
         [self.backendController beginSessionWithIsManual:NO date:[NSDate date]];
@@ -2511,6 +2520,15 @@
 - (void)testConcurrentEndSessionIfTimedOutDoesNotCrash {
     // Verify that calling endSessionIfTimedOut simultaneously from a background
     // thread and the message queue does not crash.
+    
+    // Enable automatic session tracking (required for endSessionIfTimedOut to execute).
+    // Must use startWithOptions because MParticle.sharedInstance.automaticSessionTracking
+    // reads from the instance ivar, not stateMachine.
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    options.automaticSessionTracking = YES;
+    options.shouldBeginSession = NO;
+    options.proxyAppDelegate = NO;
+    [[MParticle sharedInstance] startWithOptions:options];
     
     // 1. Set up a session eligible for timeout
     dispatch_sync(messageQueue, ^{
