@@ -20,7 +20,7 @@ let package = Package(
         .package(
             url: "https://github.com/braze-inc/braze-swift-sdk",
             .upToNextMajor(from: "12.0.0")
-        ),
+        )
     ],
     targets: [
         .target(
@@ -29,7 +29,7 @@ let package = Package(
                 .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
                 .product(name: "BrazeUI", package: "braze-swift-sdk", condition: .when(platforms: [.iOS])),
                 .product(name: "BrazeKit", package: "braze-swift-sdk"),
-                .product(name: "BrazeKitCompat", package: "braze-swift-sdk"),
+                .product(name: "BrazeKitCompat", package: "braze-swift-sdk")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")]
         )

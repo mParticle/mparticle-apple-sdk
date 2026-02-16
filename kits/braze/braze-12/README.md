@@ -1,18 +1,18 @@
-## Braze (formerly Appboy) Kit Integration
+# Braze (formerly Appboy) Kit Integration
 
 This repository contains the [Braze](https://www.braze.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk) using the latest [Braze Swift SDK](https://github.com/braze-inc/braze-swift-sdk/).
 
-### Adding the integration
+## Adding the integration
 
 1. Add the kit dependency using SPM or add it to your app's Podfile or Cartfile:
 
-   ```
+   ```ruby
    pod 'mParticle-Appboy', '~> 8.0'
    ```
 
    OR
 
-   ```
+   ```swift
    github "mparticle-integrations/mparticle-apple-integration-appboy" ~> 8.0
    ```
 
@@ -24,10 +24,10 @@ This repository contains the [Braze](https://www.braze.com) integration for the 
 
 4. Reference mParticle's integration docs below to enable the integration.
 
-### Documentation
+## Documentation
 
 [Braze integration](https://docs.mparticle.com/integrations/braze/event/)
 
-### License
+## License
 
 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
