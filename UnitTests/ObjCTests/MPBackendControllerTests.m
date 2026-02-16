@@ -125,10 +125,13 @@
 
 - (void)setUp {
     [super setUp];
-    messageQueue = [MParticle messageQueue];
     
     [MPPersistenceController_PRIVATE setMpid:@1];
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
+    
+    // Must read messageQueue AFTER [MParticle sharedInstance] triggers singleton
+    // recreation, otherwise we get the old executor's queue.
+    messageQueue = [MParticle messageQueue];
     
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
