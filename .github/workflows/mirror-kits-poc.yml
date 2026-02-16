@@ -12,19 +12,21 @@ on:
 jobs:
   mirror-kits:
     runs-on: ubuntu-latest
+    env:
+      DEST_ORG: mparticle-integrations
     strategy:
       fail-fast: false
       matrix:
         kit:
           - name: braze-12
             local_path: kits/braze/braze-12
-            dest_repo: mparticle-integrations/mparticle-apple-integration-braze-12
+            dest_repo: mparticle-apple-integration-braze-12
     #          - name: braze-13
     #            local_path: kits/braze/braze-13
-    #            dest_repo: mparticle-integrations/mparticle-apple-integration-braze-13
+    #            dest_repo: mparticle-apple-integration-braze-13
     #          - name: braze-14
     #            local_path: kits/braze/braze-14
-    #            dest_repo: mparticle-integrations/mparticle-apple-integration-braze-14
+    #            dest_repo: mparticle-apple-integration-braze-14
 
     steps:
       - name: Checkout monorepo
@@ -44,7 +46,8 @@ jobs:
         with:
           app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }}
           private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
-          owner: mparticle-integrations
+          owner: ${{ env.DEST_ORG }}
+          repositories: ${{ matrix.kit.dest_repo }}
 
       - name: Verify kit directory exists
         run: |
@@ -80,10 +83,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
-          DEST_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ matrix.kit.dest_repo }}.git"
+          DEST_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
 
           echo "🚀 Pushing to destination repository"
-          echo "   Repo: ${{ matrix.kit.dest_repo }}"
+          echo "   Repo: ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}"
           echo "   Branch: main"
           echo ""
 
@@ -94,7 +97,7 @@ jobs:
             --force
 
           echo ""
-          echo "✅ Successfully pushed to ${{ matrix.kit.dest_repo }}"
+          echo "✅ Successfully pushed to ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}"
 
       - name: Cleanup split branch
         if: always()
@@ -111,6 +114,6 @@ jobs:
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| **Source** | \`${{ matrix.kit.local_path }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Destination** | https://github.com/${{ matrix.kit.dest_repo }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Destination** | https://github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Branch** | \`main\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Kit** | ${{ matrix.kit.name }} |" >> $GITHUB_STEP_SUMMARY
