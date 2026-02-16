@@ -233,8 +233,6 @@ jobs:
 
       - name: Commit version changes
         run: |
-          # trunk format the files before committing
-          trunk fmt
           # Only add the version-related files, exclude build artifacts
           git add \
             CHANGELOG.md \
