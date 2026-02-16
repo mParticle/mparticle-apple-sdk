@@ -120,6 +120,8 @@ jobs:
           git -C dest push origin main --force
 
           # Tag with mP ecosystem version
+          git -C dest config user.name "mParticle Bot"
+          git -C dest config user.email "developers@mparticle.com"
           git -C dest tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
           git -C dest push origin "${{ steps.version.outputs.tag }}"
 
