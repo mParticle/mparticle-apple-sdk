@@ -114,7 +114,7 @@ public class MPDevice: NSObject, NSCopying {
 
     @objc public var language: String? {
         // Extra logic added to strip out the country code to stay consistent with earlier iOS releases
-        guard let subString = Locale.preferredLanguages[0].split(separator: "-").first else {
+        guard let subString = Locale.preferredLanguages.first?.split(separator: "-").first else {
             return nil
         }
 
