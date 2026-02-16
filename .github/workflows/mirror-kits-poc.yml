@@ -2,6 +2,12 @@ name: Mirror Kits to mparticle-integrations (PoC)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "kits/**"
+      - ".github/workflows/mirror-kits-poc.yml"
 
 jobs:
   mirror-kits:
