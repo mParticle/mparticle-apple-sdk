@@ -140,6 +140,8 @@
     
     [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
     self.backendController = [MParticle sharedInstance].backendController;
+    messageQueue = [MParticle messageQueue];
+    
     [self notificationController];
 }
 
@@ -2509,6 +2511,63 @@
         sessionAfter = self.backendController.session;
     });
     XCTAssertNil(sessionAfter, @"Session should be nil after endSessionIfTimedOut processes on the message queue");
+}
+
+- (void)testEndSessionIfTimedOutDoesNothingWhenAutomaticSessionTrackingDisabled {
+    // Verify endSessionIfTimedOut is a no-op when automaticSessionTracking is disabled.
+    
+    dispatch_sync(messageQueue, ^{
+        [self.backendController beginSessionWithIsManual:NO date:[NSDate date]];
+    });
+    XCTAssertNotNil(self.backendController.session, @"Session should exist");
+    
+    NSTimeInterval pastTime = [[NSDate date] timeIntervalSince1970] - 200;
+    dispatch_sync(messageQueue, ^{
+        self.backendController.sessionTimeout = 30;
+        self.backendController.timeOfLastEventInBackground = pastTime;
+        self.backendController.timeAppWentToBackgroundInCurrentSession = pastTime;
+    });
+    
+    // Disable automatic session tracking without calling startWithOptions (which
+    // would recreate backendController and add unrelated async work).
+    [[MParticle sharedInstance] setValue:@NO forKey:@"automaticSessionTracking"];
+    
+    __block NSString *sessionUUIDBefore;
+    __block NSTimeInterval endTimeBefore;
+    __block NSTimeInterval lastEventBefore;
+    dispatch_sync(messageQueue, ^{
+        sessionUUIDBefore = self.backendController.session.uuid;
+        endTimeBefore = self.backendController.session.endTime;
+        lastEventBefore = self.backendController.timeOfLastEventInBackground;
+    });
+    
+    XCTestExpectation *bgCallDone = [self expectationWithDescription:@"Background call completed"];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self.backendController endSessionIfTimedOut];
+        [bgCallDone fulfill];
+    });
+    [self waitForExpectations:@[bgCallDone] timeout:2.0];
+    
+    // Drain queue to ensure there is no delayed mutation.
+    XCTestExpectation *mqDrained = [self expectationWithDescription:@"Message queue drained"];
+    dispatch_async(messageQueue, ^{
+        [mqDrained fulfill];
+    });
+    [self waitForExpectations:@[mqDrained] timeout:5.0];
+    
+    __block MPSession *sessionAfter;
+    __block NSTimeInterval endTimeAfter;
+    __block NSTimeInterval lastEventAfter;
+    dispatch_sync(messageQueue, ^{
+        sessionAfter = self.backendController.session;
+        endTimeAfter = self.backendController.session.endTime;
+        lastEventAfter = self.backendController.timeOfLastEventInBackground;
+    });
+    
+    XCTAssertNotNil(sessionAfter, @"Session should not be ended when automaticSessionTracking is disabled");
+    XCTAssertEqualObjects(sessionAfter.uuid, sessionUUIDBefore, @"Session identity should be unchanged");
+    XCTAssertEqualWithAccuracy(endTimeAfter, endTimeBefore, DBL_EPSILON, @"Session endTime should be unchanged");
+    XCTAssertEqualWithAccuracy(lastEventAfter, lastEventBefore, DBL_EPSILON, @"Background last-event time should be unchanged");
 }
 
 - (void)testConcurrentEndSessionIfTimedOutDoesNotCrash {
