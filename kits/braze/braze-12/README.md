@@ -2,11 +2,9 @@
 
 This is the [Braze](https://www.braze.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Braze Swift SDK 12.x](https://github.com/braze-inc/braze-swift-sdk).
 
-## Source Code
-
-This repository is a **read-only mirror**. The source code is maintained in the [mParticle Apple SDK monorepo](https://github.com/mParticle/mparticle-apple-sdk) under `kits/braze/braze-12/` and is automatically published here via CI. To contribute or report issues, please open issues and pull requests against the [monorepo](https://github.com/mParticle/mparticle-apple-sdk).
-
 ## Installation
+
+> **Viewing this from the monorepo?** Add the kit as a dependency from the [mparticle-integrations/mparticle-apple-integration-braze-12](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12) repository, not from the monorepo path.
 
 ### Swift Package Manager
 
@@ -65,17 +63,10 @@ Included kits: { Braze }
 | iOS      | 15.6            |
 | tvOS     | 15.6            |
 
-## Dependencies
-
-| Dependency                                                              | Version                          |
-| ----------------------------------------------------------------------- | -------------------------------- |
-| [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk) | Aligned with kit release version |
-| [Braze Swift SDK](https://github.com/braze-inc/braze-swift-sdk)         | 12.0.0+                          |
-
 ## Documentation
 
 - [mParticle Braze Integration Guide](https://docs.mparticle.com/integrations/braze/event/)
-- [mParticle Apple SDK Quick Start](https://github.com/mParticle/mparticle-apple-sdk)
+- [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/client-sdks/ios/)
 - [Braze Swift SDK Documentation](https://www.braze.com/docs/)
 
 ## License
