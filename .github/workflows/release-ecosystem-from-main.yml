@@ -41,7 +41,7 @@ jobs:
 
   mirror-and-release-kits:
     needs: prepare
-    runs-on: macOS-15
+    runs-on: macOS-latest
     env:
       DEST_ORG: mparticle-integrations
       XCODE_VERSION: "16.4"
