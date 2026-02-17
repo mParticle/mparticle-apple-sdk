@@ -11,8 +11,8 @@
 
 @interface MPKitBraze ()
 
-- (Braze *)appboyInstance;
-- (void)setAppboyInstance:(Braze *)instance;
+- (Braze *)brazeInstanceLocal;
+- (void)setBrazeInstanceLocal:(Braze *)instance;
 - (NSMutableDictionary<NSString *, NSNumber *> *)optionsDictionary;
 + (id<BrazeInAppMessageUIDelegate>)inAppMessageControllerDelegate;
 - (void)setEnableTypeDetection:(BOOL)enableTypeDetection;
@@ -188,8 +188,8 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kitInstance setAppboyInstance:mockClient];
-    XCTAssertEqualObjects(mockClient, [kitInstance appboyInstance]);
+    [kitInstance setBrazeInstanceLocal:mockClient];
+    XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     
     // Should succeed since opted_in is a valid value
     MPKitExecStatus *execStatus1 = [kitInstance setUserAttribute:@"email_subscribe" value:@"opted_in"];
@@ -219,8 +219,8 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kitInstance setAppboyInstance:mockClient];
-    XCTAssertEqualObjects(mockClient, [kitInstance appboyInstance]);
+    [kitInstance setBrazeInstanceLocal:mockClient];
+    XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     
     // Should succeed since opted_in is a valid value
     MPKitExecStatus *execStatus1 = [kitInstance setUserAttribute:@"push_subscribe" value:@"opted_in"];
@@ -252,8 +252,8 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kitInstance setAppboyInstance:mockClient];
-    XCTAssertEqualObjects(mockClient, [kitInstance appboyInstance]);
+    [kitInstance setBrazeInstanceLocal:mockClient];
+    XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     
     // Should succeed since Bool false is a valid value
     MPKitExecStatus *execStatus1 = [kitInstance setUserAttribute:@"testAttribute1" value:@NO];
@@ -488,7 +488,7 @@
     
     MPKitBraze *appBoy = [[MPKitBraze alloc] init];
     
-    XCTAssertEqualObjects(appBoy.appboyInstance, nil);
+    XCTAssertEqualObjects(appBoy.brazeInstanceLocal, nil);
     XCTAssertEqualObjects(appBoy.providerKitInstance, nil);
     XCTAssertEqualObjects([MPKitBraze brazeInstance], testClient);
 
@@ -504,7 +504,7 @@
 
     [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    XCTAssertEqualObjects(appBoy.appboyInstance, testClient);
+    XCTAssertEqualObjects(appBoy.brazeInstanceLocal, testClient);
     XCTAssertEqualObjects(appBoy.providerKitInstance, testClient);
     XCTAssertEqualObjects([MPKitBraze brazeInstance], testClient);
 }
@@ -552,9 +552,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
 
@@ -594,9 +594,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
 
@@ -639,9 +639,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
     product.category = @"category1";
@@ -688,9 +688,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
     product.category = @"category1";
@@ -736,9 +736,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
 
@@ -814,9 +814,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
     MPProduct *product1 = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
     MPProduct *product2 = [[MPProduct alloc] initWithName:@"product2" sku:@"1131331888" quantity:@1 price:@13];
@@ -903,9 +903,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
     MPPromotion *promotion = [[MPPromotion alloc] init];
     promotion.promotionId = @"my_promo_1";
@@ -947,9 +947,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
     product.userDefinedAttributes = [@{@"productTestKey" : @"productTestCustomAttValue"} mutableCopy];
@@ -1042,9 +1042,9 @@
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     id mockClient = OCMPartialMock(testClient);
-    [kit setAppboyInstance:mockClient];
+    [kit setBrazeInstanceLocal:mockClient];
 
-    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 
 
     MPEvent *event = [[MPEvent alloc] initWithName:@"test event" type:MPEventTypeNavigation];
