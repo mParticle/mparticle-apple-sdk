@@ -38,6 +38,18 @@ fi
 
 xcodebuild -create-xcframework "${FRAMEWORK_ARGS[@]}" -output "${MODULE}.xcframework"
 
-codesign --timestamp -s "Apple Distribution: mParticle, inc (DLD43Y3TRP)" "${MODULE}.xcframework"
+# Codesign if a signing identity is available, skip otherwise
+SIGNING_IDENTITY="Apple Distribution: mParticle, inc (DLD43Y3TRP)"
+if security find-identity -v -p codesigning | grep -q "${SIGNING_IDENTITY}"; then
+	codesign --timestamp -s "${SIGNING_IDENTITY}" "${MODULE}.xcframework"
+else
+	if [[ ${DRY_RUN:-false} == "true" ]]; then
+		echo "⚠️ Signing identity not found, skipping codesign in dry run"
+	else
+		echo "❌ Signing identity not found: ${SIGNING_IDENTITY}"
+		exit 1
+	fi
+fi
+
 zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
 rm -rf archives "$MODULE.xcframework"

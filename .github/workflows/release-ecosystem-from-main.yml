@@ -115,20 +115,20 @@ jobs:
           - name: braze-12
             local_path: kits/braze/braze-12
             dest_repo: mparticle-apple-integration-braze-12
-            scheme: mParticle-Appboy
-            tvos_scheme: mParticle-Appboy-tvOS
+            package_scheme: mParticle-Appboy
+            supports_tvos: true
             module: mParticle_Appboy
     #      - name: braze-13
     #        local_path: kits/braze/braze-13
     #        dest_repo: mparticle-apple-integration-braze-13
-    #        scheme: mParticle-Appboy
-    #        tvos_scheme: mParticle-Appboy-tvOS
+    #        package_scheme: mParticle-Appboy
+    #        supports_tvos: true
     #        module: mParticle_Appboy
     #      - name: braze-14
     #        local_path: kits/braze/braze-14
     #        dest_repo: mparticle-apple-integration-braze-14
-    #        scheme: mParticle-Appboy
-    #        tvos_scheme: mParticle-Appboy-tvOS
+    #        package_scheme: mParticle-Appboy
+    #        supports_tvos: true
     #        module: mParticle_Appboy
 
     steps:
@@ -155,10 +155,44 @@ jobs:
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-      - name: Build kit xcframework
+      - name: Build kit xcframework from Package.swift
+        working-directory: ${{ matrix.kit.local_path }}
         run: |
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-          ./Scripts/xcframework.sh "$PROJECT" "${{ matrix.kit.scheme }}" "${{ matrix.kit.tvos_scheme }}"
+          MODULE="${{ matrix.kit.module }}"
+          SCHEME="${{ matrix.kit.package_scheme }}"
+
+          xcodebuild archive -scheme "$SCHEME" \
+            -destination "generic/platform=iOS" -archivePath "archives/iOS"
+          xcodebuild archive -scheme "$SCHEME" \
+            -destination "generic/platform=iOS Simulator" -archivePath "archives/iOS_Simulator"
+
+          XCFRAMEWORK_ARGS=(
+            -archive archives/iOS.xcarchive -framework "${MODULE}.framework"
+            -archive archives/iOS_Simulator.xcarchive -framework "${MODULE}.framework"
+          )
+
+          if [ "${{ matrix.kit.supports_tvos }}" = "true" ]; then
+            xcodebuild archive -scheme "$SCHEME" \
+              -destination "generic/platform=tvOS" -archivePath "archives/tvOS"
+            xcodebuild archive -scheme "$SCHEME" \
+              -destination "generic/platform=tvOS Simulator" -archivePath "archives/tvOS_Simulator"
+            XCFRAMEWORK_ARGS+=(
+              -archive archives/tvOS.xcarchive -framework "${MODULE}.framework"
+              -archive archives/tvOS_Simulator.xcarchive -framework "${MODULE}.framework"
+            )
+          fi
+
+          xcodebuild -create-xcframework "${XCFRAMEWORK_ARGS[@]}" -output "${MODULE}.xcframework"
+          codesign --timestamp -s "Apple Distribution: mParticle, inc (DLD43Y3TRP)" "${MODULE}.xcframework" || {
+            if [ "${DRY_RUN}" = "true" ]; then
+              echo "⚠️ Signing identity not found, skipping codesign in dry run"
+            else
+              echo "❌ Signing identity not found for non-dry run"
+              exit 1
+            fi
+          }
+          zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
+          rm -rf archives "${MODULE}.xcframework"
 
       - name: Configure Git
         run: |
