@@ -42,24 +42,24 @@
 }
 
 - (void)testStartwithSimpleConfig {
-    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
+    MPKitBraze *braze = [[MPKitBraze alloc] init];
     
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42
                                        };
     
-    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
     
     NSDictionary *testOptionsDictionary = @{ABKEnableAutomaticLocationCollectionKey:@(YES),
                                             ABKSDKFlavorKey:@7
                                        };
     
-    NSDictionary *optionsDictionary = [appBoy optionsDictionary];
+    NSDictionary *optionsDictionary = [braze optionsDictionary];
     XCTAssertEqualObjects(optionsDictionary, testOptionsDictionary);
 }
 
 - (void)testStartwithAdvancedConfig {
-    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
+    MPKitBraze *braze = [[MPKitBraze alloc] init];
     
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42,
@@ -71,7 +71,7 @@
                                        @"userIdentificationType":@"CustomerId"
                                        };
     
-    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
     
     NSDictionary *testOptionsDictionary = @{ABKEnableAutomaticLocationCollectionKey:@(YES),
                                             ABKSDKFlavorKey:@7,
@@ -81,7 +81,7 @@
                                             @"ABKMinimumTriggerTimeInterval":@(4)
                                             };
     
-    NSDictionary *optionsDictionary = [appBoy optionsDictionary];
+    NSDictionary *optionsDictionary = [braze optionsDictionary];
     XCTAssertEqualObjects(optionsDictionary, testOptionsDictionary);
 }
 
@@ -272,7 +272,7 @@
 
 
 //- (void)testEndpointOverride {
-//    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+//    MPKitBraze *braze = [[MPKitBraze alloc] init];
 //
 //    NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
 //                                       @"host":@"https://foo.bar.com",
@@ -285,20 +285,20 @@
 //                                       @"ABKCollectIDFA":@"true"
 //                                       };
 //
-//    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+//    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
 //
-//    XCTAssertEqualObjects(@"https://foo.bar.com", [appBoy getApiEndpoint:@"https://original.com"]);
-//    XCTAssertEqualObjects(@"https://foo.bar.com/param1", [appBoy getApiEndpoint:@"https://original.com/param1"]);
-//    XCTAssertEqualObjects(@"https://foo.bar.com/param1/param2", [appBoy getApiEndpoint:@"https://original.com/param1/param2"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com", [braze getApiEndpoint:@"https://original.com"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/param1", [braze getApiEndpoint:@"https://original.com/param1"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/param1/param2", [braze getApiEndpoint:@"https://original.com/param1/param2"]);
 //
 //    NSString *testEndpoint;
-//    XCTAssertNil([appBoy getApiEndpoint:testEndpoint]);
-//    XCTAssertEqualObjects(@"https://moo.far.com", [appBoy getApiEndpoint:@"moo.far.com"]);
-//    XCTAssertEqualObjects(@"http://moo.far.com", [appBoy getApiEndpoint:@"http://moo.far.com"]);
+//    XCTAssertNil([braze getApiEndpoint:testEndpoint]);
+//    XCTAssertEqualObjects(@"https://moo.far.com", [braze getApiEndpoint:@"moo.far.com"]);
+//    XCTAssertEqualObjects(@"http://moo.far.com", [braze getApiEndpoint:@"http://moo.far.com"]);
 //}
 //
 //- (void)testEndpointOverride2 {
-//    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+//    MPKitBraze *braze = [[MPKitBraze alloc] init];
 //
 //    NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
 //                                       @"host":@"http://foo.bar.com",
@@ -311,20 +311,20 @@
 //                                       @"ABKCollectIDFA":@"true"
 //                                       };
 //
-//    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+//    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
 //
-//    XCTAssertEqualObjects(@"http://foo.bar.com", [appBoy getApiEndpoint:@"https://original.com"]);
-//    XCTAssertEqualObjects(@"http://foo.bar.com/param1", [appBoy getApiEndpoint:@"https://original.com/param1"]);
-//    XCTAssertEqualObjects(@"http://foo.bar.com/param1/param2", [appBoy getApiEndpoint:@"https://original.com/param1/param2"]);
+//    XCTAssertEqualObjects(@"http://foo.bar.com", [braze getApiEndpoint:@"https://original.com"]);
+//    XCTAssertEqualObjects(@"http://foo.bar.com/param1", [braze getApiEndpoint:@"https://original.com/param1"]);
+//    XCTAssertEqualObjects(@"http://foo.bar.com/param1/param2", [braze getApiEndpoint:@"https://original.com/param1/param2"]);
 //
 //    NSString *testEndpoint;
-//    XCTAssertNil([appBoy getApiEndpoint:testEndpoint]);
-//    XCTAssertEqualObjects(@"https://moo.far.com", [appBoy getApiEndpoint:@"moo.far.com"]);
-//    XCTAssertEqualObjects(@"http://moo.far.com", [appBoy getApiEndpoint:@"http://moo.far.com"]);
+//    XCTAssertNil([braze getApiEndpoint:testEndpoint]);
+//    XCTAssertEqualObjects(@"https://moo.far.com", [braze getApiEndpoint:@"moo.far.com"]);
+//    XCTAssertEqualObjects(@"http://moo.far.com", [braze getApiEndpoint:@"http://moo.far.com"]);
 //}
 //
 //- (void)testEndpointOverride3 {
-//    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+//    MPKitBraze *braze = [[MPKitBraze alloc] init];
 //
 //    NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
 //                                       @"host":@"foo.bar.com",
@@ -337,21 +337,21 @@
 //                                       @"ABKCollectIDFA":@"true"
 //                                       };
 //
-//    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+//    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
 //
-//    XCTAssertEqualObjects(@"https://foo.bar.com", [appBoy getApiEndpoint:@"https://original.com"]);
-//    XCTAssertEqualObjects(@"https://foo.bar.com/param1", [appBoy getApiEndpoint:@"https://original.com/param1"]);
-//    XCTAssertEqualObjects(@"https://foo.bar.com/param1/param2", [appBoy getApiEndpoint:@"https://original.com/param1/param2"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com", [braze getApiEndpoint:@"https://original.com"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/param1", [braze getApiEndpoint:@"https://original.com/param1"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/param1/param2", [braze getApiEndpoint:@"https://original.com/param1/param2"]);
 //
 //
 //    NSString *testEndpoint;
-//    XCTAssertNil([appBoy getApiEndpoint:testEndpoint]);
-//    XCTAssertEqualObjects(@"https://moo.far.com", [appBoy getApiEndpoint:@"moo.far.com"]);
-//    XCTAssertEqualObjects(@"http://moo.far.com", [appBoy getApiEndpoint:@"http://moo.far.com"]);
+//    XCTAssertNil([braze getApiEndpoint:testEndpoint]);
+//    XCTAssertEqualObjects(@"https://moo.far.com", [braze getApiEndpoint:@"moo.far.com"]);
+//    XCTAssertEqualObjects(@"http://moo.far.com", [braze getApiEndpoint:@"http://moo.far.com"]);
 //}
 //
 //- (void)testEndpointOverride4 {
-//    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+//    MPKitBraze *braze = [[MPKitBraze alloc] init];
 //
 //    NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
 //                                       @"host":@"https://foo.bar.com/baz",
@@ -364,21 +364,21 @@
 //                                       @"ABKCollectIDFA":@"true"
 //                                       };
 //
-//    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+//    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
 //
-//    XCTAssertEqualObjects(@"https://foo.bar.com/baz", [appBoy getApiEndpoint:@"https://original.com"]);
-//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/param1", [appBoy getApiEndpoint:@"https://original.com/param1"]);
-//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/param1/param2", [appBoy getApiEndpoint:@"https://original.com/param1/param2"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/baz", [braze getApiEndpoint:@"https://original.com"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/param1", [braze getApiEndpoint:@"https://original.com/param1"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/param1/param2", [braze getApiEndpoint:@"https://original.com/param1/param2"]);
 //
 //
 //    NSString *testEndpoint;
-//    XCTAssertNil([appBoy getApiEndpoint:testEndpoint]);
-//    XCTAssertEqualObjects(@"https://moo.far.com", [appBoy getApiEndpoint:@"moo.far.com"]);
-//    XCTAssertEqualObjects(@"http://moo.far.com", [appBoy getApiEndpoint:@"http://moo.far.com"]);
+//    XCTAssertNil([braze getApiEndpoint:testEndpoint]);
+//    XCTAssertEqualObjects(@"https://moo.far.com", [braze getApiEndpoint:@"moo.far.com"]);
+//    XCTAssertEqualObjects(@"http://moo.far.com", [braze getApiEndpoint:@"http://moo.far.com"]);
 //}
 //
 //- (void)testEndpointOverride5 {
-//    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+//    MPKitBraze *braze = [[MPKitBraze alloc] init];
 //
 //    NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
 //                                       @"host":@"https://foo.bar.com/baz/baz",
@@ -391,21 +391,21 @@
 //                                       @"ABKCollectIDFA":@"true"
 //                                       };
 //
-//    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+//    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
 //
-//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/baz", [appBoy getApiEndpoint:@"https://original.com"]);
-//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/baz/param1", [appBoy getApiEndpoint:@"https://original.com/param1"]);
-//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/baz/param1/param2", [appBoy getApiEndpoint:@"https://original.com/param1/param2"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/baz", [braze getApiEndpoint:@"https://original.com"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/baz/param1", [braze getApiEndpoint:@"https://original.com/param1"]);
+//    XCTAssertEqualObjects(@"https://foo.bar.com/baz/baz/param1/param2", [braze getApiEndpoint:@"https://original.com/param1/param2"]);
 //
 //
 //    NSString *testEndpoint;
-//    XCTAssertNil([appBoy getApiEndpoint:testEndpoint]);
-//    XCTAssertEqualObjects(@"https://moo.far.com", [appBoy getApiEndpoint:@"moo.far.com"]);
-//    XCTAssertEqualObjects(@"http://moo.far.com", [appBoy getApiEndpoint:@"http://moo.far.com"]);
+//    XCTAssertNil([braze getApiEndpoint:testEndpoint]);
+//    XCTAssertEqualObjects(@"https://moo.far.com", [braze getApiEndpoint:@"moo.far.com"]);
+//    XCTAssertEqualObjects(@"http://moo.far.com", [braze getApiEndpoint:@"http://moo.far.com"]);
 //}
 //
 //- (void)testEndpointOverrideNilHost {
-//    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+//    MPKitBraze *braze = [[MPKitBraze alloc] init];
 //
 //    NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
 //                                       @"id":@42,
@@ -417,17 +417,17 @@
 //                                       @"ABKCollectIDFA":@"true"
 //                                       };
 //
-//    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+//    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
 //
-//    XCTAssertEqualObjects(@"https://original.com", [appBoy getApiEndpoint:@"https://original.com"]);
-//    XCTAssertEqualObjects(@"https://original.com/param1", [appBoy getApiEndpoint:@"https://original.com/param1"]);
-//    XCTAssertEqualObjects(@"https://original.com/param1/param2", [appBoy getApiEndpoint:@"https://original.com/param1/param2"]);
+//    XCTAssertEqualObjects(@"https://original.com", [braze getApiEndpoint:@"https://original.com"]);
+//    XCTAssertEqualObjects(@"https://original.com/param1", [braze getApiEndpoint:@"https://original.com/param1"]);
+//    XCTAssertEqualObjects(@"https://original.com/param1/param2", [braze getApiEndpoint:@"https://original.com/param1/param2"]);
 //
 //
 //    NSString *testEndpoint;
-//    XCTAssertNil([appBoy getApiEndpoint:testEndpoint]);
-//    XCTAssertEqualObjects(@"moo.far.com", [appBoy getApiEndpoint:@"moo.far.com"]);
-//    XCTAssertEqualObjects(@"http://moo.far.com", [appBoy getApiEndpoint:@"http://moo.far.com"]);
+//    XCTAssertNil([braze getApiEndpoint:testEndpoint]);
+//    XCTAssertEqualObjects(@"moo.far.com", [braze getApiEndpoint:@"moo.far.com"]);
+//    XCTAssertEqualObjects(@"http://moo.far.com", [braze getApiEndpoint:@"http://moo.far.com"]);
 //}
 
 - (void)testSetMessageDelegate {
@@ -486,10 +486,10 @@
 
     [MPKitBraze setBrazeInstance:testClient];
     
-    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
+    MPKitBraze *braze = [[MPKitBraze alloc] init];
     
-    XCTAssertEqualObjects(appBoy.brazeInstanceLocal, nil);
-    XCTAssertEqualObjects(appBoy.providerKitInstance, nil);
+    XCTAssertEqualObjects(braze.brazeInstanceLocal, nil);
+    XCTAssertEqualObjects(braze.providerKitInstance, nil);
     XCTAssertEqualObjects([MPKitBraze brazeInstance], testClient);
 
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
@@ -502,15 +502,15 @@
                                        @"userIdentificationType":@"CustomerId"
                                        };
 
-    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    XCTAssertEqualObjects(appBoy.brazeInstanceLocal, testClient);
-    XCTAssertEqualObjects(appBoy.providerKitInstance, testClient);
+    XCTAssertEqualObjects(braze.brazeInstanceLocal, testClient);
+    XCTAssertEqualObjects(braze.providerKitInstance, testClient);
     XCTAssertEqualObjects([MPKitBraze brazeInstance], testClient);
 }
 
 - (void)testUserIdCustomerId {
-    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
+    MPKitBraze *braze = [[MPKitBraze alloc] init];
 
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42,
@@ -522,13 +522,13 @@
                                        @"userIdentificationType":@"CustomerId"
                                        };
 
-    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    XCTAssertEqual(appBoy.configuration[@"userIdentificationType"], @"CustomerId");
+    XCTAssertEqual(braze.configuration[@"userIdentificationType"], @"CustomerId");
 }
 
 - (void)testUserIdMPID {
-    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
+    MPKitBraze *braze = [[MPKitBraze alloc] init];
 
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42,
@@ -540,9 +540,9 @@
                                        @"userIdentificationType":@"MPID"
                                        };
 
-    [appBoy didFinishLaunchingWithConfiguration:kitConfiguration];
+    [braze didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    XCTAssertEqual(appBoy.configuration[@"userIdentificationType"], @"MPID");
+    XCTAssertEqual(braze.configuration[@"userIdentificationType"], @"MPID");
 }
 
 - (void)testlogCommerceEvent {
@@ -984,14 +984,14 @@
 }
 
 //- (void)testTypeDetection {
-//    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+//    MPKitBraze *kit = [[MPKitBraze alloc] init];
 //
 //    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
 //    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
 //    id mockClient = OCMPartialMock(testClient);
 //    [kit setAppboyInstance:mockClient];
 //
-//    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+//    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 //
 //
 //    MPEvent *event = [[MPEvent alloc] initWithName:@"test event" type:MPEventTypeNavigation];
@@ -1011,14 +1011,14 @@
 //
 //
 //- (void)testTypeDetectionDisable {
-//    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+//    MPKitBraze *kit = [[MPKitBraze alloc] init];
 //
 //    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
 //    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
 //    id mockClient = OCMPartialMock(testClient);
 //    [kit setAppboyInstance:mockClient];
 //
-//    XCTAssertEqualObjects(mockClient, [kit appboyInstance]);
+//    XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
 //
 //
 //    MPEvent *event = [[MPEvent alloc] initWithName:@"test event" type:MPEventTypeNavigation];

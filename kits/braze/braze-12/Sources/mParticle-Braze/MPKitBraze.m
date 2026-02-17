@@ -89,7 +89,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 + (void)load {
-    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"Appboy" className:@"MPKitAppboy"];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"Braze" className:@"MPKitBraze"];
     [MParticle registerExtension:kitRegister];
 }
 
@@ -203,7 +203,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     return subscriptionGroupDictionary;
 }
 
-- (MPKitExecStatus *)logAppboyCustomEvent:(MPEvent *)event eventType:(NSUInteger)eventType {
+- (MPKitExecStatus *)logBrazeCustomEvent:(MPEvent *)event eventType:(NSUInteger)eventType {
     void (^logCustomEvent)(void) = ^{
         NSDictionary *transformedEventInfo = [event.customAttributes transformValuesToString];
         
@@ -218,7 +218,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             detectedEventInfo = [self simplifiedDictionary:eventInfo];
         }
         
-        // Appboy expects that the properties are non empty when present.
+        // Braze expects that the properties are non empty when present.
         if (detectedEventInfo && detectedEventInfo.count > 0) {
             [self->brazeInstanceLocal logCustomEvent:event.name properties:detectedEventInfo];
         } else {
@@ -445,7 +445,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 
 - (NSMutableDictionary<NSString *, NSObject *> *)optionsDictionary {
     NSArray <NSString *> *serverKeys = @[@"ABKRequestProcessingPolicyOptionKey", @"ABKFlushIntervalOptionKey", @"ABKSessionTimeoutKey", @"ABKMinimumTriggerTimeIntervalKey"];
-    NSArray <NSString *> *appboyKeys = @[ABKRequestProcessingPolicyOptionKey, ABKFlushIntervalOptionKey, ABKSessionTimeoutKey, ABKMinimumTriggerTimeIntervalKey];
+    NSArray <NSString *> *brazeKeys = @[ABKRequestProcessingPolicyOptionKey, ABKFlushIntervalOptionKey, ABKSessionTimeoutKey, ABKMinimumTriggerTimeIntervalKey];
     NSMutableDictionary<NSString *, NSObject *> *optionsDictionary = [[NSMutableDictionary alloc] initWithCapacity:serverKeys.count];
     NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
     numberFormatter.numberStyle = NSNumberFormatterNoStyle;
@@ -454,7 +454,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         NSString *optionValue = self.configuration[serverKey];
         
         if (optionValue != nil && (NSNull *)optionValue != [NSNull null]) {
-            NSString *appboyKey = appboyKeys[idx];
+            NSString *brazeKey = brazeKeys[idx];
             NSNumber *numberValue = nil;
             @try {
                 numberValue = [numberFormatter numberFromString:optionValue];
@@ -462,7 +462,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 numberValue = nil;
             }
             if (numberValue != nil) {
-                optionsDictionary[appboyKey] = numberValue;
+                optionsDictionary[brazeKey] = numberValue;
             }
         }
     }];
@@ -588,7 +588,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                     sanitizedProductName = product.name;
                 }
                 
-                // Strips key/values already being passed to Appboy, plus key/values initialized to default values
+                // Strips key/values already being passed to Braze, plus key/values initialized to default values
                 keys = @[kMPExpProductSKU, kMPProductCurrency, kMPExpProductUnitPrice, kMPExpProductQuantity];
                 [properties removeObjectsForKeys:keys];
                 
@@ -641,7 +641,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 }
             }
             
-            // Appboy expects that the properties are non empty when present.
+            // Braze expects that the properties are non empty when present.
             if (eventInfo.count > 0) {
                 [self->brazeInstanceLocal logCustomEvent:eventName properties:eventInfo];
             } else {
@@ -662,14 +662,14 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (MPKitExecStatus *)routeEvent:(MPEvent *)event {
-    return [self logAppboyCustomEvent:event eventType:event.type];
+    return [self logBrazeCustomEvent:event eventType:event.type];
 }
 
 - (MPKitExecStatus *)logScreen:(MPEvent *)event {
     MPKitExecStatus *execStatus = nil;
     
     if (forwardScreenViews) {
-        execStatus = [self logAppboyCustomEvent:event eventType:0];
+        execStatus = [self logBrazeCustomEvent:event eventType:0];
     } else {
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeCannotExecute];
     }
