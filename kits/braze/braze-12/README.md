@@ -27,7 +27,7 @@ Then add `mParticle-Braze` as a dependency of your target.
 
 After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
 
-```
+```bash
 Included kits: { Braze }
 ```
 

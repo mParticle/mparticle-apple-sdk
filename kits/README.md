@@ -6,7 +6,7 @@ This directory contains the source code for all mParticle integration kits (forw
 
 Each kit lives under a provider/version directory:
 
-```
+```bash
 kits/
 └── <provider>/
     └── <provider>-<major_version>/
@@ -46,7 +46,7 @@ Kit releases are driven by the monorepo's CI pipeline and a single `VERSION` fil
 
 Each kit directory is mirrored to its own standalone repository under the [`mparticle-integrations`](https://github.com/mparticle-integrations) GitHub organization. These mirror repos are what consumers add as SPM or CocoaPods dependencies. **Do not commit directly to mirror repos** — all changes flow through this monorepo.
 
-```
+```bash
 monorepo                                           mirror repo
 kits/braze/braze-12/  ──subtree split──>  mparticle-integrations/mparticle-apple-integration-braze-12
 ```
