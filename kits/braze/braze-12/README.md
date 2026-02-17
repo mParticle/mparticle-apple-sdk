@@ -1,26 +1,55 @@
-# Braze (formerly Appboy) Kit Integration
+# mParticle Braze Kit (Braze Swift SDK 12.x)
 
-This repository contains the [Braze](https://www.braze.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk) using the latest [Braze Swift SDK](https://github.com/braze-inc/braze-swift-sdk/).
+This is the [Braze](https://www.braze.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Braze Swift SDK 12.x](https://github.com/braze-inc/braze-swift-sdk).
 
-## Adding the integration
+## Source Code
 
-1. Add the kit dependency using SPM:
+This repository is a **read-only mirror**. The source code is maintained in the [mParticle Apple SDK monorepo](https://github.com/mParticle/mparticle-apple-sdk) under `kits/braze/braze-12/` and is automatically published here via CI. To contribute or report issues, please open issues and pull requests against the [monorepo](https://github.com/mParticle/mparticle-apple-sdk).
 
-   ```swift
-   github "mparticle-integrations/mparticle-apple-integration-braze-12" ~> 8.0
-   ```
+## Installation
 
-2. If using SPM, make sure to add the `-ObjC` flag to the target's `Other Linker Flags` setting in Xcode, according to the [Braze documentation](https://www.braze.com/docs/developer_guide/platform_integration_guides/ios/initial_sdk_setup/installation_methods/swift_package_manager#step-2-configuring-your-project).
+### Swift Package Manager
 
-3. Follow the mParticle iOS SDK [quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app, and verify that you see `"Included kits: { Appboy }"` in your Xcode console
+Add the package dependency in Xcode or in your `Package.swift`:
 
-> (This requires your mParticle log level to be at least Debug)
+```swift
+.package(
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12",
+    .upToNextMajor(from: "9.0.0")
+)
+```
 
-4. Reference mParticle's integration docs below to enable the integration.
+Then add `mParticle-Braze` as a dependency of your target.
+
+> **Note:** Add the `-ObjC` flag to your target's **Other Linker Flags** build setting, per the [Braze documentation](https://www.braze.com/docs/developer_guide/platform_integration_guides/ios/initial_sdk_setup/installation_methods/swift_package_manager#step-2-configuring-your-project).
+
+### Verifying the Integration
+
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
+
+```
+Included kits: { Braze }
+```
+
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
+
+## Dependencies
+
+| Dependency                                                              | Version                          |
+| ----------------------------------------------------------------------- | -------------------------------- |
+| [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk) | Aligned with kit release version |
+| [Braze Swift SDK](https://github.com/braze-inc/braze-swift-sdk)         | 12.0.0+                          |
 
 ## Documentation
 
-[Braze integration](https://docs.mparticle.com/integrations/braze/event/)
+- [mParticle Braze Integration Guide](https://docs.mparticle.com/integrations/braze/event/)
+- [mParticle Apple SDK Quick Start](https://github.com/mParticle/mparticle-apple-sdk)
+- [Braze Swift SDK Documentation](https://www.braze.com/docs/)
 
 ## License
 
