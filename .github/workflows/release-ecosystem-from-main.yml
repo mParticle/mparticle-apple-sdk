@@ -54,16 +54,19 @@ jobs:
             local_path: kits/braze/braze-12
             dest_repo: mparticle-apple-integration-braze-12
             ios_scheme: mParticle-Appboy
+            tvos_scheme: mParticle-Appboy-tvOS
             module: mParticle_Appboy
     #      - name: braze-13
     #        local_path: kits/braze/braze-13
     #        dest_repo: mparticle-apple-integration-braze-13
     #        ios_scheme: mParticle-Appboy
+    #        tvos_scheme: mParticle-Appboy-tvOS
     #        module: mParticle_Appboy
     #      - name: braze-14
     #        local_path: kits/braze/braze-14
     #        dest_repo: mparticle-apple-integration-braze-14
     #        ios_scheme: mParticle-Appboy
+    #        tvos_scheme: mParticle-Appboy-tvOS
     #        module: mParticle_Appboy
 
     steps:
@@ -79,17 +82,32 @@ jobs:
         run: |
           PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
           MODULE="${{ matrix.kit.module }}"
-          SCHEME="${{ matrix.kit.ios_scheme }}"
+          IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
+          TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
 
-          xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
-            -destination "generic/platform=iOS" -archivePath "archives/iOS"
-          xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
-            -destination "generic/platform=iOS Simulator" -archivePath "archives/iOS_Simulator"
+          xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
+            -destination "generic/platform=iOS" -archivePath "archives/iOS" \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
+            -destination "generic/platform=iOS Simulator" -archivePath "archives/iOS_Simulator" \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-          xcodebuild -create-xcframework \
-            -archive archives/iOS.xcarchive -framework "${MODULE}.framework" \
-            -archive archives/iOS_Simulator.xcarchive -framework "${MODULE}.framework" \
-            -output "${MODULE}.xcframework"
+          XCFRAMEWORK_ARGS="-archive archives/iOS.xcarchive -framework ${MODULE}.framework"
+          XCFRAMEWORK_ARGS+=" -archive archives/iOS_Simulator.xcarchive -framework ${MODULE}.framework"
+
+          if [ -n "$TVOS_SCHEME" ]; then
+            xcodebuild archive -project "$PROJECT" -scheme "$TVOS_SCHEME" \
+              -destination "generic/platform=tvOS" -archivePath "archives/tvOS" \
+              CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+            xcodebuild archive -project "$PROJECT" -scheme "$TVOS_SCHEME" \
+              -destination "generic/platform=tvOS Simulator" -archivePath "archives/tvOS_Simulator" \
+              CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+            XCFRAMEWORK_ARGS+=" -archive archives/tvOS.xcarchive -framework ${MODULE}.framework"
+            XCFRAMEWORK_ARGS+=" -archive archives/tvOS_Simulator.xcarchive -framework ${MODULE}.framework"
+          fi
+
+          xcodebuild -create-xcframework $XCFRAMEWORK_ARGS -output "${MODULE}.xcframework"
 
           zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
           rm -rf archives "${MODULE}.xcframework"
