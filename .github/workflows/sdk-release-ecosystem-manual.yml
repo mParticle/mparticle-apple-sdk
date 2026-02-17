@@ -62,43 +62,6 @@ jobs:
           git push origin --delete chore/release-v${VERSION} 2>/dev/null || true
           git checkout -b chore/release-v${VERSION}
 
-      - name: Generate changelog entry
-        run: |
-          PREV_TAG="v${{ steps.current-version.outputs.version }}"
-          if [ "$PREV_TAG" = "v0.0.0" ]; then PREV_TAG=""; fi
-          DATE=$(date +%Y-%m-%d)
-
-          echo "# [${VERSION}](https://github.com/mParticle/mparticle-apple-sdk/compare/${PREV_TAG}...v${VERSION}) (${DATE})" > /tmp/changelog_entry.md
-          echo "" >> /tmp/changelog_entry.md
-
-          if [ -n "$PREV_TAG" ]; then
-            FIXES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" --grep="^fix" --regexp-ignore-case 2>/dev/null || true)
-            if [ -n "$FIXES" ]; then
-              echo -e "### Bug Fixes\n\n$FIXES\n" >> /tmp/changelog_entry.md
-            fi
-
-            FEATURES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" --grep="^feat" --regexp-ignore-case 2>/dev/null || true)
-            if [ -n "$FEATURES" ]; then
-              echo -e "### Features\n\n$FEATURES\n" >> /tmp/changelog_entry.md
-            fi
-
-            if [ -z "$FIXES" ] && [ -z "$FEATURES" ]; then
-              OTHER=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" 2>/dev/null || true)
-              if [ -n "$OTHER" ]; then
-                echo -e "### Changes\n\n$OTHER\n" >> /tmp/changelog_entry.md
-              fi
-            fi
-          else
-            echo -e "### Initial Release\n" >> /tmp/changelog_entry.md
-          fi
-
-          if [ -f CHANGELOG.md ]; then
-            cat /tmp/changelog_entry.md CHANGELOG.md > /tmp/new_changelog.md
-            mv /tmp/new_changelog.md CHANGELOG.md
-          else
-            mv /tmp/changelog_entry.md CHANGELOG.md
-          fi
-
       - name: Update VERSION file
         run: echo "$VERSION" > VERSION
 
@@ -141,7 +104,6 @@ jobs:
           trunk fmt
           git add \
             VERSION \
-            CHANGELOG.md \
             Framework/Info.plist \
             mParticle-Apple-SDK.podspec \
             mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec \
@@ -169,14 +131,13 @@ jobs:
 
           ### Bump type: \`${{ github.event.inputs.bump-type }}\`
 
-          This PR contains the version bump and changelog updates for release ${VERSION}.
+          This PR contains the version bump for release ${VERSION}.
 
           ### Files updated
           - All podspecs (core, Swift, kits) → \`${VERSION}\`
           - \`mParticle-Apple-SDK/MPIConstants.m\`
           - \`mParticle-Apple-SDK/MPConstants.swift\`
           - \`Framework/Info.plist\`
-          - \`CHANGELOG.md\`
           - Integration test mappings
 
           ---

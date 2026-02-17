@@ -17,8 +17,7 @@ on:
         default: true
 
 env:
-  # TODO: Remove after testing
-  DRY_RUN: true
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
 
 permissions:
   contents: write
@@ -110,11 +109,6 @@ jobs:
           zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
           rm -rf archives "${MODULE}.xcframework"
 
-      - name: Configure Git
-        run: |
-          git config user.name "mParticle Bot"
-          git config user.email "developers@mparticle.com"
-
       - name: Generate GitHub App Token
         id: generate-token
         uses: actions/create-github-app-token@v1
@@ -189,7 +183,3 @@ jobs:
           ### Release notes
           ${{ steps.release-notes.outputs.release_notes }}
           EOF
-
-      - name: Cleanup split branch
-        if: always()
-        run: git branch -D "split/${{ matrix.kit.name }}" || true
