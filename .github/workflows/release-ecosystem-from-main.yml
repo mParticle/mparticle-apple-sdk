@@ -85,23 +85,21 @@ jobs:
           IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
           TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
 
+          BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
+
           xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
-            -destination "generic/platform=iOS" -archivePath "archives/iOS" \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+            -destination "generic/platform=iOS" -archivePath "archives/iOS" $BUILD_SETTINGS
           xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
-            -destination "generic/platform=iOS Simulator" -archivePath "archives/iOS_Simulator" \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+            -destination "generic/platform=iOS Simulator" -archivePath "archives/iOS_Simulator" $BUILD_SETTINGS
 
           XCFRAMEWORK_ARGS="-archive archives/iOS.xcarchive -framework ${MODULE}.framework"
           XCFRAMEWORK_ARGS+=" -archive archives/iOS_Simulator.xcarchive -framework ${MODULE}.framework"
 
           if [ -n "$TVOS_SCHEME" ]; then
             xcodebuild archive -project "$PROJECT" -scheme "$TVOS_SCHEME" \
-              -destination "generic/platform=tvOS" -archivePath "archives/tvOS" \
-              CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+              -destination "generic/platform=tvOS" -archivePath "archives/tvOS" $BUILD_SETTINGS
             xcodebuild archive -project "$PROJECT" -scheme "$TVOS_SCHEME" \
-              -destination "generic/platform=tvOS Simulator" -archivePath "archives/tvOS_Simulator" \
-              CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+              -destination "generic/platform=tvOS Simulator" -archivePath "archives/tvOS_Simulator" $BUILD_SETTINGS
 
             XCFRAMEWORK_ARGS+=" -archive archives/tvOS.xcarchive -framework ${MODULE}.framework"
             XCFRAMEWORK_ARGS+=" -archive archives/tvOS_Simulator.xcarchive -framework ${MODULE}.framework"

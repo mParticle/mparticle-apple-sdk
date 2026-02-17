@@ -1,5 +1,5 @@
 {
-  "originHash" : "d10621051b2ac079bb9f52858baaceb0415e24d96ef6316c8a3c0f50d2f920da",
+  "originHash" : "3aaf9c7579aa36337c8e4da10f1df686ea1441178187ab0aef130191e02e7531",
   "pins" : [
     {
       "identity" : "braze-swift-sdk",
@@ -8,15 +8,6 @@
       "state" : {
         "revision" : "0dd962407eacf857b3555c4c3d948adf3544b0fc",
         "version" : "9.3.1"
-      }
-    },
-    {
-      "identity" : "ocmock",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/erikdoe/ocmock",
-      "state" : {
-        "branch" : "master",
-        "revision" : "7f6e9e9b6c9ffa19a9040860da9f7a1f202b9f4d"
       }
     },
     {
