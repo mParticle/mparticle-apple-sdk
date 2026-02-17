@@ -13,7 +13,6 @@ sed -i '' 's/\(^    s.version[^=]*= \).*/\1"'"${VERSION}"'"/' mParticle-Appboy.p
 #
 
 git add mParticle-Appboy.podspec
-git add mParticle_Appboy.json
 git add CHANGELOG.md
 git commit -m "chore(release): ${VERSION} [skip ci]
 
