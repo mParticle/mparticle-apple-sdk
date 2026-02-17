@@ -11,7 +11,7 @@
     #import BrazeKit-Swift.h
 #endif
 
-@interface MPKitAppboy : NSObject <MPKitProtocol>
+@interface MPKitBraze : NSObject <MPKitProtocol>
 
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
