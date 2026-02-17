@@ -11,8 +11,6 @@
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
-static NSDateFormatter *RFC1123DateFormatter;
-
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
@@ -33,15 +31,6 @@ static NSDateFormatter *RFC1123DateFormatter;
 
 
 @implementation MPURLRequestBuilder
-
-+ (void)initialize {
-    if (self == [MPURLRequestBuilder class]) {
-        RFC1123DateFormatter = [[NSDateFormatter alloc] init];
-        RFC1123DateFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
-        RFC1123DateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
-        RFC1123DateFormatter.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
-    }
-}
 
 - (instancetype)initWithURL:(MPURL *)url {
     self = [super init];
@@ -144,6 +133,16 @@ static NSDateFormatter *RFC1123DateFormatter;
 }
 
 - (NSMutableURLRequest *)build {
+    if (!_url.url) {
+        MPILogError(@"Cannot build URL request — URL is nil");
+        return nil;
+    }
+
+    if (!_url.defaultURL) {
+        MPILogError(@"Cannot build URL request — defaultURL is nil");
+        return nil;
+    }
+
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:_url.url];
     [urlRequest setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
     [urlRequest setTimeoutInterval:[MPURLRequestBuilder requestTimeout]];
@@ -152,18 +151,30 @@ static NSDateFormatter *RFC1123DateFormatter;
     BOOL isIdentityRequest = [urlRequest.URL.accessibilityHint isEqualToString:@"identity"];
     BOOL isAudienceRequest = [urlRequest.URL.accessibilityHint isEqualToString:@"audience"];
     
-    NSString *date = [RFC1123DateFormatter stringFromDate:[NSDate date]];
+    NSString *date = [MPDateFormatter stringFromDateRFC1123:[NSDate date]] ?: @"";
     NSString *secret = _secret ?: [MParticle sharedInstance].stateMachine.secret;
+    NSString *apiKey = [MParticle sharedInstance].stateMachine.apiKey;
 
     if (isAudienceRequest) {
-        NSString *audienceSignature = [NSString stringWithFormat:@"%@\n%@\n%@?%@", _httpMethod, date, [urlRequest.URL relativePath], [urlRequest.URL query]];
+        NSString *audienceRelativePath = [urlRequest.URL relativePath];
+        if (!audienceRelativePath) {
+            MPILogError(@"Cannot build URL request — audience relative path is nil");
+            return nil;
+        }
+        NSString *audienceQuery = [urlRequest.URL query];
+        NSString *audienceSignature;
+        if (audienceQuery) {
+            audienceSignature = [NSString stringWithFormat:@"%@\n%@\n%@?%@", _httpMethod, date, audienceRelativePath, audienceQuery];
+        } else {
+            audienceSignature = [NSString stringWithFormat:@"%@\n%@\n%@", _httpMethod, date, audienceRelativePath];
+        }
         MPILogVerbose(@"Audience Signature:\n%@", audienceSignature);
         NSString *hmacSha256Encode = [self hmacSha256Encode:audienceSignature key:secret];
         if (hmacSha256Encode) {
             [urlRequest setValue:hmacSha256Encode forHTTPHeaderField:@"x-mp-signature"];
         }
         [urlRequest setValue:date forHTTPHeaderField:@"Date"];
-        [urlRequest setValue:[MParticle sharedInstance].stateMachine.apiKey forHTTPHeaderField:@"x-mp-key"];
+        [urlRequest setValue:apiKey forHTTPHeaderField:@"x-mp-key"];
         NSString *userAgent = [self userAgent];
         if (userAgent) {
             [urlRequest setValue:userAgent forHTTPHeaderField:@"User-Agent"];
@@ -175,16 +186,28 @@ static NSDateFormatter *RFC1123DateFormatter;
         NSString *contentType = nil;
         NSString *kits = nil;
         NSString *relativePath = [_url.defaultURL relativePath];
+        if (!relativePath) {
+            MPILogError(@"Cannot build URL request — relative path is nil");
+            return nil;
+        }
         NSString *signatureMessage;
         NSTimeZone *timeZone = [NSTimeZone defaultTimeZone];
-        NSString *secondsFromGMT = [NSString stringWithFormat:@"%ld", (unsigned long)[timeZone secondsFromGMT]];
+        NSString *secondsFromGMT = [NSString stringWithFormat:@"%ld", (long)[timeZone secondsFromGMT]];
         NSRange range;
         BOOL containsMessage = _message != nil;
                 
         if (isIdentityRequest) { // /identify, /login, /logout, /<mpid>/modify
             contentType = @"application/json";
-            [urlRequest setValue:[MParticle sharedInstance].stateMachine.apiKey forHTTPHeaderField:@"x-mp-key"];
+            [urlRequest setValue:apiKey forHTTPHeaderField:@"x-mp-key"];
+            if (!_postData) {
+                MPILogError(@"Cannot build URL request — post data is nil for identity request");
+                return nil;
+            }
             NSString *postDataString = [[NSString alloc] initWithData:_postData encoding:NSUTF8StringEncoding];
+            if (!postDataString) {
+                MPILogError(@"Cannot build URL request — failed to encode post data as UTF-8");
+                return nil;
+            }
             signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, postDataString];
         } else if (containsMessage) { // /events
             contentType = @"application/json";
@@ -221,7 +244,11 @@ static NSDateFormatter *RFC1123DateFormatter;
             }
             
             NSString *query = [_url.defaultURL query];
-            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@?%@", _httpMethod, date, relativePath, query];
+            if (query) {
+                signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@?%@", _httpMethod, date, relativePath, query];
+            } else {
+                signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@", _httpMethod, date, relativePath];
+            }
         }
         
         NSString *hmacSha256Encode = [self hmacSha256Encode:signatureMessage key:secret];

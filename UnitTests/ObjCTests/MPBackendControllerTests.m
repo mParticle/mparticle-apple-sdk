@@ -17,6 +17,7 @@
 #import "MPKitConfiguration.h"
 #import "MPBaseTestCase.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -94,7 +95,20 @@
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
 - (void)cleanUp:(NSTimeInterval)currentTime;
 - (void)processDidFinishLaunching:(NSNotification *)notification;
+- (void)beginBackgroundTask;
+- (void)endBackgroundTask;
+- (void)beginBackgroundTimeCheckLoop;
+- (void)cancelBackgroundTimeCheckLoop;
+- (void)endSessionIfTimedOut;
+@property NSOperationQueue *backgroundCheckQueue;
+@property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
+@property NSTimeInterval timeOfLastEventInBackground;
+@property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 
+@end
+
+@interface MPApplication_PRIVATE(Tests)
++ (void)setMockApplication:(id)mockApplication;
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
@@ -112,10 +126,13 @@
 
 - (void)setUp {
     [super setUp];
-    messageQueue = [MParticle messageQueue];
     
     [MPPersistenceController_PRIVATE setMpid:@1];
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
+    
+    // Must read messageQueue AFTER [MParticle sharedInstance] triggers singleton
+    // recreation, otherwise we get the old executor's queue.
+    messageQueue = [MParticle messageQueue];
     
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
@@ -124,6 +141,8 @@
     
     [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
     self.backendController = [MParticle sharedInstance].backendController;
+    messageQueue = [MParticle messageQueue];
+    
     [self notificationController];
 }
 
@@ -2304,6 +2323,277 @@
     XCTAssertNil(instance.stateMachine.launchInfo.sourceApplication);
     XCTAssertNil(instance.stateMachine.launchInfo.annotation);
     XCTAssertEqual(instance.stateMachine.launchInfo.url, testURL);
+}
+
+#pragma mark - Background Time Check Loop Tests
+
+- (void)testExpirationHandlerCancelsBackgroundTimeCheckLoop {
+    // Verify that the expiration handler cancels the background check loop
+    // so that backgroundTimeRemaining is not called after the OS begins suspension.
+    
+    // 1. Set up a mock UIApplication that tracks backgroundTimeRemaining calls
+    __block NSInteger backgroundTimeRemainingCallCount = 0;
+    __block void (^capturedExpirationHandler)(void) = nil;
+    
+    id mockApplication = OCMClassMock([UIApplication class]);
+    OCMStub([mockApplication applicationState]).andReturn(UIApplicationStateBackground);
+    OCMStub([mockApplication backgroundTimeRemaining]).andDo(^(NSInvocation *invocation) {
+        backgroundTimeRemainingCallCount++;
+        NSTimeInterval remaining = 25.0;
+        [invocation setReturnValue:&remaining];
+    });
+    OCMStub([mockApplication beginBackgroundTaskWithExpirationHandler:([OCMArg checkWithBlock:^BOOL(id obj) {
+        capturedExpirationHandler = [obj copy];
+        return YES;
+    }])]).andReturn((UIBackgroundTaskIdentifier)42);
+    OCMStub([mockApplication endBackgroundTask:(UIBackgroundTaskIdentifier)42]);
+    
+    [MPApplication_PRIVATE setMockApplication:mockApplication];
+    
+    // 2. Start the background task on the main queue (captures the expiration handler)
+    //    beginBackgroundTask dispatches to main, so we use an expectation to wait for it
+    XCTestExpectation *taskStarted = [self expectationWithDescription:@"Background task started"];
+    [self.backendController beginBackgroundTask];
+    // Give the main queue time to process the dispatched block
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [taskStarted fulfill];
+    });
+    [self waitForExpectations:@[taskStarted] timeout:2.0];
+    
+    XCTAssertNotNil(capturedExpirationHandler, @"Expiration handler should have been captured");
+    
+    // 3. Start the background time check loop on the message queue
+    dispatch_async(messageQueue, ^{
+        [self.backendController beginBackgroundTimeCheckLoop];
+    });
+    
+    // Let the loop run a few iterations.
+    // Use NSRunLoop instead of sleep so the main queue stays alive
+    // (the loop calls dispatch_sync to the main queue to check app state)
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:3.0]];
+    NSInteger callsBeforeExpiration = backgroundTimeRemainingCallCount;
+    XCTAssertGreaterThan(callsBeforeExpiration, 0, @"Loop should have called backgroundTimeRemaining at least once");
+    
+    // 4. Simulate the OS firing the expiration handler
+    capturedExpirationHandler();
+    // Let the main queue process the cancelBackgroundTimeCheckLoop and endBackgroundTask dispatches
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.5]];
+    
+    // 5. Record calls right after expiration and wait to see if any new calls arrive
+    NSInteger callsAtExpiration = backgroundTimeRemainingCallCount;
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:3.0]];
+    NSInteger callsAfterExpiration = backgroundTimeRemainingCallCount;
+    
+    // 6. Assert: no new backgroundTimeRemaining calls after expiration
+    XCTAssertEqual(callsAfterExpiration, callsAtExpiration,
+                   @"backgroundTimeRemaining should not be called after expiration handler fires. "
+                   "Calls at expiration: %ld, calls after waiting: %ld",
+                   (long)callsAtExpiration, (long)callsAfterExpiration);
+    
+    // 7. Verify the loop's operation queue is empty (loop exited)
+    XCTAssertEqual(self.backendController.backgroundCheckQueue.operationCount, 0,
+                   @"Background check queue should have no running operations after expiration");
+    
+    // Clean up
+    [self.backendController cancelBackgroundTimeCheckLoop];
+    [MPApplication_PRIVATE setMockApplication:nil];
+}
+
+- (void)testBackgroundTimeCheckLoopStoresTimeRemainingInLocalVariable {
+    // Verify that backgroundTimeRemaining is called only once per loop iteration
+    // (not twice as in the original code that called it again for logging).
+    
+    __block NSInteger backgroundTimeRemainingCallCount = 0;
+    __block NSTimeInterval simulatedTime = 15.0;
+    
+    id mockApplication = OCMClassMock([UIApplication class]);
+    
+    // First call returns background, subsequent calls return foreground to exit loop after one iteration
+    __block NSInteger stateCallCount = 0;
+    OCMStub([mockApplication applicationState]).andDo(^(NSInvocation *invocation) {
+        UIApplicationState state = (stateCallCount == 0)
+            ? UIApplicationStateBackground
+            : UIApplicationStateActive;
+        stateCallCount++;
+        [invocation setReturnValue:&state];
+    });
+    
+    OCMStub([mockApplication backgroundTimeRemaining]).andDo(^(NSInvocation *invocation) {
+        backgroundTimeRemainingCallCount++;
+        [invocation setReturnValue:&simulatedTime];
+    });
+    OCMStub([mockApplication beginBackgroundTaskWithExpirationHandler:OCMOCK_ANY]).andReturn((UIBackgroundTaskIdentifier)42);
+    OCMStub([mockApplication endBackgroundTask:(UIBackgroundTaskIdentifier)42]);
+    
+    [MPApplication_PRIVATE setMockApplication:mockApplication];
+    
+    dispatch_async(messageQueue, ^{
+        [self.backendController beginBackgroundTimeCheckLoop];
+    });
+    
+    // Wait for the loop to run one iteration and exit (it exits because applicationState returns active on second call)
+    // Use NSRunLoop so the main queue stays alive for the loop's dispatch_sync calls
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:3.0]];
+    
+    // Should be called exactly once per iteration (not twice like the old code)
+    XCTAssertEqual(backgroundTimeRemainingCallCount, 1,
+                   @"backgroundTimeRemaining should be called exactly once per loop iteration, got %ld",
+                   (long)backgroundTimeRemainingCallCount);
+    
+    [self.backendController cancelBackgroundTimeCheckLoop];
+    [MPApplication_PRIVATE setMockApplication:nil];
+}
+
+- (void)testEndSessionIfTimedOutDispatchesToMessageQueue {
+    // Verify that endSessionIfTimedOut called from a non-message-queue thread
+    // does not mutate session properties directly on that thread, but instead
+    // dispatches the work to the message queue.
+    
+    // 1. Set up a session and make it eligible for timeout
+    dispatch_sync(messageQueue, ^{
+        [self.backendController beginSessionWithIsManual:NO date:[NSDate date]];
+    });
+    XCTAssertNotNil(self.backendController.session, @"Session should exist");
+    
+    NSTimeInterval pastTime = [[NSDate date] timeIntervalSince1970] - 200;
+    dispatch_sync(messageQueue, ^{
+        self.backendController.sessionTimeout = 30;
+        self.backendController.timeOfLastEventInBackground = pastTime;
+        self.backendController.timeAppWentToBackgroundInCurrentSession = pastTime;
+    });
+    
+    // 2. Capture the session's endTime before the call
+    __block NSTimeInterval endTimeBefore;
+    dispatch_sync(messageQueue, ^{
+        endTimeBefore = self.backendController.session.endTime;
+    });
+    
+    // 3. Call endSessionIfTimedOut from a background thread (not the message queue)
+    XCTestExpectation *bgCallDone = [self expectationWithDescription:@"Background call completed"];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self.backendController endSessionIfTimedOut];
+        [bgCallDone fulfill];
+    });
+    [self waitForExpectations:@[bgCallDone] timeout:2.0];
+    
+    // 4. Wait for the message queue to drain and process the dispatched block
+    XCTestExpectation *mqDrained = [self expectationWithDescription:@"Message queue drained"];
+    dispatch_async(messageQueue, ^{
+        [mqDrained fulfill];
+    });
+    [self waitForExpectations:@[mqDrained] timeout:5.0];
+    
+    // 5. Verify the session was ended (set to nil by processOpenSessionsEndingCurrent:YES)
+    __block MPSession *sessionAfter;
+    dispatch_sync(messageQueue, ^{
+        sessionAfter = self.backendController.session;
+    });
+    XCTAssertNil(sessionAfter, @"Session should be nil after endSessionIfTimedOut processes on the message queue");
+}
+
+- (void)testEndSessionIfTimedOutDoesNothingWhenAutomaticSessionTrackingDisabled {
+    // Verify endSessionIfTimedOut is a no-op when automaticSessionTracking is disabled.
+    
+    dispatch_sync(messageQueue, ^{
+        [self.backendController beginSessionWithIsManual:NO date:[NSDate date]];
+    });
+    XCTAssertNotNil(self.backendController.session, @"Session should exist");
+    
+    NSTimeInterval pastTime = [[NSDate date] timeIntervalSince1970] - 200;
+    dispatch_sync(messageQueue, ^{
+        self.backendController.sessionTimeout = 30;
+        self.backendController.timeOfLastEventInBackground = pastTime;
+        self.backendController.timeAppWentToBackgroundInCurrentSession = pastTime;
+    });
+    
+    // Disable automatic session tracking without calling startWithOptions (which
+    // would recreate backendController and add unrelated async work).
+    [[MParticle sharedInstance] setValue:@NO forKey:@"automaticSessionTracking"];
+    
+    __block NSString *sessionUUIDBefore;
+    __block NSTimeInterval endTimeBefore;
+    __block NSTimeInterval lastEventBefore;
+    dispatch_sync(messageQueue, ^{
+        sessionUUIDBefore = self.backendController.session.uuid;
+        endTimeBefore = self.backendController.session.endTime;
+        lastEventBefore = self.backendController.timeOfLastEventInBackground;
+    });
+    
+    XCTestExpectation *bgCallDone = [self expectationWithDescription:@"Background call completed"];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        [self.backendController endSessionIfTimedOut];
+        [bgCallDone fulfill];
+    });
+    [self waitForExpectations:@[bgCallDone] timeout:2.0];
+    
+    // Drain queue to ensure there is no delayed mutation.
+    XCTestExpectation *mqDrained = [self expectationWithDescription:@"Message queue drained"];
+    dispatch_async(messageQueue, ^{
+        [mqDrained fulfill];
+    });
+    [self waitForExpectations:@[mqDrained] timeout:5.0];
+    
+    __block MPSession *sessionAfter;
+    __block NSTimeInterval endTimeAfter;
+    __block NSTimeInterval lastEventAfter;
+    dispatch_sync(messageQueue, ^{
+        sessionAfter = self.backendController.session;
+        endTimeAfter = self.backendController.session.endTime;
+        lastEventAfter = self.backendController.timeOfLastEventInBackground;
+    });
+    
+    XCTAssertNotNil(sessionAfter, @"Session should not be ended when automaticSessionTracking is disabled");
+    XCTAssertEqualObjects(sessionAfter.uuid, sessionUUIDBefore, @"Session identity should be unchanged");
+    XCTAssertEqualWithAccuracy(endTimeAfter, endTimeBefore, DBL_EPSILON, @"Session endTime should be unchanged");
+    XCTAssertEqualWithAccuracy(lastEventAfter, lastEventBefore, DBL_EPSILON, @"Background last-event time should be unchanged");
+}
+
+- (void)testConcurrentEndSessionIfTimedOutDoesNotCrash {
+    // Verify that calling endSessionIfTimedOut simultaneously from a background
+    // thread and the message queue does not crash.
+    
+    // 1. Set up a session eligible for timeout
+    dispatch_sync(messageQueue, ^{
+        [self.backendController beginSessionWithIsManual:NO date:[NSDate date]];
+    });
+    XCTAssertNotNil(self.backendController.session, @"Session should exist");
+    
+    NSTimeInterval pastTime = [[NSDate date] timeIntervalSince1970] - 200;
+    dispatch_sync(messageQueue, ^{
+        self.backendController.sessionTimeout = 30;
+        self.backendController.timeOfLastEventInBackground = pastTime;
+        self.backendController.timeAppWentToBackgroundInCurrentSession = pastTime;
+    });
+    
+    // 2. Call from both a background thread and the message queue simultaneously
+    XCTestExpectation *bgDone = [self expectationWithDescription:@"Background thread done"];
+    XCTestExpectation *mqDone = [self expectationWithDescription:@"Message queue done"];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        [self.backendController endSessionIfTimedOut];
+        [bgDone fulfill];
+    });
+    
+    dispatch_async(messageQueue, ^{
+        [self.backendController endSessionIfTimedOut];
+        [mqDone fulfill];
+    });
+    
+    [self waitForExpectations:@[bgDone, mqDone] timeout:5.0];
+    
+    // 3. Wait for the message queue to fully drain
+    XCTestExpectation *drained = [self expectationWithDescription:@"Queue drained"];
+    dispatch_async(messageQueue, ^{
+        [drained fulfill];
+    });
+    [self waitForExpectations:@[drained] timeout:5.0];
+    
+    // 4. Verify session ended exactly once (session is nil, no crash)
+    __block MPSession *sessionAfter;
+    dispatch_sync(messageQueue, ^{
+        sessionAfter = self.backendController.session;
+    });
+    XCTAssertNil(sessionAfter, @"Session should be nil after concurrent endSessionIfTimedOut calls");
 }
 
 @end

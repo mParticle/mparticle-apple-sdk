@@ -87,4 +87,98 @@ final class MPDateFormatterTests: XCTestCase {
             )
         }
     }
+
+    // MARK: - Thread Safety Tests
+
+    func testDateFormatterThreadSafety() {
+        // This stress test verifies that MPDateFormatter doesn't crash when
+        // called concurrently from multiple threads. DateFormatter is NOT
+        // thread-safe, so without synchronization this test would likely crash.
+        // Race conditions are non-deterministic, so this test increases the
+        // likelihood of catching issues but cannot guarantee detection.
+
+        let expectation = self.expectation(description: "Thread safety stress test")
+
+        let group = DispatchGroup()
+        let concurrentQueue = DispatchQueue(label: "com.mparticle.test.dateformatter", attributes: .concurrent)
+
+        let iterations = 100
+        var encounteredError = false
+        let errorLock = NSLock()
+
+        let rfc3339Strings = [
+            "2024-01-15T10:30:00+0000",
+            "2023-06-20T15:45:30-0500",
+            "1955-11-05T01:15:00-0800"
+        ]
+
+        let rfc1123Strings = [
+            "Mon, 15 Jan 2024 10:30:00 GMT",
+            "Tue, 20 Jun 2023 15:45:30 GMT",
+            "Sat, 05 Nov 1955 09:15:00 GMT"
+        ]
+
+        // Multiple threads parsing RFC3339 dates
+        for _ in 0..<3 {
+            group.enter()
+            concurrentQueue.async {
+                for j in 0..<iterations {
+                    errorLock.lock()
+                    let hasError = encounteredError
+                    errorLock.unlock()
+                    if hasError { break }
+
+                    let dateString = rfc3339Strings[j % rfc3339Strings.count]
+                    let date = MPDateFormatter.date(fromStringRFC3339: dateString)
+                    _ = date // Use the result to prevent optimization
+                }
+                group.leave()
+            }
+        }
+
+        // Multiple threads parsing RFC1123 dates
+        for _ in 0..<3 {
+            group.enter()
+            concurrentQueue.async {
+                for j in 0..<iterations {
+                    errorLock.lock()
+                    let hasError = encounteredError
+                    errorLock.unlock()
+                    if hasError { break }
+
+                    let dateString = rfc1123Strings[j % rfc1123Strings.count]
+                    let date = MPDateFormatter.date(fromStringRFC1123: dateString)
+                    _ = date
+                }
+                group.leave()
+            }
+        }
+
+        // Multiple threads formatting dates to strings
+        for _ in 0..<2 {
+            group.enter()
+            concurrentQueue.async {
+                for j in 0..<iterations {
+                    errorLock.lock()
+                    let hasError = encounteredError
+                    errorLock.unlock()
+                    if hasError { break }
+
+                    let date = Date(timeIntervalSince1970: Double(j * 86400))
+                    let rfc3339 = MPDateFormatter.string(fromDateRFC3339: date)
+                    let rfc1123 = MPDateFormatter.string(fromDateRFC1123: date)
+                    _ = rfc3339
+                    _ = rfc1123
+                }
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            XCTAssertFalse(encounteredError, "Thread safety test should complete without errors")
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 30, handler: nil)
+    }
 }

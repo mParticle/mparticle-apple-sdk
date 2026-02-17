@@ -1,6 +1,11 @@
 import Foundation
 
 @objc public class MPDateFormatter: NSObject {
+    // MARK: - Serial queue for thread-safe access to DateFormatter instances
+
+    // DateFormatter is NOT thread-safe, so we use a serial queue to synchronize access
+    private static let formatterQueue = DispatchQueue(label: "com.mparticle.dateformatter")
+
     private static var dateFormatterRFC3339: DateFormatter = {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -30,15 +35,17 @@ import Foundation
             return nil
         }
 
-        if let date = dateFormatterRFC3339.date(from: dateString) {
-            return date
-        }
+        return formatterQueue.sync {
+            if let date = dateFormatterRFC3339.date(from: dateString) {
+                return date
+            }
 
-        if let date = dateFormatterRFC1123.date(from: dateString) {
-            return date
-        }
+            if let date = dateFormatterRFC1123.date(from: dateString) {
+                return date
+            }
 
-        return dateFormatterRFC850.date(from: dateString)
+            return dateFormatterRFC850.date(from: dateString)
+        }
     }
 
     @objc public static func date(fromStringRFC1123 dateString: String) -> Date? {
@@ -46,7 +53,9 @@ import Foundation
             return nil
         }
 
-        return dateFormatterRFC1123.date(from: dateString)
+        return formatterQueue.sync {
+            dateFormatterRFC1123.date(from: dateString)
+        }
     }
 
     @objc public static func date(fromStringRFC3339 dateString: String) -> Date? {
@@ -54,14 +63,20 @@ import Foundation
             return nil
         }
 
-        return dateFormatterRFC3339.date(from: dateString)
+        return formatterQueue.sync {
+            dateFormatterRFC3339.date(from: dateString)
+        }
     }
 
     @objc public static func string(fromDateRFC1123 date: Date) -> String? {
-        return dateFormatterRFC1123.string(from: date)
+        return formatterQueue.sync {
+            dateFormatterRFC1123.string(from: date)
+        }
     }
 
     @objc public static func string(fromDateRFC3339 date: Date) -> String? {
-        return dateFormatterRFC3339.string(from: date)
+        return formatterQueue.sync {
+            dateFormatterRFC3339.string(from: date)
+        }
     }
 }

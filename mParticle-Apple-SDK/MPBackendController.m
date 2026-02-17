@@ -343,13 +343,25 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     NSString *previousSessionStateFile = [stateMachineDirectoryPath stringByAppendingPathComponent:kMPPreviousSessionStateFileName];
     NSDictionary *previousSessionStateDictionary = @{kMPASTPreviousSessionSuccessfullyClosedKey:previousSessionSuccessfullyClosed};
     
-    if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-    } else if ([fileManager fileExistsAtPath:previousSessionStateFile]) {
-        [fileManager removeItemAtPath:previousSessionStateFile error:nil];
+    @try {
+        if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+            NSError *dirError = nil;
+            [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:&dirError];
+            if (dirError) {
+                MPILogError(@"Failed to create state machine directory: %@", dirError);
+                return;
+            }
+        } else if ([fileManager fileExistsAtPath:previousSessionStateFile]) {
+            [fileManager removeItemAtPath:previousSessionStateFile error:nil];
+        }
+        
+        BOOL success = [previousSessionStateDictionary writeToFile:previousSessionStateFile atomically:YES];
+        if (!success) {
+            MPILogError(@"Failed to write previous session state to file");
+        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception writing previous session state: %@", exception);
     }
-    
-    [previousSessionStateDictionary writeToFile:previousSessionStateFile atomically:YES];
 }
 
 - (void)processDidFinishLaunching:(NSNotification *)notification {
@@ -598,8 +610,10 @@ static BOOL skipNextUpload = NO;
                             [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self.deletedUserAttributes];
                             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
                             [uploadBuilder build:^(MPUpload *upload) {
-                                //Save the Upload to the Database (3)
-                                [persistence saveUpload:upload];
+                                if (upload) {
+                                    //Save the Upload to the Database (3)
+                                    [persistence saveUpload:upload];
+                                }
                             }];
                         }
                         
@@ -1888,6 +1902,7 @@ static BOOL skipNextUpload = NO;
         if (self.backendBackgroundTaskIdentifier == UIBackgroundTaskInvalid) {
             self.backendBackgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
                 MPILogDebug(@"SDK has ended background activity together with the app.");
+                [self cancelBackgroundTimeCheckLoop];
                 [self endBackgroundTask];
             }];
         }
@@ -1934,31 +1949,31 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    if (self.session != nil && [self shouldEndSession]) {
-        NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-        NSTimeInterval lastEventTime = self.timeOfLastEventInBackground;
-        self.session.endTime = lastEventTime;
-        
-        [self updateSessionBackgroundTime];
-        
-        // Since we use the timeAppWentToBackground to calculate background time, but timeOfLastEventInBackground as the endTime,
-        // this can result in incorrectly calculated foreground time when ending a session in the background. So subtract the additional
-        // time since timeOfLastEventInBackground from the background time to correct this.
-        self.session.backgroundTime -= currentTime - self.timeOfLastEventInBackground;
-                
-        // Reset time of last event to reset the session timeout
-        self.timeOfLastEventInBackground = currentTime;
-        
-        // Reset the time app went to background so that it's correctly calculated in the new session
-        self.timeAppWentToBackgroundInCurrentSession = currentTime;
-        
-        [MParticle executeOnMessage:^{
+    [MParticle executeOnMessage:^{
+        if (self.session != nil && [self shouldEndSession]) {
+            NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+            NSTimeInterval lastEventTime = self.timeOfLastEventInBackground;
+            self.session.endTime = lastEventTime;
+            
+            [self updateSessionBackgroundTime];
+            
+            // Since we use the timeAppWentToBackground to calculate background time, but timeOfLastEventInBackground as the endTime,
+            // this can result in incorrectly calculated foreground time when ending a session in the background. So subtract the additional
+            // time since timeOfLastEventInBackground from the background time to correct this.
+            self.session.backgroundTime -= currentTime - self.timeOfLastEventInBackground;
+                    
+            // Reset time of last event to reset the session timeout
+            self.timeOfLastEventInBackground = currentTime;
+            
+            // Reset the time app went to background so that it's correctly calculated in the new session
+            self.timeAppWentToBackgroundInCurrentSession = currentTime;
+            
             [[MParticle sharedInstance].persistenceController updateSession:self.session];
             [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
                 MPILogVerbose(@"Session ended in the background. New session will begin if an mParticle event is logged or app enters foreground.");
             }];
-        }];
-    }
+        }
+    }];
 }
 
 #pragma mark Application Lifecycle
@@ -2036,14 +2051,17 @@ static BOOL skipNextUpload = NO;
         
         // Loop to check the background state and time remaining to decide when to upload
         while (applicationState == UIApplicationStateBackground) {
-            // Handle edge case where app leaves and re-enters background during while the thread is asleep
+            [self endSessionIfTimedOut];
+            
+            // Check cancellation immediately before accessing backgroundTimeRemaining
+            // to avoid calling it after the OS has begun tearing down XPC connections
             if (!weakBlockOperation || weakBlockOperation.isCancelled) {
                 return;
             }
             
-            [self endSessionIfTimedOut];
+            NSTimeInterval timeRemaining = sharedApplication.backgroundTimeRemaining;
             
-            if (sharedApplication.backgroundTimeRemaining <= kMPRemainingBackgroundTimeMinimumThreshold) {
+            if (timeRemaining <= kMPRemainingBackgroundTimeMinimumThreshold) {
                 // Less than kMPRemainingBackgroundTimeMinimumThreshold seconds left in the background, upload the batch
                 MPILogVerbose(@"Less than %f time remaining in background, uploading batch and ending background task", kMPRemainingBackgroundTimeMinimumThreshold);
                 [MParticle executeOnMessage:^{
@@ -2055,7 +2073,7 @@ static BOOL skipNextUpload = NO;
                 }];
                 return;
             }
-            MPILogVerbose(@"Background time remaining %f", sharedApplication.backgroundTimeRemaining);
+            MPILogVerbose(@"Background time remaining %f", timeRemaining);
             
             // Short sleep to prevent burning CPU cycles
             [NSThread sleepForTimeInterval:1.0];

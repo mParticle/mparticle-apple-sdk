@@ -68,6 +68,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 
 - (void)logKitBatch:(NSString *)batch;
++ (void)executeOnMain:(void(^)(void))block;
++ (void)executeOnMainSync:(void(^)(void))block;
 
 @end
 
@@ -109,9 +111,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!self) {
         return nil;
     }
-    
+
     self.identifying = NO;
-    
+
     return self;
 }
 
@@ -148,11 +150,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (_configURL) {
         return _configURL;
     }
-    
+
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
     NSString *configHost = [MParticle sharedInstance].networkOptions.configHost ?: kMPURLHostConfig;
-    
+
     NSString *dataPlanConfigString;
     NSString *dataPlanId = MParticle.sharedInstance.dataPlanId;
     if (dataPlanId != nil) {
@@ -172,7 +174,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
     urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
-    
+
     if ([MParticle sharedInstance].networkOptions.overridesConfigSubdirectory) {
         NSString *configURLFormat = [urlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
         urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
@@ -180,7 +182,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (dataPlanConfigString) {
         urlString = [NSString stringWithFormat:@"%@%@", urlString, dataPlanConfigString];
     }
-    
+
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
     if (modifiedURL && defaultURL) {
         _configURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
@@ -198,13 +200,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
-    
+
     if (mpUpload.uploadSettings.overridesEventsSubdirectory) {
         urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     } else {
         urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     }
-    
+
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
     MPURL *eventURL;
     if (modifiedURL && defaultURL) {
@@ -215,7 +217,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (MPURL *)audienceURL {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
+
     NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
     NSString *audienceURLFormat = [audienceFormat stringByAppendingString:@"?mpid=%@"];
     NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
@@ -228,16 +230,16 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         audienceURLFormat = [urlFormat stringByAppendingString:@"?mpid=%@"];
         urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     }
-    
+
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
     defaultURL.accessibilityHint = @"audience";
     modifiedURL.accessibilityHint = @"audience";
-    
+
     MPURL *audienceURL;
     if (modifiedURL && defaultURL) {
         audienceURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
-    
+
     return audienceURL;
 }
 
@@ -245,9 +247,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (_identifyURL) {
         return _identifyURL;
     }
-    
+
     _identifyURL = [self identityURL:@"identify"];
-    
+
     return _identifyURL;
 }
 
@@ -255,9 +257,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (_loginURL) {
         return _loginURL;
     }
-    
+
     _loginURL = [self identityURL:@"login"];
-    
+
     return _loginURL;
 }
 
@@ -265,9 +267,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (_logoutURL) {
         return _logoutURL;
     }
-    
+
     _logoutURL = [self identityURL:@"logout"];
-    
+
     return _logoutURL;
 }
 
@@ -281,22 +283,22 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
-    
+
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
         urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
     } else {
         urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
     }
-    
+
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
     defaultURL.accessibilityHint = @"identity";
     modifiedURL.accessibilityHint = @"identity";
-    
+
     MPURL *identityURL;
     if (modifiedURL && defaultURL) {
         identityURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
-    
+
     return identityURL;
 }
 
@@ -321,18 +323,18 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
     defaultURL.accessibilityHint = @"identity";
     modifiedURL.accessibilityHint = @"identity";
-    
+
     MPURL *modifyURL;
     if (modifiedURL && defaultURL) {
         modifyURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
-        
+
     return modifyURL;
 }
 
 - (MPURL *)aliasURLForUpload:(MPUpload *)mpUpload {
     NSString *pathComponent = @"alias";
-    
+
     NSString *eventHost;
     if (mpUpload.uploadSettings.aliasTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
         eventHost = mpUpload.uploadSettings.aliasTrackingHost;
@@ -341,28 +343,28 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
-    
+
     BOOL overrides = mpUpload.uploadSettings.overridesAliasSubdirectory;
     if (!mpUpload.uploadSettings.eventsOnly && !mpUpload.uploadSettings.aliasHost) {
         eventHost = mpUpload.uploadSettings.eventsHost ?: self.defaultEventHost;
         overrides = mpUpload.uploadSettings.overridesEventsSubdirectory;
     }
-    
+
     if (overrides) {
         urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, pathComponent];
     } else {
         urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
     }
-    
+
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
     defaultURL.accessibilityHint = @"identity";
     modifiedURL.accessibilityHint = @"identity";
-    
+
     MPURL *aliasURL;
     if (modifiedURL && defaultURL) {
         aliasURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
-    
+
     return aliasURL;
 }
 
@@ -386,7 +388,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSTimeInterval retryAfter = 7200; // Default of 2 hours
     NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
     id suggestedRetryAfter = httpHeaders[@"Retry-After"];
-    
+
     if (!MPIsNull(suggestedRetryAfter)) {
         if ([suggestedRetryAfter isKindOfClass:[NSString class]]) {
             if ([suggestedRetryAfter containsString:@":"]) { // Date
@@ -409,7 +411,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             retryAfter = MIN([(NSNumber *)suggestedRetryAfter doubleValue], maxRetryAfter);
         }
     }
-    
+
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
     if ([minUploadDate compare:now] == NSOrderedAscending) {
         [MParticle.sharedInstance.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
@@ -424,16 +426,16 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 - (NSNumber *)maxAgeForCache:(nonnull NSString *)cache {
     NSNumber *maxAge;
     cache = cache.lowercaseString;
-    
+
     if ([cache containsString: @"max-age="]) {
         NSArray *maxAgeComponents = [cache componentsSeparatedByString:@"max-age="];
         NSString *beginningOfMaxAgeString = [maxAgeComponents objectAtIndex:1];
         NSArray *components = [beginningOfMaxAgeString componentsSeparatedByString:@","];
         NSString *maxAgeValue = [components objectAtIndex:0];
-        
+
         maxAge = [NSNumber numberWithDouble:MIN([maxAgeValue doubleValue], CONFIG_REQUESTS_MAX_EXPIRATION_AGE)];
     }
-    
+
     return maxAge;
 }
 
@@ -445,65 +447,76 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     return [[MPConnector alloc] init];
 }
 
+- (UIBackgroundTaskIdentifier)beginSafeBackgroundTaskWithExpirationHandler:(void(^_Nullable)(void))handler {
+    if ([MPStateMachine_PRIVATE isAppExtension]) {
+        return UIBackgroundTaskInvalid;
+    }
+    __block UIBackgroundTaskIdentifier taskId = UIBackgroundTaskInvalid;
+    [MParticle executeOnMainSync:^{
+        taskId = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+            if (taskId != UIBackgroundTaskInvalid) {
+                MPILogDebug(@"Background task expiration handler invoked");
+                if (handler) handler();
+                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:taskId];
+                taskId = UIBackgroundTaskInvalid;
+            }
+        }];
+    }];
+    return taskId;
+}
+
+- (void)endSafeBackgroundTask:(UIBackgroundTaskIdentifier)taskId {
+    if (taskId == UIBackgroundTaskInvalid) return;
+    [MParticle executeOnMain:^{
+        [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:taskId];
+    }];
+}
+
 - (void)requestConfig:(nullable NSObject<MPConnectorProtocol> *)connector withCompletionHandler:(void(^)(BOOL success))completionHandler {
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     BOOL shouldSendRequest = [userDefaults isConfigurationExpired];
-    
+
     if (!shouldSendRequest) {
         completionHandler(YES);
         return;
     }
-        
+
     MPILogVerbose(@"Starting config request");
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-    
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-            if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-                backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-            }
-        }];
-    }
-    
+
+    UIBackgroundTaskIdentifier backgroundTaskIdentifier = [self beginSafeBackgroundTaskWithExpirationHandler:nil];
+
     connector = connector ? connector : [self makeConnector];
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromGetRequestToURL:self.configURL];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
-    
+
     NSString *cacheControl = httpResponse.allHeaderFields[kMPHTTPCacheControlHeaderKey];
     NSString *ageString = httpResponse.allHeaderFields[kMPHTTPAgeHeaderKey];
     NSNumber *maxAge = [self maxAgeForCache:cacheControl];
-    
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }
-    
+
+    [self endSafeBackgroundTask:backgroundTaskIdentifier];
+
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-        
+
     if (responseCode == HTTPStatusCodeNotModified) {
         MPILogDebug(@"Config response 304 Not Modified - using cached config");
         MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
         [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
-        
+
         completionHandler(YES);
         return;
     }
-    
+
     BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-    
+
     if (!data && success) {
         completionHandler(NO);
         MPILogError(@"Config request failed - no data received (responseCode: %ld). Kits may not initialize.", (long)responseCode);
         return;
     }
-    
+
     success = success && [data length] > 0;
 
     NSDictionary *configurationDictionary = nil;
@@ -517,7 +530,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             responseCode = HTTPStatusCodeNoContent;
         }
     }
-    
+
     if (success && configurationDictionary) {
         NSDictionary *headersDictionary = [httpResponse allHeaderFields];
         NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
@@ -528,7 +541,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
             [userDefaults setConfiguration:configurationDictionary eTag:eTag requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
         }
-        
+
         completionHandler(success);
     } else {
         MPILogError(@"Config request failed - could not parse response or wrong message type (responseCode: %ld). Kits may not initialize.", (long)responseCode);
@@ -537,17 +550,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)requestAudiencesWithCompletionHandler:(MPAudienceResponseHandler)completionHandler {
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-            if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-                backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-            }
-        }];
-    }
-    
+    UIBackgroundTaskIdentifier backgroundTaskIdentifier = [self beginSafeBackgroundTaskWithExpirationHandler:nil];
+
     __weak MPNetworkCommunication_PRIVATE *weakSelf = self;
     NSObject<MPConnectorProtocol> *connector = [self makeConnector];
 
@@ -559,14 +563,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         completionHandler(NO, nil, nil);
         return;
     }
-    
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }
-    
+
+    [self endSafeBackgroundTask:backgroundTaskIdentifier];
+
     if (!data) {
         NSError *audienceError = [NSError errorWithDomain:@"mParticle Audiences"
                                                      code:httpResponse.statusCode
@@ -574,18 +573,18 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         completionHandler(NO, nil, audienceError);
         return;
     }
-    
+
     NSMutableArray<MPAudience *> *currentAudiences = nil;
     BOOL success = NO;
-    
+
     NSArray *audiencesList = nil;
     NSInteger responseCode = [httpResponse statusCode];
     success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
-    
+
     if (success) {
         NSError *serializationError = nil;
         NSDictionary *audiencesDictionary = nil;
-        
+
         @try {
             audiencesDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
             success = serializationError == nil;
@@ -594,29 +593,29 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             success = NO;
             MPILogError(@"Audiences Error: %@", [exception reason]);
         }
-        
+
         if (success) {
             audiencesList = audiencesDictionary[kMPAudienceMembershipKey];
         }
-        
+
         if (audiencesList.count > 0) {
             currentAudiences = [[NSMutableArray alloc] init];
-            
+
             for (NSDictionary *audienceDictionary in audiencesList) {
                 MPAudience *audience = [[MPAudience alloc] initWithAudienceId:audienceDictionary[kMPAudienceIdKey]];
                 [currentAudiences addObject:audience];
             }
-            
+
             MPILogVerbose(@"Audiences Response Code: %ld", (long)responseCode);
         } else {
             MPILogWarning(@"Audiences Error - Response Code: %ld", (long)responseCode);
         }
     }
-    
+
     if (currentAudiences.count == 0) {
         currentAudiences = nil;
     }
-    
+
     NSError *audienceError = nil;
 
     if (responseCode == HTTPStatusCodeForbidden) {
@@ -624,7 +623,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                            code:responseCode
                                        userInfo:@{@"message":@"Audiences not enabled for this org."}];
     }
-    
+
     completionHandler(success, currentAudiences, audienceError);
 }
 
@@ -633,24 +632,24 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return YES;  //stop upload loop
     }
-    
+
     MPURL *eventURL = [self eventURLForUpload:upload];
-    
+
     NSString *uploadString = [upload serializedString];
     NSObject<MPConnectorProtocol> *connector = [self makeConnector];
-    
+
     MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
-    
+
     NSData *zipUploadData;
     NSNumber *authTimestamp = [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp;
     NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
-    
+
     if (authStatus != nil && authTimestamp != nil) {
         NSDictionary *uploadDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
         NSMutableDictionary *uploadDict = [uploadDictionary mutableCopy];
-        
+
         NSMutableDictionary *deviceDict = [uploadDict[kMPDeviceInformationKey] mutableCopy];
-        
+
         switch (authStatus.integerValue) {
             case MPATTAuthorizationStatusNotDetermined:
                 deviceDict[kMPATT] = @"not_determined";
@@ -670,11 +669,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             default:
                 break;
         }
-        
+
         deviceDict[kMPATTTimestamp] = authTimestamp;
-        
+
         uploadDict[kMPDeviceInformationKey] = [deviceDict copy];
-        
+
         NSData *updatedData = [NSJSONSerialization dataWithJSONObject:[uploadDict copy] options:0 error:nil];
         uploadString = [[NSString alloc] initWithData:updatedData encoding:NSUTF8StringEncoding];
 
@@ -682,20 +681,20 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     } else {
         zipUploadData = [MPZipPRIVATE compressedDataFromData:upload.uploadData];
     }
-    
+
     if (zipUploadData == nil || zipUploadData.length <= 0) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
         return NO;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-    
+
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:eventURL
                                                                                       message:uploadString
                                                                              serializedParams:zipUploadData
                                                                                        secret:upload.uploadSettings.secret];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
-    
+
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
@@ -706,7 +705,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             [[MParticle sharedInstance] logKitBatch:uploadString];
         }
     }
-    
+
     BOOL success = isSuccessCode && data && [data length] > 0;
     if (success) {
         @try {
@@ -718,25 +717,25 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                 [MPNetworkCommunication_PRIVATE parseConfiguration:responseDictionary];
             }
             MPILogVerbose(@"Upload complete: %@\n", uploadString);
-            
+
         } @catch (NSException *exception) {
             MPILogError(@"Upload error: %@", [exception reason]);
         }
     }
-    
+
     MPILogVerbose(@"Upload execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-    
+
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
         [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeMessage];
         return YES;
     }
-    
+
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
         return YES;
     }
-    
+
     return NO;
 }
 
@@ -745,47 +744,47 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return YES; //stop upload loop
     }
-    
+
     MPURL *aliasURL = [self aliasURLForUpload:upload];
-    
+
     NSString *uploadString = [upload serializedString];
     NSObject<MPConnectorProtocol> *connector = [self makeConnector];
-    
+
     MPILogVerbose(@"Beginning alias request with upload ID: %@", upload.uuid);
-    
+
     if (upload.uploadData == nil || upload.uploadData.length <= 0) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
         return NO;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-    
+
     MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", aliasURL.url, uploadString);
-    
+
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:aliasURL
                                                                                       message:uploadString
                                                                              serializedParams:upload.uploadData
                                                                                        secret:upload.uploadSettings.secret];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
-    
+
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Alias response code: %ld", (long)responseCode);
-    
+
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
     if (isSuccessCode || isInvalidCode) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
-    
+
     NSString *responseString = [[NSString alloc] initWithData:response.data encoding:NSUTF8StringEncoding];
     if (responseString != nil && responseString.length > 0) {
         MPILogVerbose(@"Alias response:\n%@", responseString);
     }
-    
+
     MPAliasResponse *aliasResponse = [[MPAliasResponse alloc] init];
     aliasResponse.responseCode = responseCode;
     aliasResponse.willRetry = NO;
-    
+
     NSDictionary *requestDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
     NSNumber *sourceMPID = requestDictionary[@"source_mpid"];
     NSNumber *destinationMPID = requestDictionary[@"destination_mpid"];
@@ -795,7 +794,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:endTimeNumber.doubleValue/1000];
     aliasResponse.requestID = requestDictionary[@"request_id"];
     aliasResponse.request = [MPAliasRequest requestWithSourceMPID:sourceMPID destinationMPID:destinationMPID startTime:startTime endTime:endTime];
-    
+
     if (!isSuccessCode && data && data.length > 0) {
         @try {
             NSError *serializationError = nil;
@@ -810,36 +809,27 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             MPILogError(@"Alias error: %@", [exception reason]);
         }
     }
-    
+
     MPILogVerbose(@"Alias execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-    
+
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
         aliasResponse.willRetry = YES;
         [self throttleWithHTTPResponse:httpResponse uploadType:upload.uploadType];
         return YES;
     }
-    
+
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
         return YES;
     }
-    
+
     return NO;
 }
 
 - (void)upload:(NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler {
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-            if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-                backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-            }
-        }];
-    }
-    
+    UIBackgroundTaskIdentifier backgroundTaskIdentifier = [self beginSafeBackgroundTaskWithExpirationHandler:nil];
+
     for (int index = 0; index < uploads.count; index++) {
         @autoreleasepool {
             MPUpload *upload = uploads[index];
@@ -854,18 +844,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             }
         }
     }
-    
-    if (![MPStateMachine_PRIVATE isAppExtension]) {
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }
+
+    [self endSafeBackgroundTask:backgroundTaskIdentifier];
     completionHandler();
 }
 
 - (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion {
-    
+
     if (self.identifying) {
         MPILogWarning(@"Identity API request blocked - another identity request is already in progress");
         if (completion) {
@@ -873,7 +858,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         }
         return;
     }
-    
+
     if ([MParticle sharedInstance].stateMachine.optOut) {
         MPILogWarning(@"Identity API request blocked - SDK is opted out");
         if (completion) {
@@ -881,11 +866,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         }
         return;
     }
-    
+
     if (blockOtherRequests) {
         self.identifying = YES;
     }
-    
+
     MPEndpoint endpointType;
     MPURL *mpURL;
     if ([self.identifyURL.url.absoluteString isEqualToString:url.absoluteString]) {
@@ -901,26 +886,25 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         endpointType = MPEndpointIdentityModify;
         mpURL = self.modifyURL;
     }
-    
+
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-    
+
     NSDictionary *dictionary = [identityRequest dictionaryRepresentation];
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     NSString *jsonRequest = [[NSString alloc] initWithData:data
                                                   encoding:NSUTF8StringEncoding];
-    
+
     MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
-    
-    
+
     BOOL success = NO;
     NSError *error = nil;
     NSDictionary *responseDictionary = nil;
     NSString *responseString = nil;
     NSInteger responseCode = 0;
-    
+
     BOOL enableIdentityCaching = MParticle.sharedInstance.stateMachine.enableIdentityCaching;
     BOOL usedCachedResponse = NO;
-        
+
     // Try to use the cache if enabled
     if (enableIdentityCaching) {
         MPIdentityCachedResponse *cachedResponse = [MPIdentityCaching getCachedIdentityResponseForEndpoint:endpointType identityRequest:identityRequest];
@@ -929,7 +913,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                 NSError *serializationError = nil;
                 responseString = [[NSString alloc] initWithData:cachedResponse.bodyData encoding:NSUTF8StringEncoding];
                 responseDictionary = [NSJSONSerialization JSONObjectWithData:cachedResponse.bodyData options:0 error:&serializationError];
-                
+
                 if (serializationError) {
                     responseDictionary = nil;
                     success = NO;
@@ -947,52 +931,38 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                 MPILogError(@"Identity response serialization error: %@", [exception reason]);
             }
         }
-    } 
-    
+    }
+
     if (!usedCachedResponse) {
-        __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        
-        if (![MPStateMachine_PRIVATE isAppExtension]) {
-            backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-                if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                    self.identifying = NO;
-                    
-                    [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-                    backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                }
-            }];
-        }
-        
+        UIBackgroundTaskIdentifier backgroundTaskIdentifier = [self beginSafeBackgroundTaskWithExpirationHandler:^{
+            self.identifying = NO;
+        }];
+
         NSObject<MPConnectorProtocol> *connector = [self makeConnector];
         NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:mpURL
                                                                                           message:nil
-                                                                                 serializedParams:data 
+                                                                                 serializedParams:data
                                                                                            secret:nil];
-        
+
         NSData *responseData = response.data;
         error = response.error;
         NSHTTPURLResponse *httpResponse = response.httpResponse;
-        
-        if (![MPStateMachine_PRIVATE isAppExtension]) {
-            if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-                backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-            }
-        }
-        
+
+        [self endSafeBackgroundTask:backgroundTaskIdentifier];
+
         responseCode = [httpResponse statusCode];
         success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
         success = success && [responseData length] > 0;
-        
-        
+
+
         MPILogVerbose(@"Identity response code: %ld", (long)responseCode);
-                
+
         if (success) {
             @try {
                 NSError *serializationError = nil;
                 responseString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
                 responseDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&serializationError];
-                
+
                 if (responseDictionary && !serializationError) {
                     // Cache response if it contains the custom max age header and the feature is enabled
                     if (enableIdentityCaching) {
@@ -1018,11 +988,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             }
         }
     }
-    
+
     MPILogVerbose(@"Identity execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-    
+
     self.identifying = NO;
-    
+
     if (success) {
         if (responseString) {
             MPILogVerbose(@"Identity response:\n%@", responseString);
@@ -1068,7 +1038,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!userDefaults[kMPATT] && identifyRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
-    
+
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:identifyRequest];
     [self identityApiRequestWithURL:self.identifyURL.url identityRequest:request blockOtherRequests: YES completion:completion];
 }
@@ -1078,7 +1048,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!userDefaults[kMPATT] && loginRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
-    
+
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:loginRequest];
     [self identityApiRequestWithURL:self.loginURL.url identityRequest:request blockOtherRequests: YES completion:completion];
 }
@@ -1089,7 +1059,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!userDefaults[kMPATT] && logoutRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
-    
+
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:logoutRequest];
     [self identityApiRequestWithURL:self.logoutURL.url identityRequest:request blockOtherRequests: YES completion:completion];
 }
@@ -1099,19 +1069,19 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!userDefaults[kMPATT] && modifyRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
-    
+
     NSMutableArray *identityChanges = [NSMutableArray array];
-    
+
     NSDictionary *identitiesDictionary = modifyRequest.identities;
     NSDictionary *existingIdentities = [MParticle sharedInstance].identity.currentUser.identities;
-    
+
     [identitiesDictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, NSString *value, BOOL * _Nonnull stop) {
         NSString *oldValue = existingIdentities[identityType];
-        
+
         if ((NSNull *)value == [NSNull null]) {
             value = nil;
         }
-        
+
         if (!oldValue || ![value isEqualToString:oldValue]) {
             MPIdentity userIdentity = (MPIdentity)[identityType intValue];
             NSString *stringType = [MPIdentityHTTPIdentities stringForIdentityType:userIdentity];
@@ -1119,9 +1089,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             [identityChanges addObject:identityChange];
         }
     }];
-    
+
     [self modifyWithIdentityChanges:identityChanges blockOtherRequests:YES completion:completion];
-    
+
 }
 
 - (void)modifyDeviceID:(NSString *_Nonnull)deviceIdType value:(NSString *_Nonnull)value oldValue:(NSString *_Nonnull)oldValue {
@@ -1132,7 +1102,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)modifyWithIdentityChanges:(NSArray *)identityChanges blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerModifyCallback)completion {
-    
+
     if (identityChanges == nil || identityChanges.count == 0) {
         if (completion) {
             completion([[MPIdentityHTTPModifySuccessResponse alloc] init], nil);
@@ -1160,7 +1130,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (MPIsNull(configuration) || MPIsNull(configuration[kMPMessageTypeKey])) {
         return;
     }
-    
+
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
 
     // Consumer Information

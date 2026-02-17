@@ -482,4 +482,63 @@ class MPUserDefaultsTests: XCTestCase {
             configuration as NSDictionary
         )
     }
+
+    // MARK: - Thread Safety Tests
+
+    func testUserDefaultsSingletonThreadSafety() {
+        // Stress test to verify the singleton accessor is thread-safe
+        // This tests the fix for the race condition in standardUserDefaults()
+
+        let expectation = self.expectation(description: "Thread safety test completed")
+
+        let group = DispatchGroup()
+        let concurrentQueue = DispatchQueue(
+            label: "com.mparticle.test.userdefaults.concurrent",
+            attributes: .concurrent
+        )
+
+        let iterations = 1000
+
+        for i in 0..<iterations {
+            // Concurrent reads of the singleton
+            group.enter()
+            concurrentQueue.async {
+                let defaults = MPUserDefaults.standardUserDefaults(connector: self.connector)
+                XCTAssertNotNil(defaults)
+
+                // Concurrent reads/writes to user defaults
+                let key = "testKey_\(i % 10)"
+                defaults.setMPObject(NSNumber(value: i), forKey: key, userId: 1)
+                let value = defaults.mpObject(forKey: key, userId: 1)
+                // Value may or may not match due to concurrent writes - that's expected
+                _ = value
+                group.leave()
+            }
+
+            // Also test static class methods concurrently
+            group.enter()
+            concurrentQueue.async {
+                _ = MPUserDefaults.isOlderThanConfigMaxAgeSeconds()
+                group.leave()
+            }
+
+            group.enter()
+            concurrentQueue.async {
+                _ = MPUserDefaults.restore()
+                group.leave()
+            }
+
+            group.enter()
+            concurrentQueue.async {
+                MPUserDefaults.deleteConfig()
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 30, handler: nil)
+    }
 }
