@@ -72,6 +72,7 @@ lint:
     - linters: [markdownlint]
       paths:
         - CHANGELOG.md # Standard changelog format violates MD001, MD024, MD025
+        - kits/braze/braze-12/CHANGELOG.md
 
 actions:
   enabled:
