@@ -16,6 +16,10 @@ on:
         type: boolean
         default: true
 
+env:
+  # TODO: Remove after testing
+  DRY_RUN: true
+
 permissions:
   contents: write
 
@@ -38,9 +42,32 @@ jobs:
 
   release-core:
     needs: prepare
-    runs-on: ubuntu-latest
+    runs-on: macOS-15
+    env:
+      XCODE_VERSION: "16.4"
     steps:
       - uses: actions/checkout@v6
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Install signing certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+      - name: Build xcframework
+        run: ./Scripts/xcframework.sh mParticle-Apple-SDK.xcodeproj mParticle-Apple-SDK mParticle-Apple-SDK
 
       - name: Extract release notes
         id: release-notes
@@ -49,28 +76,38 @@ jobs:
           changelog_file: CHANGELOG.md
 
       - name: Dry run summary
-        if: inputs.dry_run
+        if: env.DRY_RUN == 'true'
         run: |
-          echo "🏜️ DRY RUN — would create core release:"
-          echo "  Tag: ${{ needs.prepare.outputs.tag }}"
-          echo "  Release notes:"
-          echo "${{ steps.release-notes.outputs.release_notes }}"
+          cat >> $GITHUB_STEP_SUMMARY <<'EOF'
+          ## 🏜️ DRY RUN — Core SDK Release
+
+          | Property | Value |
+          |----------|-------|
+          | **Tag** | `${{ needs.prepare.outputs.tag }}` |
+          | **Repository** | `mParticle/mparticle-apple-sdk` |
+          | **Artifact** | `mParticle_Apple_SDK.xcframework.zip` |
+
+          ### Release notes
+          ${{ steps.release-notes.outputs.release_notes }}
+          EOF
 
       - name: Create GitHub release
-        if: ${{ !inputs.dry_run }}
+        if: env.DRY_RUN != 'true'
         uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
           makeLatest: true
+          artifacts: mParticle_Apple_SDK.xcframework.zip
           body: |
             ## Release notes
             ${{ steps.release-notes.outputs.release_notes }}
 
   mirror-and-release-kits:
     needs: prepare
-    runs-on: ubuntu-latest
+    runs-on: macOS-15
     env:
       DEST_ORG: mparticle-integrations
+      XCODE_VERSION: "16.4"
     strategy:
       fail-fast: false
       matrix:
@@ -78,18 +115,50 @@ jobs:
           - name: braze-12
             local_path: kits/braze/braze-12
             dest_repo: mparticle-apple-integration-braze-12
+            scheme: mParticle-Appboy
+            tvos_scheme: mParticle-Appboy-tvOS
+            module: mParticle_Appboy
     #      - name: braze-13
     #        local_path: kits/braze/braze-13
     #        dest_repo: mparticle-apple-integration-braze-13
+    #        scheme: mParticle-Appboy
+    #        tvos_scheme: mParticle-Appboy-tvOS
+    #        module: mParticle_Appboy
     #      - name: braze-14
     #        local_path: kits/braze/braze-14
     #        dest_repo: mparticle-apple-integration-braze-14
+    #        scheme: mParticle-Appboy
+    #        tvos_scheme: mParticle-Appboy-tvOS
+    #        module: mParticle_Appboy
 
     steps:
       - name: Checkout monorepo
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Install signing certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+      - name: Build kit xcframework
+        run: |
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+          ./Scripts/xcframework.sh "$PROJECT" "${{ matrix.kit.scheme }}" "${{ matrix.kit.tvos_scheme }}"
 
       - name: Configure Git
         run: |
@@ -116,7 +185,6 @@ jobs:
         id: mirror
         run: |
           SPLIT_BRANCH="split/${{ matrix.kit.name }}"
-
           git subtree split --prefix ${{ matrix.kit.local_path }} -b "${SPLIT_BRANCH}"
 
       - name: Checkout destination repo
@@ -127,7 +195,7 @@ jobs:
           path: dest
 
       - name: Push split to destination
-        if: ${{ !inputs.dry_run }}
+        if: env.DRY_RUN != 'true'
         id: push
         run: |
           git -C dest fetch "$GITHUB_WORKSPACE" "split/${{ matrix.kit.name }}:refs/heads/incoming"
@@ -136,7 +204,7 @@ jobs:
           echo "sha=$(git -C dest rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release on mirror
-        if: ${{ !inputs.dry_run }}
+        if: env.DRY_RUN != 'true'
         uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
         with:
           tag: ${{ needs.prepare.outputs.tag }}
@@ -144,20 +212,33 @@ jobs:
           owner: ${{ env.DEST_ORG }}
           repo: ${{ matrix.kit.dest_repo }}
           token: ${{ steps.generate-token.outputs.token }}
+          artifacts: ${{ matrix.kit.local_path }}/${{ matrix.kit.module }}.xcframework.zip
           body: |
             ${{ steps.release-notes.outputs.release_notes }}
 
       - name: Dry run summary
-        if: inputs.dry_run
+        if: env.DRY_RUN == 'true'
         run: |
-          echo "🏜️ DRY RUN — would mirror and release kit:"
-          echo "  Kit: ${{ matrix.kit.name }}"
-          echo "  Dest: ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}"
-          echo "  Tag: ${{ needs.prepare.outputs.tag }}"
-          echo "  Split branch commits:"
-          git log "split/${{ matrix.kit.name }}" --oneline -5
-          echo "  Release notes:"
-          echo "${{ steps.release-notes.outputs.release_notes }}"
+          COMMITS=$(git log "split/${{ matrix.kit.name }}" --oneline -5)
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## 🏜️ DRY RUN — Kit Mirror: ${{ matrix.kit.name }}
+
+          | Property | Value |
+          |----------|-------|
+          | **Kit** | \`${{ matrix.kit.name }}\` |
+          | **Source** | \`${{ matrix.kit.local_path }}\` |
+          | **Destination** | \`${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}\` |
+          | **Tag** | \`${{ needs.prepare.outputs.tag }}\` |
+          | **Artifact** | \`${{ matrix.kit.module }}.xcframework.zip\` |
+
+          ### Split branch commits
+          \`\`\`
+          ${COMMITS}
+          \`\`\`
+
+          ### Release notes
+          ${{ steps.release-notes.outputs.release_notes }}
+          EOF
 
       - name: Cleanup split branch
         if: always()
