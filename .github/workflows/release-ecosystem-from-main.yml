@@ -40,68 +40,6 @@ jobs:
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
           echo "📌 Ecosystem version: $VERSION"
 
-  release-core:
-    needs: prepare
-    runs-on: macOS-15
-    env:
-      XCODE_VERSION: "16.4"
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
-
-      - name: Install signing certificate
-        env:
-          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
-          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
-          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
-        run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
-
-      - name: Build xcframework
-        run: ./Scripts/xcframework.sh mParticle-Apple-SDK.xcodeproj mParticle-Apple-SDK mParticle-Apple-SDK
-
-      - name: Extract release notes
-        id: release-notes
-        uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105 # v3.0.0
-        with:
-          changelog_file: CHANGELOG.md
-
-      - name: Dry run summary
-        if: env.DRY_RUN == 'true'
-        run: |
-          cat >> $GITHUB_STEP_SUMMARY <<'EOF'
-          ## 🏜️ DRY RUN — Core SDK Release
-
-          | Property | Value |
-          |----------|-------|
-          | **Tag** | `${{ needs.prepare.outputs.tag }}` |
-          | **Repository** | `mParticle/mparticle-apple-sdk` |
-          | **Artifact** | `mParticle_Apple_SDK.xcframework.zip` |
-
-          ### Release notes
-          ${{ steps.release-notes.outputs.release_notes }}
-          EOF
-
-      - name: Create GitHub release
-        if: env.DRY_RUN != 'true'
-        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
-        with:
-          tag: ${{ needs.prepare.outputs.tag }}
-          makeLatest: true
-          artifacts: mParticle_Apple_SDK.xcframework.zip
-          body: |
-            ## Release notes
-            ${{ steps.release-notes.outputs.release_notes }}
-
   mirror-and-release-kits:
     needs: prepare
     runs-on: macOS-15
@@ -115,20 +53,17 @@ jobs:
           - name: braze-12
             local_path: kits/braze/braze-12
             dest_repo: mparticle-apple-integration-braze-12
-            package_scheme: mParticle-Appboy
-            supports_tvos: true
+            ios_scheme: mParticle-Appboy
             module: mParticle_Appboy
     #      - name: braze-13
     #        local_path: kits/braze/braze-13
     #        dest_repo: mparticle-apple-integration-braze-13
-    #        package_scheme: mParticle-Appboy
-    #        supports_tvos: true
+    #        ios_scheme: mParticle-Appboy
     #        module: mParticle_Appboy
     #      - name: braze-14
     #        local_path: kits/braze/braze-14
     #        dest_repo: mparticle-apple-integration-braze-14
-    #        package_scheme: mParticle-Appboy
-    #        supports_tvos: true
+    #        ios_scheme: mParticle-Appboy
     #        module: mParticle_Appboy
 
     steps:
@@ -140,26 +75,11 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Install signing certificate
-        env:
-          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
-          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
-          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
-        run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security list-keychain -d user -s $KEYCHAIN_PATH
-
       - name: Build kit xcframework from Package.swift
         working-directory: ${{ matrix.kit.local_path }}
         run: |
           MODULE="${{ matrix.kit.module }}"
-          SCHEME="${{ matrix.kit.package_scheme }}"
+          SCHEME="${{ matrix.kit.ios_scheme }}"
 
           xcodebuild archive -scheme "$SCHEME" \
             -destination "generic/platform=iOS" -archivePath "archives/iOS"
@@ -171,26 +91,7 @@ jobs:
             -archive archives/iOS_Simulator.xcarchive -framework "${MODULE}.framework"
           )
 
-          if [ "${{ matrix.kit.supports_tvos }}" = "true" ]; then
-            xcodebuild archive -scheme "$SCHEME" \
-              -destination "generic/platform=tvOS" -archivePath "archives/tvOS"
-            xcodebuild archive -scheme "$SCHEME" \
-              -destination "generic/platform=tvOS Simulator" -archivePath "archives/tvOS_Simulator"
-            XCFRAMEWORK_ARGS+=(
-              -archive archives/tvOS.xcarchive -framework "${MODULE}.framework"
-              -archive archives/tvOS_Simulator.xcarchive -framework "${MODULE}.framework"
-            )
-          fi
-
           xcodebuild -create-xcframework "${XCFRAMEWORK_ARGS[@]}" -output "${MODULE}.xcframework"
-          codesign --timestamp -s "Apple Distribution: mParticle, inc (DLD43Y3TRP)" "${MODULE}.xcframework" || {
-            if [ "${DRY_RUN}" = "true" ]; then
-              echo "⚠️ Signing identity not found, skipping codesign in dry run"
-            else
-              echo "❌ Signing identity not found for non-dry run"
-              exit 1
-            fi
-          }
           zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
           rm -rf archives "${MODULE}.xcframework"
 
