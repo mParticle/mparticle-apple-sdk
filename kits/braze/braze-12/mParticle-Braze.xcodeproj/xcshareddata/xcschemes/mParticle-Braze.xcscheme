@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "DB94016B1CB703F2007ABB18"
-               BuildableName = "mParticle_Appboy.framework"
-               BlueprintName = "mParticle-Appboy"
-               ReferencedContainer = "container:mParticle-Appboy.xcodeproj">
+               BuildableName = "mParticle_Braze.framework"
+               BlueprintName = "mParticle-Braze"
+               ReferencedContainer = "container:mParticle-Braze.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -44,9 +44,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DB94016B1CB703F2007ABB18"
-            BuildableName = "mParticle_Appboy.framework"
-            BlueprintName = "mParticle-Appboy"
-            ReferencedContainer = "container:mParticle-Appboy.xcodeproj">
+            BuildableName = "mParticle_Braze.framework"
+            BlueprintName = "mParticle-Braze"
+            ReferencedContainer = "container:mParticle-Braze.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </LaunchAction>
@@ -60,9 +60,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "DB94016B1CB703F2007ABB18"
-            BuildableName = "mParticle_Appboy.framework"
-            BlueprintName = "mParticle-Appboy"
-            ReferencedContainer = "container:mParticle-Appboy.xcodeproj">
+            BuildableName = "mParticle_Braze.framework"
+            BlueprintName = "mParticle-Braze"
+            ReferencedContainer = "container:mParticle-Braze.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

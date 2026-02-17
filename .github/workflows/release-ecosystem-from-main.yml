@@ -53,21 +53,21 @@ jobs:
           - name: braze-12
             local_path: kits/braze/braze-12
             dest_repo: mparticle-apple-integration-braze-12
-            ios_scheme: mParticle-Appboy
-            tvos_scheme: mParticle-Appboy-tvOS
-            module: mParticle_Appboy
+            ios_scheme: mParticle-Braze
+            tvos_scheme: mParticle-Braze-tvOS
+            module: mParticle_Braze
     #      - name: braze-13
     #        local_path: kits/braze/braze-13
     #        dest_repo: mparticle-apple-integration-braze-13
-    #        ios_scheme: mParticle-Appboy
-    #        tvos_scheme: mParticle-Appboy-tvOS
-    #        module: mParticle_Appboy
+    #        ios_scheme: mParticle-Braze
+    #        tvos_scheme: mParticle-Braze-tvOS
+    #        module: mParticle_Braze
     #      - name: braze-14
     #        local_path: kits/braze/braze-14
     #        dest_repo: mparticle-apple-integration-braze-14
-    #        ios_scheme: mParticle-Appboy
-    #        tvos_scheme: mParticle-Appboy-tvOS
-    #        module: mParticle_Appboy
+    #        ios_scheme: mParticle-Braze
+    #        tvos_scheme: mParticle-Braze-tvOS
+    #        module: mParticle_Braze
 
     steps:
       - name: Checkout monorepo
