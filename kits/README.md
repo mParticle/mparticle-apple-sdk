@@ -10,14 +10,14 @@ Each kit lives under a provider/version directory:
 kits/
 └── <provider>/
     └── <provider>-<major_version>/
-        ├── Package.swift          # SPM manifest (this is what consumers resolve)
+        ├── Package.swift          # SPM manifest
         ├── CHANGELOG.md           # Kit-specific release notes
         ├── LICENSE
-        ├── README.md              # Consumer-facing README (mirrors to the public repo)
+        ├── README.md              # Consumer-facing README
         ├── Sources/               # Kit implementation
         ├── Tests/                 # Unit tests
-        ├── Example/               # Sample apps (Swift + Obj-C)
-        └── *.xcodeproj            # Xcode project for building the XCFramework
+        ├── Example/               # Sample apps
+        └── *.xcodeproj            # Developer project
 ```
 
 The version suffix (e.g., `braze-12`) corresponds to the **major version of the third-party SDK** that the kit integrates with, not the mParticle kit version itself. This allows multiple kit variants to coexist when a vendor ships breaking major releases (e.g., `braze-12`, `braze-13`).
