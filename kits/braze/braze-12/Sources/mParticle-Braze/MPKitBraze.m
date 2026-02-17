@@ -1,4 +1,4 @@
-#import "MPKitAppboy.h"
+#import "MPKitBraze.h"
 
 #if TARGET_OS_IOS
     @import BrazeKit;
@@ -69,7 +69,7 @@ static Braze *brazeInstance = nil;
 static id brazeLocationProvider = nil;
 static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 
-@interface MPKitAppboy() {
+@interface MPKitBraze() {
     Braze *appboyInstance;
     BOOL collectIDFA;
     BOOL forwardScreenViews;
@@ -82,7 +82,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 @end
 
 
-@implementation MPKitAppboy
+@implementation MPKitBraze
 
 + (NSNumber *)kitCode {
     return @28;
@@ -406,15 +406,15 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     }
     [self->appboyInstance setAdTrackingEnabled:[self isAppTrackingEnabled]];
     
-    if ([MPKitAppboy urlDelegate]) {
-        self->appboyInstance.delegate = [MPKitAppboy urlDelegate];
+    if ([MPKitBraze urlDelegate]) {
+        self->appboyInstance.delegate = [MPKitBraze urlDelegate];
     }
     
     self->subscriptionGroupDictionary = [self getSubscriptionGroupIds:self.configuration[subscriptionGroupMapping]];
     
 #if TARGET_OS_IOS
     BrazeInAppMessageUI *inAppMessageUI = [[BrazeInAppMessageUI alloc] init];
-    inAppMessageUI.delegate = [MPKitAppboy inAppMessageControllerDelegate];
+    inAppMessageUI.delegate = [MPKitBraze inAppMessageControllerDelegate];
     [self->appboyInstance setInAppMessagePresenter:inAppMessageUI];
 #endif
     

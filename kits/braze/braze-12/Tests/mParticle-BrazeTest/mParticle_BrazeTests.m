@@ -9,7 +9,7 @@
     @import BrazeKitCompat;
 #endif
 
-@interface MPKitAppboy ()
+@interface MPKitBraze ()
 
 - (Braze *)appboyInstance;
 - (void)setAppboyInstance:(Braze *)instance;
@@ -23,17 +23,17 @@
 
 @end
 
-@interface mParticle_AppboyTests : XCTestCase
+@interface mParticle_BrazeTests : XCTestCase
 
 @end
 
-@implementation mParticle_AppboyTests
+@implementation mParticle_BrazeTests
 
 - (void)setUp {
     [super setUp];
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    [MPKitAppboy setBrazeInstance:nil];
-    [MPKitAppboy setURLDelegate:nil];
+    [MPKitBraze setBrazeInstance:nil];
+    [MPKitBraze setURLDelegate:nil];
 }
 
 - (void)tearDown {
@@ -42,7 +42,7 @@
 }
 
 - (void)testStartwithSimpleConfig {
-    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
     
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42
@@ -59,7 +59,7 @@
 }
 
 - (void)testStartwithAdvancedConfig {
-    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
     
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42,
@@ -96,7 +96,7 @@
                                        @"userIdentificationType":@"MPID"
                                        };
     
-    MPKitAppboy *kitInstance = [[MPKitAppboy alloc] init];
+    MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
@@ -125,7 +125,7 @@
                                        @"userIdentificationType":@"MPID"
                                        };
     
-    MPKitAppboy *kitInstance = [[MPKitAppboy alloc] init];
+    MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
@@ -154,7 +154,7 @@
                                        @"userIdentificationType":@"MPID"
                                        };
     
-    MPKitAppboy *kitInstance = [[MPKitAppboy alloc] init];
+    MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
@@ -182,7 +182,7 @@
                                        @"ABKMinimumTriggerTimeIntervalKey":@"4",
                                        @"userIdentificationType":@"MPID"
                                        };
-    MPKitAppboy *kitInstance = [[MPKitAppboy alloc] init];
+    MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -213,7 +213,7 @@
                                        @"ABKMinimumTriggerTimeIntervalKey":@"4",
                                        @"userIdentificationType":@"MPID"
                                        };
-    MPKitAppboy *kitInstance = [[MPKitAppboy alloc] init];
+    MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -246,7 +246,7 @@
                                        @"subscriptionGroupMapping" : @"[{\"jsmap\":null,\"map\":\"testAttribute1\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"00000000-0000-0000-0000-00000000000\"},{\"jsmap\":null,\"map\":\"testAttribute2\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"00000000-0000-0000-0000-00000000001\"}]"
                                        };
     
-    MPKitAppboy *kitInstance = [[MPKitAppboy alloc] init];
+    MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -433,16 +433,16 @@
 - (void)testSetMessageDelegate {
     id<BrazeInAppMessageUIDelegate> delegate = (id)[NSObject new];
     
-    XCTAssertNil([MPKitAppboy inAppMessageControllerDelegate]);
+    XCTAssertNil([MPKitBraze inAppMessageControllerDelegate]);
     
-    [MPKitAppboy setInAppMessageControllerDelegate:delegate];
+    [MPKitBraze setInAppMessageControllerDelegate:delegate];
     
-    XCTAssertEqualObjects([MPKitAppboy inAppMessageControllerDelegate], delegate);
+    XCTAssertEqualObjects([MPKitBraze inAppMessageControllerDelegate], delegate);
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        XCTAssertEqualObjects([MPKitAppboy inAppMessageControllerDelegate], delegate);
+        XCTAssertEqualObjects([MPKitBraze inAppMessageControllerDelegate], delegate);
         [expectation fulfill];
     });
     
@@ -452,14 +452,14 @@
 - (void)testStrongMessageDelegate {
     id<BrazeInAppMessageUIDelegate> delegate = (id)[NSObject new];
     
-    [MPKitAppboy setInAppMessageControllerDelegate:delegate];
+    [MPKitBraze setInAppMessageControllerDelegate:delegate];
     
     delegate = nil;
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        XCTAssertNotNil([MPKitAppboy inAppMessageControllerDelegate]);
+        XCTAssertNotNil([MPKitBraze inAppMessageControllerDelegate]);
         [expectation fulfill];
     });
     
@@ -467,30 +467,30 @@
 }
 
 - (void)testSetDisableNotificationHandling {
-    XCTAssertEqual([MPKitAppboy shouldDisableNotificationHandling], NO);
+    XCTAssertEqual([MPKitBraze shouldDisableNotificationHandling], NO);
     
-    [MPKitAppboy setShouldDisableNotificationHandling:YES];
+    [MPKitBraze setShouldDisableNotificationHandling:YES];
     
-    XCTAssertEqual([MPKitAppboy shouldDisableNotificationHandling], YES);
+    XCTAssertEqual([MPKitBraze shouldDisableNotificationHandling], YES);
     
-    [MPKitAppboy setShouldDisableNotificationHandling:NO];
+    [MPKitBraze setShouldDisableNotificationHandling:NO];
     
-    XCTAssertEqual([MPKitAppboy shouldDisableNotificationHandling], NO);
+    XCTAssertEqual([MPKitBraze shouldDisableNotificationHandling], NO);
 }
 
 - (void)testSetBrazeInstance {
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
     
-    XCTAssertEqualObjects([MPKitAppboy brazeInstance], nil);
+    XCTAssertEqualObjects([MPKitBraze brazeInstance], nil);
 
-    [MPKitAppboy setBrazeInstance:testClient];
+    [MPKitBraze setBrazeInstance:testClient];
     
-    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
     
     XCTAssertEqualObjects(appBoy.appboyInstance, nil);
     XCTAssertEqualObjects(appBoy.providerKitInstance, nil);
-    XCTAssertEqualObjects([MPKitAppboy brazeInstance], testClient);
+    XCTAssertEqualObjects([MPKitBraze brazeInstance], testClient);
 
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42,
@@ -506,11 +506,11 @@
     
     XCTAssertEqualObjects(appBoy.appboyInstance, testClient);
     XCTAssertEqualObjects(appBoy.providerKitInstance, testClient);
-    XCTAssertEqualObjects([MPKitAppboy brazeInstance], testClient);
+    XCTAssertEqualObjects([MPKitBraze brazeInstance], testClient);
 }
 
 - (void)testUserIdCustomerId {
-    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
 
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42,
@@ -528,7 +528,7 @@
 }
 
 - (void)testUserIdMPID {
-    MPKitAppboy *appBoy = [[MPKitAppboy alloc] init];
+    MPKitBraze *appBoy = [[MPKitBraze alloc] init];
 
     NSDictionary *kitConfiguration = @{@"apiKey":@"BrazeID",
                                        @"id":@42,
@@ -546,7 +546,7 @@
 }
 
 - (void)testlogCommerceEvent {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @0};
 
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -588,7 +588,7 @@
 }
 
 - (void)testlogCommerceEventWithBundledProducts {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -633,7 +633,7 @@
 }
 
 - (void)testlogPurchaseCommerceEvent {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @0};
 
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -681,7 +681,7 @@
 }
 
 - (void)testlogPurchaseCommerceEventSendingProductName {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @0,
                           @"replaceSkuWithProductName": @"True"};
 
@@ -730,7 +730,7 @@
 }
 
 - (void)testlogPurchaseCommerceEventWithBundledProducts {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -808,7 +808,7 @@
 }
 
 - (void)testlogCommerceEventWithMultipleBundledProducts {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -897,7 +897,7 @@
 }
 
 - (void)testlogPromotionCommerceEventWithBundledProducts {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -941,7 +941,7 @@
 }
 
 - (void)testlogImpressionCommerceEventWithBundledProducts {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
@@ -1037,7 +1037,7 @@
 //}
 
 - (void)testEventWithEmptyProperties {
-    MPKitAppboy *kit = [[MPKitAppboy alloc] init];
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
 
     BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
     Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
