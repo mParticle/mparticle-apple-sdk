@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "mParticle-Appboy",
+    name: "mParticle-Braze",
     platforms: [ .iOS(.v15), .tvOS(.v15) ],
     products: [
         .library(
-            name: "mParticle-Appboy",
-            targets: ["mParticle-Appboy"]
+            name: "mParticle-Braze",
+            targets: ["mParticle-Braze"]
         )
     ],
     dependencies: [
@@ -20,11 +20,15 @@ let package = Package(
         .package(
             url: "https://github.com/braze-inc/braze-swift-sdk",
             .upToNextMajor(from: "12.0.0")
+        ),
+        .package(
+            url: "https://github.com/erikdoe/ocmock",
+            branch: "master"
         )
     ],
     targets: [
         .target(
-            name: "mParticle-Appboy",
+            name: "mParticle-Braze",
             dependencies: [
                 .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
                 .product(name: "BrazeUI", package: "braze-swift-sdk", condition: .when(platforms: [.iOS])),
@@ -32,6 +36,13 @@ let package = Package(
                 .product(name: "BrazeKitCompat", package: "braze-swift-sdk")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")]
+        ),
+        .testTarget(
+            name: "mParticle-BrazeTests",
+            dependencies: [
+                "mParticle-Braze",
+                .product(name: "OCMock", package: "ocmock")
+            ]
         )
     ]
 )
