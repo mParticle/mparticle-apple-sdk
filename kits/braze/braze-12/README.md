@@ -13,15 +13,42 @@ This repository is a **read-only mirror**. The source code is maintained in the 
 Add the package dependency in Xcode or in your `Package.swift`:
 
 ```swift
+let mParticleVersion: Version = "9.0.0"
+
 .package(
     url: "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12",
-    .upToNextMajor(from: "9.0.0")
-)
+    .upToNextMajor(from: mParticleVersion)
+),
+.package(
+    url: "https://github.com/mParticle/mparticle-apple-sdk",
+    .upToNextMajor(from: mParticleVersion)
+),
 ```
 
 Then add `mParticle-Braze` as a dependency of your target.
 
 > **Note:** Add the `-ObjC` flag to your target's **Other Linker Flags** build setting, per the [Braze documentation](https://www.braze.com/docs/developer_guide/platform_integration_guides/ios/initial_sdk_setup/installation_methods/swift_package_manager#step-2-configuring-your-project).
+
+For iOS push-launch tracking, initialize Braze in `application(_:didFinishLaunchingWithOptions:)` **before** starting mParticle, then pass the instance to the kit:
+
+```swift
+import BrazeKit
+import mParticle_Braze
+
+let configuration = Braze.Configuration(
+    apiKey: "[YOUR_BRAZE_API_KEY]",
+    endpoint: "[YOUR_BRAZE_ENDPOINT]"
+)
+let braze = Braze(configuration: configuration)
+
+MPKitBraze.setBrazeInstance(braze)
+MPKitBraze.setShouldDisableNotificationHandling(true)
+// Start mParticle after this.
+```
+
+Complete setup details (including required push delegate methods) are in the mParticle docs:
+
+- [mParticle Braze iOS App Launch Tracking](https://docs.mparticle.com/integrations/braze/event/#ios-app-launch-tracking)
 
 ### Verifying the Integration
 
@@ -35,8 +62,8 @@ Included kits: { Braze }
 
 | Platform | Minimum Version |
 | -------- | --------------- |
-| iOS      | 15.0            |
-| tvOS     | 15.0            |
+| iOS      | 15.6            |
+| tvOS     | 15.6            |
 
 ## Dependencies
 
