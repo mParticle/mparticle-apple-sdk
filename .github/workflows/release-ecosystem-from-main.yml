@@ -131,21 +131,13 @@ jobs:
           SPLIT_BRANCH="split/${{ matrix.kit.name }}"
           git subtree split --prefix ${{ matrix.kit.local_path }} -b "${SPLIT_BRANCH}"
 
-      - name: Checkout destination repo
-        uses: actions/checkout@v6
-        with:
-          repository: ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}
-          token: ${{ steps.generate-token.outputs.token }}
-          path: dest
-
       - name: Push split to destination
         if: env.DRY_RUN != 'true'
         id: push
         run: |
-          git -C dest fetch "$GITHUB_WORKSPACE" "split/${{ matrix.kit.name }}:refs/heads/incoming"
-          git -C dest reset --hard incoming
-          git -C dest push origin main --force
-          echo "sha=$(git -C dest rev-parse HEAD)" >> $GITHUB_OUTPUT
+          DEST_URL="https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
+          git push "$DEST_URL" "split/${{ matrix.kit.name }}:main" --force
+          echo "sha=$(git rev-parse split/${{ matrix.kit.name }})" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release on mirror
         if: env.DRY_RUN != 'true'
