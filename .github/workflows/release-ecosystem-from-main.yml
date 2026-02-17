@@ -1,0 +1,179 @@
+name: Release mParticle Ecosystem
+
+on:
+  push:
+    # TODO: Remove ci/** after testing
+    branches:
+      - main
+      - "ci/**"
+    paths:
+      - "VERSION"
+      - ".github/workflows/release-ecosystem-from-main.yml"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — skip creating real releases/tags"
+        type: boolean
+        default: true
+
+env:
+  # TODO: Remove after testing
+  DRY_RUN: true
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get ecosystem version
+        id: version
+        run: |
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "📌 Ecosystem version: $VERSION"
+
+  mirror-and-release-kits:
+    needs: prepare
+    runs-on: macOS-15
+    env:
+      DEST_ORG: mparticle-integrations
+      XCODE_VERSION: "16.4"
+    strategy:
+      fail-fast: false
+      matrix:
+        kit:
+          - name: braze-12
+            local_path: kits/braze/braze-12
+            dest_repo: mparticle-apple-integration-braze-12
+            ios_scheme: mParticle-Appboy
+            module: mParticle_Appboy
+    #      - name: braze-13
+    #        local_path: kits/braze/braze-13
+    #        dest_repo: mparticle-apple-integration-braze-13
+    #        ios_scheme: mParticle-Appboy
+    #        module: mParticle_Appboy
+    #      - name: braze-14
+    #        local_path: kits/braze/braze-14
+    #        dest_repo: mparticle-apple-integration-braze-14
+    #        ios_scheme: mParticle-Appboy
+    #        module: mParticle_Appboy
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Build kit xcframework
+        run: |
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+          MODULE="${{ matrix.kit.module }}"
+          SCHEME="${{ matrix.kit.ios_scheme }}"
+
+          xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
+            -destination "generic/platform=iOS" -archivePath "archives/iOS"
+          xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
+            -destination "generic/platform=iOS Simulator" -archivePath "archives/iOS_Simulator"
+
+          xcodebuild -create-xcframework \
+            -archive archives/iOS.xcarchive -framework "${MODULE}.framework" \
+            -archive archives/iOS_Simulator.xcarchive -framework "${MODULE}.framework" \
+            -output "${MODULE}.xcframework"
+
+          zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
+          rm -rf archives "${MODULE}.xcframework"
+
+      - name: Configure Git
+        run: |
+          git config user.name "mParticle Bot"
+          git config user.email "developers@mparticle.com"
+
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ env.DEST_ORG }}
+          repositories: ${{ matrix.kit.dest_repo }}
+          permission-contents: write
+
+      - name: Extract kit release notes
+        id: release-notes
+        uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105 # v3.0.0
+        with:
+          changelog_file: ${{ matrix.kit.local_path }}/CHANGELOG.md
+
+      - name: Split kit and push to mirror
+        id: mirror
+        run: |
+          SPLIT_BRANCH="split/${{ matrix.kit.name }}"
+          git subtree split --prefix ${{ matrix.kit.local_path }} -b "${SPLIT_BRANCH}"
+
+      - name: Checkout destination repo
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}
+          token: ${{ steps.generate-token.outputs.token }}
+          path: dest
+
+      - name: Push split to destination
+        if: env.DRY_RUN != 'true'
+        id: push
+        run: |
+          git -C dest fetch "$GITHUB_WORKSPACE" "split/${{ matrix.kit.name }}:refs/heads/incoming"
+          git -C dest reset --hard incoming
+          git -C dest push origin main --force
+          echo "sha=$(git -C dest rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release on mirror
+        if: env.DRY_RUN != 'true'
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+        with:
+          tag: ${{ needs.prepare.outputs.tag }}
+          commit: ${{ steps.push.outputs.sha }}
+          owner: ${{ env.DEST_ORG }}
+          repo: ${{ matrix.kit.dest_repo }}
+          token: ${{ steps.generate-token.outputs.token }}
+          artifacts: ${{ matrix.kit.module }}.xcframework.zip
+          body: |
+            ${{ steps.release-notes.outputs.release_notes }}
+
+      - name: Dry run summary
+        if: env.DRY_RUN == 'true'
+        run: |
+          COMMITS=$(git log "split/${{ matrix.kit.name }}" --oneline -5)
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## 🏜️ DRY RUN — Kit Mirror: ${{ matrix.kit.name }}
+
+          | Property | Value |
+          |----------|-------|
+          | **Kit** | \`${{ matrix.kit.name }}\` |
+          | **Source** | \`${{ matrix.kit.local_path }}\` |
+          | **Destination** | \`${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}\` |
+          | **Tag** | \`${{ needs.prepare.outputs.tag }}\` |
+          | **Artifact** | \`${{ matrix.kit.module }}.xcframework.zip\` |
+
+          ### Split branch commits
+          \`\`\`
+          ${COMMITS}
+          \`\`\`
+
+          ### Release notes
+          ${{ steps.release-notes.outputs.release_notes }}
+          EOF
+
+      - name: Cleanup split branch
+        if: always()
+        run: git branch -D "split/${{ matrix.kit.name }}" || true
