@@ -1,0 +1,33 @@
+{
+  "originHash" : "70f84f973d6f19b21074e0af5db23cc36df8aacca14ad6bf7d0291fc60c1f70c",
+  "pins" : [
+    {
+      "identity" : "ios-library",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/urbanairship/ios-library",
+      "state" : {
+        "revision" : "98e6d9552392e80791c20e382632afab4cbd1ab1",
+        "version" : "19.1.2"
+      }
+    },
+    {
+      "identity" : "mparticle-apple-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mParticle/mparticle-apple-sdk",
+      "state" : {
+        "revision" : "dffa5b707b0b1523a54f9a4bbf1c5e3056bf5948",
+        "version" : "8.40.0"
+      }
+    },
+    {
+      "identity" : "ocmock",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/erikdoe/ocmock",
+      "state" : {
+        "branch" : "master",
+        "revision" : "7f6e9e9b6c9ffa19a9040860da9f7a1f202b9f4d"
+      }
+    }
+  ],
+  "version" : 3
+}
