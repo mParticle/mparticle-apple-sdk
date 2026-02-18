@@ -25,6 +25,7 @@ Add the kit dependency to your app's Podfile:
 
 ```ruby
 pod 'mParticle-UrbanAirship', '~> 9'
+```
 
 ## Verifying the Integration
 
