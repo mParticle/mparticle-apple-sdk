@@ -1,0 +1,147 @@
+name: Create Ecosystem Release PR (Manual)
+# Ensure the manual release process only starts from the main branch.
+# Bump ecosystem versions and open a release PR that triggers publish-on-main after merge.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump-type:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  confirm-main-branch:
+    name: Confirm release is run from main branch
+    uses: mParticle/mparticle-workflows/.github/workflows/sdk-release-repo-branch-check.yml@stable
+
+  release:
+    name: Create release PR
+    runs-on: macOS-latest
+    needs: confirm-main-branch
+    env:
+      GITHUB_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          ref: main
+
+      - name: Get current version from latest tag
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Bump version
+        id: bump-version
+        uses: actions-ecosystem/action-bump-semver@v1
+        with:
+          current_version: ${{ steps.current-version.outputs.version }}
+          level: ${{ github.event.inputs.bump-type }}
+
+      - name: Set version environment variables
+        run: |
+          VERSION=$(echo "${{ steps.bump-version.outputs.new_version }}" | sed 's/^v//')
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "MAJOR=$MAJOR" >> $GITHUB_ENV
+          echo "📌 ${{ steps.current-version.outputs.version }} → $VERSION (${{ github.event.inputs.bump-type }})"
+
+      - name: Setup git config
+        run: |
+          git config user.email "developers@mparticle.com"
+          git config user.name "mParticle Automation"
+
+      - name: Create release branch
+        run: |
+          git push origin --delete chore/release-v${VERSION} 2>/dev/null || true
+          git checkout -b chore/release-v${VERSION}
+
+      - name: Update VERSION file
+        run: echo "$VERSION" > VERSION
+
+      - name: Update version in all podspecs
+        run: |
+          find . -name "*.podspec" -exec \
+            sed -i '' 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"${VERSION}"'"/' {} +
+
+      - name: Update version in MPIConstants.m
+        run: sed -i '' "s/kMParticleSDKVersion = @\"[^\"]*\"/kMParticleSDKVersion = @\"${VERSION}\"/" mParticle-Apple-SDK/MPIConstants.m
+
+      - name: Update version in MPConstants.swift
+        run: sed -i '' "s/let kMParticleSDKVersion = \"[^\"]*\"/let kMParticleSDKVersion = \"${VERSION}\"/" mParticle-Apple-SDK/MPConstants.swift
+
+      - name: Update version in Info.plist
+        run: /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" Framework/Info.plist
+
+      - name: Update SDK version in integration test mappings
+        run: ./Scripts/update_mapping_versions.sh "${VERSION}"
+
+      - name: Update kit dependency on core SDK for major release
+        if: github.event.inputs.bump-type == 'major'
+        run: |
+          # Podspec: '~> X.Y' → '~> MAJOR.0'
+          find kits -name "*.podspec" -exec \
+            sed -i '' "s/'mParticle-Apple-SDK', '~> [^']*'/'mParticle-Apple-SDK', '~> ${MAJOR}.0'/" {} +
+
+          # Package.swift: .upToNextMajor(from: "X.Y.Z") → .upToNextMajor(from: "MAJOR.0.0")
+          find kits -name "Package.swift" -exec \
+            sed -i '' "/mparticle-apple-sdk/{
+              n
+              s/.upToNextMajor(from: \"[^\"]*\")/.upToNextMajor(from: \"${MAJOR}.0.0\")/
+              s/branch: \"[^\"]*\"/.upToNextMajor(from: \"${MAJOR}.0.0\")/
+            }" {} +
+
+      # --- Commit, push, and create PR ---
+
+      - name: Commit version changes
+        run: |
+          git add \
+            VERSION \
+            Framework/Info.plist \
+            mParticle-Apple-SDK.podspec \
+            mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec \
+            mParticle-Apple-SDK/MPConstants.swift \
+            mParticle-Apple-SDK/MPIConstants.m \
+            IntegrationTests/wiremock-recordings/mappings/*.json \
+            kits/
+
+          git commit -m "chore: (release) ${VERSION}
+
+          Updates version to ${VERSION} across the mParticle ecosystem."
+
+      - name: Push release branch
+        run: git push origin chore/release-v${VERSION}
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+        run: |
+          gh pr create \
+            --base main \
+            --head chore/release-v${VERSION} \
+            --title "chore: Release v${VERSION}" \
+            --body "## Release v${VERSION}
+
+          ### Bump type: \`${{ github.event.inputs.bump-type }}\`
+
+          This PR contains the version bump for release ${VERSION}.
+
+          ### Files updated
+          - All podspecs (core, Swift, kits) → \`${VERSION}\`
+          - \`mParticle-Apple-SDK/MPIConstants.m\`
+          - \`mParticle-Apple-SDK/MPConstants.swift\`
+          - \`Framework/Info.plist\`
+          - Integration test mappings
+
+          ---
+
+          **On merge:** The [Publish Ecosystem Releases from Main](https://github.com/mParticle/mparticle-apple-sdk/actions/workflows/release-ecosystem-from-main.yml) workflow will automatically create tags and GitHub releases for the core SDK and all mirrored kit repos." \
+            --reviewer mParticle/sdk-team

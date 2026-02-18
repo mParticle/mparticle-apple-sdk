@@ -1,0 +1,208 @@
+name: Publish Ecosystem Releases from Main
+# Build each kit, mirror its subtree repo, and publish a GitHub release/tag (unless dry run).
+
+on:
+  push:
+    branches:
+      - main
+      - workstation*
+    paths:
+      - VERSION
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — skip creating real releases/tags"
+        type: boolean
+        default: true
+
+env:
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+
+permissions:
+  contents: write
+
+jobs:
+  build-kits:
+    name: Build ${{ matrix.kit.name }}
+    runs-on: macOS-latest
+    env:
+      XCODE_VERSION: "16.4"
+    strategy:
+      fail-fast: false
+      matrix:
+        kit:
+          - name: braze-12
+            local_path: kits/braze/braze-12
+            dest_repo: mparticle-apple-integration-braze-12
+            ios_scheme: mParticle-Braze
+            tvos_scheme: mParticle-Braze-tvOS
+            module: mParticle_Braze
+    #      - name: braze-13
+    #        local_path: kits/braze/braze-13
+    #        dest_repo: mparticle-apple-integration-braze-13
+    #        ios_scheme: mParticle-Braze
+    #        tvos_scheme: mParticle-Braze-tvOS
+    #        module: mParticle_Braze
+    #      - name: braze-14
+    #        local_path: kits/braze/braze-14
+    #        dest_repo: mparticle-apple-integration-braze-14
+    #        ios_scheme: mParticle-Braze
+    #        tvos_scheme: mParticle-Braze-tvOS
+    #        module: mParticle_Braze
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Build kit xcframework
+        run: |
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+          MODULE="${{ matrix.kit.module }}"
+          IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
+          TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
+
+          BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
+
+          xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
+            -destination "generic/platform=iOS" -archivePath "archives/iOS" $BUILD_SETTINGS
+          xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
+            -destination "generic/platform=iOS Simulator" -archivePath "archives/iOS_Simulator" $BUILD_SETTINGS
+
+          XCFRAMEWORK_ARGS="-archive archives/iOS.xcarchive -framework ${MODULE}.framework"
+          XCFRAMEWORK_ARGS+=" -archive archives/iOS_Simulator.xcarchive -framework ${MODULE}.framework"
+
+          if [ -n "$TVOS_SCHEME" ]; then
+            xcodebuild archive -project "$PROJECT" -scheme "$TVOS_SCHEME" \
+              -destination "generic/platform=tvOS" -archivePath "archives/tvOS" $BUILD_SETTINGS
+            xcodebuild archive -project "$PROJECT" -scheme "$TVOS_SCHEME" \
+              -destination "generic/platform=tvOS Simulator" -archivePath "archives/tvOS_Simulator" $BUILD_SETTINGS
+
+            XCFRAMEWORK_ARGS+=" -archive archives/tvOS.xcarchive -framework ${MODULE}.framework"
+            XCFRAMEWORK_ARGS+=" -archive archives/tvOS_Simulator.xcarchive -framework ${MODULE}.framework"
+          fi
+
+          xcodebuild -create-xcframework $XCFRAMEWORK_ARGS -output "${MODULE}.xcframework"
+
+          zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
+          rm -rf archives "${MODULE}.xcframework"
+
+      - name: Upload xcframework artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcframework-${{ matrix.kit.name }}
+          path: ${{ matrix.kit.module }}.xcframework.zip
+
+  mirror-and-release-kits:
+    name: Mirror & Release ${{ matrix.kit.name }}
+    runs-on: macOS-latest
+    needs: build-kits
+    env:
+      DEST_ORG: mparticle-integrations
+    strategy:
+      fail-fast: false
+      matrix:
+        kit:
+          - name: braze-12
+            local_path: kits/braze/braze-12
+            dest_repo: mparticle-apple-integration-braze-12
+            module: mParticle_Braze
+    #      - name: braze-13
+    #        local_path: kits/braze/braze-13
+    #        dest_repo: mparticle-apple-integration-braze-13
+    #        module: mParticle_Braze
+    #      - name: braze-14
+    #        local_path: kits/braze/braze-14
+    #        dest_repo: mparticle-apple-integration-braze-14
+    #        module: mParticle_Braze
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download xcframework artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xcframework-${{ matrix.kit.name }}
+
+      - name: Get ecosystem version
+        id: version
+        run: |
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "📌 Ecosystem version: $VERSION"
+
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ env.DEST_ORG }}
+          repositories: ${{ matrix.kit.dest_repo }}
+          permission-contents: write
+
+      - name: Extract kit release notes
+        id: release-notes
+        uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105 # v3.0.0
+        with:
+          changelog_file: ${{ matrix.kit.local_path }}/CHANGELOG.md
+          prerelease: true
+
+      - name: Split kit and push to mirror
+        id: mirror
+        run: |
+          SPLIT_BRANCH="split/${{ matrix.kit.name }}"
+          git subtree split --prefix ${{ matrix.kit.local_path }} -b "${SPLIT_BRANCH}"
+
+      - name: Push split to destination
+        if: env.DRY_RUN != 'true'
+        id: push
+        run: |
+          DEST_URL="https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
+          git push "$DEST_URL" "split/${{ matrix.kit.name }}:main" --force
+          echo "sha=$(git rev-parse split/${{ matrix.kit.name }})" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release on mirror
+        if: env.DRY_RUN != 'true'
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          commit: ${{ steps.push.outputs.sha }}
+          owner: ${{ env.DEST_ORG }}
+          repo: ${{ matrix.kit.dest_repo }}
+          token: ${{ steps.generate-token.outputs.token }}
+          artifacts: xcframework-${{ matrix.kit.name }}/${{ matrix.kit.module }}.xcframework.zip
+          body: |
+            ${{ steps.release-notes.outputs.release_notes }}
+
+      - name: Summary
+        run: |
+          COMMITS=$(git log "split/${{ matrix.kit.name }}" --oneline -5)
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## Kit Mirror: ${{ matrix.kit.name }}
+
+          | Property | Value |
+          |----------|-------|
+          | **Kit** | \`${{ matrix.kit.name }}\` |
+          | **Source** | \`${{ matrix.kit.local_path }}\` |
+          | **Destination** | \`${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}\` |
+          | **Tag** | \`${{ steps.version.outputs.tag }}\` |
+          | **Dry Run** | \`${{ env.DRY_RUN }}\` |
+          | **Artifact** | \`${{ matrix.kit.module }}.xcframework.zip\` |
+
+          ### Split branch commits
+          \`\`\`
+          ${COMMITS}
+          \`\`\`
+
+          ### Release notes
+          ${{ steps.release-notes.outputs.release_notes }}
+          EOF
