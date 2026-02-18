@@ -3,13 +3,11 @@ name: Publish Ecosystem Releases from Main
 
 on:
   push:
-    # TODO: Remove ci/** after testing
     branches:
       - main
-      - "ci/**"
+      - workstation*
     paths:
-      - "VERSION"
-      - ".github/workflows/release-ecosystem-from-main.yml"
+      - VERSION
   workflow_dispatch:
     inputs:
       dry_run:
