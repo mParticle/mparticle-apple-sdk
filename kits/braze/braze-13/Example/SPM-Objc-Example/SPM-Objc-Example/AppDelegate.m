@@ -1,5 +1,6 @@
 #import "AppDelegate.h"
 #import "mParticle.h"
+#import "MPKitBraze.h"
 
 @interface AppDelegate ()
 
