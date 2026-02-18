@@ -1,4 +1,6 @@
-name: iOS SDK Ecosystem Release
+name: Create Ecosystem Release PR (Manual)
+# Ensure the manual release process only starts from the main branch.
+# Bump ecosystem versions and open a release PR that triggers publish-on-main after merge.
 
 on:
   workflow_dispatch:
@@ -142,5 +144,5 @@ jobs:
 
           ---
 
-          **On merge:** The [Release mParticle Ecosystem](https://github.com/mParticle/mparticle-apple-sdk/actions/workflows/release-ecosystem-from-main.yml) workflow will automatically create tags and GitHub releases for the core SDK and all mirrored kit repos." \
+          **On merge:** The [Publish Ecosystem Releases from Main](https://github.com/mParticle/mparticle-apple-sdk/actions/workflows/release-ecosystem-from-main.yml) workflow will automatically create tags and GitHub releases for the core SDK and all mirrored kit repos." \
             --reviewer mParticle/sdk-team
