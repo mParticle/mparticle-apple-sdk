@@ -8,7 +8,7 @@ let package = Package(
         .library(
             name: "mParticle-UrbanAirship",
             targets: ["mParticle-UrbanAirship"]
-        ),
+        )
     ],
     dependencies: [
         .package(
@@ -18,14 +18,14 @@ let package = Package(
         .package(url: "https://github.com/urbanairship/ios-library",
                  from: "20.0.3"),
         .package(url: "https://github.com/erikdoe/ocmock",
-                 branch: "master"),
+                 branch: "master")
     ],
     targets: [
         .target(
             name: "mParticle-UrbanAirship",
             dependencies: [
                 .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
-                .product(name: "AirshipObjectiveC", package: "ios-library"),
+                .product(name: "AirshipObjectiveC", package: "ios-library")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "."

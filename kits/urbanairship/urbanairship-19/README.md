@@ -1,12 +1,12 @@
-## UrbanAirship Kit Integration
+# UrbanAirship Kit Integration
 
 This repository contains the [Airship](https://www.airship.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
 
-### Adding the integration
+## Adding the integration
 
 1. Add the kit dependency to your app's Podfile:
 
-   ```
+   ```ruby
    pod 'mParticle-UrbanAirship', '~> 8'
    ```
 
@@ -34,7 +34,7 @@ All mParticle user attributes are forwarded to Airship as [tags](https://docs.ai
 
 Most clients prefer for all tags to remain constant if set. But, a tag can be removed manually by invoking removeTag directly on the Airship SDK as shown bellow.
 
-#### Swift
+### Swift
 
 ```swift
     private func removeTag(key: String) {
@@ -47,7 +47,7 @@ Most clients prefer for all tags to remain constant if set. But, a tag can be re
     }
 ```
 
-#### Objective-C
+### Objective-C
 
 ```objective-c
     - (void)removeTag:(nonnull NSString *)key {
