@@ -152,12 +152,11 @@ jobs:
           body: |
             ${{ steps.release-notes.outputs.release_notes }}
 
-      - name: Dry run summary
-        if: env.DRY_RUN == 'true'
+      - name: Summary
         run: |
           COMMITS=$(git log "split/${{ matrix.kit.name }}" --oneline -5)
           cat >> $GITHUB_STEP_SUMMARY <<EOF
-          ## 🏜️ DRY RUN — Kit Mirror: ${{ matrix.kit.name }}
+          ## Kit Mirror: ${{ matrix.kit.name }}
 
           | Property | Value |
           |----------|-------|
@@ -165,6 +164,7 @@ jobs:
           | **Source** | \`${{ matrix.kit.local_path }}\` |
           | **Destination** | \`${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}\` |
           | **Tag** | \`${{ needs.prepare.outputs.tag }}\` |
+          | **Dry Run** | \`${{ env.DRY_RUN }}\` |
           | **Artifact** | \`${{ matrix.kit.module }}.xcframework.zip\` |
 
           ### Split branch commits

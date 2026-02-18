@@ -19,7 +19,7 @@ jobs:
 
   release:
     name: Create release PR
-    runs-on: macOS-15
+    runs-on: macOS-latest
     needs: confirm-main-branch
     env:
       GITHUB_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
