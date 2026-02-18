@@ -49,6 +49,7 @@ jobs:
             dest_repo: mparticle-apple-integration-urbanairship-20
             ios_scheme: mParticle-UrbanAirship
             module: mParticle_UrbanAirship
+            extra_build_settings: SWIFT_VALIDATE_EMITTED_MODULE_INTERFACE=NO
 
     steps:
       - name: Checkout monorepo
@@ -66,7 +67,7 @@ jobs:
           IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
           TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
 
-          BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
+          BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES ${{ matrix.kit.extra_build_settings }}"
 
           xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
             -destination "generic/platform=iOS" -archivePath "archives/iOS" $BUILD_SETTINGS
