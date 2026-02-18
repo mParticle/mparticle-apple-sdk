@@ -7,8 +7,8 @@ on:
       - main
       - workstation*
       - feat/add-braze-13-kit-track
-    paths:
-      - VERSION
+    # paths:
+    #   - VERSION
   workflow_dispatch:
     inputs:
       dry_run:
