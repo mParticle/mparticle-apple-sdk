@@ -16,9 +16,7 @@ let package = Package(
             branch: "workstation/9.0-Release"
         ),
         .package(url: "https://github.com/urbanairship/ios-library",
-                 from: "20.0.3"),
-        .package(url: "https://github.com/erikdoe/ocmock",
-                 branch: "master")
+                 from: "20.0.3")
     ],
     targets: [
         .target(

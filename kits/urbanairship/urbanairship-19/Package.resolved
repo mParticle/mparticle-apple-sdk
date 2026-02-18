@@ -1,5 +1,5 @@
 {
-  "originHash" : "843948d7a1c351383461684e6211a55881195e729cc763d6b12c891f6dfe5e72",
+  "originHash" : "f60e28220724f131a14192c4d3c55504f9697281d09326b4e1426ee7a1f5f9c2",
   "pins" : [
     {
       "identity" : "ios-library",
@@ -17,15 +17,6 @@
       "state" : {
         "branch" : "workstation/9.0-Release",
         "revision" : "ba020c22b0c93a0e48c423ac62a8e7438224b0e9"
-      }
-    },
-    {
-      "identity" : "ocmock",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/erikdoe/ocmock",
-      "state" : {
-        "branch" : "master",
-        "revision" : "7f6e9e9b6c9ffa19a9040860da9f7a1f202b9f4d"
       }
     }
   ],
