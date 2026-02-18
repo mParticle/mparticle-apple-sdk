@@ -17,7 +17,7 @@ on:
         default: true
 
 env:
-  DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
 
 permissions:
   contents: write
@@ -44,11 +44,11 @@ jobs:
             ios_scheme: mParticle-Braze
             tvos_scheme: mParticle-Braze-tvOS
             module: mParticle_Braze
-          - name: urbanairship-20
-            local_path: kits/urbanairship/urbanairship-20
-            dest_repo: mparticle-apple-integration-urbanairship-20
-            ios_scheme: mParticle-UrbanAirship
-            module: mParticle_UrbanAirship
+        #   - name: urbanairship-20
+        #     local_path: kits/urbanairship/urbanairship-20
+        #     dest_repo: mparticle-apple-integration-urbanairship-20
+        #     ios_scheme: mParticle-UrbanAirship
+        #     module: mParticle_UrbanAirship
 
     steps:
       - name: Checkout monorepo
