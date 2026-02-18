@@ -31,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kit:
+        kit: &kit-matrix
           - name: braze-12
             local_path: kits/braze/braze-12
             dest_repo: mparticle-apple-integration-braze-12
@@ -44,12 +44,6 @@ jobs:
             ios_scheme: mParticle-Braze
             tvos_scheme: mParticle-Braze-tvOS
             module: mParticle_Braze
-    #      - name: braze-14
-    #        local_path: kits/braze/braze-14
-    #        dest_repo: mparticle-apple-integration-braze-14
-    #        ios_scheme: mParticle-Braze
-    #        tvos_scheme: mParticle-Braze-tvOS
-    #        module: mParticle_Braze
 
     steps:
       - name: Checkout monorepo
@@ -107,19 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kit:
-          - name: braze-12
-            local_path: kits/braze/braze-12
-            dest_repo: mparticle-apple-integration-braze-12
-            module: mParticle_Braze
-    #      - name: braze-13
-    #        local_path: kits/braze/braze-13
-    #        dest_repo: mparticle-apple-integration-braze-13
-    #        module: mParticle_Braze
-    #      - name: braze-14
-    #        local_path: kits/braze/braze-14
-    #        dest_repo: mparticle-apple-integration-braze-14
-    #        module: mParticle_Braze
+        kit: *kit-matrix
 
     steps:
       - name: Checkout monorepo
