@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "mParticle-UrbanAirship",
-    platforms: [ .iOS(.v15) ],
+    platforms: [ .iOS(.v16) ],
     products: [
         .library(
             name: "mParticle-UrbanAirship",
@@ -16,7 +16,7 @@ let package = Package(
             branch: "workstation/9.0-Release"
         ),
         .package(url: "https://github.com/urbanairship/ios-library",
-                 from: "19.1.0"),
+                 from: "20.0.3"),
         .package(url: "https://github.com/erikdoe/ocmock",
                  branch: "master"),
     ],

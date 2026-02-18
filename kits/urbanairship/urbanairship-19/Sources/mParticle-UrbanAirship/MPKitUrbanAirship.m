@@ -547,9 +547,9 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
 - (void)logUrbanAirshipEvent:(MPEvent *)event {
     UACustomEvent *customEvent = [[UACustomEvent alloc] initWithName:event.name];
     NSError *error = nil;
-    [customEvent setProperties:event.info error:&error];
+    [customEvent setProperties:event.customAttributes error:&error];
     if (error) {
-        NSLog(@"Failed to set properties: %@\non Event: %@\n failed: %@", event.info, event.name, error);
+        NSLog(@"Failed to set properties: %@\non Event: %@\n failed: %@", event.customAttributes, event.name, error);
     }
     
     [customEvent track];
@@ -671,7 +671,7 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     } else if ([value isKindOfClass:[NSNumber class]]) {
         stringRepresentation = [(NSNumber *)value stringValue];
     } else if ([value isKindOfClass:[NSDate class]]) {
-        stringRepresentation = [MPDateFormatter stringFromDateRFC3339:value];
+        stringRepresentation = [MPKitAPI stringFromDateRFC3339:value];
     } else if ([value isKindOfClass:[NSData class]]) {
         stringRepresentation = [[NSString alloc] initWithData:value encoding:NSUTF8StringEncoding];
     } else {
@@ -687,7 +687,7 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     }
     
     NSString *stringToHash = [[NSString stringWithFormat:@"%@", [@([commerceEvent type]) stringValue]] lowercaseString];
-    NSString *hashedString = [MPIHasher hashString:stringToHash];
+    NSString *hashedString = [MPKitAPI hashString:stringToHash];
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mapHash == %@", hashedString];
     NSArray<MPUATagMapping *> *matchTagMappings = [tagMappings filteredArrayUsingPredicate:predicate];
@@ -707,7 +707,7 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     }
     
     NSString *stringToHash = [[NSString stringWithFormat:@"%@%@", [eventType stringValue], event.name] lowercaseString];
-    NSString *hashedString = [MPIHasher hashString:stringToHash];
+    NSString *hashedString = [MPKitAPI hashString:stringToHash];
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mapHash == %@", hashedString];
     NSArray<MPUATagMapping *> *matchTagMappings = [tagMappings filteredArrayUsingPredicate:predicate];
@@ -727,7 +727,7 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     }
     
     NSDictionary *beautifiedAtrributes = [commerceEvent beautifiedAttributes];
-    NSDictionary *userDefinedAttributes = [commerceEvent userDefinedAttributes];
+    NSDictionary *userDefinedAttributes = [commerceEvent customAttributes];
     NSMutableDictionary<NSString *, id> *commerceEventAttributes = [[NSMutableDictionary alloc] initWithCapacity:(beautifiedAtrributes.count + userDefinedAttributes.count)];
     
     if (beautifiedAtrributes.count > 0) {
@@ -740,7 +740,7 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     
     [commerceEventAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         NSString *stringToHash = [[NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key] lowercaseString];
-        NSString *hashedString = [MPIHasher hashString:stringToHash];
+        NSString *hashedString = [MPKitAPI hashString:stringToHash];
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mapHash == %@", hashedString];
         NSArray<MPUATagMapping *> *matchTagMappings = [tagMappings filteredArrayUsingPredicate:predicate];
@@ -762,15 +762,15 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
 }
 
 - (void)setTagMappings:(NSArray<MPUATagMapping *> *)tagMappings forAttributesInEvent:(MPEvent *)event eventType:(NSNumber *)eventType {
-    if (!tagMappings || event.info.count == 0) {
+    if (!tagMappings || event.customAttributes.count == 0) {
         return;
     }
     
-    NSDictionary<NSString *, id> *eventInfo = event.info;
+    NSDictionary<NSString *, id> *eventInfo = event.customAttributes;
     
     [eventInfo enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
         NSString *stringToHash = [[NSString stringWithFormat:@"%@%@%@", [eventType stringValue], event.name, key] lowercaseString];
-        NSString *hashedString = [MPIHasher hashString:stringToHash];
+        NSString *hashedString = [MPKitAPI hashString:stringToHash];
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"mapHash == %@", hashedString];
         NSArray<MPUATagMapping *> *matchTagMappings = [tagMappings filteredArrayUsingPredicate:predicate];
