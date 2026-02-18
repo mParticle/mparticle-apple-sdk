@@ -288,7 +288,6 @@ struct RoktLayoutExampleView: View {
                                 handleRoktEvent(roktEvent)
                             }
                         ).roktLayout
-                            .frame(minHeight: 100)
                             .padding(.horizontal)
                     }
                 }
