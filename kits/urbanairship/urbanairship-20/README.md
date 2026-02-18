@@ -1,20 +1,39 @@
-# UrbanAirship Kit Integration
+# mParticle Urban Airship Kit (Airship SDK 20.x)
 
-This repository contains the [Airship](https://www.airship.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
+This is the Urban Airship integration for the mParticle Apple SDK, built against the Airship SDK 20.x.
 
-## Adding the integration
+## Installation
 
-1. Add the kit dependency to your app's Podfile:
+### Swift Package Manager
 
-   ```ruby
-   pod 'mParticle-UrbanAirship', '~> 8'
-   ```
+Add the Urban Airship kit package dependency in Xcode or in your Package.swift. Swift Package Manager resolves the mParticle SDK automatically as a transitive dependency, so you do not need a separate .package entry for mparticle-apple-sdk.
 
-2. Follow the mParticle iOS SDK [quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app, and verify that you see `"Included kits: { UrbanAirship }"` in your Xcode console
+```swift
+let mParticleVersion: Version = "9.0.0"
 
-> (This requires your mParticle log level to be at least Debug)
+.package(
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-20",
+    .upToNextMajor(from: mParticleVersion)
+),
+```
 
-3. Reference mParticle's integration docs below to enable the integration.
+Then add `mParticle-UrbanAirship` as a dependency of your target.
+
+### CocoaPods
+
+Add the kit dependency to your app's Podfile:
+
+```ruby
+pod 'mParticle-UrbanAirship', '~> 8'
+```
+
+## Verifying the Integration
+
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
+
+```text
+Included kits: { UrbanAirship }
+```
 
 ## Push Registration
 
@@ -23,48 +42,57 @@ Push registration is not handled by the Airship SDK when the passive registratio
 Registering out-of-the-box categories manually can be accomplished by accessing the defaultCategories class method on MPKitUrbanAirship and setting them on the UNNotificationCenter:
 
 ```swift
-    UNUserNotificationCenter.current().requestAuthorization(options: [UNAuthorizationOptions.alert]) { (success, err) in
-        UNUserNotificationCenter.current().setNotificationCategories(MPKitUrbanAirship.defaultCategories())
-    }
+UNUserNotificationCenter.current().requestAuthorization(options: [UNAuthorizationOptions.alert]) { (success, err) in
+    UNUserNotificationCenter.current().setNotificationCategories(MPKitUrbanAirship.defaultCategories())
+}
 ```
 
 ## Tag-Based Segmentation
 
 All mParticle user attributes are forwarded to Airship as [tags](https://docs.airship.com/platform/ios/segmentation/) which can be used to identify and segment your audience.
 
-Most clients prefer for all tags to remain constant if set. But, a tag can be removed manually by invoking removeTag directly on the Airship SDK as shown bellow.
+Most clients prefer for all tags to remain constant if set. But, a tag can be removed manually by invoking removeTag directly on the Airship SDK as shown below.
 
 ### Swift
 
 ```swift
-    private func removeTag(key: String) {
-        if (!key.isEmpty) {
-            Airship.channel.editTags { editor in
-                editor.remove(key)
-            }
-            Airship.channel.updateRegistration()
+private func removeTag(key: String) {
+    if (!key.isEmpty) {
+        Airship.channel.editTags { editor in
+            editor.remove(key)
         }
+        Airship.channel.updateRegistration()
     }
+}
 ```
 
 ### Objective-C
 
 ```objective-c
-    - (void)removeTag:(nonnull NSString *)key {
-        if (key && (NSNull *)key != [NSNull null] && ![key isEqualToString:@""]) {
-            [[UAirship channel] editTags:^(UATagEditor * _Nonnull editor) {
-                [editor removeTag:key];
-                [editor apply];
-            }];
-            [[UAirship channel] updateRegistration];
-        }
+- (void)removeTag:(nonnull NSString *)key {
+    if (key && (NSNull *)key != [NSNull null] && ![key isEqualToString:@""]) {
+        [[UAirship channel] editTags:^(UATagEditor * _Nonnull editor) {
+            [editor removeTag:key];
+            [editor apply];
+        }];
+        [[UAirship channel] updateRegistration];
     }
+}
 ```
 
-### Documentation
+## Platform Support
 
-[Airship integration](https://docs.mparticle.com/integrations/airship/event/)
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.6            |
+| tvOS     | 15.6            |
 
-### License
+## Documentation
 
-[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+- [mParticle Urban Airship Integration Guide](https://docs.mparticle.com/integrations/airship/event/)
+- [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
+- [Airship iOS SDK Documentation](https://docs.airship.com/platform/ios/)
+
+## License
+
+Apache License 2.0
