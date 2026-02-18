@@ -1,5 +1,6 @@
 import UIKit
 import mParticle_Apple_SDK
+import mParticle_UrbanAirship
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
