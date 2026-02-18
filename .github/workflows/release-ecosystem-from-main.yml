@@ -6,8 +6,9 @@ on:
     branches:
       - main
       - workstation*
-    paths:
-      - VERSION
+      - chore/**
+    # paths:
+    #   - VERSION
   workflow_dispatch:
     inputs:
       dry_run:
@@ -16,7 +17,7 @@ on:
         default: true
 
 env:
-  DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
 
 permissions:
   contents: write
