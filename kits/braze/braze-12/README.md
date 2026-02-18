@@ -4,21 +4,16 @@ This is the [Braze](https://www.braze.com) integration for the [mParticle Apple 
 
 ## Installation
 
-> **Viewing this from the monorepo?** Add the kit as a dependency from the [mparticle-integrations/mparticle-apple-integration-braze-12](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12) repository, not from the monorepo path.
-
 ### Swift Package Manager
 
-Add the package dependency in Xcode or in your `Package.swift`:
+Add the Braze kit package dependency in Xcode or in your `Package.swift`.
+Swift Package Manager resolves the `mParticle` SDK automatically as a transitive dependency, so you do not need a separate `.package` entry for `mparticle-apple-sdk`.
 
 ```swift
 let mParticleVersion: Version = "9.0.0"
 
 .package(
     url: "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12",
-    .upToNextMajor(from: mParticleVersion)
-),
-.package(
-    url: "https://github.com/mParticle/mparticle-apple-sdk",
     .upToNextMajor(from: mParticleVersion)
 ),
 ```
