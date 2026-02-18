@@ -24,10 +24,10 @@ permissions:
   contents: write
 
 jobs:
-  mirror-and-release-kits:
+  build-kits:
+    name: Build ${{ matrix.kit.name }}
     runs-on: macOS-latest
     env:
-      DEST_ORG: mparticle-integrations
       XCODE_VERSION: "16.4"
     strategy:
       fail-fast: false
@@ -57,14 +57,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-
-      - name: Get ecosystem version
-        id: version
-        run: |
-          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-          echo "📌 Ecosystem version: $VERSION"
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
@@ -100,6 +92,54 @@ jobs:
 
           zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
           rm -rf archives "${MODULE}.xcframework"
+
+      - name: Upload xcframework artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcframework-${{ matrix.kit.name }}
+          path: ${{ matrix.kit.module }}.xcframework.zip
+
+  mirror-and-release-kits:
+    name: Mirror & Release ${{ matrix.kit.name }}
+    runs-on: macOS-latest
+    needs: build-kits
+    env:
+      DEST_ORG: mparticle-integrations
+    strategy:
+      fail-fast: false
+      matrix:
+        kit:
+          - name: braze-12
+            local_path: kits/braze/braze-12
+            dest_repo: mparticle-apple-integration-braze-12
+            module: mParticle_Braze
+    #      - name: braze-13
+    #        local_path: kits/braze/braze-13
+    #        dest_repo: mparticle-apple-integration-braze-13
+    #        module: mParticle_Braze
+    #      - name: braze-14
+    #        local_path: kits/braze/braze-14
+    #        dest_repo: mparticle-apple-integration-braze-14
+    #        module: mParticle_Braze
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download xcframework artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xcframework-${{ matrix.kit.name }}
+
+      - name: Get ecosystem version
+        id: version
+        run: |
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "📌 Ecosystem version: $VERSION"
 
       - name: Generate GitHub App Token
         id: generate-token
@@ -141,7 +181,7 @@ jobs:
           owner: ${{ env.DEST_ORG }}
           repo: ${{ matrix.kit.dest_repo }}
           token: ${{ steps.generate-token.outputs.token }}
-          artifacts: ${{ matrix.kit.module }}.xcframework.zip
+          artifacts: xcframework-${{ matrix.kit.name }}/${{ matrix.kit.module }}.xcframework.zip
           body: |
             ${{ steps.release-notes.outputs.release_notes }}
 
