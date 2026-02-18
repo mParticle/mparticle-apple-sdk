@@ -116,6 +116,7 @@ jobs:
         uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105 # v3.0.0
         with:
           changelog_file: ${{ matrix.kit.local_path }}/CHANGELOG.md
+          prerelease: true
 
       - name: Split kit and push to mirror
         id: mirror

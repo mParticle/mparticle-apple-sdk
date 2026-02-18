@@ -103,7 +103,6 @@ jobs:
 
       - name: Commit version changes
         run: |
-          trunk fmt
           git add \
             VERSION \
             Framework/Info.plist \
