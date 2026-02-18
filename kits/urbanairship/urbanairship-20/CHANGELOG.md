@@ -1,9 +1,18 @@
+<!-- markdownlint-disable MD024 -->
+
 # Changelog
 
-## [8.3.0](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship/compare/v8.2.1...v8.3.0) (2024-05-08)
+All notable changes to this project will be documented in this file.
 
-- Update to Partner Version 18.2 and add Privacy Manifest ([#30](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship/issues/30)) ([9dc5408](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship/commit/9dc5408f75e4fa2f3ba8911dec9eeae3cbf7365b))
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [8.2.0](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship/compare/v8.1.0...v8.2.0) (2024-01-04)
+## [Unreleased]
 
-- Update to Latest Version of Airship ([#29](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship/issues/29)) ([bf46b7b](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship/commit/bf46b7b15f8e11feaa84496ae4d2619f8c9702d3))
+### Changed
+
+- Transitioned UrbanAirship kit development to this monorepo; versions before 9.0.0 remain documented in the legacy repository.
+
+## <9.0.0
+
+- For versions earlier than 9.0.0, see the legacy Appboy/Braze [changelog](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship/blob/development/CHANGELOG.md)

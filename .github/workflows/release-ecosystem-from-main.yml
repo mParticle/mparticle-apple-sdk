@@ -6,8 +6,9 @@ on:
     branches:
       - main
       - workstation*
-    paths:
-      - VERSION
+      - ci/**
+    # paths:
+    #   - VERSION
   workflow_dispatch:
     inputs:
       dry_run:
@@ -43,6 +44,11 @@ jobs:
             ios_scheme: mParticle-Braze
             tvos_scheme: mParticle-Braze-tvOS
             module: mParticle_Braze
+          - name: urbanairship-20
+            local_path: kits/urbanairship/urbanairship-20
+            dest_repo: mparticle-apple-integration-urbanairship-20
+            ios_scheme: mParticle-UrbanAirship
+            module: mParticle_UrbanAirship
 
     steps:
       - name: Checkout monorepo
