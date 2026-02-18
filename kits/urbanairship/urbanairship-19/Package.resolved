@@ -1,5 +1,5 @@
 {
-  "originHash" : "70f84f973d6f19b21074e0af5db23cc36df8aacca14ad6bf7d0291fc60c1f70c",
+  "originHash" : "6dea1f6228d680413f9c871f74ff95c2448080926ba30f9f1af16e214fa50248",
   "pins" : [
     {
       "identity" : "ios-library",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mParticle/mparticle-apple-sdk",
       "state" : {
-        "revision" : "dffa5b707b0b1523a54f9a4bbf1c5e3056bf5948",
-        "version" : "8.40.0"
+        "branch" : "workstation/9.0-Release",
+        "revision" : "ba020c22b0c93a0e48c423ac62a8e7438224b0e9"
       }
     },
     {

@@ -11,8 +11,10 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/mParticle/mparticle-apple-sdk",
-                 from: "8.40.0"),
+        .package(
+            url: "https://github.com/mParticle/mparticle-apple-sdk",
+            branch: "workstation/9.0-Release"
+        ),
         .package(url: "https://github.com/urbanairship/ios-library",
                  from: "19.1.0"),
         .package(url: "https://github.com/erikdoe/ocmock",
