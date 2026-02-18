@@ -16,19 +16,19 @@
 		539B2EA12A13D6AB00C8339D /* BrazeKitCompat in Frameworks */ = {isa = PBXBuildFile; productRef = 539B2EA02A13D6AB00C8339D /* BrazeKitCompat */; };
 		D34423302B960F44006CD046 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D344232F2B960F44006CD046 /* PrivacyInfo.xcprivacy */; };
 		D34423312B960F44006CD046 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D344232F2B960F44006CD046 /* PrivacyInfo.xcprivacy */; };
-		DB76F1CF25D2E71D00CAB3EB /* MPKitAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CB25D2E71D00CAB3EB /* MPKitAppboy.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DB76F1D025D2E71D00CAB3EB /* mParticle_Appboy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CC25D2E71D00CAB3EB /* mParticle_Appboy.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DB76F1D125D2E71D00CAB3EB /* MPKitAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */; };
-		DB76F1DB25D2E73700CAB3EB /* MPKitAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */; };
-		DB76F1DF25D2E74900CAB3EB /* MPKitAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CB25D2E71D00CAB3EB /* MPKitAppboy.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB76F1CF25D2E71D00CAB3EB /* MPKitBraze.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CB25D2E71D00CAB3EB /* MPKitBraze.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB76F1D025D2E71D00CAB3EB /* mParticle_Braze.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CC25D2E71D00CAB3EB /* mParticle_Braze.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB76F1D125D2E71D00CAB3EB /* MPKitBraze.m in Sources */ = {isa = PBXBuildFile; fileRef = DB76F1CD25D2E71D00CAB3EB /* MPKitBraze.m */; };
+		DB76F1DB25D2E73700CAB3EB /* MPKitBraze.m in Sources */ = {isa = PBXBuildFile; fileRef = DB76F1CD25D2E71D00CAB3EB /* MPKitBraze.m */; };
+		DB76F1DF25D2E74900CAB3EB /* MPKitBraze.h in Headers */ = {isa = PBXBuildFile; fileRef = DB76F1CB25D2E71D00CAB3EB /* MPKitBraze.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DBDEDD9C209B8FD600DD3B9B /* mParticle_Braze_tvOS.h in Headers */ = {isa = PBXBuildFile; fileRef = DBDEDD9A209B8FD600DD3B9B /* mParticle_Braze_tvOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D344232F2B960F44006CD046 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		DB76F1CB25D2E71D00CAB3EB /* MPKitAppboy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppboy.h; sourceTree = "<group>"; };
-		DB76F1CC25D2E71D00CAB3EB /* mParticle_Appboy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle_Appboy.h; sourceTree = "<group>"; };
-		DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAppboy.m; sourceTree = "<group>"; };
+		DB76F1CB25D2E71D00CAB3EB /* MPKitBraze.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitBraze.h; sourceTree = "<group>"; };
+		DB76F1CC25D2E71D00CAB3EB /* mParticle_Braze.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle_Braze.h; sourceTree = "<group>"; };
+		DB76F1CD25D2E71D00CAB3EB /* MPKitBraze.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitBraze.m; sourceTree = "<group>"; };
 		DB76F1CE25D2E71D00CAB3EB /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DB94016C1CB703F2007ABB18 /* mParticle_Braze.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Braze.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBDEDD98209B8FD600DD3B9B /* mParticle_Braze.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Braze.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -74,7 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				DB76F1CA25D2E71D00CAB3EB /* include */,
-				DB76F1CD25D2E71D00CAB3EB /* MPKitAppboy.m */,
+				DB76F1CD25D2E71D00CAB3EB /* MPKitBraze.m */,
 				D344232F2B960F44006CD046 /* PrivacyInfo.xcprivacy */,
 			);
 			path = "mParticle-Braze";
@@ -83,8 +83,8 @@
 		DB76F1CA25D2E71D00CAB3EB /* include */ = {
 			isa = PBXGroup;
 			children = (
-				DB76F1CB25D2E71D00CAB3EB /* MPKitAppboy.h */,
-				DB76F1CC25D2E71D00CAB3EB /* mParticle_Appboy.h */,
+				DB76F1CB25D2E71D00CAB3EB /* MPKitBraze.h */,
+				DB76F1CC25D2E71D00CAB3EB /* mParticle_Braze.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -123,8 +123,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DB76F1CF25D2E71D00CAB3EB /* MPKitAppboy.h in Headers */,
-				DB76F1D025D2E71D00CAB3EB /* mParticle_Appboy.h in Headers */,
+				DB76F1CF25D2E71D00CAB3EB /* MPKitBraze.h in Headers */,
+				DB76F1D025D2E71D00CAB3EB /* mParticle_Braze.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,7 +132,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DB76F1DF25D2E74900CAB3EB /* MPKitAppboy.h in Headers */,
+				DB76F1DF25D2E74900CAB3EB /* MPKitBraze.h in Headers */,
 				DBDEDD9C209B8FD600DD3B9B /* mParticle_Braze_tvOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -251,7 +251,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DB76F1D125D2E71D00CAB3EB /* MPKitAppboy.m in Sources */,
+				DB76F1D125D2E71D00CAB3EB /* MPKitBraze.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,7 +259,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DB76F1DB25D2E73700CAB3EB /* MPKitAppboy.m in Sources */,
+				DB76F1DB25D2E73700CAB3EB /* MPKitBraze.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
