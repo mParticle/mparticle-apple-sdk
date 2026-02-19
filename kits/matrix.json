@@ -14,5 +14,12 @@
     "ios_scheme": "mParticle-Braze",
     "tvos_scheme": "mParticle-Braze-tvOS",
     "module": "mParticle_Braze"
+  },
+  {
+    "name": "adjust-5",
+    "local_path": "kits/adjust/adjust-5",
+    "dest_repo": "mparticle-apple-integration-adjust-5",
+    "ios_scheme": "mParticle-Adjust",
+    "module": "mParticle_Adjust"
   }
 ]
