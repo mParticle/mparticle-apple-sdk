@@ -27,7 +27,14 @@ let package = Package(
                 .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
                 .product(name: "AdjustSdk", package: "ios_sdk"),
             ],
-            resources: [.process("PrivacyInfo.xcprivacy")]
+            resources: [.process("PrivacyInfo.xcprivacy")],
+            publicHeadersPath: "include"
+        ),
+        .testTarget(
+            name: "mParticle-AdjustTests",
+            dependencies: [
+                "mParticle-Adjust"
+            ]
         )
     ]
 )
