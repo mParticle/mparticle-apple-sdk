@@ -13,10 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          sparse-checkout: kits/matrix.json
+          sparse-checkout: Kits/matrix.json
           sparse-checkout-cone-mode: false
       - id: set
-        run: echo "matrix=$(jq -c . kits/matrix.json)" >> "$GITHUB_OUTPUT"
+        run: echo "matrix=$(jq -c . Kits/matrix.json)" >> "$GITHUB_OUTPUT"
 
   build-kits:
     name: Build ${{ matrix.kit.name }}
