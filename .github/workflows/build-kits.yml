@@ -10,7 +10,7 @@ jobs:
     name: Build ${{ matrix.kit.name }}
     runs-on: macOS-latest
     env:
-      XCODE_VERSION: "16.4"
+      XCODE_VERSION: "26.2"
     strategy:
       fail-fast: false
       matrix:
@@ -25,11 +25,6 @@ jobs:
             ios_scheme: mParticle-Braze
             tvos_scheme: mParticle-Braze-tvOS
             module: mParticle_Braze
-          - name: urbanairship-20
-            local_path: kits/urbanairship/urbanairship-20
-            ios_scheme: mParticle-UrbanAirship
-            tvos_scheme: ""
-            module: mParticle_UrbanAirship
 
     steps:
       - name: Checkout monorepo
