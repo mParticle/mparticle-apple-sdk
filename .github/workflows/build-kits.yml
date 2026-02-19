@@ -25,6 +25,11 @@ jobs:
             ios_scheme: mParticle-Braze
             tvos_scheme: mParticle-Braze-tvOS
             module: mParticle_Braze
+          - name: urbanairship-20
+            local_path: kits/urbanairship/urbanairship-20
+            ios_scheme: mParticle-UrbanAirship
+            tvos_scheme: ""
+            module: mParticle_UrbanAirship
 
     steps:
       - name: Checkout monorepo
