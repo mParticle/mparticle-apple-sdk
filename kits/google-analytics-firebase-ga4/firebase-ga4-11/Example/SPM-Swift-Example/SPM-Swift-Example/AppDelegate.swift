@@ -1,6 +1,6 @@
 import UIKit
 import mParticle_Apple_SDK
-import MPKitFirebaseGA4
+import mParticle_FirebaseGA4
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
