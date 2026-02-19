@@ -2,7 +2,9 @@ import Foundation
 
 @objc
 public protocol OpenURLHandlerProtocol {
+    @objc(openURL:options:)
     func open(_ url: URL, options: [String: Any]?)
+    @objc(continueUserActivity:restorationHandler:)
     func continueUserActivity(
         _ userActivity: NSUserActivity,
         restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
