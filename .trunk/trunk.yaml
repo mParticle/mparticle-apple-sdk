@@ -74,6 +74,7 @@ lint:
         - CHANGELOG.md # Standard changelog format violates MD001, MD024, MD025
         - kits/braze/braze-12/CHANGELOG.md
         - kits/braze/braze-13/CHANGELOG.md
+        - kits/urbanairship/urbanairship-20/CHANGELOG.md
     - linters: [actionlint]
       paths:
         - .github/workflows/release-ecosystem-from-main.yml
