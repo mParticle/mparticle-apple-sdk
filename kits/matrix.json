@@ -16,6 +16,13 @@
     "module": "mParticle_Braze"
   },
   {
+    "name": "google-analytics-firebase-12",
+    "local_path": "kits/google-analytics-firebase/firebase-12",
+    "dest_repo": "mparticle-apple-integration-google-analytics-firebase-12",
+    "ios_scheme": "mParticle-Firebase",
+    "module": "mParticle_Firebase"
+  },
+  {
     "name": "google-analytics-firebase-11",
     "local_path": "kits/google-analytics-firebase/firebase-11",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-11",
