@@ -92,6 +92,9 @@ private func removeTag(key: String) {
 - [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
 - [Airship iOS SDK Documentation](https://docs.airship.com/platform/ios/)
 
+> [!NOTE]
+> Please create all inbound issues and contributions for this kit in the [mParticle Apple SDK monorepo](https://github.com/mParticle/mparticle-apple-sdk).
+
 ## License
 
 Apache License 2.0
