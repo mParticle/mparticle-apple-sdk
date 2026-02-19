@@ -43,8 +43,9 @@ jobs:
       - name: Resolve SPM dependencies
         run: |
           PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+          IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
           xcodebuild -resolvePackageDependencies -project "$PROJECT" \
-            -derivedDataPath DerivedData
+            -scheme "$IOS_SCHEME" -derivedDataPath DerivedData
 
       - name: Build kit (iOS)
         run: |
