@@ -4,10 +4,8 @@ name: Publish Ecosystem Releases from Main
 on:
   push:
     branches:
-      - main
-      - workstation*
-    paths:
-      - VERSION
+      # TODO: change this to main and VERSION path when we are ready to release
+      - workstation/**
   workflow_dispatch:
     inputs:
       dry_run:
