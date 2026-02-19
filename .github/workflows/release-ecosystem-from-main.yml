@@ -6,9 +6,8 @@ on:
     branches:
       - main
       - workstation*
-      - ci/**
-    # paths:
-    #   - VERSION
+    paths:
+      - VERSION
   workflow_dispatch:
     inputs:
       dry_run:
