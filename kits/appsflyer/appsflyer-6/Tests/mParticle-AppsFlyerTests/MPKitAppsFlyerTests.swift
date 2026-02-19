@@ -27,9 +27,9 @@ final class MPKitAppsFlyerTests: XCTestCase {
     let fakeProducts: [MPProduct] = [
         MPKitAppsFlyerTests.product1,
         MPKitAppsFlyerTests.product2,
-        MPKitAppsFlyerTests.product3,
+        MPKitAppsFlyerTests.product3
     ]
-    
+
     // MARK: - Lifecycle
 
     override func setUp() {
@@ -129,49 +129,49 @@ final class MPKitAppsFlyerTests: XCTestCase {
         )
         XCTAssertNil(result)
     }
-    
+
     func testComputeQuantityWithNoEvent() {
-        XCTAssertEqual(MPKitAppsFlyer.computeProductQuantity(nil).intValue, 1);
+        XCTAssertEqual(MPKitAppsFlyer.computeProductQuantity(nil).intValue, 1)
     }
-    
+
     func testComputeQuantityWithNoProducts() {
         let event = MPCommerceEvent(action: .purchase)
-        XCTAssertEqual(MPKitAppsFlyer.computeProductQuantity(event).intValue, 1);
+        XCTAssertEqual(MPKitAppsFlyer.computeProductQuantity(event).intValue, 1)
     }
-    
+
     func testComputeQuantityWithProductWithNoQuantity() {
         let event = MPCommerceEvent(action: .purchase)
         event!.addProducts([.init(name: "foo", sku: "bar", quantity: 0, price: 50)])
-        
-        XCTAssertEqual(MPKitAppsFlyer.computeProductQuantity(event).intValue, 1);
+
+        XCTAssertEqual(MPKitAppsFlyer.computeProductQuantity(event).intValue, 1)
     }
-    
+
     func testComputeQuantityWithProductWithMultipleQuantities() {
         let event = MPCommerceEvent(action: .purchase)
         event!.addProducts([
             MPKitAppsFlyerTests.product1,
             MPKitAppsFlyerTests.product2
         ])
-        
-        XCTAssertEqual(MPKitAppsFlyer.computeProductQuantity(event).intValue, 5);
+
+        XCTAssertEqual(MPKitAppsFlyer.computeProductQuantity(event).intValue, 5)
     }
-    
+
     func testGenerateSkuStringNoEvent() {
-        XCTAssertNil(MPKitAppsFlyer.generateProductIdList(nil));
+        XCTAssertNil(MPKitAppsFlyer.generateProductIdList(nil))
     }
-    
+
     func testGenerateSkuStringNoProducts() {
         let event = MPCommerceEvent.mock()
-        XCTAssertNil(MPKitAppsFlyer.generateProductIdList(event));
+        XCTAssertNil(MPKitAppsFlyer.generateProductIdList(event))
     }
-    
+
     func testGenerateSkuStringSingleProduct() {
         let event = MPCommerceEvent.mock(products: [
             MPKitAppsFlyerTests.product1
         ])
         XCTAssertEqual(MPKitAppsFlyer.generateProductIdList(event), "foo-sku")
     }
-    
+
     func testGenerateSkuStringMultipleProducts() {
         let event = MPCommerceEvent.mock(products: [
             MPKitAppsFlyerTests.product1,
@@ -179,38 +179,38 @@ final class MPKitAppsFlyerTests: XCTestCase {
         ])
         XCTAssertEqual(MPKitAppsFlyer.generateProductIdList(event), "foo-sku,foo-sku-2")
     }
-    
+
     func testGenerateSkuStringEmbeddedCommas() {
         let event = MPCommerceEvent.mock(products: fakeProducts)
         XCTAssertEqual(MPKitAppsFlyer.generateProductIdList(event), "foo-sku,foo-sku-2,foo-sku-%2C3")
     }
-    
+
     func testRouteCommerce() {
         let event = MPCommerceEvent.mock(products: fakeProducts)
         event.customAttributes = ["test": "Malarkey"]
-        
+
         let af = MPKitAppsFlyer()
-        
+
         af.providerKitInstance = mock
         af.routeCommerceEvent(event)
-        
+
         checkLogEventParams()
-        
+
         XCTAssertEqual(mock.logEventValues!["test"] as! String, "Malarkey")
     }
-    
+
     func testRouteCommerceNilCustomAttributes() {
         let event = MPCommerceEvent.mock(products: fakeProducts)
         event.customAttributes = nil
-        
+
         let af = MPKitAppsFlyer()
-        
+
         af.providerKitInstance = mock
         af.routeCommerceEvent(event)
-        
+
         checkLogEventParams()
     }
-    
+
     func checkLogEventParams() {
         XCTAssertTrue(mock.logEventCalled)
         XCTAssertEqual(mock.logEventEventName, AFEventPurchase)
@@ -218,5 +218,5 @@ final class MPKitAppsFlyerTests: XCTestCase {
         XCTAssertEqual(mock.logEventValues!["af_quantity"] as! NSNumber, 7)
         XCTAssertEqual(mock.logEventValues!["af_content_id"] as! String, "foo-sku,foo-sku-2,foo-sku-%2C3")
     }
-    
+
 }

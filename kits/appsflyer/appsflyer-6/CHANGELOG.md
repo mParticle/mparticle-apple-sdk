@@ -1,16 +1,18 @@
+# Changelog
+
 ## [8.4.1](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer/compare/v8.4.0...v8.4.1) (2024-05-13)
 
 ### Bug Fixes
 
 - Update Carthage dependency to use binary ([661f3f7](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer/commit/661f3f726ca5eb29476c7d09c7005e4159fc3923))
 
-# [8.4.0](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer/compare/v8.3.0...v8.4.0) (2024-04-29)
+## [8.4.0](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer/compare/v8.3.0...v8.4.0) (2024-04-29)
 
 ### Features
 
 - Improve Privacy Manifest support for iOS 17 ([#46](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer/issues/46)) ([7813fb6](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer/commit/7813fb65cd0f778c5d8ee485441fe6c868bbfc51))
 
-# [8.3.0](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer/compare/v8.2.3...v8.3.0) (2024-04-01)
+## [8.3.0](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer/compare/v8.2.3...v8.3.0) (2024-04-01)
 
 ### Bug Fixes
 

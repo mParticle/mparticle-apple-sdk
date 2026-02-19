@@ -1,18 +1,18 @@
-## AppsFlyer Kit Integration
+# AppsFlyer Kit Integration
 
 This repository contains the [AppsFlyer](https://www.appsflyer.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
 
-### Adding the integration
+## Adding the integration
 
 1. Add the kit dependency to your app's Podfile or Cartfile:
 
-   ```
+   ```ruby
    pod 'mParticle-AppsFlyer', '~> 8'
    ```
 
    OR
 
-   ```
+   ```ruby
    github "mparticle-integrations/mparticle-apple-integration-appsflyer" ~> 8.0
    ```
 

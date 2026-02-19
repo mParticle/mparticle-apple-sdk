@@ -14,5 +14,21 @@
     "ios_scheme": "mParticle-Braze",
     "tvos_scheme": "mParticle-Braze-tvOS",
     "module": "mParticle_Braze"
+  },
+  {
+    "name": "adjust-5",
+    "local_path": "kits/adjust/adjust-5",
+    "dest_repo": "mparticle-apple-integration-adjust",
+    "ios_scheme": "mParticle-Adjust",
+    "tvos_scheme": null,
+    "module": "mParticle_Adjust"
+  },
+  {
+    "name": "appsflyer-6",
+    "local_path": "kits/appsflyer/appsflyer-6",
+    "dest_repo": "mparticle-apple-integration-appsflyer",
+    "ios_scheme": "mParticle-AppsFlyer",
+    "tvos_scheme": null,
+    "module": "mParticle_AppsFlyer"
   }
 ]

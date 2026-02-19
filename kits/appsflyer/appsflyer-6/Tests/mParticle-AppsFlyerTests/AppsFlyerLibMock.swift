@@ -11,7 +11,7 @@ class AppsFlyerLibMock: AppsFlyerLib {
     var logEventCalled = false
     var logEventEventName: String?
     var logEventValues: [AnyHashable: Any]?
-    
+
     override func logEvent(_ eventName: String, withValues values: [AnyHashable: Any]?) {
         logEventCalled = true
         logEventEventName = eventName
