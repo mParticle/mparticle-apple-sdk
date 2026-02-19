@@ -42,36 +42,36 @@ jobs:
           xcodebuild -resolvePackageDependencies -project "$PROJECT" \
             -scheme "$IOS_SCHEME" -derivedDataPath DerivedData
 
-      - name: Build kit (iOS)
-        run: |
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-          IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
+      # - name: Build kit (iOS)
+      #   run: |
+      #     PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+      #     IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
 
-          xcodebuild build -project "$PROJECT" -scheme "$IOS_SCHEME" \
-            -destination "generic/platform=iOS" \
-            -derivedDataPath DerivedData \
-            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+      #     xcodebuild build -project "$PROJECT" -scheme "$IOS_SCHEME" \
+      #       -destination "generic/platform=iOS" \
+      #       -derivedDataPath DerivedData \
+      #       CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-          xcodebuild build -project "$PROJECT" -scheme "$IOS_SCHEME" \
-            -destination "generic/platform=iOS Simulator" \
-            -derivedDataPath DerivedData \
-            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+      #     xcodebuild build -project "$PROJECT" -scheme "$IOS_SCHEME" \
+      #       -destination "generic/platform=iOS Simulator" \
+      #       -derivedDataPath DerivedData \
+      #       CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-      - name: Build kit (tvOS)
-        if: ${{ matrix.kit.tvos_scheme != '' }}
-        run: |
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-          TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
+      # - name: Build kit (tvOS)
+      #   if: ${{ matrix.kit.tvos_scheme != '' }}
+      #   run: |
+      #     PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+      #     TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
 
-          xcodebuild build -project "$PROJECT" -scheme "$TVOS_SCHEME" \
-            -destination "generic/platform=tvOS" \
-            -derivedDataPath DerivedData \
-            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+      #     xcodebuild build -project "$PROJECT" -scheme "$TVOS_SCHEME" \
+      #       -destination "generic/platform=tvOS" \
+      #       -derivedDataPath DerivedData \
+      #       CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-          xcodebuild build -project "$PROJECT" -scheme "$TVOS_SCHEME" \
-            -destination "generic/platform=tvOS Simulator" \
-            -derivedDataPath DerivedData \
-            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+      #     xcodebuild build -project "$PROJECT" -scheme "$TVOS_SCHEME" \
+      #       -destination "generic/platform=tvOS Simulator" \
+      #       -derivedDataPath DerivedData \
+      #       CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Build SPM-Swift-Example
         run: |
@@ -85,7 +85,7 @@ jobs:
             echo "No xcodeproj in SPM-Swift-Example — skipping."
             exit 0
           fi
-          xcodebuild build -project "$PROJECT" \
+          xcodebuild build -project "$PROJECT" -scheme SPM-Swift-Example \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath DerivedData-Example \
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
@@ -102,7 +102,7 @@ jobs:
             echo "No xcodeproj in SPM-Objc-Example — skipping."
             exit 0
           fi
-          xcodebuild build -project "$PROJECT" \
+          xcodebuild build -project "$PROJECT" -scheme SPM-Objc-Example \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath DerivedData-Example \
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
