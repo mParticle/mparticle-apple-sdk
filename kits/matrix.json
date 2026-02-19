@@ -16,12 +16,12 @@
     "module": "mParticle_Braze"
   },
   {
-      "name": "braze-14",
-      "local_path": "kits/braze/braze-14",
-      "dest_repo": "mparticle-apple-integration-braze-14",
-      "ios_scheme": "mParticle-Braze",
-      "tvos_scheme": "mParticle-Braze-tvOS",
-      "module": "mParticle_Braze"
+    "name": "braze-14",
+    "local_path": "kits/braze/braze-14",
+    "dest_repo": "mparticle-apple-integration-braze-14",
+    "ios_scheme": "mParticle-Braze",
+    "tvos_scheme": "mParticle-Braze-tvOS",
+    "module": "mParticle_Braze"
   },
   {
     "name": "google-analytics-firebase-12",
