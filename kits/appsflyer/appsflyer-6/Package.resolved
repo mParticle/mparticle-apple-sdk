@@ -1,25 +1,23 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "AppsFlyerLib",
-        "repositoryURL": "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static",
-        "state": {
-          "branch": null,
-          "revision": "1741d025d5bdd8a64c42854ba0fcfd7f768e4594",
-          "version": "6.17.5"
-        }
-      },
-      {
-        "package": "mParticle-Apple-SDK",
-        "repositoryURL": "https://github.com/mParticle/mparticle-apple-sdk",
-        "state": {
-          "branch": null,
-          "revision": "e629ee514f760bd14f195ac34370afba4c816baa",
-          "version": "8.38.0"
-        }
+  "pins" : [
+    {
+      "identity" : "appsflyerframework-static",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static",
+      "state" : {
+        "revision" : "1741d025d5bdd8a64c42854ba0fcfd7f768e4594",
+        "version" : "6.17.5"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "mparticle-apple-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mParticle/mparticle-apple-sdk",
+      "state" : {
+        "branch" : "workstation/9.0-Release",
+        "revision" : "5d9abc5b6fbb527f13a33de232e72286db505b38"
+      }
+    }
+  ],
+  "version" : 2
 }

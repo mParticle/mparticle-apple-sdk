@@ -10,8 +10,6 @@ FOUNDATION_EXPORT const unsigned char mParticle_AppsFlyerVersionString[];
 
 #if defined(__has_include) && __has_include(<mParticle_AppsFlyer/MPKitAppsFlyer.h>)
     #import <mParticle_AppsFlyer/MPKitAppsFlyer.h>
-#elif defined(__has_include) && __has_include(<mParticle_AppsFlyer_NoLocation/MPKitAppsFlyer.h>)
-    #import <mParticle_AppsFlyer/MPKitAppsFlyer.h>
 #else
     #import "MPKitAppsFlyer.h"
 #endif
