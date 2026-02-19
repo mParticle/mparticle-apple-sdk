@@ -35,5 +35,12 @@
     "dest_repo": "mparticle-apple-integration-adjust-5",
     "ios_scheme": "mParticle-Adjust",
     "module": "mParticle_Adjust"
+  },
+  {
+    "name": "urbanairship-20",
+    "local_path": "kits/urbanairship/urbanairship-20",
+    "dest_repo": "mparticle-apple-integration-urbanairship-20",
+    "ios_scheme": "mParticle-UrbanAirship",
+    "module": "mParticle_UrbanAirship"
   }
 ]
