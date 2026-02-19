@@ -6,7 +6,8 @@
     #if __has_include("AirshipLib.h")
         #import "AirshipLib.h"
     #else
-        @import AirshipKit;
+        @import AirshipCore;
+        @import AirshipObjectiveC;
     #endif
 #endif
 
