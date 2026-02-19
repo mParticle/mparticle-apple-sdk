@@ -5,10 +5,8 @@
 #else
     #if __has_include("AirshipLib.h")
         #import "AirshipLib.h"
-    #elif __has_include(<AirshipKit/AirshipKit.h>)
-        @import AirshipKit;
     #else
-        @import AirshipObjectiveC;
+        @import AirshipKit;
     #endif
 #endif
 

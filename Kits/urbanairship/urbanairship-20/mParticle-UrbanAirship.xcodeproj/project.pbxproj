@@ -10,14 +10,14 @@
 		AA0001012A18050500000001 /* AirshipObjectiveC in Frameworks */ = {isa = PBXBuildFile; productRef = 880001022A18050500000002 /* AirshipObjectiveC */; };
 		AA0001022A18050500000002 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = 880001012A18050500000001 /* mParticle-Apple-SDK */; };
 		AA0001032A18050500000003 /* MPKitUrbanAirship.h in Headers */ = {isa = PBXBuildFile; fileRef = BB0001012A18050500000001 /* MPKitUrbanAirship.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		AA0001042A18050500000004 /* mParticle_UrbanAirship.h in Headers */ = {isa = PBXBuildFile; fileRef = BB0001022A18050500000002 /* mParticle_UrbanAirship.h */; settings = {ATTRIBUTES = (Public, ); }; };
+
 		AA0001052A18050500000005 /* MPKitUrbanAirship.m in Sources */ = {isa = PBXBuildFile; fileRef = BB0001032A18050500000003 /* MPKitUrbanAirship.m */; };
 		AA0001062A18050500000006 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BB0001052A18050500000005 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		BB0001012A18050500000001 /* MPKitUrbanAirship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitUrbanAirship.h; sourceTree = "<group>"; };
-		BB0001022A18050500000002 /* mParticle_UrbanAirship.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle_UrbanAirship.h; sourceTree = "<group>"; };
+
 		BB0001032A18050500000003 /* MPKitUrbanAirship.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitUrbanAirship.m; sourceTree = "<group>"; };
 		BB0001042A18050500000004 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BB0001052A18050500000005 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -58,7 +58,7 @@
 			isa = PBXGroup;
 			children = (
 				BB0001012A18050500000001 /* MPKitUrbanAirship.h */,
-				BB0001022A18050500000002 /* mParticle_UrbanAirship.h */,
+
 				BB0001032A18050500000003 /* MPKitUrbanAirship.m */,
 				BB0001052A18050500000005 /* PrivacyInfo.xcprivacy */,
 			);
@@ -81,7 +81,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0001032A18050500000003 /* MPKitUrbanAirship.h in Headers */,
-				AA0001042A18050500000004 /* mParticle_UrbanAirship.h in Headers */,
+
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
