@@ -1,6 +1,6 @@
 # mParticle Braze Kit (Braze Swift SDK 14.x)
 
-This is the [Braze](https://www.braze.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Braze Swift SDK 13.x](https://github.com/braze-inc/braze-swift-sdk).
+This is the [Braze](https://www.braze.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Braze Swift SDK 14.x](https://github.com/braze-inc/braze-swift-sdk).
 
 ## Installation
 
@@ -13,7 +13,7 @@ Swift Package Manager resolves the `mParticle` SDK automatically as a transitive
 let mParticleVersion: Version = "9.0.0"
 
 .package(
-    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-13",
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-14",
     .upToNextMajor(from: mParticleVersion)
 ),
 ```
