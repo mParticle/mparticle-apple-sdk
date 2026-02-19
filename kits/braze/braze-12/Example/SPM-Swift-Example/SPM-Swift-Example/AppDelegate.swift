@@ -1,6 +1,6 @@
 import UIKit
 import mParticle_Apple_SDK
-import MPKitBraze
+import mParticle_Braze
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {

@@ -41,6 +41,10 @@ jobs:
     uses: ./.github/workflows/size-report.yml
     secrets: inherit
 
+  build-kits:
+    uses: ./.github/workflows/build-kits.yml
+    secrets: inherit
+
   pr-notify:
     if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
     needs:
@@ -49,6 +53,7 @@ jobs:
       # - build-secondary-platforms  # TODO: Re-enable after 9.0 release
       - integration-tests
       - size-report
+      - build-kits
     name: Notify GChat
     uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main
     secrets:
