@@ -7,28 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		35CE10952F44CE6A00F2EAB7 /* mParticle-Braze in Frameworks */ = {isa = PBXBuildFile; productRef = 35CE10942F44CE6A00F2EAB7 /* mParticle-Braze */; };
+		35A07BD92F462C7C00EAB7C5 /* mParticle-UrbanAirship in Frameworks */ = {isa = PBXBuildFile; productRef = 35A07BD82F462C7C00EAB7C5 /* mParticle-UrbanAirship */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		35CE10762F44CE3F00F2EAB7 /* SPM-Objc-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Objc-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		35A07BBA2F462C2100EAB7C5 /* SPM-Objc-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Objc-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		35CE108D2F44CE4000F2EAB7 /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */ = {
+		35A07BD12F462C2200EAB7C5 /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 35CE10752F44CE3F00F2EAB7 /* SPM-Objc-Example */;
+			target = 35A07BB92F462C2100EAB7C5 /* SPM-Objc-Example */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		35CE10782F44CE3F00F2EAB7 /* SPM-Objc-Example */ = {
+		35A07BBC2F462C2100EAB7C5 /* SPM-Objc-Example */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				35CE108D2F44CE4000F2EAB7 /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */,
+				35A07BD12F462C2200EAB7C5 /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */,
 			);
 			path = "SPM-Objc-Example";
 			sourceTree = "<group>";
@@ -36,29 +36,29 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		35CE10732F44CE3F00F2EAB7 /* Frameworks */ = {
+		35A07BB72F462C2100EAB7C5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				35CE10952F44CE6A00F2EAB7 /* mParticle-Braze in Frameworks */,
+				35A07BD92F462C7C00EAB7C5 /* mParticle-UrbanAirship in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		35CE106D2F44CE3F00F2EAB7 = {
+		35A07BB12F462C2100EAB7C5 = {
 			isa = PBXGroup;
 			children = (
-				35CE10782F44CE3F00F2EAB7 /* SPM-Objc-Example */,
-				35CE10772F44CE3F00F2EAB7 /* Products */,
+				35A07BBC2F462C2100EAB7C5 /* SPM-Objc-Example */,
+				35A07BBB2F462C2100EAB7C5 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		35CE10772F44CE3F00F2EAB7 /* Products */ = {
+		35A07BBB2F462C2100EAB7C5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				35CE10762F44CE3F00F2EAB7 /* SPM-Objc-Example.app */,
+				35A07BBA2F462C2100EAB7C5 /* SPM-Objc-Example.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,67 +66,67 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		35CE10752F44CE3F00F2EAB7 /* SPM-Objc-Example */ = {
+		35A07BB92F462C2100EAB7C5 /* SPM-Objc-Example */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 35CE108E2F44CE4000F2EAB7 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */;
+			buildConfigurationList = 35A07BD22F462C2200EAB7C5 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */;
 			buildPhases = (
-				35CE10722F44CE3F00F2EAB7 /* Sources */,
-				35CE10732F44CE3F00F2EAB7 /* Frameworks */,
-				35CE10742F44CE3F00F2EAB7 /* Resources */,
+				35A07BB62F462C2100EAB7C5 /* Sources */,
+				35A07BB72F462C2100EAB7C5 /* Frameworks */,
+				35A07BB82F462C2100EAB7C5 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				35CE10782F44CE3F00F2EAB7 /* SPM-Objc-Example */,
+				35A07BBC2F462C2100EAB7C5 /* SPM-Objc-Example */,
 			);
 			name = "SPM-Objc-Example";
 			packageProductDependencies = (
-				35CE10942F44CE6A00F2EAB7 /* mParticle-Braze */,
+				35A07BD82F462C7C00EAB7C5 /* mParticle-UrbanAirship */,
 			);
 			productName = "SPM-Objc-Example";
-			productReference = 35CE10762F44CE3F00F2EAB7 /* SPM-Objc-Example.app */;
+			productReference = 35A07BBA2F462C2100EAB7C5 /* SPM-Objc-Example.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		35CE106E2F44CE3F00F2EAB7 /* Project object */ = {
+		35A07BB22F462C2100EAB7C5 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
-					35CE10752F44CE3F00F2EAB7 = {
+					35A07BB92F462C2100EAB7C5 = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
-			buildConfigurationList = 35CE10712F44CE3F00F2EAB7 /* Build configuration list for PBXProject "SPM-Objc-Example" */;
+			buildConfigurationList = 35A07BB52F462C2100EAB7C5 /* Build configuration list for PBXProject "SPM-Objc-Example" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = 35CE106D2F44CE3F00F2EAB7;
+			mainGroup = 35A07BB12F462C2100EAB7C5;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				35CE10932F44CE6A00F2EAB7 /* XCLocalSwiftPackageReference "../../../braze-13" */,
+				35A07BD72F462C7C00EAB7C5 /* XCLocalSwiftPackageReference "../../../urbanairship-20" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 35CE10772F44CE3F00F2EAB7 /* Products */;
+			productRefGroup = 35A07BBB2F462C2100EAB7C5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				35CE10752F44CE3F00F2EAB7 /* SPM-Objc-Example */,
+				35A07BB92F462C2100EAB7C5 /* SPM-Objc-Example */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		35CE10742F44CE3F00F2EAB7 /* Resources */ = {
+		35A07BB82F462C2100EAB7C5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -136,7 +136,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		35CE10722F44CE3F00F2EAB7 /* Sources */ = {
+		35A07BB62F462C2100EAB7C5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -146,7 +146,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		35CE108F2F44CE4000F2EAB7 /* Debug */ = {
+		35A07BD32F462C2200EAB7C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -174,7 +174,7 @@
 			};
 			name = Debug;
 		};
-		35CE10902F44CE4000F2EAB7 /* Release */ = {
+		35A07BD42F462C2200EAB7C5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -202,7 +202,7 @@
 			};
 			name = Release;
 		};
-		35CE10912F44CE4000F2EAB7 /* Debug */ = {
+		35A07BD52F462C2200EAB7C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -254,7 +254,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -263,7 +263,7 @@
 			};
 			name = Debug;
 		};
-		35CE10922F44CE4000F2EAB7 /* Release */ = {
+		35A07BD62F462C2200EAB7C5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -309,7 +309,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -321,20 +321,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		35CE10712F44CE3F00F2EAB7 /* Build configuration list for PBXProject "SPM-Objc-Example" */ = {
+		35A07BB52F462C2100EAB7C5 /* Build configuration list for PBXProject "SPM-Objc-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				35CE10912F44CE4000F2EAB7 /* Debug */,
-				35CE10922F44CE4000F2EAB7 /* Release */,
+				35A07BD52F462C2200EAB7C5 /* Debug */,
+				35A07BD62F462C2200EAB7C5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		35CE108E2F44CE4000F2EAB7 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */ = {
+		35A07BD22F462C2200EAB7C5 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				35CE108F2F44CE4000F2EAB7 /* Debug */,
-				35CE10902F44CE4000F2EAB7 /* Release */,
+				35A07BD32F462C2200EAB7C5 /* Debug */,
+				35A07BD42F462C2200EAB7C5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -342,18 +342,18 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		35CE10932F44CE6A00F2EAB7 /* XCLocalSwiftPackageReference "../../../braze-13" */ = {
+		35A07BD72F462C7C00EAB7C5 /* XCLocalSwiftPackageReference "../../../urbanairship-20" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../braze-13";
+			relativePath = "../../../urbanairship-20";
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		35CE10942F44CE6A00F2EAB7 /* mParticle-Braze */ = {
+		35A07BD82F462C7C00EAB7C5 /* mParticle-UrbanAirship */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = "mParticle-Braze";
+			productName = "mParticle-UrbanAirship";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 35CE106E2F44CE3F00F2EAB7 /* Project object */;
+	rootObject = 35A07BB22F462C2100EAB7C5 /* Project object */;
 }

@@ -396,7 +396,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Braze";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SKIP_INSTALL = YES;
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Debug;
@@ -414,7 +415,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Braze";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SKIP_INSTALL = YES;
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Release;
@@ -455,7 +457,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Braze-tvOS";
 				PRODUCT_NAME = mParticle_Braze;
 				SDKROOT = appletvos;
-				SKIP_INSTALL = YES;
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
@@ -497,7 +500,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Braze-tvOS";
 				PRODUCT_NAME = mParticle_Braze;
 				SDKROOT = appletvos;
-				SKIP_INSTALL = YES;
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
