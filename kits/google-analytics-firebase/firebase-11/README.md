@@ -7,7 +7,7 @@ This kit integrates [Firebase Analytics](https://firebase.google.com/docs/analyt
 Add the `mParticle-Firebase` product from this package to your Xcode project or `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/mParticle/mparticle-apple-integration-google-analytics-firebase-11", .upToNextMajor(from: "1.0.0"))
+.package(url: "https://github.com/mParticle/mparticle-apple-integration-google-analytics-firebase-11", .upToNextMajor(from: "9.0.0"))
 ```
 
 ## License
