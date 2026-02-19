@@ -10,7 +10,7 @@ let package = Package(
         .library(
             name: "mParticle-Adjust",
             targets: ["mParticle-Adjust"]
-        ),
+        )
     ],
     dependencies: [
         .package(
@@ -18,14 +18,14 @@ let package = Package(
             branch: "workstation/9.0-Release"
         ),
         .package(url: "https://github.com/adjust/ios_sdk",
-                 .upToNextMajor(from: "5.0.0")),
+                 .upToNextMajor(from: "5.0.0"))
     ],
     targets: [
         .target(
             name: "mParticle-Adjust",
             dependencies: [
                 .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
-                .product(name: "AdjustSdk", package: "ios_sdk"),
+                .product(name: "AdjustSdk", package: "ios_sdk")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include"
