@@ -6,25 +6,29 @@ on:
   push:
 
 jobs:
+  load-matrix:
+    name: Load kit matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: kits/matrix.json
+          sparse-checkout-cone-mode: false
+      - id: set
+        run: echo "matrix=$(jq -c . kits/matrix.json)" >> "$GITHUB_OUTPUT"
+
   build-kits:
     name: Build ${{ matrix.kit.name }}
+    needs: load-matrix
     runs-on: macOS-latest
     env:
       XCODE_VERSION: "26.2"
     strategy:
       fail-fast: false
       matrix:
-        kit:
-          - name: braze-12
-            local_path: kits/braze/braze-12
-            ios_scheme: mParticle-Braze
-            tvos_scheme: mParticle-Braze-tvOS
-            module: mParticle_Braze
-          - name: braze-13
-            local_path: kits/braze/braze-13
-            ios_scheme: mParticle-Braze
-            tvos_scheme: mParticle-Braze-tvOS
-            module: mParticle_Braze
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
 
     steps:
       - name: Checkout monorepo
@@ -42,49 +46,40 @@ jobs:
           xcodebuild -resolvePackageDependencies -project "$PROJECT" \
             -scheme "$IOS_SCHEME" -derivedDataPath DerivedData
 
-      # - name: Build kit (iOS)
-      #   run: |
-      #     PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-      #     IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
+      - name: Build kit (iOS)
+        run: |
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+          IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
 
-      #     xcodebuild build -project "$PROJECT" -scheme "$IOS_SCHEME" \
-      #       -destination "generic/platform=iOS" \
-      #       -derivedDataPath DerivedData \
-      #       CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          xcodebuild build -project "$PROJECT" -scheme "$IOS_SCHEME" \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath DerivedData \
+            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-      #     xcodebuild build -project "$PROJECT" -scheme "$IOS_SCHEME" \
-      #       -destination "generic/platform=iOS Simulator" \
-      #       -derivedDataPath DerivedData \
-      #       CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          xcodebuild build -project "$PROJECT" -scheme "$IOS_SCHEME" \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath DerivedData \
+            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-      # - name: Build kit (tvOS)
-      #   if: ${{ matrix.kit.tvos_scheme != '' }}
-      #   run: |
-      #     PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-      #     TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
+      - name: Build kit (tvOS)
+        if: ${{ matrix.kit.tvos_scheme != '' }}
+        run: |
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+          TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
 
-      #     xcodebuild build -project "$PROJECT" -scheme "$TVOS_SCHEME" \
-      #       -destination "generic/platform=tvOS" \
-      #       -derivedDataPath DerivedData \
-      #       CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          xcodebuild build -project "$PROJECT" -scheme "$TVOS_SCHEME" \
+            -destination "generic/platform=tvOS" \
+            -derivedDataPath DerivedData \
+            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-      #     xcodebuild build -project "$PROJECT" -scheme "$TVOS_SCHEME" \
-      #       -destination "generic/platform=tvOS Simulator" \
-      #       -derivedDataPath DerivedData \
-      #       CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          xcodebuild build -project "$PROJECT" -scheme "$TVOS_SCHEME" \
+            -destination "generic/platform=tvOS Simulator" \
+            -derivedDataPath DerivedData \
+            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Build SPM-Swift-Example
         run: |
-          EXAMPLE_PATH="${{ matrix.kit.local_path }}/Example/SPM-Swift-Example"
-          if [ ! -d "$EXAMPLE_PATH" ]; then
-            echo "SPM-Swift-Example not found for ${{ matrix.kit.name }} — skipping."
-            exit 0
-          fi
-          PROJECT="$(ls -d ${EXAMPLE_PATH}/*.xcodeproj 2>/dev/null | head -1)"
-          if [ -z "$PROJECT" ]; then
-            echo "No xcodeproj in SPM-Swift-Example — skipping."
-            exit 0
-          fi
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Swift-Example/*.xcodeproj | head -1)"
           xcodebuild build -project "$PROJECT" -scheme SPM-Swift-Example \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath DerivedData-Example \
@@ -92,16 +87,7 @@ jobs:
 
       - name: Build SPM-Objc-Example
         run: |
-          EXAMPLE_PATH="${{ matrix.kit.local_path }}/Example/SPM-Objc-Example"
-          if [ ! -d "$EXAMPLE_PATH" ]; then
-            echo "SPM-Objc-Example not found for ${{ matrix.kit.name }} — skipping."
-            exit 0
-          fi
-          PROJECT="$(ls -d ${EXAMPLE_PATH}/*.xcodeproj 2>/dev/null | head -1)"
-          if [ -z "$PROJECT" ]; then
-            echo "No xcodeproj in SPM-Objc-Example — skipping."
-            exit 0
-          fi
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Objc-Example/*.xcodeproj | head -1)"
           xcodebuild build -project "$PROJECT" -scheme SPM-Objc-Example \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath DerivedData-Example \
