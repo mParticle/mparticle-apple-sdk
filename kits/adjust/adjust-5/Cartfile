@@ -1,0 +1,2 @@
+github "adjust/ios_sdk" ~> 4.38
+binary "https://raw.githubusercontent.com/mParticle/mparticle-apple-sdk/main/mParticle_Apple_SDK.json" ~> 8.22
