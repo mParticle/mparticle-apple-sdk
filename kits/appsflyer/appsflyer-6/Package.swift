@@ -18,7 +18,11 @@ let package = Package(
             branch: "workstation/9.0-Release"
         ),
         .package(url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static",
-                 .upToNextMajor(from: "6.14.3"))
+                 .upToNextMajor(from: "6.0.0")),
+        .package(
+            url: "https://github.com/erikdoe/ocmock",
+            branch: "master"
+        )
     ],
     targets: [
         .target(
@@ -31,7 +35,10 @@ let package = Package(
         ),
         .testTarget(
             name: "mParticle-AppsFlyerTests",
-            dependencies: ["mParticle-AppsFlyer"],
+            dependencies: [
+                "mParticle-AppsFlyer",
+                .product(name: "OCMock", package: "ocmock")
+            ],
         )
     ]
 )
