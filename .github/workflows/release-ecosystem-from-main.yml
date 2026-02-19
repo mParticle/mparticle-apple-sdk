@@ -22,32 +22,29 @@ permissions:
   contents: write
 
 jobs:
+  load-matrix:
+    name: Load kit matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: kits/matrix.json
+          sparse-checkout-cone-mode: false
+      - id: set
+        run: echo "matrix=$(jq -c . kits/matrix.json)" >> "$GITHUB_OUTPUT"
+
   build-kits:
     name: Build ${{ matrix.kit.name }}
+    needs: load-matrix
     runs-on: macOS-latest
     env:
       XCODE_VERSION: "26.2"
     strategy:
       fail-fast: false
       matrix:
-        kit: &kit-matrix
-          - name: braze-12
-            local_path: kits/braze/braze-12
-            dest_repo: mparticle-apple-integration-braze-12
-            ios_scheme: mParticle-Braze
-            tvos_scheme: mParticle-Braze-tvOS
-            module: mParticle_Braze
-          - name: braze-13
-            local_path: kits/braze/braze-13
-            dest_repo: mparticle-apple-integration-braze-13
-            ios_scheme: mParticle-Braze
-            tvos_scheme: mParticle-Braze-tvOS
-            module: mParticle_Braze
-          - name: urbanairship-20
-            local_path: kits/urbanairship/urbanairship-20
-            dest_repo: mparticle-apple-integration-urbanairship-20
-            ios_scheme: mParticle-UrbanAirship
-            module: mParticle_UrbanAirship
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
 
     steps:
       - name: Checkout monorepo
@@ -99,13 +96,13 @@ jobs:
   mirror-and-release-kits:
     name: Mirror & Release ${{ matrix.kit.name }}
     runs-on: macOS-latest
-    needs: build-kits
+    needs: [load-matrix, build-kits]
     env:
       DEST_ORG: mparticle-integrations
     strategy:
       fail-fast: false
       matrix:
-        kit: *kit-matrix
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
 
     steps:
       - name: Checkout monorepo

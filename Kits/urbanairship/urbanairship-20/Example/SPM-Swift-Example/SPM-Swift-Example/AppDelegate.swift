@@ -1,10 +1,9 @@
 import UIKit
 import mParticle_Apple_SDK
-import mParticle_Braze
+import mParticle_UrbanAirship
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?

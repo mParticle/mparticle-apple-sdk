@@ -7,58 +7,58 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		35CE10952F44CE6A00F2EAB7 /* mParticle-Braze in Frameworks */ = {isa = PBXBuildFile; productRef = 35CE10942F44CE6A00F2EAB7 /* mParticle-Braze */; };
+		35A07B902F46295E00EAB7C5 /* mParticle-UrbanAirship in Frameworks */ = {isa = PBXBuildFile; productRef = 35A07B8F2F46295E00EAB7C5 /* mParticle-UrbanAirship */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		35CE10762F44CE3F00F2EAB7 /* SPM-Objc-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Objc-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		35A07B762F46291300EAB7C5 /* SPM-Swift-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Swift-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		35CE108D2F44CE4000F2EAB7 /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */ = {
+		35A07B882F46291500EAB7C5 /* Exceptions for "SPM-Swift-Example" folder in "SPM-Swift-Example" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 35CE10752F44CE3F00F2EAB7 /* SPM-Objc-Example */;
+			target = 35A07B752F46291300EAB7C5 /* SPM-Swift-Example */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		35CE10782F44CE3F00F2EAB7 /* SPM-Objc-Example */ = {
+		35A07B782F46291300EAB7C5 /* SPM-Swift-Example */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				35CE108D2F44CE4000F2EAB7 /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */,
+				35A07B882F46291500EAB7C5 /* Exceptions for "SPM-Swift-Example" folder in "SPM-Swift-Example" target */,
 			);
-			path = "SPM-Objc-Example";
+			path = "SPM-Swift-Example";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		35CE10732F44CE3F00F2EAB7 /* Frameworks */ = {
+		35A07B732F46291300EAB7C5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				35CE10952F44CE6A00F2EAB7 /* mParticle-Braze in Frameworks */,
+				35A07B902F46295E00EAB7C5 /* mParticle-UrbanAirship in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		35CE106D2F44CE3F00F2EAB7 = {
+		35A07B6D2F46291300EAB7C5 = {
 			isa = PBXGroup;
 			children = (
-				35CE10782F44CE3F00F2EAB7 /* SPM-Objc-Example */,
-				35CE10772F44CE3F00F2EAB7 /* Products */,
+				35A07B782F46291300EAB7C5 /* SPM-Swift-Example */,
+				35A07B772F46291300EAB7C5 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		35CE10772F44CE3F00F2EAB7 /* Products */ = {
+		35A07B772F46291300EAB7C5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				35CE10762F44CE3F00F2EAB7 /* SPM-Objc-Example.app */,
+				35A07B762F46291300EAB7C5 /* SPM-Swift-Example.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,67 +66,68 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		35CE10752F44CE3F00F2EAB7 /* SPM-Objc-Example */ = {
+		35A07B752F46291300EAB7C5 /* SPM-Swift-Example */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 35CE108E2F44CE4000F2EAB7 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */;
+			buildConfigurationList = 35A07B892F46291500EAB7C5 /* Build configuration list for PBXNativeTarget "SPM-Swift-Example" */;
 			buildPhases = (
-				35CE10722F44CE3F00F2EAB7 /* Sources */,
-				35CE10732F44CE3F00F2EAB7 /* Frameworks */,
-				35CE10742F44CE3F00F2EAB7 /* Resources */,
+				35A07B722F46291300EAB7C5 /* Sources */,
+				35A07B732F46291300EAB7C5 /* Frameworks */,
+				35A07B742F46291300EAB7C5 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				35CE10782F44CE3F00F2EAB7 /* SPM-Objc-Example */,
+				35A07B782F46291300EAB7C5 /* SPM-Swift-Example */,
 			);
-			name = "SPM-Objc-Example";
+			name = "SPM-Swift-Example";
 			packageProductDependencies = (
-				35CE10942F44CE6A00F2EAB7 /* mParticle-Braze */,
+				35A07B8F2F46295E00EAB7C5 /* mParticle-UrbanAirship */,
 			);
-			productName = "SPM-Objc-Example";
-			productReference = 35CE10762F44CE3F00F2EAB7 /* SPM-Objc-Example.app */;
+			productName = "SPM-Swift-Example";
+			productReference = 35A07B762F46291300EAB7C5 /* SPM-Swift-Example.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		35CE106E2F44CE3F00F2EAB7 /* Project object */ = {
+		35A07B6E2F46291300EAB7C5 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
-					35CE10752F44CE3F00F2EAB7 = {
+					35A07B752F46291300EAB7C5 = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
-			buildConfigurationList = 35CE10712F44CE3F00F2EAB7 /* Build configuration list for PBXProject "SPM-Objc-Example" */;
+			buildConfigurationList = 35A07B712F46291300EAB7C5 /* Build configuration list for PBXProject "SPM-Swift-Example" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = 35CE106D2F44CE3F00F2EAB7;
+			mainGroup = 35A07B6D2F46291300EAB7C5;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				35CE10932F44CE6A00F2EAB7 /* XCLocalSwiftPackageReference "../../../braze-13" */,
+				35A07B8E2F46295E00EAB7C5 /* XCLocalSwiftPackageReference "../../../urbanairship-20" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 35CE10772F44CE3F00F2EAB7 /* Products */;
+			productRefGroup = 35A07B772F46291300EAB7C5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				35CE10752F44CE3F00F2EAB7 /* SPM-Objc-Example */,
+				35A07B752F46291300EAB7C5 /* SPM-Swift-Example */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		35CE10742F44CE3F00F2EAB7 /* Resources */ = {
+		35A07B742F46291300EAB7C5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -136,7 +137,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		35CE10722F44CE3F00F2EAB7 /* Sources */ = {
+		35A07B722F46291300EAB7C5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -146,7 +147,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		35CE108F2F44CE4000F2EAB7 /* Debug */ = {
+		35A07B8A2F46291500EAB7C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -155,7 +156,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "SPM-Objc-Example/Info.plist";
+				INFOPLIST_FILE = "SPM-Swift-Example/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -166,15 +167,19 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Objc-Example";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Swift-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		35CE10902F44CE4000F2EAB7 /* Release */ = {
+		35A07B8B2F46291500EAB7C5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -183,7 +188,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "SPM-Objc-Example/Info.plist";
+				INFOPLIST_FILE = "SPM-Swift-Example/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -194,15 +199,19 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Objc-Example";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Swift-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
-		35CE10912F44CE4000F2EAB7 /* Debug */ = {
+		35A07B8C2F46291500EAB7C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -254,16 +263,18 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
-		35CE10922F44CE4000F2EAB7 /* Release */ = {
+		35A07B8D2F46291500EAB7C5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -309,11 +320,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -321,20 +333,20 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		35CE10712F44CE3F00F2EAB7 /* Build configuration list for PBXProject "SPM-Objc-Example" */ = {
+		35A07B712F46291300EAB7C5 /* Build configuration list for PBXProject "SPM-Swift-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				35CE10912F44CE4000F2EAB7 /* Debug */,
-				35CE10922F44CE4000F2EAB7 /* Release */,
+				35A07B8C2F46291500EAB7C5 /* Debug */,
+				35A07B8D2F46291500EAB7C5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		35CE108E2F44CE4000F2EAB7 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */ = {
+		35A07B892F46291500EAB7C5 /* Build configuration list for PBXNativeTarget "SPM-Swift-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				35CE108F2F44CE4000F2EAB7 /* Debug */,
-				35CE10902F44CE4000F2EAB7 /* Release */,
+				35A07B8A2F46291500EAB7C5 /* Debug */,
+				35A07B8B2F46291500EAB7C5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -342,18 +354,18 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		35CE10932F44CE6A00F2EAB7 /* XCLocalSwiftPackageReference "../../../braze-13" */ = {
+		35A07B8E2F46295E00EAB7C5 /* XCLocalSwiftPackageReference "../../../urbanairship-20" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../braze-13";
+			relativePath = "../../../urbanairship-20";
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		35CE10942F44CE6A00F2EAB7 /* mParticle-Braze */ = {
+		35A07B8F2F46295E00EAB7C5 /* mParticle-UrbanAirship */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = "mParticle-Braze";
+			productName = "mParticle-UrbanAirship";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 35CE106E2F44CE3F00F2EAB7 /* Project object */;
+	rootObject = 35A07B6E2F46291300EAB7C5 /* Project object */;
 }
