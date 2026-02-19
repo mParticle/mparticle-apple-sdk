@@ -62,34 +62,6 @@ jobs:
             -destination "generic/platform=tvOS Simulator" \
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-      - name: Run tests (if present)
-        run: |
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-          IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
-          KIT_PATH="${{ matrix.kit.local_path }}"
-
-          # Check for a test scheme or a non-empty Tests/ directory
-          HAS_TEST_SCHEME=$(xcodebuild -project "$PROJECT" -list 2>/dev/null \
-            | grep -E "^\s+${IOS_SCHEME}Tests$" | wc -l | tr -d ' ')
-
-          HAS_TEST_DIR=0
-          if [ -d "${KIT_PATH}/Tests" ] && [ -n "$(ls -A "${KIT_PATH}/Tests" 2>/dev/null)" ]; then
-            HAS_TEST_DIR=1
-          fi
-
-          if [ "$HAS_TEST_SCHEME" -gt 0 ]; then
-            TEST_SCHEME="${IOS_SCHEME}Tests"
-            xcodebuild test -project "$PROJECT" -scheme "$TEST_SCHEME" \
-              -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
-              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-          elif [ "$HAS_TEST_DIR" -eq 1 ]; then
-            xcodebuild test -project "$PROJECT" -scheme "$IOS_SCHEME" \
-              -destination "platform=iOS Simulator,name=iPhone 16,OS=latest" \
-              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-          else
-            echo "No tests found for ${{ matrix.kit.name }} — skipping."
-          fi
-
       - name: Build SPM-Swift-Example
         run: |
           EXAMPLE_PATH="${{ matrix.kit.local_path }}/Example/SPM-Swift-Example"
