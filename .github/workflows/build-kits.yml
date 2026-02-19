@@ -3,7 +3,6 @@ name: Build Kits
 on:
   workflow_call:
   workflow_dispatch:
-  push:
 
 jobs:
   load-matrix:
