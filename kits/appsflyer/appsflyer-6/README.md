@@ -1,31 +1,54 @@
-# AppsFlyer Kit Integration
+# mParticle AppsFlyer Kit (AppsFlyer SDK 6.x)
 
-This repository contains the [AppsFlyer](https://www.appsflyer.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
+This is the [AppsFlyer](https://www.appsflyer.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [AppsFlyer SDK 6.x](https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static).
 
-## Adding the integration
+## Installation
 
-1. Add the kit dependency to your app's Podfile or Cartfile:
+### Swift Package Manager
 
-   ```ruby
-   pod 'mParticle-AppsFlyer', '~> 8'
-   ```
+Add the AppsFlyer kit package dependency in Xcode or in your `Package.swift`.
+Swift Package Manager resolves the `mParticle` SDK automatically as a transitive dependency, so you do not need a separate `.package` entry for `mparticle-apple-sdk`.
 
-   OR
+```swift
+let mParticleVersion: Version = "9.0.0"
 
-   ```ruby
-   github "mparticle-integrations/mparticle-apple-integration-appsflyer" ~> 8.0
-   ```
+.package(
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer-6",
+    .upToNextMajor(from: mParticleVersion)
+),
+```
 
-2. Follow the mParticle iOS SDK [quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app, and verify that you see `"Included kits: { AppsFlyer }"` in your Xcode console
+Then add `mParticle-AppsFlyer` as a dependency of your target.
 
-> (This requires your mParticle log level to be at least Debug)
+### CocoaPods
 
-3. Reference mParticle's integration docs below to enable the integration.
+Add the kit dependency to your app's Podfile:
 
-### Documentation
+```ruby
+pod 'mParticle-AppsFlyer', '~> 9.0'
+```
 
-[AppsFlyer integration](https://docs.mparticle.com/integrations/appsflyer/event/)
+## Verifying the Integration
 
-### License
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
 
-[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+```bash
+Included kits: { AppsFlyer }
+```
+
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.6            |
+| tvOS     | 15.6            |
+
+## Documentation
+
+- [mParticle AppsFlyer Integration Guide](https://docs.mparticle.com/integrations/appsflyer/event/)
+- [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
+- [AppsFlyer iOS SDK Documentation](https://dev.appsflyer.com/hc/docs/integrate-ios-sdk)
+
+## License
+
+Apache License 2.0
