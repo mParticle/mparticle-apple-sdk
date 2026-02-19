@@ -7,26 +7,55 @@ import mParticle_Apple_SDK
 import XCTest
 
 final class MParticleSceneDelegateTests: XCTestCase {
-    
+
     // MARK: - Properties
 
     var mparticle: MParticle!
     var sceneMock: OpenURLHandlerProtocolMock!
-    var testURL: URL!
     var testUserActivity: NSUserActivity!
-    
+
     override func setUp() {
         super.setUp()
         mparticle = MParticle()
-        testURL = URL(string: "myapp://test/path?param=value")!
         testUserActivity = NSUserActivity(activityType: "com.test.activity")
         testUserActivity.title = "Test Activity"
         testUserActivity.userInfo = ["key": "value"]
-        
-        // The implementation calls [MParticle sharedInstance], so we need to set the mock on the shared instance
+
         sceneMock = OpenURLHandlerProtocolMock()
         let sceneHandler = SceneDelegateHandler(logger: MPLog(logLevel: .verbose), appNotificationHandler: sceneMock)
         mparticle.sceneDelegateHandler = sceneHandler
+    }
+
+    // MARK: - Protocol Selector Tests
+
+    func test_openURLHandlerProtocol_respondsToOpenURLSelector() {
+        // This test verifies that the protocol method maps to the correct ObjC selector
+        let handler: OpenURLHandlerProtocol = sceneMock
+        let selector = NSSelectorFromString("openURL:options:")
+        XCTAssertTrue((handler as AnyObject).responds(to: selector),
+                      "OpenURLHandlerProtocol should respond to openURL:options: selector")
+    }
+
+    func test_openURLHandlerProtocol_respondsToContiuneUserActivitySelector() {
+        // This test verifies that the protocol method maps to the correct ObjC selector
+        let handler: OpenURLHandlerProtocol = sceneMock
+        let selector = NSSelectorFromString("continueUserActivity:restorationHandler:")
+        XCTAssertTrue((handler as AnyObject).responds(to: selector),
+                      "OpenURLHandlerProtocol should respond to continueUserActivity:restorationHandler: selector")
+    }
+
+    func test_mpAppNotificationHandler_respondsToOpenURLHandlerProtocolSelectors() {
+        // This test verifies that MPAppNotificationHandler responds to the selectors
+        // expected by OpenURLHandlerProtocol
+        let handler = MPAppNotificationHandler()
+
+        let openURLSelector = NSSelectorFromString("openURL:options:")
+        XCTAssertTrue(handler.responds(to: openURLSelector),
+                      "MPAppNotificationHandler must respond to openURL:options: to conform to OpenURLHandlerProtocol")
+
+        let continueActivitySelector = NSSelectorFromString("continueUserActivity:restorationHandler:")
+        XCTAssertTrue(handler.responds(to: continueActivitySelector),
+                      "MPAppNotificationHandler must respond to continueUserActivity:restorationHandler: to conform to OpenURLHandlerProtocol")
     }
         
     // MARK: - handleUserActivity Tests    
@@ -58,14 +87,14 @@ final class MParticleSceneDelegateTests: XCTestCase {
     func test_handleUserActivity_restorationHandlerIsEmpty() {
         // Act
         mparticle.handleUserActivity(testUserActivity)
-        
+
         // Assert
         XCTAssertTrue(sceneMock.continueUserActivityCalled)
-        
+
         // Verify the restoration handler is provided and safe to call
         let restorationHandler = sceneMock.continueUserActivityRestorationHandlerParam
         XCTAssertNotNil(restorationHandler)
-        
+
         // Test that calling the restoration handler doesn't crash
         XCTAssertNoThrow(restorationHandler?(nil))
         XCTAssertNoThrow(restorationHandler?([]))
