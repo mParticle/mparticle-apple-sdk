@@ -1,3 +1,9 @@
+# [8.44.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.43.1...v8.44.0) (2026-02-19)
+
+### Bug Fixes
+
+- fix: SceneDelegate Protocol Objc Selector Issue (#603) ([99364bfb](https://github.com/mParticle/mparticle-apple-sdk/commit/99364bfbf62401c6d53b195b63a21576baaf354b))
+
 # [8.43.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.2...v8.43.1) (2026-02-16)
 
 ### Bug Fixes

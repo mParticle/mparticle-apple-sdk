@@ -120,7 +120,7 @@
           ],
           "uitl": 60,
           "oo": false,
-          "sdk": "8.43.1",
+          "sdk": "8.44.0",
           "di": {
             "p": "arm64",
             "bid": "${json-unit.ignore}",
