@@ -1,5 +1,12 @@
 [
   {
+    "name": "adjust-5",
+    "local_path": "kits/adjust/adjust-5",
+    "dest_repo": "mparticle-apple-integration-adjust-5",
+    "ios_scheme": "mParticle-Adjust",
+    "module": "mParticle_Adjust"
+  },
+  {
     "name": "braze-12",
     "local_path": "kits/braze/braze-12",
     "dest_repo": "mparticle-apple-integration-braze-12",
@@ -24,13 +31,6 @@
     "module": "mParticle_Braze"
   },
   {
-    "name": "google-analytics-firebase-12",
-    "local_path": "kits/google-analytics-firebase/firebase-12",
-    "dest_repo": "mparticle-apple-integration-google-analytics-firebase-12",
-    "ios_scheme": "mParticle-Firebase",
-    "module": "mParticle_Firebase"
-  },
-  {
     "name": "google-analytics-firebase-11",
     "local_path": "kits/google-analytics-firebase/firebase-11",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-11",
@@ -38,16 +38,24 @@
     "module": "mParticle_Firebase"
   },
   {
-    "name": "adjust-5",
-    "local_path": "kits/adjust/adjust-5",
-    "dest_repo": "mparticle-apple-integration-adjust-5",
-    "ios_scheme": "mParticle-Adjust",
-    "module": "mParticle_Adjust"
+    "name": "google-analytics-firebase-12",
+    "local_path": "kits/google-analytics-firebase/firebase-12",
+    "dest_repo": "mparticle-apple-integration-google-analytics-firebase-12",
+    "ios_scheme": "mParticle-Firebase",
+    "module": "mParticle_Firebase"
   },
   {
     "name": "optimizely-4",
     "local_path": "kits/optimizely/optimizely-4",
     "dest_repo": "mparticle-apple-integration-optimizely-4",
+    "ios_scheme": "mParticle-Optimizely",
+    "tvos_scheme": "mParticle-Optimizely-tvOS",
+    "module": "mParticle_Optimizely"
+  },
+  {
+    "name": "optimizely-5",
+    "local_path": "kits/optimizely/optimizely-5",
+    "dest_repo": "mparticle-apple-integration-optimizely-5",
     "ios_scheme": "mParticle-Optimizely",
     "tvos_scheme": "mParticle-Optimizely-tvOS",
     "module": "mParticle_Optimizely"
