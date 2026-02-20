@@ -9,7 +9,7 @@ let package = Package(
         .library(
             name: "mParticle-Kochava",
             targets: ["mParticle-Kochava"]
-        ),
+        )
     ],
     dependencies: [
         .package(
@@ -27,7 +27,7 @@ let package = Package(
         .package(
             url: "https://github.com/Kochava/Apple-SwiftPackage-KochavaTracking-XCFramework",
             .upToNextMajor(from: "9.0.0")
-        ),
+        )
     ],
     targets: [
         .target(
