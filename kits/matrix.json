@@ -45,6 +45,13 @@
     "module": "mParticle_Adjust"
   },
   {
+    "name": "appsflyer-6",
+    "local_path": "kits/appsflyer/appsflyer-6",
+    "dest_repo": "mparticle-apple-integration-appsflyer-6",
+    "ios_scheme": "mParticle-AppsFlyer",
+    "module": "mParticle_AppsFlyer"
+  },
+  {
     "name": "optimizely-4",
     "local_path": "kits/optimizely/optimizely-4",
     "dest_repo": "mparticle-apple-integration-optimizely-4",
