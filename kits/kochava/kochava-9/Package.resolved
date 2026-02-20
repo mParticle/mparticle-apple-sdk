@@ -1,0 +1,41 @@
+{
+  "pins" : [
+    {
+      "identity" : "apple-swiftpackage-kochavameasurement-xcframework",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Kochava/Apple-SwiftPackage-KochavaMeasurement-XCFramework",
+      "state" : {
+        "revision" : "b1562a5ef19faec9cda31b43bef1593cc886af00",
+        "version" : "9.1.0"
+      }
+    },
+    {
+      "identity" : "apple-swiftpackage-kochavanetworking-xcframework",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Kochava/Apple-SwiftPackage-KochavaNetworking-XCFramework",
+      "state" : {
+        "revision" : "a780ab3c8f4503e2306a16cef2b3ee6ba59ab300",
+        "version" : "9.1.0"
+      }
+    },
+    {
+      "identity" : "apple-swiftpackage-kochavatracking-xcframework",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Kochava/Apple-SwiftPackage-KochavaTracking-XCFramework",
+      "state" : {
+        "revision" : "4c361ae010e460c818698cd5aec631f5eb0ccd7f",
+        "version" : "9.1.0"
+      }
+    },
+    {
+      "identity" : "mparticle-apple-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mParticle/mparticle-apple-sdk",
+      "state" : {
+        "branch" : "workstation/9.0-Release",
+        "revision" : "0b5a659fff16ec1f2e7da88b4adfa3d78772e35f"
+      }
+    }
+  ],
+  "version" : 2
+}

@@ -1,41 +1,30 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.9
 
 import PackageDescription
 
 let package = Package(
     name: "mParticle-Kochava",
-    platforms: [
-        .iOS("14.0"),
-        .tvOS("14.0"),
-    ],
+    platforms: [ .iOS(.v15), .tvOS(.v15) ],
     products: [
         .library(
             name: "mParticle-Kochava",
             targets: ["mParticle-Kochava"]
         ),
-        .library(
-            name: "mParticle-Kochava-NoTracking",
-            targets: ["mParticle-Kochava-NoTracking"]
-        ),
     ],
     dependencies: [
         .package(
-            name: "mParticle-Apple-SDK",
             url: "https://github.com/mParticle/mparticle-apple-sdk",
-            .upToNextMajor(from: "8.22.0")
+            branch: "workstation/9.0-Release"
         ),
         .package(
-            name: "KochavaNetworking",
             url: "https://github.com/Kochava/Apple-SwiftPackage-KochavaNetworking-XCFramework",
             .upToNextMajor(from: "9.0.0")
         ),
         .package(
-            name: "KochavaMeasurement",
             url: "https://github.com/Kochava/Apple-SwiftPackage-KochavaMeasurement-XCFramework",
             .upToNextMajor(from: "9.0.0")
         ),
         .package(
-            name: "KochavaTracking",
             url: "https://github.com/Kochava/Apple-SwiftPackage-KochavaTracking-XCFramework",
             .upToNextMajor(from: "9.0.0")
         ),
@@ -43,17 +32,20 @@ let package = Package(
     targets: [
         .target(
             name: "mParticle-Kochava",
-            dependencies: ["mParticle-Apple-SDK", "KochavaNetworking", "KochavaMeasurement", "KochavaTracking"],
-            path: "mParticle-Kochava",
+            dependencies: [
+                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
+                .product(name: "KochavaNetworking", package: "Apple-SwiftPackage-KochavaNetworking-XCFramework"),
+                .product(name: "KochavaMeasurement", package: "Apple-SwiftPackage-KochavaMeasurement-XCFramework"),
+                .product(name: "KochavaTracking", package: "Apple-SwiftPackage-KochavaTracking-XCFramework")
+            ],
             resources: [.process("PrivacyInfo.xcprivacy")],
-            publicHeadersPath: "."
+            publicHeadersPath: "include"
         ),
-        .target(
-            name: "mParticle-Kochava-NoTracking",
-            dependencies: ["mParticle-Apple-SDK", "KochavaNetworking", "KochavaMeasurement"],
-            path: "mParticle-Kochava-NoTracking",
-            resources: [.process("PrivacyInfo.xcprivacy")],
-            publicHeadersPath: "."
-        ),
+        .testTarget(
+            name: "mParticle-KochavaTests",
+            dependencies: [
+                "mParticle-Kochava"
+            ]
+        )
     ]
 )
