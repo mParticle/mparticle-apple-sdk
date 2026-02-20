@@ -52,6 +52,14 @@
     "module": "mParticle_AppsFlyer"
   },
   {
+    "name": "kochava-9",
+    "local_path": "kits/kochava/kochava-9",
+    "dest_repo": "mparticle-apple-integration-kochava-9",
+    "ios_scheme": "mParticle-Kochava",
+    "tvos_scheme": "mParticle-Kochava-tvOS",
+    "module": "mParticle_Kochava"
+  },
+  {
     "name": "optimizely-4",
     "local_path": "kits/optimizely/optimizely-4",
     "dest_repo": "mparticle-apple-integration-optimizely-4",
