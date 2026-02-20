@@ -1,13 +1,13 @@
 #import <Foundation/Foundation.h>
 #if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
     #import <mParticle_Apple_SDK/mParticle.h>
-    #import <mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>
+    #import <mParticle_Apple_SDK/mParticle_Apple_SDK.h>
 #else
     #import "mParticle.h"
-    #import "mParticle_Apple_SDK-Swift.h"
+    #import "mParticle_Apple_SDK.h"
 #endif
 
-@interface MPKitFirebaseGA4 : NSObject <MPKitProtocol>
+@interface MPKitFirebaseGA4Analytics : NSObject <MPKitProtocol>
 
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;

@@ -1,7 +1,16 @@
-#import "MPKitFirebaseGA4.h"
-#import <FirebaseAnalytics/FirebaseAnalytics.h>
-#if __has_include(<FirebaseAnalytics/FIRAnalytics+Consent.h>)
-    #import <FirebaseAnalytics/FIRAnalytics+Consent.h>
+#import "MPKitFirebaseGA4Analytics.h"
+#if SWIFT_PACKAGE
+    @import Firebase;
+#else
+    #if __has_include(<FirebaseAnalytics/FirebaseAnalytics.h>)
+        #import <FirebaseCore/FirebaseCore.h>
+        #import <FirebaseAnalytics/FIRAnalytics.h>
+        #import <FirebaseAnalytics/FIRAnalytics+Consent.h>
+    #else
+        #import "FirebaseCore/FirebaseCore.h"
+        #import "FirebaseAnalytics/FIRAnalytics.h"
+        #import "FirebaseAnalytics/FIRAnalytics+Consent.h"
+    #endif
 #endif
 
 static NSString* (^customNameStandardization)(NSString* name) = nil;
@@ -19,13 +28,13 @@ static NSString* (^customNameStandardization)(NSString* name) = nil;
 
 @end
 
-@interface MPKitFirebaseGA4 () <MPKitProtocol> {
+@interface MPKitFirebaseGA4Analytics () <MPKitProtocol> {
     BOOL forwardRequestsServerSide;
 }
 
 @end
 
-@implementation MPKitFirebaseGA4
+@implementation MPKitFirebaseGA4Analytics
 
 static NSString *const kMPFIRUserIdValueCustomerID = @"CustomerId";
 static NSString *const kMPFIRUserIdValueMPID = @"mpid";
@@ -60,7 +69,7 @@ static NSString *const kMPFIRGA4DefaultAdUserDataKey = @"defaultAdUserDataConsen
 static NSString *const kMPFIRGA4DefaultAdPersonalizationKey = @"defaultAdPersonalizationConsentSDK";
 static NSString *const kMPFIRGA4DefaultAnalyticsStorageKey = @"defaultAnalyticsStorageConsentSDK";
 
-// Following limits are based off Google Analytics 360 limits
+// Following limits are based off Google Analytics 360 limits, docs here "https://support.google.com/analytics/answer/11202874?sjid=14644072134282618832-NA#limits"
 const NSInteger FIR_MAX_CHARACTERS_EVENT_NAME = 40;
 const NSInteger FIR_MAX_CHARACTERS_IDENTITY_NAME = 24;
 const NSInteger FIR_MAX_CHARACTERS_EVENT_ATTR_VALUE = 500;
@@ -75,7 +84,7 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
 }
 
 + (void)load {
-    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"GA4 for Firebase" className:@"MPKitFirebaseGA4"];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"GA4 for Firebase" className:@"MPKitFirebaseGA4Analytics"];
     [MParticle registerExtension:kitRegister];
 }
 
@@ -206,8 +215,8 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
 
 - (NSString *)standardizeNameOrKey:(NSString *)nameOrKey forEvent:(BOOL)forEvent {
     NSString *initialValue = [nameOrKey copy];
-    if ([MPKitFirebaseGA4 customNameStandardization]) {
-        initialValue = [MPKitFirebaseGA4 customNameStandardization](initialValue);
+    if ([MPKitFirebaseGA4Analytics customNameStandardization]) {
+        initialValue = [MPKitFirebaseGA4Analytics customNameStandardization](initialValue);
     }
 
     NSMutableCharacterSet *firebaseAllowedCharacterSet = [NSMutableCharacterSet characterSetWithCharactersInString:firebaseAllowedCharacters];
@@ -215,18 +224,15 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
     NSString* truncatedString = initialValue;
     NSCharacterSet *aTozCharacterSet = [NSCharacterSet characterSetWithCharactersInString:aToZCharacters];
 
-    // Remove any non-alphabetic characters from the beginning of the string
     NSString* standardizedString = truncatedString;
     if (forEvent) {
         while (truncatedString.length > 0 && ![aTozCharacterSet characterIsMember:[truncatedString characterAtIndex:0]]) {
             truncatedString = [truncatedString substringFromIndex:1];
         }
 
-        // Replace all invalid characters with an underscore
         standardizedString = [[truncatedString componentsSeparatedByCharactersInSet:notAllowedChars] componentsJoinedByString:@"_"];
     }
 
-    // Ensure no Firebase reserved prefix's are being used
     if (standardizedString.length > reservedPrefixOne.length && [standardizedString hasPrefix:reservedPrefixOne]) {
         standardizedString = [standardizedString substringFromIndex:reservedPrefixOne.length];
     } else if (standardizedString.length > reservedPrefixTwo.length && [standardizedString hasPrefix:reservedPrefixTwo]) {
@@ -235,7 +241,6 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
         standardizedString = [standardizedString substringFromIndex:reservedPrefixThree.length];
     }
 
-    // Truncate to max characters allowed by GA4
     if (forEvent) {
         if (standardizedString.length > FIR_MAX_CHARACTERS_EVENT_NAME) {
             standardizedString = [standardizedString substringToIndex:FIR_MAX_CHARACTERS_EVENT_NAME];
@@ -246,7 +251,6 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
         }
     }
 
-    // If empty set to invalid GA4 key constant
     if (standardizedString.length == 0) {
         standardizedString = invalidFirebaseKey;
     }
@@ -272,7 +276,7 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
 }
 
 - (NSMutableDictionary<NSString *, id> *)standardizeValues:(NSDictionary<NSString *, id> *)values forEvent:(BOOL)forEvent {
-    NSMutableDictionary<NSString *, id>  *standardizedValue = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary<NSString *, id> *standardizedValue = [[NSMutableDictionary alloc] init];
 
     for (NSString *key in values.allKeys) {
         NSString *standardizedKey = [self standardizeNameOrKey:key forEvent:forEvent];
@@ -439,7 +443,6 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
         uploadDict[FIRConsentTypeAdPersonalization] = adPersonalization.boolValue ? FIRConsentStatusGranted : FIRConsentStatusDenied;
     }
 
-    // Update consent state with FIRAnalytics
     [FIRAnalytics setConsent:uploadDict];
 }
 
@@ -644,7 +647,7 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
 
     if (userId) {
         if ([self.configuration[kMPFIRGA4ShouldHashUserId] isEqualToString: @"True"]) {
-            userId = [MPIHasher hashString:[userId lowercaseString]];
+            userId = [MPKitAPI hashString:[userId lowercaseString]];
         }
     } else {
         NSLog(@"External identity type of %@ not set on the user", self.configuration[kMPFIRGA4ExternalUserIdentityType]);
@@ -678,7 +681,6 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
                                         gdprConsents:(NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsents
                                              mapping:(NSDictionary<NSString *, NSString*> *)mapping {
 
-    // Prefer mParticle Consent if available
     NSString *purpose = mapping[mappingKey];
     if (purpose) {
         MPGDPRConsent *consent = gdprConsents[purpose];
@@ -687,7 +689,6 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
         }
     }
 
-    // Fallback to configuration defaults
     NSString *value = self->_configuration[defaultKey];
     return [value isGranted];
 }

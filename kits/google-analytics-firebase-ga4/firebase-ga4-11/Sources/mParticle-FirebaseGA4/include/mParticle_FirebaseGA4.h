@@ -1,2 +1,2 @@
 #import <Foundation/Foundation.h>
-#import "MPKitFirebaseGA4.h"
+#import "MPKitFirebaseGA4Analytics.h"

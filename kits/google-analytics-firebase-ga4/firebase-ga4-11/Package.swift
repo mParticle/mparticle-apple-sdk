@@ -31,8 +31,15 @@ let package = Package(
             publicHeadersPath: "include"
         ),
         .testTarget(
-            name: "mParticle-FirebaseGA4Tests",
-            dependencies: ["mParticle-FirebaseGA4"]
+            name: "mParticle-FirebaseGA4-Swift-Tests",
+            dependencies: ["mParticle-FirebaseGA4"],
+            path: "Tests/mParticle-FirebaseGA4Test/Swift"
+        ),
+        .testTarget(
+            name: "mParticle-FirebaseGA4-Objc-Tests",
+            dependencies: ["mParticle-FirebaseGA4"],
+            path: "Tests/mParticle-FirebaseGA4Test/Objc",
+            resources: [.process("GoogleService-Info.plist")]
         )
     ]
 )

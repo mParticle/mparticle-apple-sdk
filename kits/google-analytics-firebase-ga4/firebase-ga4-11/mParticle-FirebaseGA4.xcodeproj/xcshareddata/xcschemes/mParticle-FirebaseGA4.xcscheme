@@ -28,6 +28,16 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "G41100030000000000000001C"
+               BuildableName = "mParticle-FirebaseGA4Tests.xctest"
+               BlueprintName = "mParticle-FirebaseGA4Tests"
+               ReferencedContainer = "container:mParticle-FirebaseGA4.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

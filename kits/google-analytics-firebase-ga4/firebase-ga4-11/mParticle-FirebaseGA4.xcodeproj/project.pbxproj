@@ -7,27 +7,44 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		G411000100000000000000A1 /* MPKitFirebaseGA4.m in Sources */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A2 /* MPKitFirebaseGA4.m */; };
-		G411000100000000000000A3 /* MPKitFirebaseGA4.h in Headers */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A4 /* MPKitFirebaseGA4.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		G411000100000000000000A1 /* MPKitFirebaseGA4Analytics.m in Sources */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A2 /* MPKitFirebaseGA4Analytics.m */; };
+		G411000100000000000000A3 /* MPKitFirebaseGA4Analytics.h in Headers */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A4 /* MPKitFirebaseGA4Analytics.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		G411000100000000000000A5 /* mParticle_FirebaseGA4.h in Headers */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A6 /* mParticle_FirebaseGA4.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		G411000100000000000000A7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A8 /* PrivacyInfo.xcprivacy */; };
 		G411000100000000000000B1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = G411000100000000000000B2 /* FirebaseAnalytics */; };
 		G411000100000000000000B3 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = G411000100000000000000B4 /* mParticle-Apple-SDK */; };
-		G411000200000000000000A1 /* MPKitFirebaseGA4.m in Sources */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A2 /* MPKitFirebaseGA4.m */; };
-		G411000200000000000000A3 /* MPKitFirebaseGA4.h in Headers */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A4 /* MPKitFirebaseGA4.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		G411000200000000000000A1 /* MPKitFirebaseGA4Analytics.m in Sources */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A2 /* MPKitFirebaseGA4Analytics.m */; };
+		G411000200000000000000A3 /* MPKitFirebaseGA4Analytics.h in Headers */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A4 /* MPKitFirebaseGA4Analytics.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		G411000200000000000000A5 /* mParticle_FirebaseGA4.h in Headers */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A6 /* mParticle_FirebaseGA4.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		G411000200000000000000A7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = G411000100000000000000A8 /* PrivacyInfo.xcprivacy */; };
 		G411000200000000000000B1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = G411000200000000000000B2 /* FirebaseAnalytics */; };
 		G411000200000000000000B3 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = G411000200000000000000B4 /* mParticle-Apple-SDK */; };
+		G411000300000000000000A1 /* MPKitFirebaseGA4AnalyticsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = G411000300000000000000A2 /* MPKitFirebaseGA4AnalyticsTests.m */; };
+		G411000300000000000000A9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = G411000300000000000000AA /* GoogleService-Info.plist */; };
+		G411000300000000000000B1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = G411000300000000000000B2 /* FirebaseAnalytics */; };
+		G411000300000000000000B3 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = G411000300000000000000B4 /* mParticle-Apple-SDK */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		G411000300000000000000D2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = G411000100000000000000F5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = G41100010000000000000001C;
+			remoteInfo = "mParticle-FirebaseGA4";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
-		G411000100000000000000A2 /* MPKitFirebaseGA4.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = MPKitFirebaseGA4.m; path = Sources/mParticle-FirebaseGA4/MPKitFirebaseGA4.m; sourceTree = "<group>"; };
-		G411000100000000000000A4 /* MPKitFirebaseGA4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MPKitFirebaseGA4.h; path = Sources/mParticle-FirebaseGA4/include/MPKitFirebaseGA4.h; sourceTree = "<group>"; };
+		G411000100000000000000A2 /* MPKitFirebaseGA4Analytics.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = MPKitFirebaseGA4Analytics.m; path = Sources/mParticle-FirebaseGA4/MPKitFirebaseGA4Analytics.m; sourceTree = "<group>"; };
+		G411000100000000000000A4 /* MPKitFirebaseGA4Analytics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MPKitFirebaseGA4Analytics.h; path = Sources/mParticle-FirebaseGA4/include/MPKitFirebaseGA4Analytics.h; sourceTree = "<group>"; };
 		G411000100000000000000A6 /* mParticle_FirebaseGA4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = mParticle_FirebaseGA4.h; path = Sources/mParticle-FirebaseGA4/include/mParticle_FirebaseGA4.h; sourceTree = "<group>"; };
 		G411000100000000000000A8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Sources/mParticle-FirebaseGA4/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		G411000100000000000000C1 /* mParticle_FirebaseGA4.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_FirebaseGA4.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		G411000200000000000000C1 /* mParticle_FirebaseGA4.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_FirebaseGA4.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		G411000300000000000000A2 /* MPKitFirebaseGA4AnalyticsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = MPKitFirebaseGA4AnalyticsTests.m; path = Tests/mParticle-FirebaseGA4Test/Objc/MPKitFirebaseGA4AnalyticsTests.m; sourceTree = "<group>"; };
+		G411000300000000000000AA /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "Tests/mParticle-FirebaseGA4Test/Objc/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		G411000300000000000000C1 /* mParticle-FirebaseGA4Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-FirebaseGA4Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +66,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		G411000300000000000000D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				G411000300000000000000B1 /* FirebaseAnalytics in Frameworks */,
+				G411000300000000000000B3 /* mParticle-Apple-SDK in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -56,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				G411000100000000000000E2 /* Sources */,
+				G411000300000000000000E2 /* Tests */,
 				G411000100000000000000E3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -63,8 +90,8 @@
 		G411000100000000000000E2 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				G411000100000000000000A2 /* MPKitFirebaseGA4.m */,
-				G411000100000000000000A4 /* MPKitFirebaseGA4.h */,
+				G411000100000000000000A2 /* MPKitFirebaseGA4Analytics.m */,
+				G411000100000000000000A4 /* MPKitFirebaseGA4Analytics.h */,
 				G411000100000000000000A6 /* mParticle_FirebaseGA4.h */,
 				G411000100000000000000A8 /* PrivacyInfo.xcprivacy */,
 			);
@@ -76,8 +103,18 @@
 			children = (
 				G411000100000000000000C1 /* mParticle_FirebaseGA4.framework */,
 				G411000200000000000000C1 /* mParticle_FirebaseGA4.framework */,
+				G411000300000000000000C1 /* mParticle-FirebaseGA4Tests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		G411000300000000000000E2 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				G411000300000000000000A2 /* MPKitFirebaseGA4AnalyticsTests.m */,
+				G411000300000000000000AA /* GoogleService-Info.plist */,
+			);
+			name = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -87,7 +124,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				G411000100000000000000A3 /* MPKitFirebaseGA4.h in Headers */,
+				G411000100000000000000A3 /* MPKitFirebaseGA4Analytics.h in Headers */,
 				G411000100000000000000A5 /* mParticle_FirebaseGA4.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -96,7 +133,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				G411000200000000000000A3 /* MPKitFirebaseGA4.h in Headers */,
+				G411000200000000000000A3 /* MPKitFirebaseGA4Analytics.h in Headers */,
 				G411000200000000000000A5 /* mParticle_FirebaseGA4.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,6 +185,28 @@
 			productReference = G411000200000000000000C1 /* mParticle_FirebaseGA4.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		G41100030000000000000001C /* mParticle-FirebaseGA4Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = G411000300000000000000F2 /* Build configuration list for PBXNativeTarget "mParticle-FirebaseGA4Tests" */;
+			buildPhases = (
+				G411000300000000000000F3 /* Sources */,
+				G411000300000000000000D1 /* Frameworks */,
+				G411000300000000000000F4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				G411000300000000000000D3 /* PBXTargetDependency */,
+			);
+			name = "mParticle-FirebaseGA4Tests";
+			packageProductDependencies = (
+				G411000300000000000000B2 /* FirebaseAnalytics */,
+				G411000300000000000000B4 /* mParticle-Apple-SDK */,
+			);
+			productName = "mParticle-FirebaseGA4Tests";
+			productReference = G411000300000000000000C1 /* mParticle-FirebaseGA4Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -161,6 +220,10 @@
 					};
 					G41100020000000000000001C = {
 						CreatedOnToolsVersion = 12.0;
+					};
+					G41100030000000000000001C = {
+						CreatedOnToolsVersion = 12.0;
+						TestTargetID = G41100010000000000000001C;
 					};
 				};
 			};
@@ -183,6 +246,7 @@
 			targets = (
 				G41100010000000000000001C /* mParticle-FirebaseGA4 */,
 				G41100020000000000000001C /* mParticle-FirebaseGA4-tvOS */,
+				G41100030000000000000001C /* mParticle-FirebaseGA4Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -204,6 +268,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		G411000300000000000000F4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				G411000300000000000000A9 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -211,7 +283,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				G411000100000000000000A1 /* MPKitFirebaseGA4.m in Sources */,
+				G411000100000000000000A1 /* MPKitFirebaseGA4Analytics.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,11 +291,27 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				G411000200000000000000A1 /* MPKitFirebaseGA4.m in Sources */,
+				G411000200000000000000A1 /* MPKitFirebaseGA4Analytics.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		G411000300000000000000F3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				G411000300000000000000A1 /* MPKitFirebaseGA4AnalyticsTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		G411000300000000000000D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = G41100010000000000000001C /* mParticle-FirebaseGA4 */;
+			targetProxy = G411000300000000000000D2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		G411000100000000000000F9 /* Debug */ = {
@@ -350,6 +438,40 @@
 			};
 			name = Release;
 		};
+		G411000300000000000000F9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-FirebaseGA4Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		G411000300000000000000FA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-FirebaseGA4Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -376,6 +498,15 @@
 			buildConfigurations = (
 				G411000200000000000000F9 /* Debug */,
 				G411000200000000000000FA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		G411000300000000000000F2 /* Build configuration list for PBXNativeTarget "mParticle-FirebaseGA4Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				G411000300000000000000F9 /* Debug */,
+				G411000300000000000000FA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -418,6 +549,16 @@
 			productName = FirebaseAnalytics;
 		};
 		G411000200000000000000B4 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = G411000100000000000000F8 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */;
+			productName = "mParticle-Apple-SDK";
+		};
+		G411000300000000000000B2 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = G411000100000000000000F7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		G411000300000000000000B4 /* mParticle-Apple-SDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = G411000100000000000000F8 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */;
 			productName = "mParticle-Apple-SDK";
