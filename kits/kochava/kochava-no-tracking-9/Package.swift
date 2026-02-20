@@ -31,7 +31,7 @@ let package = Package(
             dependencies: [
                 .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
                 .product(name: "KochavaNetworking", package: "Apple-SwiftPackage-KochavaNetworking-XCFramework"),
-                .product(name: "KochavaMeasurement", package: "Apple-SwiftPackage-KochavaMeasurement-XCFramework"),
+                .product(name: "KochavaMeasurement", package: "Apple-SwiftPackage-KochavaMeasurement-XCFramework")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include"
