@@ -21,5 +21,13 @@
     "dest_repo": "mparticle-apple-integration-adjust-5",
     "ios_scheme": "mParticle-Adjust",
     "module": "mParticle_Adjust"
+  },
+  {
+    "name": "optimizely-5",
+    "local_path": "kits/optimizely/optimizely-5",
+    "dest_repo": "mparticle-apple-integration-optimizely-5",
+    "ios_scheme": "mParticle-Optimizely",
+    "tvos_scheme": "mParticle-Optimizely-tvOS",
+    "module": "mParticle_Optimizely"
   }
 ]
