@@ -1,0 +1,41 @@
+{
+  "pins" : [
+    {
+      "identity" : "braze-swift-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/braze-inc/braze-swift-sdk",
+      "state" : {
+        "revision" : "e31907eaa0dbd151dc2e6826de66cc494242ba60",
+        "version" : "14.0.1"
+      }
+    },
+    {
+      "identity" : "mparticle-apple-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mParticle/mparticle-apple-sdk",
+      "state" : {
+        "branch" : "workstation/9.0-Release",
+        "revision" : "d26eb54c9a862a996e8ff9e7515be87115030ba5"
+      }
+    },
+    {
+      "identity" : "ocmock",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/erikdoe/ocmock",
+      "state" : {
+        "branch" : "master",
+        "revision" : "7f6e9e9b6c9ffa19a9040860da9f7a1f202b9f4d"
+      }
+    },
+    {
+      "identity" : "sdwebimage",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SDWebImage/SDWebImage.git",
+      "state" : {
+        "revision" : "449e8f8f10377f620db8ad22ea81208eecf6325f",
+        "version" : "5.21.6"
+      }
+    }
+  ],
+  "version" : 2
+}
