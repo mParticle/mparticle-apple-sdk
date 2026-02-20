@@ -45,6 +45,14 @@
     "module": "mParticle_Adjust"
   },
   {
+    "name": "optimizely-4",
+    "local_path": "kits/optimizely/optimizely-4",
+    "dest_repo": "mparticle-apple-integration-optimizely-4",
+    "ios_scheme": "mParticle-Optimizely",
+    "tvos_scheme": "mParticle-Optimizely-tvOS",
+    "module": "mParticle_Optimizely"
+  },
+  {
     "name": "urbanairship-20",
     "local_path": "kits/urbanairship/urbanairship-20",
     "dest_repo": "mparticle-apple-integration-urbanairship-20",
