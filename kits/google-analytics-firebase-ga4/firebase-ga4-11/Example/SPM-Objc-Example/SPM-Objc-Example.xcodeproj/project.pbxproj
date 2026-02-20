@@ -1,0 +1,245 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		G411EX02000000000000000B /* mParticle-FirebaseGA4 in Frameworks */ = {isa = PBXBuildFile; productRef = G411EX0200000000000000A0 /* mParticle-FirebaseGA4 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		G411EX02000000000000000C /* SPM-Objc-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Objc-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		G411EX02000000000000000D /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = G411EX02000000000000000E /* SPM-Objc-Example */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		G411EX02000000000000000F /* SPM-Objc-Example */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				G411EX02000000000000000D /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */,
+			);
+			path = "SPM-Objc-Example";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		G411EX020000000000000010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				G411EX02000000000000000B /* mParticle-FirebaseGA4 in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		G411EX020000000000000011 = {
+			isa = PBXGroup;
+			children = (
+				G411EX02000000000000000F /* SPM-Objc-Example */,
+				G411EX020000000000000012 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		G411EX020000000000000012 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				G411EX02000000000000000C /* SPM-Objc-Example.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		G411EX02000000000000000E /* SPM-Objc-Example */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = G411EX020000000000000013 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */;
+			buildPhases = (
+				G411EX020000000000000014 /* Sources */,
+				G411EX020000000000000010 /* Frameworks */,
+				G411EX020000000000000015 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				G411EX02000000000000000F /* SPM-Objc-Example */,
+			);
+			name = "SPM-Objc-Example";
+			packageProductDependencies = (
+				G411EX0200000000000000A0 /* mParticle-FirebaseGA4 */,
+			);
+			productName = "SPM-Objc-Example";
+			productReference = G411EX02000000000000000C /* SPM-Objc-Example.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		G411EX020000000000000016 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					G411EX02000000000000000E = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = G411EX020000000000000017 /* Build configuration list for PBXProject "SPM-Objc-Example" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = G411EX020000000000000011;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				G411EX020000000000000018 /* XCLocalSwiftPackageReference "../../../firebase-ga4-11" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = G411EX020000000000000012 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				G411EX02000000000000000E /* SPM-Objc-Example */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		G411EX020000000000000015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		G411EX020000000000000014 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		G411EX020000000000000019 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SPM-Objc-Example/Info.plist";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Objc-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		G411EX01000000000000002A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SPM-Objc-Example/Info.plist";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Objc-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		G411EX01000000000000002B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		G411EX01000000000000002C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		G411EX020000000000000017 /* Build configuration list for PBXProject "SPM-Objc-Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				G411EX01000000000000002B /* Debug */,
+				G411EX01000000000000002C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		G411EX020000000000000013 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				G411EX020000000000000019 /* Debug */,
+				G411EX01000000000000002A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		G411EX020000000000000018 /* XCLocalSwiftPackageReference "../../../firebase-ga4-11" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../firebase-ga4-11";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		G411EX0200000000000000A0 /* mParticle-FirebaseGA4 */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "mParticle-FirebaseGA4";
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = G411EX020000000000000016 /* Project object */;
+}

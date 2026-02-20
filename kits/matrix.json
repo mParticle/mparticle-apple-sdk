@@ -65,5 +65,13 @@
     "dest_repo": "mparticle-apple-integration-urbanairship-20",
     "ios_scheme": "mParticle-UrbanAirship",
     "module": "mParticle_UrbanAirship"
+  },
+  {
+    "name": "google-analytics-firebase-ga4-11",
+    "local_path": "kits/google-analytics-firebase-ga4/firebase-ga4-11",
+    "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-11",
+    "ios_scheme": "mParticle-FirebaseGA4",
+    "tvos_scheme": "mParticle-FirebaseGA4-tvOS",
+    "module": "mParticle_FirebaseGA4"
   }
 ]
