@@ -97,5 +97,12 @@
     "ios_scheme": "mParticle-FirebaseGA4",
     "tvos_scheme": "mParticle-FirebaseGA4-tvOS",
     "module": "mParticle_FirebaseGA4"
+  },
+  {
+    "name": "branchmetrics-3",
+    "local_path": "kits/branchmetrics/branchmetrics-3",
+    "dest_repo": "mparticle-apple-integration-branchmetrics-3",
+    "ios_scheme": "mParticle-BranchMetrics",
+    "module": "mParticle_BranchMetrics"
   }
 ]
