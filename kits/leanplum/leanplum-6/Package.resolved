@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CleverTapSDK",
+        "repositoryURL": "https://github.com/CleverTap/clevertap-ios-sdk",
+        "state": {
+          "branch": null,
+          "revision": "15d7e45bb53ecac12af00b6b82e88e1daa68ea5d",
+          "version": "7.5.0"
+        }
+      },
+      {
+        "package": "Leanplum",
+        "repositoryURL": "https://github.com/leanplum/leanplum-ios-sdk",
+        "state": {
+          "branch": null,
+          "revision": "0a1f2142bab6db644bb96b7b474e42c1285b1001",
+          "version": "6.6.1"
+        }
+      },
+      {
+        "package": "mParticle-Apple-SDK",
+        "repositoryURL": "https://github.com/mParticle/mparticle-apple-sdk",
+        "state": {
+          "branch": null,
+          "revision": "37c277c3a9fd43ac8cc90e974f2db73d3b370ccd",
+          "version": "8.44.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
