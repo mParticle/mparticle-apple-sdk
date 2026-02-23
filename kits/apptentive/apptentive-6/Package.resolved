@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "apptentive-kit-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apptentive/apptentive-kit-ios",
+      "state" : {
+        "revision" : "58b6d1aaf226178ebd92c20f891d1ac795a8a287",
+        "version" : "6.10.0"
+      }
+    },
+    {
+      "identity" : "mparticle-apple-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mParticle/mparticle-apple-sdk",
+      "state" : {
+        "revision" : "37c277c3a9fd43ac8cc90e974f2db73d3b370ccd",
+        "version" : "8.44.0"
+      }
+    }
+  ],
+  "version" : 2
+}
