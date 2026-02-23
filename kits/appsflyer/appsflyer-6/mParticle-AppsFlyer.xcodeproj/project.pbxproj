@@ -1,0 +1,385 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		890E16DE853441BF79AB1314 /* MPKitAppsFlyer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6BDAB6ACE0557CED9BE8FA64 /* MPKitAppsFlyer.m */; };
+		0A859A3F5E4C5C1D8752AAC2 /* MPKitAppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = D332A9834DC984DB4FD934C6 /* MPKitAppsFlyer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8CA05B821916C4FFC15062C8 /* mParticle_AppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = 40D0122E117E63949D3A1019 /* mParticle_AppsFlyer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		58F939FA48A08B9D29822BDF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3FD23FABD83AEB8A58E427C6 /* PrivacyInfo.xcprivacy */; };
+		32611EB3492425C687D8F69C /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = 8625D1443F52E7A698A680A8 /* mParticle-Apple-SDK */; };
+		87C4E16CCDAD49D90C643460 /* AppsFlyerLib-Static in Frameworks */ = {isa = PBXBuildFile; productRef = 6634F5559F44CCAFA10F5747 /* AppsFlyerLib-Static */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		6BDAB6ACE0557CED9BE8FA64 /* MPKitAppsFlyer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAppsFlyer.m; sourceTree = "<group>"; };
+		D332A9834DC984DB4FD934C6 /* MPKitAppsFlyer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppsFlyer.h; sourceTree = "<group>"; };
+		40D0122E117E63949D3A1019 /* mParticle_AppsFlyer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle_AppsFlyer.h; sourceTree = "<group>"; };
+		3FD23FABD83AEB8A58E427C6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		4A731C6E443066D2D5A02B67 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D3BFFD6271B0312661864F2D /* mParticle_AppsFlyer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_AppsFlyer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		411B59FF2E39C43B7A8C3CDD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				32611EB3492425C687D8F69C /* mParticle-Apple-SDK in Frameworks */,
+				87C4E16CCDAD49D90C643460 /* AppsFlyerLib-Static in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		664A6128792C96D0C97DCE57 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D4232C3CDF02E009E7A18C2F /* mParticle-AppsFlyer */,
+				4A731C6E443066D2D5A02B67 /* Info.plist */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		D4232C3CDF02E009E7A18C2F /* mParticle-AppsFlyer */ = {
+			isa = PBXGroup;
+			children = (
+				A13B605A07ED8E2727BAC990 /* include */,
+				6BDAB6ACE0557CED9BE8FA64 /* MPKitAppsFlyer.m */,
+				3FD23FABD83AEB8A58E427C6 /* PrivacyInfo.xcprivacy */,
+			);
+			path = "mParticle-AppsFlyer";
+			sourceTree = "<group>";
+		};
+		A13B605A07ED8E2727BAC990 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				D332A9834DC984DB4FD934C6 /* MPKitAppsFlyer.h */,
+				40D0122E117E63949D3A1019 /* mParticle_AppsFlyer.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		F93A79A07B24297B9DB472EE = {
+			isa = PBXGroup;
+			children = (
+				664A6128792C96D0C97DCE57 /* Sources */,
+				11DA63FE999224C6FEDC2F0E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		11DA63FE999224C6FEDC2F0E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D3BFFD6271B0312661864F2D /* mParticle_AppsFlyer.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		C683673ADB449628C56CCC94 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A859A3F5E4C5C1D8752AAC2 /* MPKitAppsFlyer.h in Headers */,
+				8CA05B821916C4FFC15062C8 /* mParticle_AppsFlyer.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		AECD3EA4B54953C844B5BC75 /* mParticle-AppsFlyer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EFA3A1EB4BF9AF788FAF75A0 /* Build configuration list for PBXNativeTarget "mParticle-AppsFlyer" */;
+			buildPhases = (
+				5F78B473444C1986CB01673E /* Sources */,
+				411B59FF2E39C43B7A8C3CDD /* Frameworks */,
+				C683673ADB449628C56CCC94 /* Headers */,
+				D8F2E0F19E83C6F474A896D2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-AppsFlyer";
+			packageProductDependencies = (
+				8625D1443F52E7A698A680A8 /* mParticle-Apple-SDK */,
+				6634F5559F44CCAFA10F5747 /* AppsFlyerLib-Static */,
+			);
+			productName = "mParticle-AppsFlyer";
+			productReference = D3BFFD6271B0312661864F2D /* mParticle_AppsFlyer.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		52DE8841EEB9007F41CE715C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1200;
+				ORGANIZATIONNAME = mParticle;
+				TargetAttributes = {
+					AECD3EA4B54953C844B5BC75 = {
+						CreatedOnToolsVersion = 7.3;
+					};
+				};
+			};
+			buildConfigurationList = FC7B61D28F0C5B90582D3588 /* Build configuration list for PBXProject "mParticle-AppsFlyer" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F93A79A07B24297B9DB472EE;
+			packageReferences = (
+				78DA6E989328CB5C8828F051 /* XCLocalSwiftPackageReference "../../.." */,
+				AD41E7C8320AF506B87A3AC6 /* XCRemoteSwiftPackageReference "AppsFlyerFramework-Static" */,
+			);
+			productRefGroup = 11DA63FE999224C6FEDC2F0E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AECD3EA4B54953C844B5BC75 /* mParticle-AppsFlyer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D8F2E0F19E83C6F474A896D2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				58F939FA48A08B9D29822BDF /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5F78B473444C1986CB01673E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				890E16DE853441BF79AB1314 /* MPKitAppsFlyer.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7B4ACEDE736CB3E335AD48CF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		4EA567CED907C8471C848E61 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		0B877BB7B096E20BEC4E2C71 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-AppsFlyer";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = NO;
+			};
+			name = Debug;
+		};
+		080C267847E0F0E2EBD2B737 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-AppsFlyer";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FC7B61D28F0C5B90582D3588 /* Build configuration list for PBXProject "mParticle-AppsFlyer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7B4ACEDE736CB3E335AD48CF /* Debug */,
+				4EA567CED907C8471C848E61 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EFA3A1EB4BF9AF788FAF75A0 /* Build configuration list for PBXNativeTarget "mParticle-AppsFlyer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B877BB7B096E20BEC4E2C71 /* Debug */,
+				080C267847E0F0E2EBD2B737 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		78DA6E989328CB5C8828F051 /* XCLocalSwiftPackageReference "../../.." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AD41E7C8320AF506B87A3AC6 /* XCRemoteSwiftPackageReference "AppsFlyerFramework-Static" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8625D1443F52E7A698A680A8 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78DA6E989328CB5C8828F051 /* XCLocalSwiftPackageReference "../../.." */;
+			productName = "mParticle-Apple-SDK";
+		};
+		6634F5559F44CCAFA10F5747 /* AppsFlyerLib-Static */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AD41E7C8320AF506B87A3AC6 /* XCRemoteSwiftPackageReference "AppsFlyerFramework-Static" */;
+			productName = AppsFlyerLib-Static;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 52DE8841EEB9007F41CE715C /* Project object */;
+}
