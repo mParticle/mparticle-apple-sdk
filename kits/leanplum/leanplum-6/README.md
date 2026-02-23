@@ -1,31 +1,50 @@
-## Leanplum Kit Integration
+# mParticle Leanplum Kit (Leanplum SDK 6.x)
 
-This repository contains the [Leanplum](https://www.leanplum.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
+This is the [Leanplum](https://www.leanplum.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against [Leanplum SDK 6.x](https://github.com/leanplum/leanplum-ios-sdk).
 
-### Adding the integration
+## Installation
 
-1. Add the kit dependency via SPM or add to your app's Podfile or Cartfile:
+### Swift Package Manager
 
-   ```
-   pod 'mParticle-Leanplum', '~> 8.0'
-   ```
+Add the Leanplum kit package dependency in Xcode or in your `Package.swift`. Swift Package Manager resolves the mParticle SDK automatically as a transitive dependency, so you do not need a separate `.package` entry for `mparticle-apple-sdk`.
 
-   OR
+```swift
+.package(
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum-6",
+    .upToNextMajor(from: "9.0.0")
+),
+```
 
-   ```
-   github "mparticle-integrations/mparticle-apple-integration-leanplum" ~> 8.0
-   ```
+Then add `mParticle-Leanplum` as a dependency of your target.
 
-2. Follow the mParticle iOS SDK [quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app, and verify that you see `"Included kits: { Leanplum }"` in your Xcode console
+### CocoaPods
 
-> (This requires your mParticle log level to be at least Debug)
+Add the kit dependency to your app's Podfile:
 
-3. Reference mParticle's integration docs below to enable the integration.
+```ruby
+pod 'mParticle-Leanplum', '~> 9.0'
+```
 
-### Documentation
+## Verifying the Integration
 
-[Leanplum integration](https://docs.mparticle.com/integrations/leanplum/event/)
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
 
-### License
+```bash
+Included kits: { Leanplum }
+```
 
-[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.6            |
+
+## Documentation
+
+- [mParticle Leanplum Integration Guide](https://docs.mparticle.com/integrations/leanplum/event/)
+- [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
+- [Leanplum iOS SDK Documentation](https://docs.leanplum.com/docs/ios-sdk)
+
+## License
+
+Apache License 2.0
