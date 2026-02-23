@@ -1,3 +1,0 @@
-github "CleverTap/clevertap-ios-sdk" ~> 6.2
-github "leanplum/leanplum-ios-sdk" ~> 6.4
-github "mparticle/mparticle-apple-sdk" ~> 8.22
