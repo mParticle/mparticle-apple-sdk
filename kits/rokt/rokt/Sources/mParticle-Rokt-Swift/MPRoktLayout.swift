@@ -19,7 +19,7 @@ import mParticle_Rokt
 
 @available(iOS 15, *)
 public class MPRoktLayout {
-    public var roktLayout: RoktLayout? = nil
+    public var roktLayout: RoktLayout?
     let mparticle = MParticle.sharedInstance()
 
     public init(
@@ -38,7 +38,11 @@ public class MPRoktLayout {
 
         MPRoktLayout
             .mpLog(
-                "Initializing MPRoktLayout with arguments sdkTriggered:\(sdkTriggered.wrappedValue), viewName:\(viewName ?? "nil"), locationName:\(locationName), attributes:\(attributes)"
+                "Initializing MPRoktLayout with arguments " +
+                    "sdkTriggered:\(sdkTriggered.wrappedValue), " +
+                    "viewName:\(viewName ?? "nil"), " +
+                    "locationName:\(locationName), " +
+                    "attributes:\(attributes)"
             )
         confirmUser(attributes: attributes) { identifyCalled in
             let preparedAttributes = MPKitRokt.prepareAttributes(
@@ -46,13 +50,17 @@ public class MPRoktLayout {
                 filteredUser: Optional<FilteredMParticleUser>.none,
                 performMapping: true
             )
-            
+
             // Log custom event for selectPlacements call
             MPKitRokt.logSelectPlacementEvent(preparedAttributes)
-            
+
             MPRoktLayout
                 .mpLog(
-                    "Initializing RoktLayout with arguments  sdkTriggered:\(sdkTriggered.wrappedValue), viewName: \(viewName ?? "nil"), locationName:\(locationName), attributes:\(preparedAttributes)"
+                    "Initializing RoktLayout with arguments " +
+                        "sdkTriggered:\(sdkTriggered.wrappedValue), " +
+                        "viewName: \(viewName ?? "nil"), " +
+                        "locationName:\(locationName), " +
+                        "attributes:\(preparedAttributes)"
                 )
             self.roktLayout = RoktLayout.init(
                 sdkTriggered: sdkTriggered,
@@ -73,7 +81,7 @@ public class MPRoktLayout {
             }
         }
     }
-    
+
     func confirmUser(
         attributes: [String: String]?,
         completion: @escaping (Bool) -> Void
@@ -85,9 +93,9 @@ public class MPRoktLayout {
         let email = attributes?["email"]
         let hashedEmail = attributes?["emailsha256"]
         let hashedEmailIdentity = MPKitRokt.getHashedEmailUserIdentityType()
-        
+
         let userEmailIdentity = user.identities[NSNumber(value: MPIdentity.email.rawValue)]
-        
+
         let emailMismatch: Bool = {
             guard let email = email,
                   let userEmail = user.identities[NSNumber(value: MPIdentity.email.rawValue)] else {
@@ -103,22 +111,33 @@ public class MPRoktLayout {
             }
             return hashedEmail != userHashedEmail
         }()
-        
+
         if emailMismatch || hashedEmailMismatch {
             // If there is an existing email or hashed email but it doesn't match what was passed in, warn the customer
             if emailMismatch {
                 MPRoktLayout
                     .mpLog(
-                        "The existing email on the user (\(userEmailIdentity ?? "nil")) does not match the email passed in to `selectPlacements:` (\(email ?? "nil")). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before creating the layout"
+                        "The existing email on the user " +
+                            "(\(userEmailIdentity ?? "nil")) does not match the email " +
+                            "passed in to `selectPlacements:` (\(email ?? "nil")). " +
+                            "Please remember to sync the email identity to mParticle " +
+                            "as soon as you receive it. " +
+                            "We will now identify the user before creating the layout"
                     )
             }
             if hashedEmailMismatch {
                 MPRoktLayout
                     .mpLog(
-                        "The existing hashed email on the user (\(user.identities[hashedEmailIdentity ?? NSNumber(value: -1)] ?? "nil")) does not match the email passed in to `selectPlacements:` (\(hashedEmail ?? "nil")). Please remember to sync the hashed email identity to mParticle as soon as you receive it. We will now identify the user before creating the layout"
+                        "The existing hashed email on the user " +
+                            "(\(user.identities[hashedEmailIdentity ?? NSNumber(value: -1)] ?? "nil")) " +
+                            "does not match the email passed in to " +
+                            "`selectPlacements:` (\(hashedEmail ?? "nil")). " +
+                            "Please remember to sync the hashed email identity to " +
+                            "mParticle as soon as you receive it. " +
+                            "We will now identify the user before creating the layout"
                     )
             }
-            
+
             syncIdentities(user: user, email: email, hashedEmail: hashedEmail, hashedEmailKey: hashedEmailIdentity) {
                 completion(true)
             }
@@ -126,7 +145,7 @@ public class MPRoktLayout {
             completion(false)
         }
     }
-    
+
     func syncIdentities(
         user: MParticleUser,
         email: String?,
@@ -139,7 +158,7 @@ public class MPRoktLayout {
         if let hashedEmailKey = hashedEmailKey {
             identityRequest.setIdentity(hashedEmail, identityType: MPIdentity(rawValue: hashedEmailKey.uintValue) ?? .other)
         }
-        
+
         mparticle.identity.identify(identityRequest) {apiResult, error in
             if let error = error {
                 MPRoktLayout.mpLog("Failed to sync email from selectPlacement to user: \(error)")
@@ -152,7 +171,7 @@ public class MPRoktLayout {
             }
         }
     }
-    
+
     static func mpLog(_ message: String) {
         let msg = "MPRokt -> \(message)"
         if MParticle.sharedInstance().environment == .development {
