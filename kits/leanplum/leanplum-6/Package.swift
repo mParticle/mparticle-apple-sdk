@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/mParticle/mparticle-apple-sdk",
-                 .upToNextMajor(from: "8.22.0")),
+                 branch: "workstation/9.0-Release"),
         .package(url: "https://github.com/leanplum/leanplum-ios-sdk",
                  .upToNextMajor(from: "6.0.0"))
     ],

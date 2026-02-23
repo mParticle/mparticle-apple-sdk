@@ -1,34 +1,32 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "CleverTapSDK",
-        "repositoryURL": "https://github.com/CleverTap/clevertap-ios-sdk",
-        "state": {
-          "branch": null,
-          "revision": "15d7e45bb53ecac12af00b6b82e88e1daa68ea5d",
-          "version": "7.5.0"
-        }
-      },
-      {
-        "package": "Leanplum",
-        "repositoryURL": "https://github.com/leanplum/leanplum-ios-sdk",
-        "state": {
-          "branch": null,
-          "revision": "0a1f2142bab6db644bb96b7b474e42c1285b1001",
-          "version": "6.6.1"
-        }
-      },
-      {
-        "package": "mParticle-Apple-SDK",
-        "repositoryURL": "https://github.com/mParticle/mparticle-apple-sdk",
-        "state": {
-          "branch": null,
-          "revision": "37c277c3a9fd43ac8cc90e974f2db73d3b370ccd",
-          "version": "8.44.0"
-        }
+  "pins" : [
+    {
+      "identity" : "clevertap-ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/CleverTap/clevertap-ios-sdk",
+      "state" : {
+        "revision" : "15d7e45bb53ecac12af00b6b82e88e1daa68ea5d",
+        "version" : "7.5.0"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "leanplum-ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leanplum/leanplum-ios-sdk",
+      "state" : {
+        "revision" : "0a1f2142bab6db644bb96b7b474e42c1285b1001",
+        "version" : "6.6.1"
+      }
+    },
+    {
+      "identity" : "mparticle-apple-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mParticle/mparticle-apple-sdk",
+      "state" : {
+        "branch" : "workstation/9.0-Release",
+        "revision" : "51f94b6f41d56d001065d94fccd5d8145ae8bcef"
+      }
+    }
+  ],
+  "version" : 2
 }
