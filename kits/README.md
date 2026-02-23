@@ -23,3 +23,4 @@ Each kit has its own README with installation and configuration steps.
 | Kit      | Standalone Repository                                                                                                    | Partner SDK                                                          |
 | -------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
 | Braze 12 | [`mparticle-apple-integration-braze-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12) | [Braze Swift SDK 12.x](https://github.com/braze-inc/braze-swift-sdk) |
+| Rokt     | [`mparticle-apple-integration-rokt`](https://github.com/mparticle-integrations/mparticle-apple-integration-rokt)         | [Rokt Widget SDK](https://github.com/ROKT/rokt-sdk-ios)              |
