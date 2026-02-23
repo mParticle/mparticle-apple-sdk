@@ -1,5 +1,4 @@
 import XCTest
-@testable import mParticle_Apple_SDK
 @testable import mParticle_Kochava
 
 final class MPKitKochavaTests: XCTestCase {
