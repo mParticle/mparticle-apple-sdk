@@ -64,7 +64,6 @@ Included kits: { Iterable }
 | Platform | Minimum Version |
 | -------- | --------------- |
 | iOS      | 15.6            |
-| tvOS     | 15.6            |
 
 ## Documentation
 
