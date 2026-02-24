@@ -7,6 +7,7 @@ Kits forward events from the mParticle Apple SDK to partner services. To use a p
 Kits are versioned by the partner SDK major:
 
 - `braze-12` → Braze Swift SDK 12.x
+- `braze-14` → Braze Swift SDK 14.x
 
 Pick the kit that matches the partner SDK major you want in your app.
 
@@ -20,6 +21,20 @@ Each kit has its own README with installation and configuration steps.
 
 ## Available Kits
 
-| Kit      | Standalone Repository                                                                                                    | Partner SDK                                                          |
-| -------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- |
-| Braze 12 | [`mparticle-apple-integration-braze-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12) | [Braze Swift SDK 12.x](https://github.com/braze-inc/braze-swift-sdk) |
+| Kit                       | Standalone Repository                                                                                                                                                    | Partner SDK                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Adjust 5                  | [`mparticle-apple-integration-adjust-5`](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust-5)                                                 | [Adjust SDK 5.x](https://github.com/adjust/ios_sdk)                             |
+| AppsFlyer 6               | [`mparticle-apple-integration-appsflyer-6`](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer-6)                                           | [AppsFlyer SDK 6.x](https://github.com/AppsFlyerSDK/AppsFlyerFramework)         |
+| Branch Metrics 3          | [`mparticle-apple-integration-branchmetrics-3`](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics-3)                                   | [Branch SDK 3.x](https://github.com/BranchMetrics/ios-branch-sdk-spm)           |
+| Braze 12                  | [`mparticle-apple-integration-braze-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12)                                                 | [Braze Swift SDK 12.x](https://github.com/braze-inc/braze-swift-sdk)            |
+| Braze 13                  | [`mparticle-apple-integration-braze-13`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-13)                                                 | [Braze Swift SDK 13.x](https://github.com/braze-inc/braze-swift-sdk)            |
+| Braze 14                  | [`mparticle-apple-integration-braze-14`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-14)                                                 | [Braze Swift SDK 14.x](https://github.com/braze-inc/braze-swift-sdk)            |
+| Firebase Analytics 11     | [`mparticle-apple-integration-google-analytics-firebase-11`](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-11)         | [Firebase 11.x](https://github.com/firebase/firebase-ios-sdk)                   |
+| Firebase Analytics 12     | [`mparticle-apple-integration-google-analytics-firebase-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-12)         | [Firebase 12.x](https://github.com/firebase/firebase-ios-sdk)                   |
+| Firebase Analytics GA4 11 | [`mparticle-apple-integration-google-analytics-firebase-ga4-11`](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-ga4-11) | [Firebase 11.x (GA4)](https://github.com/firebase/firebase-ios-sdk)             |
+| Firebase Analytics GA4 12 | [`mparticle-apple-integration-google-analytics-firebase-ga4-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-ga4-12) | [Firebase 12.x (GA4)](https://github.com/firebase/firebase-ios-sdk)             |
+| Kochava 9                 | [`mparticle-apple-integration-kochava-9`](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava-9)                                               | [Kochava SDK 9.x](https://github.com/Kochava/Apple-SwiftPackage-KochavaTracker) |
+| Optimizely 4              | [`mparticle-apple-integration-optimizely-4`](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely-4)                                         | [Optimizely Swift SDK 4.x](https://github.com/optimizely/swift-sdk)             |
+| Optimizely 5              | [`mparticle-apple-integration-optimizely-5`](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely-5)                                         | [Optimizely Swift SDK 5.x](https://github.com/optimizely/swift-sdk)             |
+| Rokt                      | [`mparticle-apple-integration-rokt`](https://github.com/mparticle-integrations/mparticle-apple-integration-rokt)                                                         | [Rokt Widget SDK](https://github.com/ROKT/rokt-sdk-ios)                         |
+| Urban Airship 20          | [`mparticle-apple-integration-urbanairship-20`](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-20)                                   | [Airship SDK 20.x](https://github.com/urbanairship/ios-library)                 |
