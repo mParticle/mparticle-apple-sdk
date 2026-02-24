@@ -112,5 +112,12 @@
     "dest_repo": "mparticle-apple-integration-branchmetrics-3",
     "ios_scheme": "mParticle-BranchMetrics",
     "module": "mParticle_BranchMetrics"
+  },
+  {
+    "name": "iterable-6",
+    "local_path": "kits/iterable/iterable-6",
+    "dest_repo": "mparticle-apple-integration-iterable-6",
+    "ios_scheme": "mParticle-Iterable",
+    "module": "mParticle_Iterable"
   }
 ]
