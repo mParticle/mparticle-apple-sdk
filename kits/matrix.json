@@ -67,6 +67,14 @@
     "module": "mParticle_Leanplum"
   },
   {
+    "name": "kochava-no-tracking-9",
+    "local_path": "kits/kochava/kochava-no-tracking-9",
+    "dest_repo": "mparticle-apple-integration-kochava-no-tracking-9",
+    "ios_scheme": "mParticle-Kochava",
+    "tvos_scheme": "mParticle-Kochava-tvOS",
+    "module": "mParticle_Kochava"
+  },
+  {
     "name": "optimizely-4",
     "local_path": "kits/optimizely/optimizely-4",
     "dest_repo": "mparticle-apple-integration-optimizely-4",
@@ -88,6 +96,14 @@
     "dest_repo": "mparticle-apple-integration-urbanairship-20",
     "ios_scheme": "mParticle-UrbanAirship",
     "module": "mParticle_UrbanAirship"
+  },
+  {
+    "name": "google-analytics-firebase-ga4-11",
+    "local_path": "kits/google-analytics-firebase-ga4/firebase-ga4-11",
+    "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-11",
+    "ios_scheme": "mParticle-FirebaseGA4",
+    "tvos_scheme": "mParticle-FirebaseGA4-tvOS",
+    "module": "mParticle_FirebaseGA4"
   },
   {
     "name": "google-analytics-firebase-ga4-12",
