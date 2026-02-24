@@ -91,6 +91,13 @@
     "module": "mParticle_UrbanAirship"
   },
   {
+    "name": "rokt",
+    "local_path": "kits/rokt/rokt",
+    "dest_repo": "mparticle-apple-integration-rokt",
+    "ios_scheme": "mParticle-Rokt",
+    "module": "mParticle_Rokt"
+  },
+  {
     "name": "google-analytics-firebase-ga4-11",
     "local_path": "kits/google-analytics-firebase-ga4/firebase-ga4-11",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-11",
