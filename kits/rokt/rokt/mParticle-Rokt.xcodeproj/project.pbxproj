@@ -14,11 +14,6 @@
 		AA0008052F50000000000005 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0001062F50000000000006 /* PrivacyInfo.xcprivacy */; };
 		AA0008062F50000000000006 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = AA000A012F50000000000001 /* mParticle-Apple-SDK */; };
 		AA0008072F50000000000007 /* Rokt-Widget in Frameworks */ = {isa = PBXBuildFile; productRef = AA000A032F50000000000003 /* Rokt-Widget */; };
-		AA0008112F50000000000011 /* MPKitRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0001032F50000000000003 /* MPKitRokt.m */; };
-		AA0008122F50000000000012 /* MPKitRokt.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0001012F50000000000001 /* MPKitRokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		AA0008132F50000000000013 /* mParticle_Rokt_tvOS.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0001072F50000000000007 /* mParticle_Rokt_tvOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		AA0008142F50000000000014 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0001062F50000000000006 /* PrivacyInfo.xcprivacy */; };
-		AA0008152F50000000000015 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = AA000A022F50000000000002 /* mParticle-Apple-SDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,10 +23,7 @@
 		AA0001042F50000000000004 /* MPRoktLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPRoktLayout.swift; sourceTree = "<group>"; };
 		AA0001052F50000000000005 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0001062F50000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		AA0001072F50000000000007 /* mParticle_Rokt_tvOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Rokt_tvOS.h; sourceTree = "<group>"; };
-		AA0001082F50000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0001092F50000000000009 /* mParticle_Rokt.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Rokt.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA0001102F50000000000010 /* mParticle_Rokt.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Rokt.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,14 +33,6 @@
 			files = (
 				AA0008072F50000000000007 /* Rokt-Widget in Frameworks */,
 				AA0008062F50000000000006 /* mParticle-Apple-SDK in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AA0003062F50000000000006 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA0008152F50000000000015 /* mParticle-Apple-SDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,7 +80,6 @@
 			isa = PBXGroup;
 			children = (
 				AA0002032F50000000000003 /* Sources */,
-				AA0002072F50000000000007 /* mParticle-Rokt-tvOS */,
 				AA0002022F50000000000002 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -105,18 +88,8 @@
 			isa = PBXGroup;
 			children = (
 				AA0001092F50000000000009 /* mParticle_Rokt.framework */,
-				AA0001102F50000000000010 /* mParticle_Rokt.framework */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		AA0002072F50000000000007 /* mParticle-Rokt-tvOS */ = {
-			isa = PBXGroup;
-			children = (
-				AA0001072F50000000000007 /* mParticle_Rokt_tvOS.h */,
-				AA0001082F50000000000008 /* Info.plist */,
-			);
-			path = "mParticle-Rokt-tvOS";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -128,15 +101,6 @@
 			files = (
 				AA0008032F50000000000003 /* MPKitRokt.h in Headers */,
 				AA0008042F50000000000004 /* mParticle_Rokt.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AA0003072F50000000000007 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA0008122F50000000000012 /* MPKitRokt.h in Headers */,
-				AA0008132F50000000000013 /* mParticle_Rokt_tvOS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,27 +129,6 @@
 			productReference = AA0001092F50000000000009 /* mParticle_Rokt.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		AA0004022F50000000000002 /* mParticle-Rokt-tvOS */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = AA0007032F50000000000003 /* Build configuration list for PBXNativeTarget "mParticle-Rokt-tvOS" */;
-			buildPhases = (
-				AA0003052F50000000000005 /* Sources */,
-				AA0003062F50000000000006 /* Frameworks */,
-				AA0003072F50000000000007 /* Headers */,
-				AA0003082F50000000000008 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "mParticle-Rokt-tvOS";
-			packageProductDependencies = (
-				AA000A022F50000000000002 /* mParticle-Apple-SDK */,
-			);
-			productName = "mParticle-Rokt-tvOS";
-			productReference = AA0001102F50000000000010 /* mParticle_Rokt.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -197,9 +140,6 @@
 				TargetAttributes = {
 					AA0004012F50000000000001 = {
 						CreatedOnToolsVersion = 7.3;
-					};
-					AA0004022F50000000000002 = {
-						CreatedOnToolsVersion = 9.3;
 					};
 				};
 			};
@@ -221,7 +161,6 @@
 			projectRoot = "";
 			targets = (
 				AA0004012F50000000000001 /* mParticle-Rokt */,
-				AA0004022F50000000000002 /* mParticle-Rokt-tvOS */,
 			);
 		};
 /* End PBXProject section */
@@ -235,14 +174,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		AA0003082F50000000000008 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA0008142F50000000000014 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -252,14 +183,6 @@
 			files = (
 				AA0008012F50000000000001 /* MPKitRokt.m in Sources */,
 				AA0008022F50000000000002 /* MPRoktLayout.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AA0003052F50000000000005 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA0008112F50000000000011 /* MPKitRokt.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,7 +246,6 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TVOS_DEPLOYMENT_TARGET = 15.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -378,7 +300,6 @@
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TVOS_DEPLOYMENT_TARGET = 15.0;
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -400,7 +321,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = NO;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				TVOS_DEPLOYMENT_TARGET = 15.0;
 			};
 			name = Debug;
 		};
@@ -419,93 +339,6 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = NO;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				TVOS_DEPLOYMENT_TARGET = 15.0;
-			};
-			name = Release;
-		};
-		AA0006052F50000000000005 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "mParticle-Rokt-tvOS/Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				OTHER_LDFLAGS = (
-					"-ObjC",
-					"-all_load",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Rokt-tvOS";
-				PRODUCT_NAME = mParticle_Rokt;
-				SDKROOT = appletvos;
-				SKIP_INSTALL = NO;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
-			};
-			name = Debug;
-		};
-		AA0006062F50000000000006 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "mParticle-Rokt-tvOS/Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				OTHER_LDFLAGS = (
-					"-ObjC",
-					"-all_load",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Rokt-tvOS";
-				PRODUCT_NAME = mParticle_Rokt;
-				SDKROOT = appletvos;
-				SKIP_INSTALL = NO;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
-				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.6;
 			};
 			name = Release;
 		};
@@ -526,15 +359,6 @@
 			buildConfigurations = (
 				AA0006032F50000000000003 /* Debug */,
 				AA0006042F50000000000004 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		AA0007032F50000000000003 /* Build configuration list for PBXNativeTarget "mParticle-Rokt-tvOS" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				AA0006052F50000000000005 /* Debug */,
-				AA0006062F50000000000006 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -561,11 +385,6 @@
 
 /* Begin XCSwiftPackageProductDependency section */
 		AA000A012F50000000000001 /* mParticle-Apple-SDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA0009012F50000000000001 /* XCLocalSwiftPackageReference "../../.." */;
-			productName = "mParticle-Apple-SDK";
-		};
-		AA000A022F50000000000002 /* mParticle-Apple-SDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AA0009012F50000000000001 /* XCLocalSwiftPackageReference "../../.." */;
 			productName = "mParticle-Apple-SDK";

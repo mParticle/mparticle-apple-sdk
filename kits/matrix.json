@@ -87,7 +87,6 @@
     "local_path": "kits/rokt/rokt",
     "dest_repo": "mparticle-apple-integration-rokt",
     "ios_scheme": "mParticle-Rokt",
-    "tvos_scheme": "mParticle-Rokt-tvOS",
     "module": "mParticle_Rokt"
   },
   {

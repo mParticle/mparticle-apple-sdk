@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "mParticle-Rokt",
-    platforms: [.iOS(.v15), .tvOS(.v15)],
+    platforms: [.iOS(.v15)],
     products: [
         .library(
             name: "mParticle-Rokt",
@@ -30,7 +30,7 @@ let package = Package(
             name: "mParticle-Rokt",
             dependencies: [
                 .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
-                .product(name: "Rokt-Widget", package: "rokt-sdk-ios", condition: .when(platforms: [.iOS]))
+                .product(name: "Rokt-Widget", package: "rokt-sdk-ios")
             ],
             path: "Sources/mParticle-Rokt",
             resources: [.process("PrivacyInfo.xcprivacy")],
@@ -41,7 +41,7 @@ let package = Package(
             dependencies: [
                 "mParticle-Rokt",
                 .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
-                .product(name: "Rokt-Widget", package: "rokt-sdk-ios", condition: .when(platforms: [.iOS]))
+                .product(name: "Rokt-Widget", package: "rokt-sdk-ios")
             ],
             path: "Sources/mParticle-Rokt-Swift"
         ),

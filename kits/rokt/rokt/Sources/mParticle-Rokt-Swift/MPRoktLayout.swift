@@ -11,7 +11,6 @@
 //
 //  You may obtain a copy of the License at https://rokt.com/sdk-license-2-0/
 
-#if os(iOS)
 import SwiftUI
 import Rokt_Widget
 import mParticle_Apple_SDK
@@ -179,4 +178,3 @@ public class MPRoktLayout {
         }
     }
 }
-#endif

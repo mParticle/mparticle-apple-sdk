@@ -1,9 +1,5 @@
 #import "MPKitRokt.h"
-#import <TargetConditionals.h>
-
-#if TARGET_OS_IOS
 #import <Rokt_Widget/Rokt_Widget-Swift.h>
-#endif
 
 // Kit version
 static NSString * const kMPRoktKitVersion = @"8.3.3";
@@ -76,7 +72,6 @@ static __weak MPKitRokt *roktKit = nil;
     // Initialize Rokt SDK here
     [MPKitRokt MPLog:[NSString stringWithFormat:@"Attempting to initialize Rokt with Kit Version: %@", kMPRoktKitVersion]];
     
-#if TARGET_OS_IOS
     [MPKitRokt applyMParticleLogLevel];
     
     [Rokt initWithRoktTagId:partnerId mParticleSdkVersion:sdkVersion mParticleKitVersion:kMPRoktKitVersion onInitComplete:^(BOOL InitComplete) {
@@ -89,9 +84,6 @@ static __weak MPKitRokt *roktKit = nil;
                                                               userInfo:userInfo];
         }
     }];
-#else
-    [self start];
-#endif
     
     return [self execStatus:MPKitReturnCodeSuccess];
 }
@@ -135,7 +127,6 @@ static __weak MPKitRokt *roktKit = nil;
     // Log custom event for selectPlacements call
     [MPKitRokt logSelectPlacementEvent:finalAtt];
 
-#if TARGET_OS_IOS
     //Convert MPRoktConfig to RoktConfig
     RoktConfig *roktConfig = [MPKitRokt convertMPRoktConfig:mpRoktConfig];
     NSDictionary<NSString *, RoktEmbeddedView *> *confirmedViews = [self confirmEmbeddedViews:embeddedViews];
@@ -165,7 +156,6 @@ static __weak MPKitRokt *roktKit = nil;
             }
         }];
     }
-#endif
 
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
@@ -175,14 +165,11 @@ static __weak MPKitRokt *roktKit = nil;
 /// \param wrapperSdkVersion A string representing the wrapper SDK version
 ///
 - (nonnull MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion {
-#if TARGET_OS_IOS
     RoktFrameworkType roktFrameworkType = [self mapMPWrapperSdkToRoktFrameworkType:wrapperSdk];
     [Rokt setFrameworkTypeWithFrameworkType:roktFrameworkType];
-#endif
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
-#if TARGET_OS_IOS
 - (RoktFrameworkType)mapMPWrapperSdkToRoktFrameworkType:(MPWrapperSdk)wrapperSdk {
     switch (wrapperSdk) {
         case MPWrapperSdkCordova:
@@ -195,9 +182,7 @@ static __weak MPKitRokt *roktKit = nil;
             return RoktFrameworkTypeIOS;
     }
 }
-#endif
 
-#if TARGET_OS_IOS
 - (NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable) confirmEmbeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews {
     if (!embeddedViews || embeddedViews.count == 0) {
         return [NSMutableDictionary dictionary];
@@ -235,7 +220,6 @@ static __weak MPKitRokt *roktKit = nil;
 
     return safePlacements;
 }
-#endif
 
 /// Ensures the "sandbox" attribute is present in the attributes dictionary.
 /// If not already set by the caller, the sandbox value is automatically determined based on the current mParticle environment
@@ -429,7 +413,6 @@ static __weak MPKitRokt *roktKit = nil;
     }
 }
 
-#if TARGET_OS_IOS
 + (RoktConfig *)convertMPRoktConfig:(MPRoktConfig *)mpRoktConfig {
     if (mpRoktConfig != nil) {
         Builder *builder = [[Builder alloc] init];
@@ -448,7 +431,6 @@ static __weak MPKitRokt *roktKit = nil;
     
     return nil;
 }
-#endif
 
 + (NSString *)stringForIdentityType:(MPIdentity)identityType {
     NSNumber *hashedEmailIdentity = [MPKitRokt getRoktHashedEmailUserIdentityType];
@@ -554,7 +536,6 @@ static __weak MPKitRokt *roktKit = nil;
 /// @param success Whether the purchase was successful (YES) or failed (NO)
 /// @return MPKitExecStatus indicating success or failure of the operation
 - (MPKitExecStatus *)purchaseFinalized:(NSString *)placementId catalogItemId:(NSString *)catalogItemId success:(NSNumber *)success {
-#if TARGET_OS_IOS
     if (placementId != nil && catalogItemId != nil && success != nil) {
         if (@available(iOS 15.0, *)) {
             [Rokt purchaseFinalizedWithPlacementId:placementId catalogItemId:catalogItemId success:success.boolValue];
@@ -563,13 +544,9 @@ static __weak MPKitRokt *roktKit = nil;
         return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeUnavailable];
     }
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeFail];
-#else
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeUnavailable];
-#endif
 }
 
 - (MPKitExecStatus *)events:(NSString *)identifier onEvent:(void (^)(MPRoktEvent * _Nonnull))onEvent {
-#if TARGET_OS_IOS
     [Rokt eventsWithViewName:identifier onEvent:^(RoktEvent * _Nonnull event) {
         MPRoktEvent *mpEvent = [MPKitRokt mapEvent:event];
         if (mpEvent) {
@@ -577,12 +554,8 @@ static __weak MPKitRokt *roktKit = nil;
         }
     }];
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
-#else
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeUnavailable];
-#endif
 }
 
-#if TARGET_OS_IOS
 - (MPKitExecStatus *)close {
     [Rokt close];
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
@@ -604,7 +577,6 @@ static __weak MPKitRokt *roktKit = nil;
 - (NSString *)getSessionId {
     return [Rokt getSessionId];
 }
-#endif
 
 #pragma mark - User attributes and identities
 
@@ -885,7 +857,6 @@ static __weak MPKitRokt *roktKit = nil;
     }
 }
 
-#if TARGET_OS_IOS
 #pragma mark - Log Level Mapping
 
 /// Maps mParticle log level to Rokt SDK log level
@@ -913,7 +884,6 @@ static __weak MPKitRokt *roktKit = nil;
     [MPKitRokt MPLog:[NSString stringWithFormat:@"Applied log level mapping: mParticle %lu -> Rokt %ld",
                       (unsigned long)mpLogLevel, (long)roktLogLevel]];
 }
-#endif
 
 + (void)logSelectPlacementEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes {
     MPEvent *event = [[MPEvent alloc] initWithName:kMPEventNameSelectPlacements type:MPEventTypeOther];
@@ -923,7 +893,6 @@ static __weak MPKitRokt *roktKit = nil;
 }
 
 
-#if TARGET_OS_IOS
 + (MPRoktEvent * _Nullable)mapEvent:(RoktEvent *)event {
     if (!event) {
         return nil;
@@ -1023,6 +992,5 @@ static __weak MPKitRokt *roktKit = nil;
     // Default case - return nil if no matching event type found
     return nil;
 }
-#endif
 
 @end
