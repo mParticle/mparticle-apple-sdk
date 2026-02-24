@@ -1,0 +1,635 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		670B4C3F1CF0A8C69B2EB4B9 /* KochavaNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = 646194770DE6C2710478F929 /* KochavaNetworking */; };
+		87F5F65F1826AB9E8BEDFC4B /* KochavaMeasurement in Frameworks */ = {isa = PBXBuildFile; productRef = 37CC60AF1D000D8C334E4B47 /* KochavaMeasurement */; };
+		2A576E2239FCCAF4F9C83EE3 /* KochavaTracking in Frameworks */ = {isa = PBXBuildFile; productRef = A484CECD0F0997AF19F9DC14 /* KochavaTracking */; };
+		CF81645EC79F3C862FD6C0C5 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = CA8C82FA5F47116709948F99 /* mParticle-Apple-SDK */; };
+		79C5156391AD403557BFB91B /* KochavaNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = EB680AFA92F581189F0684F7 /* KochavaNetworking */; };
+		626BD82929DEB579683621D5 /* KochavaMeasurement in Frameworks */ = {isa = PBXBuildFile; productRef = C410FA01C3303452145E79D6 /* KochavaMeasurement */; };
+		DF1A559786BD34D136CC28BA /* KochavaTracking in Frameworks */ = {isa = PBXBuildFile; productRef = 32449DDB5C7F2C9C101021F8 /* KochavaTracking */; };
+		9900C85F30C1B5EA6748CA67 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = 78973648999B07AFDED6D731 /* mParticle-Apple-SDK */; };
+		A0B76FC375DC12B002EF32BD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 75D1564654E2B89CE6A33A89 /* PrivacyInfo.xcprivacy */; };
+		47C9386034DFB412D2563A8D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 75D1564654E2B89CE6A33A89 /* PrivacyInfo.xcprivacy */; };
+		F8511163FDB20D26375CC2FA /* MPKitKochava.h in Headers */ = {isa = PBXBuildFile; fileRef = 5087AA2D6B906FAF8A0EACDA /* MPKitKochava.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D84EA64B909E96620CC642EF /* MPKochavaSpatialCoordinate.h in Headers */ = {isa = PBXBuildFile; fileRef = C3F6DCC03C4AB7359CA574F8 /* MPKochavaSpatialCoordinate.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		98E324643DC3630E652158EC /* mParticle_Kochava.h in Headers */ = {isa = PBXBuildFile; fileRef = B7E6556EBB81E78A4201D891 /* mParticle_Kochava.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		6838B6829D5DE0753164A3F4 /* MPKitKochava.m in Sources */ = {isa = PBXBuildFile; fileRef = 100C0FBCB0A77E9A6D638227 /* MPKitKochava.m */; };
+		EFDDFF3DECE89F50DD9CD4C2 /* MPKitKochava.m in Sources */ = {isa = PBXBuildFile; fileRef = 100C0FBCB0A77E9A6D638227 /* MPKitKochava.m */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* MPKochavaSpatialCoordinate.m in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* MPKochavaSpatialCoordinate.m */; };
+		C3D4E5F6A7B8C9D0E1F2A3B4 /* MPKochavaSpatialCoordinate.m in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* MPKochavaSpatialCoordinate.m */; };
+		B1B7C5D6F81C74206468856C /* MPKitKochava.h in Headers */ = {isa = PBXBuildFile; fileRef = 5087AA2D6B906FAF8A0EACDA /* MPKitKochava.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7FE7B689EDE57EBF5EE1F1E1 /* mParticle_Kochava_tvOS.h in Headers */ = {isa = PBXBuildFile; fileRef = D711A346EE7F5FD9FB794BA4 /* mParticle_Kochava_tvOS.h */; settings = {ATTRIBUTES = (Public, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		75D1564654E2B89CE6A33A89 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		5087AA2D6B906FAF8A0EACDA /* MPKitKochava.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitKochava.h; sourceTree = "<group>"; };
+		C3F6DCC03C4AB7359CA574F8 /* MPKochavaSpatialCoordinate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKochavaSpatialCoordinate.h; sourceTree = "<group>"; };
+		B7E6556EBB81E78A4201D891 /* mParticle_Kochava.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle_Kochava.h; sourceTree = "<group>"; };
+		100C0FBCB0A77E9A6D638227 /* MPKitKochava.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitKochava.m; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* MPKochavaSpatialCoordinate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKochavaSpatialCoordinate.m; sourceTree = "<group>"; };
+		08EEDF394515C2AB46DDCA95 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		228BA78F7CC122C71CF7BD7C /* mParticle_Kochava.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Kochava.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9F45987DD34EA4417344FBF /* mParticle_Kochava.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Kochava.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D711A346EE7F5FD9FB794BA4 /* mParticle_Kochava_tvOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Kochava_tvOS.h; sourceTree = "<group>"; };
+		ABC0327416851C3E20CE01BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		280DDC9B7E11410AEBE390EE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A576E2239FCCAF4F9C83EE3 /* KochavaTracking in Frameworks */,
+				87F5F65F1826AB9E8BEDFC4B /* KochavaMeasurement in Frameworks */,
+				670B4C3F1CF0A8C69B2EB4B9 /* KochavaNetworking in Frameworks */,
+				CF81645EC79F3C862FD6C0C5 /* mParticle-Apple-SDK in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		635A519E1EF343C87C3D9B87 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DF1A559786BD34D136CC28BA /* KochavaTracking in Frameworks */,
+				626BD82929DEB579683621D5 /* KochavaMeasurement in Frameworks */,
+				79C5156391AD403557BFB91B /* KochavaNetworking in Frameworks */,
+				9900C85F30C1B5EA6748CA67 /* mParticle-Apple-SDK in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		EFB64AF931FFAC5D94C8EA68 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				30CA97E9FC1F87E9ED902508 /* mParticle-Kochava */,
+				08EEDF394515C2AB46DDCA95 /* Info.plist */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		30CA97E9FC1F87E9ED902508 /* mParticle-Kochava */ = {
+			isa = PBXGroup;
+			children = (
+				07329894B1C374A0C811CEA4 /* include */,
+				100C0FBCB0A77E9A6D638227 /* MPKitKochava.m */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* MPKochavaSpatialCoordinate.m */,
+				75D1564654E2B89CE6A33A89 /* PrivacyInfo.xcprivacy */,
+			);
+			path = "mParticle-Kochava";
+			sourceTree = "<group>";
+		};
+		07329894B1C374A0C811CEA4 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				5087AA2D6B906FAF8A0EACDA /* MPKitKochava.h */,
+				C3F6DCC03C4AB7359CA574F8 /* MPKochavaSpatialCoordinate.h */,
+				B7E6556EBB81E78A4201D891 /* mParticle_Kochava.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		588FA809D9ADB07AC4E27461 = {
+			isa = PBXGroup;
+			children = (
+				EFB64AF931FFAC5D94C8EA68 /* Sources */,
+				429BAF8B74526FF404E52E6A /* mParticle-Kochava-tvOS */,
+				6062DE8A083680018D3D834F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6062DE8A083680018D3D834F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				228BA78F7CC122C71CF7BD7C /* mParticle_Kochava.framework */,
+				C9F45987DD34EA4417344FBF /* mParticle_Kochava.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		429BAF8B74526FF404E52E6A /* mParticle-Kochava-tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				D711A346EE7F5FD9FB794BA4 /* mParticle_Kochava_tvOS.h */,
+				ABC0327416851C3E20CE01BF /* Info.plist */,
+			);
+			path = "mParticle-Kochava-tvOS";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		0DFA4493BE4863EE6D5DA6FA /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F8511163FDB20D26375CC2FA /* MPKitKochava.h in Headers */,
+				D84EA64B909E96620CC642EF /* MPKochavaSpatialCoordinate.h in Headers */,
+				98E324643DC3630E652158EC /* mParticle_Kochava.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1D0195333E3C5AAFEF281053 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1B7C5D6F81C74206468856C /* MPKitKochava.h in Headers */,
+				7FE7B689EDE57EBF5EE1F1E1 /* mParticle_Kochava_tvOS.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		AA25A8199913E2E9BEC248EF /* mParticle-Kochava */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8D060BAE2560C74D4F71035C /* Build configuration list for PBXNativeTarget "mParticle-Kochava" */;
+			buildPhases = (
+				C93CF298D7719460E69CBA20 /* Sources */,
+				280DDC9B7E11410AEBE390EE /* Frameworks */,
+				0DFA4493BE4863EE6D5DA6FA /* Headers */,
+				5901A8BD401D5B3031148D7F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-Kochava";
+			packageProductDependencies = (
+				CA8C82FA5F47116709948F99 /* mParticle-Apple-SDK */,
+				646194770DE6C2710478F929 /* KochavaNetworking */,
+				37CC60AF1D000D8C334E4B47 /* KochavaMeasurement */,
+				A484CECD0F0997AF19F9DC14 /* KochavaTracking */,
+			);
+			productName = "mParticle-Kochava";
+			productReference = 228BA78F7CC122C71CF7BD7C /* mParticle_Kochava.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		CFC7181475263B89A55563FD /* mParticle-Kochava-tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 26F98D56C9B719CD6CB5F95F /* Build configuration list for PBXNativeTarget "mParticle-Kochava-tvOS" */;
+			buildPhases = (
+				3F46CD2B8CCB4087AA9538F6 /* Sources */,
+				635A519E1EF343C87C3D9B87 /* Frameworks */,
+				1D0195333E3C5AAFEF281053 /* Headers */,
+				64C977D3740ADC969C1B0364 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-Kochava-tvOS";
+			packageProductDependencies = (
+				78973648999B07AFDED6D731 /* mParticle-Apple-SDK */,
+				EB680AFA92F581189F0684F7 /* KochavaNetworking */,
+				C410FA01C3303452145E79D6 /* KochavaMeasurement */,
+				32449DDB5C7F2C9C101021F8 /* KochavaTracking */,
+			);
+			productName = "mParticle-Kochava-tvOS";
+			productReference = C9F45987DD34EA4417344FBF /* mParticle_Kochava.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3822282EEE54315048DBDBE6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1200;
+				ORGANIZATIONNAME = mParticle;
+				TargetAttributes = {
+					AA25A8199913E2E9BEC248EF = {
+						CreatedOnToolsVersion = 7.3;
+					};
+					CFC7181475263B89A55563FD = {
+						CreatedOnToolsVersion = 9.3;
+					};
+				};
+			};
+			buildConfigurationList = 371A615F193C8A88865B0969 /* Build configuration list for PBXProject "mParticle-Kochava" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 588FA809D9ADB07AC4E27461;
+			packageReferences = (
+				F99FDA052C3498326138F820 /* XCLocalSwiftPackageReference "../../.." */,
+				C097824611534D6A6C6DBD09 /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaNetworking-XCFramework" */,
+				62D6B7DC95D3689153AF040D /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaMeasurement-XCFramework" */,
+				AEBA0859D11F51644EA663CE /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaTracking-XCFramework" */,
+			);
+			productRefGroup = 6062DE8A083680018D3D834F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA25A8199913E2E9BEC248EF /* mParticle-Kochava */,
+				CFC7181475263B89A55563FD /* mParticle-Kochava-tvOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5901A8BD401D5B3031148D7F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0B76FC375DC12B002EF32BD /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		64C977D3740ADC969C1B0364 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47C9386034DFB412D2563A8D /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C93CF298D7719460E69CBA20 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6838B6829D5DE0753164A3F4 /* MPKitKochava.m in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* MPKochavaSpatialCoordinate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3F46CD2B8CCB4087AA9538F6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EFDDFF3DECE89F50DD9CD4C2 /* MPKitKochava.m in Sources */,
+				C3D4E5F6A7B8C9D0E1F2A3B4 /* MPKochavaSpatialCoordinate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AF981DD37AE850C67ECEE169 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 11.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		F690E2D351CB71C6A443F42F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "";
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TVOS_DEPLOYMENT_TARGET = 11.0;
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		F2BB6295E2D347B36CC0BD07 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Kochava";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Debug;
+		};
+		59961B6A93A6C2F402923F14 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Kochava";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
+			};
+			name = Release;
+		};
+		A06600EEE5C5AB38514E70AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "mParticle-Kochava-tvOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-all_load",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Kochava-tvOS";
+				PRODUCT_NAME = mParticle_Kochava;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
+			};
+			name = Debug;
+		};
+		8474E1172136AC2D93FFEFD8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "mParticle-Kochava-tvOS/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
+				OTHER_LDFLAGS = (
+					"-ObjC",
+					"-all_load",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Kochava-tvOS";
+				PRODUCT_NAME = mParticle_Kochava;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		371A615F193C8A88865B0969 /* Build configuration list for PBXProject "mParticle-Kochava" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AF981DD37AE850C67ECEE169 /* Debug */,
+				F690E2D351CB71C6A443F42F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8D060BAE2560C74D4F71035C /* Build configuration list for PBXNativeTarget "mParticle-Kochava" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2BB6295E2D347B36CC0BD07 /* Debug */,
+				59961B6A93A6C2F402923F14 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		26F98D56C9B719CD6CB5F95F /* Build configuration list for PBXNativeTarget "mParticle-Kochava-tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A06600EEE5C5AB38514E70AC /* Debug */,
+				8474E1172136AC2D93FFEFD8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		F99FDA052C3498326138F820 /* XCLocalSwiftPackageReference "../../.." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C097824611534D6A6C6DBD09 /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaNetworking-XCFramework" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kochava/Apple-SwiftPackage-KochavaNetworking-XCFramework";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+		62D6B7DC95D3689153AF040D /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaMeasurement-XCFramework" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kochava/Apple-SwiftPackage-KochavaMeasurement-XCFramework";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+		AEBA0859D11F51644EA663CE /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaTracking-XCFramework" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Kochava/Apple-SwiftPackage-KochavaTracking-XCFramework";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CA8C82FA5F47116709948F99 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F99FDA052C3498326138F820 /* XCLocalSwiftPackageReference "../../.." */;
+			productName = "mParticle-Apple-SDK";
+		};
+		646194770DE6C2710478F929 /* KochavaNetworking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C097824611534D6A6C6DBD09 /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaNetworking-XCFramework" */;
+			productName = KochavaNetworking;
+		};
+		37CC60AF1D000D8C334E4B47 /* KochavaMeasurement */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62D6B7DC95D3689153AF040D /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaMeasurement-XCFramework" */;
+			productName = KochavaMeasurement;
+		};
+		A484CECD0F0997AF19F9DC14 /* KochavaTracking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AEBA0859D11F51644EA663CE /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaTracking-XCFramework" */;
+			productName = KochavaTracking;
+		};
+		78973648999B07AFDED6D731 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F99FDA052C3498326138F820 /* XCLocalSwiftPackageReference "../../.." */;
+			productName = "mParticle-Apple-SDK";
+		};
+		EB680AFA92F581189F0684F7 /* KochavaNetworking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C097824611534D6A6C6DBD09 /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaNetworking-XCFramework" */;
+			productName = KochavaNetworking;
+		};
+		C410FA01C3303452145E79D6 /* KochavaMeasurement */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62D6B7DC95D3689153AF040D /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaMeasurement-XCFramework" */;
+			productName = KochavaMeasurement;
+		};
+		32449DDB5C7F2C9C101021F8 /* KochavaTracking */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AEBA0859D11F51644EA663CE /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaTracking-XCFramework" */;
+			productName = KochavaTracking;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 3822282EEE54315048DBDBE6 /* Project object */;
+}
