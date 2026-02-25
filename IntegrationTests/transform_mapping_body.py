@@ -6,19 +6,22 @@ This script can:
 - Unescape JSON body from string to formatted JSON object
 - Escape JSON body from object back to string format
 - Update dynamic fields with ${json-unit.ignore} placeholder
+- Replace SDK_VERSION_PLACEHOLDER with the actual SDK version
 
 Usage:
-    python3 transform_mapping_body.py <mapping_file> <mode>
+    python3 transform_mapping_body.py <mapping_file> <mode> [--version VERSION]
 
 Modes:
     unescape        - Convert equalToJson from escaped string to formatted JSON object in file
     escape          - Convert equalToJson from JSON object back to escaped string in file
     unescape+update - Parse, replace dynamic fields with ${json-unit.ignore}, convert to JSON object, and save
+    update-version  - Replace SDK_VERSION_PLACEHOLDER with the provided --version value
 
 Examples:
     python3 transform_mapping_body.py wiremock-recordings/mappings/mapping-v1-identify.json unescape
     python3 transform_mapping_body.py wiremock-recordings/mappings/mapping-v1-identify.json escape
     python3 transform_mapping_body.py wiremock-recordings/mappings/mapping-v1-identify.json unescape+update
+    python3 transform_mapping_body.py wiremock-recordings/mappings/mapping-v1-identify.json update-version --version 8.41.1
 """
 
 import json
@@ -312,6 +315,54 @@ def mode_unescape_update(mapping_data: Dict[str, Any], mapping_path: Path) -> No
         sys.exit(1)
 
 
+def mode_update_version(mapping_data: Dict[str, Any], mapping_path: Path, version: str) -> None:
+    """
+    Mode: update-version
+    Replaces SDK_VERSION_PLACEHOLDER with the provided version in body patterns and urlPattern.
+
+    Args:
+        mapping_data: Mapping data from JSON
+        mapping_path: Path to mapping file
+        version: SDK version string to substitute (e.g. "8.41.1")
+    """
+    VERSION_PLACEHOLDER = "SDK_VERSION_PLACEHOLDER"
+    updated = False
+
+    request = mapping_data.get('request', {})
+
+    # Update sdk / sdk_version fields inside bodyPatterns
+    for pattern in request.get('bodyPatterns', []):
+        equal_to_json = pattern.get('equalToJson')
+        if equal_to_json is None:
+            continue
+
+        as_string = isinstance(equal_to_json, str)
+        body = json.loads(equal_to_json) if as_string else equal_to_json
+
+        new_body = replace_field_value(body, 'sdk', version)
+        new_body = replace_field_value(new_body, 'sdk_version', version)
+
+        if new_body != body:
+            pattern['equalToJson'] = json.dumps(new_body, ensure_ascii=False) if as_string else new_body
+            updated = True
+
+    # Update SDK_VERSION_PLACEHOLDER in urlPattern (escape dots so it works as a regex)
+    url_pattern = request.get('urlPattern')
+    if url_pattern and VERSION_PLACEHOLDER in url_pattern:
+        version_regex = version.replace('.', '\\.')
+        mapping_data['request']['urlPattern'] = url_pattern.replace(VERSION_PLACEHOLDER, version_regex)
+        updated = True
+
+    if updated:
+        try:
+            with open(mapping_path, 'w', encoding='utf-8') as f:
+                json.dump(mapping_data, f, indent=2, ensure_ascii=False)
+            print(f"✅ Updated SDK version to {version} in {mapping_path}")
+        except Exception as e:
+            print(f"❌ Error saving {mapping_path}: {e}")
+            sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Transform request body in WireMock mappings',
@@ -321,30 +372,40 @@ Modes:
   unescape        Convert equalToJson from escaped string to formatted JSON object
   escape          Convert equalToJson from JSON object back to escaped string
   unescape+update Parse, replace dynamic fields, convert to JSON object, and save
+  update-version  Replace SDK_VERSION_PLACEHOLDER with --version value
 
 Examples:
   python3 transform_mapping_body.py mappings/mapping-v1-identify.json unescape
   python3 transform_mapping_body.py mappings/mapping-v1-identify.json escape
   python3 transform_mapping_body.py mappings/mapping-v1-identify.json unescape+update
+  python3 transform_mapping_body.py mappings/mapping-v1-identify.json update-version --version 8.41.1
         """
     )
-    
+
     parser.add_argument(
         'mapping_file',
         help='Path to WireMock mapping file'
     )
-    
+
     parser.add_argument(
         'mode',
-        choices=['unescape', 'escape', 'unescape+update'],
+        choices=['unescape', 'escape', 'unescape+update', 'update-version'],
         help='Operation mode'
     )
-    
+
+    parser.add_argument(
+        '--version',
+        help='SDK version to substitute for SDK_VERSION_PLACEHOLDER (required for update-version mode)'
+    )
+
     args = parser.parse_args()
-    
+
+    if args.mode == 'update-version' and not args.version:
+        parser.error('--version is required for update-version mode')
+
     # Load mapping file
     mapping_path, mapping_data = load_mapping_file(args.mapping_file)
-    
+
     # Execute based on mode
     if args.mode == 'unescape':
         mode_unescape(mapping_data, mapping_path)
@@ -352,6 +413,8 @@ Examples:
         mode_escape(mapping_data, mapping_path)
     elif args.mode == 'unescape+update':
         mode_unescape_update(mapping_data, mapping_path)
+    elif args.mode == 'update-version':
+        mode_update_version(mapping_data, mapping_path, args.version)
 
 
 if __name__ == "__main__":
