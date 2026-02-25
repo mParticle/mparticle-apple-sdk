@@ -128,6 +128,13 @@
     "module": "mParticle_BranchMetrics"
   },
   {
+    "name": "clevertap-7",
+    "local_path": "kits/clevertap/clevertap-7",
+    "dest_repo": "mparticle-apple-integration-clevertap-7",
+    "ios_scheme": "mParticle-CleverTap",
+    "module": "mParticle_CleverTap"
+  },
+  {
     "name": "iterable-6",
     "local_path": "kits/iterable/iterable-6",
     "dest_repo": "mparticle-apple-integration-iterable-6",
