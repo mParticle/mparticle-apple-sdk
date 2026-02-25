@@ -60,6 +60,13 @@
     "module": "mParticle_Kochava"
   },
   {
+    "name": "leanplum-6",
+    "local_path": "kits/leanplum/leanplum-6",
+    "dest_repo": "mparticle-apple-integration-leanplum-6",
+    "ios_scheme": "mParticle-Leanplum",
+    "module": "mParticle_Leanplum"
+  },
+  {
     "name": "kochava-no-tracking-9",
     "local_path": "kits/kochava/kochava-no-tracking-9",
     "dest_repo": "mparticle-apple-integration-kochava-no-tracking-9",
@@ -126,5 +133,12 @@
     "dest_repo": "mparticle-apple-integration-clevertap-7",
     "ios_scheme": "mParticle-CleverTap",
     "module": "mParticle_CleverTap"
+  },
+  {
+    "name": "iterable-6",
+    "local_path": "kits/iterable/iterable-6",
+    "dest_repo": "mparticle-apple-integration-iterable-6",
+    "ios_scheme": "mParticle-Iterable",
+    "module": "mParticle_Iterable"
   }
 ]
