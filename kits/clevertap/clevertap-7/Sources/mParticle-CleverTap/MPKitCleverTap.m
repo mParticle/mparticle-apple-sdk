@@ -1,9 +1,9 @@
 #import "MPKitCleverTap.h"
 
 #if defined(__has_include) && __has_include(<CleverTapSDK/CleverTap.h>)
-#import <CleverTapSDK/CleverTap.h>
+    #import <CleverTapSDK/CleverTap.h>
 #else
-#import "CleverTap.h"
+    #import "CleverTap.h"
 #endif
 
 static NSString *const ctAccountID = @"AccountID";
@@ -89,13 +89,11 @@ static NSString *const kLibVersion = @"9.0.0";
 
 #pragma mark Application
 
-#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 - (nonnull MPKitExecStatus *)userNotificationCenter:(nonnull UNUserNotificationCenter *)center
-                     didReceiveNotificationResponse:(nonnull UNNotificationResponse *)response API_AVAILABLE(ios(10.0)) {
+                     didReceiveNotificationResponse:(nonnull UNNotificationResponse *)response {
     [CleverTap handlePushNotification:response.notification.request.content.userInfo openDeepLinksInForeground:YES];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
-#endif
 
 - (MPKitExecStatus *)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
     [[CleverTap sharedInstance] handleNotificationWithData:userInfo];
@@ -133,12 +131,10 @@ static NSString *const kLibVersion = @"9.0.0";
 
 #pragma mark Location tracking
 
-#if TARGET_OS_IOS == 1
 - (nonnull MPKitExecStatus *)setLocation:(nonnull CLLocation *)location {
     [CleverTap setLocation:location.coordinate];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
-#endif
 
 #pragma mark User attributes
 
