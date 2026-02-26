@@ -18,7 +18,7 @@ Add the package dependency to your `Package.swift` or via Xcode:
 ### CocoaPods
 
 ```ruby
-pod 'mParticle-Apptimize', '~> 8'
+pod 'mParticle-Apptimize', '~> 9'
 ```
 
 ## Usage
