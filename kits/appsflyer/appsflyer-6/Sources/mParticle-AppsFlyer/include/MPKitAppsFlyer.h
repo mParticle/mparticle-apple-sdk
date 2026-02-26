@@ -28,6 +28,8 @@ extern NSString * _Nonnull const MPKitAppsFlyerErrorDomain;
 
 - (nullable NSArray<NSDictionary *>*)mappingForKey:(NSString* _Nonnull)key;
 
+- (nullable NSArray<NSString *> *)sharingFilterForPartnersFromConfiguration:(NSDictionary * _Nonnull)configuration;
+
 - (nonnull NSDictionary*)convertToKeyValuePairs: (NSArray<NSDictionary *> * _Nonnull)mappings;
 
 - (nonnull MPKitExecStatus *)routeCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
