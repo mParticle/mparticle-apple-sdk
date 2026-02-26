@@ -7,6 +7,13 @@
     "module": "mParticle_Adjust"
   },
   {
+    "name": "apptimize-3",
+    "local_path": "kits/apptimize/apptimize-3",
+    "dest_repo": "mparticle-apple-integration-apptimize-3",
+    "ios_scheme": "mParticle-Apptimize",
+    "module": "mParticle_Apptimize"
+  },
+  {
     "name": "braze-12",
     "local_path": "kits/braze/braze-12",
     "dest_repo": "mparticle-apple-integration-braze-12",
