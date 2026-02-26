@@ -1,31 +1,53 @@
-## Apptentive Kit Integration
+# mParticle Apptentive Kit (Apptentive SDK 6.x)
 
-This repository contains the [Apptentive](https://www.apptentive.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
+This is the [Apptentive](https://www.apptentive.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Apptentive SDK 6.x](https://github.com/apptentive/apptentive-kit-ios).
 
-### Adding the integration
+## Installation
 
-1. Add the kit dependency to your app's Podfile or Cartfile:
+### Swift Package Manager
 
-   ```
-   pod 'mParticle-Apptentive', '~> 8'
-   ```
+Add the Apptentive kit package dependency in Xcode or in your `Package.swift`.
+Swift Package Manager resolves the `mParticle` SDK automatically as a transitive dependency, so you do not need a separate `.package` entry for `mparticle-apple-sdk`.
 
-   OR
+```swift
+let mParticleVersion: Version = "9.0.0"
 
-   ```
-   github "mparticle-integrations/mparticle-apple-integration-apptentive" ~> 8.0
-   ```
+.package(
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive-6",
+    .upToNextMajor(from: mParticleVersion)
+),
+```
 
-2. Follow the mParticle iOS SDK [quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app, and verify that you see `"Included kits: { Apptentive }"` in your Xcode console
+Then add `mParticle-Apptentive` as a dependency of your target.
 
-> (This requires your mParticle log level to be at least Debug)
+### CocoaPods
 
-3. Reference mParticle's integration docs below to enable the integration.
+Add the kit dependency to your app's Podfile:
 
-### Documentation
+```ruby
+pod 'mParticle-Apptentive', '~> 9.0'
+```
 
-[Apptentive integration](https://docs.mparticle.com/integrations/apptentive/event/)
+## Verifying the Integration
 
-### License
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
 
-[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+```bash
+Included kits: { Apptentive }
+```
+
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.6            |
+
+## Documentation
+
+- [mParticle Apptentive Integration Guide](https://docs.mparticle.com/integrations/apptentive/event/)
+- [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
+- [Apptentive iOS SDK Documentation](https://github.com/apptentive/apptentive-kit-ios)
+
+## License
+
+Apache License 2.0

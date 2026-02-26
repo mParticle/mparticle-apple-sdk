@@ -19,7 +19,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/apptentive/apptentive-kit-ios",
-            .upToNextMinor(from: "6.6.0")
+            .upToNextMajor(from: "6.0.0")
         )
     ],
     targets: [
@@ -27,7 +27,7 @@ let package = Package(
             name: "mParticle-Apptentive",
             dependencies: [
                 .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
-                .product(name: "ApptentiveKit", package: "apptentive-kit-ios"),
+                .product(name: "ApptentiveKit", package: "apptentive-kit-ios")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include"
