@@ -215,6 +215,13 @@
     ]
   },
   {
+    "name": "singular-12",
+    "local_path": "kits/singular/singular-12",
+    "dest_repo": "mparticle-apple-integration-singular-12",
+    "ios_scheme": "mParticle-Singular",
+    "module": "mParticle_Singular"
+  },
+  {
     "name": "google-analytics-firebase-ga4-11",
     "local_path": "kits/google-analytics-firebase-ga4/firebase-ga4-11",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-11",
