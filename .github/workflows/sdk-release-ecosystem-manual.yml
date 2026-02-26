@@ -81,9 +81,6 @@ jobs:
       - name: Update version in Info.plist
         run: /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" Framework/Info.plist
 
-      - name: Update SDK version in integration test mappings
-        run: ./Scripts/update_mapping_versions.sh "${VERSION}"
-
       - name: Update kit dependency on core SDK for major release
         if: github.event.inputs.bump-type == 'major'
         run: |

@@ -74,6 +74,32 @@ final class MPKitAppsFlyerTests: XCTestCase {
         XCTAssertNil(result)
     }
 
+    // MARK: - sharingFilterForPartnersFromConfiguration
+
+    func test_sharingFilterForPartners_validJSON_returnsList() {
+        kit.configuration["sharingFilterForPartners"] = #"["partner_1", "partner_2"]"#
+        let result = kit.sharingFilterForPartners(fromConfiguration: kit.configuration)
+        XCTAssertEqual(result, ["partner_1", "partner_2"])
+    }
+
+    func test_sharingFilterForPartners_emptyOrMissing_returnsNil() {
+        XCTAssertNil(kit.sharingFilterForPartners(fromConfiguration: [:]))
+        kit.configuration["sharingFilterForPartners"] = ""
+        XCTAssertNil(kit.sharingFilterForPartners(fromConfiguration: kit.configuration))
+    }
+
+    func test_sharingFilterForPartners_invalidJSON_returnsNil() {
+        kit.configuration["sharingFilterForPartners"] = "not a json array"
+        let result = kit.sharingFilterForPartners(fromConfiguration: kit.configuration)
+        XCTAssertNil(result)
+    }
+
+    func test_sharingFilterForPartners_invalidEscapedJSON_returnsNil() {
+        kit.configuration["sharingFilterForPartners"] = #"[\"test_1\", \"test_2\"]"#
+        let result = kit.sharingFilterForPartners(fromConfiguration: kit.configuration)
+        XCTAssertNil(result)
+    }
+
     // MARK: - resolvedConsentForMappingKey
 
     func test_resolvedConsentForMappingKey_withGDPRMapping_returnsTrue() {

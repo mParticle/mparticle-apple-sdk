@@ -18,6 +18,7 @@ NSString *const MPKitAppsFlyerErrorDomain = @"mParticle-AppsFlyer";
 
 NSString *const afAppleAppId = @"appleAppId";
 NSString *const afDevKey = @"devKey";
+NSString *const afSharingFilterForPartners = @"sharingFilterForPartners";
 NSString *const afAppsFlyerIdIntegrationKey = @"appsflyer_id_integration_setting";
 NSString *const kMPKAFCustomerUserId = @"af_customer_user_id";
 
@@ -111,6 +112,11 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
     appsFlyerTracker.deepLinkDelegate = self;
     
     _configuration = configuration;
+
+    NSArray<NSString *> *sharingFilter = [self sharingFilterForPartnersFromConfiguration:configuration];
+    if (sharingFilter.count > 0) {
+        [appsFlyerTracker setSharingFilterForPartners:sharingFilter];
+    }
 
     [self updateConsent];
     [appsFlyerTracker waitForATTUserAuthorizationWithTimeoutInterval:60];
@@ -535,6 +541,35 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
     // Fallback to configuration defaults
     NSString *value = self->_configuration[defaultKey];
     return [value isGranted];
+}
+
+- (NSArray<NSString *> *)sharingFilterForPartnersFromConfiguration:(NSDictionary *)configuration {
+    id value = configuration[afSharingFilterForPartners];
+    if (!value) {
+        return nil;
+    }
+
+    NSArray *partnerIds = nil;
+    if ([value isKindOfClass:[NSArray class]]) {
+        partnerIds = value;
+    } else if ([value isKindOfClass:[NSString class]]) {
+        NSData *jsonData = [value dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *error;
+        partnerIds = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+        if (error || ![partnerIds isKindOfClass:[NSArray class]]) {
+            return nil;
+        }
+    } else {
+        return nil;
+    }
+
+    NSMutableArray<NSString *> *result = [NSMutableArray arrayWithCapacity:partnerIds.count];
+    for (id item in partnerIds) {
+        if ([item isKindOfClass:[NSString class]] && ((NSString *)item).length > 0) {
+            [result addObject:item];
+        }
+    }
+    return result.count > 0 ? [result copy] : nil;
 }
 
 - (NSArray<NSDictionary *>*)mappingForKey:(NSString*)key {
