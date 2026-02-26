@@ -153,6 +153,7 @@
     "local_path": "kits/comscore/comscore-6",
     "dest_repo": "mparticle-apple-integration-comscore-6",
     "ios_scheme": "mParticle-ComScore",
+    "tvos_scheme": "mParticle-ComScore-tvOS",
     "module": "mParticle_ComScore"
   },
   {

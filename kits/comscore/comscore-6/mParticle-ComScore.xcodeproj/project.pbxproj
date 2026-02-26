@@ -14,6 +14,13 @@
 		C6000115492425C687D8F69C /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = C60001263F52E7A698A680A8 /* mParticle-Apple-SDK */; };
 		C6000116CDAD49D90C643460 /* ComScore in Frameworks */ = {isa = PBXBuildFile; productRef = C60001279F44CCAFA10F5747 /* ComScore */; };
 		C6000117AD49D90C6434601 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6000128AD49D90C6434602 /* SystemConfiguration.framework */; };
+		C60001501853441BF79AB1315 /* MPKitComScore.m in Sources */ = {isa = PBXBuildFile; fileRef = C600012205557CED9BE8FA64 /* MPKitComScore.m */; };
+		C60001512E4C5C1D8752AAC3 /* MPKitComScore.h in Headers */ = {isa = PBXBuildFile; fileRef = C60001234DC984DB4FD934C6 /* MPKitComScore.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C6000152916C4FFC15062C89 /* mParticle_ComScore.h in Headers */ = {isa = PBXBuildFile; fileRef = C6000124117E63949D3A1019 /* mParticle_ComScore.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C600015348A08B9D29822BE0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C6000125D83AEB8A58E427C6 /* PrivacyInfo.xcprivacy */; };
+		C6000154492425C687D8F69D /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = C60001263F52E7A698A680A8 /* mParticle-Apple-SDK */; };
+		C6000155CDAD49D90C643461 /* ComScore in Frameworks */ = {isa = PBXBuildFile; productRef = C60001279F44CCAFA10F5747 /* ComScore */; };
+		C6000156AD49D90C6434603 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C6000128AD49D90C6434602 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +31,7 @@
 		C6000126430666D2D5A02B67 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C6000128AD49D90C6434602 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		C600012971B0312661864F2D /* mParticle_ComScore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_ComScore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C600015771B0312661864F2E /* mParticle_ComScore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_ComScore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,6 +42,16 @@
 				C6000115492425C687D8F69C /* mParticle-Apple-SDK in Frameworks */,
 				C6000116CDAD49D90C643460 /* ComScore in Frameworks */,
 				C6000117AD49D90C6434601 /* SystemConfiguration.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C60001582E39C43B7A8C3CDE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C6000154492425C687D8F69D /* mParticle-Apple-SDK in Frameworks */,
+				C6000155CDAD49D90C643461 /* ComScore in Frameworks */,
+				C6000156AD49D90C6434603 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,6 +98,7 @@
 			isa = PBXGroup;
 			children = (
 				C600012971B0312661864F2D /* mParticle_ComScore.framework */,
+				C600015771B0312661864F2E /* mParticle_ComScore.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -93,6 +112,15 @@
 			files = (
 				C60001125E4C5C1D8752AAC2 /* MPKitComScore.h in Headers */,
 				C6000113916C4FFC15062C8 /* mParticle_ComScore.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C6000159DB449628C56CCC95 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C60001512E4C5C1D8752AAC3 /* MPKitComScore.h in Headers */,
+				C6000152916C4FFC15062C89 /* mParticle_ComScore.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +149,28 @@
 			productReference = C600012971B0312661864F2D /* mParticle_ComScore.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		C600015AB54953C844B5BC76 /* mParticle-ComScore-tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C600015BBF9AF788FAF75A1 /* Build configuration list for PBXNativeTarget "mParticle-ComScore-tvOS" */;
+			buildPhases = (
+				C600015C444C1986CB01673F /* Sources */,
+				C60001582E39C43B7A8C3CDE /* Frameworks */,
+				C6000159DB449628C56CCC95 /* Headers */,
+				C600015D9E83C6F474A896D3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-ComScore-tvOS";
+			packageProductDependencies = (
+				C60001263F52E7A698A680A8 /* mParticle-Apple-SDK */,
+				C60001279F44CCAFA10F5747 /* ComScore */,
+			);
+			productName = "mParticle-ComScore-tvOS";
+			productReference = C600015771B0312661864F2E /* mParticle_ComScore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -131,6 +181,9 @@
 				ORGANIZATIONNAME = mParticle;
 				TargetAttributes = {
 					C6000137B54953C844B5BC75 = {
+						CreatedOnToolsVersion = 7.3;
+					};
+					C600015AB54953C844B5BC76 = {
 						CreatedOnToolsVersion = 7.3;
 					};
 				};
@@ -153,6 +206,7 @@
 			projectRoot = "";
 			targets = (
 				C6000137B54953C844B5BC75 /* mParticle-ComScore */,
+				C600015AB54953C844B5BC76 /* mParticle-ComScore-tvOS */,
 			);
 		};
 /* End PBXProject section */
@@ -166,6 +220,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C600015D9E83C6F474A896D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C600015348A08B9D29822BE0 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -174,6 +236,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				C6000111853441BF79AB1314 /* MPKitComScore.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C600015C444C1986CB01673F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C60001501853441BF79AB1315 /* MPKitComScore.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,6 +324,47 @@
 			};
 			name = Release;
 		};
+		C600015EB096E20BEC4E2C72 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/mParticle-ComScore/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-ComScore-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
+			};
+			name = Debug;
+		};
+		C600015FE0F0E2EBD2B738 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/mParticle-ComScore/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-ComScore-tvOS";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = appletvos;
+				SKIP_INSTALL = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 15.6;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -271,6 +382,15 @@
 			buildConfigurations = (
 				C6000141B096E20BEC4E2C71 /* Debug */,
 				C6000142E0F0E2EBD2B737 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C600015BBF9AF788FAF75A1 /* Build configuration list for PBXNativeTarget "mParticle-ComScore-tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C600015EB096E20BEC4E2C72 /* Debug */,
+				C600015FE0F0E2EBD2B738 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
