@@ -142,6 +142,13 @@
     "module": "mParticle_CleverTap"
   },
   {
+    "name": "comscore-6",
+    "local_path": "kits/comscore/comscore-6",
+    "dest_repo": "mparticle-apple-integration-comscore-6",
+    "ios_scheme": "mParticle-ComScore",
+    "module": "mParticle_ComScore"
+  },
+  {
     "name": "iterable-6",
     "local_path": "kits/iterable/iterable-6",
     "dest_repo": "mparticle-apple-integration-iterable-6",
