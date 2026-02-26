@@ -356,7 +356,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		R2A0100E2F476973006A5440 /* XCLocalSwiftPackageReference "../../../radar-3" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../radar";
+			relativePath = "../../../radar-3";
 		};
 /* End XCLocalSwiftPackageReference section */
 
