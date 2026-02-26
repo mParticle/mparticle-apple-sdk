@@ -18,7 +18,7 @@ let package = Package(
         .package(url: "https://github.com/mParticle/mparticle-apple-sdk",
                  branch: "workstation/9.0-Release"),
         .package(url: "https://github.com/mParticle/mparticle-apple-media-sdk",
-                 .upToNextMajor(from: "1.3.0")),
+                 branch: "feat/remove-nolocation-product"),
         .package(url: "https://github.com/adobe/aepsdk-core-ios.git",
                  .upToNextMajor(from: "5.0.0")),
         .package(url: "https://github.com/adobe/aepsdk-userprofile-ios.git",
