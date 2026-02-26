@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "mparticle-apple-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mParticle/mparticle-apple-sdk",
+      "state" : {
+        "branch" : "workstation/9.0-Release",
+        "revision" : "16ea706b1cae5f980c5bc6d49beb586e091e7de4"
+      }
+    },
+    {
+      "identity" : "singular-ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/singular-labs/Singular-iOS-SDK",
+      "state" : {
+        "revision" : "f8b2d5ba562ad23795ac597d24482ef55fecc762",
+        "version" : "12.10.0"
+      }
+    }
+  ],
+  "version" : 2
+}
