@@ -1,3 +1,0 @@
-github "apptentive/apptentive-kit-ios" ~> 6.6
-binary "https://raw.githubusercontent.com/mParticle/mparticle-apple-sdk/main/mParticle_Apple_SDK.json" ~> 8.22
-
