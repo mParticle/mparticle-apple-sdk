@@ -140,5 +140,12 @@
     "dest_repo": "mparticle-apple-integration-iterable-6",
     "ios_scheme": "mParticle-Iterable",
     "module": "mParticle_Iterable"
+  },
+  {
+    "name": "radar-3",
+    "local_path": "kits/radar/radar-3",
+    "dest_repo": "mparticle-apple-integration-radar-3",
+    "ios_scheme": "mParticle-Radar",
+    "module": "mParticle_Radar"
   }
 ]
