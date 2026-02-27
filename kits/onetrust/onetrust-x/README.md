@@ -1,39 +1,72 @@
-## OneTrust Kit Integration
+# mParticle OneTrust Kit
 
-This repository contains the [OneTrust](https://www.onetrust.com/) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
+This is the [OneTrust](https://www.onetrust.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [OTPublishersHeadlessSDK](https://github.com/Zentrust/OTPublishersHeadlessSDK) (iOS) and [OTPublishersHeadlessSDKtvOS](https://github.com/Zentrust/OTPublishersHeadlessSDKtvOS) (tvOS).
 
-### Adding the integration
+## OneTrust SDK Version
 
-1. Add the kit dependencies to your app's Podfile or using SPM:
+OneTrust uses a constrained versioning model defined in [app.onetrust.com](https://app.onetrust.com). **Partners must specify the OneTrust SDK version they require** in their app's dependency configuration; the kit does not pin a specific version by default.
 
-   ```
-   pod 'mParticle-OneTrust', '~> 8.0'
-   ```
+- **Source-based distribution (SPM, CocoaPods)**: Add `OTPublishersHeadlessSDK` and `OTPublishersHeadlessSDKtvOS` as direct dependencies with the version that matches your OneTrust configuration.
+- **Binary distribution (XCFramework, vendored frameworks)**: Pre-built binaries are built with a specific OneTrust SDK version baked in at build time. Binary releases use the latest OneTrust SDK version available when the kit was built. If you need a different version, use source-based distribution and pin the version yourself.
 
-   OR
+## Installation
 
-   ```
-   Open your project and navigate to the project's settings. Select the tab named Swift Packages and click on the add button (+) at the bottom left. then, enter the URL of OneTrust Kit GitHub repository - https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust and click Next.
-   ```
+### Swift Package Manager
 
-   _Note: OneTrust does not support Carthage at this moment_
+Add the OneTrust kit package dependency in Xcode or in your `Package.swift`.
+Swift Package Manager resolves the mParticle SDK automatically as a transitive dependency, so you do not need a separate `.package` entry for `mparticle-apple-sdk`.
 
-2. Add the OneTrust SDK following their [documentation](https://developer.onetrust.com/onetrust/docs/add-sdk-to-app-ios-tvos) and ensure you pin to the correct version of the OneTrust SDK as you specified in the OneTrust UI on app.onetrust.com.
+Add the OneTrust SDK as a direct dependency with the version from your OneTrust configuration:
 
-   _Note: OneTrust is unique in their versioning and in that you must specify your version used from a constrained list in their UI. This necessitates that we cannot pin the version of the OneTrust SDK in this kit. Therefore you must pin the correct version in the podspec or package.swift of your application_
+```swift
+let mParticleVersion: Version = "9.0.0"
 
-3. Follow the mParticle iOS SDK [quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app, and verify that you see `"Included kits: { OneTrust }"` in your Xcode console
+.package(
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust",
+    .upToNextMajor(from: mParticleVersion)
+),
+.package(
+    url: "https://github.com/Zentrust/OTPublishersHeadlessSDK",
+    .exact("202502.1.0")  // Use the version from your OneTrust UI
+),
+.package(
+    url: "https://github.com/Zentrust/OTPublishersHeadlessSDKtvOS",
+    .exact("202502.1.0")  // Must match your iOS SDK version
+),
+```
 
-- (This requires your mParticle log level to be at least Debug)
+Then add `mParticle-OneTrust` and the OneTrust SDK products as dependencies of your target.
 
-3. Reference mParticle's integration docs below to enable the integration.
+### CocoaPods
 
-### Documentation
+Add the kit and pin the OneTrust SDK to the version from your OneTrust configuration:
 
-[mParticle Docs: OneTrust integration](https://docs.mparticle.com/integrations/onetrust/event/)
+```ruby
+pod 'mParticle-OneTrust', '~> 9.0'
+pod 'OTPublishersHeadlessSDK', '202502.1.0'  # Use the version from your OneTrust UI
+```
 
-[OneTrust Developer SDK Portal: Getting Started with Native SDK (iOS)](https://developer.onetrust.com/sdk/mobile-apps/ios/getting-started)
+## Verifying the Integration
 
-### License
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
 
-[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+```bash
+Included kits: { OneTrust }
+```
+
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.6            |
+| tvOS     | 15.6            |
+
+## Documentation
+
+- [mParticle OneTrust Integration Guide](https://docs.mparticle.com/integrations/onetrust/event/)
+- [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
+- [OneTrust Developer Portal: iOS SDK](https://developer.onetrust.com/onetrust/docs/add-sdk-to-app-ios-tvos)
+
+## License
+
+Apache License 2.0
