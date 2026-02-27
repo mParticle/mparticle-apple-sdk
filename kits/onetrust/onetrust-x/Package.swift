@@ -1,10 +1,10 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 import PackageDescription
 
 let package = Package(
     name: "mParticle-OneTrust",
-    platforms: [ .iOS(.v11), .tvOS(.v11) ],
+    platforms: [ .iOS(.v15), .tvOS(.v15) ],
     products: [
         .library(
             name: "mParticle-OneTrust",
@@ -12,19 +12,46 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "mParticle-Apple-SDK",
-                 url: "https://github.com/mParticle/mparticle-apple-sdk",
-                 .upToNextMajor(from: "8.22.0")),
-        // OneTrust's unique version formating makes automatic support up to the next major version no longer possible. Additionally, as a specific version is required in their UI for their SDK to function we do not include a specific version of the 'OTPublishersHeadlessSDK' here and expect the version to be defined in the client app.
+        .package(
+            url: "https://github.com/mParticle/mparticle-apple-sdk",
+            branch: "workstation/9.0-Release"
+        ),
+        // iOS OneTrust
+        .package(
+            url: "https://github.com/Zentrust/OTPublishersHeadlessSDK",
+            "0.0.0"..<"999999.0.0"
+        ),
+
+        // tvOS OneTrust (отдельный пакет)
+        .package(
+            url: "https://github.com/Zentrust/OTPublishersHeadlessSDKtvOS",
+            "0.0.0"..<"999999.0.0"
+        )
     ],
     targets: [
         .target(
             name: "mParticle-OneTrust",
-            dependencies: ["mParticle-Apple-SDK"],
-            path: "mParticle-OneTrust",
-            exclude: ["Info.plist"],
+            dependencies: [
+                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
+                .product(
+                    name: "OTPublishersHeadlessSDK",
+                    package: "OTPublishersHeadlessSDK",
+                    condition: .when(platforms: [.iOS])
+                ),
+                .product(
+                    name: "OTPublishersHeadlessSDKtvOS",
+                    package: "OTPublishersHeadlessSDKtvOS",
+                    condition: .when(platforms: [.tvOS])
+                )
+            ],
             resources: [.process("PrivacyInfo.xcprivacy")],
-            publicHeadersPath: "."
+            publicHeadersPath: "include"
         ),
+        .testTarget(
+            name: "mParticle-OneTrustTests",
+            dependencies: [
+                "mParticle-OneTrust"
+            ]
+        )
     ]
 )
