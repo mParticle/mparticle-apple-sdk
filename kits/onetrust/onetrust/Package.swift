@@ -22,7 +22,7 @@ let package = Package(
             "0.0.0"..<"999999.0.0"
         ),
 
-        // tvOS OneTrust (отдельный пакет)
+        // tvOS OneTrust
         .package(
             url: "https://github.com/Zentrust/OTPublishersHeadlessSDKtvOS",
             "0.0.0"..<"999999.0.0"
