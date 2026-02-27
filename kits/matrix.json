@@ -162,5 +162,13 @@
     "dest_repo": "mparticle-apple-integration-iterable-6",
     "ios_scheme": "mParticle-Iterable",
     "module": "mParticle_Iterable"
+  },
+  {
+    "name": "onetrust",
+    "local_path": "kits/onetrust/onetrust",
+    "dest_repo": "mparticle-apple-integration-onetrust",
+    "ios_scheme": "mParticle-OneTrust",
+    "tvos_scheme": "mParticle-OneTrust-tvOS",
+    "module": "mParticle_OneTrust"
   }
 ]
