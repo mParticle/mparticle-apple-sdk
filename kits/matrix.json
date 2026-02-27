@@ -171,6 +171,14 @@
     "module": "mParticle_Iterable"
   },
   {
+    "name": "onetrust",
+    "local_path": "kits/onetrust/onetrust",
+    "dest_repo": "mparticle-apple-integration-onetrust",
+    "ios_scheme": "mParticle-OneTrust",
+    "tvos_scheme": "mParticle-OneTrust-tvOS",
+    "module": "mParticle_OneTrust"
+  },
+  {
     "name": "radar-3",
     "local_path": "kits/radar/radar-3",
     "dest_repo": "mparticle-apple-integration-radar-3",
