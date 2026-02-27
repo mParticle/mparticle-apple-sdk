@@ -9,7 +9,7 @@ let package = Package(
         .library(
             name: "mParticle-OneTrust",
             targets: ["mParticle-OneTrust"]
-        ),
+        )
     ],
     dependencies: [
         .package(
