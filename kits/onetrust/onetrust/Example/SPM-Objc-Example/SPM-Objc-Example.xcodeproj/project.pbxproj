@@ -113,7 +113,7 @@
 			mainGroup = 350861A32F51F632005F633A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				350861C92F51F644005F633A /* XCLocalSwiftPackageReference "../../../onetrust-x" */,
+				350861C92F51F644005F633A /* XCLocalSwiftPackageReference "../../../onetrust" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 350861AD2F51F632005F633A /* Products */;
@@ -340,9 +340,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		350861C92F51F644005F633A /* XCLocalSwiftPackageReference "../../../onetrust-x" */ = {
+		350861C92F51F644005F633A /* XCLocalSwiftPackageReference "../../../onetrust" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../onetrust-x";
+			relativePath = "../../../onetrust";
 		};
 /* End XCLocalSwiftPackageReference section */
 
