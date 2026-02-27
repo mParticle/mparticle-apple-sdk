@@ -7,6 +7,13 @@
     "module": "mParticle_Adjust"
   },
   {
+    "name": "apptentive-6",
+    "local_path": "kits/apptentive/apptentive-6",
+    "dest_repo": "mparticle-apple-integration-apptentive-6",
+    "ios_scheme": "mParticle-Apptentive",
+    "module": "mParticle_Apptentive"
+  },
+  {
     "name": "apptimize-3",
     "local_path": "kits/apptimize/apptimize-3",
     "dest_repo": "mparticle-apple-integration-apptimize-3",
@@ -170,5 +177,12 @@
     "ios_scheme": "mParticle-OneTrust",
     "tvos_scheme": "mParticle-OneTrust-tvOS",
     "module": "mParticle_OneTrust"
+  },
+  {
+    "name": "radar-3",
+    "local_path": "kits/radar/radar-3",
+    "dest_repo": "mparticle-apple-integration-radar-3",
+    "ios_scheme": "mParticle-Radar",
+    "module": "mParticle_Radar"
   }
 ]
