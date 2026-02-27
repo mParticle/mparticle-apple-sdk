@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "G41200020000000000000001C"
-               BuildableName = "mParticle_FirebaseGA4_tvOS.framework"
-               BlueprintName = "mParticle-FirebaseGA4-tvOS"
-               ReferencedContainer = "container:mParticle-FirebaseGA4.xcodeproj">
+               BlueprintIdentifier = "C600015AB54953C844B5BC76"
+               BuildableName = "mParticle_ComScore_tvOS.framework"
+               BlueprintName = "mParticle-ComScore-tvOS"
+               ReferencedContainer = "container:mParticle-ComScore.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
