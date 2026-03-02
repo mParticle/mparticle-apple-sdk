@@ -12,6 +12,13 @@
     ]
   },
   {
+    "name": "apptentive-6",
+    "local_path": "kits/apptentive/apptentive-6",
+    "dest_repo": "mparticle-apple-integration-apptentive-6",
+    "ios_scheme": "mParticle-Apptentive",
+    "module": "mParticle_Apptentive"
+  },
+  {
     "name": "apptimize-3",
     "local_path": "kits/apptimize/apptimize-3",
     "dest_repo": "mparticle-apple-integration-apptimize-3",
@@ -283,6 +290,14 @@
         "destination": "iOS"
       }
     ]
+  },
+  {
+    "name": "comscore-6",
+    "local_path": "kits/comscore/comscore-6",
+    "dest_repo": "mparticle-apple-integration-comscore-6",
+    "ios_scheme": "mParticle-ComScore",
+    "tvos_scheme": "mParticle-ComScore-tvOS",
+    "module": "mParticle_ComScore"
   },
   {
     "name": "iterable-6",

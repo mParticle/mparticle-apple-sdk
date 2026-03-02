@@ -32,7 +32,12 @@ let package = Package(
         ),
         .testTarget(
             name: "mParticle-FirebaseTests",
-            dependencies: ["mParticle-Firebase"]
+            dependencies: [
+                "mParticle-Firebase",
+                .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk")
+            ],
+            resources: [.process("GoogleService-Info.plist")]
         )
     ]
 )

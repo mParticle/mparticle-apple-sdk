@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "G41200020000000000000001C"
-               BuildableName = "mParticle_FirebaseGA4.framework"
+               BuildableName = "mParticle_FirebaseGA4_tvOS.framework"
                BlueprintName = "mParticle-FirebaseGA4-tvOS"
                ReferencedContainer = "container:mParticle-FirebaseGA4.xcodeproj">
             </BuildableReference>
