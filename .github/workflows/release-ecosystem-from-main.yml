@@ -35,17 +35,6 @@ jobs:
       - id: set
         run: echo "matrix=$(jq -c . kits/matrix.json)" >> "$GITHUB_OUTPUT"
 
-  build-kits:
-    name: Build ${{ matrix.kit.name }}
-    needs: load-matrix
-    runs-on: macOS-latest
-    env:
-      XCODE_VERSION: "16.4"
-    strategy:
-      fail-fast: false
-      matrix:
-        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
-
   mirror-and-release-kits:
     name: Mirror & Release ${{ matrix.kit.name }}
     runs-on: macOS-latest
