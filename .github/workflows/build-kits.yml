@@ -38,14 +38,6 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Resolve SPM dependencies
-        run: |
-          SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-
-          xcodebuild -resolvePackageDependencies -project "$PROJECT" \
-            -scheme "$SCHEME" -derivedDataPath DerivedData
-
       - name: Build SPM-Swift-Example
         run: |
           PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Swift-Example/*.xcodeproj | head -1)"
