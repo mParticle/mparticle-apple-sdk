@@ -184,5 +184,19 @@
     "dest_repo": "mparticle-apple-integration-radar-3",
     "ios_scheme": "mParticle-Radar",
     "module": "mParticle_Radar"
+  },
+  {
+    "name": "localytics-6",
+    "local_path": "kits/localytics/localytics-6",
+    "dest_repo": "mparticle-apple-integration-localytics-6",
+    "ios_scheme": "mParticle-Localytics",
+    "module": "mParticle_Localytics"
+  },
+  {
+    "name": "localytics-7",
+    "local_path": "kits/localytics/localytics-7",
+    "dest_repo": "mparticle-apple-integration-localytics-7",
+    "ios_scheme": "mParticle-Localytics",
+    "module": "mParticle_Localytics"
   }
 ]

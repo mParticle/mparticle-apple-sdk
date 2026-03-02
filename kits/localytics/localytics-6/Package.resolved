@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "localytics-swiftpm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/localytics/Localytics-swiftpm",
+      "state" : {
+        "revision" : "c00b0fba05061ea62c947aa516d06b5edb4c9b45",
+        "version" : "6.3.5"
+      }
+    },
+    {
+      "identity" : "mparticle-apple-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mParticle/mparticle-apple-sdk",
+      "state" : {
+        "branch" : "workstation/9.0-Release",
+        "revision" : "0c0adab6e737dedfcfdacface09b30ec4a7d1bc0"
+      }
+    }
+  ],
+  "version" : 2
+}
