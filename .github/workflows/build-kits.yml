@@ -56,10 +56,9 @@ jobs:
 
       - name: Run SPM tests
         run: |
-          KIT_PATH="${{ matrix.kit.local_path }}"
+          cd ${{ matrix.kit.local_path }}
           SCHEME=$(echo '${{ toJson(matrix.kit) }}' | jq -r '.schemes[0].scheme')
-          xcodebuild test -packagePath "$KIT_PATH" -scheme "$SCHEME" \
-            -destination "generic/platform=iOS Simulator" \
+          xcodebuild test -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
             -derivedDataPath DerivedData-Test \
-            -resultBundlePath TestResults \
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
