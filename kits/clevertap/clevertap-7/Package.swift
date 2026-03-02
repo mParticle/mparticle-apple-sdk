@@ -20,7 +20,10 @@ let package = Package(
                 .product(name: "CleverTapSDK", package: "clevertap-ios-sdk")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")],
-            publicHeadersPath: "include"
+            publicHeadersPath: "include",
+            cSettings: [
+                .unsafeFlags(["-Wno-non-modular-include-in-framework-module"])
+            ]
         ),
         .testTarget(name: "mParticle-CleverTapTests", dependencies: ["mParticle-CleverTap"])
     ]
