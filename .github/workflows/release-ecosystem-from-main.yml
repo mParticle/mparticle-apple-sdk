@@ -55,43 +55,68 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Build kit xcframework
+      - name: Build kit xcframeworks
+        shell: bash
         run: |
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-          MODULE="${{ matrix.kit.module }}"
-          IOS_SCHEME="${{ matrix.kit.ios_scheme }}"
-          TVOS_SCHEME="${{ matrix.kit.tvos_scheme }}"
-
+          SCHEMES_JSON='${{ toJson(matrix.kit.schemes) }}'
+          LOCAL_PATH="${{ matrix.kit.local_path }}"
           BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
 
-          xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
-            -destination "generic/platform=iOS" -archivePath "archives/iOS" $BUILD_SETTINGS
-          xcodebuild archive -project "$PROJECT" -scheme "$IOS_SCHEME" \
-            -destination "generic/platform=iOS Simulator" -archivePath "archives/iOS_Simulator" $BUILD_SETTINGS
+          mkdir -p archives xcframeworks
 
-          XCFRAMEWORK_ARGS="-archive archives/iOS.xcarchive -framework ${MODULE}.framework"
-          XCFRAMEWORK_ARGS+=" -archive archives/iOS_Simulator.xcarchive -framework ${MODULE}.framework"
+          MODULES=$(echo "$SCHEMES_JSON" | jq -r '.[].module' | sort -u)
 
-          if [ -n "$TVOS_SCHEME" ]; then
-            xcodebuild archive -project "$PROJECT" -scheme "$TVOS_SCHEME" \
-              -destination "generic/platform=tvOS" -archivePath "archives/tvOS" $BUILD_SETTINGS
-            xcodebuild archive -project "$PROJECT" -scheme "$TVOS_SCHEME" \
-              -destination "generic/platform=tvOS Simulator" -archivePath "archives/tvOS_Simulator" $BUILD_SETTINGS
+          for MODULE in $MODULES; do
+            XCFRAMEWORK_ARGS=""
 
-            XCFRAMEWORK_ARGS+=" -archive archives/tvOS.xcarchive -framework ${MODULE}.framework"
-            XCFRAMEWORK_ARGS+=" -archive archives/tvOS_Simulator.xcarchive -framework ${MODULE}.framework"
-          fi
+            while IFS= read -r ENTRY; do
+              SCHEME=$(echo "$ENTRY" | jq -r '.scheme')
+              DEST=$(echo "$ENTRY" | jq -r '.destination')
 
-          xcodebuild -create-xcframework $XCFRAMEWORK_ARGS -output "${MODULE}.xcframework"
+              if [ -d "$LOCAL_PATH/$SCHEME.xcodeproj" ]; then
+                PROJECT="$LOCAL_PATH/$SCHEME.xcodeproj"
+              else
+                PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
+              fi
 
-          zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework"
-          rm -rf archives "${MODULE}.xcframework"
+              ARCHIVE_DEVICE="archives/${MODULE}-${DEST}"
+              ARCHIVE_SIM="archives/${MODULE}-${DEST}_Simulator"
 
-      - name: Upload xcframework artifact
+              case "$DEST" in
+                iOS)
+                  PLATFORM_DEVICE="generic/platform=iOS"
+                  PLATFORM_SIM="generic/platform=iOS Simulator"
+                  ;;
+                tvOS)
+                  PLATFORM_DEVICE="generic/platform=tvOS"
+                  PLATFORM_SIM="generic/platform=tvOS Simulator"
+                  ;;
+                *)
+                  echo "::error::Unknown destination: $DEST"
+                  exit 1
+                  ;;
+              esac
+
+              xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
+                -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" $BUILD_SETTINGS
+              xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
+                -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" $BUILD_SETTINGS
+
+              XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_DEVICE}.xcarchive -framework ${MODULE}.framework"
+              XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_SIM}.xcarchive -framework ${MODULE}.framework"
+            done < <(echo "$SCHEMES_JSON" | jq -c ".[] | select(.module == \"$MODULE\")")
+
+            xcodebuild -create-xcframework $XCFRAMEWORK_ARGS -output "xcframeworks/${MODULE}.xcframework"
+            (cd xcframeworks && zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework" && rm -rf "${MODULE}.xcframework")
+          done
+
+          rm -rf archives
+
+      - name: Upload xcframework artifacts
         uses: actions/upload-artifact@v4
         with:
           name: xcframework-${{ matrix.kit.name }}
-          path: ${{ matrix.kit.module }}.xcframework.zip
+          path: xcframeworks/*.xcframework.zip
 
   mirror-and-release-kits:
     name: Mirror & Release ${{ matrix.kit.name }}
@@ -110,7 +135,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download xcframework artifact
+      - name: Download xcframework artifacts
         uses: actions/download-artifact@v4
         with:
           name: xcframework-${{ matrix.kit.name }}
@@ -163,13 +188,15 @@ jobs:
           owner: ${{ env.DEST_ORG }}
           repo: ${{ matrix.kit.dest_repo }}
           token: ${{ steps.generate-token.outputs.token }}
-          artifacts: xcframework-${{ matrix.kit.name }}/${{ matrix.kit.module }}.xcframework.zip
+          artifacts: "*.xcframework.zip"
           body: |
             ${{ steps.release-notes.outputs.release_notes }}
 
       - name: Summary
+        shell: bash
         run: |
           COMMITS=$(git log "split/${{ matrix.kit.name }}" --oneline -5)
+          ARTIFACTS=$(ls *.xcframework.zip 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
           cat >> $GITHUB_STEP_SUMMARY <<EOF
           ## Kit Mirror: ${{ matrix.kit.name }}
 
@@ -180,7 +207,7 @@ jobs:
           | **Destination** | \`${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}\` |
           | **Tag** | \`${{ steps.version.outputs.tag }}\` |
           | **Dry Run** | \`${{ env.DRY_RUN }}\` |
-          | **Artifact** | \`${{ matrix.kit.module }}.xcframework.zip\` |
+          | **Artifacts** | \`${ARTIFACTS}\` |
 
           ### Split branch commits
           \`\`\`
