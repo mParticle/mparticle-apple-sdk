@@ -117,63 +117,14 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
 
       - name: Generate changelog entry
-        run: |
-          PREV_TAG="v${{ steps.current-version.outputs.version }}"
-          # Handle case where there's no previous version
-          if [ "$PREV_TAG" = "v0.0.0" ]; then
-            PREV_TAG=""
-          fi
-          DATE=$(date +%Y-%m-%d)
-
-          # Create temp file for new changelog entry
-          echo "# [${VERSION}](https://github.com/mParticle/mparticle-apple-sdk/compare/${PREV_TAG}...v${VERSION}) (${DATE})" > /tmp/changelog_entry.md
-          echo "" >> /tmp/changelog_entry.md
-
-          # Get commits since last tag, grouped by type
-          if [ -n "$PREV_TAG" ]; then
-            # Bug Fixes
-            FIXES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" --grep="^fix" --regexp-ignore-case 2>/dev/null || true)
-            if [ -n "$FIXES" ]; then
-              echo "### Bug Fixes" >> /tmp/changelog_entry.md
-              echo "" >> /tmp/changelog_entry.md
-              echo "$FIXES" >> /tmp/changelog_entry.md
-              echo "" >> /tmp/changelog_entry.md
-            fi
-            
-            # Features
-            FEATURES=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" --grep="^feat" --regexp-ignore-case 2>/dev/null || true)
-            if [ -n "$FEATURES" ]; then
-              echo "### Features" >> /tmp/changelog_entry.md
-              echo "" >> /tmp/changelog_entry.md
-              echo "$FEATURES" >> /tmp/changelog_entry.md
-              echo "" >> /tmp/changelog_entry.md
-            fi
-            
-            # Other changes (if no fixes or features found, include all commits)
-            if [ -z "$FIXES" ] && [ -z "$FEATURES" ]; then
-              OTHER=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s ([%h](https://github.com/mParticle/mparticle-apple-sdk/commit/%H))" 2>/dev/null || true)
-              if [ -n "$OTHER" ]; then
-                echo "### Changes" >> /tmp/changelog_entry.md
-                echo "" >> /tmp/changelog_entry.md
-                echo "$OTHER" >> /tmp/changelog_entry.md
-                echo "" >> /tmp/changelog_entry.md
-              fi
-            fi
-          else
-            echo "### Initial Release" >> /tmp/changelog_entry.md
-            echo "" >> /tmp/changelog_entry.md
-          fi
-
-          # Prepend new entry to existing CHANGELOG.md
-          if [ -f CHANGELOG.md ]; then
-            cat /tmp/changelog_entry.md CHANGELOG.md > /tmp/new_changelog.md
-            mv /tmp/new_changelog.md CHANGELOG.md
-          else
-            mv /tmp/changelog_entry.md CHANGELOG.md
-          fi
-
-          echo "Generated changelog entry:"
-          head -50 CHANGELOG.md
+        id: changelog
+        uses: ./.github/actions/generate-changelog
+        with:
+          version: ${{ env.VERSION }}
+          repo-url: https://github.com/${{ github.repository }}
+          tag-prefix: v
+          changelog-path: CHANGELOG.md
+          exclude-types: chore,ci,test,build
 
       - name: Update version in MPIConstants.m
         run: |
