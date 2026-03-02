@@ -35,10 +35,14 @@ jobs:
       - id: set
         run: echo "matrix=$(jq -c . kits/matrix.json)" >> "$GITHUB_OUTPUT"
 
+  build-kits:
+    uses: ./.github/workflows/build-kits.yml
+    secrets: inherit
+
   mirror-and-release-kits:
     name: Mirror & Release ${{ matrix.kit.name }}
     runs-on: macOS-latest
-    needs: [load-matrix]
+    needs: [load-matrix, build-kits]
     env:
       DEST_ORG: mparticle-integrations
     strategy:
