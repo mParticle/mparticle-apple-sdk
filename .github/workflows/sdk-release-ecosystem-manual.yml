@@ -96,11 +96,22 @@ jobs:
               s/branch: \"[^\"]*\"/.upToNextMajor(from: \"${MAJOR}.0.0\")/
             }" {} +
 
+      - name: Generate changelog entry
+        id: changelog
+        uses: ./.github/actions/generate-changelog
+        with:
+          version: ${{ env.VERSION }}
+          repo-url: https://github.com/${{ github.repository }}
+          tag-prefix: v
+          changelog-path: CHANGELOG.md
+          exclude-types: chore,ci,test,build
+
       # --- Commit, push, and create PR ---
 
       - name: Commit version changes
         run: |
           git add \
+            CHANGELOG.md \
             VERSION \
             Framework/Info.plist \
             mParticle-Apple-SDK.podspec \

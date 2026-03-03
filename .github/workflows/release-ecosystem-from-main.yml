@@ -140,6 +140,14 @@ jobs:
         with:
           name: xcframework-${{ matrix.kit.name }}
 
+      - name: Copy root CHANGELOG into kit for mirror
+        run: |
+          cp CHANGELOG.md "${{ matrix.kit.local_path }}/CHANGELOG.md"
+          git config user.email "developers@mparticle.com"
+          git config user.name "mParticle Automation"
+          git add "${{ matrix.kit.local_path }}/CHANGELOG.md"
+          git commit -m "chore: Update CHANGELOG for kit release"
+
       - name: Get ecosystem version
         id: version
         run: |
