@@ -57,7 +57,13 @@ jobs:
       - name: Run SPM tests
         run: |
           cd ${{ matrix.kit.local_path }}
-          SCHEME=$(grep -E '^\s*name:' Package.swift | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+          PACKAGE=$(grep -E '^\s*name:' Package.swift | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+          LIB_COUNT=$(grep -c '\.library' Package.swift || true)
+          if [ "$LIB_COUNT" -gt 1 ]; then
+            SCHEME="${PACKAGE}-Package"
+          else
+            SCHEME="$PACKAGE"
+          fi
           xcodebuild test -scheme "$SCHEME" \
             -destination "platform=iOS Simulator,name=iPhone 16" \
             -derivedDataPath DerivedData-Test \
