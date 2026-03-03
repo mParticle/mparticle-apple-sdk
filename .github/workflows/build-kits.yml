@@ -57,7 +57,7 @@ jobs:
       - name: Run SPM tests
         run: |
           cd ${{ matrix.kit.local_path }}
-          SCHEME=$(echo '${{ toJson(matrix.kit) }}' | jq -r '.schemes[0].scheme')
+          SCHEME=$(grep -E '^\s*name:' Package.swift | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
           xcodebuild test -scheme "$SCHEME" \
             -destination "platform=iOS Simulator,name=iPhone 16" \
             -derivedDataPath DerivedData-Test \
