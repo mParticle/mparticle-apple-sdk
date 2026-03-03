@@ -1,10 +1,3 @@
-//
-//  MPKitAppsFlyerTests.swift
-//  mParticle-AppsFlyer
-//
-//  Created by Nick Dimitrakas on 9/16/25.
-//
-
 import XCTest
 @testable import mParticle_AppsFlyer
 import AppsFlyerLib
@@ -240,7 +233,8 @@ final class MPKitAppsFlyerTests: XCTestCase {
     func checkLogEventParams() {
         XCTAssertTrue(mock.logEventCalled)
         XCTAssertEqual(mock.logEventEventName, AFEventPurchase)
-        XCTAssertEqual(mock.logEventValues!["af_customer_user_id"] as! String, "1")
+        let expectedUserId = MParticle.sharedInstance().identity.currentUser?.userId.stringValue ?? "0"
+        XCTAssertEqual(mock.logEventValues!["af_customer_user_id"] as! String, expectedUserId)
         XCTAssertEqual(mock.logEventValues!["af_quantity"] as! NSNumber, 7)
         XCTAssertEqual(mock.logEventValues!["af_content_id"] as! String, "foo-sku,foo-sku-2,foo-sku-%2C3")
     }
