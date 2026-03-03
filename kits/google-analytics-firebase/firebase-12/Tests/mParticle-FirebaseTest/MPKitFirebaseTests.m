@@ -22,21 +22,19 @@
 - (void)setUp {
     [super setUp];
 
-    // 1. Start with the test bundle
-    NSBundle *testBundle = [NSBundle bundleForClass:[self class]];
+    // Values from GoogleService-Info.plist (FIROptions does not support IS_*, PLIST_VERSION)
+    NSString *googleAppID = @"1:123456789012:ios:abcdef1234567890";
+    NSString *gcmSenderID = @"123456789012";
+    NSString *apiKey = @"AIzaSyTestKeyForUnitTesting123456789012";
+    NSString *projectID = @"mparticle-test-project";
+    NSString *storageBucket = @"mparticle-test-project.appspot.com";
+    NSString *bundleID = @"com.mparticle.mParticle-FirebaseGA4-Tests";
 
-    // 2. Locate the auto-generated resource bundle for this test target
-    NSURL *resourceBundleURL = [testBundle URLForResource:@"mParticle-Firebase_mParticle-FirebaseTests"
-                                            withExtension:@"bundle"];
-    NSBundle *resourceBundle = [NSBundle bundleWithURL:resourceBundleURL];
-    NSAssert(resourceBundle != nil, @"Resource bundle not found");
-
-    // 3. Fetch the plist inside that resource bundle
-    NSString *filePath = [resourceBundle pathForResource:@"GoogleService-Info" ofType:@"plist"];
-    NSAssert(filePath != nil, @"GoogleService-Info.plist not found in resource bundle");
-
-    // 4. Configure Firebase
-    FIROptions *options = [[FIROptions alloc] initWithContentsOfFile:filePath];
+    FIROptions *options = [[FIROptions alloc] initWithGoogleAppID:googleAppID GCMSenderID:gcmSenderID];
+    options.APIKey = apiKey;
+    options.projectID = projectID;
+    options.storageBucket = storageBucket;
+    options.bundleID = bundleID;
     [FIRApp configureWithOptions:options];
 }
 
