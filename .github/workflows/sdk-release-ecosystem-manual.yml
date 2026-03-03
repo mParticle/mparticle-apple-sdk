@@ -98,13 +98,14 @@ jobs:
 
       - name: Generate changelog entry
         id: changelog
-        uses: ./.github/actions/generate-changelog
+        uses: ROKT/rokt-workflows/actions/generate-changelog@main
         with:
           version: ${{ env.VERSION }}
           repo-url: https://github.com/${{ github.repository }}
           tag-prefix: v
           changelog-path: CHANGELOG.md
           exclude-types: chore,ci,test,build
+          kits-path: kits
 
       # --- Commit, push, and create PR ---
 
