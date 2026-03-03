@@ -71,6 +71,29 @@ swiftlint
 
 Make sure all tests pass successfully before submitting your PR. If you encounter any test failures, investigate and fix the issues before proceeding.
 
+#### Build and Test Kits Locally
+
+Kits live under `kits/<provider>/<kit-name>/` (e.g. `kits/appsflyer/appsflyer-6`). Each kit is a Swift Package that can be opened and tested in Xcode:
+
+1. Change to the kit directory:
+
+   ```bash
+   cd kits/appsflyer/appsflyer-6
+   ```
+
+2. Open the package in Xcode:
+
+   ```bash
+   open Package.swift
+   ```
+
+3. Run tests from Xcode: **Product → Test** (⌘U).
+
+To also verify example app builds (matching CI), open the example project and build it:
+
+- `Example/SPM-Swift-Example/SPM-Swift-Example.xcodeproj` — Swift example
+- `Example/SPM-Objc-Example/SPM-Objc-Example.xcodeproj` — Objective‑C example
+
 ### Reporting Bugs
 
 This section guides you through submitting a bug report for the mParticle Apple SDK. Following these guidelines helps maintainers and the community understand your report, reproduce the behavior, and find related reports.
