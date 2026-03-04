@@ -1,12 +1,12 @@
-# mParticle-Apptimize
+# mParticle Apptimize Kit (Apptimize SDK 3.x)
 
-[Apptimize](https://www.apptimize.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
+This is the [Apptimize](https://www.apptimize.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Apptimize SDK 3.x](https://sdk.apptimize.com).
 
 ## Installation
 
 ### Swift Package Manager
 
-Add the package dependency to your `Package.swift` or via Xcode:
+Add the Apptimize kit package dependency in Xcode or in your `Package.swift`:
 
 ```swift
 .package(
@@ -15,20 +15,28 @@ Add the package dependency to your `Package.swift` or via Xcode:
 )
 ```
 
+Then add `mParticle-Apptimize` as a dependency of your target.
+
 ### CocoaPods
 
+Add the kit dependency to your app's Podfile:
+
 ```ruby
-pod 'mParticle-Apptimize', '~> 9'
+pod 'mParticle-Apptimize', '~> 9.0'
 ```
 
-## Usage
+## Verifying the Integration
 
-Follow the [mParticle iOS SDK quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app. Verify you see `"Included kits: { Apptimize }"` in the Xcode console (requires Debug log level).
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
+
+```bash
+Included kits: { Apptimize }
+```
 
 ## Documentation
 
-- [Apptimize integration](https://docs.mparticle.com/integrations/apptimize/event/)
-- [mParticle Apple SDK Docs](https://docs.mparticle.com/developers/sdk/ios/)
+- [mParticle Apptimize Integration Guide](https://docs.mparticle.com/integrations/apptimize/event/)
+- [mParticle Apple SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
 
 ## License
 

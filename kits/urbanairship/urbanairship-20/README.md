@@ -1,12 +1,12 @@
 # mParticle Urban Airship Kit (Airship SDK 20.x)
 
-This is the Urban Airship integration for the mParticle Apple SDK, built against the Airship SDK 20.x.
+This is the [Urban Airship](https://www.airship.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Airship SDK 20.x](https://github.com/urbanairship/ios-library).
 
 ## Installation
 
 ### Swift Package Manager
 
-Add the Urban Airship kit package dependency in Xcode or in your Package.swift. Swift Package Manager resolves the mParticle SDK automatically as a transitive dependency, so you do not need a separate .package entry for mparticle-apple-sdk.
+Add the Urban Airship kit package dependency in Xcode or in your `Package.swift`. Swift Package Manager resolves the mParticle SDK automatically as a transitive dependency, so you do not need a separate `.package` entry for `mparticle-apple-sdk`.
 
 ```swift
 let mParticleVersion: Version = "9.0.0"
@@ -31,7 +31,7 @@ pod 'mParticle-UrbanAirship', '~> 9'
 
 After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
 
-```text
+```bash
 Included kits: { UrbanAirship }
 ```
 
@@ -95,4 +95,4 @@ private func removeTag(key: String) {
 
 ## License
 
-Apache License 2.0
+[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)

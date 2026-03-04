@@ -1,12 +1,12 @@
-# mParticle-Singular
+# mParticle Singular Kit (Singular SDK 12.x)
 
-Singular integration kit for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
+This is the [Singular](https://www.singular.net) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Singular SDK 12.x](https://github.com/singular-labs/Singular-iOS-SDK).
 
 ## Installation
 
 ### Swift Package Manager
 
-Add the package dependency to your `Package.swift` or via Xcode:
+Add the Singular kit package dependency in Xcode or in your `Package.swift`:
 
 ```swift
 .package(
@@ -15,20 +15,28 @@ Add the package dependency to your `Package.swift` or via Xcode:
 )
 ```
 
+Then add `mParticle-Singular` as a dependency of your target.
+
 ### CocoaPods
+
+Add the kit dependency to your app's Podfile:
 
 ```ruby
 pod 'mParticle-Singular', '~> 9.0'
 ```
 
-## Usage
+## Verifying the Integration
 
-Follow the [mParticle iOS SDK quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app. Verify you see `"Included kits: { Singular }"` in the Xcode console (requires Debug log level).
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
+
+```bash
+Included kits: { Singular }
+```
 
 ## Documentation
 
 - [Singular mParticle Integration](https://support.singular.net/)
-- [mParticle Apple SDK Docs](https://docs.mparticle.com/developers/sdk/ios/)
+- [mParticle Apple SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
 
 ## License
 
