@@ -19,7 +19,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/braze-inc/braze-swift-sdk",
-            .upToNextMinor(from: "12.0.0")
+            .upToNextMajor(from: "12.0.0")
         ),
         .package(
             url: "https://github.com/erikdoe/ocmock",
