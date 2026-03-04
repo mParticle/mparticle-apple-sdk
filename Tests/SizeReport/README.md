@@ -1,5 +1,7 @@
 # SDK Size Report
 
+## Overview
+
 Measures the mParticle SDK's impact on app size by comparing a baseline app (no SDK) against one with the SDK integrated.
 
 ![SDK Size Monitoring Diagram](diagram-mparticle-ios-sdk-size-monitoring.jpg)
