@@ -51,3 +51,7 @@ Each kit has its own README with installation and configuration steps.
 | Rokt                      | [`mparticle-apple-integration-rokt`](https://github.com/mparticle-integrations/mparticle-apple-integration-rokt)                                                         | [Rokt Widget SDK](https://github.com/ROKT/rokt-sdk-ios)                         |
 | Singular 12               | [`mparticle-apple-integration-singular-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-singular-12)                                           | [Singular SDK 12.x](https://github.com/singular-labs/Singular-iOS-SDK)          |
 | Urban Airship 20          | [`mparticle-apple-integration-urbanairship-20`](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-20)                                   | [Airship SDK 20.x](https://github.com/urbanairship/ios-library)                 |
+
+## Integrations Not in This Repository
+
+Integrations that are not maintained directly by mParticle are not currently included in this repository. These may live in separate, partner- or community-maintained repos (for example, the [MoEngage kit](https://github.com/moengage/mparticle-apple-integration-moengage)). If you maintain an mParticle Apple kit and would like it included here, please contact us.
