@@ -1,6 +1,16 @@
+# Changelog
+
+All notable changes to the mParticle Apple SDK (core and integration kits) are documented in this file.
+
+**Format:** For each release, **Core** (main SDK) changes are listed first, followed by **Kits** (integration-kit–specific changes). This file is intended to be updated automatically on release via a changelog/release-notes action (e.g. [ROKT/rokt-workflows generate-changelog](https://github.com/ROKT/rokt-workflows/pull/37)).
+
+---
+
 # [8.43.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.2...v8.43.1) (2026-02-16)
 
-### Bug Fixes
+### Core
+
+#### Bug Fixes
 
 - fix: MPNetworkCommunication background task (#584) ([dfab795e](https://github.com/mParticle/mparticle-apple-sdk/commit/dfab795e2bd68b6eb51f5cb0e5bcf1f551ae1182))
 - fix: PreferredLanguages may be empty (#583) ([5a538c3b](https://github.com/mParticle/mparticle-apple-sdk/commit/5a538c3b3fc67444b76b8e3e756ec3f520c1d23c))
@@ -16,6 +26,16 @@
 - fix: MPURLRequestBuilder build crash (#575) ([604afeef](https://github.com/mParticle/mparticle-apple-sdk/commit/604afeefdfe32e5c2785cc3404c64941fcfda847))
 - fix: Mitigate Thread-safety of DateFormatter (#574) ([7b36691d](https://github.com/mParticle/mparticle-apple-sdk/commit/7b36691d5fb50739da8e17b76cdba127caefaa19))
 - fix: Use Defensive Copy for ActiveKitsRegistry (#571) ([e5d5e273](https://github.com/mParticle/mparticle-apple-sdk/commit/e5d5e27313bd6445ff491590168ab9718f05b86e))
+
+### Kits
+
+- No kit-specific changes in this release.
+
+---
+
+_Older releases below are in the previous flat format (no Core/Kits split). They will be normalized when the release changelog action is in place._
+
+---
 
 # [8.42.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.1...v8.42.2) (2026-02-11)
 

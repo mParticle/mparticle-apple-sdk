@@ -1,19 +1,7 @@
-<!-- markdownlint-disable MD024 -->
-
 # Changelog
 
-All notable changes to this project will be documented in this file.
+This integration is developed in the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk) monorepo.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+**Pull requests and issues** for this kit should be opened on the [mParticle/mparticle-apple-sdk](https://github.com/mParticle/mparticle-apple-sdk) repository.
 
-## [Unreleased]
-
-### Changed
-
-- Transitioned Braze kit development to this monorepo; versions before 9.0.0 remain documented in the legacy repository.
-- Renamed from Appboy to Braze.
-
-## [<9.0.0]
-
-- For versions earlier than 9.0.0, see the legacy Appboy/Braze [changelog](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy/blob/development/CHANGELOG.md)
+For changelog details for this integration, see the **Kits** section of the root [CHANGELOG.md](https://github.com/mParticle/mparticle-apple-sdk/blob/main/CHANGELOG.md) in that repo.

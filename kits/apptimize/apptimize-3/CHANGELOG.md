@@ -1,16 +1,7 @@
 # Changelog
 
-## [Unreleased]
+This integration is developed in the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk) monorepo.
 
-### Added
+**Pull requests and issues** for this kit should be opened on the [mParticle/mparticle-apple-sdk](https://github.com/mParticle/mparticle-apple-sdk) repository.
 
-- Migrated Apptimize kit (v3) into the mParticle Apple SDK monorepo
-- Standardized directory layout following kit track conventions
-- Added SPM example apps (ObjC and Swift)
-- Added test target
-
-### Changed
-
-- Updated minimum deployment target to iOS 15.0
-- Updated Swift tools version to 5.9
-- Updated Package.swift to use monorepo core SDK dependency
+For changelog details for this integration, see the **Kits** section of the root [CHANGELOG.md](https://github.com/mParticle/mparticle-apple-sdk/blob/main/CHANGELOG.md) in that repo.
