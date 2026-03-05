@@ -84,3 +84,20 @@ jobs:
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath DerivedData-Example \
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+      - name: Run SPM tests
+        run: |
+          cd ${{ matrix.kit.local_path }}
+          PACKAGE=$(grep -E '^\s*name:' Package.swift | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+          LIB_COUNT=$(grep -c '\.library' Package.swift || true)
+          if [ "$LIB_COUNT" -gt 1 ]; then
+            SCHEME="${PACKAGE}-Package"
+          else
+            SCHEME="$PACKAGE"
+          fi
+          for xc in *.xcodeproj; do [ -d "$xc" ] && mv "$xc" "${xc}.bak"; done
+          trap 'for xc in *.xcodeproj.bak; do [ -d "$xc" ] && mv "$xc" "${xc%.bak}"; done' EXIT
+          xcodebuild test -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=iPhone 16,OS=26.2" \
+            -derivedDataPath DerivedData-Test \
+            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO

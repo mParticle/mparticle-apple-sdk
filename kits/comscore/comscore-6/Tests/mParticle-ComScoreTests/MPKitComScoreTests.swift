@@ -4,6 +4,6 @@ import XCTest
 final class MPKitComScoreTests: XCTestCase {
 
     func test_kitCode_returns39() {
-        XCTAssertEqual(MPKitComScore.kitCode()?.intValue, 39)
+        XCTAssertEqual(MPKitComScore.kitCode().intValue, 39)
     }
 }
