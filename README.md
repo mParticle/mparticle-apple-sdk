@@ -239,4 +239,4 @@ Questions? Have an issue? Read the [docs](https://docs.mparticle.com/developers/
 
 ## License
 
-Apache 2.0
+[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)

@@ -1,6 +1,6 @@
-# mParticle-Rokt
+# mParticle Rokt Kit
 
-Rokt integration kit for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
+[Rokt](https://www.rokt.com) integration kit for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
 
 ## Installation
 
@@ -15,20 +15,28 @@ Add the package dependency to your `Package.swift` or via Xcode:
 )
 ```
 
+Then add `mParticle-Rokt` as a dependency of your target.
+
 ### CocoaPods
+
+Add the kit dependency to your app's Podfile:
 
 ```ruby
 pod 'mParticle-Rokt', '~> 9.0'
 ```
 
-## Usage
+## Verifying the Integration
 
-Follow the [mParticle iOS SDK quick-start](https://github.com/mParticle/mparticle-apple-sdk), then rebuild and launch your app. Verify you see `"Included kits: { Rokt }"` in the Xcode console (requires Debug log level).
+After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
+
+```bash
+Included kits: { Rokt }
+```
 
 ## Documentation
 
 - [Rokt mParticle Integration](https://docs.rokt.com/developers/integration-guides/rokt-ads/customer-data-platforms/mparticle/)
-- [mParticle Apple SDK Docs](https://docs.mparticle.com/developers/sdk/ios/)
+- [mParticle Apple SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
 
 ## License
 
