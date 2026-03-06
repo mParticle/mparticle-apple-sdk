@@ -5,18 +5,14 @@ on:
   push:
     branches:
       - main
-      - test/**
-    # paths:
-    #   - VERSION
+    paths:
+      - VERSION
   workflow_dispatch:
     inputs:
       dry_run:
         description: "Dry run — skip creating real releases/tags"
         type: boolean
         default: true
-
-env:
-  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
 
 permissions:
   contents: write
@@ -144,7 +140,7 @@ jobs:
       - name: Get ecosystem version
         id: version
         run: |
-          VERSION="9.0.0"
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
           echo "📌 Ecosystem version: $VERSION"

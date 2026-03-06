@@ -6,7 +6,7 @@ Kits forward events from the mParticle Apple SDK to partner services. To use a p
 
 Kits are versioned by the partner SDK major:
 
-- `braze-12` → Braze Swift SDK 12.x
+- `braze-13` → Braze Swift SDK 13.x
 - `braze-14` → Braze Swift SDK 14.x
 
 Pick the kit that matches the partner SDK major you want in your app.
@@ -47,7 +47,7 @@ Each kit has its own README with installation and configuration steps.
 | OneTrust                  | [`mparticle-apple-integration-onetrust`](https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust)                                                 | [OneTrust SDK](https://github.com/Zentrust/OTPublishersHeadlessSDK)             |
 | Optimizely 4              | [`mparticle-apple-integration-optimizely-4`](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely-4)                                         | [Optimizely Swift SDK 4.x](https://github.com/optimizely/swift-sdk)             |
 | Optimizely 5              | [`mparticle-apple-integration-optimizely-5`](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely-5)                                         | [Optimizely Swift SDK 5.x](https://github.com/optimizely/swift-sdk)             |
-| Radar 3                   | [`mparticle-apple-integration-radar`](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                                                       | [Radar SDK 3.x](https://github.com/radarlabs/radar-sdk-ios-spm)                 |
+| Radar 3                   | [`mparticle-apple-integration-radar-3`](https://github.com/mparticle-integrations/mparticle-apple-integration-radar-3)                                                   | [Radar SDK 3.x](https://github.com/radarlabs/radar-sdk-ios-spm)                 |
 | Rokt                      | [`mparticle-apple-integration-rokt`](https://github.com/mparticle-integrations/mparticle-apple-integration-rokt)                                                         | [Rokt Widget SDK](https://github.com/ROKT/rokt-sdk-ios)                         |
 | Singular 12               | [`mparticle-apple-integration-singular-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-singular-12)                                           | [Singular SDK 12.x](https://github.com/singular-labs/Singular-iOS-SDK)          |
 | Urban Airship 20          | [`mparticle-apple-integration-urbanairship-20`](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-20)                                   | [Airship SDK 20.x](https://github.com/urbanairship/ios-library)                 |
