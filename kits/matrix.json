@@ -350,7 +350,7 @@
   {
     "name": "radar-3",
     "local_path": "kits/radar/radar-3",
-    "dest_repo": "mparticle-apple-integration-radar",
+    "dest_repo": "mparticle-apple-integration-radar-3",
     "schemes": [
       {
         "scheme": "mParticle-Radar",
