@@ -5,9 +5,9 @@ on:
   push:
     branches:
       - main
-      - workstation*
-    paths:
-      - VERSION
+      - test/**
+    # paths:
+    #   - VERSION
   workflow_dispatch:
     inputs:
       dry_run:
@@ -143,7 +143,7 @@ jobs:
       - name: Get ecosystem version
         id: version
         run: |
-          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          VERSION="9.0.0"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
           echo "📌 Ecosystem version: $VERSION"
