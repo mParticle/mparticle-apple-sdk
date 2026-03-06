@@ -16,7 +16,7 @@ on:
         default: true
 
 env:
-  DRY_RUN: ${{ github.event.inputs.dry_run || 'true' }}
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
 
 permissions:
   contents: write
@@ -40,7 +40,7 @@ jobs:
     needs: load-matrix
     runs-on: macOS-latest
     env:
-      XCODE_VERSION: "16.4"
+      XCODE_VERSION: "26.2"
     strategy:
       fail-fast: false
       matrix:
