@@ -1,4 +1,4 @@
-name: Publish Ecosystem Releases from Main
+name: Release – Publish
 # Build each kit, mirror its subtree repo, and publish a GitHub release/tag (unless dry run).
 
 on:

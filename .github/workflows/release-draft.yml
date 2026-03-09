@@ -1,4 +1,4 @@
-name: Create Ecosystem Release PR (Manual)
+name: Release – Draft
 # Ensure the manual release process only starts from the main branch.
 # Bump ecosystem versions and open a release PR that triggers publish-on-main after merge.
 
