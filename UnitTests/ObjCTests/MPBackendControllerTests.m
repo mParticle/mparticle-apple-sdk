@@ -77,8 +77,6 @@
 - (void)logRemoteNotificationWithNotificationController:(MPNotificationController_PRIVATE *const)notificationController;
 - (void)parseConfigResponse:(NSDictionary *)configurationDictionary;
 - (void)parseResponseHeader:(NSDictionary *)responseDictionary session:(MPSession *)session;
-- (NSNumber *)previousSessionSuccessfullyClosed;
-- (void)setPreviousSessionSuccessfullyClosed:(NSNumber *)previousSessionSuccessfullyClosed;
 - (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(dispatch_block_t)completionHandler;
 - (void)resetUserIdentitiesFirstTimeUseFlag;
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession;
@@ -125,10 +123,10 @@
 
 - (void)setUp {
     [super setUp];
-    
+
     [MPPersistenceController_PRIVATE setMpid:@1];
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
-    
+
     // Must read messageQueue AFTER [MParticle sharedInstance] triggers singleton
     // recreation, otherwise we get the old executor's queue.
     messageQueue = [MParticle messageQueue];
