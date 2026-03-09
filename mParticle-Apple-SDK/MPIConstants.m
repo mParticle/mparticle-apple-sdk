@@ -139,7 +139,6 @@ NSString *const kMPUploadIntervalKey = @"uitl";
 NSString *const kMPPreviousSessionLengthKey = @"psl";
 NSString *const kMPLifeTimeValueKey = @"ltv";
 NSString *const kMPIncreasedLifeTimeValueKey = @"iltv";
-NSString *const kMPPreviousSessionStateFileName = @"PreviousSessionState.dic";
 NSString *const kMPHTTPMethodPost = @"POST";
 NSString *const kMPHTTPMethodGet = @"GET";
 NSString *const kMPPreviousSessionIdKey = @"pid";
@@ -310,7 +309,6 @@ NSString *const kMPASTBackgroundKey = @"app_back";
 NSString *const kMPASTForegroundKey = @"app_fore";
 NSString *const kMPASTIsFirstRunKey = @"ifr";
 NSString *const kMPASTIsUpgradeKey = @"iu";
-NSString *const kMPASTPreviousSessionSuccessfullyClosedKey = @"sc";
 
 // Network performance
 NSString *const kMPNetworkPerformanceMeasurementNotification = @"MPNetworkPerformanceMeasurement";
