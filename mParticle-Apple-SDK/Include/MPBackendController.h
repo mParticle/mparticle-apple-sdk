@@ -56,7 +56,7 @@ extern const NSInteger kInvalidKey;
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
 - (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
 - (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *_Nullable)consentState completionHandler:(dispatch_block_t _Nonnull)completionHandler;
-- (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings;
+- (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings NS_SWIFT_NAME(prepareBatches(forUpload:));
 - (MParticleSession* _Nullable)tempSession;
 - (void)endSession;
 - (void)beginTimedEvent:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
@@ -134,7 +134,7 @@ extern const NSInteger kInvalidKey;
 - (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
 - (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
 - (nonnull NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(nonnull NSNumber *)userId;
-- (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings;
+- (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings NS_SWIFT_NAME(prepareBatches(forUpload:));
 
 #if TARGET_OS_IOS == 1
 - (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;

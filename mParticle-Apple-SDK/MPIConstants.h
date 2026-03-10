@@ -206,7 +206,6 @@ extern NSString * _Nonnull const kMPUploadIntervalKey;
 extern NSString * _Nonnull const kMPPreviousSessionLengthKey;
 extern NSString * _Nonnull const kMPLifeTimeValueKey;
 extern NSString * _Nonnull const kMPIncreasedLifeTimeValueKey;
-extern NSString * _Nonnull const kMPPreviousSessionStateFileName;
 extern NSString * _Nonnull const kMPHTTPMethodPost;
 extern NSString * _Nonnull const kMPHTTPMethodGet;
 extern NSString * _Nonnull const kMPPreviousSessionIdKey;
@@ -384,7 +383,6 @@ extern NSString * _Nonnull const kMPASTBackgroundKey;
 extern NSString * _Nonnull const kMPASTForegroundKey;
 extern NSString * _Nonnull const kMPASTIsFirstRunKey;
 extern NSString * _Nonnull const kMPASTIsUpgradeKey;
-extern NSString * _Nonnull const kMPASTPreviousSessionSuccessfullyClosedKey;
 
 // Network performance
 extern NSString * _Nonnull const kMPNetworkPerformanceMeasurementNotification;

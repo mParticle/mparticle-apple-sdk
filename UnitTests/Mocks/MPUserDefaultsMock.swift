@@ -2,7 +2,7 @@ import XCTest
 import mParticle_Apple_SDK
 internal import mParticle_Apple_SDK_Swift
 
-class MPUserDefaultsMock: MPUserDefaultsProtocol {
+class MPUserDefaultsMock: mParticle_Apple_SDK_Swift.MPUserDefaultsProtocol {
     var setMPObjectCalled = false
     var setMPObjectValueParam: Any?
     var setMPObjectKeyParam: String?

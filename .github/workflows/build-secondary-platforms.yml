@@ -23,7 +23,7 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Setup specified simulator
-        uses: futureware-tech/simulator-action@v4
+        uses: futureware-tech/simulator-action@v5
         id: simulator
         with:
           model: iPhone 16 Pro
