@@ -69,7 +69,7 @@
                     MPLog.verbose("Getting user agent")
                     self.webView?.evaluateJavaScript("navigator.userAgent") { result, error in
                         if result == nil, let error = error as? NSError {
-                            MPLog.verbose("Error collecting user agent: %@", error)
+                            MPLog.verbose("Error collecting user agent: \(error)")
                         }
                         if let result = result as? String {
                             MPLog.verbose("Finished getting user agent")
@@ -77,7 +77,7 @@
                         } else {
                             if self.retryCount < 10 {
                                 self.retryCount += 1
-                                MPLog.verbose("User agent collection failed (count=%@), retrying", self.retryCount)
+                                MPLog.verbose("User agent collection failed (count=\(self.retryCount)), retrying")
                                 self.webView = nil
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                     self.evaluateAgent()
