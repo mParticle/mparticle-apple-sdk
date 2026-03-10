@@ -1,0 +1,21 @@
+Pod::Spec.new do |s|
+    s.name             = "mParticle-Braze-13"
+    s.version          = "9.0.0"
+    s.summary          = "Braze integration for mParticle"
+    s.description      = <<-DESC
+                       This is the Braze integration for mParticle.
+                       DESC
+    s.homepage         = "https://www.mparticle.com"
+    s.license          = { :type => 'Apache 2.0', :file => 'LICENSE' }
+    s.author           = { "mParticle" => "support@mparticle.com" }
+    s.source           = { :git => "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-13.git", :tag => "v" + s.version.to_s }
+    s.swift_version = "5.5"
+    s.ios.deployment_target  = "15.6"
+    s.tvos.deployment_target = "15.6"
+    s.source_files      = 'Sources/mParticle-Braze/**/*.{h,m,mm}'
+    s.resource_bundles  = { 'mParticle-Braze-13-Privacy' => ['Sources/mParticle-Braze/PrivacyInfo.xcprivacy'] }
+    s.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
+    s.dependency 'BrazeKit', '~> 13.0'
+    s.dependency 'BrazeKitCompat', '~> 13.0'
+    s.ios.dependency 'BrazeUI', '~> 13.0'
+end
