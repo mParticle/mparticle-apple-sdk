@@ -77,7 +77,7 @@
                         } else {
                             if self.retryCount < 10 {
                                 self.retryCount += 1
-                                MPLog.verbose("User agent collection failed (count=%@), retrying", self.retryCount)
+                                MPLog.verbose("User agent collection failed (count=%d), retrying", self.retryCount)
                                 self.webView = nil
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                                     self.evaluateAgent()
