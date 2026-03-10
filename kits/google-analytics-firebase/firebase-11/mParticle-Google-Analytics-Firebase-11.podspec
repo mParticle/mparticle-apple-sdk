@@ -12,6 +12,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = "15.6"
     s.ios.source_files      = 'kits/google-analytics-firebase/firebase-11/Sources/mParticle-Firebase/**/*.{h,m,mm}'
     s.ios.resource_bundles  = { 'mParticle-Google-Analytics-Firebase-11-Privacy' => ['kits/google-analytics-firebase/firebase-11/Sources/mParticle-Firebase/PrivacyInfo.xcprivacy'] }
-    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
+    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.ios.dependency 'FirebaseAnalytics', '~> 11.0'
 end

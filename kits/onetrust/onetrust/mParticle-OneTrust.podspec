@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
     s.tvos.deployment_target = "15.6"
     s.source_files      = 'kits/onetrust/onetrust/Sources/mParticle-OneTrust/**/*.{h,m,mm}'
     s.resource_bundles  = { 'mParticle-OneTrust-Privacy' => ['kits/onetrust/onetrust/Sources/mParticle-OneTrust/PrivacyInfo.xcprivacy'] }
-    s.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
+    s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.ios.dependency 'OTPublishersHeadlessSDK'
     s.tvos.dependency 'OTPublishersHeadlessSDKtvOS'
 end

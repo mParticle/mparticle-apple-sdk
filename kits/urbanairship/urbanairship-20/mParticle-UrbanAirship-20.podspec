@@ -12,6 +12,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = "16.0"
     s.ios.source_files      = 'kits/urbanairship/urbanairship-20/Sources/mParticle-UrbanAirship/**/*.{h,m,mm}'
     s.ios.resource_bundles  = { 'mParticle-UrbanAirship-20-Privacy' => ['kits/urbanairship/urbanairship-20/Sources/mParticle-UrbanAirship/PrivacyInfo.xcprivacy'] }
-    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
+    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.ios.dependency 'AirshipObjectiveC', '~> 20.0'
 end

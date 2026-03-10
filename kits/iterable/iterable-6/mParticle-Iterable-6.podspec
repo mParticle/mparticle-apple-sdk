@@ -12,6 +12,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = "15.6"
     s.ios.source_files      = 'kits/iterable/iterable-6/Sources/mParticle-Iterable/**/*.{h,m,mm}'
     s.ios.resource_bundles  = { 'mParticle-Iterable-6-Privacy' => ['kits/iterable/iterable-6/Sources/mParticle-Iterable/PrivacyInfo.xcprivacy'] }
-    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
+    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.ios.dependency 'Iterable-iOS-SDK', '~> 6.5'
 end

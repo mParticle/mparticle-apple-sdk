@@ -12,6 +12,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = "15.6"
     s.ios.source_files      = 'kits/apptimize/apptimize-3/Sources/mParticle-Apptimize/**/*.{h,m,mm}'
     s.ios.resource_bundles  = { 'mParticle-Apptimize-3-Privacy' => ['kits/apptimize/apptimize-3/Sources/mParticle-Apptimize/PrivacyInfo.xcprivacy'] }
-    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
+    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.ios.dependency 'Apptimize-Swift', '~> 3.5'
 end

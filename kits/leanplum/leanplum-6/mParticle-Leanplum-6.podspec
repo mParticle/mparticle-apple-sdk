@@ -12,6 +12,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = "15.6"
     s.ios.source_files      = 'kits/leanplum/leanplum-6/Sources/mParticle-Leanplum/**/*.{h,m,mm}'
     s.ios.resource_bundles  = { 'mParticle-Leanplum-6-Privacy' => ['kits/leanplum/leanplum-6/Sources/mParticle-Leanplum/PrivacyInfo.xcprivacy'] }
-    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
+    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.ios.dependency 'Leanplum-iOS-SDK', '~> 6.0'
 end

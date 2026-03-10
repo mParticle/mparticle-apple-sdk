@@ -13,6 +13,6 @@ Pod::Spec.new do |s|
     s.tvos.deployment_target = "15.6"
     s.source_files      = 'kits/optimizely/optimizely-5/Sources/mParticle-Optimizely/**/*.{h,m,mm}'
     s.resource_bundles  = { 'mParticle-Optimizely-5-Privacy' => ['kits/optimizely/optimizely-5/Sources/mParticle-Optimizely/PrivacyInfo.xcprivacy'] }
-    s.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
+    s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.dependency 'OptimizelySwiftSDK', '~> 5.0'
 end
