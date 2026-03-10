@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-OneTrust"
-    s.version          = "9.0.0"
+    s.version          = "8.4.0"
     s.summary          = "OneTrust integration for mParticle"
     s.description      = <<-DESC
                        This is the OneTrust integration for mParticle.
@@ -8,7 +8,7 @@ Pod::Spec.new do |s|
     s.homepage         = "https://www.mparticle.com"
     s.license          = { :type => 'Apache 2.0', :file => 'LICENSE' }
     s.author           = { "mParticle" => "support@mparticle.com" }
-    s.source           = { :git => "https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust.git", :tag => "v" + s.version.to_s }
+    s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
     s.source_files      = 'Sources/mParticle-OneTrust/**/*.{h,m,mm}'
