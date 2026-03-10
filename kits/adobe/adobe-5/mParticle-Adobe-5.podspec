@@ -12,14 +12,14 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = "15.6"
 
     s.subspec 'Core' do |core|
-        core.source_files      = 'Sources/mParticle-Adobe/**/*.{h,m,mm}'
-        core.resource_bundles  = { 'mParticle-Adobe-5-Privacy' => ['Sources/mParticle-Adobe/PrivacyInfo.xcprivacy'] }
+        core.source_files      = 'kits/adobe/adobe-5/Sources/mParticle-Adobe/**/*.{h,m,mm}'
+        core.resource_bundles  = { 'mParticle-Adobe-5-Privacy' => ['kits/adobe/adobe-5/Sources/mParticle-Adobe/PrivacyInfo.xcprivacy'] }
         core.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
     end
 
     s.subspec 'Media' do |media|
-        media.source_files      = 'Sources/mParticle-AdobeMedia/**/*.{h,m,mm}'
-        media.resource_bundles  = { 'mParticle-Adobe-5-Media-Privacy' => ['Sources/mParticle-AdobeMedia/PrivacyInfo.xcprivacy'] }
+        media.source_files      = 'kits/adobe/adobe-5/Sources/mParticle-AdobeMedia/**/*.{h,m,mm}'
+        media.resource_bundles  = { 'mParticle-Adobe-5-Media-Privacy' => ['kits/adobe/adobe-5/Sources/mParticle-AdobeMedia/PrivacyInfo.xcprivacy'] }
         media.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
         media.dependency 'mParticle-Apple-Media-SDK'
         media.dependency 'AEPCore', '~> 5.0'

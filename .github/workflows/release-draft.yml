@@ -69,7 +69,12 @@ jobs:
 
       - name: Update version in all podspecs
         run: |
-          find . -name "*.podspec" -exec \
+          find . -maxdepth 2 -name "*.podspec" -exec \
+            sed -i '' 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"${VERSION}"'"/' {} +
+
+      - name: Update version in kit podspecs
+        run: |
+          find kits -name "*.podspec" -not -path "*/.build/*" -exec \
             sed -i '' 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"${VERSION}"'"/' {} +
 
       - name: Update version in MPIConstants.m

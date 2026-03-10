@@ -10,8 +10,8 @@ Pod::Spec.new do |s|
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.ios.deployment_target = "15.6"
-    s.ios.source_files      = 'Sources/mParticle-Localytics/**/*.{h,m,mm}'
-    s.ios.resource_bundles  = { 'mParticle-Localytics-7-Privacy' => ['Sources/mParticle-Localytics/PrivacyInfo.xcprivacy'] }
+    s.ios.source_files      = 'kits/localytics/localytics-7/Sources/mParticle-Localytics/**/*.{h,m,mm}'
+    s.ios.resource_bundles  = { 'mParticle-Localytics-7-Privacy' => ['kits/localytics/localytics-7/Sources/mParticle-Localytics/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
     s.ios.dependency 'Localytics', '~> 7.0'
 end

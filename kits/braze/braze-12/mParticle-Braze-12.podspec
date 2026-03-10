@@ -12,8 +12,8 @@ Pod::Spec.new do |s|
     s.swift_version = "5.5"
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
-    s.source_files      = 'Sources/mParticle-Braze/**/*.{h,m,mm}'
-    s.resource_bundles  = { 'mParticle-Braze-12-Privacy' => ['Sources/mParticle-Braze/PrivacyInfo.xcprivacy'] }
+    s.source_files      = 'kits/braze/braze-12/Sources/mParticle-Braze/**/*.{h,m,mm}'
+    s.resource_bundles  = { 'mParticle-Braze-12-Privacy' => ['kits/braze/braze-12/Sources/mParticle-Braze/PrivacyInfo.xcprivacy'] }
     s.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
     s.dependency 'BrazeKit', '~> 12.0'
     s.dependency 'BrazeKitCompat', '~> 12.0'

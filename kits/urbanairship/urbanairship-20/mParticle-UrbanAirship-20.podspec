@@ -10,8 +10,8 @@ Pod::Spec.new do |s|
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.ios.deployment_target = "16.0"
-    s.ios.source_files      = 'Sources/mParticle-UrbanAirship/**/*.{h,m,mm}'
-    s.ios.resource_bundles  = { 'mParticle-UrbanAirship-20-Privacy' => ['Sources/mParticle-UrbanAirship/PrivacyInfo.xcprivacy'] }
+    s.ios.source_files      = 'kits/urbanairship/urbanairship-20/Sources/mParticle-UrbanAirship/**/*.{h,m,mm}'
+    s.ios.resource_bundles  = { 'mParticle-UrbanAirship-20-Privacy' => ['kits/urbanairship/urbanairship-20/Sources/mParticle-UrbanAirship/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 8.22'
     s.ios.dependency 'AirshipObjectiveC', '~> 20.0'
 end
