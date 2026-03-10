@@ -821,17 +821,18 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)beginSessionWithIsManual:(BOOL)isManual date:(NSDate *)date {
-    if (!isManual && !MParticle.sharedInstance.automaticSessionTracking) {
+    MParticle* mparticle = MParticle.sharedInstance;
+    if (!isManual && !mparticle.automaticSessionTracking) {
         return;
     }
     
     @synchronized (self) {
-        if (_session != nil || [MParticle sharedInstance].stateMachine.optOut) {
+        MPStateMachine_PRIVATE *stateMachine = mparticle.stateMachine;
+        if (_session != nil || stateMachine.optOut) {
             return;
         }
         
-        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-        MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+        MPPersistenceController_PRIVATE *persistence = mparticle.persistenceController;
         
         NSNumber *mpId = [MPPersistenceController_PRIVATE mpId];
         date = date ?: [NSDate date];
@@ -846,7 +847,12 @@ static BOOL skipNextUpload = NO;
             _session.appInfo = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
         }
         if (!_session.deviceInfo) {
-            MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+            MPUserDefaults* userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:stateMachine
+                                                                              backendController:mparticle.backendController
+                                                                                       identity:mparticle.identity];
+            MPDevice *device = [[MPDevice alloc] initWithStateMachine:stateMachine
+                                                         userDefaults:userDefaults
+                                                             identity:mparticle.identity];
 
             _session.deviceInfo = [device dictionaryRepresentationWithMpid:mpId];
         }
@@ -864,7 +870,9 @@ static BOOL skipNextUpload = NO;
                 
         messageInfo[kMPPreviousSessionLengthKey] = @(previousSessionLength);
         
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionStart session:_session messageInfo:messageInfo];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionStart
+                                                                                 session:_session
+                                                                             messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
         [messageBuilder location:stateMachine.location];
