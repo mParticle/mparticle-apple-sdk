@@ -2,21 +2,21 @@
 
 @interface MPSession : MPDataModelAbstract <NSCopying>
 
-@property (nonatomic, strong, nonnull) NSMutableDictionary *attributesDictionary;
-@property (nonatomic) NSTimeInterval backgroundTime;
-@property (nonatomic, readonly) NSTimeInterval foregroundTime;
+@property (atomic, strong, nonnull) NSMutableDictionary *attributesDictionary;
+@property (atomic) NSTimeInterval backgroundTime;
+@property (atomic, readonly) NSTimeInterval foregroundTime;
 @property (nonatomic) NSTimeInterval startTime;
 @property (nonatomic) NSTimeInterval endTime;
 @property (nonatomic) NSTimeInterval length;
-@property (nonatomic, readonly) NSTimeInterval suspendTime;
-@property (nonatomic, readonly) uint eventCounter;
-@property (nonatomic, readonly) uint numberOfInterruptions;
+@property (atomic, readonly) NSTimeInterval suspendTime;
+@property (atomic, readonly) uint eventCounter;
+@property (atomic, readonly) uint numberOfInterruptions;
 @property (nonatomic) int64_t sessionId;
-@property (nonatomic, readonly) BOOL persisted;
-@property (nonatomic, strong, readwrite, nonnull) NSNumber *userId;
-@property (nonatomic, strong, readwrite, nonnull) NSString *sessionUserIds;
-@property (nonatomic, strong, readwrite, nullable) NSDictionary<NSString *, id> *appInfo;
-@property (nonatomic, strong, readwrite, nullable) NSDictionary *deviceInfo;
+@property (atomic, readonly) BOOL persisted;
+@property (atomic, strong, readwrite, nonnull) NSNumber *userId;
+@property (atomic, strong, readwrite, nonnull) NSString *sessionUserIds;
+@property (atomic, strong, readwrite, nullable) NSDictionary<NSString *, id> *appInfo;
+@property (atomic, strong, readwrite, nullable) NSDictionary *deviceInfo;
 
 
 - (nonnull instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId;

@@ -1659,8 +1659,6 @@ const int MaxBreadcrumbs = 50;
             }
             
             session.sessionId = sqlite3_last_insert_rowid(mParticleDB);
-            
-            [MPListenerController.sharedInstance onEntityStored:MPDatabaseTableSessions primaryKey:@(session.sessionId) message:session.description];
 
             sqlite3_clear_bindings(preparedStatement);
         } else {
