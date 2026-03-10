@@ -189,6 +189,22 @@ jobs:
           body: |
             ${{ steps.release-notes.outputs.release_notes }}
 
+      - name: Publish to CocoaPods trunk
+        if: env.DRY_RUN != 'true'
+        id: cocoapods
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: |
+          PODSPEC=$(find "${{ matrix.kit.local_path }}" -name "*.podspec" -maxdepth 1 | head -1)
+          if [ -z "$PODSPEC" ]; then
+            echo "⚠️  No podspec found for ${{ matrix.kit.name }}, skipping CocoaPods publish"
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "📦 Publishing $(basename "$PODSPEC") to CocoaPods trunk"
+          pod trunk push "$PODSPEC" --allow-warnings --skip-tests
+          echo "pod=$(basename "$PODSPEC" .podspec)" >> "$GITHUB_OUTPUT"
+
       - name: Summary
         shell: bash
         run: |
