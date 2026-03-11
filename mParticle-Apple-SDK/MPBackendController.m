@@ -320,50 +320,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     [self saveMessage:message updateSession:YES];
 }
 
-- (NSNumber *)previousSessionSuccessfullyClosed {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    NSString *previousSessionStateFile = [stateMachineDirectoryPath stringByAppendingPathComponent:kMPPreviousSessionStateFileName];
-    NSNumber *previousSessionSuccessfullyClosed = nil;
-    if ([fileManager fileExistsAtPath:previousSessionStateFile]) {
-        NSDictionary *previousSessionStateDictionary = [NSDictionary dictionaryWithContentsOfFile:previousSessionStateFile];
-        previousSessionSuccessfullyClosed = previousSessionStateDictionary[kMPASTPreviousSessionSuccessfullyClosedKey];
-    }
-    
-    if (previousSessionSuccessfullyClosed == nil) {
-        previousSessionSuccessfullyClosed = @YES;
-    }
-    
-    return previousSessionSuccessfullyClosed;
-}
-
-- (void)setPreviousSessionSuccessfullyClosed:(NSNumber *)previousSessionSuccessfullyClosed {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    NSString *previousSessionStateFile = [stateMachineDirectoryPath stringByAppendingPathComponent:kMPPreviousSessionStateFileName];
-    NSDictionary *previousSessionStateDictionary = @{kMPASTPreviousSessionSuccessfullyClosedKey:previousSessionSuccessfullyClosed};
-    
-    @try {
-        if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-            NSError *dirError = nil;
-            [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:&dirError];
-            if (dirError) {
-                MPILogError(@"Failed to create state machine directory: %@", dirError);
-                return;
-            }
-        } else if ([fileManager fileExistsAtPath:previousSessionStateFile]) {
-            [fileManager removeItemAtPath:previousSessionStateFile error:nil];
-        }
-        
-        BOOL success = [previousSessionStateDictionary writeToFile:previousSessionStateFile atomically:YES];
-        if (!success) {
-            MPILogError(@"Failed to write previous session state to file");
-        }
-    } @catch (NSException *exception) {
-        MPILogError(@"Exception writing previous session state: %@", exception);
-    }
-}
-
 - (void)processDidFinishLaunching:(NSNotification *)notification {
     NSString *astType = kMPASTInitKey;
     NSMutableDictionary *messageInfo = [[NSMutableDictionary alloc] initWithCapacity:3];
@@ -379,8 +335,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         [self.delegate forwardLogUpdate];
         isInstallOrUpgrade = YES;
     }
-    
-    messageInfo[kMPASTPreviousSessionSuccessfullyClosedKey] = [self previousSessionSuccessfullyClosed];
     
     NSDictionary *userInfo = [notification userInfo];
     
@@ -2007,7 +1961,6 @@ static BOOL skipNextUpload = NO;
         self.timeAppWentToBackgroundInCurrentSession = currentTime;
         self.timeOfLastEventInBackground = currentTime;
         
-        [self setPreviousSessionSuccessfullyClosed:@YES];
         [self cleanUp];
                 
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition

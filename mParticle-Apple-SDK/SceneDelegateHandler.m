@@ -17,7 +17,7 @@
 }
 
 #if TARGET_OS_IOS
-- (void)handleWithUrlContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
+- (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
     
     MPILogDebug(@"Opening URLContext URL: %@", urlContext.URL);
     MPILogDebug(@"Source: %@", urlContext.options.sourceApplication ?: @"unknown");
@@ -34,7 +34,7 @@
         options[@"UIApplicationOpenURLOptionsSourceApplicationKey"] = urlContext.options.sourceApplication;
     }
 
-    [self.appNotificationHandler open:urlContext.URL options:options];
+    [self.appNotificationHandler openURL:urlContext.URL options:options];
 }
 #endif
 

@@ -69,7 +69,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var prepareBatchesCalled = false
     var prepareBatchesUploadSettingsParam: MPUploadSettings?
 
-    func prepareBatches(forUpload uploadSettings: MPUploadSettings) {
+    func prepareBatches(forUpload uploadSettings: MPUploadSettings) -> Void {
         prepareBatchesCalled = true
         prepareBatchesUploadSettingsParam = uploadSettings
     }

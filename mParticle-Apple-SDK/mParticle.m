@@ -658,7 +658,7 @@ MPLog* logger;
 }
 
 - (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
-    [self.sceneDelegateHandler handleWithUrlContext:urlContext];
+    [self.sceneDelegateHandler handleURLContext:urlContext];
 }
 #endif
 
