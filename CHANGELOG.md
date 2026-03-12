@@ -735,7 +735,7 @@ Important behavioral and API changes:
 - The above are using wildcard dependencies, see here for how to interpret these: https://guides.cocoapods.org/using/the-podfile.html#specifying-pod-versions
 - If you don't see a kit listed here, it was probably already using a wildcard dependency. It has been released as is, as version 8.0.1, and will automatically pull in the latest version of the partner's SDK.
 
-To learn more, please reference the [migration guide](https://github.com/mParticle/mparticle-apple-sdk/blob/master/migration-guide-v8.md).
+To learn more, please reference the [migration guide](MIGRATING.md).
 
 ## 8.0.0-beta1
 
@@ -747,7 +747,7 @@ Important behavioral and API changes:
 - Introduction of the MPIdentity enum, allowing for both device and user identities to be supplied to the identity API
 - Braze, Branch and AppsFlyer kits have been updated to use the latest iOS 14 betas of their respective SDKs
 
-To learn more, please reference the [migration guide](https://github.com/mParticle/mparticle-apple-sdk/blob/master/migration-guide-v8.md).
+To learn more, please reference the [migration guide](MIGRATING.md).
 
 ## 7.16.2
 
