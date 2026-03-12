@@ -3,6 +3,13 @@
 
 @implementation UploadSettingsUtils
 
++ (void)registerUploadSettingsClassMappings {
+    [NSKeyedUnarchiver setClass:[MPUploadSettings class]
+                   forClassName:@"mParticle_Apple_SDK.MPUploadSettings"];
+    [NSKeyedUnarchiver setClass:[MPUploadSettings class]
+                   forClassName:@"mParticle_Apple_SDK_NoLocation.MPUploadSettings"];
+}
+
 
 + (void)setLastUploadSettings:(nullable MPUploadSettings *)lastUploadSettings userDefaults:(MPUserDefaults*)userDefaults {
     if (lastUploadSettings) {
@@ -31,8 +38,7 @@
     }
 
     NSError *error = nil;
-    [NSKeyedArchiver setClassName:@"mParticle_Apple_SDK.MPUploadSettings" forClass:MPUploadSettings.self];
-    [NSKeyedArchiver setClassName:@"mParticle_Apple_SDK_NoLocation.MPUploadSettings" forClass:MPUploadSettings.self];
+    [self registerUploadSettingsClassMappings];
     MPUploadSettings *settings =
         [NSKeyedUnarchiver unarchivedObjectOfClass:[MPUploadSettings class]
                                           fromData:(NSData *)obj
