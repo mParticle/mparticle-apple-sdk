@@ -1,3 +1,12 @@
+# [8.44.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.0...v8.44.1) (2026-03-11)
+
+### Bug Fixes
+
+- fix: Add Defensive Code when Building URL Signatures (#656) ([d84ef13e](https://github.com/mParticle/mparticle-apple-sdk/commit/d84ef13ed1547c8e28196727ea2f183941debf1b))
+- fix: WKWebView Logging Crash (#662) ([edaa25c0](https://github.com/mParticle/mparticle-apple-sdk/commit/edaa25c0b3b230207c5344d06c5879f51a756b6e))
+- fix: Crash in MPSession description (#661) ([dd6c80f9](https://github.com/mParticle/mparticle-apple-sdk/commit/dd6c80f9942c2ea7863b945a1a47844444e89f4a))
+- fix: Remove Outdated previousSessionSuccessfullyClosed Logic (#655) ([84ad0875](https://github.com/mParticle/mparticle-apple-sdk/commit/84ad08757b5c845dfefe9b9e1bef2655b5e8c9ed))
+
 # [8.44.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.43.1...v8.44.0) (2026-02-19)
 
 ### Bug Fixes
