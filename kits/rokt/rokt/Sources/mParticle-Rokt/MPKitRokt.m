@@ -14,12 +14,12 @@ static NSString * const kMPAttributeMappingDestinationKey = @"value";
 static NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
 
 // Rokt kit constants
-static NSString * const kMPRemoteConfigKitHashesKey = @"hs";
+static NSString * const kMPRoktRemoteConfigKitHashesKey = @"hs";
 static NSString * const kMPRemoteConfigUserAttributeFilter = @"ua";
 static NSString * const MPKitRoktErrorDomain = @"com.mparticle.kits.rokt";
 static NSString * const MPKitRoktErrorMessageKey = @"mParticle-Rokt Error";
-static NSString * const kMPPlacementAttributesMapping = @"placementAttributesMapping";
-static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
+static NSString * const kMPRoktPlacementAttributesMapping = @"placementAttributesMapping";
+static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
 static NSString * const kMPRoktEmbeddedViewClassName = @"MPRoktEmbeddedView";
 static NSString * const kMPEventNameSelectPlacements = @"selectPlacements";
 static NSString * const kMPRoktIdentityTypeEmailSha256 = @"emailsha256";
@@ -74,16 +74,22 @@ static __weak MPKitRokt *roktKit = nil;
     
     [MPKitRokt applyMParticleLogLevel];
     
-    [Rokt initWithRoktTagId:partnerId mParticleSdkVersion:sdkVersion mParticleKitVersion:kMPRoktKitVersion onInitComplete:^(BOOL InitComplete) {
-        if (InitComplete) {
-            [self start];
-            [MPKitRokt MPLog:@"Rokt Init Complete"];
-            NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"mParticle.Rokt.Initialized"
-                                                                object:nil
-                                                              userInfo:userInfo];
+    // Subscribe to global events to receive InitComplete
+    [Rokt globalEventsOnEvent:^(RoktEvent * _Nonnull event) {
+        if ([event isKindOfClass:[InitComplete class]]) {
+            InitComplete *initComplete = (InitComplete *)event;
+            if (initComplete.success) {
+                [self start];
+                [MPKitRokt MPLog:@"Rokt Init Complete"];
+                NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"mParticle.Rokt.Initialized"
+                                                                    object:nil
+                                                                  userInfo:userInfo];
+            }
         }
     }];
+
+    [Rokt initWithRoktTagId:partnerId mParticleSdkVersion:sdkVersion mParticleKitVersion:kMPRoktKitVersion];
     
     return [self execStatus:MPKitReturnCodeSuccess];
 }
@@ -111,7 +117,7 @@ static __weak MPKitRokt *roktKit = nil;
 /// @param attributes Dictionary of user attributes (email, firstName, etc.). Attributes will be mapped according to dashboard configuration.
 /// @param embeddedViews Optional dictionary mapping placement identifiers to embedded view containers for inline placements
 /// @param mpRoktConfig Optional Rokt configuration object (e.g., for dark mode or custom styling)
-/// @param callbacks Object that contains all possible callbacks for selectPlacements
+/// @param onEvent Callback block that receives RoktEvent objects for all placement events
 /// @param filteredUser The current user when this placement was requested. Filtered for the kit as per settings in the mParticle UI
 /// @return MPKitExecStatus indicating success or failure of the operation
 - (MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
@@ -136,26 +142,19 @@ static __weak MPKitRokt *roktKit = nil;
         placementOptions = [[PlacementOptions alloc] initWithJointSdkSelectPlacements:options.jointSdkSelectPlacements dynamicPerformanceMarkers:@{}];
     }
 
-    [Rokt executeWithViewName:identifier
-                   attributes:finalAtt
-                   placements:confirmedViews
-                       config:roktConfig
-             placementOptions:placementOptions
-                       onLoad:nil
-                     onUnLoad:nil
- onShouldShowLoadingIndicator:nil
- onShouldHideLoadingIndicator:nil
-         onEmbeddedSizeChange:nil
-    ];
-
-    if (onEvent) {
-        [Rokt eventsWithViewName:identifier onEvent:^(RoktEvent * _Nonnull event) {
+    [Rokt selectPlacementsWithIdentifier:identifier
+                              attributes:finalAtt
+                              placements:confirmedViews
+                                  config:roktConfig
+                        placementOptions:placementOptions
+                                 onEvent:^(RoktEvent * _Nonnull event) {
+        if (onEvent) {
             MPRoktEvent *mpEvent = [MPKitRokt mapEvent:event];
             if (mpEvent) {
                 onEvent(mpEvent);
             }
-        }];
-    }
+        }
+    }];
 
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
@@ -289,11 +288,7 @@ static __weak MPKitRokt *roktKit = nil;
                 transformedDictionary[key] = [numberAttribute stringValue];
             }
         } else if ([obj isKindOfClass:[NSDate class]]) {
-            NSDateFormatter *rfc3339Formatter = [[NSDateFormatter alloc] init];
-            rfc3339Formatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-            rfc3339Formatter.dateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ssZ";
-            rfc3339Formatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-            transformedDictionary[key] = [rfc3339Formatter stringFromDate:obj];
+            transformedDictionary[key] = [MPKitAPI stringFromDateRFC3339:obj];
         } else if ([obj isKindOfClass:[NSData class]] && [(NSData *)obj length] > 0) {
             transformedDictionary[key] = [[NSString alloc] initWithData:obj encoding:NSUTF8StringEncoding];
         } else if ([obj isKindOfClass:[NSDictionary class]]) {
@@ -333,7 +328,7 @@ static __weak MPKitRokt *roktKit = nil;
     NSData *dataAttributeMap;
     // Rokt Kit is available though there may not be an attribute map
     attributeMap = @[];
-    id configJSONString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPPlacementAttributesMapping];
+    id configJSONString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPRoktPlacementAttributesMapping];
     if (configJSONString != nil && configJSONString != [NSNull null]) {
         strAttributeMap = [configJSONString stringByRemovingPercentEncoding];
         dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
@@ -523,7 +518,7 @@ static __weak MPKitRokt *roktKit = nil;
     NSDictionary *roktKitConfig = [MPKitRokt getKitConfig];
     
     // Get the string representing which identity to use and convert it to the key (NSNumber)
-    NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPHashedEmailUserIdentityType];
+    NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPRoktHashedEmailUserIdentityType];
     NSNumber *hashedIdentityTypeNumber = [MPKitRokt identityTypeForString:hashedIdentityTypeString.lowercaseString];
     
     return hashedIdentityTypeNumber;
@@ -535,19 +530,26 @@ static __weak MPKitRokt *roktKit = nil;
 /// @param catalogItemId The identifier of the catalog item that was purchased
 /// @param success Whether the purchase was successful (YES) or failed (NO)
 /// @return MPKitExecStatus indicating success or failure of the operation
-- (MPKitExecStatus *)purchaseFinalized:(NSString *)placementId catalogItemId:(NSString *)catalogItemId success:(NSNumber *)success {
-    if (placementId != nil && catalogItemId != nil && success != nil) {
-        if (@available(iOS 15.0, *)) {
-            [Rokt purchaseFinalizedWithPlacementId:placementId catalogItemId:catalogItemId success:success.boolValue];
-            return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
-        }
-        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeUnavailable];
+- (MPKitExecStatus *)purchaseFinalized:(NSString *)identifier catalogItemId:(NSString *)catalogItemId success:(NSNumber *)success {
+    if (identifier != nil && catalogItemId != nil && success != nil) {
+        [Rokt purchaseFinalizedWithIdentifier:identifier catalogItemId:catalogItemId success:success.boolValue];
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     }
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeFail];
 }
 
 - (MPKitExecStatus *)events:(NSString *)identifier onEvent:(void (^)(MPRoktEvent * _Nonnull))onEvent {
-    [Rokt eventsWithViewName:identifier onEvent:^(RoktEvent * _Nonnull event) {
+    [Rokt eventsWithIdentifier:identifier onEvent:^(RoktEvent * _Nonnull event) {
+        MPRoktEvent *mpEvent = [MPKitRokt mapEvent:event];
+        if (mpEvent) {
+            onEvent(mpEvent);
+        }
+    }];
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+
+- (MPKitExecStatus *)globalEvents:(void (^)(MPRoktEvent * _Nonnull))onEvent {
+    [Rokt globalEventsOnEvent:^(RoktEvent * _Nonnull event) {
         MPRoktEvent *mpEvent = [MPKitRokt mapEvent:event];
         if (mpEvent) {
             onEvent(mpEvent);
@@ -969,6 +971,13 @@ static __weak MPKitRokt *roktKit = nil;
         return [[MPRoktFirstPositiveEngagement alloc] initWithPlacementId:firstPositiveEngagement.placementId];
     }
     
+    // Check for RoktEvent.EmbeddedSizeChanged
+    if ([event isKindOfClass:[EmbeddedSizeChanged class]]) {
+        EmbeddedSizeChanged *embeddedSizeChanged = (EmbeddedSizeChanged *)event;
+        return [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:embeddedSizeChanged.placementId
+                                                        updatedHeight:embeddedSizeChanged.updatedHeight];
+    }
+
     // Check for RoktEvent.CartItemInstantPurchase
     if ([event isKindOfClass:[CartItemInstantPurchase class]]) {
         CartItemInstantPurchase *cartItemInstantPurchase = (CartItemInstantPurchase *)event;
