@@ -17,6 +17,8 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitFilter.h"
+#import "UploadSettingsUtils.h"
+#import "MPUploadSettings.h"
 
 @interface MParticle ()
 
@@ -1456,6 +1458,88 @@
     XCTAssertEqual(maxBytesNormal, MAX_BYTES_PER_BATCH, @"Normal batch max bytes should be MAX_BYTES_PER_BATCH");
     XCTAssertEqual(maxBytesCrash, MAX_BYTES_PER_BATCH_CRASH, @"Crash batch max bytes should be MAX_BYTES_PER_BATCH_CRASH");
     XCTAssertGreaterThan(maxBytesCrash, maxBytesNormal, @"Crash batch should allow more bytes than normal batch");
+}
+
+// Simulates a row written by the old Swift module (mParticle_Apple_SDK_NoLocation)
+// by manually encoding MPUploadSettings under the legacy class name and verifying
+// fetchUploads can still decode and return it after the ObjC migration.
+- (void)testFetchUploads_decodesLegacySwiftModuleClassName {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]
+                                                       userId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *uploadDictionary = @{kMPOptOutKey: @NO,
+                                       kMPSessionTimeoutKey: @120,
+                                       kMPUploadIntervalKey: @10,
+                                       kMPLifeTimeValueKey: @0,
+                                       kMPMessagesKey: @[],
+                                       kMPMessageIdKey: [[NSUUID UUID] UUIDString]};
+
+    MPUploadSettings *settings = [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                                           networkOptions:[MParticle sharedInstance].networkOptions];
+
+    // Encode using the legacy Swift module class name to simulate pre-migration persisted data
+    [NSKeyedArchiver setClassName:@"mParticle_Apple_SDK_NoLocation.MPUploadSettings"
+                         forClass:[MPUploadSettings class]];
+    NSData *legacyBlob = [NSKeyedArchiver archivedDataWithRootObject:settings
+                                               requiringSecureCoding:YES
+                                                               error:nil];
+    // Reset so other tests are not affected
+    [NSKeyedArchiver setClassName:nil forClass:[MPUploadSettings class]];
+
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId)
+                                          uploadDictionary:uploadDictionary
+                                               dataPlanId:nil
+                                          dataPlanVersion:nil
+                                           uploadSettings:settings];
+
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    [persistence saveUpload:upload];
+
+    // Patch the saved row's upload_settings blob with the legacy-encoded version
+    // to simulate the state of a DB row written before the Swift→ObjC migration
+    NSString *dbPath = [persistence valueForKey:@"databasePath"];
+    sqlite3 *db;
+    sqlite3_open([dbPath UTF8String], &db);
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(db, "UPDATE uploads SET upload_settings = ? WHERE _id = ?", -1, &stmt, NULL);
+    sqlite3_bind_blob(stmt, 1, legacyBlob.bytes, (int)legacyBlob.length, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 2, upload.uploadId);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
+
+    NSArray<MPUpload *> *fetched = [persistence fetchUploads];
+    XCTAssertEqual(fetched.count, 1, @"Upload with legacy class name should be decoded and returned by fetchUploads");
+    XCTAssertEqualObjects(fetched.firstObject.uploadSettings.apiKey, settings.apiKey,
+                          @"Decoded upload settings apiKey should match original");
+}
+
+// Verifies registerUploadSettingsClassMappings enables decoding blobs encoded
+// under either the old Swift module name or the current ObjC module name.
+- (void)testRegisterUploadSettingsClassMappings_decodesAllModuleNames {
+    MPUploadSettings *original = [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                                           networkOptions:[MParticle sharedInstance].networkOptions];
+
+    NSArray *legacyNames = @[
+        @"mParticle_Apple_SDK_NoLocation.MPUploadSettings",
+        @"mParticle_Apple_SDK.MPUploadSettings"
+    ];
+
+    for (NSString *legacyName in legacyNames) {
+        [NSKeyedArchiver setClassName:legacyName forClass:[MPUploadSettings class]];
+        NSData *blob = [NSKeyedArchiver archivedDataWithRootObject:original
+                                             requiringSecureCoding:YES
+                                                             error:nil];
+        [NSKeyedArchiver setClassName:nil forClass:[MPUploadSettings class]];
+
+        NSError *error = nil;
+        MPUploadSettings *decoded = [NSKeyedUnarchiver unarchivedObjectOfClass:[MPUploadSettings class]
+                                                                      fromData:blob
+                                                                         error:&error];
+        XCTAssertNil(error, @"Should decode without error for class name: %@", legacyName);
+        XCTAssertNotNil(decoded, @"Decoded settings should not be nil for class name: %@", legacyName);
+        XCTAssertEqualObjects(decoded.apiKey, original.apiKey,
+                              @"apiKey should survive round-trip for class name: %@", legacyName);
+    }
 }
 
 @end

@@ -14,6 +14,15 @@ static NSString *const kEventsOnly = @"eventsOnly";
 
 @implementation MPUploadSettings
 
++ (void)initialize {
+    if (self == [MPUploadSettings class]) {
+        [NSKeyedUnarchiver setClass:[MPUploadSettings class]
+                       forClassName:@"mParticle_Apple_SDK.MPUploadSettings"];
+        [NSKeyedUnarchiver setClass:[MPUploadSettings class]
+                       forClassName:@"mParticle_Apple_SDK_NoLocation.MPUploadSettings"];
+    }
+}
+
 + (BOOL)supportsSecureCoding {
     return YES;
 }
