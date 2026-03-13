@@ -8,7 +8,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)setLastUploadSettings:(nullable MPUploadSettings *)lastUploadSettings userDefaults:(MPUserDefaults*)userDefaults;
 + (nullable MPUploadSettings *)lastUploadSettingsWithUserDefaults:(MPUserDefaults*)userDefaults;
-+ (void)registerUploadSettingsClassMappings;
 
 @end
 

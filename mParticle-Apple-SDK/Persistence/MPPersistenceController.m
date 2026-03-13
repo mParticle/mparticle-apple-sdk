@@ -19,7 +19,6 @@
 #import "MPApplication.h"
 #import "MParticleUserNotification.h"
 #import "MPUserDefaultsConnector.h"
-#import "UploadSettingsUtils.h"
 @import mParticle_Apple_SDK_Swift;
 
 // Prototype declaration of the C functions
@@ -1246,7 +1245,6 @@ const int MaxBreadcrumbs = 50;
             NSData *uploadSettingsData = dataValue(preparedStatement, 8);
             if (uploadSettingsData) {
                 NSError *error = nil;
-                [UploadSettingsUtils registerUploadSettingsClassMappings];
                 MPUploadSettings *uploadSettings = [NSKeyedUnarchiver unarchivedObjectOfClass:[MPUploadSettings class] fromData:uploadSettingsData error:&error];
                 
                 if (uploadSettings && !error) {
