@@ -2151,13 +2151,22 @@ static BOOL skipNextUpload = NO;
         while (applicationState == UIApplicationStateBackground) {
             [self endSessionIfTimedOut];
             
-            // Check cancellation immediately before accessing backgroundTimeRemaining
-            // to avoid calling it after the OS has begun tearing down XPC connections
-            if (!weakBlockOperation || weakBlockOperation.isCancelled) {
+            // Perform cancellation check and backgroundTimeRemaining in a single
+            // dispatch_sync to the main queue. This serializes with the expiration
+            // handler and foreground handler (both fire on the main thread)
+            __block BOOL cancelled = NO;
+            __block NSTimeInterval timeRemaining = 0;
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                if (!weakBlockOperation || weakBlockOperation.isCancelled) {
+                    cancelled = YES;
+                    return;
+                }
+                timeRemaining = sharedApplication.backgroundTimeRemaining;
+            });
+            
+            if (cancelled) {
                 return;
             }
-            
-            NSTimeInterval timeRemaining = sharedApplication.backgroundTimeRemaining;
             
             if (timeRemaining <= kMPRemainingBackgroundTimeMinimumThreshold) {
                 // Less than kMPRemainingBackgroundTimeMinimumThreshold seconds left in the background, upload the batch
