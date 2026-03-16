@@ -322,8 +322,7 @@
                                     title:@"Sample App Video"
                                     duration:[NSNumber numberWithInt:120000]
                                     contentType:MPMediaContentTypeVideo
-                                    streamType:MPMediaStreamTypeOnDemand
-                                    excludeAdBreaksFromContentTime:true];
+                                    streamType:MPMediaStreamTypeOnDemand];
     
     [mediaSession logMediaSessionStartWithOptions:nil];
     [mediaSession logPlayWithOptions:nil];
