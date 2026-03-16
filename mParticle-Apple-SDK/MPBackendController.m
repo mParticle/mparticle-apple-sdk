@@ -2157,7 +2157,8 @@ static BOOL skipNextUpload = NO;
             __block BOOL cancelled = NO;
             __block NSTimeInterval timeRemaining = 0;
             dispatch_sync(dispatch_get_main_queue(), ^{
-                if (!weakBlockOperation || weakBlockOperation.isCancelled) {
+                NSBlockOperation *strongOperation = weakBlockOperation;
+                if (!strongOperation || strongOperation.isCancelled) {
                     cancelled = YES;
                     return;
                 }
