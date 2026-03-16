@@ -2525,6 +2525,46 @@
     [MPApplication_PRIVATE setMockApplication:nil];
 }
 
+- (void)testBackgroundTimeRemainingIsAccessedOnMainThread {
+    __block BOOL allAccessesOnMainThread = YES;
+
+    id mockApplication = OCMClassMock([UIApplication class]);
+
+    __block NSInteger stateCallCount = 0;
+    OCMStub([mockApplication applicationState]).andDo(^(NSInvocation *invocation) {
+        UIApplicationState state = (stateCallCount < 3)
+            ? UIApplicationStateBackground
+            : UIApplicationStateActive;
+        stateCallCount++;
+        [invocation setReturnValue:&state];
+    });
+
+    OCMStub([mockApplication backgroundTimeRemaining]).andDo(^(NSInvocation *invocation) {
+        if (![NSThread isMainThread]) {
+            allAccessesOnMainThread = NO;
+        }
+        NSTimeInterval remaining = 25.0;
+        [invocation setReturnValue:&remaining];
+    });
+    OCMStub([mockApplication beginBackgroundTaskWithExpirationHandler:OCMOCK_ANY]).andReturn((UIBackgroundTaskIdentifier)42);
+    OCMStub([mockApplication endBackgroundTask:(UIBackgroundTaskIdentifier)42]);
+
+    [MPApplication_PRIVATE setMockApplication:mockApplication];
+
+    dispatch_async(messageQueue, ^{
+        [self.backendController beginBackgroundTimeCheckLoop];
+    });
+
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];
+
+    XCTAssertTrue(allAccessesOnMainThread,
+                  @"backgroundTimeRemaining must be accessed on the main thread "
+                  "to prevent XPC race conditions during app suspension");
+
+    [self.backendController cancelBackgroundTimeCheckLoop];
+    [MPApplication_PRIVATE setMockApplication:nil];
+}
+
 - (void)testEndSessionIfTimedOutDispatchesToMessageQueue {
     // Verify that endSessionIfTimedOut called from a non-message-queue thread
     // does not mutate session properties directly on that thread, but instead
