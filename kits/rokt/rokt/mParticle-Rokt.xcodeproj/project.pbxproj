@@ -377,8 +377,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ROKT/rokt-sdk-ios";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.16.1;
+				branch = "workstation/5.0.0";
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
