@@ -839,17 +839,13 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
         return YES;
     }]]);
     
-    // Stub Rokt execute call
-    OCMStub([mockRoktSDK executeWithViewName:OCMOCK_ANY
-                                  attributes:OCMOCK_ANY
-                                  placements:OCMOCK_ANY
-                                      config:OCMOCK_ANY
-                            placementOptions:OCMOCK_ANY
-                                      onLoad:OCMOCK_ANY
-                                    onUnLoad:OCMOCK_ANY
-                onShouldShowLoadingIndicator:OCMOCK_ANY
-                onShouldHideLoadingIndicator:OCMOCK_ANY
-                        onEmbeddedSizeChange:OCMOCK_ANY]);
+    // Stub Rokt selectPlacements call
+    OCMStub([mockRoktSDK selectPlacementsWithIdentifier:OCMOCK_ANY
+                                             attributes:OCMOCK_ANY
+                                             placements:OCMOCK_ANY
+                                                 config:OCMOCK_ANY
+                                       placementOptions:OCMOCK_ANY
+                                              onEvent:OCMOCK_ANY]);
     
     // Call executeWithIdentifier which triggers logSelectPlacementEvent with prepareAttributes
     MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
