@@ -1,3 +1,9 @@
+# [8.44.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.1...v8.44.2) (2026-03-17)
+
+### Bug Fixes
+
+- fix: serialize backgroundTimeRemaining with cancellation check (#667) ([beccd65a](https://github.com/mParticle/mparticle-apple-sdk/commit/beccd65a2d3ba77a548ca1d104a14d511174e528))
+
 # [8.44.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.0...v8.44.1) (2026-03-11)
 
 ### Bug Fixes
