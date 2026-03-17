@@ -23,7 +23,7 @@ public class MPRoktLayout {
 
     public init(
         sdkTriggered: Binding<Bool>,
-        viewName: String? = nil,
+        identifier: String,
         locationName: String = "",
         attributes: [String: String],
         config: RoktConfig? = nil,
@@ -39,7 +39,7 @@ public class MPRoktLayout {
             .mpLog(
                 "Initializing MPRoktLayout with arguments " +
                     "sdkTriggered:\(sdkTriggered.wrappedValue), " +
-                    "viewName:\(viewName ?? "nil"), " +
+                    "viewName:\(identifier ?? "nil"), " +
                     "locationName:\(locationName), " +
                     "attributes:\(attributes)"
             )
@@ -57,14 +57,14 @@ public class MPRoktLayout {
                 .mpLog(
                     "Initializing RoktLayout with arguments " +
                         "sdkTriggered:\(sdkTriggered.wrappedValue), " +
-                        "viewName: \(viewName ?? "nil"), " +
+                        "viewName: \(identifier ?? "nil"), " +
                         "locationName:\(locationName), " +
                         "attributes:\(preparedAttributes)"
                 )
             self.roktLayout = RoktLayout.init(
                 sdkTriggered: sdkTriggered,
-                viewName: viewName,
-                locationName: locationName,
+                identifier: identifier,
+                location: locationName,
                 attributes: preparedAttributes,
                 config: config,
                 placementOptions: options,

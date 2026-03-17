@@ -1,5 +1,5 @@
 #import "MPKitRokt.h"
-#import <Rokt_Widget/Rokt_Widget-Swift.h>
+@import Rokt_Widget;
 
 // Kit version
 static NSString * const kMPRoktKitVersion = @"8.3.3";
@@ -920,61 +920,61 @@ static __weak MPKitRokt *roktKit = nil;
     // Check for RoktEvent.PlacementInteractive
     if ([event isKindOfClass:[PlacementInteractive class]]) {
         PlacementInteractive *placementInteractive = (PlacementInteractive *)event;
-        return [[MPRoktPlacementInteractive alloc] initWithPlacementId:placementInteractive.placementId];
+        return [[MPRoktPlacementInteractive alloc] initWithPlacementId:placementInteractive.identifier];
     }
     
     // Check for RoktEvent.PlacementReady
     if ([event isKindOfClass:[PlacementReady class]]) {
         PlacementReady *placementReady = (PlacementReady *)event;
-        return [[MPRoktPlacementReady alloc] initWithPlacementId:placementReady.placementId];
+        return [[MPRoktPlacementReady alloc] initWithPlacementId:placementReady.identifier];
     }
     
     // Check for RoktEvent.OfferEngagement
     if ([event isKindOfClass:[OfferEngagement class]]) {
         OfferEngagement *offerEngagement = (OfferEngagement *)event;
-        return [[MPRoktOfferEngagement alloc] initWithPlacementId:offerEngagement.placementId];
+        return [[MPRoktOfferEngagement alloc] initWithPlacementId:offerEngagement.identifier];
     }
     
     // Check for RoktEvent.OpenUrl
     if ([event isKindOfClass:[OpenUrl class]]) {
         OpenUrl *openUrl = (OpenUrl *)event;
-        return [[MPRoktOpenUrl alloc] initWithPlacementId:openUrl.placementId url:openUrl.url];
+        return [[MPRoktOpenUrl alloc] initWithPlacementId:openUrl.identifier url:openUrl.url];
     }
     
     // Check for RoktEvent.PositiveEngagement
     if ([event isKindOfClass:[PositiveEngagement class]]) {
         PositiveEngagement *positiveEngagement = (PositiveEngagement *)event;
-        return [[MPRoktPositiveEngagement alloc] initWithPlacementId:positiveEngagement.placementId];
+        return [[MPRoktPositiveEngagement alloc] initWithPlacementId:positiveEngagement.identifier];
     }
     
     // Check for RoktEvent.PlacementClosed
     if ([event isKindOfClass:[PlacementClosed class]]) {
         PlacementClosed *placementClosed = (PlacementClosed *)event;
-        return [[MPRoktPlacementClosed alloc] initWithPlacementId:placementClosed.placementId];
+        return [[MPRoktPlacementClosed alloc] initWithPlacementId:placementClosed.identifier];
     }
     
     // Check for RoktEvent.PlacementCompleted
     if ([event isKindOfClass:[PlacementCompleted class]]) {
         PlacementCompleted *placementCompleted = (PlacementCompleted *)event;
-        return [[MPRoktPlacementCompleted alloc] initWithPlacementId:placementCompleted.placementId];
+        return [[MPRoktPlacementCompleted alloc] initWithPlacementId:placementCompleted.identifier];
     }
     
     // Check for RoktEvent.PlacementFailure
     if ([event isKindOfClass:[PlacementFailure class]]) {
         PlacementFailure *placementFailure = (PlacementFailure *)event;
-        return [[MPRoktPlacementFailure alloc] initWithPlacementId:placementFailure.placementId];
+        return [[MPRoktPlacementFailure alloc] initWithPlacementId:placementFailure.identifier];
     }
     
     // Check for RoktEvent.FirstPositiveEngagement
     if ([event isKindOfClass:[FirstPositiveEngagement class]]) {
         FirstPositiveEngagement *firstPositiveEngagement = (FirstPositiveEngagement *)event;
-        return [[MPRoktFirstPositiveEngagement alloc] initWithPlacementId:firstPositiveEngagement.placementId];
+        return [[MPRoktFirstPositiveEngagement alloc] initWithPlacementId:firstPositiveEngagement.identifier];
     }
     
     // Check for RoktEvent.EmbeddedSizeChanged
     if ([event isKindOfClass:[EmbeddedSizeChanged class]]) {
         EmbeddedSizeChanged *embeddedSizeChanged = (EmbeddedSizeChanged *)event;
-        return [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:embeddedSizeChanged.placementId
+        return [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:embeddedSizeChanged.identifier
                                                         updatedHeight:embeddedSizeChanged.updatedHeight];
     }
 
@@ -985,7 +985,7 @@ static __weak MPKitRokt *roktKit = nil;
         // Handle nil coalescing for name field
         NSString *name = cartItemInstantPurchase.name ?: @"";
         
-        return [[MPRoktCartItemInstantPurchase alloc] initWithPlacementId:cartItemInstantPurchase.placementId
+        return [[MPRoktCartItemInstantPurchase alloc] initWithPlacementId:cartItemInstantPurchase.identifier
                                                                      name:name
                                                                cartItemId:cartItemInstantPurchase.cartItemId
                                                             catalogItemId:cartItemInstantPurchase.catalogItemId

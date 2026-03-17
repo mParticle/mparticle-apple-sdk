@@ -18,7 +18,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
-            .upToNextMajor(from: "5.0.0")
+            branch: "workstation/5.0.0"
         ),
         .package(
             url: "https://github.com/erikdoe/ocmock",
