@@ -2464,6 +2464,107 @@
     [MPApplication_PRIVATE setMockApplication:nil];
 }
 
+- (void)testForegroundHandlerStopsBackgroundTimeRemainingCalls {
+    // Verify that when the app returns to foreground (simulated via
+    // cancelBackgroundTimeCheckLoop + endBackgroundTask, the same
+    // sequence as handleApplicationWillEnterForeground), the loop
+    // stops calling backgroundTimeRemaining. This is the scenario
+    // where the TOCTOU race was observed (2ms window in production).
+    
+    __block NSInteger backgroundTimeRemainingCallCount = 0;
+    
+    id mockApplication = OCMClassMock([UIApplication class]);
+    OCMStub([mockApplication applicationState]).andReturn(UIApplicationStateBackground);
+    OCMStub([mockApplication backgroundTimeRemaining]).andDo(^(NSInvocation *invocation) {
+        backgroundTimeRemainingCallCount++;
+        NSTimeInterval remaining = 25.0;
+        [invocation setReturnValue:&remaining];
+    });
+    OCMStub([mockApplication beginBackgroundTaskWithExpirationHandler:OCMOCK_ANY]).andReturn((UIBackgroundTaskIdentifier)42);
+    OCMStub([mockApplication endBackgroundTask:(UIBackgroundTaskIdentifier)42]);
+    
+    [MPApplication_PRIVATE setMockApplication:mockApplication];
+    
+    // Start the background task
+    XCTestExpectation *taskStarted = [self expectationWithDescription:@"Background task started"];
+    [self.backendController beginBackgroundTask];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [taskStarted fulfill];
+    });
+    [self waitForExpectations:@[taskStarted] timeout:2.0];
+    
+    // Start the background time check loop
+    dispatch_async(messageQueue, ^{
+        [self.backendController beginBackgroundTimeCheckLoop];
+    });
+    
+    // Let the loop run a few iterations
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:3.0]];
+    NSInteger callsBeforeForeground = backgroundTimeRemainingCallCount;
+    XCTAssertGreaterThan(callsBeforeForeground, 0, @"Loop should have called backgroundTimeRemaining at least once");
+    
+    // Simulate the foreground handler (same sequence as handleApplicationWillEnterForeground)
+    [self.backendController cancelBackgroundTimeCheckLoop];
+    [self.backendController endBackgroundTask];
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.5]];
+    
+    // Record calls and wait to confirm no new calls arrive
+    NSInteger callsAtForeground = backgroundTimeRemainingCallCount;
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:3.0]];
+    NSInteger callsAfterForeground = backgroundTimeRemainingCallCount;
+    
+    XCTAssertEqual(callsAfterForeground, callsAtForeground,
+                   @"backgroundTimeRemaining should not be called after foreground handler. "
+                   "Calls at foreground: %ld, calls after waiting: %ld",
+                   (long)callsAtForeground, (long)callsAfterForeground);
+    
+    XCTAssertEqual(self.backendController.backgroundCheckQueue.operationCount, 0,
+                   @"Background check queue should have no running operations after foreground");
+    
+    [self.backendController cancelBackgroundTimeCheckLoop];
+    [MPApplication_PRIVATE setMockApplication:nil];
+}
+
+- (void)testBackgroundTimeRemainingIsAccessedOnMainThread {
+    __block BOOL allAccessesOnMainThread = YES;
+
+    id mockApplication = OCMClassMock([UIApplication class]);
+
+    __block NSInteger stateCallCount = 0;
+    OCMStub([mockApplication applicationState]).andDo(^(NSInvocation *invocation) {
+        UIApplicationState state = (stateCallCount < 3)
+            ? UIApplicationStateBackground
+            : UIApplicationStateActive;
+        stateCallCount++;
+        [invocation setReturnValue:&state];
+    });
+
+    OCMStub([mockApplication backgroundTimeRemaining]).andDo(^(NSInvocation *invocation) {
+        if (![NSThread isMainThread]) {
+            allAccessesOnMainThread = NO;
+        }
+        NSTimeInterval remaining = 25.0;
+        [invocation setReturnValue:&remaining];
+    });
+    OCMStub([mockApplication beginBackgroundTaskWithExpirationHandler:OCMOCK_ANY]).andReturn((UIBackgroundTaskIdentifier)42);
+    OCMStub([mockApplication endBackgroundTask:(UIBackgroundTaskIdentifier)42]);
+
+    [MPApplication_PRIVATE setMockApplication:mockApplication];
+
+    dispatch_async(messageQueue, ^{
+        [self.backendController beginBackgroundTimeCheckLoop];
+    });
+
+    [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];
+
+    XCTAssertTrue(allAccessesOnMainThread,
+                  @"backgroundTimeRemaining must be accessed on the main thread "
+                  "to prevent XPC race conditions during app suspension");
+
+    [self.backendController cancelBackgroundTimeCheckLoop];
+    [MPApplication_PRIVATE setMockApplication:nil];
+}
+
 - (void)testEndSessionIfTimedOutDispatchesToMessageQueue {
     // Verify that endSessionIfTimedOut called from a non-message-queue thread
     // does not mutate session properties directly on that thread, but instead
