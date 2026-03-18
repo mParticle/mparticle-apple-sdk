@@ -18,6 +18,25 @@ jobs:
       - id: set
         run: echo "matrix=$(jq -c . kits/matrix.json)" >> "$GITHUB_OUTPUT"
 
+  pod-lint-kits:
+    name: Pod Lint ${{ matrix.kit.name }}
+    needs: load-matrix
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.4"
+      - name: Pod Lib Lint
+        run: |
+          PODSPEC=$(find "${{ matrix.kit.local_path }}" -maxdepth 1 -name "*.podspec" | head -1)
+          echo "Linting: $PODSPEC"
+          pod lib lint "$PODSPEC" --allow-warnings --skip-import-validation
+
   build-kits:
     name: Build ${{ matrix.kit.name }}
     needs: load-matrix

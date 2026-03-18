@@ -11,8 +11,8 @@ Pod::Spec.new do |s|
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
-    s.source_files      = 'kits/kochava/kochava-9/Sources/mParticle-Kochava/**/*.{h,m,mm}'
-    s.resource_bundles  = { 'mParticle-Kochava-9-Privacy' => ['kits/kochava/kochava-9/Sources/mParticle-Kochava/PrivacyInfo.xcprivacy'] }
+    s.source_files      = 'Sources/mParticle-Kochava/**/*.{h,m,mm}'
+    s.resource_bundles  = { 'mParticle-Kochava-9-Privacy' => ['Sources/mParticle-Kochava/PrivacyInfo.xcprivacy'] }
     s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.dependency 'KochavaNetworking', '~> 9.0'
     s.dependency 'KochavaMeasurement', '~> 9.0'

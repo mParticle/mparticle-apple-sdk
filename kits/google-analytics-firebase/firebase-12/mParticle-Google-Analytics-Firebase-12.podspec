@@ -10,8 +10,8 @@ Pod::Spec.new do |s|
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.ios.deployment_target = "15.6"
-    s.ios.source_files      = 'kits/google-analytics-firebase/firebase-12/Sources/mParticle-Firebase/**/*.{h,m,mm}'
-    s.ios.resource_bundles  = { 'mParticle-Google-Analytics-Firebase-12-Privacy' => ['kits/google-analytics-firebase/firebase-12/Sources/mParticle-Firebase/PrivacyInfo.xcprivacy'] }
+    s.ios.source_files      = 'Sources/mParticle-Firebase/**/*.{h,m,mm}'
+    s.ios.resource_bundles  = { 'mParticle-Google-Analytics-Firebase-12-Privacy' => ['Sources/mParticle-Firebase/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.ios.dependency 'FirebaseAnalytics', '~> 12.0'
 end
