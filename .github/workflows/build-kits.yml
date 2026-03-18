@@ -50,8 +50,9 @@ jobs:
           echo "Linting: $PODSPEC"
           pod lib lint "$PODSPEC" \
             --allow-warnings \
+            --use-libraries \
             --skip-import-validation \
-            --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec}"
+            --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}"
 
   build-kits:
     name: Build ${{ matrix.kit.name }}
