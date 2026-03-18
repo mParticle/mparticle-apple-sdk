@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
     s.source_files      = 'Sources/mParticle-OneTrust/**/*.{h,m,mm}'
     s.resource_bundles  = { 'mParticle-OneTrust-Privacy' => ['Sources/mParticle-OneTrust/PrivacyInfo.xcprivacy'] }
     s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
-    s.ios.dependency 'OTPublishersHeadlessSDK'
-    s.tvos.dependency 'OTPublishersHeadlessSDKtvOS'
+    s.ios.dependency 'OneTrust-CMP-XCFramework'
+    s.tvos.dependency 'OneTrust-CMP-tvOS-XCFramework'
 end

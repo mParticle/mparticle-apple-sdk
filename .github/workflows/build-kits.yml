@@ -43,6 +43,10 @@ jobs:
           sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
 
           PODSPEC=$(find "${{ matrix.kit.local_path }}" -maxdepth 1 -name "*.podspec" | head -1)
+          if [ -z "$PODSPEC" ]; then
+            echo "No podspec found for ${{ matrix.kit.name }}, skipping pod lint."
+            exit 0
+          fi
           echo "Linting: $PODSPEC"
           pod lib lint "$PODSPEC" \
             --allow-warnings \
