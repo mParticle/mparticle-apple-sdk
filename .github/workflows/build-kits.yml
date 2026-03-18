@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.4"
+          xcode-version: "26.2"
       - name: Pod Lib Lint
         run: |
           # Bump local SDK versions to 9.0.0 to satisfy kit ~> 9.0 dependency constraints.
@@ -50,7 +50,6 @@ jobs:
           echo "Linting: $PODSPEC"
           pod lib lint "$PODSPEC" \
             --allow-warnings \
-            --use-libraries \
             --skip-import-validation \
             --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}"
 
