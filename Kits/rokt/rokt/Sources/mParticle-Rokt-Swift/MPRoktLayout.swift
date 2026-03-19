@@ -39,7 +39,7 @@ public class MPRoktLayout {
             .mpLog(
                 "Initializing MPRoktLayout with arguments " +
                     "sdkTriggered:\(sdkTriggered.wrappedValue), " +
-                    "viewName:\(identifier ?? "nil"), " +
+                    "viewName:\(identifier), " +
                     "locationName:\(locationName), " +
                     "attributes:\(attributes)"
             )
@@ -57,7 +57,7 @@ public class MPRoktLayout {
                 .mpLog(
                     "Initializing RoktLayout with arguments " +
                         "sdkTriggered:\(sdkTriggered.wrappedValue), " +
-                        "viewName: \(identifier ?? "nil"), " +
+                        "viewName: \(identifier), " +
                         "locationName:\(locationName), " +
                         "attributes:\(preparedAttributes)"
                 )
