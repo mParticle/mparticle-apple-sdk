@@ -58,7 +58,7 @@ jobs:
     needs: load-matrix
     runs-on: macOS-latest
     env:
-      XCODE_VERSION: "26.2"
+      XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
     strategy:
       fail-fast: false
       matrix:
@@ -133,6 +133,6 @@ jobs:
           for xc in *.xcodeproj; do [ -d "$xc" ] && mv "$xc" "${xc}.bak"; done
           trap 'for xc in *.xcodeproj.bak; do [ -d "$xc" ] && mv "$xc" "${xc%.bak}"; done' EXIT
           xcodebuild test -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=26.2" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
             -derivedDataPath DerivedData-Test \
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO

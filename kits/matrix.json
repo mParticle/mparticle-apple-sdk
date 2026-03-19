@@ -78,6 +78,7 @@
   },
   {
     "name": "braze-12",
+    "xcode_version": "16.4",
     "local_path": "kits/braze/braze-12",
     "dest_repo": "mparticle-apple-integration-braze-12",
     "schemes": [
@@ -95,6 +96,7 @@
   },
   {
     "name": "braze-13",
+    "xcode_version": "16.4",
     "local_path": "kits/braze/braze-13",
     "dest_repo": "mparticle-apple-integration-braze-13",
     "schemes": [
@@ -112,6 +114,7 @@
   },
   {
     "name": "braze-14",
+    "xcode_version": "16.4",
     "local_path": "kits/braze/braze-14",
     "dest_repo": "mparticle-apple-integration-braze-14",
     "schemes": [
