@@ -31,7 +31,7 @@ let package = Package(
             publicHeadersPath: "include"
         ),
         .testTarget(
-            name: "mParticle-FirebaseTests",
+            name: "mParticle-FirebaseTest",
             dependencies: [
                 "mParticle-Firebase",
                 .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
