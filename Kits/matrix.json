@@ -1,7 +1,7 @@
 [
   {
     "name": "adjust-5",
-    "local_path": "kits/adjust/adjust-5",
+    "local_path": "Kits/adjust/adjust-5",
     "dest_repo": "mparticle-apple-integration-adjust-5",
     "schemes": [
       {
@@ -13,7 +13,7 @@
   },
   {
     "name": "adobe-5",
-    "local_path": "kits/adobe/adobe-5",
+    "local_path": "Kits/adobe/adobe-5",
     "dest_repo": "mparticle-apple-integration-adobe-5",
     "schemes": [
       {
@@ -30,7 +30,7 @@
   },
   {
     "name": "appsflyer-6",
-    "local_path": "kits/appsflyer/appsflyer-6",
+    "local_path": "Kits/appsflyer/appsflyer-6",
     "dest_repo": "mparticle-apple-integration-appsflyer-6",
     "schemes": [
       {
@@ -42,7 +42,7 @@
   },
   {
     "name": "apptentive-6",
-    "local_path": "kits/apptentive/apptentive-6",
+    "local_path": "Kits/apptentive/apptentive-6",
     "dest_repo": "mparticle-apple-integration-apptentive-6",
     "schemes": [
       {
@@ -54,7 +54,7 @@
   },
   {
     "name": "apptimize-3",
-    "local_path": "kits/apptimize/apptimize-3",
+    "local_path": "Kits/apptimize/apptimize-3",
     "dest_repo": "mparticle-apple-integration-apptimize-3",
     "schemes": [
       {
@@ -66,7 +66,7 @@
   },
   {
     "name": "branchmetrics-3",
-    "local_path": "kits/branchmetrics/branchmetrics-3",
+    "local_path": "Kits/branchmetrics/branchmetrics-3",
     "dest_repo": "mparticle-apple-integration-branchmetrics-3",
     "schemes": [
       {
@@ -79,7 +79,7 @@
   {
     "name": "braze-12",
     "xcode_version": "16.4",
-    "local_path": "kits/braze/braze-12",
+    "local_path": "Kits/braze/braze-12",
     "dest_repo": "mparticle-apple-integration-braze-12",
     "schemes": [
       {
@@ -97,7 +97,7 @@
   {
     "name": "braze-13",
     "xcode_version": "16.4",
-    "local_path": "kits/braze/braze-13",
+    "local_path": "Kits/braze/braze-13",
     "dest_repo": "mparticle-apple-integration-braze-13",
     "schemes": [
       {
@@ -115,7 +115,7 @@
   {
     "name": "braze-14",
     "xcode_version": "16.4",
-    "local_path": "kits/braze/braze-14",
+    "local_path": "Kits/braze/braze-14",
     "dest_repo": "mparticle-apple-integration-braze-14",
     "schemes": [
       {
@@ -132,7 +132,7 @@
   },
   {
     "name": "clevertap-7",
-    "local_path": "kits/clevertap/clevertap-7",
+    "local_path": "Kits/clevertap/clevertap-7",
     "dest_repo": "mparticle-apple-integration-clevertap-7",
     "schemes": [
       {
@@ -144,7 +144,7 @@
   },
   {
     "name": "comscore-6",
-    "local_path": "kits/comscore/comscore-6",
+    "local_path": "Kits/comscore/comscore-6",
     "dest_repo": "mparticle-apple-integration-comscore-6",
     "schemes": [
       {
@@ -161,7 +161,7 @@
   },
   {
     "name": "google-analytics-firebase-11",
-    "local_path": "kits/google-analytics-firebase/firebase-11",
+    "local_path": "Kits/google-analytics-firebase/firebase-11",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-11",
     "schemes": [
       {
@@ -173,7 +173,7 @@
   },
   {
     "name": "google-analytics-firebase-12",
-    "local_path": "kits/google-analytics-firebase/firebase-12",
+    "local_path": "Kits/google-analytics-firebase/firebase-12",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-12",
     "schemes": [
       {
@@ -185,7 +185,7 @@
   },
   {
     "name": "google-analytics-firebase-ga4-11",
-    "local_path": "kits/google-analytics-firebase-ga4/firebase-ga4-11",
+    "local_path": "Kits/google-analytics-firebase-ga4/firebase-ga4-11",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-11",
     "schemes": [
       {
@@ -202,7 +202,7 @@
   },
   {
     "name": "google-analytics-firebase-ga4-12",
-    "local_path": "kits/google-analytics-firebase-ga4/firebase-ga4-12",
+    "local_path": "Kits/google-analytics-firebase-ga4/firebase-ga4-12",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-12",
     "schemes": [
       {
@@ -219,7 +219,7 @@
   },
   {
     "name": "iterable-6",
-    "local_path": "kits/iterable/iterable-6",
+    "local_path": "Kits/iterable/iterable-6",
     "dest_repo": "mparticle-apple-integration-iterable-6",
     "schemes": [
       {
@@ -231,7 +231,7 @@
   },
   {
     "name": "kochava-9",
-    "local_path": "kits/kochava/kochava-9",
+    "local_path": "Kits/kochava/kochava-9",
     "dest_repo": "mparticle-apple-integration-kochava-9",
     "schemes": [
       {
@@ -248,7 +248,7 @@
   },
   {
     "name": "kochava-no-tracking-9",
-    "local_path": "kits/kochava/kochava-no-tracking-9",
+    "local_path": "Kits/kochava/kochava-no-tracking-9",
     "dest_repo": "mparticle-apple-integration-kochava-no-tracking-9",
     "schemes": [
       {
@@ -265,7 +265,7 @@
   },
   {
     "name": "leanplum-6",
-    "local_path": "kits/leanplum/leanplum-6",
+    "local_path": "Kits/leanplum/leanplum-6",
     "dest_repo": "mparticle-apple-integration-leanplum-6",
     "schemes": [
       {
@@ -277,7 +277,7 @@
   },
   {
     "name": "localytics-6",
-    "local_path": "kits/localytics/localytics-6",
+    "local_path": "Kits/localytics/localytics-6",
     "dest_repo": "mparticle-apple-integration-localytics-6",
     "schemes": [
       {
@@ -289,7 +289,7 @@
   },
   {
     "name": "localytics-7",
-    "local_path": "kits/localytics/localytics-7",
+    "local_path": "Kits/localytics/localytics-7",
     "dest_repo": "mparticle-apple-integration-localytics-7",
     "schemes": [
       {
@@ -301,7 +301,7 @@
   },
   {
     "name": "onetrust",
-    "local_path": "kits/onetrust/onetrust",
+    "local_path": "Kits/onetrust/onetrust",
     "dest_repo": "mparticle-apple-integration-onetrust",
     "schemes": [
       {
@@ -318,7 +318,7 @@
   },
   {
     "name": "optimizely-4",
-    "local_path": "kits/optimizely/optimizely-4",
+    "local_path": "Kits/optimizely/optimizely-4",
     "dest_repo": "mparticle-apple-integration-optimizely-4",
     "schemes": [
       {
@@ -335,7 +335,7 @@
   },
   {
     "name": "optimizely-5",
-    "local_path": "kits/optimizely/optimizely-5",
+    "local_path": "Kits/optimizely/optimizely-5",
     "dest_repo": "mparticle-apple-integration-optimizely-5",
     "schemes": [
       {
@@ -352,7 +352,7 @@
   },
   {
     "name": "radar-3",
-    "local_path": "kits/radar/radar-3",
+    "local_path": "Kits/radar/radar-3",
     "dest_repo": "mparticle-apple-integration-radar-3",
     "schemes": [
       {
@@ -364,7 +364,7 @@
   },
   {
     "name": "rokt",
-    "local_path": "kits/rokt/rokt",
+    "local_path": "Kits/rokt/rokt",
     "dest_repo": "mparticle-apple-integration-rokt",
     "schemes": [
       {
@@ -376,7 +376,7 @@
   },
   {
     "name": "singular-12",
-    "local_path": "kits/singular/singular-12",
+    "local_path": "Kits/singular/singular-12",
     "dest_repo": "mparticle-apple-integration-singular-12",
     "schemes": [
       {
@@ -388,7 +388,7 @@
   },
   {
     "name": "urbanairship-20",
-    "local_path": "kits/urbanairship/urbanairship-20",
+    "local_path": "Kits/urbanairship/urbanairship-20",
     "dest_repo": "mparticle-apple-integration-urbanairship-20",
     "schemes": [
       {
