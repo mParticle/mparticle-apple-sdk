@@ -38,7 +38,7 @@ let package = Package(
             resources: [.process("PrivacyInfo.xcprivacy")]
         ),
         .testTarget(
-            name: "mParticle-BrazeTest",
+            name: "mParticle-BrazeTests",
             dependencies: [
                 "mParticle-Braze",
                 .product(name: "OCMock", package: "ocmock")
