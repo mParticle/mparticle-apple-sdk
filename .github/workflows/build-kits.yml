@@ -13,17 +13,52 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          sparse-checkout: kits/matrix.json
+          sparse-checkout: Kits/matrix.json
           sparse-checkout-cone-mode: false
       - id: set
-        run: echo "matrix=$(jq -c . kits/matrix.json)" >> "$GITHUB_OUTPUT"
+        run: echo "matrix=$(jq -c . Kits/matrix.json)" >> "$GITHUB_OUTPUT"
+
+  pod-lint-kits:
+    name: Pod Lint ${{ matrix.kit.name }}
+    needs: load-matrix
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.2"
+      - name: Pod Lib Lint
+        run: |
+          # Bump local SDK versions to 9.0.0 to satisfy kit ~> 9.0 dependency constraints.
+          # v9.0 is in-progress and not yet on CocoaPods CDN. CocoaPods podspec dependencies
+          # cannot reference git branches (unlike SPM), so we supply local podspecs via
+          # --include-podspecs with a temporary version bump on the ephemeral CI runner.
+          # TODO: Remove the sed bumps and --include-podspecs once mParticle-Apple-SDK v9.0
+          # is published to CocoaPods CDN.
+          sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK.podspec
+          sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
+
+          PODSPEC=$(find "${{ matrix.kit.local_path }}" -maxdepth 1 -name "*.podspec" | head -1)
+          if [ -z "$PODSPEC" ]; then
+            echo "No podspec found for ${{ matrix.kit.name }}, skipping pod lint."
+            exit 0
+          fi
+          echo "Linting: $PODSPEC"
+          pod lib lint "$PODSPEC" \
+            --allow-warnings \
+            --skip-import-validation \
+            --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}"
 
   build-kits:
     name: Build ${{ matrix.kit.name }}
     needs: load-matrix
     runs-on: macOS-latest
     env:
-      XCODE_VERSION: "26.2"
+      XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
     strategy:
       fail-fast: false
       matrix:
@@ -98,6 +133,6 @@ jobs:
           for xc in *.xcodeproj; do [ -d "$xc" ] && mv "$xc" "${xc}.bak"; done
           trap 'for xc in *.xcodeproj.bak; do [ -d "$xc" ] && mv "$xc" "${xc%.bak}"; done' EXIT
           xcodebuild test -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=iPhone 16,OS=26.2" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
             -derivedDataPath DerivedData-Test \
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
