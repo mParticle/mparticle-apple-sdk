@@ -10,8 +10,8 @@ Pod::Spec.new do |s|
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.ios.deployment_target = "15.6"
-    s.ios.source_files      = 'kits/clevertap/clevertap-7/Sources/mParticle-CleverTap/**/*.{h,m,mm}'
-    s.ios.resource_bundles  = { 'mParticle-CleverTap-7-Privacy' => ['kits/clevertap/clevertap-7/Sources/mParticle-CleverTap/PrivacyInfo.xcprivacy'] }
+    s.ios.source_files      = 'Sources/mParticle-CleverTap/**/*.{h,m,mm}'
+    s.ios.resource_bundles  = { 'mParticle-CleverTap-7-Privacy' => ['Sources/mParticle-CleverTap/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.ios.dependency 'CleverTap-iOS-SDK', '~> 7.0'
 end

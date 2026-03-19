@@ -9,11 +9,12 @@ Pod::Spec.new do |s|
     s.license          = { :type => 'Apache 2.0', :file => 'LICENSE' }
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
+    s.static_framework = true
     s.swift_version = "5.5"
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
-    s.source_files      = 'kits/braze/braze-13/Sources/mParticle-Braze/**/*.{h,m,mm}'
-    s.resource_bundles  = { 'mParticle-Braze-13-Privacy' => ['kits/braze/braze-13/Sources/mParticle-Braze/PrivacyInfo.xcprivacy'] }
+    s.source_files      = 'Sources/mParticle-Braze/**/*.{h,m,mm}'
+    s.resource_bundles  = { 'mParticle-Braze-13-Privacy' => ['Sources/mParticle-Braze/PrivacyInfo.xcprivacy'] }
     s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
     s.dependency 'BrazeKit', '~> 13.0'
     s.dependency 'BrazeKitCompat', '~> 13.0'
