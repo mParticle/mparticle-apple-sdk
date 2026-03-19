@@ -2,8 +2,8 @@
 // Defines the types needed by MPKitAdobeMedia.m so that pod lib lint can compile
 // the AdobeMedia subspec against the local mParticle-Apple-SDK 9.0.0 without
 // fetching the real CDN release (which requires mParticle-Apple-SDK ~> 8.37).
-// TODO: Remove once mParticle-Apple-SDK v9.0 and mParticle-Apple-Media-SDK v9.0
-// are both published to CocoaPods CDN.
+// TODO: Remove this file (and MPMediaTypes.m + mParticle-Apple-Media-SDK.podspec at repo root)
+// once the mParticle-Apple-Media-SDK v9.0 PR is merged and released to CocoaPods CDN.
 
 #import <Foundation/Foundation.h>
 
