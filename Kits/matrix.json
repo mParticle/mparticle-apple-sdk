@@ -388,7 +388,6 @@
   {
     "name": "rokt",
     "local_path": "Kits/rokt/rokt",
-    "podspec": "Kits/rokt/rokt/mParticle-Rokt.podspec",
     "dest_repo": "mparticle-apple-integration-rokt",
     "schemes": [
       {
