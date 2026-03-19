@@ -69,8 +69,19 @@ jobs:
 
       - name: Update version in all podspecs
         run: |
-          find . -name "*.podspec" -not -path "*/.build/*" -exec \
-            sed -i '' 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"${VERSION}"'"/' {} +
+          PODSPECS=(
+            "mParticle-Apple-SDK.podspec"
+            "mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec"
+          )
+
+          while IFS= read -r kit_path; do
+            podspec=$(find "$kit_path" -maxdepth 1 -name "*.podspec" | head -1)
+            [ -n "$podspec" ] && PODSPECS+=("$podspec")
+          done < <(jq -r '.[].local_path' Kits/matrix.json)
+
+          for podspec in "${PODSPECS[@]}"; do
+            sed -i '' 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"${VERSION}"'"/' "$podspec"
+          done
 
       - name: Update version in MPIConstants.m
         run: sed -i '' "s/kMParticleSDKVersion = @\"[^\"]*\"/kMParticleSDKVersion = @\"${VERSION}\"/" mParticle-Apple-SDK/MPIConstants.m
