@@ -3,7 +3,8 @@
 // the AdobeMedia subspec against the local mParticle-Apple-SDK 9.0.0 without
 // fetching the real CDN release (which requires mParticle-Apple-SDK ~> 8.37).
 // TODO: Remove this file (and MPMediaTypes.m + mParticle-Apple-Media-SDK.podspec at repo root)
-// once the mParticle-Apple-Media-SDK v9.0 PR is merged and released to CocoaPods CDN.
+// once the next mParticle-Apple-Media-SDK release (with mParticle-Apple-SDK ~> 9.0 dependency)
+// is published to CocoaPods CDN.
 
 #import <Foundation/Foundation.h>
 

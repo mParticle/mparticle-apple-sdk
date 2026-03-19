@@ -4,10 +4,9 @@
 # pod lib lint. The CDN version (1.x) depends on mParticle-Apple-SDK ~> 8.37, which conflicts
 # with the local SDK bumped to 9.0.0 for CI. This stub provides a minimal ObjC header that
 # defines MPMediaEvent and related types so that MPKitAdobeMedia.m compiles cleanly.
-# TODO: Remove this stub (and kits/adobe/adobe-5/Sources/MediaSDKStub/) once the
-# mParticle-Apple-Media-SDK v9.0 PR is merged and a new release is published to CocoaPods CDN.
-# At that point the CDN version will depend on mParticle-Apple-SDK ~> 9.0 and all
-# dependencies resolve without local overrides.
+# TODO: Remove this stub (and kits/adobe/adobe-5/Sources/MediaSDKStub/) once the next
+# mParticle-Apple-Media-SDK release (with its mParticle-Apple-SDK dependency updated to ~> 9.0)
+# is published to CocoaPods CDN. At that point all dependencies resolve without local overrides.
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-Media-SDK"
     s.version          = "9.0.0"
