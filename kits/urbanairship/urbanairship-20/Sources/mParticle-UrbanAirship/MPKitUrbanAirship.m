@@ -1,5 +1,7 @@
 #import "MPKitUrbanAirship.h"
-#if SWIFT_PACKAGE
+#if AIRSHIP_COCOAPODS
+    @import AirshipKit;
+#elif SWIFT_PACKAGE
     @import AirshipCore;
     @import AirshipObjectiveC;
 #else
