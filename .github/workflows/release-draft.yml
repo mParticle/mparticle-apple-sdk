@@ -85,11 +85,11 @@ jobs:
         if: github.event.inputs.bump-type == 'major'
         run: |
           # Podspec: '~> X.Y' → '~> MAJOR.0'
-          find kits -name "*.podspec" -exec \
+          find Kits -name "*.podspec" -exec \
             sed -i '' "s/'mParticle-Apple-SDK', '~> [^']*'/'mParticle-Apple-SDK', '~> ${MAJOR}.0'/" {} +
 
           # Package.swift: .upToNextMajor(from: "X.Y.Z") → .upToNextMajor(from: "MAJOR.0.0")
-          find kits -name "Package.swift" -exec \
+          find Kits -name "Package.swift" -exec \
             sed -i '' "/mparticle-apple-sdk/{
               n
               s/.upToNextMajor(from: \"[^\"]*\")/.upToNextMajor(from: \"${MAJOR}.0.0\")/
@@ -105,7 +105,7 @@ jobs:
           tag-prefix: v
           changelog-path: CHANGELOG.md
           exclude-types: chore,ci,test,build
-          kits-path: kits
+          kits-path: Kits
 
       # --- Commit, push, and create PR ---
 
@@ -120,7 +120,7 @@ jobs:
             mParticle-Apple-SDK/MPConstants.swift \
             mParticle-Apple-SDK/MPIConstants.m \
             IntegrationTests/wiremock-recordings/mappings/*.json \
-            kits/
+            Kits/
 
           git commit -m "chore: (release) ${VERSION}
 
