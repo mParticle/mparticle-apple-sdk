@@ -411,6 +411,19 @@
     ]
   },
   {
+    "name": "urbanairship-19",
+    "local_path": "Kits/urbanairship/urbanairship-19",
+    "podspec": "Kits/urbanairship/urbanairship-19/mParticle-UrbanAirship-19.podspec",
+    "dest_repo": "mparticle-apple-integration-urbanairship-19",
+    "schemes": [
+      {
+        "scheme": "mParticle-UrbanAirship",
+        "module": "mParticle_UrbanAirship",
+        "destination": "iOS"
+      }
+    ]
+  },
+  {
     "name": "urbanairship-20",
     "local_path": "Kits/urbanairship/urbanairship-20",
     "podspec": "Kits/urbanairship/urbanairship-20/mParticle-UrbanAirship-20.podspec",
