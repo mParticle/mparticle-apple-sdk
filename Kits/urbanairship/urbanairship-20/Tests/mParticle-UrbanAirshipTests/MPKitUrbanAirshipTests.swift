@@ -13,10 +13,10 @@ final class MPKitUrbanAirshipTests: XCTestCase {
 
     func testEventTagsMappingUsesCorrectKey() {
         let kit = MPKitUrbanAirship()
-        kit.setConfiguration(makeConfiguration(
+        kit.configuration = makeConfiguration(
             eventTagsMapType: "EventClass.Id",
             eventAttributeTagsMapType: "EventAttributeClass.Id"
-        ))
+        )
 
         let mappings = kit.value(forKey: "eventTagsMapping") as? [NSObject]
         let firstMapType = mappings?.first?.value(forKey: "mapType") as? String
@@ -27,10 +27,10 @@ final class MPKitUrbanAirshipTests: XCTestCase {
 
     func testEventAttributeTagsMappingUsesCorrectKey() {
         let kit = MPKitUrbanAirship()
-        kit.setConfiguration(makeConfiguration(
+        kit.configuration = makeConfiguration(
             eventTagsMapType: "EventClass.Id",
             eventAttributeTagsMapType: "EventAttributeClass.Id"
-        ))
+        )
 
         let mappings = kit.value(forKey: "eventAttributeTagsMapping") as? [NSObject]
         let firstMapType = mappings?.first?.value(forKey: "mapType") as? String
