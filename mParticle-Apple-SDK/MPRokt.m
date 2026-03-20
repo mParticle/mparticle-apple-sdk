@@ -12,6 +12,7 @@
 #import "MPIConstants.h"
 #import "MPIdentityDTO.h"
 #import "MPExtensionProtocol.h"
+@import RoktContracts;
 
 // Constants for kit configuration keys
 static NSString * const kMPKitConfigurationIdKey = @"id";
@@ -28,12 +29,6 @@ static const NSInteger kMPRoktKitId = 181;
 
 + (dispatch_queue_t)messageQueue;
 
-@end
-
-@implementation MPRoktEmbeddedView
-@end
-
-@implementation MPRoktConfig
 @end
 
 @interface MPRoktPlacementOptions ()
@@ -88,9 +83,9 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - onEvent: Optional callback block to handle Rokt events
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-           embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                  config:(MPRoktConfig * _Nullable)config
-                 onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
+           embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
+                  config:(RoktConfig * _Nullable)config
+                 onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
     MPILogDebug(@"MPRokt selectPlacements (full) - identifier: %@, attributes: %lu, embeddedViews: %lu, config: %@, onEvent: %@",
                 identifier,
                 (unsigned long)attributes.count,
@@ -191,8 +186,8 @@ static const NSInteger kMPRoktKitId = 181;
 /// Use this to listen for events like placement shown, offer selected, placement closed, etc.
 /// - Parameters:
 ///   - identifier: The Rokt placement identifier to listen for events from
-///   - onEvent: Callback block that receives MPRoktEvent objects when placement events occur
-- (void)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
+///   - onEvent: Callback block that receives RoktEvent objects when placement events occur
+- (void)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
     MPILogDebug(@"MPRokt events called - identifier: %@, onEvent: %@",
                 identifier, onEvent ? @"present" : @"nil");
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -214,8 +209,8 @@ static const NSInteger kMPRoktKitId = 181;
 /// Registers a callback to receive global events from all Rokt sources.
 /// Additional events that are not associated with a view (such as InitComplete) will also be delivered.
 /// - Parameters:
-///   - onEvent: Callback block that receives MPRoktEvent objects when events occur
-- (void)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent {
+///   - onEvent: Callback block that receives RoktEvent objects when events occur
+- (void)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent {
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];

@@ -6,6 +6,7 @@
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
+@import RoktContracts;
 
 @class MPCommerceEvent;
 @class MPBaseEvent;
@@ -15,9 +16,6 @@
 @class MPConsentState;
 @class FilteredMParticleUser;
 @class FilteredMPIdentityApiRequest;
-@class MPRoktEmbeddedView;
-@class MPRoktConfig;
-@class MPRoktEvent;
 
 /**
  * Internal class for configuring placement options passed to the Rokt Kit.
@@ -162,16 +160,16 @@
 #pragma mark First Party Kits
 - (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
                                         attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                                     embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                                            config:(MPRoktConfig * _Nullable)config
-                                           onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent
+                                     embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
+                                            config:(RoktConfig * _Nullable)config
+                                           onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
                                       filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 
 - (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
                                         attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                                     embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                                            config:(MPRoktConfig * _Nullable)config
-                                           onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent
+                                     embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
+                                            config:(RoktConfig * _Nullable)config
+                                           onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
                                       filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser
                                            options:(MPRoktPlacementOptions * _Nullable)options;
 - (nonnull MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk
@@ -179,8 +177,8 @@
 - (nonnull MPKitExecStatus *)purchaseFinalized:(nonnull NSString *)identifier
                                  catalogItemId:(nonnull NSString *)catalogItemId
                                        success:(nonnull NSNumber *)success;
-- (nonnull MPKitExecStatus *)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
-- (nonnull MPKitExecStatus *)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent;
+- (nonnull MPKitExecStatus *)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
+- (nonnull MPKitExecStatus *)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent;
 
 @end
 

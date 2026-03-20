@@ -5,7 +5,7 @@
 #import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
-#import "MPRoktEvent.h"
+@import RoktContracts;
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -149,16 +149,16 @@ static NSNumber * const kTestRoktKitId = @181;
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
     NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
-    MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
+    RoktEmbeddedView *exampleView = [[RoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement": exampleView};
     
     // Create onEvent callback block
-    void (^exampleOnEvent)(MPRoktEvent * _Nonnull) = ^(MPRoktEvent * _Nonnull event) {
+    void (^exampleOnEvent)(RoktEvent * _Nonnull) = ^(RoktEvent * _Nonnull event) {
         // Handle event
     };
     
-    MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
-    roktConfig.colorMode = MPColorModeDark;
+    RoktConfig *roktConfig = [[RoktConfig alloc] init];
+    roktConfig.colorMode = RoktColorModeDark;
     roktConfig.cacheDuration = @(60*10);
     roktConfig.cacheAttributes = @{@"test": @"test"};
     
@@ -660,9 +660,9 @@ static NSNumber * const kTestRoktKitId = @181;
     // Set up test parameters
     NSString *identifier = @"testPlacementId";
     __block BOOL callbackInvoked = NO;
-    __block MPRoktEvent *receivedEvent = nil;
+    __block RoktEvent *receivedEvent = nil;
 
-    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
+    void (^onEventCallback)(RoktEvent *) = ^(RoktEvent *event) {
         callbackInvoked = YES;
         receivedEvent = event;
     };
@@ -737,9 +737,9 @@ static NSNumber * const kTestRoktKitId = @181;
     // Set up test parameters
     NSString *identifier = @"testPlacementId";
     __block BOOL callbackInvoked = NO;
-    __block MPRoktEvent *receivedEvent = nil;
+    __block RoktEvent *receivedEvent = nil;
 
-    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
+    void (^onEventCallback)(RoktEvent *) = ^(RoktEvent *event) {
         callbackInvoked = YES;
         receivedEvent = event;
     };
@@ -752,9 +752,9 @@ static NSNumber * const kTestRoktKitId = @181;
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], identifier);
         // Simulate the kit calling the callback
-        void (^capturedCallback)(MPRoktEvent *) = params[1];
+        void (^capturedCallback)(RoktEvent *) = params[1];
         if (capturedCallback) {
-            MPRoktPlacementReady *testEvent = [[MPRoktPlacementReady alloc] initWithPlacementId:identifier];
+            RoktPlacementReady *testEvent = [[RoktPlacementReady alloc] initWithPlacementId:identifier];
             capturedCallback(testEvent);
         }
         return true;
@@ -773,7 +773,7 @@ static NSNumber * const kTestRoktKitId = @181;
     // Verify callback was invoked
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
     XCTAssertNotNil(receivedEvent, @"Should have received an event");
-    XCTAssertTrue([receivedEvent isKindOfClass:[MPRoktPlacementReady class]], @"Should receive the correct event type");
+    XCTAssertTrue([receivedEvent isKindOfClass:[RoktPlacementReady class]], @"Should receive the correct event type");
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -787,7 +787,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
     // Set up test parameters
-    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
+    void (^onEventCallback)(RoktEvent *) = ^(RoktEvent *event) {
         // Handle global event
     };
 
@@ -824,9 +824,9 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Set up test parameters
     __block BOOL callbackInvoked = NO;
-    __block MPRoktEvent *receivedEvent = nil;
+    __block RoktEvent *receivedEvent = nil;
     
-    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
+    void (^onEventCallback)(RoktEvent *) = ^(RoktEvent *event) {
         callbackInvoked = YES;
         receivedEvent = event;
     };
@@ -838,9 +838,9 @@ static NSNumber * const kTestRoktKitId = @181;
                                            event:nil
                                       parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         // Simulate the kit calling the callback with InitComplete event
-        void (^capturedCallback)(MPRoktEvent *) = params[0];
+        void (^capturedCallback)(RoktEvent *) = params[0];
         if (capturedCallback) {
-            MPRoktInitComplete *testEvent = [[MPRoktInitComplete alloc] initWithSuccess:YES];
+            RoktInitComplete *testEvent = [[RoktInitComplete alloc] initWithSuccess:YES];
             capturedCallback(testEvent);
         }
         return true;
@@ -859,8 +859,8 @@ static NSNumber * const kTestRoktKitId = @181;
     // Verify callback was invoked
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
     XCTAssertNotNil(receivedEvent, @"Should have received an event");
-    XCTAssertTrue([receivedEvent isKindOfClass:[MPRoktInitComplete class]], @"Should receive the correct event type");
-    XCTAssertTrue(((MPRoktInitComplete *)receivedEvent).success, @"InitComplete event should indicate success");
+    XCTAssertTrue([receivedEvent isKindOfClass:[RoktInitComplete class]], @"Should receive the correct event type");
+    XCTAssertTrue(((RoktInitComplete *)receivedEvent).success, @"InitComplete event should indicate success");
     
     // Verify
     OCMVerifyAll(self.mockContainer);

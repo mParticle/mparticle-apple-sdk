@@ -1,155 +1,155 @@
 #import <XCTest/XCTest.h>
-#import "MPRoktEvent.h"
+@import RoktContracts;
 
 @interface MPRoktEventTests : XCTestCase
 @end
 
 @implementation MPRoktEventTests
 
-#pragma mark - MPRoktInitComplete Tests
+#pragma mark - RoktInitComplete Tests
 
 - (void)testInitCompleteWithSuccessTrue {
-    MPRoktInitComplete *event = [[MPRoktInitComplete alloc] initWithSuccess:YES];
+    RoktInitComplete *event = [[RoktInitComplete alloc] initWithSuccess:YES];
     XCTAssertNotNil(event);
     XCTAssertTrue(event.success);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
 - (void)testInitCompleteWithSuccessFalse {
-    MPRoktInitComplete *event = [[MPRoktInitComplete alloc] initWithSuccess:NO];
+    RoktInitComplete *event = [[RoktInitComplete alloc] initWithSuccess:NO];
     XCTAssertNotNil(event);
     XCTAssertFalse(event.success);
 }
 
-#pragma mark - MPRoktShowLoadingIndicator Tests
+#pragma mark - RoktShowLoadingIndicator Tests
 
 - (void)testShowLoadingIndicator {
-    MPRoktShowLoadingIndicator *event = [[MPRoktShowLoadingIndicator alloc] init];
+    RoktShowLoadingIndicator *event = [[RoktShowLoadingIndicator alloc] init];
     XCTAssertNotNil(event);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
-#pragma mark - MPRoktHideLoadingIndicator Tests
+#pragma mark - RoktHideLoadingIndicator Tests
 
 - (void)testHideLoadingIndicator {
-    MPRoktHideLoadingIndicator *event = [[MPRoktHideLoadingIndicator alloc] init];
+    RoktHideLoadingIndicator *event = [[RoktHideLoadingIndicator alloc] init];
     XCTAssertNotNil(event);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
-#pragma mark - MPRoktPlacementInteractive Tests
+#pragma mark - RoktPlacementInteractive Tests
 
 - (void)testPlacementInteractiveWithPlacementId {
     NSString *placementId = @"test-placement-123";
-    MPRoktPlacementInteractive *event = [[MPRoktPlacementInteractive alloc] initWithPlacementId:placementId];
+    RoktPlacementInteractive *event = [[RoktPlacementInteractive alloc] initWithPlacementId:placementId];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
 - (void)testPlacementInteractiveWithNilPlacementId {
-    MPRoktPlacementInteractive *event = [[MPRoktPlacementInteractive alloc] initWithPlacementId:nil];
+    RoktPlacementInteractive *event = [[RoktPlacementInteractive alloc] initWithPlacementId:nil];
     XCTAssertNotNil(event);
     XCTAssertNil(event.placementId);
 }
 
-#pragma mark - MPRoktPlacementReady Tests
+#pragma mark - RoktPlacementReady Tests
 
 - (void)testPlacementReadyWithPlacementId {
     NSString *placementId = @"ready-placement-456";
-    MPRoktPlacementReady *event = [[MPRoktPlacementReady alloc] initWithPlacementId:placementId];
+    RoktPlacementReady *event = [[RoktPlacementReady alloc] initWithPlacementId:placementId];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
 - (void)testPlacementReadyWithNilPlacementId {
-    MPRoktPlacementReady *event = [[MPRoktPlacementReady alloc] initWithPlacementId:nil];
+    RoktPlacementReady *event = [[RoktPlacementReady alloc] initWithPlacementId:nil];
     XCTAssertNotNil(event);
     XCTAssertNil(event.placementId);
 }
 
-#pragma mark - MPRoktOfferEngagement Tests
+#pragma mark - RoktOfferEngagement Tests
 
 - (void)testOfferEngagementWithPlacementId {
     NSString *placementId = @"offer-placement-789";
-    MPRoktOfferEngagement *event = [[MPRoktOfferEngagement alloc] initWithPlacementId:placementId];
+    RoktOfferEngagement *event = [[RoktOfferEngagement alloc] initWithPlacementId:placementId];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
-#pragma mark - MPRoktOpenUrl Tests
+#pragma mark - RoktOpenUrl Tests
 
 - (void)testOpenUrlWithPlacementIdAndUrl {
     NSString *placementId = @"url-placement";
     NSString *url = @"https://example.com/offer";
-    MPRoktOpenUrl *event = [[MPRoktOpenUrl alloc] initWithPlacementId:placementId url:url];
+    RoktOpenUrl *event = [[RoktOpenUrl alloc] initWithPlacementId:placementId url:url];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
     XCTAssertEqualObjects(event.url, url);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
 - (void)testOpenUrlWithNilPlacementId {
     NSString *url = @"https://example.com/offer";
-    MPRoktOpenUrl *event = [[MPRoktOpenUrl alloc] initWithPlacementId:nil url:url];
+    RoktOpenUrl *event = [[RoktOpenUrl alloc] initWithPlacementId:nil url:url];
     XCTAssertNotNil(event);
     XCTAssertNil(event.placementId);
     XCTAssertEqualObjects(event.url, url);
 }
 
-#pragma mark - MPRoktPositiveEngagement Tests
+#pragma mark - RoktPositiveEngagement Tests
 
 - (void)testPositiveEngagementWithPlacementId {
     NSString *placementId = @"positive-placement";
-    MPRoktPositiveEngagement *event = [[MPRoktPositiveEngagement alloc] initWithPlacementId:placementId];
+    RoktPositiveEngagement *event = [[RoktPositiveEngagement alloc] initWithPlacementId:placementId];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
-#pragma mark - MPRoktPlacementClosed Tests
+#pragma mark - RoktPlacementClosed Tests
 
 - (void)testPlacementClosedWithPlacementId {
     NSString *placementId = @"closed-placement";
-    MPRoktPlacementClosed *event = [[MPRoktPlacementClosed alloc] initWithPlacementId:placementId];
+    RoktPlacementClosed *event = [[RoktPlacementClosed alloc] initWithPlacementId:placementId];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
-#pragma mark - MPRoktPlacementCompleted Tests
+#pragma mark - RoktPlacementCompleted Tests
 
 - (void)testPlacementCompletedWithPlacementId {
     NSString *placementId = @"completed-placement";
-    MPRoktPlacementCompleted *event = [[MPRoktPlacementCompleted alloc] initWithPlacementId:placementId];
+    RoktPlacementCompleted *event = [[RoktPlacementCompleted alloc] initWithPlacementId:placementId];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
-#pragma mark - MPRoktPlacementFailure Tests
+#pragma mark - RoktPlacementFailure Tests
 
 - (void)testPlacementFailureWithPlacementId {
     NSString *placementId = @"failed-placement";
-    MPRoktPlacementFailure *event = [[MPRoktPlacementFailure alloc] initWithPlacementId:placementId];
+    RoktPlacementFailure *event = [[RoktPlacementFailure alloc] initWithPlacementId:placementId];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
-#pragma mark - MPRoktFirstPositiveEngagement Tests
+#pragma mark - RoktFirstPositiveEngagement Tests
 
 - (void)testFirstPositiveEngagementWithPlacementId {
     NSString *placementId = @"first-positive-placement";
-    MPRoktFirstPositiveEngagement *event = [[MPRoktFirstPositiveEngagement alloc] initWithPlacementId:placementId];
+    RoktFirstPositiveEngagement *event = [[RoktFirstPositiveEngagement alloc] initWithPlacementId:placementId];
     XCTAssertNotNil(event);
     XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
-#pragma mark - MPRoktCartItemInstantPurchase Tests
+#pragma mark - RoktCartItemInstantPurchase Tests
 
 - (void)testCartItemInstantPurchaseWithAllParameters {
     NSString *placementId = @"cart-placement";
@@ -164,7 +164,7 @@
     NSDecimalNumber *totalPrice = [NSDecimalNumber decimalNumberWithString:@"19.99"];
     NSDecimalNumber *unitPrice = [NSDecimalNumber decimalNumberWithString:@"9.995"];
     
-    MPRoktCartItemInstantPurchase *event = [[MPRoktCartItemInstantPurchase alloc]
+    RoktCartItemInstantPurchase *event = [[RoktCartItemInstantPurchase alloc]
                                             initWithPlacementId:placementId
                                             name:name
                                             cartItemId:cartItemId
@@ -189,7 +189,7 @@
     XCTAssertEqualObjects(event.quantity, quantity);
     XCTAssertEqualObjects(event.totalPrice, totalPrice);
     XCTAssertEqualObjects(event.unitPrice, unitPrice);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
 }
 
 - (void)testCartItemInstantPurchaseWithNilOptionalParameters {
@@ -200,7 +200,7 @@
     NSString *description = @"A test product";
     NSString *providerData = @"provider-data";
     
-    MPRoktCartItemInstantPurchase *event = [[MPRoktCartItemInstantPurchase alloc]
+    RoktCartItemInstantPurchase *event = [[RoktCartItemInstantPurchase alloc]
                                             initWithPlacementId:placementId
                                             name:nil
                                             cartItemId:cartItemId
@@ -230,7 +230,7 @@
 - (void)testCartItemInstantPurchaseDescriptionOverride {
     NSString *customDescription = @"Custom description text";
     
-    MPRoktCartItemInstantPurchase *event = [[MPRoktCartItemInstantPurchase alloc]
+    RoktCartItemInstantPurchase *event = [[RoktCartItemInstantPurchase alloc]
                                             initWithPlacementId:@"placement"
                                             name:nil
                                             cartItemId:@"cart"
@@ -247,42 +247,23 @@
     XCTAssertEqualObjects(event.description, customDescription);
 }
 
-#pragma mark - MPRoktEmbeddedSizeChanged Tests
-
-- (void)testEmbeddedSizeChangedWithPlacementIdAndHeight {
-    NSString *placementId = @"embed-placement-123";
-    CGFloat updatedHeight = 250.5;
-    MPRoktEmbeddedSizeChanged *event = [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:placementId updatedHeight:updatedHeight];
-    XCTAssertNotNil(event);
-    XCTAssertEqualObjects(event.placementId, placementId);
-    XCTAssertEqualWithAccuracy(event.updatedHeight, updatedHeight, 0.001);
-    XCTAssertTrue([event isKindOfClass:[MPRoktEvent class]]);
-}
-
-- (void)testEmbeddedSizeChangedWithZeroHeight {
-    MPRoktEmbeddedSizeChanged *event = [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:@"placement" updatedHeight:0];
-    XCTAssertNotNil(event);
-    XCTAssertEqualWithAccuracy(event.updatedHeight, 0, 0.001);
-}
-
 #pragma mark - Inheritance Tests
 
-- (void)testAllEventTypesInheritFromMPRoktEvent {
-    // Test that all event types inherit from MPRoktEvent
-    XCTAssertTrue([[[MPRoktInitComplete alloc] initWithSuccess:YES] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktShowLoadingIndicator alloc] init] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktHideLoadingIndicator alloc] init] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktPlacementInteractive alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktPlacementReady alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktOfferEngagement alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktOpenUrl alloc] initWithPlacementId:@"test" url:@"url"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktPositiveEngagement alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktPlacementClosed alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktPlacementCompleted alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktPlacementFailure alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktFirstPositiveEngagement alloc] initWithPlacementId:@"test"] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktCartItemInstantPurchase alloc] initWithPlacementId:@"p" name:nil cartItemId:@"c" catalogItemId:@"cat" currency:@"USD" description:@"d" linkedProductId:nil providerData:@"prov" quantity:nil totalPrice:nil unitPrice:nil] isKindOfClass:[MPRoktEvent class]]);
-    XCTAssertTrue([[[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:@"p" updatedHeight:100] isKindOfClass:[MPRoktEvent class]]);
+- (void)testAllEventTypesInheritFromRoktEvent {
+    // Test that all event types inherit from RoktEvent (RoktContracts)
+    XCTAssertTrue([[[RoktInitComplete alloc] initWithSuccess:YES] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktShowLoadingIndicator alloc] init] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktHideLoadingIndicator alloc] init] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktPlacementInteractive alloc] initWithPlacementId:@"test"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktPlacementReady alloc] initWithPlacementId:@"test"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktOfferEngagement alloc] initWithPlacementId:@"test"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktOpenUrl alloc] initWithPlacementId:@"test" url:@"url"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktPositiveEngagement alloc] initWithPlacementId:@"test"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktPlacementClosed alloc] initWithPlacementId:@"test"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktPlacementCompleted alloc] initWithPlacementId:@"test"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktPlacementFailure alloc] initWithPlacementId:@"test"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktFirstPositiveEngagement alloc] initWithPlacementId:@"test"] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktCartItemInstantPurchase alloc] initWithPlacementId:@"p" name:nil cartItemId:@"c" catalogItemId:@"cat" currency:@"USD" description:@"d" linkedProductId:nil providerData:@"prov" quantity:nil totalPrice:nil unitPrice:nil] isKindOfClass:[RoktEvent class]]);
 }
 
 @end

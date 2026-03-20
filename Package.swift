@@ -9,20 +9,24 @@ let package = Package(
         .library(
             name: "mParticle-Apple-SDK",
             targets: ["mParticle_Apple_SDK"]
-        ),
+        )
     ],
     dependencies: [
+        .package(path: "../ROKT/rokt-contracts-apple")
     ],
     targets: [
         // Swift-only components
         .target(
             name: "mParticle_Apple_SDK_Swift",
-            path: "mParticle-Apple-SDK-Swift/Sources",
+            path: "mParticle-Apple-SDK-Swift/Sources"
         ),
         // Objective-C SDK - source-based distribution
         .target(
             name: "mParticle_Apple_SDK",
-            dependencies: ["mParticle_Apple_SDK_Swift"],
+            dependencies: [
+                "mParticle_Apple_SDK_Swift",
+                .product(name: "RoktContracts", package: "rokt-contracts-apple")
+            ],
             path: "mParticle-Apple-SDK",
             sources: nil,
             resources: [
@@ -52,6 +56,6 @@ let package = Package(
                 .linkedFramework("WebKit", .when(platforms: [.iOS])),
                 .linkedFramework("UserNotifications", .when(platforms: [.iOS]))
             ]
-        ),
+        )
     ]
 )

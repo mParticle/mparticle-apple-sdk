@@ -1,5 +1,6 @@
 #import "ViewController.h"
 #import <mParticle_Apple_SDK/mParticle.h>
+@import RoktContracts;
 #import <mParticle_Apple_Media_SDK-Swift.h>
 #import <AdSupport/AdSupport.h>
 #import "AdSupport/ASIdentifierManager.h"
@@ -16,7 +17,7 @@
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UITextField *emailField;
 @property (nonatomic, strong) UITextField *customerIDField;
-@property (nonatomic, strong) MPRoktEmbeddedView *roktView;
+@property (nonatomic, strong) RoktEmbeddedView *roktView;
 
 @end
 
@@ -58,7 +59,7 @@
     if (self.roktView) {
         self.roktView.frame = roktFrame;
     } else {
-        self.roktView = [[MPRoktEmbeddedView alloc] initWithFrame:roktFrame];
+        self.roktView = [[RoktEmbeddedView alloc] initWithFrame:roktFrame];
     }
     [self.view addSubview:_roktView];
     
@@ -254,13 +255,13 @@
                                                                @"mobile": @"(555)867-5309"
     };
 
-    MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
-    roktConfig.colorMode = MPColorModeDark;
+    RoktConfig *roktConfig = [[RoktConfig alloc] init];
+    roktConfig.colorMode = RoktColorModeDark;
     [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout"
                                            attributes:customAttributes
                                         embeddedViews:nil
                                                config:roktConfig
-                                            callbacks:nil];
+                                              onEvent:nil];
 }
 
 - (void)selectEmbeddedPlacement {
@@ -272,26 +273,14 @@
                                                                @"mobile": @"(555)867-5309"
     };
     
-    MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
-    callbacks.onLoad = ^{
-        // Optional callback for when the Rokt placement loads
-    };
-    callbacks.onUnLoad = ^{
-        // Optional callback for when the Rokt placement unloads
-    };
-    callbacks.onShouldShowLoadingIndicator = ^{
-        // Optional callback to show a loading indicator
-    };
-    callbacks.onShouldHideLoadingIndicator = ^{
-        // Optional callback to hide a loading indicator
-    };
-    callbacks.onEmbeddedSizeChange = ^(NSString *placement, CGFloat size) {
-        [self setupUI:size];
-    };
-    
     NSDictionary *embeddedViews = @{@"Location1": self.roktView};
 
-    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS" attributes:customAttributes embeddedViews:embeddedViews config:nil callbacks:callbacks];
+    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS"
+                                             attributes:customAttributes
+                                          embeddedViews:embeddedViews
+                                                 config:nil
+                                                onEvent:^(__unused RoktEvent * _Nonnull event) {
+    }];
 }
 
 - (void)selectOverlayPlacementAutoClose {
