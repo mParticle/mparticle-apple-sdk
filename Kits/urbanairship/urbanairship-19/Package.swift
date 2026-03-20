@@ -16,7 +16,7 @@ let package = Package(
             branch: "workstation/9.0-Release"
         ),
         .package(url: "https://github.com/urbanairship/ios-library",
-                 .upToNextMajor(from: "19.0.0"))
+                 .upToNextMajor(from: "19.1.0"))
     ],
     targets: [
         .target(
