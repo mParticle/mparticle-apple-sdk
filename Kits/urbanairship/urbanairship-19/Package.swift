@@ -1,9 +1,9 @@
-// swift-tools-version:5.5
+// swift-tools-version:6.0
 import PackageDescription
 
 let package = Package(
     name: "mParticle-UrbanAirship",
-    platforms: [ .iOS(.v15) ],
+    platforms: [ .iOS(.v16) ],
     products: [
         .library(
             name: "mParticle-UrbanAirship",

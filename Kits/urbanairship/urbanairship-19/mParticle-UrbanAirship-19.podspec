@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
     s.license          = { :type => 'Apache 2.0', :file => 'LICENSE' }
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
-    s.ios.deployment_target = "15.6"
+    s.ios.deployment_target = "16.0"
     s.ios.source_files      = 'Sources/mParticle-UrbanAirship/**/*.{h,m,mm}'
     s.ios.resource_bundles  = { 'mParticle-UrbanAirship-19-Privacy' => ['Sources/mParticle-UrbanAirship/PrivacyInfo.xcprivacy'] }
     s.ios.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) AIRSHIP_COCOAPODS=1' }
