@@ -26,7 +26,6 @@
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
-@import RoktContracts;
 #import "MPRokt.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"

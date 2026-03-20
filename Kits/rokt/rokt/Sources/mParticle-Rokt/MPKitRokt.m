@@ -19,9 +19,8 @@ static NSString * const kMPRoktRemoteConfigKitHashesKey = @"hs";
 static NSString * const kMPRemoteConfigUserAttributeFilter = @"ua";
 static NSString * const MPKitRoktErrorDomain = @"com.mparticle.kits.rokt";
 static NSString * const MPKitRoktErrorMessageKey = @"mParticle-Rokt Error";
-static NSString * const kMPRoktPlacementAttributesMapping = @"placementAttributesMapping";
-static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
-static NSString * const kMPRoktEmbeddedViewClassName = @"MPRoktEmbeddedView";
+static NSString * const kMPPlacementAttributesMapping = @"placementAttributesMapping";
+static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
 static NSString * const kMPEventNameSelectPlacements = @"selectPlacements";
 static NSString * const kMPRoktIdentityTypeEmailSha256 = @"emailsha256";
 static NSString * const kMPRoktIdentityTypeMpid = @"mpid";
@@ -117,45 +116,33 @@ static __weak MPKitRokt *roktKit = nil;
 /// @param identifier The Rokt placement identifier configured in the Rokt dashboard
 /// @param attributes Dictionary of user attributes (email, firstName, etc.). Attributes will be mapped according to dashboard configuration.
 /// @param embeddedViews Optional dictionary mapping placement identifiers to embedded view containers for inline placements
-/// @param mpRoktConfig Optional Rokt configuration object (e.g., for dark mode or custom styling)
-/// @param onEvent Callback block that receives RoktEvent objects for all placement events
+/// @param config Optional Rokt configuration from RoktContracts (shared with mParticle core).
+/// @param onEvent Optional callback for RoktContracts `RoktEvent` values from the Rokt SDK.
 /// @param filteredUser The current user when this placement was requested. Filtered for the kit as per settings in the mParticle UI
 /// @return MPKitExecStatus indicating success or failure of the operation
 - (MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
                                 attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                             embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                                    config:(MPRoktConfig * _Nullable)mpRoktConfig
-                                   onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent
+                             embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
+                                    config:(RoktConfig * _Nullable)config
+                                   onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
                               filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser
-                                   options:(MPRoktPlacementOptions * _Nullable)options {
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit recieved `executeWithIdentifier` method with the following arguments: \n identifier: %@ \n attributes: %@ \n embeddedViews: %@ \n config: %@ \n onEvent: %@ \n filteredUser identities: %@ \n options: %@", identifier, attributes, embeddedViews, mpRoktConfig, onEvent, filteredUser.userIdentities, options]];
+                                   options:(RoktPlacementOptions * _Nullable)options {
+    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit recieved `executeWithIdentifier` method with the following arguments: \n identifier: %@ \n attributes: %@ \n embeddedViews: %@ \n config: %@ \n onEvent: %@ \n filteredUser identities: %@ \n options: %@", identifier, attributes, embeddedViews, config, onEvent, filteredUser.userIdentities, options]];
     NSDictionary<NSString *, NSString *> *finalAtt = [MPKitRokt prepareAttributes:attributes filteredUser:filteredUser performMapping:NO];
     
     // Log custom event for selectPlacements call
     [MPKitRokt logSelectPlacementEvent:finalAtt];
 
-    //Convert MPRoktConfig to RoktConfig
-    RoktConfig *roktConfig = [MPKitRokt convertMPRoktConfig:mpRoktConfig];
     NSDictionary<NSString *, RoktEmbeddedView *> *confirmedViews = [self confirmEmbeddedViews:embeddedViews];
 
-    RoktPlacementOptions *placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:0];
-    if (options) {
-        placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:options.jointSdkSelectPlacements];
-    }
+    RoktPlacementOptions *placementOptions = options ?: [[RoktPlacementOptions alloc] initWithTimestamp:0];
 
     [Rokt selectPlacementsWithIdentifier:identifier
                               attributes:finalAtt
                               placements:confirmedViews
-                                  config:roktConfig
+                                  config:config
                         placementOptions:placementOptions
-                                 onEvent:^(RoktEvent * _Nonnull event) {
-        if (onEvent) {
-            MPRoktEvent *mpEvent = [MPKitRokt mapEvent:event];
-            if (mpEvent) {
-                onEvent(mpEvent);
-            }
-        }
-    }];
+                                onEvent:onEvent];
 
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
@@ -183,41 +170,20 @@ static __weak MPKitRokt *roktKit = nil;
     }
 }
 
-- (NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable) confirmEmbeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews {
+- (NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)confirmEmbeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews {
     if (!embeddedViews || embeddedViews.count == 0) {
-        return [NSMutableDictionary dictionary];
+        return @{};
     }
-    
-    NSMutableDictionary <NSString *, RoktEmbeddedView *> *safePlacements = [NSMutableDictionary dictionary];
 
-    for (NSString* key in embeddedViews) {
-        MPRoktEmbeddedView *mpView = [embeddedViews objectForKey:key];
-
-        BOOL isUIView = [mpView isKindOfClass:[UIView class]];
-        
-        if (!isUIView) {
-            [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt embedded view is incorrect type. Found: %@ but required: UIView", NSStringFromClass([mpView class])]];
-            continue;
-        }
-
-        Class runtimeClass = NSClassFromString(kMPRoktEmbeddedViewClassName);
-        
-        // Use runtime class for type checking instead of compile-time reference
-        // This handles cases where the class is defined in multiple frameworks
-        BOOL isProperType = runtimeClass && [mpView isKindOfClass:runtimeClass];
-        
-        if (isProperType) {
-            // Create a new RoktEmbeddedView instance
-            RoktEmbeddedView *roktView = [[RoktEmbeddedView alloc] initWithFrame:mpView.bounds];
-            // Add the RoktEmbeddedView as a child view of MPRoktEmbeddedView
-            [mpView addSubview:roktView];
-            // Add the RoktEmbeddedView to our safe placements dictionary
-            [safePlacements setObject:roktView forKey:key];
+    NSMutableDictionary<NSString *, RoktEmbeddedView *> *safePlacements = [NSMutableDictionary dictionary];
+    for (NSString *key in embeddedViews) {
+        RoktEmbeddedView *view = embeddedViews[key];
+        if ([view isKindOfClass:[UIView class]]) {
+            safePlacements[key] = view;
         } else {
-            [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt embedded view is incorrect type. Found: %@ but required: %@", NSStringFromClass([mpView class]), kMPRoktEmbeddedViewClassName]];
+            [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt embedded view is incorrect type. Found: %@ but required: UIView subclass", NSStringFromClass([view class])]];
         }
     }
-
     return safePlacements;
 }
 
@@ -409,25 +375,6 @@ static __weak MPKitRokt *roktKit = nil;
     }
 }
 
-+ (RoktConfig *)convertMPRoktConfig:(MPRoktConfig *)mpRoktConfig {
-    if (mpRoktConfig != nil) {
-        RoktConfigBuilder *builder = [[RoktConfigBuilder alloc] init];
-
-        if (mpRoktConfig.cacheDuration != nil) {
-            RoktCacheConfig *cacheConfig = [[RoktCacheConfig alloc] initWithCacheDuration:mpRoktConfig.cacheDuration.doubleValue cacheAttributes:mpRoktConfig.cacheAttributes];
-            builder = [builder cacheConfig:cacheConfig];
-        }
-        
-        builder = [builder colorMode:(RoktColorMode)mpRoktConfig.colorMode];
-        
-        RoktConfig *config = [builder build];
-        
-        return config;
-    }
-    
-    return nil;
-}
-
 + (NSString *)stringForIdentityType:(MPIdentity)identityType {
     NSNumber *hashedEmailIdentity = [MPKitRokt getRoktHashedEmailUserIdentityType];
     
@@ -539,23 +486,15 @@ static __weak MPKitRokt *roktKit = nil;
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeFail];
 }
 
-- (MPKitExecStatus *)events:(NSString *)identifier onEvent:(void (^)(MPRoktEvent * _Nonnull))onEvent {
+- (MPKitExecStatus *)events:(NSString *)identifier onEvent:(void (^)(RoktEvent * _Nonnull))onEvent {
     [Rokt eventsWithIdentifier:identifier onEvent:^(RoktEvent * _Nonnull event) {
-        MPRoktEvent *mpEvent = [MPKitRokt mapEvent:event];
-        if (mpEvent) {
-            onEvent(mpEvent);
-        }
+        onEvent(event);
     }];
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
-- (MPKitExecStatus *)globalEvents:(void (^)(MPRoktEvent * _Nonnull))onEvent {
-    [Rokt globalEventsOnEvent:^(RoktEvent * _Nonnull event) {
-        MPRoktEvent *mpEvent = [MPKitRokt mapEvent:event];
-        if (mpEvent) {
-            onEvent(mpEvent);
-        }
-    }];
+- (MPKitExecStatus *)globalEvents:(void (^)(RoktEvent * _Nonnull))onEvent {
+    [Rokt globalEventsOnEvent:onEvent];
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
@@ -893,114 +832,6 @@ static __weak MPKitRokt *roktKit = nil;
     event.customAttributes = attributes;
     [[MParticle sharedInstance] logEvent:event];
     [MPKitRokt MPLog:[NSString stringWithFormat:@"Logged selectplacements custom event with attributes: %@", attributes]];
-}
-
-
-+ (MPRoktEvent * _Nullable)mapEvent:(RoktEvent *)event {
-    if (!event) {
-        return nil;
-    }
-    
-    // Check for RoktEvent.RoktInitComplete
-    if ([event isKindOfClass:[RoktInitComplete class]]) {
-        RoktInitComplete *initComplete = (RoktInitComplete *)event;
-        return [[MPRoktInitComplete alloc] initWithSuccess:initComplete.success];
-    }
-    
-    // Check for RoktEvent.RoktShowLoadingIndicator
-    if ([event isKindOfClass:[RoktShowLoadingIndicator class]]) {
-        return [[MPRoktShowLoadingIndicator alloc] init];
-    }
-    
-    // Check for RoktEvent.RoktHideLoadingIndicator
-    if ([event isKindOfClass:[RoktHideLoadingIndicator class]]) {
-        return [[MPRoktHideLoadingIndicator alloc] init];
-
-    }
-    
-    // Check for RoktEvent.RoktPlacementInteractive
-    if ([event isKindOfClass:[RoktPlacementInteractive class]]) {
-        RoktPlacementInteractive *placementInteractive = (RoktPlacementInteractive *)event;
-        return [[MPRoktPlacementInteractive alloc] initWithPlacementId:placementInteractive.identifier];
-    }
-    
-    // Check for RoktEvent.RoktPlacementReady
-    if ([event isKindOfClass:[RoktPlacementReady class]]) {
-        RoktPlacementReady *placementReady = (RoktPlacementReady *)event;
-        return [[MPRoktPlacementReady alloc] initWithPlacementId:placementReady.identifier];
-    }
-    
-    // Check for RoktEvent.RoktOfferEngagement
-    if ([event isKindOfClass:[RoktOfferEngagement class]]) {
-        RoktOfferEngagement *offerEngagement = (RoktOfferEngagement *)event;
-        return [[MPRoktOfferEngagement alloc] initWithPlacementId:offerEngagement.identifier];
-    }
-    
-    // Check for RoktEvent.RoktOpenUrl
-    if ([event isKindOfClass:[RoktOpenUrl class]]) {
-        RoktOpenUrl *openUrl = (RoktOpenUrl *)event;
-        return [[MPRoktOpenUrl alloc] initWithPlacementId:openUrl.identifier url:openUrl.url];
-    }
-    
-    // Check for RoktEvent.RoktPositiveEngagement
-    if ([event isKindOfClass:[RoktPositiveEngagement class]]) {
-        RoktPositiveEngagement *positiveEngagement = (RoktPositiveEngagement *)event;
-        return [[MPRoktPositiveEngagement alloc] initWithPlacementId:positiveEngagement.identifier];
-    }
-    
-    // Check for RoktEvent.RoktPlacementClosed
-    if ([event isKindOfClass:[RoktPlacementClosed class]]) {
-        RoktPlacementClosed *placementClosed = (RoktPlacementClosed *)event;
-        return [[MPRoktPlacementClosed alloc] initWithPlacementId:placementClosed.identifier];
-    }
-    
-    // Check for RoktEvent.RoktPlacementCompleted
-    if ([event isKindOfClass:[RoktPlacementCompleted class]]) {
-        RoktPlacementCompleted *placementCompleted = (RoktPlacementCompleted *)event;
-        return [[MPRoktPlacementCompleted alloc] initWithPlacementId:placementCompleted.identifier];
-    }
-    
-    // Check for RoktEvent.RoktPlacementFailure
-    if ([event isKindOfClass:[RoktPlacementFailure class]]) {
-        RoktPlacementFailure *placementFailure = (RoktPlacementFailure *)event;
-        return [[MPRoktPlacementFailure alloc] initWithPlacementId:placementFailure.identifier];
-    }
-    
-    // Check for RoktEvent.RoktFirstPositiveEngagement
-    if ([event isKindOfClass:[RoktFirstPositiveEngagement class]]) {
-        RoktFirstPositiveEngagement *firstPositiveEngagement = (RoktFirstPositiveEngagement *)event;
-        return [[MPRoktFirstPositiveEngagement alloc] initWithPlacementId:firstPositiveEngagement.identifier];
-    }
-    
-    // Check for RoktEvent.RoktEmbeddedSizeChanged
-    if ([event isKindOfClass:[RoktEmbeddedSizeChanged class]]) {
-        RoktEmbeddedSizeChanged *embeddedSizeChanged = (RoktEmbeddedSizeChanged *)event;
-        return [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:embeddedSizeChanged.identifier
-                                                        updatedHeight:embeddedSizeChanged.updatedHeight];
-    }
-
-    // Check for RoktEvent.RoktCartItemInstantPurchase
-    if ([event isKindOfClass:[RoktCartItemInstantPurchase class]]) {
-        RoktCartItemInstantPurchase *cartItemInstantPurchase = (RoktCartItemInstantPurchase *)event;
-        
-        // Handle nil coalescing for name field
-        NSString *name = cartItemInstantPurchase.name ?: @"";
-        
-        return [[MPRoktCartItemInstantPurchase alloc] initWithPlacementId:cartItemInstantPurchase.identifier
-                                                                     name:name
-                                                               cartItemId:cartItemInstantPurchase.cartItemId
-                                                            catalogItemId:cartItemInstantPurchase.catalogItemId
-                                                                 currency:cartItemInstantPurchase.currency
-                                                              description:cartItemInstantPurchase.description
-                                                          linkedProductId:cartItemInstantPurchase.linkedProductId
-                                                             providerData:cartItemInstantPurchase.providerData
-                                                                 quantity:cartItemInstantPurchase.quantity
-                                                               totalPrice:cartItemInstantPurchase.totalPrice
-                                                                unitPrice:cartItemInstantPurchase.unitPrice];
-    }
-    
-    // Default case - return nil if no matching event type found
-    return nil;
 }
 
 @end

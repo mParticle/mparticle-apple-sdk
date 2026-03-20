@@ -116,7 +116,7 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertNil(params[3]);
         XCTAssertNil(params[4]);
         // Verify placement options
-        MPRoktPlacementOptions *options = params[5];
+        RoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
         XCTAssertTrue(options.jointSdkSelectPlacements >= timeBeforeCall);
         return true;
@@ -177,7 +177,7 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertEqualObjects(params[3], roktConfig);
         XCTAssertNotNil(params[4]); // onEvent callback should be set
         // Verify placement options
-        MPRoktPlacementOptions *options = params[5];
+        RoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
         XCTAssertTrue(options.jointSdkSelectPlacements >= timeBeforeCall);
         return true;
@@ -227,7 +227,7 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertNil(params[3]);
         XCTAssertNil(params[4]);
         // Verify placement options exists
-        MPRoktPlacementOptions *options = params[5];
+        RoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
         return true;
     }]
@@ -275,7 +275,7 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertNil(params[3]);
         XCTAssertNil(params[4]);
         // Verify placement options exists
-        MPRoktPlacementOptions *options = params[5];
+        RoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
         return true;
     }]

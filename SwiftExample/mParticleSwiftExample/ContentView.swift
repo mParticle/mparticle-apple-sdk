@@ -1,9 +1,9 @@
 // swiftlint:disable file_length
 import SwiftUI
+import RoktContracts
 import mParticle_Apple_SDK
 import mParticle_Rokt_Swift
 import Rokt_Widget
-import RoktContracts
 import AdSupport
 import AppTrackingTransparency
 
@@ -340,31 +340,31 @@ struct RoktLayoutExampleView: View {
             eventLog.append("[\(timestamp)] Hide Loading Indicator")
 
         case let placementReady as Rokt_Widget.RoktEvent.PlacementReady:
-            eventLog.append("[\(timestamp)] Placement Ready - ID: \(placementReady.placementId ?? "unknown")")
+            eventLog.append("[\(timestamp)] Placement Ready - ID: \(placementReady.identifier ?? "unknown")")
 
         case let placementInteractive as Rokt_Widget.RoktEvent.PlacementInteractive:
-            eventLog.append("[\(timestamp)] Placement Interactive - ID: \(placementInteractive.placementId ?? "unknown")")
+            eventLog.append("[\(timestamp)] Placement Interactive - ID: \(placementInteractive.identifier ?? "unknown")")
 
         case let offerEngagement as Rokt_Widget.RoktEvent.OfferEngagement:
-            eventLog.append("[\(timestamp)] Offer Engagement - ID: \(offerEngagement.placementId ?? "unknown")")
+            eventLog.append("[\(timestamp)] Offer Engagement - ID: \(offerEngagement.identifier ?? "unknown")")
 
         case let positiveEngagement as Rokt_Widget.RoktEvent.PositiveEngagement:
-            eventLog.append("[\(timestamp)] Positive Engagement - ID: \(positiveEngagement.placementId ?? "unknown")")
+            eventLog.append("[\(timestamp)] Positive Engagement - ID: \(positiveEngagement.identifier ?? "unknown")")
 
         case let firstPositiveEngagement as Rokt_Widget.RoktEvent.FirstPositiveEngagement:
-            eventLog.append("[\(timestamp)] First Positive Engagement - ID: \(firstPositiveEngagement.placementId ?? "unknown")")
+            eventLog.append("[\(timestamp)] First Positive Engagement - ID: \(firstPositiveEngagement.identifier ?? "unknown")")
 
         case let openUrl as Rokt_Widget.RoktEvent.OpenUrl:
             eventLog.append("[\(timestamp)] Open URL - \(openUrl.url)")
 
         case let placementClosed as Rokt_Widget.RoktEvent.PlacementClosed:
-            eventLog.append("[\(timestamp)] Placement Closed - ID: \(placementClosed.placementId ?? "unknown")")
+            eventLog.append("[\(timestamp)] Placement Closed - ID: \(placementClosed.identifier ?? "unknown")")
 
         case let placementCompleted as Rokt_Widget.RoktEvent.PlacementCompleted:
-            eventLog.append("[\(timestamp)] Placement Completed - ID: \(placementCompleted.placementId ?? "unknown")")
+            eventLog.append("[\(timestamp)] Placement Completed - ID: \(placementCompleted.identifier ?? "unknown")")
 
         case let placementFailure as Rokt_Widget.RoktEvent.PlacementFailure:
-            eventLog.append("[\(timestamp)] Placement Failure - ID: \(placementFailure.placementId ?? "unknown")")
+            eventLog.append("[\(timestamp)] Placement Failure - ID: \(placementFailure.identifier ?? "unknown")")
 
         case let cartItem as Rokt_Widget.RoktEvent.CartItemInstantPurchase:
             eventLog.append("[\(timestamp)] Cart Item Purchase - \(cartItem.name ?? "unknown")")
@@ -837,8 +837,9 @@ func selectDarkOverlayPlacement() {
         "mobile": "(555)867-5309"
     ]
 
-    let roktConfig = RoktContracts.RoktConfig()
-    roktConfig.colorMode = .dark
+    let roktConfig = RoktContracts.RoktConfig.Builder()
+        .colorMode(.dark)
+        .build()
 
     MParticle.sharedInstance().rokt.selectPlacements(
         "RoktLayout",
@@ -861,15 +862,7 @@ func selectEmbeddedPlacement(heightBinding: Binding<CGFloat>) {
     let roktView = RoktContracts.RoktEmbeddedView(frame: .zero)
     let embeddedViews: [String: RoktContracts.RoktEmbeddedView] = ["Location1": roktView]
 
-    MParticle.sharedInstance().rokt.selectPlacements(
-        "testiOS",
-        attributes: customAttributes,
-        embeddedViews: embeddedViews,
-        config: nil,
-        onEvent: { _ in
-            // Use RoktContracts events when the Rokt kit forwards contract types.
-        }
-    )
+    MParticle.sharedInstance().rokt.selectPlacements("testiOS", attributes: customAttributes)
 }
 
 func selectOverlayPlacementAutoClose() {
@@ -891,8 +884,7 @@ func selectPlacementWithEventSubscription() {
 
     let placementIdentifier = "RoktLayout"
 
-    // Subscribe to Rokt events for this placement
-    MParticle.sharedInstance().rokt.events(placementIdentifier) { event in
+    MParticle.sharedInstance().rokt.events(placementIdentifier, onEvent: { event in
         switch event {
         case let initComplete as RoktContracts.RoktEvent.InitComplete:
             print("Rokt Init Complete - Success: \(initComplete.success)")
@@ -904,35 +896,35 @@ func selectPlacementWithEventSubscription() {
             print("Rokt: Hide Loading Indicator")
 
         case let placementReady as RoktContracts.RoktEvent.PlacementReady:
-            print("Rokt Placement Ready - ID: \(placementReady.placementId ?? "unknown")")
+            print("Rokt Placement Ready - ID: \(placementReady.identifier ?? "unknown")")
 
         case let placementInteractive as RoktContracts.RoktEvent.PlacementInteractive:
-            print("Rokt Placement Interactive - ID: \(placementInteractive.placementId ?? "unknown")")
+            print("Rokt Placement Interactive - ID: \(placementInteractive.identifier ?? "unknown")")
 
         case let offerEngagement as RoktContracts.RoktEvent.OfferEngagement:
-            print("Rokt Offer Engagement - ID: \(offerEngagement.placementId ?? "unknown")")
+            print("Rokt Offer Engagement - ID: \(offerEngagement.identifier ?? "unknown")")
 
         case let positiveEngagement as RoktContracts.RoktEvent.PositiveEngagement:
-            print("Rokt Positive Engagement - ID: \(positiveEngagement.placementId ?? "unknown")")
+            print("Rokt Positive Engagement - ID: \(positiveEngagement.identifier ?? "unknown")")
 
         case let firstPositiveEngagement as RoktContracts.RoktEvent.FirstPositiveEngagement:
-            print("Rokt First Positive Engagement - ID: \(firstPositiveEngagement.placementId ?? "unknown")")
+            print("Rokt First Positive Engagement - ID: \(firstPositiveEngagement.identifier ?? "unknown")")
 
         case let openUrl as RoktContracts.RoktEvent.OpenUrl:
-            print("Rokt Open URL - ID: \(openUrl.placementId ?? "unknown"), URL: \(openUrl.url)")
+            print("Rokt Open URL - ID: \(openUrl.identifier ?? "unknown"), URL: \(openUrl.url)")
 
         case let placementClosed as RoktContracts.RoktEvent.PlacementClosed:
-            print("Rokt Placement Closed - ID: \(placementClosed.placementId ?? "unknown")")
+            print("Rokt Placement Closed - ID: \(placementClosed.identifier ?? "unknown")")
 
         case let placementCompleted as RoktContracts.RoktEvent.PlacementCompleted:
-            print("Rokt Placement Completed - ID: \(placementCompleted.placementId ?? "unknown")")
+            print("Rokt Placement Completed - ID: \(placementCompleted.identifier ?? "unknown")")
 
         case let placementFailure as RoktContracts.RoktEvent.PlacementFailure:
-            print("Rokt Placement Failure - ID: \(placementFailure.placementId ?? "unknown")")
+            print("Rokt Placement Failure - ID: \(placementFailure.identifier ?? "unknown")")
 
         case let cartItem as RoktContracts.RoktEvent.CartItemInstantPurchase:
             print("Rokt Cart Item Instant Purchase:")
-            print("  - Placement ID: \(cartItem.placementId)")
+            print("  - Placement ID: \(cartItem.identifier)")
             print("  - Catalog Item ID: \(cartItem.catalogItemId)")
             print("  - Cart Item ID: \(cartItem.cartItemId)")
             print("  - Name: \(cartItem.name ?? "unknown")")
@@ -944,7 +936,7 @@ func selectPlacementWithEventSubscription() {
         default:
             print("Rokt: Unknown event type - \(type(of: event))")
         }
-    }
+    })
 
     // Select the placement (this will trigger events)
     MParticle.sharedInstance().rokt.selectPlacements(placementIdentifier, attributes: customAttributes)

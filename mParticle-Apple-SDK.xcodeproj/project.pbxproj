@@ -1391,6 +1391,9 @@
 				35DBFDEF2F2105F600E872F5 /* PBXTargetDependency */,
 			);
 			name = "mParticle-Apple-SDK";
+			packageProductDependencies = (
+				35DBFE00BF2103FD00E872F5 /* RoktContracts */,
+			);
 			productName = "mParticle-Apple-SDK";
 			productReference = 53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */;
 			productType = "com.apple.product-type.framework";
@@ -1423,6 +1426,9 @@
 				Base,
 			);
 			mainGroup = 53A79A6F29CCCD6400E7489F;
+			packageReferences = (
+				35DBFE00AF2103FD00E872F5 /* XCLocalSwiftPackageReference "rokt-contracts-apple" */,
+			);
 			productRefGroup = 53A79A7A29CCCD6400E7489F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -2155,6 +2161,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		35DBFE00AF2103FD00E872F5 /* XCLocalSwiftPackageReference "rokt-contracts-apple" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../ROKT/rokt-contracts-apple;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		35DBFE00BF2103FD00E872F5 /* RoktContracts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 35DBFE00AF2103FD00E872F5 /* XCLocalSwiftPackageReference "rokt-contracts-apple" */;
+			productName = RoktContracts;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 53A79A7029CCCD6400E7489F /* Project object */;
 }

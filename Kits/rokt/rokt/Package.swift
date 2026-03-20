@@ -21,6 +21,9 @@ let package = Package(
             branch: "workstation/5.0.0"
         ),
         .package(
+            url: "https://github.com/ROKT/rokt-contracts-apple"
+        ),
+        .package(
             url: "https://github.com/erikdoe/ocmock",
             branch: "master"
         )
@@ -29,8 +32,9 @@ let package = Package(
         .target(
             name: "mParticle-Rokt",
             dependencies: [
-                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
-                .product(name: "Rokt-Widget", package: "rokt-sdk-ios")
+                .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
+                .product(name: "Rokt-Widget", package: "rokt-sdk-ios"),
+                .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ],
             path: "Sources/mParticle-Rokt",
             resources: [.process("PrivacyInfo.xcprivacy")],
@@ -40,8 +44,9 @@ let package = Package(
             name: "mParticle-Rokt-Swift",
             dependencies: [
                 "mParticle-Rokt",
-                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
-                .product(name: "Rokt-Widget", package: "rokt-sdk-ios")
+                .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
+                .product(name: "Rokt-Widget", package: "rokt-sdk-ios"),
+                .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ],
             path: "Sources/mParticle-Rokt-Swift"
         ),
@@ -56,7 +61,8 @@ let package = Package(
             name: "mParticle-RoktSwiftTests",
             dependencies: [
                 "mParticle-Rokt",
-                "mParticle-Rokt-Swift"
+                "mParticle-Rokt-Swift",
+                .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ]
         )
     ]

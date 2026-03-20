@@ -30,33 +30,6 @@ static const NSInteger kMPRoktKitId = 181;
 
 @end
 
-@interface MPRoktPlacementOptions ()
-
-@property (nonatomic, strong, nonnull) NSMutableDictionary<NSString *, NSNumber *> *mutablePerformanceMarkers;
-
-@end
-
-@implementation MPRoktPlacementOptions
-
-- (nonnull instancetype)initWithTimestamp:(long long)timestamp {
-    self = [super init];
-    if (self) {
-        _jointSdkSelectPlacements = timestamp;
-        _mutablePerformanceMarkers = [[NSMutableDictionary alloc] init];
-    }
-    return self;
-}
-
-- (nonnull NSDictionary<NSString *, NSNumber *> *)dynamicPerformanceMarkers {
-    return [self.mutablePerformanceMarkers copy];
-}
-
-- (void)setDynamicPerformanceMarkerValue:(nonnull NSNumber *)value forKey:(nonnull NSString *)key {
-    self.mutablePerformanceMarkers[key] = value;
-}
-
-@end
-
 @implementation MPRokt
 
 /// Displays a Rokt ad placement with the specified identifier and user attributes.
@@ -94,7 +67,7 @@ static const NSInteger kMPRoktKitId = 181;
     
     // Capture the timestamp immediately when selectPlacements is called (in milliseconds)
     long long jointSdkSelectPlacementsTimestamp = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
-    MPRoktPlacementOptions *placementOptions = [[MPRoktPlacementOptions alloc] initWithTimestamp:jointSdkSelectPlacementsTimestamp];
+    RoktPlacementOptions *placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:jointSdkSelectPlacementsTimestamp];
     
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     if (!currentUser) {
