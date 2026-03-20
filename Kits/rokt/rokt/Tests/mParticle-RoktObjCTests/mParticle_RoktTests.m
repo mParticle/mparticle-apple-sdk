@@ -1,10 +1,10 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
-#import <Rokt_Widget/Rokt_Widget-Swift.h>
+@import Rokt_Widget;
 @import mParticle_Rokt;
 
 static NSInteger const kMPRoktKitCode = 181;
-static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
+static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
 
 @interface MPKitRokt ()
 
@@ -156,20 +156,16 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     NSDictionary *attributes = @{@"attr1": @"value1", @"sandbox": @"false"};
     FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
 
-    // Expect Rokt execute call and verify sandbox attribute is preserved
+    // Expect Rokt selectPlacements call and verify sandbox attribute is preserved
     // Note: attributes may include additional device identifiers (idfa, idfv, mpid)
-    OCMExpect([mockRoktSDK executeWithViewName:identifier
-                                    attributes:[OCMArg checkWithBlock:^BOOL(NSDictionary *attrs) {
-                                        return [attrs[@"sandbox"] isEqualToString:@"false"];
-                                    }]
-                                    placements:OCMOCK_ANY
-                                        config:nil
-                              placementOptions:OCMOCK_ANY
-                                        onLoad:nil
-                                      onUnLoad:nil
-                  onShouldShowLoadingIndicator:nil
-                  onShouldHideLoadingIndicator:nil
-                          onEmbeddedSizeChange:nil]);
+    OCMExpect([mockRoktSDK selectPlacementsWithIdentifier:identifier
+                                               attributes:[OCMArg checkWithBlock:^BOOL(NSDictionary *attrs) {
+                                                   return [attrs[@"sandbox"] isEqualToString:@"false"];
+                                               }]
+                                               placements:OCMOCK_ANY
+                                                   config:nil
+                                         placementOptions:OCMOCK_ANY
+                                                  onEvent:OCMOCK_ANY]);
     
     MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
                                                          attributes:attributes
@@ -194,21 +190,17 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     NSDictionary *attributes = @{@"attr1": @"value1"};  // No sandbox attribute provided
     FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
 
-    // Expect Rokt execute call and verify sandbox attribute is auto-detected
+    // Expect Rokt selectPlacements call and verify sandbox attribute is auto-detected
     // In development environment, sandbox should be "true"
     // Note: attributes may include additional device identifiers (idfa, idfv, mpid)
-    OCMExpect([mockRoktSDK executeWithViewName:identifier
-                                    attributes:[OCMArg checkWithBlock:^BOOL(NSDictionary *attrs) {
-                                        return attrs[@"sandbox"] != nil;  // Sandbox should be auto-added
-                                    }]
-                                    placements:OCMOCK_ANY
-                                        config:nil
-                              placementOptions:OCMOCK_ANY
-                                        onLoad:nil
-                                      onUnLoad:nil
-                  onShouldShowLoadingIndicator:nil
-                  onShouldHideLoadingIndicator:nil
-                          onEmbeddedSizeChange:nil]);
+    OCMExpect([mockRoktSDK selectPlacementsWithIdentifier:identifier
+                                               attributes:[OCMArg checkWithBlock:^BOOL(NSDictionary *attrs) {
+                                                   return attrs[@"sandbox"] != nil;  // Sandbox should be auto-added
+                                               }]
+                                               placements:OCMOCK_ANY
+                                                   config:nil
+                                         placementOptions:OCMOCK_ANY
+                                                  onEvent:OCMOCK_ANY]);
     
     MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
                                                          attributes:attributes
@@ -236,19 +228,15 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     // Create placement options with a custom timestamp value
     MPRoktPlacementOptions *options = [[MPRoktPlacementOptions alloc] initWithTimestamp:42];
 
-    // Expect Rokt execute call and verify placementOptions carries the jointSdkSelectPlacements value
-    OCMExpect([mockRoktSDK executeWithViewName:identifier
-                                    attributes:OCMOCK_ANY
-                                    placements:OCMOCK_ANY
-                                        config:nil
-                              placementOptions:[OCMArg checkWithBlock:^BOOL(PlacementOptions *opts) {
-                                        return opts != nil;
-                                    }]
-                                        onLoad:nil
-                                      onUnLoad:nil
-                  onShouldShowLoadingIndicator:nil
-                  onShouldHideLoadingIndicator:nil
-                          onEmbeddedSizeChange:nil]);
+    // Expect Rokt selectPlacements call and verify placementOptions carries the jointSdkSelectPlacements value
+    OCMExpect([mockRoktSDK selectPlacementsWithIdentifier:identifier
+                                               attributes:OCMOCK_ANY
+                                               placements:OCMOCK_ANY
+                                                   config:nil
+                                         placementOptions:[OCMArg checkWithBlock:^BOOL(PlacementOptions *opts) {
+                                             return opts != nil;
+                                         }]
+                                                  onEvent:OCMOCK_ANY]);
 
     MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
                                                          attributes:attributes
@@ -272,18 +260,14 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
 
     // When options is nil, a default PlacementOptions with jointSdkSelectPlacements=0 should be created
-    OCMExpect([mockRoktSDK executeWithViewName:identifier
-                                    attributes:OCMOCK_ANY
-                                    placements:OCMOCK_ANY
-                                        config:nil
-                              placementOptions:[OCMArg checkWithBlock:^BOOL(PlacementOptions *opts) {
-                                        return opts != nil;
-                                    }]
-                                        onLoad:nil
-                                      onUnLoad:nil
-                  onShouldShowLoadingIndicator:nil
-                  onShouldHideLoadingIndicator:nil
-                          onEmbeddedSizeChange:nil]);
+    OCMExpect([mockRoktSDK selectPlacementsWithIdentifier:identifier
+                                               attributes:OCMOCK_ANY
+                                               placements:OCMOCK_ANY
+                                                   config:nil
+                                         placementOptions:[OCMArg checkWithBlock:^BOOL(PlacementOptions *opts) {
+                                             return opts != nil;
+                                         }]
+                                                  onEvent:OCMOCK_ANY]);
 
     MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
                                                          attributes:attributes
@@ -596,28 +580,26 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
 }
 
 - (void)testPurchaseFinalized {
-    if (@available(iOS 15.0, *)) {
-        id mockRoktSDK = OCMClassMock([Rokt class]);
-        
-        // Set up test parameters
-        NSString *placementId = @"testonversion";
-        NSString *catalogItemId = @"testcatalogItemId";
-        BOOL success = YES;
-        
-        // Expect Rokt reportConversion call with correct parameters
-        OCMExpect([mockRoktSDK purchaseFinalizedWithPlacementId:placementId
-                                                  catalogItemId:catalogItemId
-                                                        success:success]);
-        
-        MPKitExecStatus *status = [self.kitInstance purchaseFinalized:placementId
-                                                        catalogItemId:catalogItemId
-                                                              success:@(success)];
-        
-        // Verify
-        XCTAssertNotNil(status);
-        XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
-        OCMVerifyAll(mockRoktSDK);
-    }
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    // Set up test parameters
+    NSString *identifier = @"testonversion";
+    NSString *catalogItemId = @"testcatalogItemId";
+    BOOL success = YES;
+
+    // Expect Rokt purchaseFinalized call with correct parameters
+    OCMExpect([mockRoktSDK purchaseFinalizedWithIdentifier:identifier
+                                             catalogItemId:catalogItemId
+                                                   success:success]);
+
+    MPKitExecStatus *status = [self.kitInstance purchaseFinalized:identifier
+                                                    catalogItemId:catalogItemId
+                                                          success:@(success)];
+
+    // Verify
+    XCTAssertNotNil(status);
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockRoktSDK);
 }
 
 - (void)testEvents_Success {
@@ -628,7 +610,7 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     __block MPRoktEvent *receivedEvent = nil;
 
     // Mock the Rokt SDK call and simulate triggering the callback with a mock event
-    OCMStub([mockRoktSDK eventsWithViewName:identifier onEvent:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
+    OCMStub([mockRoktSDK eventsWithIdentifier:identifier onEvent:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
         // Get the callback block from the invocation
         void (^onEventCallback)(RoktEvent *) = nil;
         [invocation getArgument:&onEventCallback atIndex:3]; // Index 3 is the second parameter (onEvent)
@@ -649,7 +631,7 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     }];
 
     // Verify the Rokt SDK method was called
-    OCMVerify([mockRoktSDK eventsWithViewName:identifier onEvent:[OCMArg any]]);
+    OCMVerify([mockRoktSDK eventsWithIdentifier:identifier onEvent:[OCMArg any]]);
 
     // Verify the return status
     XCTAssertNotNil(status);
@@ -671,7 +653,7 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     __block BOOL callbackCalled = NO;
 
     // Mock the Rokt SDK call and simulate triggering the callback with a mock event
-    OCMStub([mockRoktSDK eventsWithViewName:identifier onEvent:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
+    OCMStub([mockRoktSDK eventsWithIdentifier:identifier onEvent:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
         // Get the callback block from the invocation
         void (^onEventCallback)(RoktEvent *) = nil;
         [invocation getArgument:&onEventCallback atIndex:3];
@@ -691,7 +673,7 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     }];
 
     // Verify the Rokt SDK method was called
-    OCMVerify([mockRoktSDK eventsWithViewName:identifier onEvent:[OCMArg any]]);
+    OCMVerify([mockRoktSDK eventsWithIdentifier:identifier onEvent:[OCMArg any]]);
 
     // Verify the return status
     XCTAssertNotNil(status);
@@ -710,7 +692,7 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     __block BOOL callbackCalled = NO;
 
     // The Rokt SDK should still be called even with nil identifier
-    OCMExpect([mockRoktSDK eventsWithViewName:@"" onEvent:[OCMArg any]]);
+    OCMExpect([mockRoktSDK eventsWithIdentifier:@"" onEvent:[OCMArg any]]);
 
     // Execute the method under test
     MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:^(MPRoktEvent * _Nonnull event) {
@@ -718,7 +700,7 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     }];
 
     // Verify the Rokt SDK method was called
-    OCMVerify([mockRoktSDK eventsWithViewName:@"" onEvent:[OCMArg any]]);
+    OCMVerify([mockRoktSDK eventsWithIdentifier:@"" onEvent:[OCMArg any]]);
 
     // Verify the return status
     XCTAssertNotNil(status);
@@ -776,7 +758,7 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     NSDictionary *roktKitConfig = @{
         @"id": @(kMPRoktKitCode),
         @"as": @{
-            kMPHashedEmailUserIdentityType: @"other4"
+            kMPRoktHashedEmailUserIdentityType: @"other4"
         }
     };
     
@@ -810,7 +792,7 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
     NSDictionary *roktKitConfigNoHash = @{
         @"id": @(kMPRoktKitCode),
         @"as": @{
-            // No kMPHashedEmailUserIdentityType specified
+            // No kMPRoktHashedEmailUserIdentityType specified
         }
     };
     [[[mockMPKitRoktClass stub] andReturn:roktKitConfigNoHash] getKitConfig];
@@ -857,17 +839,13 @@ static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdenti
         return YES;
     }]]);
     
-    // Stub Rokt execute call
-    OCMStub([mockRoktSDK executeWithViewName:OCMOCK_ANY
-                                  attributes:OCMOCK_ANY
-                                  placements:OCMOCK_ANY
-                                      config:OCMOCK_ANY
-                            placementOptions:OCMOCK_ANY
-                                      onLoad:OCMOCK_ANY
-                                    onUnLoad:OCMOCK_ANY
-                onShouldShowLoadingIndicator:OCMOCK_ANY
-                onShouldHideLoadingIndicator:OCMOCK_ANY
-                        onEmbeddedSizeChange:OCMOCK_ANY]);
+    // Stub Rokt selectPlacements call
+    OCMStub([mockRoktSDK selectPlacementsWithIdentifier:OCMOCK_ANY
+                                             attributes:OCMOCK_ANY
+                                             placements:OCMOCK_ANY
+                                                 config:OCMOCK_ANY
+                                       placementOptions:OCMOCK_ANY
+                                              onEvent:OCMOCK_ANY]);
     
     // Call executeWithIdentifier which triggers logSelectPlacementEvent with prepareAttributes
     MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier

@@ -10,13 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set.outputs.matrix }}
+      pod-matrix: ${{ steps.set.outputs.pod-matrix }}
     steps:
       - uses: actions/checkout@v6
         with:
           sparse-checkout: Kits/matrix.json
           sparse-checkout-cone-mode: false
       - id: set
-        run: echo "matrix=$(jq -c . Kits/matrix.json)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "matrix=$(jq -c . Kits/matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "pod-matrix=$(jq -c '[.[] | select(.podspec)]' Kits/matrix.json)" >> "$GITHUB_OUTPUT"
 
   pod-lint-kits:
     name: Pod Lint ${{ matrix.kit.name }}
@@ -25,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
+        kit: ${{ fromJson(needs.load-matrix.outputs.pod-matrix) }}
     steps:
       - uses: actions/checkout@v6
       - uses: maxim-lobanov/setup-xcode@v1
@@ -42,13 +45,8 @@ jobs:
           sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK.podspec
           sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
 
-          PODSPEC=$(find "${{ matrix.kit.local_path }}" -maxdepth 1 -name "*.podspec" | head -1)
-          if [ -z "$PODSPEC" ]; then
-            echo "No podspec found for ${{ matrix.kit.name }}, skipping pod lint."
-            exit 0
-          fi
-          echo "Linting: $PODSPEC"
-          pod lib lint "$PODSPEC" \
+          echo "Linting: ${{ matrix.kit.podspec }}"
+          pod lib lint "${{ matrix.kit.podspec }}" \
             --allow-warnings \
             --skip-import-validation \
             --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}"

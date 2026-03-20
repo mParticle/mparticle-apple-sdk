@@ -27,6 +27,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
+            identifier: "",
             locationName: locationName,
             attributes: attributes
         )
@@ -51,7 +52,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
-            viewName: viewName,
+            identifier: viewName,
             locationName: locationName,
             attributes: attributes,
             config: config,
@@ -72,6 +73,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
+            identifier: "",
             locationName: locationName,
             attributes: attributes
         )
@@ -90,6 +92,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
+            identifier: "",
             locationName: locationName,
             attributes: attributes
         )
@@ -182,6 +185,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
+            identifier: "",
             locationName: "test",
             attributes: attributes
         )
@@ -202,6 +206,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
+            identifier: "",
             locationName: longLocationName,
             attributes: attributes
         )
@@ -223,6 +228,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
+            identifier: "",
             locationName: locationName,
             attributes: attributes
         )
@@ -242,6 +248,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
+            identifier: "",
             locationName: "state_test",
             attributes: attributes
         )
@@ -304,7 +311,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
-            viewName: "integration_test",
+            identifier: "integration_test",
             locationName: "test_location",
             attributes: attributes
         )
@@ -336,7 +343,7 @@ struct mParticle_Rokt_SwiftTests {
         // When
         let layout = MPRoktLayout(
             sdkTriggered: sdkTriggered,
-            viewName: viewName,
+            identifier: viewName,
             locationName: locationName,
             attributes: attributes,
             config: config,

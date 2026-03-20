@@ -7,28 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BB0001012F50000000000001 /* mParticle-Rokt in Frameworks */ = {isa = PBXBuildFile; productRef = BB0001022F50000000000002 /* mParticle-Rokt */; };
+		AA000007000000000000007A /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = AA000003000000000000003A /* mParticle-Apple-SDK */; };
+		AA000008000000000000008A /* mParticle-Rokt in Frameworks */ = {isa = PBXBuildFile; productRef = AA000004000000000000004A /* mParticle-Rokt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		BB0002012F50000000000001 /* SPM-Swift-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Swift-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		891CF8042F68C57C0063792A /* SPM-Swift-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Swift-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		BB0003012F50000000000001 /* Exceptions for "SPM-Swift-Example" folder in "SPM-Swift-Example" target */ = {
+		89418D042F68D62E0098E033 /* Exceptions for "SPM-Swift-Example" folder in "SPM-Swift-Example" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = BB0004012F50000000000001 /* SPM-Swift-Example */;
+			target = 891CF8032F68C57C0063792A /* SPM-Swift-Example */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		BB0005012F50000000000001 /* SPM-Swift-Example */ = {
+		891CF8062F68C57C0063792A /* SPM-Swift-Example */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				BB0003012F50000000000001 /* Exceptions for "SPM-Swift-Example" folder in "SPM-Swift-Example" target */,
+				89418D042F68D62E0098E033 /* Exceptions for "SPM-Swift-Example" folder in "SPM-Swift-Example" target */,
 			);
 			path = "SPM-Swift-Example";
 			sourceTree = "<group>";
@@ -36,29 +37,30 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		BB0006012F50000000000001 /* Frameworks */ = {
+		891CF8012F68C57C0063792A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB0001012F50000000000001 /* mParticle-Rokt in Frameworks */,
+				AA000007000000000000007A /* mParticle-Apple-SDK in Frameworks */,
+				AA000008000000000000008A /* mParticle-Rokt in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		BB0007012F50000000000001 = {
+		891CF7FB2F68C57C0063792A = {
 			isa = PBXGroup;
 			children = (
-				BB0005012F50000000000001 /* SPM-Swift-Example */,
-				BB0007022F50000000000002 /* Products */,
+				891CF8062F68C57C0063792A /* SPM-Swift-Example */,
+				891CF8052F68C57C0063792A /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		BB0007022F50000000000002 /* Products */ = {
+		891CF8052F68C57C0063792A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BB0002012F50000000000001 /* SPM-Swift-Example.app */,
+				891CF8042F68C57C0063792A /* SPM-Swift-Example.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,68 +68,70 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		BB0004012F50000000000001 /* SPM-Swift-Example */ = {
+		891CF8032F68C57C0063792A /* SPM-Swift-Example */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BB0008022F50000000000002 /* Build configuration list for PBXNativeTarget "SPM-Swift-Example" */;
+			buildConfigurationList = 891CF80F2F68C5800063792A /* Build configuration list for PBXNativeTarget "SPM-Swift-Example" */;
 			buildPhases = (
-				BB0006022F50000000000002 /* Sources */,
-				BB0006012F50000000000001 /* Frameworks */,
-				BB0006032F50000000000003 /* Resources */,
+				891CF8002F68C57C0063792A /* Sources */,
+				891CF8012F68C57C0063792A /* Frameworks */,
+				891CF8022F68C57C0063792A /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				BB0005012F50000000000001 /* SPM-Swift-Example */,
+				891CF8062F68C57C0063792A /* SPM-Swift-Example */,
 			);
 			name = "SPM-Swift-Example";
 			packageProductDependencies = (
-				BB0001022F50000000000002 /* mParticle-Rokt */,
+				AA000003000000000000003A /* mParticle-Apple-SDK */,
+				AA000004000000000000004A /* mParticle-Rokt */,
 			);
 			productName = "SPM-Swift-Example";
-			productReference = BB0002012F50000000000001 /* SPM-Swift-Example.app */;
+			productReference = 891CF8042F68C57C0063792A /* SPM-Swift-Example.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		BB0009012F50000000000001 /* Project object */ = {
+		891CF7FC2F68C57C0063792A /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
-					BB0004012F50000000000001 = {
+					891CF8032F68C57C0063792A = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
 			};
-			buildConfigurationList = BB0008012F50000000000001 /* Build configuration list for PBXProject "SPM-Swift-Example" */;
+			buildConfigurationList = 891CF7FF2F68C57C0063792A /* Build configuration list for PBXProject "SPM-Swift-Example" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = BB0007012F50000000000001;
+			mainGroup = 891CF7FB2F68C57C0063792A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BB000A012F50000000000001 /* XCLocalSwiftPackageReference "../.." */,
+				AA000001000000000000001A /* XCLocalSwiftPackageReference "../../../../../" */,
+				AA000002000000000000002A /* XCLocalSwiftPackageReference "../../" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = BB0007022F50000000000002 /* Products */;
+			productRefGroup = 891CF8052F68C57C0063792A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BB0004012F50000000000001 /* SPM-Swift-Example */,
+				891CF8032F68C57C0063792A /* SPM-Swift-Example */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		BB0006032F50000000000003 /* Resources */ = {
+		891CF8022F68C57C0063792A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -137,7 +141,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		BB0006022F50000000000002 /* Sources */ = {
+		891CF8002F68C57C0063792A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -147,69 +151,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		BB000B012F50000000000001 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "SPM-Swift-Example/Info.plist";
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Swift-Example";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		BB000B022F50000000000002 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "SPM-Swift-Example/Info.plist";
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Swift-Example";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		BB000B032F50000000000003 /* Debug */ = {
+		891CF80D2F68C5800063792A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -261,7 +203,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -272,7 +214,7 @@
 			};
 			name = Debug;
 		};
-		BB000B042F50000000000004 /* Release */ = {
+		891CF80E2F68C5800063792A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -318,7 +260,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -328,23 +270,87 @@
 			};
 			name = Release;
 		};
+		891CF8102F68C5800063792A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SPM-Swift-Example/Info.plist";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.rokt.SPM-Swift-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		891CF8112F68C5800063792A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SPM-Swift-Example/Info.plist";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.rokt.SPM-Swift-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BB0008012F50000000000001 /* Build configuration list for PBXProject "SPM-Swift-Example" */ = {
+		891CF7FF2F68C57C0063792A /* Build configuration list for PBXProject "SPM-Swift-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				BB000B032F50000000000003 /* Debug */,
-				BB000B042F50000000000004 /* Release */,
+				891CF80D2F68C5800063792A /* Debug */,
+				891CF80E2F68C5800063792A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BB0008022F50000000000002 /* Build configuration list for PBXNativeTarget "SPM-Swift-Example" */ = {
+		891CF80F2F68C5800063792A /* Build configuration list for PBXNativeTarget "SPM-Swift-Example" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				BB000B012F50000000000001 /* Debug */,
-				BB000B022F50000000000002 /* Release */,
+				891CF8102F68C5800063792A /* Debug */,
+				891CF8112F68C5800063792A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -352,18 +358,28 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BB000A012F50000000000001 /* XCLocalSwiftPackageReference "../.." */ = {
+		AA000001000000000000001A /* XCLocalSwiftPackageReference "../../../../../" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../..";
+			relativePath = ../../../../../;
+		};
+		AA000002000000000000002A /* XCLocalSwiftPackageReference "../../" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BB0001022F50000000000002 /* mParticle-Rokt */ = {
+		AA000003000000000000003A /* mParticle-Apple-SDK */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = AA000001000000000000001A /* XCLocalSwiftPackageReference "../../../../../" */;
+			productName = "mParticle-Apple-SDK";
+		};
+		AA000004000000000000004A /* mParticle-Rokt */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA000002000000000000002A /* XCLocalSwiftPackageReference "../../" */;
 			productName = "mParticle-Rokt";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = BB0009012F50000000000001 /* Project object */;
+	rootObject = 891CF7FC2F68C57C0063792A /* Project object */;
 }
