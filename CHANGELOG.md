@@ -6,6 +6,16 @@ All notable changes to the mParticle Apple SDK (core and integration kits) are d
 
 ---
 
+# [Unreleased]
+
+### Kits
+
+#### Added
+
+- feat: Add Urban Airship 19 kit targeting Airship SDK 19.x (iOS 15.6+)
+
+---
+
 # [8.44.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.43.1...v8.44.0) (2026-02-19)
 
 ### Bug Fixes

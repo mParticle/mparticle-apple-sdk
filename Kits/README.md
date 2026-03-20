@@ -50,6 +50,7 @@ Each kit has its own README with installation and configuration steps.
 | Radar 3                   | [`mparticle-apple-integration-radar-3`](https://github.com/mparticle-integrations/mparticle-apple-integration-radar-3)                                                   | [Radar SDK 3.x](https://github.com/radarlabs/radar-sdk-ios-spm)                 |
 | Rokt                      | [`mparticle-apple-integration-rokt`](https://github.com/mparticle-integrations/mparticle-apple-integration-rokt)                                                         | [Rokt Widget SDK](https://github.com/ROKT/rokt-sdk-ios)                         |
 | Singular 12               | [`mparticle-apple-integration-singular-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-singular-12)                                           | [Singular SDK 12.x](https://github.com/singular-labs/Singular-iOS-SDK)          |
+| Urban Airship 19          | [`mparticle-apple-integration-urbanairship-19`](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-19)                                   | [Airship SDK 19.x](https://github.com/urbanairship/ios-library)                 |
 | Urban Airship 20          | [`mparticle-apple-integration-urbanairship-20`](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-20)                                   | [Airship SDK 20.x](https://github.com/urbanairship/ios-library)                 |
 
 ## Integrations Not in This Repository
