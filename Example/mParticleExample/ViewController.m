@@ -1,6 +1,5 @@
 #import "ViewController.h"
 #import <mParticle_Apple_SDK/mParticle.h>
-@import RoktContracts;
 #import <mParticle_Apple_Media_SDK-Swift.h>
 #import <AdSupport/AdSupport.h>
 #import "AdSupport/ASIdentifierManager.h"

@@ -12,7 +12,6 @@
 #import "MPIConstants.h"
 #import "MPIdentityDTO.h"
 #import "MPExtensionProtocol.h"
-@import RoktContracts;
 
 // Constants for kit configuration keys
 static NSString * const kMPKitConfigurationIdKey = @"id";
