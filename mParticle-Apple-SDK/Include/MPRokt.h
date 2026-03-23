@@ -8,7 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@import RoktContracts;
+@class RoktEmbeddedView;
+@class RoktConfig;
+@class RoktEvent;
 
 /**
  * Main interface for interacting with Rokt functionality.

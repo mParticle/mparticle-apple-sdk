@@ -6,6 +6,7 @@
 //
 
 #import "MPRokt.h"
+@import RoktContracts;
 #import "mParticle.h"
 #import "MPForwardQueueParameters.h"
 #import "MPILogger.h"

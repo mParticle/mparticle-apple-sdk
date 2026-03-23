@@ -884,7 +884,7 @@ func selectPlacementWithEventSubscription() {
 
     let placementIdentifier = "RoktLayout"
 
-    MParticle.sharedInstance().rokt.events(placementIdentifier, onEvent: { event in
+    MParticle.sharedInstance().rokt.subscribeToPlacementEvents(placementIdentifier, onEvent: { event in
         switch event {
         case let initComplete as RoktContracts.RoktEvent.InitComplete:
             print("Rokt Init Complete - Success: \(initComplete.success)")
