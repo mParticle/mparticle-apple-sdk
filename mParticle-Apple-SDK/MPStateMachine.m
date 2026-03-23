@@ -251,7 +251,10 @@ static BOOL runningInBackground = NO;
 
 #pragma mark Notification handlers
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
-    [MPApplication_PRIVATE updateLastUseDate:_launchDate];
+    NSDate *launchDate = _launchDate;
+    dispatch_async(messageQueue, ^{
+        [MPApplication_PRIVATE updateLastUseDate:launchDate];
+    });
     _backgrounded = YES;
     self.launchInfo = nil;
 }
