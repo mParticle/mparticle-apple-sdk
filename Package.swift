@@ -12,7 +12,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/ROKT/rokt-contracts-apple.git", branch: "feat/shoppable-ads-events"),
+        .package(url: "https://github.com/ROKT/rokt-contracts-apple.git", branch: "feat/shoppable-ads-events")
     ],
     targets: [
         // Swift-only components
@@ -25,7 +25,7 @@ let package = Package(
             name: "mParticle_Apple_SDK",
             dependencies: [
                 "mParticle_Apple_SDK_Swift",
-                .product(name: "RoktContracts", package: "rokt-contracts-apple"),
+                .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ],
             path: "mParticle-Apple-SDK",
             sources: nil,
