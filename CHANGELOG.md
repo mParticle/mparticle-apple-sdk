@@ -1,3 +1,9 @@
+# [8.44.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.2...v8.44.3) (2026-03-23)
+
+### Bug Fixes
+
+- fix: serialize updateLastUseDate with messageQueue on background entry (#680) ([ba76afc5](https://github.com/mParticle/mparticle-apple-sdk/commit/ba76afc5c619e3fcf06acbb976e2e9e072845a7e))
+
 # [8.44.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.1...v8.44.2) (2026-03-17)
 
 ### Bug Fixes
