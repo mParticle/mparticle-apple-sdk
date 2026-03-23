@@ -9,6 +9,9 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
+#import "MPApplication.h"
+#import "MPPersistenceController.h"
+#import "MPIConstants.h"
 #import "MParticleSwift.h"
 
 #pragma mark - MPStateMachine category
@@ -26,6 +29,9 @@
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+
++ (dispatch_queue_t)messageQueue;
 
 @end
 
@@ -290,6 +296,107 @@
     });
 
     [self waitForExpectationsWithTimeout:30 handler:nil];
+}
+
+#pragma mark - Background UserDefaults Serialization Tests
+
+- (void)testUpdateLastUseDateSerializedWithMessageQueueWork {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Serialized background access"];
+
+    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    [MPPersistenceController_PRIVATE setMpid:@12345];
+
+    MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                                  backendController:[MParticle sharedInstance].backendController
+                                                                           identity:[MParticle sharedInstance].identity];
+
+    dispatch_queue_t sdkMessageQueue = [MParticle messageQueue];
+    dispatch_group_t group = dispatch_group_create();
+    NSInteger iterations = 500;
+
+    for (NSInteger i = 0; i < iterations; i++) {
+        dispatch_group_async(group, sdkMessageQueue, ^{
+            [MPApplication_PRIVATE updateLastUseDate:[NSDate date]];
+        });
+
+        dispatch_group_async(group, sdkMessageQueue, ^{
+            [defaults setMPObject:@(i) forKey:@"testBg" userId:[MPPersistenceController_PRIVATE mpId]];
+        });
+
+        dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            NSNumber *mpId = [MPPersistenceController_PRIVATE mpId];
+            (void)mpId;
+        });
+    }
+
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        MPUserDefaults *ud = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                                backendController:[MParticle sharedInstance].backendController
+                                                                         identity:[MParticle sharedInstance].identity];
+        NSNumber *lastUseDate = ud[kMPAppLastUseDateKey];
+        XCTAssertNotNil(lastUseDate, @"lastUseDate must be persisted after background transition");
+        [expectation fulfill];
+    });
+
+    [self waitForExpectationsWithTimeout:30 handler:nil];
+}
+
+- (void)testSubscriptAccessorThreadSafety {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Subscript thread safety"];
+
+    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    [MPPersistenceController_PRIVATE setMpid:@42];
+
+    MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                                  backendController:[MParticle sharedInstance].backendController
+                                                                           identity:[MParticle sharedInstance].identity];
+
+    dispatch_group_t group = dispatch_group_create();
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.subscript.concurrent", DISPATCH_QUEUE_CONCURRENT);
+    NSInteger iterations = 1000;
+
+    for (NSInteger i = 0; i < iterations; i++) {
+        dispatch_group_async(group, concurrentQueue, ^{
+            id value = defaults[@"lud"];
+            (void)value;
+        });
+
+        dispatch_group_async(group, concurrentQueue, ^{
+            defaults[@"lud"] = @(1234567890 + i);
+        });
+
+        dispatch_group_async(group, concurrentQueue, ^{
+            id mpidValue = defaults[@"mpid"];
+            (void)mpidValue;
+        });
+
+        dispatch_group_async(group, concurrentQueue, ^{
+            defaults[@"mpid"] = @(i % 100);
+        });
+    }
+
+    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+
+    [self waitForExpectationsWithTimeout:30 handler:nil];
+}
+
+- (void)testUpdateLastUseDateWithNilDate {
+    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    [MPPersistenceController_PRIVATE setMpid:@1];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    [MPApplication_PRIVATE updateLastUseDate:nil];
+#pragma clang diagnostic pop
+
+    MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                                  backendController:[MParticle sharedInstance].backendController
+                                                                           identity:[MParticle sharedInstance].identity];
+    NSNumber *lastUseDate = defaults[kMPAppLastUseDateKey];
+    XCTAssertNotNil(lastUseDate);
+    XCTAssertEqualObjects(lastUseDate, @0);
 }
 
 @end
