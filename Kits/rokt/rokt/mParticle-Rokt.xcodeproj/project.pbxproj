@@ -12,8 +12,9 @@
 		AA0008032F50000000000003 /* MPKitRokt.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0001012F50000000000001 /* MPKitRokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA0008042F50000000000004 /* mParticle_Rokt.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0001022F50000000000002 /* mParticle_Rokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA0008052F50000000000005 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0001062F50000000000006 /* PrivacyInfo.xcprivacy */; };
-		AA0008062F50000000000006 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = AA000A012F50000000000001 /* mParticle-Apple-SDK */; };
 		AA0008072F50000000000007 /* Rokt-Widget in Frameworks */ = {isa = PBXBuildFile; productRef = AA000A032F50000000000003 /* Rokt-Widget */; };
+		B359B12F2F6F340E008A6480 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = B359B12E2F6F340E008A6480 /* mParticle-Apple-SDK */; };
+		B359B1302F70D53D008A6480 /* RoktContracts in Frameworks */ = {isa = PBXBuildFile; productRef = ROKT00012F70000000000001 /* RoktContracts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,14 +32,31 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B359B1302F70D53D008A6480 /* RoktContracts in Frameworks */,
+				B359B12F2F6F340E008A6480 /* mParticle-Apple-SDK in Frameworks */,
 				AA0008072F50000000000007 /* Rokt-Widget in Frameworks */,
-				AA0008062F50000000000006 /* mParticle-Apple-SDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA0002012F50000000000001 = {
+			isa = PBXGroup;
+			children = (
+				AA0002032F50000000000003 /* Sources */,
+				AA0002022F50000000000002 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AA0002022F50000000000002 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA0001092F50000000000009 /* mParticle_Rokt.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		AA0002032F50000000000003 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
@@ -76,22 +94,6 @@
 			path = "mParticle-Rokt-Swift";
 			sourceTree = "<group>";
 		};
-		AA0002012F50000000000001 = {
-			isa = PBXGroup;
-			children = (
-				AA0002032F50000000000003 /* Sources */,
-				AA0002022F50000000000002 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		AA0002022F50000000000002 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				AA0001092F50000000000009 /* mParticle_Rokt.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -122,8 +124,9 @@
 			);
 			name = "mParticle-Rokt";
 			packageProductDependencies = (
-				AA000A012F50000000000001 /* mParticle-Apple-SDK */,
 				AA000A032F50000000000003 /* Rokt-Widget */,
+				B359B12E2F6F340E008A6480 /* mParticle-Apple-SDK */,
+				ROKT00012F70000000000001 /* RoktContracts */,
 			);
 			productName = "mParticle-Rokt";
 			productReference = AA0001092F50000000000009 /* mParticle_Rokt.framework */;
@@ -153,8 +156,9 @@
 			);
 			mainGroup = AA0002012F50000000000001;
 			packageReferences = (
-				AA0009012F50000000000001 /* XCLocalSwiftPackageReference "../../.." */,
 				AA0009022F50000000000002 /* XCRemoteSwiftPackageReference "rokt-sdk-ios" */,
+				B359B12D2F6F340E008A6480 /* XCLocalSwiftPackageReference "../../../../amman" */,
+				ROKT00002F70000000000000 /* XCRemoteSwiftPackageReference "rokt-contracts-apple" */,
 			);
 			productRefGroup = AA0002022F50000000000002 /* Products */;
 			projectDirPath = "";
@@ -309,6 +313,7 @@
 		AA0006032F50000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -320,13 +325,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Rokt";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = NO;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 			};
 			name = Debug;
 		};
 		AA0006042F50000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -338,7 +343,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Rokt";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = NO;
-				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 			};
 			name = Release;
 		};
@@ -366,9 +370,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		AA0009012F50000000000001 /* XCLocalSwiftPackageReference "../../.." */ = {
+		B359B12D2F6F340E008A6480 /* XCLocalSwiftPackageReference "../../../../amman" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../..;
+			relativePath = ../../../../amman;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -377,22 +381,34 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ROKT/rokt-sdk-ios";
 			requirement = {
-				branch = "workstation/5.0.0";
+				branch = "feat/shoppable-ads-payment-orchestration";
+				kind = branch;
+			};
+		};
+		ROKT00002F70000000000000 /* XCRemoteSwiftPackageReference "rokt-contracts-apple" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ROKT/rokt-contracts-apple.git";
+			requirement = {
+				branch = "feat/shoppable-ads-events";
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		AA000A012F50000000000001 /* mParticle-Apple-SDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA0009012F50000000000001 /* XCLocalSwiftPackageReference "../../.." */;
-			productName = "mParticle-Apple-SDK";
-		};
 		AA000A032F50000000000003 /* Rokt-Widget */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AA0009022F50000000000002 /* XCRemoteSwiftPackageReference "rokt-sdk-ios" */;
 			productName = "Rokt-Widget";
+		};
+		B359B12E2F6F340E008A6480 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "mParticle-Apple-SDK";
+		};
+		ROKT00012F70000000000001 /* RoktContracts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = ROKT00002F70000000000000 /* XCRemoteSwiftPackageReference "rokt-contracts-apple" */;
+			productName = RoktContracts;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

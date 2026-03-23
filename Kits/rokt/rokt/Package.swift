@@ -18,7 +18,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
-            branch: "workstation/5.0.0"
+            branch: "feat/shoppable-ads-payment-orchestration"
         ),
         .package(
             url: "https://github.com/erikdoe/ocmock",

@@ -202,11 +202,11 @@ struct ActionButton: View {
 struct RoktEmbeddedViewWrapper: UIViewRepresentable {
     @Binding var height: CGFloat
 
-    func makeUIView(context: Context) -> MPRoktEmbeddedView {
-        return MPRoktEmbeddedView()
+    func makeUIView(context: Context) -> RoktEmbeddedView {
+        return RoktEmbeddedView()
     }
 
-    func updateUIView(_ uiView: MPRoktEmbeddedView, context: Context) {
+    func updateUIView(_ uiView: RoktEmbeddedView, context: Context) {
         // Update the view if needed
     }
 }
@@ -836,15 +836,14 @@ func selectDarkOverlayPlacement() {
         "mobile": "(555)867-5309"
     ]
 
-    let roktConfig = MPRoktConfig()
-    roktConfig.colorMode = .dark
+    let roktConfig = RoktConfig.Builder().colorMode(.dark).build()
 
     MParticle.sharedInstance().rokt.selectPlacements(
         "RoktLayout",
         attributes: customAttributes,
         embeddedViews: nil,
         config: roktConfig,
-        callbacks: nil
+        onEvent: nil
     )
 }
 
@@ -857,35 +856,21 @@ func selectEmbeddedPlacement(heightBinding: Binding<CGFloat>) {
         "mobile": "(555)867-5309"
     ]
 
-    let callbacks = MPRoktEventCallback()
-    callbacks.onLoad = {
-        // Optional callback for when the Rokt placement loads
-    }
-    callbacks.onUnLoad = {
-        // Optional callback for when the Rokt placement unloads
-    }
-    callbacks.onShouldShowLoadingIndicator = {
-        // Optional callback to show a loading indicator
-    }
-    callbacks.onShouldHideLoadingIndicator = {
-        // Optional callback to hide a loading indicator
-    }
-    callbacks.onEmbeddedSizeChange = { _, size in
-        DispatchQueue.main.async {
-            heightBinding.wrappedValue = size
-        }
-    }
-
-    let roktView = MPRoktEmbeddedView()
-    let embeddedViews: [String: MPRoktEmbeddedView] = ["Location1": roktView]
+    let roktView = RoktEmbeddedView()
+    let embeddedViews: [String: RoktEmbeddedView] = ["Location1": roktView]
 
     MParticle.sharedInstance().rokt.selectPlacements(
         "testiOS",
         attributes: customAttributes,
         embeddedViews: embeddedViews,
-        config: nil,
-        callbacks: callbacks
-    )
+        config: nil
+    ) { event in
+        if let sizeChanged = event as? RoktEvent.EmbeddedSizeChanged {
+            DispatchQueue.main.async {
+                heightBinding.wrappedValue = sizeChanged.updatedHeight
+            }
+        }
+    }
 }
 
 func selectOverlayPlacementAutoClose() {
@@ -910,45 +895,45 @@ func selectPlacementWithEventSubscription() {
     // Subscribe to Rokt events for this placement
     MParticle.sharedInstance().rokt.events(placementIdentifier) { event in
         switch event {
-        case let initComplete as MPRoktEvent.MPRoktInitComplete:
+        case let initComplete as RoktEvent.InitComplete:
             print("Rokt Init Complete - Success: \(initComplete.success)")
 
-        case is MPRoktEvent.MPRoktShowLoadingIndicator:
+        case is RoktEvent.ShowLoadingIndicator:
             print("Rokt: Show Loading Indicator")
 
-        case is MPRoktEvent.MPRoktHideLoadingIndicator:
+        case is RoktEvent.HideLoadingIndicator:
             print("Rokt: Hide Loading Indicator")
 
-        case let placementReady as MPRoktEvent.MPRoktPlacementReady:
-            print("Rokt Placement Ready - ID: \(placementReady.placementId ?? "unknown")")
+        case let placementReady as RoktEvent.PlacementReady:
+            print("Rokt Placement Ready - ID: \(placementReady.identifier ?? "unknown")")
 
-        case let placementInteractive as MPRoktEvent.MPRoktPlacementInteractive:
-            print("Rokt Placement Interactive - ID: \(placementInteractive.placementId ?? "unknown")")
+        case let placementInteractive as RoktEvent.PlacementInteractive:
+            print("Rokt Placement Interactive - ID: \(placementInteractive.identifier ?? "unknown")")
 
-        case let offerEngagement as MPRoktEvent.MPRoktOfferEngagement:
-            print("Rokt Offer Engagement - ID: \(offerEngagement.placementId ?? "unknown")")
+        case let offerEngagement as RoktEvent.OfferEngagement:
+            print("Rokt Offer Engagement - ID: \(offerEngagement.identifier ?? "unknown")")
 
-        case let positiveEngagement as MPRoktEvent.MPRoktPositiveEngagement:
-            print("Rokt Positive Engagement - ID: \(positiveEngagement.placementId ?? "unknown")")
+        case let positiveEngagement as RoktEvent.PositiveEngagement:
+            print("Rokt Positive Engagement - ID: \(positiveEngagement.identifier ?? "unknown")")
 
-        case let firstPositiveEngagement as MPRoktEvent.MPRoktFirstPositiveEngagement:
-            print("Rokt First Positive Engagement - ID: \(firstPositiveEngagement.placementId ?? "unknown")")
+        case let firstPositiveEngagement as RoktEvent.FirstPositiveEngagement:
+            print("Rokt First Positive Engagement - ID: \(firstPositiveEngagement.identifier ?? "unknown")")
 
-        case let openUrl as MPRoktEvent.MPRoktOpenUrl:
-            print("Rokt Open URL - ID: \(openUrl.placementId ?? "unknown"), URL: \(openUrl.url)")
+        case let openUrl as RoktEvent.OpenUrl:
+            print("Rokt Open URL - ID: \(openUrl.identifier ?? "unknown"), URL: \(openUrl.url)")
 
-        case let placementClosed as MPRoktEvent.MPRoktPlacementClosed:
-            print("Rokt Placement Closed - ID: \(placementClosed.placementId ?? "unknown")")
+        case let placementClosed as RoktEvent.PlacementClosed:
+            print("Rokt Placement Closed - ID: \(placementClosed.identifier ?? "unknown")")
 
-        case let placementCompleted as MPRoktEvent.MPRoktPlacementCompleted:
-            print("Rokt Placement Completed - ID: \(placementCompleted.placementId ?? "unknown")")
+        case let placementCompleted as RoktEvent.PlacementCompleted:
+            print("Rokt Placement Completed - ID: \(placementCompleted.identifier ?? "unknown")")
 
-        case let placementFailure as MPRoktEvent.MPRoktPlacementFailure:
-            print("Rokt Placement Failure - ID: \(placementFailure.placementId ?? "unknown")")
+        case let placementFailure as RoktEvent.PlacementFailure:
+            print("Rokt Placement Failure - ID: \(placementFailure.identifier ?? "unknown")")
 
-        case let cartItem as MPRoktEvent.MPRoktCartItemInstantPurchase:
+        case let cartItem as RoktEvent.CartItemInstantPurchase:
             print("Rokt Cart Item Instant Purchase:")
-            print("  - Placement ID: \(cartItem.placementId)")
+            print("  - Placement ID: \(cartItem.identifier)")
             print("  - Catalog Item ID: \(cartItem.catalogItemId)")
             print("  - Cart Item ID: \(cartItem.cartItemId)")
             print("  - Name: \(cartItem.name ?? "unknown")")

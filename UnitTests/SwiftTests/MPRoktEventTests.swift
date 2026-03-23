@@ -1,215 +1,137 @@
 import XCTest
 @testable import mParticle_Apple_SDK
+import RoktContracts
 
-/// Tests to verify Rokt event classes use nested access via NS_SWIFT_NAME
-final class MPRoktEventTests: XCTestCase {
+/// Tests to verify RoktContracts event types are accessible from Swift
+/// via the mParticle SDK's re-export of RoktContracts.
+final class RoktEventContractsTests: XCTestCase {
 
-    // MARK: - Nested Class Instantiation Tests
+    // MARK: - Nested Class Access Tests
 
-    func test_MPRoktInitComplete_nestedAccess() {
-        let event = MPRoktEvent.MPRoktInitComplete(success: true)
+    func test_initComplete() {
+        let event = RoktEvent.InitComplete(success: true)
         XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent, "MPRoktInitComplete should inherit from MPRoktEvent")
+        XCTAssertTrue(event is RoktEvent)
         XCTAssertTrue(event.success)
     }
 
-    func test_MPRoktInitComplete_withFailure() {
-        let event = MPRoktEvent.MPRoktInitComplete(success: false)
+    func test_placementReady() {
+        let event = RoktEvent.PlacementReady(identifier: "test-placement")
         XCTAssertNotNil(event)
-        XCTAssertFalse(event.success)
+        XCTAssertTrue(event is RoktEvent)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
-    func test_MPRoktPlacementReady_nestedAccess() {
-        let event = MPRoktEvent.MPRoktPlacementReady(placementId: "test-placement")
+    func test_placementClosed() {
+        let event = RoktEvent.PlacementClosed(identifier: "test-placement")
         XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
-    func test_MPRoktPlacementClosed_nestedAccess() {
-        let event = MPRoktEvent.MPRoktPlacementClosed(placementId: "test-placement")
+    func test_embeddedSizeChanged() {
+        let event = RoktEvent.EmbeddedSizeChanged(identifier: "embed", updatedHeight: 250.5)
         XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
-    }
-
-    func test_MPRoktPlacementCompleted_nestedAccess() {
-        let event = MPRoktEvent.MPRoktPlacementCompleted(placementId: "test-placement")
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
-    }
-
-    func test_MPRoktPlacementInteractive_nestedAccess() {
-        let event = MPRoktEvent.MPRoktPlacementInteractive(placementId: "test-placement")
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
-    }
-
-    func test_MPRoktPlacementFailure_nestedAccess() {
-        let event = MPRoktEvent.MPRoktPlacementFailure(placementId: "test-placement")
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
-    }
-
-    func test_MPRoktOfferEngagement_nestedAccess() {
-        let event = MPRoktEvent.MPRoktOfferEngagement(placementId: "test-placement")
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
-    }
-
-    func test_MPRoktPositiveEngagement_nestedAccess() {
-        let event = MPRoktEvent.MPRoktPositiveEngagement(placementId: "test-placement")
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
-    }
-
-    func test_MPRoktFirstPositiveEngagement_nestedAccess() {
-        let event = MPRoktEvent.MPRoktFirstPositiveEngagement(placementId: "test-placement")
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
-    }
-
-    func test_MPRoktOpenUrl_nestedAccess() {
-        let event = MPRoktEvent.MPRoktOpenUrl(placementId: "test-placement", url: "https://example.com")
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
-        XCTAssertEqual(event.url, "https://example.com")
-    }
-
-    func test_MPRoktShowLoadingIndicator_nestedAccess() {
-        let event = MPRoktEvent.MPRoktShowLoadingIndicator()
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-    }
-
-    func test_MPRoktHideLoadingIndicator_nestedAccess() {
-        let event = MPRoktEvent.MPRoktHideLoadingIndicator()
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-    }
-
-    func test_MPRoktCartItemInstantPurchase_classExists() {
-        let eventClass: AnyClass? = NSClassFromString("MPRoktCartItemInstantPurchase")
-        XCTAssertNotNil(eventClass, "MPRoktCartItemInstantPurchase should exist")
-    }
-
-    // MARK: - MPRoktEmbeddedSizeChanged Tests
-
-    func test_MPRoktEmbeddedSizeChanged_nestedAccess() {
-        let event = MPRoktEvent.MPRoktEmbeddedSizeChanged(placementId: "embed-placement", updatedHeight: 250.5)
-        XCTAssertNotNil(event)
-        XCTAssertTrue(event is MPRoktEvent)
-        XCTAssertEqual(event.placementId, "embed-placement")
+        XCTAssertEqual(event.identifier, "embed")
         XCTAssertEqual(event.updatedHeight, 250.5, accuracy: 0.001)
     }
 
-    func test_MPRoktEmbeddedSizeChanged_zeroHeight() {
-        let event = MPRoktEvent.MPRoktEmbeddedSizeChanged(placementId: "embed-placement", updatedHeight: 0)
+    func test_openUrl() {
+        let event = RoktEvent.OpenUrl(identifier: "test", url: "https://example.com")
         XCTAssertNotNil(event)
-        XCTAssertEqual(event.updatedHeight, 0, accuracy: 0.001)
+        XCTAssertEqual(event.url, "https://example.com")
     }
 
-    func test_MPRoktEmbeddedSizeChanged_classExists() {
-        let eventClass: AnyClass? = NSClassFromString("MPRoktEmbeddedSizeChanged")
-        XCTAssertNotNil(eventClass, "MPRoktEmbeddedSizeChanged should exist")
+    func test_cartItemInstantPurchase() {
+        let event = RoktEvent.CartItemInstantPurchase(
+            identifier: "placement1",
+            name: "Test Item",
+            cartItemId: "v1:abc:canal",
+            catalogItemId: "cat-123",
+            currency: "USD",
+            description: "A test item",
+            linkedProductId: nil,
+            providerData: "{}",
+            quantity: NSDecimalNumber(value: 1),
+            totalPrice: NSDecimalNumber(value: 49.99),
+            unitPrice: NSDecimalNumber(value: 49.99)
+        )
+        XCTAssertNotNil(event)
+        XCTAssertEqual(event.cartItemId, "v1:abc:canal")
+        XCTAssertEqual(event.catalogItemId, "cat-123")
     }
 
     // MARK: - Type Checking Tests
 
-    func test_roktEvent_typeChecking_withIsOperator() {
-        let events: [MPRoktEvent] = [
-            MPRoktEvent.MPRoktInitComplete(success: true),
-            MPRoktEvent.MPRoktPlacementReady(placementId: "test"),
-            MPRoktEvent.MPRoktPlacementClosed(placementId: "test"),
-            MPRoktEvent.MPRoktPlacementCompleted(placementId: "test"),
-            MPRoktEvent.MPRoktPlacementInteractive(placementId: "test"),
-            MPRoktEvent.MPRoktPlacementFailure(placementId: "test"),
-            MPRoktEvent.MPRoktEmbeddedSizeChanged(placementId: "test", updatedHeight: 100)
+    func test_typeChecking() {
+        let events: [RoktEvent] = [
+            RoktEvent.InitComplete(success: true),
+            RoktEvent.PlacementReady(identifier: "test"),
+            RoktEvent.PlacementClosed(identifier: "test"),
+            RoktEvent.ShowLoadingIndicator(),
+            RoktEvent.HideLoadingIndicator(),
         ]
 
-        XCTAssertEqual(events.count, 7)
-
-        for event in events {
-            XCTAssertTrue(event is MPRoktEvent, "All events should be MPRoktEvent instances")
-        }
-
-        XCTAssertTrue(events[0] is MPRoktEvent.MPRoktInitComplete)
-        XCTAssertTrue(events[1] is MPRoktEvent.MPRoktPlacementReady)
-        XCTAssertTrue(events[2] is MPRoktEvent.MPRoktPlacementClosed)
-        XCTAssertTrue(events[3] is MPRoktEvent.MPRoktPlacementCompleted)
-        XCTAssertTrue(events[4] is MPRoktEvent.MPRoktPlacementInteractive)
-        XCTAssertTrue(events[5] is MPRoktEvent.MPRoktPlacementFailure)
-        XCTAssertTrue(events[6] is MPRoktEvent.MPRoktEmbeddedSizeChanged)
+        XCTAssertEqual(events.count, 5)
+        XCTAssertTrue(events[0] is RoktEvent.InitComplete)
+        XCTAssertTrue(events[1] is RoktEvent.PlacementReady)
+        XCTAssertTrue(events[2] is RoktEvent.PlacementClosed)
+        XCTAssertTrue(events[3] is RoktEvent.ShowLoadingIndicator)
+        XCTAssertTrue(events[4] is RoktEvent.HideLoadingIndicator)
     }
 
-    func test_roktEvent_switchStatement_works() {
-        let event: MPRoktEvent = MPRoktEvent.MPRoktPlacementReady(placementId: "test")
-        var matched = false
+    // MARK: - Obj-C Runtime Class Name Tests
 
-        if event is MPRoktEvent.MPRoktPlacementReady {
-            matched = true
-        }
-
-        XCTAssertTrue(matched, "Type matching should work with is operator")
+    func test_classExists_roktEvent() {
+        XCTAssertNotNil(NSClassFromString("RoktEvent"))
     }
 
-    func test_roktEvent_casting_works() {
-        let event: MPRoktEvent = MPRoktEvent.MPRoktOpenUrl(placementId: "test", url: "https://example.com")
-
-        if let openUrlEvent = event as? MPRoktEvent.MPRoktOpenUrl {
-            XCTAssertEqual(openUrlEvent.url, "https://example.com")
-        } else {
-            XCTFail("Casting to MPRoktOpenUrl should succeed")
-        }
+    func test_classExists_roktInitComplete() {
+        XCTAssertNotNil(NSClassFromString("RoktInitComplete"))
     }
 
-    func test_roktEvent_casting_embeddedSizeChanged() {
-        let event: MPRoktEvent = MPRoktEvent.MPRoktEmbeddedSizeChanged(placementId: "test", updatedHeight: 300)
-
-        if let sizeEvent = event as? MPRoktEvent.MPRoktEmbeddedSizeChanged {
-            XCTAssertEqual(sizeEvent.placementId, "test")
-            XCTAssertEqual(sizeEvent.updatedHeight, 300, accuracy: 0.001)
-        } else {
-            XCTFail("Casting to MPRoktEmbeddedSizeChanged should succeed")
-        }
+    func test_classExists_roktPlacementReady() {
+        XCTAssertNotNil(NSClassFromString("RoktPlacementReady"))
     }
 
-    // MARK: - Class Existence Tests
-
-    func test_MPRoktEvent_classExists() {
-        let eventClass: AnyClass? = NSClassFromString("MPRoktEvent")
-        XCTAssertNotNil(eventClass, "MPRoktEvent base class should exist")
+    func test_classExists_roktCartItemInstantPurchase() {
+        XCTAssertNotNil(NSClassFromString("RoktCartItemInstantPurchase"))
     }
 
-    func test_MPRoktInitComplete_classExists() {
-        let eventClass: AnyClass? = NSClassFromString("MPRoktInitComplete")
-        XCTAssertNotNil(eventClass, "MPRoktInitComplete should exist")
+    func test_classExists_roktEmbeddedSizeChanged() {
+        XCTAssertNotNil(NSClassFromString("RoktEmbeddedSizeChanged"))
     }
 
-    func test_MPRoktPlacementReady_classExists() {
-        let eventClass: AnyClass? = NSClassFromString("MPRoktPlacementReady")
-        XCTAssertNotNil(eventClass, "MPRoktPlacementReady should exist")
+    // MARK: - Config Builder Tests
+
+    func test_roktConfig_builder() {
+        let config = RoktConfig.Builder().colorMode(.dark).build()
+        XCTAssertNotNil(config)
+        XCTAssertEqual(config.colorMode, .dark)
     }
 
-    func test_MPRoktPlacementClosed_classExists() {
-        let eventClass: AnyClass? = NSClassFromString("MPRoktPlacementClosed")
-        XCTAssertNotNil(eventClass, "MPRoktPlacementClosed should exist")
+    func test_roktConfig_builderWithCache() {
+        let cacheConfig = RoktConfig.CacheConfig(cacheDuration: 3600, cacheAttributes: ["key": "value"])
+        let config = RoktConfig.Builder()
+            .colorMode(.light)
+            .cacheConfig(cacheConfig)
+            .build()
+        XCTAssertNotNil(config)
+        XCTAssertEqual(config.colorMode, .light)
+        XCTAssertTrue(config.cacheConfig.isCacheEnabled())
     }
 
-    func test_MPRoktCartItemInstantPurchase_classExists_runtime() {
-        let eventClass: AnyClass? = NSClassFromString("MPRoktCartItemInstantPurchase")
-        XCTAssertNotNil(eventClass, "MPRoktCartItemInstantPurchase should exist")
+    // MARK: - RoktEmbeddedView Tests
+
+    func test_roktEmbeddedView() {
+        let view = RoktEmbeddedView()
+        XCTAssertNotNil(view)
+        XCTAssertTrue(view is UIView)
     }
 
-    func test_MPRoktEmbeddedSizeChanged_classExists_runtime() {
-        let eventClass: AnyClass? = NSClassFromString("MPRoktEmbeddedSizeChanged")
-        XCTAssertNotNil(eventClass, "MPRoktEmbeddedSizeChanged should exist")
+    // MARK: - RoktPlacementOptions Tests
+
+    func test_roktPlacementOptions() {
+        let options = RoktPlacementOptions(timestamp: 1234567890)
+        XCTAssertEqual(options.jointSdkSelectPlacements, 1234567890)
     }
 }
