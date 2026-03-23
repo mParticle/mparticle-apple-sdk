@@ -300,7 +300,7 @@
 			repositoryURL = "https://github.com/urbanairship/ios-library";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 20.0.0;
+				minimumVersion = 20.6.0;
 			};
 		};
 		FF0001012A18050500000051 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */ = {
