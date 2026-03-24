@@ -18,7 +18,9 @@ echo "==> Publishing core SDK..."
 pod trunk push mParticle-Apple-SDK.podspec "${PUSH_FLAGS[@]}"
 
 echo "==> Publishing kit podspecs..."
-jq -r '.[] | select(.podspec) | .podspec' Kits/matrix.json | while read -r podspec; do
+# shellcheck disable=SC2312
+mapfile -t KIT_PODSPECS < <(jq -r '.[] | select(.podspec) | .podspec' Kits/matrix.json)
+for podspec in "${KIT_PODSPECS[@]}"; do
 	echo "  - ${podspec}"
 	pod trunk push "${podspec}" "${PUSH_FLAGS[@]}" &
 done
