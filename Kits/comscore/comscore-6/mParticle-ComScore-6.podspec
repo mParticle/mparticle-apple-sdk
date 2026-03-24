@@ -15,6 +15,6 @@ Pod::Spec.new do |s|
     s.source_files      = 'Sources/mParticle-ComScore/**/*.{h,m,mm}'
     s.resource_bundles  = { 'mParticle-ComScore-6-Privacy' => ['Sources/mParticle-ComScore/PrivacyInfo.xcprivacy'] }
     s.frameworks        = 'SystemConfiguration'
-    s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
+    s.dependency 'mParticle-Apple-SDK', '~> 9.0'
     s.dependency 'ComScore', '~> 6.12'
 end

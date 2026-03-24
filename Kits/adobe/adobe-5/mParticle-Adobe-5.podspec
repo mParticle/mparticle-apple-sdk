@@ -20,16 +20,16 @@ Pod::Spec.new do |s|
     s.subspec 'Adobe' do |ss|
         ss.ios.source_files      = 'Sources/mParticle-Adobe/**/*.{h,m,mm}'
         ss.ios.resource_bundles  = { 'mParticle-Adobe-5-Privacy' => ['Sources/mParticle-Adobe/PrivacyInfo.xcprivacy'] }
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
+        ss.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'
         ss.tvos.source_files     = 'Sources/mParticle-Adobe/**/*.{h,m,mm}'
         ss.tvos.resource_bundles = { 'mParticle-Adobe-5-Privacy' => ['Sources/mParticle-Adobe/PrivacyInfo.xcprivacy'] }
-        ss.tvos.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
+        ss.tvos.dependency 'mParticle-Apple-SDK', '~> 9.0'
     end
 
     s.subspec 'AdobeMedia' do |ss|
         ss.ios.source_files      = 'Sources/mParticle-AdobeMedia/**/*.{h,m,mm}'
         ss.ios.resource_bundles  = { 'mParticle-Adobe-5-Media-Privacy' => ['Sources/mParticle-AdobeMedia/PrivacyInfo.xcprivacy'] }
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
+        ss.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'
         ss.ios.dependency 'mParticle-Apple-Media-SDK'
         ss.ios.dependency 'AEPCore',        '~> 5.0'
         ss.ios.dependency 'AEPUserProfile', '~> 5.0'
@@ -41,6 +41,6 @@ Pod::Spec.new do |s|
         # AdobeMedia not supported on tvOS; fall back to Adobe source
         ss.tvos.source_files     = 'Sources/mParticle-Adobe/**/*.{h,m,mm}'
         ss.tvos.resource_bundles = { 'mParticle-Adobe-5-Privacy' => ['Sources/mParticle-Adobe/PrivacyInfo.xcprivacy'] }
-        ss.tvos.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
+        ss.tvos.dependency 'mParticle-Apple-SDK', '~> 9.0'
     end
 end

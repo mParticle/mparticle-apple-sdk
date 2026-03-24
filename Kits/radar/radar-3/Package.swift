@@ -9,7 +9,10 @@ let package = Package(
         .library(name: "mParticle-Radar", targets: ["mParticle-Radar"])
     ],
     dependencies: [
-        .package(url: "https://github.com/mParticle/mparticle-apple-sdk", branch: "workstation/9.0-Release"),
+        .package(
+            url: "https://github.com/mParticle/mparticle-apple-sdk",
+            branch: "workstation/9.0-Release"
+        ),
         .package(url: "https://github.com/radarlabs/radar-sdk-ios-spm", .upToNextMajor(from: "3.25.0"))
     ],
     targets: [

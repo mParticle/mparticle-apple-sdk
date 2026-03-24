@@ -9,7 +9,10 @@ let package = Package(
         .library(name: "mParticle-CleverTap", targets: ["mParticle-CleverTap"])
     ],
     dependencies: [
-        .package(url: "https://github.com/mParticle/mparticle-apple-sdk", branch: "workstation/9.0-Release"),
+        .package(
+            url: "https://github.com/mParticle/mparticle-apple-sdk",
+            branch: "workstation/9.0-Release"
+        ),
         .package(url: "https://github.com/CleverTap/clevertap-ios-sdk", .upToNextMajor(from: "7.0.0"))
     ],
     targets: [
