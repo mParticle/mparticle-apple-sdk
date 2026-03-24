@@ -173,7 +173,7 @@
   {
     "name": "google-analytics-firebase-11",
     "local_path": "Kits/google-analytics-firebase/firebase-11",
-    "podspec": "Kits/google-analytics-firebase/firebase-11/mParticle-Google-Analytics-Firebase-11.podspec",
+    "podspec": "Kits/google-analytics-firebase/firebase-11/mParticle-Firebase-11.podspec",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-11",
     "schemes": [
       {
@@ -186,7 +186,7 @@
   {
     "name": "google-analytics-firebase-12",
     "local_path": "Kits/google-analytics-firebase/firebase-12",
-    "podspec": "Kits/google-analytics-firebase/firebase-12/mParticle-Google-Analytics-Firebase-12.podspec",
+    "podspec": "Kits/google-analytics-firebase/firebase-12/mParticle-Firebase-12.podspec",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-12",
     "schemes": [
       {
@@ -199,7 +199,7 @@
   {
     "name": "google-analytics-firebase-ga4-11",
     "local_path": "Kits/google-analytics-firebase-ga4/firebase-ga4-11",
-    "podspec": "Kits/google-analytics-firebase-ga4/firebase-ga4-11/mParticle-Google-Analytics-Firebase-GA4-11.podspec",
+    "podspec": "Kits/google-analytics-firebase-ga4/firebase-ga4-11/mParticle-FirebaseGA4-11.podspec",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-11",
     "schemes": [
       {
@@ -217,7 +217,7 @@
   {
     "name": "google-analytics-firebase-ga4-12",
     "local_path": "Kits/google-analytics-firebase-ga4/firebase-ga4-12",
-    "podspec": "Kits/google-analytics-firebase-ga4/firebase-ga4-12/mParticle-Google-Analytics-Firebase-GA4-12.podspec",
+    "podspec": "Kits/google-analytics-firebase-ga4/firebase-ga4-12/mParticle-FirebaseGA4-12.podspec",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-12",
     "schemes": [
       {
