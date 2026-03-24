@@ -20,10 +20,20 @@ pod trunk push mParticle-Apple-SDK.podspec "${PUSH_FLAGS[@]}"
 echo "==> Publishing kit podspecs..."
 # shellcheck disable=SC2312
 mapfile -t KIT_PODSPECS < <(jq -r '.[] | select(.podspec) | .podspec' Kits/matrix.json)
+PIDS=()
 for podspec in "${KIT_PODSPECS[@]}"; do
 	echo "  - ${podspec}"
 	pod trunk push "${podspec}" "${PUSH_FLAGS[@]}" &
+	PIDS+=($!)
 done
 
-wait
+FAILED=0
+for pid in "${PIDS[@]}"; do
+	wait "${pid}" || FAILED=1
+done
+
+if [[ ${FAILED} -ne 0 ]]; then
+	echo "==> ERROR: One or more kit podspec publishes failed" >&2
+	exit 1
+fi
 echo "==> Done"
