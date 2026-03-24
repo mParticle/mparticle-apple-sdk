@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
-    s.name             = "mParticle-Google-Analytics-Firebase-12"
-    s.module_name      = 'mParticle_Google_Analytics_Firebase'
+    s.name             = "mParticle-Firebase-12"
+    s.module_name      = 'mParticle_Firebase'
     s.version          = "8.6.1"
     s.summary          = "Firebase Analytics integration for mParticle"
     s.description      = <<-DESC

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr:*)",
+      "Bash(gh run:*)",
+      "Bash(python3 -c \"import json,sys; [print\\(f[''''path'''']\\) for f in json.load\\(sys.stdin\\)[''''files'''']]\")",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh api:*)",
+      "Bash(git mv:*)"
+    ]
+  }
+}
