@@ -137,9 +137,9 @@ static __weak MPKitRokt *roktKit = nil;
     RoktConfig *roktConfig = [MPKitRokt convertMPRoktConfig:mpRoktConfig];
     NSDictionary<NSString *, RoktEmbeddedView *> *confirmedViews = [self confirmEmbeddedViews:embeddedViews];
 
-    PlacementOptions *placementOptions = [[PlacementOptions alloc] initWithJointSdkSelectPlacements:0 dynamicPerformanceMarkers:@{}];
+    RoktPlacementOptions *placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:0];
     if (options) {
-        placementOptions = [[PlacementOptions alloc] initWithJointSdkSelectPlacements:options.jointSdkSelectPlacements dynamicPerformanceMarkers:@{}];
+        placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:options.jointSdkSelectPlacements];
     }
 
     [Rokt selectPlacementsWithIdentifier:identifier
