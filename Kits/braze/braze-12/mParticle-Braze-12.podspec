@@ -1,5 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Braze-12"
+    s.module_name      = 'mParticle_Braze'
     s.version          = "8.14.1"
     s.summary          = "Braze integration for mParticle"
     s.description      = <<-DESC

@@ -1,5 +1,6 @@
 Pod::Spec.new do |s|
-    s.name             = "mParticle-Google-Analytics-Firebase-GA4-12"
+    s.name             = "mParticle-FirebaseGA4-11"
+    s.module_name      = 'mParticle_FirebaseGA4'
     s.version          = "8.11.1"
     s.summary          = "Firebase Analytics (GA4) integration for mParticle"
     s.description      = <<-DESC
@@ -13,7 +14,7 @@ Pod::Spec.new do |s|
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
     s.source_files      = 'Sources/mParticle-FirebaseGA4/**/*.{h,m,mm}'
-    s.resource_bundles  = { 'mParticle-Google-Analytics-Firebase-GA4-12-Privacy' => ['Sources/mParticle-FirebaseGA4/PrivacyInfo.xcprivacy'] }
+    s.resource_bundles  = { 'mParticle-Google-Analytics-Firebase-GA4-11-Privacy' => ['Sources/mParticle-FirebaseGA4/PrivacyInfo.xcprivacy'] }
     s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
-    s.dependency 'FirebaseAnalytics', '~> 12.0'
+    s.dependency 'FirebaseAnalytics', '~> 11.0'
 end

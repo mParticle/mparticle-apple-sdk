@@ -1,5 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Radar-3"
+    s.module_name      = 'mParticle_Radar'
     s.version          = "8.2.0"
     s.summary          = "Radar integration for mParticle"
     s.description      = <<-DESC

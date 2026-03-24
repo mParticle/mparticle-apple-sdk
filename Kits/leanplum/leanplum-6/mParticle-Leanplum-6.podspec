@@ -1,5 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Leanplum-6"
+    s.module_name      = 'mParticle_Leanplum'
     s.version          = "8.5.0"
     s.summary          = "Leanplum integration for mParticle"
     s.description      = <<-DESC
