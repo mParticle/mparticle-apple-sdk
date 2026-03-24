@@ -1,5 +1,6 @@
 #import "MPKitRokt.h"
 @import Rokt_Widget;
+@import RoktContracts;
 
 // Kit version
 static NSString * const kMPRoktKitVersion = @"8.3.3";
@@ -76,8 +77,8 @@ static __weak MPKitRokt *roktKit = nil;
     
     // Subscribe to global events to receive InitComplete
     [Rokt globalEventsOnEvent:^(RoktEvent * _Nonnull event) {
-        if ([event isKindOfClass:[InitComplete class]]) {
-            InitComplete *initComplete = (InitComplete *)event;
+        if ([event isKindOfClass:[RoktInitComplete class]]) {
+            RoktInitComplete *initComplete = (RoktInitComplete *)event;
             if (initComplete.success) {
                 [self start];
                 [MPKitRokt MPLog:@"Rokt Init Complete"];
@@ -410,10 +411,10 @@ static __weak MPKitRokt *roktKit = nil;
 
 + (RoktConfig *)convertMPRoktConfig:(MPRoktConfig *)mpRoktConfig {
     if (mpRoktConfig != nil) {
-        Builder *builder = [[Builder alloc] init];
+        RoktConfigBuilder *builder = [[RoktConfigBuilder alloc] init];
 
         if (mpRoktConfig.cacheDuration != nil) {
-            CacheConfig *cacheConfig = [[CacheConfig alloc] initWithCacheDuration:mpRoktConfig.cacheDuration.doubleValue cacheAttributes:mpRoktConfig.cacheAttributes];
+            RoktCacheConfig *cacheConfig = [[RoktCacheConfig alloc] initWithCacheDuration:mpRoktConfig.cacheDuration.doubleValue cacheAttributes:mpRoktConfig.cacheAttributes];
             builder = [builder cacheConfig:cacheConfig];
         }
         
