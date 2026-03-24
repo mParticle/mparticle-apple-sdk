@@ -6,7 +6,7 @@ final class MPRoktEventTests: XCTestCase {
     func test_RoktInitComplete() {
         let event = RoktEvent.InitComplete(success: true)
         XCTAssertNotNil(event)
-        XCTAssertTrue(event is RoktEvent)
+        XCTAssertTrue(event is RoktEvent.InitComplete)
         XCTAssertTrue(event.success)
     }
 
@@ -16,68 +16,68 @@ final class MPRoktEventTests: XCTestCase {
     }
 
     func test_RoktPlacementReady() {
-        let event = RoktEvent.PlacementReady(placementId: "test-placement")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.PlacementReady(identifier: "test-placement")
+        XCTAssertTrue(event is RoktEvent.PlacementReady)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
     func test_RoktPlacementClosed() {
-        let event = RoktEvent.PlacementClosed(placementId: "test-placement")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.PlacementClosed(identifier: "test-placement")
+        XCTAssertTrue(event is RoktEvent.PlacementClosed)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
     func test_RoktPlacementCompleted() {
-        let event = RoktEvent.PlacementCompleted(placementId: "test-placement")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.PlacementCompleted(identifier: "test-placement")
+        XCTAssertTrue(event is RoktEvent.PlacementCompleted)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
     func test_RoktPlacementInteractive() {
-        let event = RoktEvent.PlacementInteractive(placementId: "test-placement")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.PlacementInteractive(identifier: "test-placement")
+        XCTAssertTrue(event is RoktEvent.PlacementInteractive)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
     func test_RoktPlacementFailure() {
-        let event = RoktEvent.PlacementFailure(placementId: "test-placement")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.PlacementFailure(identifier: "test-placement")
+        XCTAssertTrue(event is RoktEvent.PlacementFailure)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
     func test_RoktOfferEngagement() {
-        let event = RoktEvent.OfferEngagement(placementId: "test-placement")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.OfferEngagement(identifier: "test-placement")
+        XCTAssertTrue(event is RoktEvent.OfferEngagement)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
     func test_RoktPositiveEngagement() {
-        let event = RoktEvent.PositiveEngagement(placementId: "test-placement")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.PositiveEngagement(identifier: "test-placement")
+        XCTAssertTrue(event is RoktEvent.PositiveEngagement)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
     func test_RoktFirstPositiveEngagement() {
-        let event = RoktEvent.FirstPositiveEngagement(placementId: "test-placement")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.FirstPositiveEngagement(identifier: "test-placement")
+        XCTAssertTrue(event is RoktEvent.FirstPositiveEngagement)
+        XCTAssertEqual(event.identifier, "test-placement")
     }
 
     func test_RoktOpenUrl() {
-        let event = RoktEvent.OpenUrl(placementId: "test-placement", url: "https://example.com")
-        XCTAssertTrue(event is RoktEvent)
-        XCTAssertEqual(event.placementId, "test-placement")
+        let event = RoktEvent.OpenUrl(identifier: "test-placement", url: "https://example.com")
+        XCTAssertTrue(event is RoktEvent.OpenUrl)
+        XCTAssertEqual(event.identifier, "test-placement")
         XCTAssertEqual(event.url, "https://example.com")
     }
 
     func test_RoktShowLoadingIndicator() {
         let event = RoktEvent.ShowLoadingIndicator()
-        XCTAssertTrue(event is RoktEvent)
+        XCTAssertTrue(event is RoktEvent.ShowLoadingIndicator)
     }
 
     func test_RoktHideLoadingIndicator() {
         let event = RoktEvent.HideLoadingIndicator()
-        XCTAssertTrue(event is RoktEvent)
+        XCTAssertTrue(event is RoktEvent.HideLoadingIndicator)
     }
 
     func test_RoktCartItemInstantPurchase_runtimeClass() {
@@ -85,25 +85,8 @@ final class MPRoktEventTests: XCTestCase {
         XCTAssertNotNil(eventClass)
     }
 
-    func test_roktEvent_typeChecking() {
-        let events: [RoktEvent] = [
-            RoktEvent.InitComplete(success: true),
-            RoktEvent.PlacementReady(placementId: "test"),
-            RoktEvent.PlacementClosed(placementId: "test"),
-            RoktEvent.PlacementCompleted(placementId: "test"),
-            RoktEvent.PlacementInteractive(placementId: "test"),
-            RoktEvent.PlacementFailure(placementId: "test"),
-        ]
-        XCTAssertEqual(events.count, 6)
-        for event in events {
-            XCTAssertTrue(event is RoktEvent)
-        }
-        XCTAssertTrue(events[0] is RoktEvent.InitComplete)
-        XCTAssertTrue(events[1] is RoktEvent.PlacementReady)
-    }
-
     func test_roktEvent_casting_OpenUrl() {
-        let event: RoktEvent = RoktEvent.OpenUrl(placementId: "test", url: "https://example.com")
+        let event: RoktEvent = RoktEvent.OpenUrl(identifier: "test", url: "https://example.com")
         guard let openUrl = event as? RoktEvent.OpenUrl else {
             return XCTFail("expected OpenUrl")
         }

@@ -157,10 +157,11 @@ static NSNumber * const kTestRoktKitId = @181;
         // Handle event
     };
     
-    RoktConfig *roktConfig = [[RoktConfig alloc] init];
-    roktConfig.colorMode = RoktColorModeDark;
-    roktConfig.cacheDuration = @(60*10);
-    roktConfig.cacheAttributes = @{@"test": @"test"};
+    RoktConfigBuilder *builder = [[RoktConfigBuilder alloc] init];
+    [builder colorMode:RoktColorModeDark];
+    RoktCacheConfig *cacheConfig = [[RoktCacheConfig alloc] initWithCacheDuration:60*10 cacheAttributes:@{@"test": @"test"}];
+    [builder cacheConfig:cacheConfig];
+    RoktConfig *roktConfig = [builder build];
     
     // Capture time before calling selectPlacements
     long long timeBeforeCall = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
@@ -754,7 +755,7 @@ static NSNumber * const kTestRoktKitId = @181;
         // Simulate the kit calling the callback
         void (^capturedCallback)(RoktEvent *) = params[1];
         if (capturedCallback) {
-            RoktPlacementReady *testEvent = [[RoktPlacementReady alloc] initWithPlacementId:identifier];
+            RoktPlacementReady *testEvent = [[RoktPlacementReady alloc] initWithIdentifier:identifier];
             capturedCallback(testEvent);
         }
         return true;

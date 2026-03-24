@@ -7,11 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7EAF175D2F6DC2930045B044 /* mParticle-Rokt in Frameworks */ = {isa = PBXBuildFile; productRef = 7EAF175C2F6DC2930045B044 /* mParticle-Rokt */; };
+		7EDBAF4B2F730DCF007C96CE /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = 7EDBAF4A2F730DCF007C96CE /* mParticle-Apple-SDK */; };
+		7EDBAF4E2F730EFF007C96CE /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = 7EDBAF4D2F730EFF007C96CE /* mParticle-Apple-SDK */; };
+		7EDBAF512F730F26007C96CE /* mParticle-Rokt in Frameworks */ = {isa = PBXBuildFile; productRef = 7EDBAF502F730F26007C96CE /* mParticle-Rokt */; };
 		A10000010000000000000001 /* mParticleSwiftExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000020000000000000001 /* mParticleSwiftExampleApp.swift */; };
 		A10000010000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000020000000000000002 /* ContentView.swift */; };
 		A10000010000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000020000000000000003 /* Assets.xcassets */; };
-		A10000010000000000000004 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = A10000030000000000000001 /* mParticle-Apple-SDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,8 +29,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7EAF175D2F6DC2930045B044 /* mParticle-Rokt in Frameworks */,
-				A10000010000000000000004 /* mParticle-Apple-SDK in Frameworks */,
+				7EDBAF4E2F730EFF007C96CE /* mParticle-Apple-SDK in Frameworks */,
+				7EDBAF4B2F730DCF007C96CE /* mParticle-Apple-SDK in Frameworks */,
+				7EDBAF512F730F26007C96CE /* mParticle-Rokt in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,8 +83,9 @@
 			);
 			name = mParticleSwiftExample;
 			packageProductDependencies = (
-				A10000030000000000000001 /* mParticle-Apple-SDK */,
-				7EAF175C2F6DC2930045B044 /* mParticle-Rokt */,
+				7EDBAF4A2F730DCF007C96CE /* mParticle-Apple-SDK */,
+				7EDBAF4D2F730EFF007C96CE /* mParticle-Apple-SDK */,
+				7EDBAF502F730F26007C96CE /* mParticle-Rokt */,
 			);
 			productName = mParticleSwiftExample;
 			productReference = A10000020000000000000006 /* mParticleSwiftExample.app */;
@@ -113,8 +116,8 @@
 			);
 			mainGroup = A10000050000000000000001;
 			packageReferences = (
-				A100000E0000000000000001 /* XCLocalSwiftPackageReference ".." */,
-				7EAF175B2F6DC2930045B044 /* XCLocalSwiftPackageReference "../Kits/rokt/rokt" */,
+				7EDBAF4C2F730EFF007C96CE /* XCLocalSwiftPackageReference "../../mparticle-apple-sdk" */,
+				7EDBAF4F2F730F26007C96CE /* XCLocalSwiftPackageReference "../Kits/rokt/rokt" */,
 			);
 			productRefGroup = A10000050000000000000003 /* Products */;
 			projectDirPath = "";
@@ -356,26 +359,28 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		A100000E0000000000000001 /* XCLocalSwiftPackageReference ".." */ = {
+		7EDBAF4C2F730EFF007C96CE /* XCLocalSwiftPackageReference "../../mparticle-apple-sdk" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ..;
+			relativePath = "../../mparticle-apple-sdk";
 		};
-		7EAF175B2F6DC2930045B044 /* XCLocalSwiftPackageReference "../Kits/rokt/rokt" */ = {
+		7EDBAF4F2F730F26007C96CE /* XCLocalSwiftPackageReference "../Kits/rokt/rokt" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Kits/rokt/rokt;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		7EAF175C2F6DC2930045B044 /* mParticle-Rokt */ = {
+		7EDBAF4A2F730DCF007C96CE /* mParticle-Apple-SDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7EAF175B2F6DC2930045B044 /* XCLocalSwiftPackageReference "../Kits/rokt/rokt" */;
-			productName = "mParticle-Rokt";
-		};
-		A10000030000000000000001 /* mParticle-Apple-SDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A100000E0000000000000001 /* XCLocalSwiftPackageReference ".." */;
 			productName = "mParticle-Apple-SDK";
+		};
+		7EDBAF4D2F730EFF007C96CE /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "mParticle-Apple-SDK";
+		};
+		7EDBAF502F730F26007C96CE /* mParticle-Rokt */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "mParticle-Rokt";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
