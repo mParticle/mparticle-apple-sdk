@@ -9,18 +9,18 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-PUSH_FLAGS="--allow-warnings --synchronous"
+PUSH_FLAGS=(--allow-warnings --synchronous)
 
 echo "==> Publishing Swift SDK (dependency of core)..."
-pod trunk push mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec $PUSH_FLAGS
+pod trunk push mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec "${PUSH_FLAGS[@]}"
 
 echo "==> Publishing core SDK..."
-pod trunk push mParticle-Apple-SDK.podspec $PUSH_FLAGS
+pod trunk push mParticle-Apple-SDK.podspec "${PUSH_FLAGS[@]}"
 
 echo "==> Publishing kit podspecs..."
 jq -r '.[] | select(.podspec) | .podspec' Kits/matrix.json | while read -r podspec; do
-	echo "  → $podspec"
-	pod trunk push "$podspec" $PUSH_FLAGS &
+	echo "  - ${podspec}"
+	pod trunk push "${podspec}" "${PUSH_FLAGS[@]}" &
 done
 
 wait
