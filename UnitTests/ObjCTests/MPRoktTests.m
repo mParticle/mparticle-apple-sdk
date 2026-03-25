@@ -148,13 +148,32 @@ static NSNumber * const kTestRoktKitId = @181;
     NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
     MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement": exampleView};
+    __block NSUInteger loadInvocationCount = 0;
+    __block NSUInteger unLoadInvocationCount = 0;
+    __block NSUInteger showLoadingInvocationCount = 0;
+    __block NSUInteger hideLoadingInvocationCount = 0;
+    __block NSString *embeddedPlacementReceived = nil;
+    __block CGFloat embeddedSizeReceived = 0;
     MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
-    exampleCallbacks.onLoad = ^{};
-    exampleCallbacks.onUnLoad = ^{};
-    exampleCallbacks.onShouldShowLoadingIndicator = ^{};
-    exampleCallbacks.onShouldHideLoadingIndicator = ^{};
-    exampleCallbacks.onEmbeddedSizeChange = ^(NSString *p, CGFloat s){};
-    
+    exampleCallbacks.onLoad = ^{
+        loadInvocationCount++;
+    };
+    exampleCallbacks.onUnLoad = ^{
+        unLoadInvocationCount++;
+    };
+    exampleCallbacks.onShouldShowLoadingIndicator = ^{
+        showLoadingInvocationCount++;
+    };
+    exampleCallbacks.onShouldHideLoadingIndicator = ^{
+        hideLoadingInvocationCount++;
+    };
+    exampleCallbacks.onEmbeddedSizeChange = ^(NSString *p, CGFloat s) {
+        embeddedPlacementReceived = [p copy];
+        embeddedSizeReceived = s;
+    };
+
+    __block MPRoktEventCallback *forwardedCallbacks = nil;
+
     MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
     roktConfig.colorMode = MPColorModeDark;
     roktConfig.cacheDuration = @(60*10);
@@ -174,11 +193,13 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertEqualObjects(params[2], embeddedViews);
         XCTAssertEqualObjects(params[3], roktConfig);
         MPRoktEventCallback *resultCallbacks = params[4];
-        XCTAssertEqualObjects(resultCallbacks.onLoad, exampleCallbacks.onLoad);
-        XCTAssertEqualObjects(resultCallbacks.onUnLoad, exampleCallbacks.onUnLoad);
-        XCTAssertEqualObjects(resultCallbacks.onShouldShowLoadingIndicator, exampleCallbacks.onShouldShowLoadingIndicator);
-        XCTAssertEqualObjects(resultCallbacks.onShouldHideLoadingIndicator, exampleCallbacks.onShouldHideLoadingIndicator);
-        XCTAssertEqualObjects(resultCallbacks.onEmbeddedSizeChange, exampleCallbacks.onEmbeddedSizeChange);
+        XCTAssertNotNil(resultCallbacks);
+        XCTAssertNotEqual(resultCallbacks.onLoad, exampleCallbacks.onLoad);
+        XCTAssertNotEqual(resultCallbacks.onUnLoad, exampleCallbacks.onUnLoad);
+        XCTAssertNotEqual(resultCallbacks.onShouldShowLoadingIndicator, exampleCallbacks.onShouldShowLoadingIndicator);
+        XCTAssertNotEqual(resultCallbacks.onShouldHideLoadingIndicator, exampleCallbacks.onShouldHideLoadingIndicator);
+        XCTAssertNotEqual(resultCallbacks.onEmbeddedSizeChange, exampleCallbacks.onEmbeddedSizeChange);
+        forwardedCallbacks = resultCallbacks;
         // Verify placement options
         MPRoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
@@ -199,8 +220,69 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
-    
+
+    XCTAssertNotNil(forwardedCallbacks);
+    forwardedCallbacks.onLoad();
+    forwardedCallbacks.onUnLoad();
+    forwardedCallbacks.onShouldShowLoadingIndicator();
+    forwardedCallbacks.onShouldHideLoadingIndicator();
+    forwardedCallbacks.onEmbeddedSizeChange(@"RoktEmbedded1", 50.0);
+    XCTAssertEqual(loadInvocationCount, 1u);
+    XCTAssertEqual(unLoadInvocationCount, 1u);
+    XCTAssertEqual(showLoadingInvocationCount, 1u);
+    XCTAssertEqual(hideLoadingInvocationCount, 1u);
+    XCTAssertEqualObjects(embeddedPlacementReceived, @"RoktEmbedded1");
+    XCTAssertEqualWithAccuracy(embeddedSizeReceived, 50.0, 0.001);
+
     // Verify
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectPlacementsMarshallsCallbacksToMainThread {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    XCTestExpectation *ranOnMain = [self expectationWithDescription:@"callback on main"];
+    MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
+    exampleCallbacks.onLoad = ^{
+        XCTAssertTrue([NSThread isMainThread]);
+        [ranOnMain fulfill];
+    };
+
+    __block MPRoktEventCallback *forwardedCallbacks = nil;
+    XCTestExpectation *forwardExpectation = [self expectationWithDescription:@"forward"];
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        forwardedCallbacks = params[4];
+        XCTAssertNotNil(forwardedCallbacks);
+        [forwardExpectation fulfill];
+        return YES;
+    }]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]);
+
+    [self.rokt selectPlacements:@"testView"
+                     attributes:@{@"key": @"value"}
+                  embeddedViews:nil
+                         config:nil
+                      callbacks:exampleCallbacks];
+
+    [self waitForExpectations:@[forwardExpectation] timeout:0.2];
+
+    XCTAssertNotEqual(forwardedCallbacks.onLoad, exampleCallbacks.onLoad);
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        forwardedCallbacks.onLoad();
+    });
+
+    [self waitForExpectations:@[ranOnMain] timeout:1.0];
+
     OCMVerifyAll(self.mockContainer);
 }
 

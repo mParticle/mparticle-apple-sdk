@@ -82,7 +82,7 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  * @param identifier Unique identifier for the placement
  * @param attributes Optional dictionary of attributes to customize the placement
  * @param embeddedViews Optional dictionary mapping placement names to their embedded views
- * @param roktEventCallback Optional callback object to handle widget events
+ * @param roktEventCallback Optional callback object to handle widget events. The SDK dispatches these callbacks on the main queue so UI updates are safe even when the Rokt kit invokes them from a background thread.
  */
 - (void)selectPlacements:(NSString *_Nonnull)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes

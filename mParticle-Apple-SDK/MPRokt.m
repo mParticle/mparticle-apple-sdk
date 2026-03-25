@@ -66,7 +66,79 @@ static const NSInteger kMPRoktKitId = 181;
 
 @end
 
+@interface MPRokt ()
+
+/// Wraps each set callback so invocations run on the main queue when Rokt calls back from a background thread (UIKit-safe).
+- (nullable MPRoktEventCallback *)mainThreadMarshalledCallbacksFromCallbacks:(nullable MPRoktEventCallback *)callbacks;
+
+@end
+
+static void MPInvokeOnMainThread(void (^work)(void)) {
+    if (!work) {
+        return;
+    }
+    if ([NSThread isMainThread]) {
+        work();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), work);
+    }
+}
+
 @implementation MPRokt
+
+- (nullable MPRoktEventCallback *)mainThreadMarshalledCallbacksFromCallbacks:(nullable MPRoktEventCallback *)callbacks {
+    if (!callbacks) {
+        return nil;
+    }
+    BOOL hasAny = callbacks.onLoad || callbacks.onUnLoad || callbacks.onShouldShowLoadingIndicator || callbacks.onShouldHideLoadingIndicator || callbacks.onEmbeddedSizeChange;
+    if (!hasAny) {
+        return nil;
+    }
+    MPRoktEventCallback *wrapped = [[MPRoktEventCallback alloc] init];
+    if (callbacks.onLoad) {
+        void (^original)(void) = [callbacks.onLoad copy];
+        wrapped.onLoad = ^{
+            MPInvokeOnMainThread(^{
+                original();
+            });
+        };
+    }
+    if (callbacks.onUnLoad) {
+        void (^original)(void) = [callbacks.onUnLoad copy];
+        wrapped.onUnLoad = ^{
+            MPInvokeOnMainThread(^{
+                original();
+            });
+        };
+    }
+    if (callbacks.onShouldShowLoadingIndicator) {
+        void (^original)(void) = [callbacks.onShouldShowLoadingIndicator copy];
+        wrapped.onShouldShowLoadingIndicator = ^{
+            MPInvokeOnMainThread(^{
+                original();
+            });
+        };
+    }
+    if (callbacks.onShouldHideLoadingIndicator) {
+        void (^original)(void) = [callbacks.onShouldHideLoadingIndicator copy];
+        wrapped.onShouldHideLoadingIndicator = ^{
+            MPInvokeOnMainThread(^{
+                original();
+            });
+        };
+    }
+    if (callbacks.onEmbeddedSizeChange) {
+        void (^original)(NSString *placement, CGFloat size) = [callbacks.onEmbeddedSizeChange copy];
+        wrapped.onEmbeddedSizeChange = ^(NSString *placement, CGFloat size) {
+            NSString *placementArg = [placement copy];
+            CGFloat sizeArg = size;
+            MPInvokeOnMainThread(^{
+                original(placementArg, sizeArg);
+            });
+        };
+    }
+    return wrapped;
+}
 
 /// Displays a Rokt ad placement with the specified identifier and user attributes.
 /// This is a convenience method that calls the full selectPlacements method with nil for optional parameters.
@@ -148,7 +220,7 @@ static const NSInteger kMPRoktKitId = 181;
                 [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
                 [queueParameters addParameter:embeddedViews];
                 [queueParameters addParameter:config];
-                [queueParameters addParameter:callbacks];
+                [queueParameters addParameter:[self mainThreadMarshalledCallbacksFromCallbacks:callbacks]];
                 [queueParameters addParameter:placementOptions];
                 
                 SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
