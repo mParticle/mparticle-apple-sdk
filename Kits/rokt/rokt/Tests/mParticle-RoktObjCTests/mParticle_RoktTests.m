@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 @import Rokt_Widget;
+@import RoktContracts;
 @import mParticle_Rokt;
 
 static NSInteger const kMPRoktKitCode = 181;
@@ -233,7 +234,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                                attributes:OCMOCK_ANY
                                                placements:OCMOCK_ANY
                                                    config:nil
-                                         placementOptions:[OCMArg checkWithBlock:^BOOL(PlacementOptions *opts) {
+                                         placementOptions:[OCMArg checkWithBlock:^BOOL(RoktPlacementOptions *opts) {
                                              return opts != nil;
                                          }]
                                                   onEvent:OCMOCK_ANY]);
@@ -264,7 +265,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                                attributes:OCMOCK_ANY
                                                placements:OCMOCK_ANY
                                                    config:nil
-                                         placementOptions:[OCMArg checkWithBlock:^BOOL(PlacementOptions *opts) {
+                                         placementOptions:[OCMArg checkWithBlock:^BOOL(RoktPlacementOptions *opts) {
                                              return opts != nil;
                                          }]
                                                   onEvent:OCMOCK_ANY]);
@@ -616,7 +617,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
         [invocation getArgument:&onEventCallback atIndex:3]; // Index 3 is the second parameter (onEvent)
 
         // Create a dummy ShowLoadingIndicator for testing
-        id mockRoktEvent = [[ShowLoadingIndicator alloc] init];
+        id mockRoktEvent = [[RoktShowLoadingIndicator alloc] init];
 
         // Simulate the callback being called
         if (onEventCallback) {
