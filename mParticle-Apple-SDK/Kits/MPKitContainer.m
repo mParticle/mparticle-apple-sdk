@@ -73,6 +73,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSMutableDictionary<NSNumber *, MPBracket *> *brackets;
     NSInteger sideloadedKitCodeNextValue;
 }
+
+- (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWhenLocked;
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 @property (nonatomic, strong) NSDate *initializedTime;
@@ -1980,21 +1982,27 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry {
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    NSArray<id<MPExtensionKitProtocol>> *result = [self activeKitsRegistryWhenLocked];
+    dispatch_semaphore_signal(kitsSemaphore);
+    return result;
+}
+
+- (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWhenLocked {
     if (kitsRegistry.count == 0) {
         return nil;
     }
-    
-    // Copy the registry to avoid race conditions with concurrent modifications
+
     NSSet *kitsRegistryCopy = [kitsRegistry copy];
-    NSMutableArray <id<MPExtensionKitProtocol>> *activeKitsRegistry = [[NSMutableArray alloc] initWithCapacity:kitsRegistryCopy.count];
-    
-    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistryCopy) {
+    NSMutableArray<id<MPExtensionKitProtocol>> *activeKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistryCopy.count];
+
+    for (id<MPExtensionKitProtocol> kitRegister in kitsRegistryCopy) {
         if ([self isActiveAndNotDisabled:kitRegister]) {
-            [activeKitsRegistry addObject:kitRegister];
+            [activeKits addObject:kitRegister];
         }
     }
-    
-    return activeKitsRegistry.count > 0 ? activeKitsRegistry : nil;
+
+    return activeKits.count > 0 ? activeKits : nil;
 }
 
 - (BOOL)isActiveAndNotDisabled:(id<MPExtensionKitProtocol>)kitRegister {
@@ -2033,7 +2041,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistryWhenLocked];
     id<MPExtensionKitProtocol>kitRegister;
     id<MPKitProtocol> kitInstance;
     Class NSStringClass = [NSString class];

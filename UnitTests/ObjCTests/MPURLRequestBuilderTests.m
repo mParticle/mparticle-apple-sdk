@@ -226,6 +226,25 @@
     }
 }
 
+- (void)testBuildReturnsNilWhenConfigQueryExceedsMaxLength {
+    NSMutableString *longQueryValue = [NSMutableString stringWithCapacity:9000];
+    for (NSInteger i = 0; i < 9000; i++) {
+        [longQueryValue appendString:@"a"];
+    }
+
+    NSString *urlString = [NSString stringWithFormat:@"https://config2.mparticle.com/v4/unit_test_app_key/config?plan_id=%@", longQueryValue];
+    NSURL *defaultURL = [NSURL URLWithString:urlString];
+    NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    XCTAssertNotNil(defaultURL);
+    XCTAssertNotNil(modifiedURL);
+
+    MPURL *url = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:@"GET"];
+    NSMutableURLRequest *request = [builder build];
+
+    XCTAssertNil(request);
+}
+
 - (void)testEtag {
     NSDictionary *configuration1 = @{
                                      @"id":@42,

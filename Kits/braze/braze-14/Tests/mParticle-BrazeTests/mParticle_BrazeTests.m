@@ -18,8 +18,8 @@
 - (void)setEnableTypeDetection:(BOOL)enableTypeDetection;
 + (BOOL)shouldDisableNotificationHandling;
 + (Braze *)brazeInstance;
-+ (MPKitExecStatus *)updateUser:(FilteredMParticleUser *)user request:(NSDictionary<NSNumber *,NSString *> *)userIdentities;
-+ (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value;
+- (MPKitExecStatus *)updateUser:(FilteredMParticleUser *)user request:(NSDictionary<NSNumber *,NSString *> *)userIdentities;
+- (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value;
 
 @end
 
@@ -34,10 +34,19 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [MPKitBraze setBrazeInstance:nil];
     [MPKitBraze setURLDelegate:nil];
+#if TARGET_OS_IOS
+    [MPKitBraze setInAppMessageControllerDelegate:nil];
+    [MPKitBraze setShouldDisableNotificationHandling:NO];
+#endif
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [MPKitBraze setBrazeInstance:nil];
+    [MPKitBraze setURLDelegate:nil];
+#if TARGET_OS_IOS
+    [MPKitBraze setInAppMessageControllerDelegate:nil];
+    [MPKitBraze setShouldDisableNotificationHandling:NO];
+#endif
     [super tearDown];
 }
 
@@ -254,15 +263,19 @@
     id mockClient = OCMPartialMock(testClient);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
-    
-    // Should succeed since Bool false is a valid value
-    MPKitExecStatus *execStatus1 = [kitInstance setUserAttribute:@"testAttribute1" value:@NO];
+
+    __block MPKitExecStatus *execStatus1;
+    __block MPKitExecStatus *execStatus2;
+    __block MPKitExecStatus *execStatus3;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // Braze Swift SDK user subscription APIs expect main-thread execution (matches app behavior).
+        execStatus1 = [kitInstance setUserAttribute:@"testAttribute1" value:@NO];
+        execStatus2 = [kitInstance setUserAttribute:@"testAttribute2" value:@YES];
+        execStatus3 = [kitInstance setUserAttribute:@"testAttribute2" value:@"testValue"];
+    });
+
     XCTAssertEqual(execStatus1.returnCode, MPKitReturnCodeSuccess);
-    // Should succeed since Bool true is a valid value
-    MPKitExecStatus *execStatus2 = [kitInstance setUserAttribute:@"testAttribute2" value:@YES];
     XCTAssertEqual(execStatus2.returnCode, MPKitReturnCodeSuccess);
-    // Should fail since testValue is not type BOOL
-    MPKitExecStatus *execStatus3 = [kitInstance setUserAttribute:@"testAttribute2" value:@"testValue"];
     XCTAssertEqual(execStatus3.returnCode, MPKitReturnCodeFail);
 
     [mockClient verify];

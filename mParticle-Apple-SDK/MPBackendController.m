@@ -773,17 +773,18 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)beginSessionWithIsManual:(BOOL)isManual date:(NSDate *)date {
-    if (!isManual && !MParticle.sharedInstance.automaticSessionTracking) {
+    MParticle *mparticle = MParticle.sharedInstance;
+    if (!isManual && !mparticle.automaticSessionTracking) {
         return;
     }
     
     @synchronized (self) {
-        if (_session != nil || [MParticle sharedInstance].stateMachine.optOut) {
+        MPStateMachine_PRIVATE *stateMachine = mparticle.stateMachine;
+        if (_session != nil || stateMachine.optOut) {
             return;
         }
         
-        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-        MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+        MPPersistenceController_PRIVATE *persistence = mparticle.persistenceController;
         
         NSNumber *mpId = [MPPersistenceController_PRIVATE mpId];
         date = date ?: [NSDate date];
@@ -818,10 +819,12 @@ static BOOL skipNextUpload = NO;
             messageInfo[kMPPreviousSessionIdKey] = previousSession.uuid;
             messageInfo[kMPPreviousSessionStartKey] = MPMilliseconds(previousSession.startTime);
         }
-                
+
         messageInfo[kMPPreviousSessionLengthKey] = @(previousSessionLength);
-        
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionStart session:_session messageInfo:messageInfo];
+
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionStart
+                                                                                 session:_session
+                                                                             messageInfo:messageInfo];
 
         [messageBuilder timestamp:_session.startTime];
         MPMessage *message = [messageBuilder build];
@@ -2006,13 +2009,23 @@ static BOOL skipNextUpload = NO;
         while (applicationState == UIApplicationStateBackground) {
             [self endSessionIfTimedOut];
             
-            // Check cancellation immediately before accessing backgroundTimeRemaining
-            // to avoid calling it after the OS has begun tearing down XPC connections
-            if (!weakBlockOperation || weakBlockOperation.isCancelled) {
+            // Perform cancellation check and backgroundTimeRemaining in a single
+            // dispatch_sync to the main queue. This serializes with the expiration
+            // handler and foreground handler (both fire on the main thread)
+            __block BOOL cancelled = NO;
+            __block NSTimeInterval timeRemaining = 0;
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                NSBlockOperation *strongOperation = weakBlockOperation;
+                if (!strongOperation || strongOperation.isCancelled) {
+                    cancelled = YES;
+                    return;
+                }
+                timeRemaining = sharedApplication.backgroundTimeRemaining;
+            });
+            
+            if (cancelled) {
                 return;
             }
-            
-            NSTimeInterval timeRemaining = sharedApplication.backgroundTimeRemaining;
             
             if (timeRemaining <= kMPRemainingBackgroundTimeMinimumThreshold) {
                 // Less than kMPRemainingBackgroundTimeMinimumThreshold seconds left in the background, upload the batch
