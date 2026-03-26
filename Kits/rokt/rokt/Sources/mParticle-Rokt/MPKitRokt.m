@@ -1,5 +1,6 @@
 #import "MPKitRokt.h"
 @import Rokt_Widget;
+@import RoktContracts;
 
 // Kit version
 static NSString * const kMPRoktKitVersion = @"8.3.3";
@@ -74,10 +75,10 @@ static __weak MPKitRokt *roktKit = nil;
     
     [MPKitRokt applyMParticleLogLevel];
     
-    // Subscribe to global events to receive InitComplete
+    // Subscribe to global events to receive RoktInitComplete
     [Rokt globalEventsOnEvent:^(RoktEvent * _Nonnull event) {
-        if ([event isKindOfClass:[InitComplete class]]) {
-            InitComplete *initComplete = (InitComplete *)event;
+        if ([event isKindOfClass:[RoktInitComplete class]]) {
+            RoktInitComplete *initComplete = (RoktInitComplete *)event;
             if (initComplete.success) {
                 [self start];
                 [MPKitRokt MPLog:@"Rokt Init Complete"];
@@ -137,9 +138,9 @@ static __weak MPKitRokt *roktKit = nil;
     RoktConfig *roktConfig = [MPKitRokt convertMPRoktConfig:mpRoktConfig];
     NSDictionary<NSString *, RoktEmbeddedView *> *confirmedViews = [self confirmEmbeddedViews:embeddedViews];
 
-    PlacementOptions *placementOptions = [[PlacementOptions alloc] initWithJointSdkSelectPlacements:0 dynamicPerformanceMarkers:@{}];
+    RoktPlacementOptions *placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:0];
     if (options) {
-        placementOptions = [[PlacementOptions alloc] initWithJointSdkSelectPlacements:options.jointSdkSelectPlacements dynamicPerformanceMarkers:@{}];
+        placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:options.jointSdkSelectPlacements];
     }
 
     [Rokt selectPlacementsWithIdentifier:identifier
@@ -410,14 +411,14 @@ static __weak MPKitRokt *roktKit = nil;
 
 + (RoktConfig *)convertMPRoktConfig:(MPRoktConfig *)mpRoktConfig {
     if (mpRoktConfig != nil) {
-        Builder *builder = [[Builder alloc] init];
+        RoktConfigBuilder *builder = [[RoktConfigBuilder alloc] init];
 
         if (mpRoktConfig.cacheDuration != nil) {
-            CacheConfig *cacheConfig = [[CacheConfig alloc] initWithCacheDuration:mpRoktConfig.cacheDuration.doubleValue cacheAttributes:mpRoktConfig.cacheAttributes];
+            RoktCacheConfig *cacheConfig = [[RoktCacheConfig alloc] initWithCacheDuration:mpRoktConfig.cacheDuration.doubleValue cacheAttributes:mpRoktConfig.cacheAttributes];
             builder = [builder cacheConfig:cacheConfig];
         }
         
-        builder = [builder colorMode:(ColorMode)mpRoktConfig.colorMode];
+        builder = [builder colorMode:(RoktColorMode)mpRoktConfig.colorMode];
         
         RoktConfig *config = [builder build];
         
@@ -900,87 +901,87 @@ static __weak MPKitRokt *roktKit = nil;
         return nil;
     }
     
-    // Check for RoktEvent.InitComplete
-    if ([event isKindOfClass:[InitComplete class]]) {
-        InitComplete *initComplete = (InitComplete *)event;
+    // Check for RoktEvent.RoktInitComplete
+    if ([event isKindOfClass:[RoktInitComplete class]]) {
+        RoktInitComplete *initComplete = (RoktInitComplete *)event;
         return [[MPRoktInitComplete alloc] initWithSuccess:initComplete.success];
     }
     
-    // Check for RoktEvent.ShowLoadingIndicator
-    if ([event isKindOfClass:[ShowLoadingIndicator class]]) {
+    // Check for RoktEvent.RoktShowLoadingIndicator
+    if ([event isKindOfClass:[RoktShowLoadingIndicator class]]) {
         return [[MPRoktShowLoadingIndicator alloc] init];
     }
     
-    // Check for RoktEvent.HideLoadingIndicator
-    if ([event isKindOfClass:[HideLoadingIndicator class]]) {
+    // Check for RoktEvent.RoktHideLoadingIndicator
+    if ([event isKindOfClass:[RoktHideLoadingIndicator class]]) {
         return [[MPRoktHideLoadingIndicator alloc] init];
 
     }
     
-    // Check for RoktEvent.PlacementInteractive
-    if ([event isKindOfClass:[PlacementInteractive class]]) {
-        PlacementInteractive *placementInteractive = (PlacementInteractive *)event;
+    // Check for RoktEvent.RoktPlacementInteractive
+    if ([event isKindOfClass:[RoktPlacementInteractive class]]) {
+        RoktPlacementInteractive *placementInteractive = (RoktPlacementInteractive *)event;
         return [[MPRoktPlacementInteractive alloc] initWithPlacementId:placementInteractive.identifier];
     }
     
-    // Check for RoktEvent.PlacementReady
-    if ([event isKindOfClass:[PlacementReady class]]) {
-        PlacementReady *placementReady = (PlacementReady *)event;
+    // Check for RoktEvent.RoktPlacementReady
+    if ([event isKindOfClass:[RoktPlacementReady class]]) {
+        RoktPlacementReady *placementReady = (RoktPlacementReady *)event;
         return [[MPRoktPlacementReady alloc] initWithPlacementId:placementReady.identifier];
     }
     
-    // Check for RoktEvent.OfferEngagement
-    if ([event isKindOfClass:[OfferEngagement class]]) {
-        OfferEngagement *offerEngagement = (OfferEngagement *)event;
+    // Check for RoktEvent.RoktOfferEngagement
+    if ([event isKindOfClass:[RoktOfferEngagement class]]) {
+        RoktOfferEngagement *offerEngagement = (RoktOfferEngagement *)event;
         return [[MPRoktOfferEngagement alloc] initWithPlacementId:offerEngagement.identifier];
     }
     
-    // Check for RoktEvent.OpenUrl
-    if ([event isKindOfClass:[OpenUrl class]]) {
-        OpenUrl *openUrl = (OpenUrl *)event;
+    // Check for RoktEvent.RoktOpenUrl
+    if ([event isKindOfClass:[RoktOpenUrl class]]) {
+        RoktOpenUrl *openUrl = (RoktOpenUrl *)event;
         return [[MPRoktOpenUrl alloc] initWithPlacementId:openUrl.identifier url:openUrl.url];
     }
     
-    // Check for RoktEvent.PositiveEngagement
-    if ([event isKindOfClass:[PositiveEngagement class]]) {
-        PositiveEngagement *positiveEngagement = (PositiveEngagement *)event;
+    // Check for RoktEvent.RoktPositiveEngagement
+    if ([event isKindOfClass:[RoktPositiveEngagement class]]) {
+        RoktPositiveEngagement *positiveEngagement = (RoktPositiveEngagement *)event;
         return [[MPRoktPositiveEngagement alloc] initWithPlacementId:positiveEngagement.identifier];
     }
     
-    // Check for RoktEvent.PlacementClosed
-    if ([event isKindOfClass:[PlacementClosed class]]) {
-        PlacementClosed *placementClosed = (PlacementClosed *)event;
+    // Check for RoktEvent.RoktPlacementClosed
+    if ([event isKindOfClass:[RoktPlacementClosed class]]) {
+        RoktPlacementClosed *placementClosed = (RoktPlacementClosed *)event;
         return [[MPRoktPlacementClosed alloc] initWithPlacementId:placementClosed.identifier];
     }
     
-    // Check for RoktEvent.PlacementCompleted
-    if ([event isKindOfClass:[PlacementCompleted class]]) {
-        PlacementCompleted *placementCompleted = (PlacementCompleted *)event;
+    // Check for RoktEvent.RoktPlacementCompleted
+    if ([event isKindOfClass:[RoktPlacementCompleted class]]) {
+        RoktPlacementCompleted *placementCompleted = (RoktPlacementCompleted *)event;
         return [[MPRoktPlacementCompleted alloc] initWithPlacementId:placementCompleted.identifier];
     }
     
-    // Check for RoktEvent.PlacementFailure
-    if ([event isKindOfClass:[PlacementFailure class]]) {
-        PlacementFailure *placementFailure = (PlacementFailure *)event;
+    // Check for RoktEvent.RoktPlacementFailure
+    if ([event isKindOfClass:[RoktPlacementFailure class]]) {
+        RoktPlacementFailure *placementFailure = (RoktPlacementFailure *)event;
         return [[MPRoktPlacementFailure alloc] initWithPlacementId:placementFailure.identifier];
     }
     
-    // Check for RoktEvent.FirstPositiveEngagement
-    if ([event isKindOfClass:[FirstPositiveEngagement class]]) {
-        FirstPositiveEngagement *firstPositiveEngagement = (FirstPositiveEngagement *)event;
+    // Check for RoktEvent.RoktFirstPositiveEngagement
+    if ([event isKindOfClass:[RoktFirstPositiveEngagement class]]) {
+        RoktFirstPositiveEngagement *firstPositiveEngagement = (RoktFirstPositiveEngagement *)event;
         return [[MPRoktFirstPositiveEngagement alloc] initWithPlacementId:firstPositiveEngagement.identifier];
     }
     
-    // Check for RoktEvent.EmbeddedSizeChanged
-    if ([event isKindOfClass:[EmbeddedSizeChanged class]]) {
-        EmbeddedSizeChanged *embeddedSizeChanged = (EmbeddedSizeChanged *)event;
+    // Check for RoktEvent.RoktEmbeddedSizeChanged
+    if ([event isKindOfClass:[RoktEmbeddedSizeChanged class]]) {
+        RoktEmbeddedSizeChanged *embeddedSizeChanged = (RoktEmbeddedSizeChanged *)event;
         return [[MPRoktEmbeddedSizeChanged alloc] initWithPlacementId:embeddedSizeChanged.identifier
                                                         updatedHeight:embeddedSizeChanged.updatedHeight];
     }
 
-    // Check for RoktEvent.CartItemInstantPurchase
-    if ([event isKindOfClass:[CartItemInstantPurchase class]]) {
-        CartItemInstantPurchase *cartItemInstantPurchase = (CartItemInstantPurchase *)event;
+    // Check for RoktEvent.RoktCartItemInstantPurchase
+    if ([event isKindOfClass:[RoktCartItemInstantPurchase class]]) {
+        RoktCartItemInstantPurchase *cartItemInstantPurchase = (RoktCartItemInstantPurchase *)event;
         
         // Handle nil coalescing for name field
         NSString *name = cartItemInstantPurchase.name ?: @"";

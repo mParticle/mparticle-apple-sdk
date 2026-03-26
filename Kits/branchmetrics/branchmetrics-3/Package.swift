@@ -9,7 +9,10 @@ let package = Package(
         .library(name: "mParticle-BranchMetrics", targets: ["mParticle-BranchMetrics"])
     ],
     dependencies: [
-        .package(url: "https://github.com/mParticle/mparticle-apple-sdk", branch: "workstation/9.0-Release"),
+        .package(
+            url: "https://github.com/mParticle/mparticle-apple-sdk",
+            branch: "workstation/9.0-Release"
+        ),
         .package(url: "https://github.com/BranchMetrics/ios-branch-sdk-spm", .upToNextMajor(from: "3.4.1"))
     ],
     targets: [

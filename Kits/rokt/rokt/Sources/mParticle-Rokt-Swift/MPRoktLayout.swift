@@ -30,10 +30,7 @@ public class MPRoktLayout {
         onEvent: ((RoktEvent) -> Void)? = nil
     ) {
         // Capture the timestamp when the SwiftUI component is rendered
-        let options = PlacementOptions(
-            jointSdkSelectPlacements: Int64(Date().timeIntervalSince1970 * 1000),
-            dynamicPerformanceMarkers: [:]
-        )
+        let options = RoktPlacementOptions(timestamp: Int64(Date().timeIntervalSince1970 * 1000))
 
         MPRoktLayout
             .mpLog(

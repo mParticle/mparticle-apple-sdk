@@ -1,77 +1,38 @@
 # Release Process
 
-This document outlines the process for creating a new release of the mParticle Apple SDK.
+## 1. Draft the release
 
-## Automated Release Process
+1. Go to **Actions → Release – Draft** in GitHub
+2. Select the bump type (`patch`, `minor`, or `major`) and run the workflow from `main`
 
-We use GitHub Actions to automate our release process. Follow these steps to create a new release:
+This bumps versions across podspecs, `Package.swift`, constants files, and `CHANGELOG.md`, then opens a release PR against `main`.
 
-### Pre-release Checklist
+## 2. Merge the release PR
 
-- Ensure all commits are in the public main branch
-- Review `sdk-release.yml` in the repo for specific workflow details
-- The release job deploys the most current snapshot of main branch release tag to main branch
+Review and merge the PR. On merge, the **Release – Publish** workflow runs automatically:
 
-## Step 2: Release via GitHub Actions
+- Builds xcframeworks for every kit
+- Mirrors each kit subtree to its own repo under `mparticle-integrations/`
+- Creates GitHub releases and tags (used by SPM consumers)
 
-### What the GitHub Release Job Does
+## 3. Publish to CocoaPods
 
-1. **Initial Setup**
-   - Verifies job is running from public repo and on main branch
-   - Creates temporary `release/{run_number}` branch
+> [!IMPORTANT]
+> This is a **manual** step. Wait for the Release – Publish workflow to finish before running — kit mirror repos and GitHub tags must exist first.
 
-2. **Testing Phase**
-   - Runs unit tests for iOS and tvOS platforms
-   - Validates CocoaPods spec
-   - Validates Swift Package Manager build
-   - Updates kits and runs additional tests
+```bash
+# Register a trunk session if you don't have one (expires after ~3 days):
+pod trunk register developers@mparticle.com 'mParticle Developers' --description='<your machine>'
+# (confirm via email link)
 
-3. **Version Management**
-   - Runs semantic version action
-     - Automatically bumps version based on commit messages
-     - No version bump if no new commits (e.g., feat/fix)
-     - Generates release notes automatically
+# Publish everything:
+./Scripts/pod_publish.sh
+```
 
-4. **Artifact Publishing**
-   - Publishes to package managers:
-     - Pushes to CocoaPods trunk
-     - Updates Swift Package Manager
-   - Creates GitHub release with artifacts
+This pushes the Swift SDK and core SDK podspecs sequentially, then all kit podspecs in parallel.
 
-### How to Release
+## Post-release verification
 
-1. Navigate to the Actions tab in GitHub
-2. Select "iOS SDK Release" workflow
-3. Run the workflow from main branch with "true" first to perform a dry run
-   > Important: Always start with a dry run to validate the release process. This will perform all steps up to semantic release without actually publishing, helping catch potential issues early.
-4. If the dry run succeeds, run the workflow again with "false" option to perform the actual release
-   > Note: Only proceed with the actual release after confirming a successful dry run
-
-### Important Notes
-
-- **Release Duration**: Expect ~30 minutes due to comprehensive test suite across platforms
-- **Platform Requirements**:
-  - Tests run on macOS runners
-  - Multiple Xcode versions may be tested
-  - Both iOS and tvOS platforms are validated
-- **Code Reusability**:
-  - Reusable GitHub Actions are defined in the [mparticle-workflows repo](https://github.com/mParticle/mparticle-workflows)
-  - This enables other platforms to reuse similar jobs
-
-## Post-Release Verification
-
-After a successful build through GitHub Actions, verify:
-
-1. Public repo has a new semantic release tag
-2. New version is available on:
-   - [CocoaPods](https://cocoapods.org/pods/mParticle-Apple-SDK)
-   - Swift Package Manager
-
-## Troubleshooting
-
-If you encounter issues during testing, check:
-
-- Xcode version compatibility
-- Platform-specific test failures (iOS vs tvOS)
-- GitHub Actions logs for specific error messages
-- CocoaPods trunk status
+- New `v<version>` tag exists on the main repo and all kit mirror repos
+- New version is available on [CocoaPods](https://cocoapods.org/pods/mParticle-Apple-SDK)
+- SPM resolves the new version
