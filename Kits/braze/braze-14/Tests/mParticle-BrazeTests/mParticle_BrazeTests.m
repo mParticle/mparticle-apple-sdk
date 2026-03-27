@@ -18,8 +18,8 @@
 - (void)setEnableTypeDetection:(BOOL)enableTypeDetection;
 + (BOOL)shouldDisableNotificationHandling;
 + (Braze *)brazeInstance;
-+ (MPKitExecStatus *)updateUser:(FilteredMParticleUser *)user request:(NSDictionary<NSNumber *,NSString *> *)userIdentities;
-+ (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value;
+- (MPKitExecStatus *)updateUser:(FilteredMParticleUser *)user request:(NSDictionary<NSNumber *,NSString *> *)userIdentities;
+- (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value;
 
 @end
 
@@ -34,10 +34,19 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     [MPKitBraze setBrazeInstance:nil];
     [MPKitBraze setURLDelegate:nil];
+#if TARGET_OS_IOS
+    [MPKitBraze setInAppMessageControllerDelegate:nil];
+    [MPKitBraze setShouldDisableNotificationHandling:NO];
+#endif
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
+    [MPKitBraze setBrazeInstance:nil];
+    [MPKitBraze setURLDelegate:nil];
+#if TARGET_OS_IOS
+    [MPKitBraze setInAppMessageControllerDelegate:nil];
+    [MPKitBraze setShouldDisableNotificationHandling:NO];
+#endif
     [super tearDown];
 }
 
@@ -75,10 +84,10 @@
     
     NSDictionary *testOptionsDictionary = @{ABKEnableAutomaticLocationCollectionKey:@(YES),
                                             ABKSDKFlavorKey:@7,
-                                            @"ABKRquestProcessingPolicy": @(1),
-                                            @"ABKFlushInterval":@(2),
-                                            @"ABKSessionTimeout":@(3),
-                                            @"ABKMinimumTriggerTimeInterval":@(4)
+                                            ABKRequestProcessingPolicyOptionKey: @(1),
+                                            ABKFlushIntervalOptionKey: @(2),
+                                            ABKSessionTimeoutKey: @(3),
+                                            ABKMinimumTriggerTimeIntervalKey: @(4)
                                             };
     
     NSDictionary *optionsDictionary = [braze optionsDictionary];
@@ -254,15 +263,15 @@
     id mockClient = OCMPartialMock(testClient);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
-    
-    // Should succeed since Bool false is a valid value
+    // subscriptionGroupMapping is applied in -start only; without -start mapped keys are handled as custom attributes (invalid subscription values would incorrectly return success).
+    [kitInstance start];
+
     MPKitExecStatus *execStatus1 = [kitInstance setUserAttribute:@"testAttribute1" value:@NO];
-    XCTAssertEqual(execStatus1.returnCode, MPKitReturnCodeSuccess);
-    // Should succeed since Bool true is a valid value
     MPKitExecStatus *execStatus2 = [kitInstance setUserAttribute:@"testAttribute2" value:@YES];
-    XCTAssertEqual(execStatus2.returnCode, MPKitReturnCodeSuccess);
-    // Should fail since testValue is not type BOOL
     MPKitExecStatus *execStatus3 = [kitInstance setUserAttribute:@"testAttribute2" value:@"testValue"];
+
+    XCTAssertEqual(execStatus1.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual(execStatus2.returnCode, MPKitReturnCodeSuccess);
     XCTAssertEqual(execStatus3.returnCode, MPKitReturnCodeFail);
 
     [mockClient verify];

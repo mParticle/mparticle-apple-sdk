@@ -58,6 +58,7 @@ public class MPRoktLayout {
                         "locationName:\(locationName), " +
                         "attributes:\(preparedAttributes)"
                 )
+
             self.roktLayout = RoktLayout.init(
                 sdkTriggered: sdkTriggered,
                 identifier: identifier,

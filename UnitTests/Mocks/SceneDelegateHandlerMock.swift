@@ -6,7 +6,6 @@ class OpenURLHandlerProtocolMock: NSObject, OpenURLHandlerProtocol {
     var openURLWithOptionsURLParam: URL?
     var openURLWithOptionsOptionsParam: [String: Any]?
 
-    @objc(openURL:options:)
     func open(_ url: URL, options: [String: Any]?) {
         openURLWithOptionsCalled = true
         openURLWithOptionsURLParam = url
@@ -18,11 +17,8 @@ class OpenURLHandlerProtocolMock: NSObject, OpenURLHandlerProtocol {
     var continueUserActivityRestorationHandlerParam: (([UIUserActivityRestoring]?) -> Void)?
     var continueUserActivityReturnValue: Bool = false
 
-    @objc(continueUserActivity:restorationHandler:)
-    func `continue`(
-        _ userActivity: NSUserActivity,
-        restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void
-    ) -> Bool {
+    func `continue`(_ userActivity: NSUserActivity,
+                    restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
         continueUserActivityCalled = true
         continueUserActivityUserActivityParam = userActivity
         continueUserActivityRestorationHandlerParam = restorationHandler

@@ -196,7 +196,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
-    
+
     // Verify
     OCMVerifyAll(self.mockContainer);
 }
