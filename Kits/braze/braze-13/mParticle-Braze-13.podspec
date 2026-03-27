@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
     s.tvos.deployment_target = "15.6"
     s.source_files      = 'Sources/mParticle-Braze/**/*.{h,m,mm}'
     s.resource_bundles  = { 'mParticle-Braze-13-Privacy' => ['Sources/mParticle-Braze/PrivacyInfo.xcprivacy'] }
-    s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
+    s.dependency 'mParticle-Apple-SDK', '~> 9.0'
     s.dependency 'BrazeKit', '~> 13.0'
     s.dependency 'BrazeKitCompat', '~> 13.0'
     s.ios.dependency 'BrazeUI', '~> 13.0'

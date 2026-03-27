@@ -11,7 +11,10 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/mParticle/mparticle-apple-sdk", branch: "workstation/9.0-Release"),
+        .package(
+            url: "https://github.com/mParticle/mparticle-apple-sdk",
+            branch: "workstation/9.0-Release"
+        ),
         .package(url: "https://github.com/comScore/Comscore-Swift-Package-Manager", .upToNextMajor(from: "6.12.3"))
     ],
     targets: [

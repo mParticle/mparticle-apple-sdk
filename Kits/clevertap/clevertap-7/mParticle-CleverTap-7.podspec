@@ -13,6 +13,6 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = "15.6"
     s.ios.source_files      = 'Sources/mParticle-CleverTap/**/*.{h,m,mm}'
     s.ios.resource_bundles  = { 'mParticle-CleverTap-7-Privacy' => ['Sources/mParticle-CleverTap/PrivacyInfo.xcprivacy'] }
-    s.ios.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
+    s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'
     s.ios.dependency 'CleverTap-iOS-SDK', '~> 7.0'
 end

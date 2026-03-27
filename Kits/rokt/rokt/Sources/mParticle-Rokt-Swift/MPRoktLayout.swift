@@ -28,6 +28,9 @@ public class MPRoktLayout {
         config: RoktConfig? = nil,
         onEvent: ((RoktEvent) -> Void)? = nil
     ) {
+        // Capture the timestamp when the SwiftUI component is rendered
+        let options = RoktPlacementOptions(timestamp: Int64(Date().timeIntervalSince1970 * 1000))
+
         MPRoktLayout
             .mpLog(
                 "Initializing MPRoktLayout with arguments " +
@@ -54,16 +57,14 @@ public class MPRoktLayout {
                         "locationName:\(locationName), " +
                         "attributes:\(preparedAttributes)"
                 )
-            let placementOptions = RoktPlacementOptions(
-                timestamp: Int64(Date().timeIntervalSince1970 * 1000)
-            )
+
             self.roktLayout = RoktLayout.init(
                 sdkTriggered: sdkTriggered,
                 identifier: identifier,
                 location: locationName,
                 attributes: preparedAttributes,
                 config: config,
-                placementOptions: placementOptions,
+                placementOptions: options,
                 onEvent: onEvent
             )
             // The Binding variable provided by the client allows us to trigger a re-render of the UI but we only want to do this if the value was true to start

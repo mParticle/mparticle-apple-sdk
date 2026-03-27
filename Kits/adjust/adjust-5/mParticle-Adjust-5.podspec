@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
     s.tvos.deployment_target = "15.6"
     s.source_files      = 'Sources/mParticle-Adjust/**/*.{h,m,mm}'
     s.resource_bundles  = { 'mParticle-Adjust-5-Privacy' => ['Sources/mParticle-Adjust/PrivacyInfo.xcprivacy'] }
-    s.dependency 'mParticle-Apple-SDK/mParticle', '~> 9.0'
+    s.dependency 'mParticle-Apple-SDK', '~> 9.0'
     s.dependency 'Adjust', '~> 5.0'
 end
