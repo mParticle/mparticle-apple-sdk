@@ -14,6 +14,7 @@
 import SwiftUI
 import Rokt_Widget
 import mParticle_Apple_SDK
+import mParticle_Rokt
 
 @available(iOS 15, *)
 public class MPRoktLayout {

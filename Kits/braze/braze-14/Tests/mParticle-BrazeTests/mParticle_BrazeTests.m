@@ -84,10 +84,10 @@
     
     NSDictionary *testOptionsDictionary = @{ABKEnableAutomaticLocationCollectionKey:@(YES),
                                             ABKSDKFlavorKey:@7,
-                                            @"ABKRquestProcessingPolicy": @(1),
-                                            @"ABKFlushInterval":@(2),
-                                            @"ABKSessionTimeout":@(3),
-                                            @"ABKMinimumTriggerTimeInterval":@(4)
+                                            ABKRequestProcessingPolicyOptionKey: @(1),
+                                            ABKFlushIntervalOptionKey: @(2),
+                                            ABKSessionTimeoutKey: @(3),
+                                            ABKMinimumTriggerTimeIntervalKey: @(4)
                                             };
     
     NSDictionary *optionsDictionary = [braze optionsDictionary];
@@ -263,16 +263,12 @@
     id mockClient = OCMPartialMock(testClient);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
+    // subscriptionGroupMapping is applied in -start only; without -start mapped keys are handled as custom attributes (invalid subscription values would incorrectly return success).
+    [kitInstance start];
 
-    __block MPKitExecStatus *execStatus1;
-    __block MPKitExecStatus *execStatus2;
-    __block MPKitExecStatus *execStatus3;
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        // Braze Swift SDK user subscription APIs expect main-thread execution (matches app behavior).
-        execStatus1 = [kitInstance setUserAttribute:@"testAttribute1" value:@NO];
-        execStatus2 = [kitInstance setUserAttribute:@"testAttribute2" value:@YES];
-        execStatus3 = [kitInstance setUserAttribute:@"testAttribute2" value:@"testValue"];
-    });
+    MPKitExecStatus *execStatus1 = [kitInstance setUserAttribute:@"testAttribute1" value:@NO];
+    MPKitExecStatus *execStatus2 = [kitInstance setUserAttribute:@"testAttribute2" value:@YES];
+    MPKitExecStatus *execStatus3 = [kitInstance setUserAttribute:@"testAttribute2" value:@"testValue"];
 
     XCTAssertEqual(execStatus1.returnCode, MPKitReturnCodeSuccess);
     XCTAssertEqual(execStatus2.returnCode, MPKitReturnCodeSuccess);
