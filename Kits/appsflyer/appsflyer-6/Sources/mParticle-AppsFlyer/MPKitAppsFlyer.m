@@ -19,6 +19,9 @@ NSString *const MPKitAppsFlyerErrorDomain = @"mParticle-AppsFlyer";
 NSString *const afAppleAppId = @"appleAppId";
 NSString *const afDevKey = @"devKey";
 NSString *const afManualStart = @"manualStart";
+NSString *const afUserIdentificationType = @"userIdentificationType";
+NSString *const afUserIdentificationMPID = @"MPID";
+NSString *const afUserIdentificationCustomerId = @"CustomerId";
 NSString *const afAppsFlyerIdIntegrationKey = @"appsflyer_id_integration_setting";
 NSString *const kMPKAFCustomerUserId = @"af_customer_user_id";
 
@@ -112,7 +115,9 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
     appsFlyerTracker.deepLinkDelegate = self;
     
     _configuration = configuration;
-    
+
+    [self updateCustomerUserIDIfNeededForUser:[self currentUser]];
+
     [self updateConsent];
     [appsFlyerTracker waitForATTUserAuthorizationWithTimeoutInterval:60];
     [self start];
@@ -196,10 +201,11 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 #endif
 
 - (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType {
-    MPKitExecStatus *execStatus;
     if (identityType == MPUserIdentityCustomerId) {
-        [appsFlyerTracker setCustomerUserID:identityString];
-        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
+        if (![self isUserIdentificationMPID]) {
+            [appsFlyerTracker setCustomerUserID:identityString];
+        }
+        return [self successStatus];
     } else if (identityType == MPUserIdentityEmail) {
         if (identityString) {
             [appsFlyerTracker setUserEmails:@[identityString] withCryptType:EmailCryptTypeNone];
@@ -207,11 +213,30 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
         else {
             [appsFlyerTracker setUserEmails:nil withCryptType:EmailCryptTypeNone];
         }
-        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
+        return [self successStatus];
     } else {
-        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeFail];
+        return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeFail];
     }
-    return execStatus;
+}
+
+- (nonnull MPKitExecStatus *)onIdentifyComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request {
+    [self updateCustomerUserIDIfNeededForUser:user];
+    return [self successStatus];
+}
+
+- (nonnull MPKitExecStatus *)onLoginComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request {
+    [self updateCustomerUserIDIfNeededForUser:user];
+    return [self successStatus];
+}
+
+- (nonnull MPKitExecStatus *)onLogoutComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request {
+    [self updateCustomerUserIDIfNeededForUser:user];
+    return [self successStatus];
+}
+
+- (nonnull MPKitExecStatus *)onModifyComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request {
+    [self updateCustomerUserIDIfNeededForUser:user];
+    return [self successStatus];
 }
 
 + (NSString * _Nullable)generateProductIdList:(nullable MPCommerceEvent *)event {
@@ -256,7 +281,7 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
     
     // If a customer id is available, add it to the commerce event user defined attributes
     FilteredMParticleUser *user = [self currentUser];
-    NSString *customerId = [user.userId stringValue];
+    NSString *customerId = [self customerIDForAppsFlyer:user];
     if (customerId.length) {
         MPCommerceEvent *surrogateCommerceEvent = [commerceEvent copy];
         NSMutableDictionary *mutableInfo = surrogateCommerceEvent.customAttributes ? [surrogateCommerceEvent.customAttributes mutableCopy] : [NSMutableDictionary dictionary];
@@ -370,7 +395,7 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
     
     // If a customer id is available, add it to the event attributes
     FilteredMParticleUser *user = [self currentUser];
-    NSString *customerId = [user.userId stringValue];
+    NSString *customerId = [self customerIDForAppsFlyer:user];
     if (customerId.length) {
         MPEvent *surrogateEvent = [event copy];
         NSMutableDictionary *mutableInfo = surrogateEvent.customAttributes ? [surrogateEvent.customAttributes mutableCopy] : [NSMutableDictionary dictionary];
@@ -573,6 +598,36 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 
 - (FilteredMParticleUser *)currentUser {
     return [[self kitApi] getCurrentUserWithKit:self];
+}
+
+- (nonnull MPKitExecStatus *)successStatus {
+    return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
+}
+
+- (BOOL)isUserIdentificationMPID {
+    return [afUserIdentificationMPID isEqualToString:_configuration[afUserIdentificationType]];
+}
+
+- (BOOL)isUserIdentificationCustomerId {
+    return [afUserIdentificationCustomerId isEqualToString:_configuration[afUserIdentificationType]];
+}
+
+- (NSString *)customerIDForAppsFlyer:(FilteredMParticleUser *)user {
+    if ([self isUserIdentificationMPID]) {
+        return [user.userId stringValue];
+    } else if ([self isUserIdentificationCustomerId]) {
+        return user.userIdentities[@(MPUserIdentityCustomerId)];
+    } else {
+        // Fallback to MPID as was the default behavior before the new user identification types were introduced
+        return [user.userId stringValue];
+    }
+}
+
+- (void)updateCustomerUserIDIfNeededForUser:(FilteredMParticleUser *)user {
+    if ([self isUserIdentificationMPID] || [self isUserIdentificationCustomerId]) {
+        NSString *customerId = [self customerIDForAppsFlyer:user];
+        [appsFlyerTracker setCustomerUserID:customerId];
+    }
 }
 
 @end

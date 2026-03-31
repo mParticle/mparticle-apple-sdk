@@ -2,11 +2,9 @@
 
 #if TARGET_OS_IOS
     @import BrazeKit;
-    @import BrazeKitCompat;
     @import BrazeUI;
 #else
     @import BrazeKit;
-    @import BrazeKitCompat;
 #endif
 
 static NSString *const eabAPIKey = @"apiKey";
@@ -59,6 +57,14 @@ static NSString *const MPGoogleAdUserDataKey = @"google_ad_user_data";
 static NSString *const MPGoogleAdPersonalizationKey = @"google_ad_personalization";
 static NSString *const BGoogleAdUserDataKey = @"$google_ad_user_data";
 static NSString *const BGoogleAdPersonalizationKey = @"$google_ad_personalization";
+
+// Braze configuration option keys used internally by the options dictionary
+static NSString *const kMPBrazeConfigEndpoint = @"endpoint";
+static NSString *const kMPBrazeConfigRequestPolicy = @"requestPolicy";
+static NSString *const kMPBrazeConfigFlushInterval = @"flushInterval";
+static NSString *const kMPBrazeConfigSessionTimeout = @"sessionTimeout";
+static NSString *const kMPBrazeConfigTriggerMinimumTimeInterval = @"triggerMinimumTimeInterval";
+static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLocationCollection";
 
 #if TARGET_OS_IOS
 static id<BrazeInAppMessageUIDelegate> inAppMessageControllerDelegate = nil;
@@ -371,20 +377,20 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 - (void)start {
     if (!self->brazeInstanceLocal) {
         NSDictionary *optionsDict = [self optionsDictionary];
-        BRZConfiguration *configuration = [[BRZConfiguration alloc] initWithApiKey:self.configuration[eabAPIKey] endpoint:optionsDict[ABKEndpointKey]];
-        
+        BRZConfiguration *configuration = [[BRZConfiguration alloc] initWithApiKey:self.configuration[eabAPIKey] endpoint:optionsDict[kMPBrazeConfigEndpoint]];
+
         [configuration.api addSDKMetadata:@[BRZSDKMetadata.mparticle]];
-        configuration.api.sdkFlavor = ((NSNumber *)optionsDict[ABKSDKFlavorKey]).intValue;
-        configuration.api.requestPolicy = ((NSNumber *)optionsDict[ABKRequestProcessingPolicyOptionKey]).intValue;
-        NSNumber *flushIntervalOption = (NSNumber *)optionsDict[ABKFlushIntervalOptionKey] ?: @10; // If not set, use the default 10 seconds specified in Braze SDK header
+        configuration.api.sdkFlavor = BRZSDKFlavorMparticle;
+        configuration.api.requestPolicy = ((NSNumber *)optionsDict[kMPBrazeConfigRequestPolicy]).intValue;
+        NSNumber *flushIntervalOption = (NSNumber *)optionsDict[kMPBrazeConfigFlushInterval] ?: @10; // If not set, use the default 10 seconds specified in Braze SDK header
         configuration.api.flushInterval = flushIntervalOption.doubleValue < 1.0 ? 1.0 : flushIntervalOption.doubleValue; // Ensure value is above the minimum of 1.0 per run time warning from Braze SDK
         configuration.api.trackingPropertyAllowList = brazeTrackingPropertyAllowList;
-        
-        configuration.sessionTimeout = ((NSNumber *)optionsDict[ABKSessionTimeoutKey]).doubleValue;
-        
-        configuration.triggerMinimumTimeInterval = ((NSNumber *)optionsDict[ABKMinimumTriggerTimeIntervalKey]).doubleValue;
-        
-        NSNumber *automaticLocationTrackingOption = (NSNumber *)optionsDict[ABKEnableAutomaticLocationCollectionKey];
+
+        configuration.sessionTimeout = ((NSNumber *)optionsDict[kMPBrazeConfigSessionTimeout]).doubleValue;
+
+        configuration.triggerMinimumTimeInterval = ((NSNumber *)optionsDict[kMPBrazeConfigTriggerMinimumTimeInterval]).doubleValue;
+
+        NSNumber *automaticLocationTrackingOption = (NSNumber *)optionsDict[kMPBrazeConfigAutomaticLocationCollection];
         if (automaticLocationTrackingOption != nil && automaticLocationTrackingOption.boolValue && brazeLocationProvider) {
             configuration.location.automaticLocationCollection = YES;
             configuration.location.brazeLocationProvider = brazeLocationProvider;
@@ -443,9 +449,10 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     _configuration = nil;
 }
 
+// This maps the mParticle keys (prefixed with ABK) to the Braze Swift SDK configuration keys (prefixed with kMPBrazeConfig).
 - (NSMutableDictionary<NSString *, NSObject *> *)optionsDictionary {
     NSArray <NSString *> *serverKeys = @[@"ABKRequestProcessingPolicyOptionKey", @"ABKFlushIntervalOptionKey", @"ABKSessionTimeoutKey", @"ABKMinimumTriggerTimeIntervalKey"];
-    NSArray <NSString *> *brazeKeys = @[ABKRequestProcessingPolicyOptionKey, ABKFlushIntervalOptionKey, ABKSessionTimeoutKey, ABKMinimumTriggerTimeIntervalKey];
+    NSArray <NSString *> *configKeys = @[kMPBrazeConfigRequestPolicy, kMPBrazeConfigFlushInterval, kMPBrazeConfigSessionTimeout, kMPBrazeConfigTriggerMinimumTimeInterval];
     NSMutableDictionary<NSString *, NSObject *> *optionsDictionary = [[NSMutableDictionary alloc] initWithCapacity:serverKeys.count];
     NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
     numberFormatter.numberStyle = NSNumberFormatterNoStyle;
@@ -454,7 +461,6 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         NSString *optionValue = self.configuration[serverKey];
         
         if (optionValue != nil && (NSNull *)optionValue != [NSNull null]) {
-            NSString *brazeKey = brazeKeys[idx];
             NSNumber *numberValue = nil;
             @try {
                 numberValue = [numberFormatter numberFromString:optionValue];
@@ -462,34 +468,24 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 numberValue = nil;
             }
             if (numberValue != nil) {
-                optionsDictionary[brazeKey] = numberValue;
+                optionsDictionary[configKeys[idx]] = numberValue;
             }
         }
     }];
     
     if (self.host.length) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-pointer-types"
-        optionsDictionary[ABKEndpointKey] = self.host;
-#pragma clang diagnostic pop
+        optionsDictionary[kMPBrazeConfigEndpoint] = self.host;
     }
-    
+
     if (optionsDictionary.count == 0) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-pointer-types"
         optionsDictionary = [[NSMutableDictionary alloc] initWithCapacity:serverKeys.count];
     }
-    optionsDictionary[ABKSDKFlavorKey] = @(MPARTICLE);
-#pragma clang diagnostic pop
-    
+
 #if TARGET_OS_IOS
-    optionsDictionary[ABKEnableAutomaticLocationCollectionKey] = @(YES);
+    optionsDictionary[kMPBrazeConfigAutomaticLocationCollection] = @(YES);
     if (self.configuration[@"ABKDisableAutomaticLocationCollectionKey"]) {
         if ([self.configuration[@"ABKDisableAutomaticLocationCollectionKey"] caseInsensitiveCompare:@"true"] == NSOrderedSame) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-pointer-types"
-            optionsDictionary[ABKEnableAutomaticLocationCollectionKey] = @(NO);
-#pragma clang diagnostic pop
+            optionsDictionary[kMPBrazeConfigAutomaticLocationCollection] = @(NO);
         }
     }
 #endif
