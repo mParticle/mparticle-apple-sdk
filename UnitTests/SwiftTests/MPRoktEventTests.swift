@@ -80,6 +80,18 @@ final class MPRoktEventTests: XCTestCase {
         XCTAssertTrue(event is RoktEvent.HideLoadingIndicator)
     }
 
+    func test_RoktEmbeddedSizeChanged() {
+        let event = RoktEvent.EmbeddedSizeChanged(identifier: "embed-1", updatedHeight: 250.5)
+        XCTAssertTrue(event is RoktEvent.EmbeddedSizeChanged)
+        XCTAssertEqual(event.identifier, "embed-1")
+        XCTAssertEqual(event.updatedHeight, 250.5)
+        XCTAssertTrue(event is RoktEvent)
+    }
+
+    func test_RoktEmbeddedSizeChanged_runtimeClass() {
+        XCTAssertNotNil(NSClassFromString("RoktEmbeddedSizeChanged"))
+    }
+
     func test_RoktCartItemInstantPurchase_runtimeClass() {
         let eventClass: AnyClass? = NSClassFromString("RoktCartItemInstantPurchase")
         XCTAssertNotNil(eventClass)

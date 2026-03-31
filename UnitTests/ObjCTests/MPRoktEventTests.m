@@ -282,6 +282,25 @@
     XCTAssertEqualObjects(event.description, customDescription);
 }
 
+#pragma mark - RoktEmbeddedSizeChanged Tests
+
+- (void)testEmbeddedSizeChangedWithIdentifierAndHeight {
+    NSString *identifier = @"Location1";
+    CGFloat height = 250.5;
+    RoktEmbeddedSizeChanged *event = [[RoktEmbeddedSizeChanged alloc] initWithIdentifier:identifier updatedHeight:height];
+    XCTAssertNotNil(event);
+    XCTAssertEqualObjects(event.identifier, identifier);
+    XCTAssertEqual(event.updatedHeight, height);
+    XCTAssertTrue([event isKindOfClass:[RoktEvent class]]);
+}
+
+- (void)testEmbeddedSizeChangedZeroHeight {
+    RoktEmbeddedSizeChanged *event = [[RoktEmbeddedSizeChanged alloc] initWithIdentifier:@"embed" updatedHeight:0];
+    XCTAssertNotNil(event);
+    XCTAssertEqualObjects(event.identifier, @"embed");
+    XCTAssertEqual(event.updatedHeight, (CGFloat)0);
+}
+
 #pragma mark - Inheritance Tests
 
 - (void)testAllEventTypesInheritFromRoktEvent {
@@ -298,6 +317,7 @@
     XCTAssertTrue([[[RoktPlacementCompleted alloc] initWithIdentifier:@"test"] isKindOfClass:[RoktEvent class]]);
     XCTAssertTrue([[[RoktPlacementFailure alloc] initWithIdentifier:@"test"] isKindOfClass:[RoktEvent class]]);
     XCTAssertTrue([[[RoktFirstPositiveEngagement alloc] initWithIdentifier:@"test" setFulfillmentAttributes:nil] isKindOfClass:[RoktEvent class]]);
+    XCTAssertTrue([[[RoktEmbeddedSizeChanged alloc] initWithIdentifier:@"Location1" updatedHeight:320] isKindOfClass:[RoktEvent class]]);
     XCTAssertTrue([[[RoktCartItemInstantPurchase alloc] initWithIdentifier:@"p" name:nil cartItemId:@"c" catalogItemId:@"cat" currency:@"USD" description:@"d" linkedProductId:nil providerData:@"prov" quantity:nil totalPrice:nil unitPrice:nil] isKindOfClass:[RoktEvent class]]);
 }
 

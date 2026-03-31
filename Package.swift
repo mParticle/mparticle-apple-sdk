@@ -14,7 +14,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/ROKT/rokt-contracts-apple.git",
-            branch: "main"
+            .upToNextMajor(from: "0.1.0")
         )
     ],
     targets: [

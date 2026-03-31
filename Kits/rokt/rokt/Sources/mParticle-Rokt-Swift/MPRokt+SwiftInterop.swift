@@ -3,6 +3,7 @@ import ObjectiveC
 import mParticle_Apple_SDK
 import RoktContracts
 
+// Swift omits `events:onEvent:` and the full `selectPlacements:…onEvent:` from generated Swift API (RoktEvent block bridging).
 extension MPRokt {
     public func subscribeToPlacementEvents(
         _ identifier: String,
