@@ -96,6 +96,61 @@ final class MPKitAppsFlyerTests: XCTestCase {
         XCTAssertEqual(mock.startCallCount, 1)
     }
 
+    // MARK: - setUserIdentity / userIdentificationType
+
+    func test_setUserIdentity_customerId_legacy_forwardsToAppsFlyer() {
+        kit.configuration = [:]
+        kit.providerKitInstance = mock
+
+        let status = kit.setUserIdentity("ext-cust-1", identityType: .customerId)
+
+        XCTAssertEqual(status.returnCode, .success)
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 1)
+        XCTAssertEqual(mock.lastCustomerUserID, "ext-cust-1")
+    }
+
+    func test_setUserIdentity_customerId_customerIdMode_forwardsToAppsFlyer() {
+        kit.configuration = ["userIdentificationType": "CustomerId"]
+        kit.providerKitInstance = mock
+
+        let status = kit.setUserIdentity("ext-cust-2", identityType: .customerId)
+
+        XCTAssertEqual(status.returnCode, .success)
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 1)
+        XCTAssertEqual(mock.lastCustomerUserID, "ext-cust-2")
+    }
+
+    func test_setUserIdentity_customerId_mpidMode_doesNotCallSetCustomerUserID() {
+        kit.configuration = ["userIdentificationType": "MPID"]
+        kit.providerKitInstance = mock
+
+        let status = kit.setUserIdentity("ext-cust-ignored", identityType: .customerId)
+
+        XCTAssertEqual(status.returnCode, .success)
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 0)
+        XCTAssertNil(mock.lastCustomerUserID)
+    }
+
+    func test_setUserIdentity_email_doesNotUseCustomerUserIDPath() {
+        kit.configuration = ["userIdentificationType": "MPID"]
+        kit.providerKitInstance = mock
+
+        let status = kit.setUserIdentity("a@b.com", identityType: .email)
+
+        XCTAssertEqual(status.returnCode, .success)
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 0)
+    }
+
+    func test_setUserIdentity_unsupportedIdentity_returnsFail() {
+        kit.configuration = [:]
+        kit.providerKitInstance = mock
+
+        let status = kit.setUserIdentity("x", identityType: .other)
+
+        XCTAssertEqual(status.returnCode, .fail)
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 0)
+    }
+
     // MARK: - resolvedConsentForMappingKey
 
     func test_resolvedConsentForMappingKey_withGDPRMapping_returnsTrue() {
