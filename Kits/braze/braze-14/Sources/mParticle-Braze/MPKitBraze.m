@@ -449,6 +449,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     _configuration = nil;
 }
 
+// This maps the mParticle keys (prefixed with ABK) to the Braze Swift SDK configuration keys (prefixed with kMPBrazeConfig).
 - (NSMutableDictionary<NSString *, NSObject *> *)optionsDictionary {
     NSArray <NSString *> *serverKeys = @[@"ABKRequestProcessingPolicyOptionKey", @"ABKFlushIntervalOptionKey", @"ABKSessionTimeoutKey", @"ABKMinimumTriggerTimeIntervalKey"];
     NSArray <NSString *> *configKeys = @[kMPBrazeConfigRequestPolicy, kMPBrazeConfigFlushInterval, kMPBrazeConfigSessionTimeout, kMPBrazeConfigTriggerMinimumTimeInterval];
