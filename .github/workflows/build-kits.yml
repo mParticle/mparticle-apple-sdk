@@ -21,25 +21,9 @@ jobs:
           echo "matrix=$(jq -c . Kits/matrix.json)" >> "$GITHUB_OUTPUT"
           echo "pod-matrix=$(jq -c '[.[] | select(.podspec)]' Kits/matrix.json)" >> "$GITHUB_OUTPUT"
 
-  warm-cocoapods-cache:
-    name: Warm CocoaPods spec cache
-    needs: load-matrix
-    runs-on: macos-15
-    steps:
-      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        id: cache
-        with:
-          path: |
-            ~/.cocoapods
-            ~/.cache/cocoapods
-          key: cocoapods-specs-${{ runner.os }}
-      - name: Update CocoaPods spec repo
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: pod repo update
-
   pod-lint-kits:
     name: Pod Lint ${{ matrix.kit.name }}
-    needs: [load-matrix, warm-cocoapods-cache]
+    needs: load-matrix
     runs-on: macos-15
     strategy:
       fail-fast: false
@@ -50,12 +34,6 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: "26.2"
-      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: |
-            ~/.cocoapods
-            ~/.cache/cocoapods
-          key: cocoapods-specs-${{ runner.os }}
       - name: Pod Lib Lint
         run: |
           # Bump local SDK versions to 9.0.0 to satisfy kit ~> 9.0 dependency constraints.
