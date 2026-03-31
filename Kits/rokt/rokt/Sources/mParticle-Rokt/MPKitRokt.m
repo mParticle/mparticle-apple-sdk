@@ -295,7 +295,7 @@ static __weak MPKitRokt *roktKit = nil;
     NSData *dataAttributeMap;
     // Rokt Kit is available though there may not be an attribute map
     attributeMap = @[];
-    id configJSONString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPRoktPlacementAttributesMapping];
+    id configJSONString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPPlacementAttributesMapping];
     if (configJSONString != nil && configJSONString != [NSNull null]) {
         strAttributeMap = [configJSONString stringByRemovingPercentEncoding];
         dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
@@ -466,7 +466,7 @@ static __weak MPKitRokt *roktKit = nil;
     NSDictionary *roktKitConfig = [MPKitRokt getKitConfig];
     
     // Get the string representing which identity to use and convert it to the key (NSNumber)
-    NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPRoktHashedEmailUserIdentityType];
+    NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPHashedEmailUserIdentityType];
     NSNumber *hashedIdentityTypeNumber = [MPKitRokt identityTypeForString:hashedIdentityTypeString.lowercaseString];
     
     return hashedIdentityTypeNumber;

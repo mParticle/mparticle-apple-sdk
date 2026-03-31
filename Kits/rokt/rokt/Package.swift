@@ -12,16 +12,15 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/mParticle/mparticle-apple-sdk",
-            branch: "workstation/9.0-Release"
-        ),
+        // Monorepo root — must match the app’s local mParticle-Apple-SDK package so SPM resolves one SDK.
+        .package(path: "../../../"),
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
             branch: "workstation/5.0.0"
         ),
         .package(
-            url: "https://github.com/ROKT/rokt-contracts-apple"
+            url: "https://github.com/ROKT/rokt-contracts-apple.git",
+            branch: "main"
         ),
         .package(
             url: "https://github.com/erikdoe/ocmock",
@@ -32,7 +31,7 @@ let package = Package(
         .target(
             name: "mParticle-Rokt",
             dependencies: [
-                .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
+                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
                 .product(name: "Rokt-Widget", package: "rokt-sdk-ios"),
                 .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ],
@@ -44,7 +43,7 @@ let package = Package(
             name: "mParticle-Rokt-Swift",
             dependencies: [
                 "mParticle-Rokt",
-                .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
+                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
                 .product(name: "Rokt-Widget", package: "rokt-sdk-ios"),
                 .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ],

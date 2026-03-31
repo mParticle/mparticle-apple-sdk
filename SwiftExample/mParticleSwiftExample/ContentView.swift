@@ -281,7 +281,7 @@ struct RoktLayoutExampleView: View {
 
                         MPRoktLayout(
                             sdkTriggered: $sdkTriggered,
-                            viewName: "RoktExperience",
+                            identifier: "RoktExperience",
                             locationName: "RoktEmbedded1",
                             attributes: attributes,
                             config: createRoktConfig(),
@@ -862,7 +862,13 @@ func selectEmbeddedPlacement(heightBinding: Binding<CGFloat>) {
     let roktView = RoktContracts.RoktEmbeddedView(frame: .zero)
     let embeddedViews: [String: RoktContracts.RoktEmbeddedView] = ["Location1": roktView]
 
-    MParticle.sharedInstance().rokt.selectPlacements("testiOS", attributes: customAttributes)
+    MParticle.sharedInstance().rokt.selectPlacements(
+        "testiOS",
+        attributes: customAttributes,
+        embeddedViews: embeddedViews,
+        config: nil,
+        onEvent: nil
+    )
 }
 
 func selectOverlayPlacementAutoClose() {
