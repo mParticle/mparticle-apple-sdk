@@ -29,7 +29,9 @@ jobs:
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         id: cache
         with:
-          path: ~/.cocoapods
+          path: |
+            ~/.cocoapods
+            ~/.cache/cocoapods
           key: cocoapods-specs-${{ runner.os }}
       - name: Update CocoaPods spec repo
         if: steps.cache.outputs.cache-hit != 'true'
@@ -50,7 +52,9 @@ jobs:
           xcode-version: "26.2"
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
-          path: ~/.cocoapods
+          path: |
+            ~/.cocoapods
+            ~/.cache/cocoapods
           key: cocoapods-specs-${{ runner.os }}
       - name: Pod Lib Lint
         run: |
@@ -67,7 +71,6 @@ jobs:
           pod lib lint "${{ matrix.kit.podspec }}" \
             --allow-warnings \
             --skip-import-validation \
-            --no-repo-update \
             --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}"
 
   build-kits:
