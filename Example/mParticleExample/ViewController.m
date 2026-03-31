@@ -255,8 +255,7 @@
                                                                @"mobile": @"(555)867-5309"
     };
 
-    RoktConfig *roktConfig = [[RoktConfig alloc] init];
-    roktConfig.colorMode = RoktColorModeDark;
+    RoktConfig *roktConfig = [[[[RoktConfigBuilder alloc] init] colorMode:RoktColorModeDark] build];
     [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout"
                                            attributes:customAttributes
                                         embeddedViews:nil

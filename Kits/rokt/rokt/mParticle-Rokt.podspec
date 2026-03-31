@@ -13,6 +13,9 @@ Pod::Spec.new do |s|
     s.ios.deployment_target = "15.6"
     s.ios.source_files      = 'Sources/mParticle-Rokt/**/*.{h,m,mm}', 'Sources/mParticle-Rokt-Swift/**/*.swift'
     s.ios.resource_bundles  = { 'mParticle-Rokt-Privacy' => ['Sources/mParticle-Rokt/PrivacyInfo.xcprivacy'] }
-    s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'
+    # Align with monorepo mParticle-Apple-SDK.podspec (8.x). When using `pod :path`, CocoaPods
+    # resolves the local SDK; keep a loose constraint so `pod lib lint` and trunk releases stay valid.
+    s.ios.dependency 'mParticle-Apple-SDK', '>= 8.0'
+    s.ios.dependency 'RoktContracts', '~> 0.1'
     s.ios.dependency 'Rokt-Widget', '~> 5.0'
 end
