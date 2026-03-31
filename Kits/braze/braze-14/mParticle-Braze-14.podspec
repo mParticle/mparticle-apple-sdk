@@ -18,6 +18,5 @@ Pod::Spec.new do |s|
     s.resource_bundles  = { 'mParticle-Braze-14-Privacy' => ['Sources/mParticle-Braze/PrivacyInfo.xcprivacy'] }
     s.dependency 'mParticle-Apple-SDK', '~> 9.0'
     s.dependency 'BrazeKit', '~> 14.0'
-    s.dependency 'BrazeKitCompat', '~> 14.0'
     s.ios.dependency 'BrazeUI', '~> 14.0'
 end
