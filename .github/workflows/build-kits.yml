@@ -68,10 +68,14 @@ jobs:
           sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
 
           echo "Linting: ${{ matrix.kit.podspec }}"
-          pod lib lint "${{ matrix.kit.podspec }}" \
-            --allow-warnings \
-            --skip-import-validation \
-            --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}"
+          for attempt in 1 2 3; do
+            pod lib lint "${{ matrix.kit.podspec }}" \
+              --allow-warnings \
+              --skip-import-validation \
+              --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}" \
+              && break
+            [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 60s..." && sleep 60 || exit 1
+          done
 
   build-kits:
     name: Build ${{ matrix.kit.name }}
