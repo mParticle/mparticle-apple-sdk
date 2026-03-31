@@ -10,12 +10,11 @@ target 'mParticleExample' do
 
   pod 'mParticle-Apple-Media-SDK/mParticleMediaNoLocation', '~> 1.7.0'
 
-  # Rokt-Widget 5.x depends on RoktUXHelper. Pin from Git (podspec in repo) so CocoaPods does not need
-  # the CDN podspec for RoktUXHelper — helps when cdn.cocoapods.org returns HTTP2 errors.
-  # DcuiSchema stays on trunk (dcui-swift-schema is SPM-only; no podspec at repo root).
+  # Rokt-Widget pulls in RoktUXHelper (~> 0.8) transitively. This explicit line is only to resolve it
+  # from Git (tag) instead of CocoaPods trunk when CDN/trunk is unreliable — remove it if trunk works.
   pod 'RoktUXHelper', :git => 'https://github.com/ROKT/rokt-ux-helper-ios.git', :tag => '0.8.3'
 
-  # Rokt iOS SDK 5.x (matches Kits/rokt/rokt/Package.swift). Not published to CocoaPods trunk; use GitHub branch.
+  # Rokt iOS SDK 5.x (aligned with Kits/rokt/rokt/Package.swift). Use Git branch; not on CocoaPods trunk.
   pod 'Rokt-Widget', :git => 'https://github.com/ROKT/rokt-sdk-ios.git', :branch => 'workstation/5.0.0'
 
   # Local Rokt kit — uses the same local mParticle-Apple-SDK above (single resolved copy via :path).
