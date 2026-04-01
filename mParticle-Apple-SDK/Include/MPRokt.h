@@ -8,38 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-/**
- * Custom view class for embedding Rokt widgets in the UI.
- * Inherits from UIView and provides container functionality for Rokt placements.
- */
-@interface MPRoktEmbeddedView : UIView
-
-@end
-
-// An enum of the possible options for an MPRoktConfig colorMode
-typedef NS_ENUM(NSInteger, MPColorMode) {
-    MPColorModeLight = 0,
-    MPColorModeDark = 1,
-    MPColorModeSystem = 2
-};
-
-/**
- * A class for customizing the UI displayed by Rokt
- */
-@interface MPRoktConfig : NSObject
-/** The max duration for the cache */
-@property (nonatomic, copy, nullable) NSNumber *cacheDuration;
-/** The attributes you would like tied to the cache */
-@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *cacheAttributes;
-/** The color mode you would like Rokt to display in */
-@property (nonatomic) MPColorMode colorMode;
-
-@end
-
-/**
- * A class for handling Rokt events
- */
-@class MPRoktEvent;
+@class RoktEmbeddedView;
+@class RoktConfig;
+@class RoktEvent;
 
 /**
  * Main interface for interacting with Rokt functionality.
@@ -68,9 +39,9 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  */
 - (void)selectPlacements:(NSString *_Nonnull)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-           embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                  config:(MPRoktConfig * _Nullable)config
-                 onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
+           embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
+                  config:(RoktConfig * _Nullable)config
+                 onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
 
 /**
  * Used to report a successful conversion without displaying a placement
@@ -89,7 +60,7 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  * @param identifier The identifier of the placement to subscribe to
  * @param onEvent The block to execute when the event is triggered
  */
-- (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
+- (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
 
 /**
  * Used to subscribe to global Rokt events from all sources.
@@ -97,7 +68,7 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  *
  * @param onEvent The block to execute when the event is triggered
  */
-- (void)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent;
+- (void)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent;
 
 /**
  * Used to close Rokt overlay placements

@@ -10,6 +10,7 @@ import Testing
 import SwiftUI
 @testable import mParticle_Rokt
 import Rokt_Widget
+import RoktContracts
 import mParticle_Rokt_Swift
 
 // swiftlint:disable:next type_name
@@ -43,9 +44,7 @@ struct mParticle_Rokt_SwiftTests {
         let viewName = "test_view"
         let locationName = "test_location"
         let attributes: [String: String] = ["user_id": "12345", "sandbox": "true"]
-        let config = RoktConfig.Builder()
-            .colorMode(.light)
-            .build()
+        let config = RoktConfig(colorMode: .light)
         let onEvent: (RoktEvent) -> Void = { _ in
         }
 
@@ -332,9 +331,7 @@ struct mParticle_Rokt_SwiftTests {
             "ab_test_group": "variant_a",
             "sandbox": "false"
         ]
-        let config = RoktConfig.Builder()
-            .colorMode(.light)
-            .build()
+        let config = RoktConfig(colorMode: .light)
         var eventsReceived: [RoktEvent] = []
         let onEvent: (RoktEvent) -> Void = { event in
             eventsReceived.append(event)

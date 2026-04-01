@@ -1,11 +1,75 @@
 #import "ViewController.h"
 #import <mParticle_Apple_SDK/mParticle.h>
+@import RoktContracts;
 #import <mParticle_Apple_Media_SDK-Swift.h>
 #import <AdSupport/AdSupport.h>
 #import "AdSupport/ASIdentifierManager.h"
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
     #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #endif
+
+/// Reference / Swift example: `logRoktContractsExampleEvent` — logs RoktContracts events for debugging.
+static NSString *MPE_RoktExampleStringOrUnknown(NSString * _Nullable value) {
+    return value.length > 0 ? value : @"unknown";
+}
+
+static void MPE_LogRoktContractsExampleEvent(RoktEvent *event) {
+    if ([event isKindOfClass:[RoktInitComplete class]]) {
+        RoktInitComplete *e = (RoktInitComplete *)event;
+        NSLog(@"Rokt Init Complete - Success: %@", e.success ? @"YES" : @"NO");
+    } else if ([event isKindOfClass:[RoktShowLoadingIndicator class]]) {
+        NSLog(@"Rokt: Show Loading Indicator");
+    } else if ([event isKindOfClass:[RoktHideLoadingIndicator class]]) {
+        NSLog(@"Rokt: Hide Loading Indicator");
+    } else if ([event isKindOfClass:[RoktPlacementReady class]]) {
+        RoktPlacementReady *e = (RoktPlacementReady *)event;
+        NSLog(@"Rokt Placement Ready - ID: %@", MPE_RoktExampleStringOrUnknown(e.identifier));
+    } else if ([event isKindOfClass:[RoktPlacementInteractive class]]) {
+        RoktPlacementInteractive *e = (RoktPlacementInteractive *)event;
+        NSLog(@"Rokt Placement Interactive - ID: %@", MPE_RoktExampleStringOrUnknown(e.identifier));
+    } else if ([event isKindOfClass:[RoktOfferEngagement class]]) {
+        RoktOfferEngagement *e = (RoktOfferEngagement *)event;
+        NSLog(@"Rokt Offer Engagement - ID: %@", MPE_RoktExampleStringOrUnknown(e.identifier));
+    } else if ([event isKindOfClass:[RoktPositiveEngagement class]]) {
+        RoktPositiveEngagement *e = (RoktPositiveEngagement *)event;
+        NSLog(@"Rokt Positive Engagement - ID: %@", MPE_RoktExampleStringOrUnknown(e.identifier));
+    } else if ([event isKindOfClass:[RoktFirstPositiveEngagement class]]) {
+        RoktFirstPositiveEngagement *e = (RoktFirstPositiveEngagement *)event;
+        NSLog(@"Rokt First Positive Engagement - ID: %@", MPE_RoktExampleStringOrUnknown(e.identifier));
+    } else if ([event isKindOfClass:[RoktOpenUrl class]]) {
+        RoktOpenUrl *e = (RoktOpenUrl *)event;
+        NSLog(
+            @"Rokt Open URL - ID: %@, URL: %@",
+            MPE_RoktExampleStringOrUnknown(e.identifier),
+            e.url
+        );
+    } else if ([event isKindOfClass:[RoktPlacementClosed class]]) {
+        RoktPlacementClosed *e = (RoktPlacementClosed *)event;
+        NSLog(@"Rokt Placement Closed - ID: %@", MPE_RoktExampleStringOrUnknown(e.identifier));
+    } else if ([event isKindOfClass:[RoktPlacementCompleted class]]) {
+        RoktPlacementCompleted *e = (RoktPlacementCompleted *)event;
+        NSLog(@"Rokt Placement Completed - ID: %@", MPE_RoktExampleStringOrUnknown(e.identifier));
+    } else if ([event isKindOfClass:[RoktPlacementFailure class]]) {
+        RoktPlacementFailure *e = (RoktPlacementFailure *)event;
+        NSLog(@"Rokt Placement Failure - ID: %@", MPE_RoktExampleStringOrUnknown(e.identifier));
+    } else if ([event isKindOfClass:[RoktEmbeddedSizeChanged class]]) {
+        RoktEmbeddedSizeChanged *e = (RoktEmbeddedSizeChanged *)event;
+        NSLog(@"Rokt Embedded Size Changed - ID: %@, height: %@", e.identifier, @(e.updatedHeight));
+    } else if ([event isKindOfClass:[RoktCartItemInstantPurchase class]]) {
+        RoktCartItemInstantPurchase *e = (RoktCartItemInstantPurchase *)event;
+        NSLog(@"Rokt Cart Item Instant Purchase:");
+        NSLog(@"  - Placement ID: %@", e.identifier);
+        NSLog(@"  - Catalog Item ID: %@", e.catalogItemId);
+        NSLog(@"  - Cart Item ID: %@", e.cartItemId);
+        NSLog(@"  - Name: %@", MPE_RoktExampleStringOrUnknown(e.name));
+        NSLog(@"  - Currency: %@", e.currency);
+        NSLog(@"  - Unit Price: %@", e.unitPrice ?: @0);
+        NSLog(@"  - Total Price: %@", e.totalPrice ?: @0);
+        NSLog(@"  - Quantity: %@", e.quantity ?: @0);
+    } else {
+        NSLog(@"Rokt: Unknown event type - %@", NSStringFromClass([event class]));
+    }
+}
 
 
 @interface ViewController () <UITableViewDataSource, UITableViewDelegate>
@@ -16,7 +80,7 @@
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UITextField *emailField;
 @property (nonatomic, strong) UITextField *customerIDField;
-@property (nonatomic, strong) MPRoktEmbeddedView *roktView;
+@property (nonatomic, strong) RoktEmbeddedView *roktView;
 
 @end
 
@@ -58,7 +122,7 @@
     if (self.roktView) {
         self.roktView.frame = roktFrame;
     } else {
-        self.roktView = [[MPRoktEmbeddedView alloc] initWithFrame:roktFrame];
+        self.roktView = [[RoktEmbeddedView alloc] initWithFrame:roktFrame];
     }
     [self.view addSubview:_roktView];
     
@@ -254,13 +318,14 @@
                                                                @"mobile": @"(555)867-5309"
     };
 
-    MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
-    roktConfig.colorMode = MPColorModeDark;
+    RoktConfig *roktConfig = [[[[RoktConfigBuilder alloc] init] colorMode:RoktColorModeDark] build];
     [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout"
                                            attributes:customAttributes
                                         embeddedViews:nil
                                                config:roktConfig
-                                            callbacks:nil];
+                                              onEvent:^(RoktEvent *_Nonnull event) {
+        MPE_LogRoktContractsExampleEvent(event);
+    }];
 }
 
 - (void)selectEmbeddedPlacement {
@@ -271,27 +336,31 @@
                                                                @"sandbox": @"true",
                                                                @"mobile": @"(555)867-5309"
     };
-    
-    MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
-    callbacks.onLoad = ^{
-        // Optional callback for when the Rokt placement loads
-    };
-    callbacks.onUnLoad = ^{
-        // Optional callback for when the Rokt placement unloads
-    };
-    callbacks.onShouldShowLoadingIndicator = ^{
-        // Optional callback to show a loading indicator
-    };
-    callbacks.onShouldHideLoadingIndicator = ^{
-        // Optional callback to hide a loading indicator
-    };
-    callbacks.onEmbeddedSizeChange = ^(NSString *placement, CGFloat size) {
-        [self setupUI:size];
-    };
-    
-    NSDictionary *embeddedViews = @{@"Location1": self.roktView};
 
-    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS" attributes:customAttributes embeddedViews:embeddedViews config:nil callbacks:callbacks];
+    if (CGRectGetHeight(self.roktView.frame) < 1.0) {
+        [self setupUI:320];
+    }
+
+    NSDictionary *embeddedViews = @{@"Location1": self.roktView};
+    __weak typeof(self) weakSelf = self;
+
+    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS"
+                                             attributes:customAttributes
+                                          embeddedViews:embeddedViews
+                                                 config:nil
+                                                onEvent:^(RoktEvent *_Nonnull event) {
+        MPE_LogRoktContractsExampleEvent(event);
+        if ([event isKindOfClass:[RoktEmbeddedSizeChanged class]]) {
+            RoktEmbeddedSizeChanged *sizeEvent = (RoktEmbeddedSizeChanged *)event;
+            __strong typeof(weakSelf) strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [strongSelf setupUI:sizeEvent.updatedHeight];
+            });
+        }
+    }];
 }
 
 - (void)selectOverlayPlacementAutoClose {

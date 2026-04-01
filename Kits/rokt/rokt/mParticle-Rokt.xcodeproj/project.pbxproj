@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		AA0008012F50000000000001 /* MPKitRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0001032F50000000000003 /* MPKitRokt.m */; };
 		AA0008022F50000000000002 /* MPRoktLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F50000000000004 /* MPRoktLayout.swift */; };
+		AA00080A2F5000000000000A /* MPRokt+SwiftInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00010C2F5000000000000C /* MPRokt+SwiftInterop.swift */; };
 		AA0008032F50000000000003 /* MPKitRokt.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0001012F50000000000001 /* MPKitRokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA0008042F50000000000004 /* mParticle_Rokt.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0001022F50000000000002 /* mParticle_Rokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA0008052F50000000000005 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0001062F50000000000006 /* PrivacyInfo.xcprivacy */; };
@@ -21,6 +22,7 @@
 		AA0001022F50000000000002 /* mParticle_Rokt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle_Rokt.h; sourceTree = "<group>"; };
 		AA0001032F50000000000003 /* MPKitRokt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitRokt.m; sourceTree = "<group>"; };
 		AA0001042F50000000000004 /* MPRoktLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPRoktLayout.swift; sourceTree = "<group>"; };
+		AA00010C2F5000000000000C /* MPRokt+SwiftInterop.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MPRokt+SwiftInterop.swift"; sourceTree = "<group>"; };
 		AA0001052F50000000000005 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0001062F50000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA0001092F50000000000009 /* mParticle_Rokt.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Rokt.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -72,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0001042F50000000000004 /* MPRoktLayout.swift */,
+				AA00010C2F5000000000000C /* MPRokt+SwiftInterop.swift */,
 			);
 			path = "mParticle-Rokt-Swift";
 			sourceTree = "<group>";
@@ -183,6 +186,7 @@
 			files = (
 				AA0008012F50000000000001 /* MPKitRokt.m in Sources */,
 				AA0008022F50000000000002 /* MPRoktLayout.swift in Sources */,
+				AA00080A2F5000000000000A /* MPRokt+SwiftInterop.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

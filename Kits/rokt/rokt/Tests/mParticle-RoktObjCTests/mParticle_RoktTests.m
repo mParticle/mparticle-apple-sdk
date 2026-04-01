@@ -11,11 +11,11 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 - (MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
                                 attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                             embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                                    config:(MPRoktConfig * _Nullable)mpRoktConfig
-                                   onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent
+                             embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
+                                    config:(RoktConfig * _Nullable)config
+                                   onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
                               filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser
-                                   options:(MPRoktPlacementOptions * _Nullable)options;
+                                   options:(RoktPlacementOptions * _Nullable)options;
 - (MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 
 - (MPKitExecStatus *)purchaseFinalized:(NSString *)placementId
@@ -25,7 +25,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId;
 - (NSString *)getSessionId;
 
-- (NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable) confirmEmbeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews;
+- (NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)confirmEmbeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews;
 
 + (void)addIdentityAttributes:(NSMutableDictionary<NSString *, NSString *> * _Nullable)attributes filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 
@@ -34,8 +34,6 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 + (NSDictionary *)getKitConfig;
 
 + (NSNumber *)getRoktHashedEmailUserIdentityType;
-
-+ (RoktConfig *)convertMPRoktConfig:(MPRoktConfig *)mpRoktConfig;
 
 + (NSDictionary<NSString *, NSString *> *)transformValuesToString:(NSDictionary<NSString *, id> * _Nullable)originalDictionary;
 
@@ -101,13 +99,13 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 }
 
 - (void)testConfirmEmbeddedViews_ValidEmbeddedViews {
-    MPRoktEmbeddedView *view = [[MPRoktEmbeddedView alloc] init];
+    RoktEmbeddedView *view = [[RoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement1": view};
     
     NSDictionary *result = [self.kitInstance confirmEmbeddedViews:embeddedViews];
     
     XCTAssertEqual(result.count, 1);
-    XCTAssertTrue([result[@"placement1"] isKindOfClass:[RoktEmbeddedView class]]);
+    XCTAssertEqualObjects(result[@"placement1"], view);
 }
 
 - (void)testConfirmEmbeddedViews_InvalidEmbeddedViews {
@@ -151,7 +149,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 - (void)testExecuteWithIdentifier {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
-    MPRoktEmbeddedView *view = [[MPRoktEmbeddedView alloc] init];
+    RoktEmbeddedView *view = [[RoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSString *identifier = @"TestView";
     NSDictionary *embeddedViews = @{@"placement1": view};
     NSDictionary *attributes = @{@"attr1": @"value1", @"sandbox": @"false"};
@@ -185,7 +183,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 - (void)testExecuteSandboxDetection {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
-    MPRoktEmbeddedView *view = [[MPRoktEmbeddedView alloc] init];
+    RoktEmbeddedView *view = [[RoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSString *identifier = @"TestView";
     NSDictionary *embeddedViews = @{@"placement1": view};
     NSDictionary *attributes = @{@"attr1": @"value1"};  // No sandbox attribute provided
@@ -220,14 +218,14 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 - (void)testExecuteWithIdentifierWithOptions {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
-    MPRoktEmbeddedView *view = [[MPRoktEmbeddedView alloc] init];
+    RoktEmbeddedView *view = [[RoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSString *identifier = @"TestView";
     NSDictionary *embeddedViews = @{@"placement1": view};
     NSDictionary *attributes = @{@"attr1": @"value1", @"sandbox": @"false"};
     FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
 
     // Create placement options with a custom timestamp value
-    MPRoktPlacementOptions *options = [[MPRoktPlacementOptions alloc] initWithTimestamp:42];
+    RoktPlacementOptions *options = [[RoktPlacementOptions alloc] initWithTimestamp:42];
 
     // Expect Rokt selectPlacements call and verify placementOptions carries the jointSdkSelectPlacements value
     OCMExpect([mockRoktSDK selectPlacementsWithIdentifier:identifier
@@ -543,18 +541,6 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(passedAttributes[@"device_application_stamp"], @"Test DAS");
 }
 
-- (void)testConvertMPRoktConfig {
-    MPRoktConfig *mpConfig = [[MPRoktConfig alloc] init];
-    mpConfig.colorMode = MPColorModeDark;
-    mpConfig.cacheDuration = @(100);
-    mpConfig.cacheAttributes = @{@"test": @"tested"};
-    
-    // RoktConfig does not expose any of it's properties so we are only able to confirm that it was successfully initialized
-    RoktConfig *roktConfig = [MPKitRokt convertMPRoktConfig:mpConfig];
-    
-    XCTAssert(roktConfig);
-}
-
 - (void)runSetWrapperSdkTestWithProvidedMPWrapperType:(MPWrapperSdk)providedMPWrapperType expectedRoktFrameworkType:(RoktFrameworkType)expectedRoktFrameworkType {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
@@ -608,7 +594,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
     NSString *identifier = @"TestViewName";
     __block BOOL callbackCalled = NO;
-    __block MPRoktEvent *receivedEvent = nil;
+    __block RoktEvent *receivedEvent = nil;
 
     // Mock the Rokt SDK call and simulate triggering the callback with a mock event
     OCMStub([mockRoktSDK eventsWithIdentifier:identifier onEvent:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
@@ -616,17 +602,16 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
         void (^onEventCallback)(RoktEvent *) = nil;
         [invocation getArgument:&onEventCallback atIndex:3]; // Index 3 is the second parameter (onEvent)
 
-        // Create a dummy ShowLoadingIndicator for testing
-        id mockRoktEvent = [[RoktShowLoadingIndicator alloc] init];
+        RoktShowLoadingIndicator *roktEvent = [[RoktShowLoadingIndicator alloc] init];
 
         // Simulate the callback being called
         if (onEventCallback) {
-            onEventCallback(mockRoktEvent);
+            onEventCallback(roktEvent);
         }
     });
 
     // Execute the method under test
-    MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:^(MPRoktEvent * _Nonnull event) {
+    MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:^(RoktEvent * _Nonnull event) {
         callbackCalled = YES;
         receivedEvent = event;
     }];
@@ -639,19 +624,21 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
     XCTAssertEqualObjects(status.integrationId, @181);
 
-    // Verify the callback was called with the mapped event
+    // Verify the callback was called with the same RoktContracts event instance
     XCTAssertTrue(callbackCalled);
     XCTAssertNotNil(receivedEvent);
-    XCTAssertEqual([receivedEvent class], [MPRoktShowLoadingIndicator class]);
+    XCTAssertEqual([receivedEvent class], [RoktShowLoadingIndicator class]);
 
     [mockRoktSDK stopMocking];
 }
 
-- (void)testEvents_MappingReturnsNil {
+- (void)testEvents_PassesThroughConcreteEvent {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
     NSString *identifier = @"TestViewName";
     __block BOOL callbackCalled = NO;
+    __block RoktEvent *receivedEvent = nil;
+    __block id mockRoktEvent = nil;
 
     // Mock the Rokt SDK call and simulate triggering the callback with a mock event
     OCMStub([mockRoktSDK eventsWithIdentifier:identifier onEvent:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
@@ -659,29 +646,25 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
         void (^onEventCallback)(RoktEvent *) = nil;
         [invocation getArgument:&onEventCallback atIndex:3];
 
-        // Create a mock RoktEvent for testing
-        id mockRoktEvent = OCMClassMock([RoktEvent class]);
+        mockRoktEvent = OCMClassMock([RoktEvent class]);
 
-        // Simulate the callback being called
         if (onEventCallback) {
             onEventCallback(mockRoktEvent);
         }
     });
 
-    // Execute the method under test
-    MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:^(MPRoktEvent * _Nonnull event) {
+    MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:^(RoktEvent * _Nonnull event) {
         callbackCalled = YES;
+        receivedEvent = event;
     }];
 
     // Verify the Rokt SDK method was called
     OCMVerify([mockRoktSDK eventsWithIdentifier:identifier onEvent:[OCMArg any]]);
 
-    // Verify the return status
     XCTAssertNotNil(status);
     XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
-
-    // Verify the callback was NOT called since mapping returned nil
-    XCTAssertFalse(callbackCalled);
+    XCTAssertTrue(callbackCalled);
+    XCTAssertEqualObjects(receivedEvent, mockRoktEvent);
 
     [mockRoktSDK stopMocking];
 }
@@ -696,7 +679,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     OCMExpect([mockRoktSDK eventsWithIdentifier:@"" onEvent:[OCMArg any]]);
 
     // Execute the method under test
-    MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:^(MPRoktEvent * _Nonnull event) {
+    MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:^(RoktEvent * _Nonnull event) {
         callbackCalled = YES;
     }];
 
@@ -706,6 +689,22 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     // Verify the return status
     XCTAssertNotNil(status);
     XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testEvents_NilOnEventForwardedWithoutCrash {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    NSString *identifier = @"RoktLayout";
+
+    OCMExpect([mockRoktSDK eventsWithIdentifier:identifier onEvent:nil]);
+
+    MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:nil];
+
+    XCTAssertNotNil(status);
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockRoktSDK);
 
     [mockRoktSDK stopMocking];
 }

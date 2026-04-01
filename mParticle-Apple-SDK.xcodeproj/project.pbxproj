@@ -254,10 +254,6 @@
 		7231B83D2EB961F2001565E5 /* MParticleLTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */; };
 		7231B83F2EB9627D001565E5 /* MParticleErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */; };
 		7231B8452EB9630E001565E5 /* MParticleCommerceEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8442EB9630E001565E5 /* MParticleCommerceEventTests.swift */; };
-		AAAA00012F3D000100000001 /* MParticleAPIRemovalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00022F3D000100000002 /* MParticleAPIRemovalTests.swift */; };
-		AAAA00032F3D000100000003 /* MPRoktEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00042F3D000100000004 /* MPRoktEventTests.swift */; };
-		AAAA00052F3D000100000005 /* DeprecatedAPIRemovalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00062F3D000100000006 /* DeprecatedAPIRemovalTests.swift */; };
-		AAAA00072F3D000100000007 /* SwiftToObjCMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00082F3D000100000008 /* SwiftToObjCMigrationTests.swift */; };
 		7231B84D2EB963B3001565E5 /* MParticleKitBatchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */; };
 		7231B8552EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8542EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift */; };
 		7231B8582EB96598001565E5 /* MParticleRemoteNotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */; };
@@ -275,9 +271,12 @@
 		7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E0387802DB913D2003B7D5E /* MPRokt.m */; };
 		7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		7E15B2072D94617900C1FF3F /* MPRoktEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2082D94617900C1FF3F /* MPRoktEventTests.m */; };
+		7E40BF652F7C22EA005264DD /* RoktContracts in Frameworks */ = {isa = PBXBuildFile; productRef = 7E40BF642F7C22EA005264DD /* RoktContracts */; };
 		7E573D2A2ECB65D90087185D /* MParticleSceneDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */; };
-		B3D778622E02F55F00D887A4 /* MPRoktEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.m */; };
-		B3D778632E02F55F00D887A5 /* MPRoktEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = B31360F82E012760000DFBC9 /* MPRoktEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AAAA00012F3D000100000001 /* MParticleAPIRemovalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00022F3D000100000002 /* MParticleAPIRemovalTests.swift */; };
+		AAAA00032F3D000100000003 /* MPRoktEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00042F3D000100000004 /* MPRoktEventTests.swift */; };
+		AAAA00052F3D000100000005 /* DeprecatedAPIRemovalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00062F3D000100000006 /* DeprecatedAPIRemovalTests.swift */; };
+		AAAA00072F3D000100000007 /* SwiftToObjCMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA00082F3D000100000008 /* SwiftToObjCMigrationTests.swift */; };
 		D33C8B342B8510C20012EDFD /* MPAudience.h in Headers */ = {isa = PBXBuildFile; fileRef = D33C8B312B8510C20012EDFD /* MPAudience.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */ = {isa = PBXBuildFile; fileRef = D33C8B322B8510C20012EDFD /* MPAudience.m */; };
 		D34286122D419CB800FEC2C8 /* MPUploadSettings.h in Headers */ = {isa = PBXBuildFile; fileRef = D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -585,10 +584,6 @@
 		7231B83B2EB961F2001565E5 /* MParticleLTVTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleLTVTests.swift; sourceTree = "<group>"; };
 		7231B83E2EB9627D001565E5 /* MParticleErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleErrorTests.swift; sourceTree = "<group>"; };
 		7231B8442EB9630E001565E5 /* MParticleCommerceEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleCommerceEventTests.swift; sourceTree = "<group>"; };
-		AAAA00022F3D000100000002 /* MParticleAPIRemovalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleAPIRemovalTests.swift; sourceTree = "<group>"; };
-		AAAA00042F3D000100000004 /* MPRoktEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPRoktEventTests.swift; sourceTree = "<group>"; };
-		AAAA00062F3D000100000006 /* DeprecatedAPIRemovalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeprecatedAPIRemovalTests.swift; sourceTree = "<group>"; };
-		AAAA00082F3D000100000008 /* SwiftToObjCMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftToObjCMigrationTests.swift; sourceTree = "<group>"; };
 		7231B84B2EB963B3001565E5 /* MParticleKitBatchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleKitBatchTests.swift; sourceTree = "<group>"; };
 		7231B8542EB9652C001565E5 /* MParticlePushNotificationTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticlePushNotificationTokenTests.swift; sourceTree = "<group>"; };
 		7231B8572EB96598001565E5 /* MParticleRemoteNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleRemoteNotificationTests.swift; sourceTree = "<group>"; };
@@ -607,8 +602,10 @@
 		7E15B2052D94617900C1FF3E /* MPRoktTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktTests.m; sourceTree = "<group>"; };
 		7E15B2082D94617900C1FF3F /* MPRoktEventTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktEventTests.m; sourceTree = "<group>"; };
 		7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleSceneDelegateTests.swift; sourceTree = "<group>"; };
-		B31360F72E012760000DFBC9 /* MPRoktEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktEvent.m; sourceTree = "<group>"; };
-		B31360F82E012760000DFBC9 /* MPRoktEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPRoktEvent.h; sourceTree = "<group>"; };
+		AAAA00022F3D000100000002 /* MParticleAPIRemovalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleAPIRemovalTests.swift; sourceTree = "<group>"; };
+		AAAA00042F3D000100000004 /* MPRoktEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPRoktEventTests.swift; sourceTree = "<group>"; };
+		AAAA00062F3D000100000006 /* DeprecatedAPIRemovalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeprecatedAPIRemovalTests.swift; sourceTree = "<group>"; };
+		AAAA00082F3D000100000008 /* SwiftToObjCMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftToObjCMigrationTests.swift; sourceTree = "<group>"; };
 		D33C8B312B8510C20012EDFD /* MPAudience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAudience.h; sourceTree = "<group>"; };
 		D33C8B322B8510C20012EDFD /* MPAudience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAudience.m; sourceTree = "<group>"; };
 		D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUploadSettings.h; sourceTree = "<group>"; };
@@ -620,14 +617,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-	35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-		isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-		membershipExceptions = (
-			Test/Identity/MPUserIdentityChangeTests.m,
-			Test/Utils/HasherTests.m,
-			Test/Utils/MParticleWebViewTests.m,
-			Test/Utils/MPDateFormatterTests.swift,
-			Test/Utils/MPDeviceTests.swift,
+		35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Utils/HasherTests.m,
+				Test/Utils/MParticleWebViewTests.m,
+				Test/Utils/MPDateFormatterTests.swift,
+				Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPUserAttributeChangeTests.m,
@@ -639,14 +636,14 @@
 			);
 			target = 35DBFDC72F2103FD00E872F5 /* mParticle-Apple-SDK-Swift */;
 		};
-	35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-		isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-		membershipExceptions = (
-			Test/Identity/MPUserIdentityChangeTests.m,
-			Test/Utils/HasherTests.m,
-			Test/Utils/MParticleWebViewTests.m,
-			Test/Utils/MPDateFormatterTests.swift,
-			Test/Utils/MPDeviceTests.swift,
+		35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Utils/HasherTests.m,
+				Test/Utils/MParticleWebViewTests.m,
+				Test/Utils/MPDateFormatterTests.swift,
+				Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPUserAttributeChangeTests.m,
@@ -694,6 +691,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7E40BF652F7C22EA005264DD /* RoktContracts in Frameworks */,
 				35DBFDEC2F2105F600E872F5 /* mParticle_Apple_SDK_Swift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -767,7 +765,6 @@
 				7E0387802DB913D2003B7D5E /* MPRokt.m */,
 				53A79AF429CDFB1F00E7489F /* MPBackendController.m */,
 				53A79AD029CDFB1F00E7489F /* MPEnums.m */,
-				B31360F72E012760000DFBC9 /* MPRoktEvent.m */,
 				53A79ACF29CDFB1F00E7489F /* MPIConstants.h */,
 				53A79B6429CDFB1F00E7489F /* MPIConstants.m */,
 				53A79B0329CDFB1F00E7489F /* MPStateMachine.m */,
@@ -1049,7 +1046,6 @@
 				53A79AA329CDFB1E00E7489F /* MPBackendController.h */,
 				53A79ABB29CDFB1E00E7489F /* MPPersistenceController.h */,
 				7E03877F2DB913D2003B7D5E /* MPRokt.h */,
-				B31360F82E012760000DFBC9 /* MPRoktEvent.h */,
 				35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */,
 				7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */,
 				D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */,
@@ -1258,7 +1254,6 @@
 				359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */,
 				53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */,
 				7E0387812DB913D2003B7D5E /* MPRokt.h in Headers */,
-				B3D778632E02F55F00D887A5 /* MPRoktEvent.h in Headers */,
 				351308432E6B28F5002A3AD6 /* Executor.h in Headers */,
 				35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */,
 				35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */,
@@ -1398,6 +1393,9 @@
 				35DBFDEF2F2105F600E872F5 /* PBXTargetDependency */,
 			);
 			name = "mParticle-Apple-SDK";
+			packageProductDependencies = (
+				7E40BF642F7C22EA005264DD /* RoktContracts */,
+			);
 			productName = "mParticle-Apple-SDK";
 			productReference = 53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */;
 			productType = "com.apple.product-type.framework";
@@ -1430,6 +1428,9 @@
 				Base,
 			);
 			mainGroup = 53A79A6F29CCCD6400E7489F;
+			packageReferences = (
+				7E40BF632F7C22EA005264DD /* XCRemoteSwiftPackageReference "rokt-contracts-apple" */,
+			);
 			productRefGroup = 53A79A7A29CCCD6400E7489F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1662,7 +1663,6 @@
 				35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */,
 				D34286132D419CB800FEC2C8 /* MPUploadSettings.m in Sources */,
 				53A79DAD29CE23F700E7489F /* MPAliasResponse.m in Sources */,
-				B3D778622E02F55F00D887A4 /* MPRoktEvent.m in Sources */,
 				53A79DAE29CE23F700E7489F /* MPKitFilter.m in Sources */,
 				72E8785C2F2AB29A00F355F2 /* MPSideloadedKit.m in Sources */,
 				53A79DAF29CE23F700E7489F /* MPURLConnectionAssociate.m in Sources */,
@@ -2163,6 +2163,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7E40BF632F7C22EA005264DD /* XCRemoteSwiftPackageReference "rokt-contracts-apple" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ROKT/rokt-contracts-apple.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7E40BF642F7C22EA005264DD /* RoktContracts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7E40BF632F7C22EA005264DD /* XCRemoteSwiftPackageReference "rokt-contracts-apple" */;
+			productName = RoktContracts;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 53A79A7029CCCD6400E7489F /* Project object */;
 }
