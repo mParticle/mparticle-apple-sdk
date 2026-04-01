@@ -1,11 +1,11 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
+@import RoktContracts;
 #import "MParticle.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
-@import RoktContracts;
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -106,7 +106,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -168,7 +168,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -216,7 +216,7 @@ static NSNumber * const kTestRoktKitId = @181;
     // Set up expectations BEFORE calling selectPlacements
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     NSDictionary *finalAttributes = @{@"sandbox": @"true"};
 
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
@@ -266,7 +266,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -304,7 +304,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMReject([self.mockContainer forwardSDKCall:roktSelector
                                       event:[OCMArg any]
                                  parameters:[OCMArg any]
@@ -864,6 +864,171 @@ static NSNumber * const kTestRoktKitId = @181;
     XCTAssertTrue(((RoktInitComplete *)receivedEvent).success, @"InitComplete event should indicate success");
     
     // Verify
+    OCMVerifyAll(self.mockContainer);
+}
+
+#pragma mark - registerPaymentExtension & selectShoppableAds
+
+- (void)testRegisterPaymentExtensionForwardsToKitContainer {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wat-protocol"
+    id paymentExtension = OCMProtocolMock(@protocol(PaymentExtension));
+#pragma clang diagnostic pop
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for message queue forward"];
+    SEL roktSelector = @selector(registerPaymentExtension:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], paymentExtension);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt registerPaymentExtension:paymentExtension];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsShortForwardsToKitWithValidParameters {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [[[self.identityMock stub] andReturn:currentUser] currentUser];
+
+    self.mockApiResult = OCMClassMock([MPIdentityApiResult class]);
+    OCMStub([self.mockApiResult user]).andReturn(currentUser);
+    [[[self.identityMock stub] andDo:^(NSInvocation *invocation) {
+        void (^completion)(MPIdentityApiResult * _Nullable, NSError * _Nullable);
+        [invocation getArgument:&completion atIndex:3];
+        completion(self.mockApiResult, nil);
+    }] identify:[OCMArg any] completion:[OCMArg any]];
+
+    NSString *identifier = @"shoppableView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for shoppable forward"];
+    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], identifier);
+        XCTAssertEqualObjects(params[1], attributes);
+        XCTAssertNil(params[2]);
+        XCTAssertNil(params[3]);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt selectShoppableAds:identifier attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsFullForwardsToKitWithConfigAndCallback {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    NSString *identifier = @"shoppableView";
+    NSDictionary *attributes = @{@"key": @"value"};
+    NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
+
+    void (^exampleOnEvent)(RoktEvent * _Nonnull) = ^(RoktEvent * _Nonnull event) {
+    };
+
+    RoktConfigBuilder *builder = [[RoktConfigBuilder alloc] init];
+    [builder colorMode:RoktColorModeDark];
+    RoktConfig *roktConfig = [builder build];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for shoppable forward"];
+    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], identifier);
+        XCTAssertEqualObjects(params[1], finalAttributes);
+        XCTAssertEqualObjects(params[2], roktConfig);
+        XCTAssertEqualObjects(params[3], exampleOnEvent);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt selectShoppableAds:identifier
+                       attributes:attributes
+                           config:roktConfig
+                          onEvent:exampleOnEvent];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsWithNilMappingDoesNotForward {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+    OCMReject([self.mockContainer forwardSDKCall:roktSelector
+                                           event:[OCMArg any]
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:[OCMArg any]]);
+
+    [self.rokt selectShoppableAds:@"shoppableView" attributes:@{@"email": @"a@b.com"}];
+
+    OCMVerifyAll((id)self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsInvokesConfirmUser {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    NSString *identifier = @"shoppableView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"confirmUser called"];
+    OCMExpect([self.mockRokt confirmUser:attributes user:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt selectShoppableAds:identifier attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
