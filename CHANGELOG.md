@@ -16,6 +16,12 @@ All notable changes to the mParticle Apple SDK (core and integration kits) are d
 
 ---
 
+# [8.44.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.3...v8.44.4) (2026-03-30)
+
+### Bug Fixes
+
+- fix: Rokt Callback should be Called on Main (#683) ([21bd4c1b](https://github.com/mParticle/mparticle-apple-sdk/commit/21bd4c1b8d554ed77ded8d279dc43f2ac117421c))
+
 # [8.44.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.2...v8.44.3) (2026-03-23)
 
 ### Bug Fixes

@@ -44,7 +44,7 @@ struct mParticle_Rokt_SwiftTests {
         let viewName = "test_view"
         let locationName = "test_location"
         let attributes: [String: String] = ["user_id": "12345", "sandbox": "true"]
-        let config = RoktConfig(colorMode: .light)
+        let config = RoktConfig.Builder().colorMode(.light).build()
         let onEvent: (RoktEvent) -> Void = { _ in
         }
 
@@ -331,7 +331,7 @@ struct mParticle_Rokt_SwiftTests {
             "ab_test_group": "variant_a",
             "sandbox": "false"
         ]
-        let config = RoktConfig(colorMode: .light)
+        let config = RoktConfig.Builder().colorMode(.light).build()
         var eventsReceived: [RoktEvent] = []
         let onEvent: (RoktEvent) -> Void = { event in
             eventsReceived.append(event)
