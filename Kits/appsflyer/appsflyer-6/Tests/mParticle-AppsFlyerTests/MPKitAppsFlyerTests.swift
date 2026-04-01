@@ -151,6 +151,121 @@ final class MPKitAppsFlyerTests: XCTestCase {
         XCTAssertEqual(mock.setCustomerUserIDCallCount, 0)
     }
 
+    // MARK: - updateCustomerUserIDIfNeededForUser (via identity callbacks)
+
+    func test_onIdentifyComplete_mpidMode_setsCustomerUserID() {
+        kit.configuration = ["userIdentificationType": "MPID"]
+        kit.providerKitInstance = mock
+
+        let user = FilteredMParticleUserMock(userId: 12345)
+        let request = FilteredMPIdentityApiRequest()
+
+        _ = kit.onIdentifyComplete(user, request: request)
+
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 1)
+        XCTAssertEqual(mock.lastCustomerUserID, "12345")
+    }
+
+    func test_onIdentifyComplete_customerIdMode_withCustomerId_setsCustomerUserID() {
+        kit.configuration = ["userIdentificationType": "CustomerId"]
+        kit.providerKitInstance = mock
+
+        let user = FilteredMParticleUserMock(
+            userId: 99,
+            userIdentities: [NSNumber(value: MPUserIdentity.customerId.rawValue): "cust-abc"]
+        )
+        let request = FilteredMPIdentityApiRequest()
+
+        _ = kit.onIdentifyComplete(user, request: request)
+
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 1)
+        XCTAssertEqual(mock.lastCustomerUserID, "cust-abc")
+    }
+
+    func test_onLogoutComplete_customerIdMode_nilCustomerId_doesNotSetCustomerUserID() {
+        kit.configuration = ["userIdentificationType": "CustomerId"]
+        kit.providerKitInstance = mock
+
+        let user = FilteredMParticleUserMock(userId: 99, userIdentities: [:])
+        let request = FilteredMPIdentityApiRequest()
+
+        _ = kit.onLogoutComplete(user, request: request)
+
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 0)
+        XCTAssertNil(mock.lastCustomerUserID)
+    }
+
+    func test_onLogoutComplete_customerIdMode_emptyCustomerId_doesNotSetCustomerUserID() {
+        kit.configuration = ["userIdentificationType": "CustomerId"]
+        kit.providerKitInstance = mock
+
+        let user = FilteredMParticleUserMock(
+            userId: 99,
+            userIdentities: [NSNumber(value: MPUserIdentity.customerId.rawValue): ""]
+        )
+        let request = FilteredMPIdentityApiRequest()
+
+        _ = kit.onLogoutComplete(user, request: request)
+
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 0)
+        XCTAssertNil(mock.lastCustomerUserID)
+    }
+
+    func test_onLogoutComplete_mpidMode_setsCustomerUserID() {
+        kit.configuration = ["userIdentificationType": "MPID"]
+        kit.providerKitInstance = mock
+
+        let user = FilteredMParticleUserMock(userId: 77777)
+        let request = FilteredMPIdentityApiRequest()
+
+        _ = kit.onLogoutComplete(user, request: request)
+
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 1)
+        XCTAssertEqual(mock.lastCustomerUserID, "77777")
+    }
+
+    func test_onLoginComplete_customerIdMode_withCustomerId_setsCustomerUserID() {
+        kit.configuration = ["userIdentificationType": "CustomerId"]
+        kit.providerKitInstance = mock
+
+        let user = FilteredMParticleUserMock(
+            userId: 42,
+            userIdentities: [NSNumber(value: MPUserIdentity.customerId.rawValue): "new-user-123"]
+        )
+        let request = FilteredMPIdentityApiRequest()
+
+        _ = kit.onLoginComplete(user, request: request)
+
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 1)
+        XCTAssertEqual(mock.lastCustomerUserID, "new-user-123")
+    }
+
+    func test_onIdentifyComplete_legacyMode_doesNotSetCustomerUserID() {
+        kit.configuration = [:]
+        kit.providerKitInstance = mock
+
+        let user = FilteredMParticleUserMock(userId: 12345)
+        let request = FilteredMPIdentityApiRequest()
+
+        _ = kit.onIdentifyComplete(user, request: request)
+
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 0)
+        XCTAssertNil(mock.lastCustomerUserID)
+    }
+
+    func test_onModifyComplete_mpidMode_setsCustomerUserID() {
+        kit.configuration = ["userIdentificationType": "MPID"]
+        kit.providerKitInstance = mock
+
+        let user = FilteredMParticleUserMock(userId: 55555)
+        let request = FilteredMPIdentityApiRequest()
+
+        _ = kit.onModifyComplete(user, request: request)
+
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 1)
+        XCTAssertEqual(mock.lastCustomerUserID, "55555")
+    }
+
     // MARK: - resolvedConsentForMappingKey
 
     func test_resolvedConsentForMappingKey_withGDPRMapping_returnsTrue() {
