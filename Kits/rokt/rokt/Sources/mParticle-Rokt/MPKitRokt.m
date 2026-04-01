@@ -486,10 +486,8 @@ static __weak MPKitRokt *roktKit = nil;
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeFail];
 }
 
-- (MPKitExecStatus *)events:(NSString *)identifier onEvent:(void (^)(RoktEvent * _Nonnull))onEvent {
-    [Rokt eventsWithIdentifier:identifier onEvent:^(RoktEvent * _Nonnull event) {
-        onEvent(event);
-    }];
+- (MPKitExecStatus *)events:(NSString *)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
+    [Rokt eventsWithIdentifier:identifier onEvent:onEvent];
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 

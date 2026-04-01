@@ -693,6 +693,22 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     [mockRoktSDK stopMocking];
 }
 
+- (void)testEvents_NilOnEventForwardedWithoutCrash {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    NSString *identifier = @"RoktLayout";
+
+    OCMExpect([mockRoktSDK eventsWithIdentifier:identifier onEvent:nil]);
+
+    MPKitExecStatus *status = [self.kitInstance events:identifier onEvent:nil];
+
+    XCTAssertNotNil(status);
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockRoktSDK);
+
+    [mockRoktSDK stopMocking];
+}
+
 - (void)testHandleHashedEmailOtherOverride {
     NSMutableDictionary<NSString *, NSString *> *passedAttributes = [[NSMutableDictionary alloc] init];
     [passedAttributes setObject:@"foo@gmail.com" forKey:@"email"];
