@@ -626,7 +626,9 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 - (void)updateCustomerUserIDIfNeededForUser:(FilteredMParticleUser *)user {
     if ([self isUserIdentificationMPID] || [self isUserIdentificationCustomerId]) {
         NSString *customerId = [self customerIDForAppsFlyer:user];
-        [appsFlyerTracker setCustomerUserID:customerId];
+        if (customerId.length) {
+            [appsFlyerTracker setCustomerUserID:customerId];
+        }
     }
 }
 
