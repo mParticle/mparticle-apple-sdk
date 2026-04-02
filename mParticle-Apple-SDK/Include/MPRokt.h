@@ -11,6 +11,7 @@
 @class RoktEmbeddedView;
 @class RoktConfig;
 @class RoktEvent;
+@protocol PaymentExtension;
 
 /**
  * Main interface for interacting with Rokt functionality.
@@ -92,5 +93,41 @@
  * @return The session id or nil if no session is present.
  */
 - (NSString * _Nullable)getSessionId;
+
+/**
+ * Registers a payment extension for Shoppable Ads.
+ * The payment extension handles payment processing (e.g., Apple Pay via Stripe).
+ *
+ * For the mParticle path, the Stripe publishable key is automatically provided
+ * from the mParticle dashboard configuration. The partner only needs to provide
+ * the payment extension with platform-specific config (e.g., Apple Pay merchantId).
+ *
+ * @param paymentExtension An object conforming to the PaymentExtension protocol (from RoktContracts)
+ */
+- (void)registerPaymentExtension:(id<PaymentExtension> _Nonnull)paymentExtension;
+
+/**
+ * Displays a Shoppable Ads overlay placement.
+ * Requires a payment extension to be registered first via registerPaymentExtension:.
+ *
+ * @param identifier The view name / placement identifier
+ * @param attributes User attributes for targeting
+ */
+- (void)selectShoppableAds:(NSString * _Nonnull)identifier
+                attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
+
+/**
+ * Displays a Shoppable Ads overlay placement with configuration and callbacks.
+ *
+ * @param identifier The view name / placement identifier
+ * @param attributes User attributes for targeting
+ * @param config Optional display configuration (color mode, caching)
+ * @param onEvent Optional callback block to handle Rokt events
+ */
+- (void)selectShoppableAds:(NSString * _Nonnull)identifier
+                attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                    config:(RoktConfig * _Nullable)config
+                   onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
+
 
 @end

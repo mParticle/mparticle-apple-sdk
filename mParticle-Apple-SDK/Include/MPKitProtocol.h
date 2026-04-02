@@ -11,6 +11,7 @@
 @class RoktConfig;
 @class RoktEvent;
 @class RoktPlacementOptions;
+@protocol PaymentExtension;
 
 @class MPCommerceEvent;
 @class MPBaseEvent;
@@ -132,14 +133,7 @@
 - (nonnull NSArray<MPForwardRecord *> *)logBatch:(nonnull NSDictionary *)batch;
 
 #pragma mark First Party Kits
-- (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
-                                        attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                                     embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
-                                            config:(RoktConfig * _Nullable)config
-                                           onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
-                                      filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
-
-- (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
+- (nonnull MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
                                         attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                                      embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
                                             config:(RoktConfig * _Nullable)config
@@ -153,6 +147,12 @@
                                        success:(nonnull NSNumber *)success;
 - (nonnull MPKitExecStatus *)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
 - (nonnull MPKitExecStatus *)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent;
+- (nonnull MPKitExecStatus *)registerPaymentExtension:(id<PaymentExtension> _Nonnull)paymentExtension;
+- (nonnull MPKitExecStatus *)selectShoppableAdsWithIdentifier:(nonnull NSString *)identifier
+                                                   attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                                                       config:(RoktConfig * _Nullable)config
+                                                      onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
+                                                 filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 
 @end
 

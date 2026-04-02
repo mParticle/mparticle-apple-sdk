@@ -2344,29 +2344,38 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                     return;
                 }
                 execStatus = [kitRegister.wrapperInstance logBaseEvent:kitFilter.forwardEvent];
-            } else if (selector == @selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:)) {
+            } else if (selector == @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:)) {
                 if (kitFilter.shouldFilter) {
-                    MPILogDebug(@"executeWithIdentifier filtered out for kit: %@ - shouldFilter: YES", kitRegister.name);
+                    MPILogDebug(@"selectPlacementsWithIdentifier filtered out for kit: %@ - shouldFilter: YES", kitRegister.name);
                     return;
                 }
                 MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-                MPILogVerbose(@"executeWithIdentifier - kit: %@, currentUser: %@", kitRegister.name, currentUser ? currentUser.userId : @"nil");
+                MPILogVerbose(@"selectPlacementsWithIdentifier - kit: %@, currentUser: %@", kitRegister.name, currentUser ? currentUser.userId : @"nil");
                 FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser kitConfiguration:self.kitConfigurations[kitRegister.code]];
-                // Try the new method with options first; fall back to the legacy method for older kits
-                if ([kitRegister.wrapperInstance respondsToSelector:@selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:)]) {
-                    execStatus = [kitRegister.wrapperInstance executeWithIdentifier:parameters[0]
+
+                if ([kitRegister.wrapperInstance respondsToSelector:@selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:)]) {
+                    execStatus = [kitRegister.wrapperInstance selectPlacementsWithIdentifier:parameters[0]
                                                                          attributes:parameters[1]
                                                                       embeddedViews:parameters[2]
                                                                              config:parameters[3]
                                                                             onEvent:parameters[4]
                                                                        filteredUser:filteredUser
                                                                             options:parameters[5]];
-                } else if ([kitRegister.wrapperInstance respondsToSelector:@selector(executeWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:)]) {
-                    execStatus = [kitRegister.wrapperInstance executeWithIdentifier:parameters[0]
+                }
+            } else if (selector == @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:)) {
+                if (kitFilter.shouldFilter) {
+                    MPILogDebug(@"selectShoppableAdsWithIdentifier filtered out for kit: %@ - shouldFilter: YES", kitRegister.name);
+                    return;
+                }
+                MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+                MPILogVerbose(@"selectShoppableAdsWithIdentifier - kit: %@, currentUser: %@", kitRegister.name, currentUser ? currentUser.userId : @"nil");
+                FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser kitConfiguration:self.kitConfigurations[kitRegister.code]];
+
+                if ([kitRegister.wrapperInstance respondsToSelector:@selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:)]) {
+                    execStatus = [kitRegister.wrapperInstance selectShoppableAdsWithIdentifier:parameters[0]
                                                                          attributes:parameters[1]
-                                                                      embeddedViews:parameters[2]
-                                                                             config:parameters[3]
-                                                                            onEvent:parameters[4]
+                                                                             config:parameters[2]
+                                                                            onEvent:parameters[3]
                                                                        filteredUser:filteredUser];
                 }
             } else if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
