@@ -2,6 +2,7 @@
 #import <OCMock/OCMock.h>
 @import RoktContracts;
 #import "MParticle.h"
+#import "MParticleUser.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
@@ -29,6 +30,9 @@ static NSNumber * const kTestRoktKitId = @181;
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
 - (NSNumber *)getRoktHashedEmailUserIdentityType;
 - (void)confirmUser:(NSDictionary<NSString *, NSString *> *)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
+- (NSMutableDictionary<NSString *, NSString *> *)mapPlacementAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
+                                                             attributeMap:(NSArray<NSDictionary<NSString *, NSString *> *> *)attributeMap
+                                                                  forUser:(MParticleUser * _Nullable)user;
 @end
 
 @interface MPRokt (Testing)
@@ -1030,6 +1034,49 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
     OCMVerifyAll(self.mockContainer);
+}
+
+#pragma mark - mapPlacementAttributes
+
+- (void)testMapPlacementAttributesRemapsKeysPerDashboardMapping {
+    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = @[
+        @{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"},
+        @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}
+    ];
+    NSDictionary *attributes = @{@"f.name": @"Brandon", @"zip": @"12345", @"unmapped": @"keep"};
+
+    NSMutableDictionary *result = [self.rokt mapPlacementAttributes:attributes attributeMap:attributeMap forUser:nil];
+
+    XCTAssertEqualObjects(result[@"firstname"], @"Brandon");
+    XCTAssertEqualObjects(result[@"billingzipcode"], @"12345");
+    XCTAssertEqualObjects(result[@"unmapped"], @"keep");
+    XCTAssertNil(result[@"f.name"]);
+    XCTAssertNil(result[@"zip"]);
+}
+
+- (void)testMapPlacementAttributesNilAttributesReturnsEmptyMutableDictionary {
+    NSMutableDictionary *result = [self.rokt mapPlacementAttributes:nil attributeMap:@[] forUser:nil];
+
+    XCTAssertNotNil(result);
+    XCTAssertEqual(result.count, 0U);
+    XCTAssertTrue([result isKindOfClass:[NSMutableDictionary class]]);
+}
+
+- (void)testMapPlacementAttributesDoesNotSetSandboxOnUser {
+    MParticleUser *mockUser = OCMClassMock([MParticleUser class]);
+    __block NSMutableArray<NSString *> *keysSet = [NSMutableArray array];
+    OCMStub([(MParticleUser *)mockUser setUserAttribute:[OCMArg any] value:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
+        NSString *key;
+        [invocation getArgument:&key atIndex:2];
+        [keysSet addObject:key];
+    });
+
+    NSDictionary *attributes = @{@"email": @"a@b.com", @"sandbox": @"true", @"name": @"Pat"};
+    [self.rokt mapPlacementAttributes:attributes attributeMap:@[] forUser:mockUser];
+
+    XCTAssertTrue([keysSet containsObject:@"email"]);
+    XCTAssertTrue([keysSet containsObject:@"name"]);
+    XCTAssertFalse([keysSet containsObject:@"sandbox"]);
 }
 
 #pragma mark - setSessionId Tests

@@ -88,22 +88,10 @@ static const NSInteger kMPRoktKitId = 181;
 
         // If attributeMap is nil the kit hasn't been initialized
         if (attributeMap) {
-            NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
-            for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
-                NSString *mapFrom = map[kMPAttributeMappingSourceKey];
-                NSString *mapTo = map[kMPAttributeMappingDestinationKey];
-                if (mappedAttributes[mapFrom]) {
-                    NSString * value = mappedAttributes[mapFrom];
-                    [mappedAttributes removeObjectForKey:mapFrom];
-                    mappedAttributes[mapTo] = value;
-                }
-            }
-            for (NSString *key in mappedAttributes) {
-                if (![key isEqual:kMPRoktAttributeKeySandbox]) {
-                    [resolvedUser setUserAttribute:key value:mappedAttributes[key]];
-                }
-            }
-            
+            NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
+                                                                    attributeMap:attributeMap
+                                                                         forUser:resolvedUser];
+
             dispatch_async([MParticle messageQueue], ^{
                 MPILogDebug(@"MPRokt forwarding to kit - identifier: %@, mappedAttributes count: %lu",
                             identifier, (unsigned long)mappedAttributes.count);
@@ -346,22 +334,10 @@ static const NSInteger kMPRoktKitId = 181;
 
         // If attributeMap is nil the kit hasn't been initialized
         if (attributeMap) {
-            NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
-            for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
-                NSString *mapFrom = map[kMPAttributeMappingSourceKey];
-                NSString *mapTo = map[kMPAttributeMappingDestinationKey];
-                if (mappedAttributes[mapFrom]) {
-                    NSString * value = mappedAttributes[mapFrom];
-                    [mappedAttributes removeObjectForKey:mapFrom];
-                    mappedAttributes[mapTo] = value;
-                }
-            }
-            for (NSString *key in mappedAttributes) {
-                if (![key isEqual:kMPRoktAttributeKeySandbox]) {
-                    [resolvedUser setUserAttribute:key value:mappedAttributes[key]];
-                }
-            }
-            
+            NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
+                                                                    attributeMap:attributeMap
+                                                                         forUser:resolvedUser];
+
             dispatch_async([MParticle messageQueue], ^{
                 MPILogDebug(@"MPRokt forwarding selectShoppableAds to kit - identifier: %@, mappedAttributes count: %lu",
                             identifier, (unsigned long)mappedAttributes.count);
@@ -387,6 +363,34 @@ static const NSInteger kMPRoktKitId = 181;
 }
 
 #pragma mark - Private Helper Methods
+
+/// Applies dashboard placement attribute key mapping, then sets each non-sandbox key on the user.
+/// @return Mutable dictionary after remapping (empty when \p attributes is nil).
+- (NSMutableDictionary<NSString *, NSString *> *)mapPlacementAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
+                                                           attributeMap:(NSArray<NSDictionary<NSString *, NSString *> *> *)attributeMap
+                                                                forUser:(MParticleUser * _Nullable)user {
+    NSMutableDictionary<NSString *, NSString *> *mappedAttributes = [attributes mutableCopy];
+    if (!mappedAttributes) {
+        mappedAttributes = [[NSMutableDictionary alloc] init];
+    }
+    for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
+        NSString *mapFrom = map[kMPAttributeMappingSourceKey];
+        NSString *mapTo = map[kMPAttributeMappingDestinationKey];
+        if (mappedAttributes[mapFrom]) {
+            NSString *value = mappedAttributes[mapFrom];
+            [mappedAttributes removeObjectForKey:mapFrom];
+            mappedAttributes[mapTo] = value;
+        }
+    }
+    if (user) {
+        for (NSString *key in mappedAttributes) {
+            if (![key isEqual:kMPRoktAttributeKeySandbox]) {
+                [user setUserAttribute:key value:mappedAttributes[key]];
+            }
+        }
+    }
+    return mappedAttributes;
+}
 
 /// Retrieves the Rokt Kit configuration from the kit container.
 /// @return The Rokt Kit configuration dictionary, or nil if Rokt Kit is not configured.
