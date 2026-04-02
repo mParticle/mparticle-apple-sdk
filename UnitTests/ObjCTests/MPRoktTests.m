@@ -882,7 +882,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wat-protocol"
-    id paymentExtension = OCMProtocolMock(@protocol(PaymentExtension));
+    id paymentExtension = OCMProtocolMock(@protocol(RoktPaymentExtension));
 #pragma clang diagnostic pop
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for message queue forward"];
