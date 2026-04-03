@@ -1,6 +1,7 @@
 import Foundation
 
 @objc public class MPDateFormatter: NSObject {
+
     // MARK: - Serial queue for thread-safe access to DateFormatter instances
 
     // DateFormatter is NOT thread-safe, so we use a serial queue to synchronize access
