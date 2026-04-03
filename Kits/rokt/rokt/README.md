@@ -33,6 +33,60 @@ After installing, rebuild and launch your app. With the mParticle log level set 
 Included kits: { Rokt }
 ```
 
+## Usage
+
+### Placements
+
+```swift
+MParticle.sharedInstance().rokt.selectPlacements("checkout",
+                                                  attributes: ["email": "user@example.com"],
+                                                  embeddedViews: ["Location1": embeddedView],
+                                                  config: nil) { event in
+    if event is RoktEvent.PlacementReady {
+        // Placement is ready
+    }
+}
+```
+
+### Shoppable Ads
+
+Shoppable Ads enable in-placement purchases via Apple Pay (or another registered payment extension). The `stripePublishableKey` configured in the mParticle dashboard is automatically forwarded to Rokt — no manual key management needed in code.
+
+**Step 1 — Register a payment extension once** (e.g., at app start):
+
+```swift
+MParticle.sharedInstance().rokt.registerPaymentExtension(stripeExtension)
+```
+
+```objective-c
+[[MParticle sharedInstance].rokt registerPaymentExtension:stripeExtension];
+```
+
+**Step 2 — Display a Shoppable Ads placement:**
+
+```swift
+MParticle.sharedInstance().rokt.selectShoppableAds("ShopView",
+                                                    attributes: ["email": "user@example.com"],
+                                                    config: nil) { event in
+    if event is RoktEvent.PlacementReady {
+        // Placement is ready
+    }
+}
+```
+
+```objective-c
+[[MParticle sharedInstance].rokt selectShoppableAds:@"ShopView"
+                                          attributes:@{@"email": @"user@example.com"}
+                                             config:nil
+                                            onEvent:^(RoktEvent * _Nonnull event) {
+    if ([event isKindOfClass:[RoktPlacementReady class]]) {
+        // Placement is ready
+    }
+}];
+```
+
+For the full event type reference, see [MIGRATING.md](../../MIGRATING.md).
+
 ## Documentation
 
 - [Rokt mParticle Integration](https://docs.rokt.com/developers/integration-guides/rokt-ads/customer-data-platforms/mparticle/)

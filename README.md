@@ -207,64 +207,6 @@ Next, you'll need to start the SDK:
 
 Please see [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
-## Rokt Integration
-
-The mParticle Apple SDK includes built-in support for Rokt placements and Shoppable Ads via the `MPRokt` interface, available at `MParticle.sharedInstance().rokt`.
-
-### Placements
-
-```swift
-MParticle.sharedInstance().rokt.selectPlacements("checkout",
-                                                  attributes: ["email": "user@example.com"],
-                                                  embeddedViews: ["Location1": embeddedView],
-                                                  config: nil) { event in
-    if event is RoktEvent.PlacementReady {
-        // Placement is ready
-    }
-}
-```
-
-### Shoppable Ads
-
-Shoppable Ads enable in-placement purchases via Apple Pay (or another registered payment extension). The `stripePublishableKey` configured in the mParticle dashboard is automatically forwarded to Rokt — no manual key management needed in code.
-
-**Step 1 — Register a payment extension once** (e.g., at app start):
-
-```swift
-MParticle.sharedInstance().rokt.registerPaymentExtension(stripeExtension)
-```
-
-```objective-c
-[[MParticle sharedInstance].rokt registerPaymentExtension:stripeExtension];
-```
-
-**Step 2 — Display a Shoppable Ads placement:**
-
-```swift
-MParticle.sharedInstance().rokt.selectShoppableAds("ShopView",
-                                                    attributes: ["email": "user@example.com"],
-                                                    config: nil) { event in
-    if event is RoktEvent.PlacementReady {
-        // Placement is ready
-    }
-}
-```
-
-```objective-c
-[[MParticle sharedInstance].rokt selectShoppableAds:@"ShopView"
-                                          attributes:@{@"email": @"user@example.com"}
-                                             config:nil
-                                            onEvent:^(RoktEvent * _Nonnull event) {
-    if ([event isKindOfClass:[RoktPlacementReady class]]) {
-        // Placement is ready
-    }
-}];
-```
-
-For full event type reference and migration guidance, see [MIGRATING.md](MIGRATING.md).
-
----
-
 ## Example Project with Sample Code
 
 A sample project is provided with the mParticle Apple SDK. It is a multi-platform video streaming app for both iOS and tvOS.
