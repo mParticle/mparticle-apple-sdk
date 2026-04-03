@@ -260,13 +260,13 @@ static const NSInteger kMPRoktKitId = 181;
  * Registers a payment extension for Shoppable Ads.
  * The payment extension handles payment processing (e.g., Apple Pay via Stripe).
  *
- * For the mParticle path, the Stripe publishable key is automatically provided
- * from the mParticle dashboard configuration. The partner only needs to provide
- * the payment extension with platform-specific config (e.g., Apple Pay merchantId).
+ * For the mParticle path, the Rokt kit reads `stripePublishableKey` from kit configuration
+ * (dashboard) and passes it to Rokt as `stripeKey`. The partner still supplies platform-specific
+ * setup in the payment extension (e.g., Apple Pay merchant ID).
  *
- * @param paymentExtension An object conforming to the PaymentExtension protocol (from RoktContracts)
+ * @param paymentExtension An object conforming to RoktPaymentExtension (PaymentExtension in Swift; from RoktContracts)
  */
-- (void)registerPaymentExtension:(id<PaymentExtension> _Nonnull)paymentExtension {
+- (void)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension {
     dispatch_async([MParticle messageQueue], ^{
         MPILogDebug(@"MPRokt forwarding to kit - registerPaymentExtension: %@",
                     paymentExtension);

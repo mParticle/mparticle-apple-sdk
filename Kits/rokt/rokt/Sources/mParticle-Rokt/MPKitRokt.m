@@ -22,6 +22,8 @@ static NSString * const MPKitRoktErrorMessageKey = @"mParticle-Rokt Error";
 static NSString * const kMPPlacementAttributesMapping = @"placementAttributesMapping";
 static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
 static NSString * const kMPEventNameSelectPlacements = @"selectPlacements";
+static NSString * const kMPEventNameSelectShoppableAds = @"selectShoppableAds";
+static NSString * const kMPRoktConfigStripePublishableKey = @"stripePublishableKey";
 static NSString * const kMPRoktIdentityTypeEmailSha256 = @"emailsha256";
 static NSString * const kMPRoktIdentityTypeMpid = @"mpid";
 
@@ -120,14 +122,14 @@ static __weak MPKitRokt *roktKit = nil;
 /// @param onEvent Optional callback for RoktContracts `RoktEvent` values from the Rokt SDK.
 /// @param filteredUser The current user when this placement was requested. Filtered for the kit as per settings in the mParticle UI
 /// @return MPKitExecStatus indicating success or failure of the operation
-- (MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
+- (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
                                 attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                              embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
                                     config:(RoktConfig * _Nullable)config
                                    onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
                               filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser
                                    options:(RoktPlacementOptions * _Nullable)options {
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit recieved `executeWithIdentifier` method with the following arguments: \n identifier: %@ \n attributes: %@ \n embeddedViews: %@ \n config: %@ \n onEvent: %@ \n filteredUser identities: %@ \n options: %@", identifier, attributes, embeddedViews, config, onEvent, filteredUser.userIdentities, options]];
+    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit recieved `selectPlacementsWithIdentifier` method with the following arguments: \n identifier: %@ \n attributes: %@ \n embeddedViews: %@ \n config: %@ \n onEvent: %@ \n filteredUser identities: %@ \n options: %@", identifier, attributes, embeddedViews, config, onEvent, filteredUser.userIdentities, options]];
     NSDictionary<NSString *, NSString *> *finalAtt = [MPKitRokt prepareAttributes:attributes filteredUser:filteredUser performMapping:NO];
     
     // Log custom event for selectPlacements call
@@ -144,6 +146,36 @@ static __weak MPKitRokt *roktKit = nil;
                         placementOptions:placementOptions
                                 onEvent:onEvent];
 
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+
+/// Forwards to Rokt Shoppable payment registration. When kit \c configuration includes \c stripePublishableKey (mParticle kit settings), it is passed to Rokt as \c stripeKey in the registration config.
+- (MPKitExecStatus *)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension {
+    if (!paymentExtension) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeFail];
+    }
+    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit registerPaymentExtension: %@", paymentExtension]];
+    id rawStripeKey = _configuration[kMPRoktConfigStripePublishableKey];
+    NSDictionary<NSString *, NSString *> *paymentConfig = @{};
+    if ([rawStripeKey isKindOfClass:[NSString class]] && [(NSString *)rawStripeKey length] > 0) {
+        paymentConfig = @{@"stripeKey": (NSString *)rawStripeKey};
+    }
+    [Rokt registerPaymentExtension:paymentExtension config:paymentConfig];
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+
+- (MPKitExecStatus *)selectShoppableAdsWithIdentifier:(NSString * _Nonnull)identifier
+                                            attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                                                config:(RoktConfig * _Nullable)config
+                                               onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
+                                          filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser {
+    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit selectShoppableAds identifier: %@ attributes: %@ config: %@ onEvent: %@ filteredUser identities: %@",
+                      identifier, attributes, config, onEvent, filteredUser.userIdentities]];
+    NSDictionary<NSString *, NSString *> *finalAtt = [MPKitRokt prepareAttributes:attributes filteredUser:filteredUser performMapping:NO];
+    [MPKitRokt logSelectShoppableAdsEvent:finalAtt];
+    NSString *viewName = (identifier.length > 0) ? identifier : nil;
+    [Rokt selectShoppableAdsWithIdentifier:viewName attributes:finalAtt config:config onEvent:onEvent];
+    
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
@@ -830,6 +862,13 @@ static __weak MPKitRokt *roktKit = nil;
     event.customAttributes = attributes;
     [[MParticle sharedInstance] logEvent:event];
     [MPKitRokt MPLog:[NSString stringWithFormat:@"Logged selectplacements custom event with attributes: %@", attributes]];
+}
+
++ (void)logSelectShoppableAdsEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes {
+    MPEvent *event = [[MPEvent alloc] initWithName:kMPEventNameSelectShoppableAds type:MPEventTypeOther];
+    event.customAttributes = attributes;
+    [[MParticle sharedInstance] logEvent:event];
+    [MPKitRokt MPLog:[NSString stringWithFormat:@"Logged selectShoppableAds custom event with attributes: %@", attributes]];
 }
 
 @end

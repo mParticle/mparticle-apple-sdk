@@ -9,7 +9,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 @interface MPKitRokt ()
 
-- (MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
+- (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
                                 attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                              embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
                                     config:(RoktConfig * _Nullable)config
@@ -38,6 +38,16 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 + (NSDictionary<NSString *, NSString *> *)transformValuesToString:(NSDictionary<NSString *, id> * _Nullable)originalDictionary;
 
 + (void)logSelectPlacementEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
+
++ (void)logSelectShoppableAdsEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
+
+- (MPKitExecStatus *)registerPaymentExtension:(id<RoktPaymentExtension>)paymentExtension;
+
+- (MPKitExecStatus *)selectShoppableAdsWithIdentifier:(NSString *)identifier
+                                           attributes:(NSDictionary<NSString *, NSString *> *)attributes
+                                               config:(RoktConfig *)config
+                                              onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
+                                         filteredUser:(FilteredMParticleUser *)filteredUser;
 
 + (NSDictionary<NSString *, NSString *> *)mapAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 
@@ -166,7 +176,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                          placementOptions:OCMOCK_ANY
                                                   onEvent:OCMOCK_ANY]);
     
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:embeddedViews
                                                              config:nil
@@ -201,7 +211,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                          placementOptions:OCMOCK_ANY
                                                   onEvent:OCMOCK_ANY]);
     
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:embeddedViews
                                                              config:nil
@@ -237,7 +247,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                          }]
                                                   onEvent:OCMOCK_ANY]);
 
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:embeddedViews
                                                              config:nil
@@ -268,7 +278,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                          }]
                                                   onEvent:OCMOCK_ANY]);
 
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:nil
                                                              config:nil
@@ -848,7 +858,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                               onEvent:OCMOCK_ANY]);
     
     // Call executeWithIdentifier which triggers logSelectPlacementEvent with prepareAttributes
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:nil
                                                              config:nil
@@ -1030,6 +1040,106 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(passedAttributes[@"email"], @"test@example.com", @"Email should still be added");
     
     [mockMPKitRoktClass stopMocking];
+}
+
+#pragma mark - Shoppable Ads
+
+- (void)testRegisterPaymentExtensionPassesStripeKeyFromKitConfiguration {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMExpect([mockRoktSDK registerPaymentExtension:OCMOCK_ANY
+                                             config:[OCMArg checkWithBlock:^BOOL(NSDictionary *cfg) {
+                                                 return [cfg isEqualToDictionary:@{@"stripeKey": @"pk_test_123"}];
+                                             }]]);
+    NSMutableDictionary *cfg = [self.configuration mutableCopy];
+    cfg[@"stripePublishableKey"] = @"pk_test_123";
+    self.kitInstance.configuration = cfg;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-protocol-method-selector"
+#pragma clang diagnostic ignored "-Wat-protocol"
+    id ext = OCMProtocolMock(@protocol(RoktPaymentExtension));
+#pragma clang diagnostic pop
+    MPKitExecStatus *status = [self.kitInstance registerPaymentExtension:ext];
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testRegisterPaymentExtensionPassesEmptyConfigWhenStripeKeyAbsent {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMExpect([mockRoktSDK registerPaymentExtension:OCMOCK_ANY
+                                             config:[OCMArg checkWithBlock:^BOOL(NSDictionary *cfg) {
+                                                 return cfg.count == 0;
+                                             }]]);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-protocol-method-selector"
+#pragma clang diagnostic ignored "-Wat-protocol"
+    id ext = OCMProtocolMock(@protocol(RoktPaymentExtension));
+#pragma clang diagnostic pop
+    MPKitExecStatus *status = [self.kitInstance registerPaymentExtension:ext];
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testRegisterPaymentExtensionNilReturnsFail {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    MPKitExecStatus *status = [self.kitInstance registerPaymentExtension:nil];
+#pragma clang diagnostic pop
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeFail);
+}
+
+- (void)testRegisterPaymentExtensionForwardsToRoktWithConfigurationStripeKey {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMExpect([mockRoktSDK registerPaymentExtension:OCMOCK_ANY config:@{@"stripeKey": @"pk_x"}]);
+    NSMutableDictionary *cfg = [self.configuration mutableCopy];
+    cfg[@"stripePublishableKey"] = @"pk_x";
+    self.kitInstance.configuration = cfg;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wobjc-protocol-method-selector"
+#pragma clang diagnostic ignored "-Wat-protocol"
+    id ext = OCMProtocolMock(@protocol(RoktPaymentExtension));
+#pragma clang diagnostic pop
+    MPKitExecStatus *status = [self.kitInstance registerPaymentExtension:ext];
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testSelectShoppableAdsInvokesRoktAndLogsEvent {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMExpect([mockRoktSDK selectShoppableAdsWithIdentifier:@"ShopView"
+                                               attributes:[OCMArg checkWithBlock:^BOOL(NSDictionary *attrs) {
+                                                   return [attrs[@"email"] isEqualToString:@"a@b.com"];
+                                               }]
+                                                   config:nil
+                                                  onEvent:nil]);
+    id mockMParticleInstance = OCMClassMock([MParticle class]);
+    id mockMParticleClass = OCMClassMock([MParticle class]);
+    OCMStub([mockMParticleClass sharedInstance]).andReturn(mockMParticleInstance);
+    OCMStub([(MParticle *)mockMParticleInstance environment]).andReturn(MPEnvironmentDevelopment);
+    OCMExpect([(MParticle *)mockMParticleInstance logEvent:[OCMArg checkWithBlock:^BOOL(MPEvent *event) {
+        XCTAssertEqualObjects(event.name, @"selectShoppableAds");
+        XCTAssertEqual(event.type, MPEventTypeOther);
+        return YES;
+    }]]);
+    FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
+    id mockUser = OCMPartialMock(user);
+    OCMStub([mockUser userId]).andReturn(@(99));
+    OCMStub([mockUser userIdentities]).andReturn(@{@(MPIdentityEmail): @"a@b.com"});
+    OCMStub([mockUser userAttributes]).andReturn(@{});
+
+    MPKitExecStatus *status = [self.kitInstance selectShoppableAdsWithIdentifier:@"ShopView"
+                                                                      attributes:@{@"email": @"a@b.com"}
+                                                                          config:nil
+                                                                         onEvent:nil
+                                                                    filteredUser:user];
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockRoktSDK);
+    OCMVerifyAll(mockMParticleInstance);
+    [mockRoktSDK stopMocking];
+    [mockMParticleClass stopMocking];
+    [mockMParticleInstance stopMocking];
 }
 
 #pragma mark - Log Level Mapping tests

@@ -3,8 +3,47 @@ import ObjectiveC
 import mParticle_Apple_SDK
 import RoktContracts
 
-// Swift omits `events:onEvent:` and the full `selectPlacements:…onEvent:` from generated Swift API (RoktEvent block bridging).
+// Swift omits several `MPRokt` APIs that use `RoktEvent` blocks or `RoktPaymentExtension` from the generated Swift API.
 extension MPRokt {
+    /// Bridges `registerPaymentExtension:` when Swift cannot import the ObjC declaration.
+    public func registerPaymentExtension(_ paymentExtension: PaymentExtension) {
+        let sel = NSSelectorFromString("registerPaymentExtension:")
+        guard let method = class_getInstanceMethod(MPRokt.self, sel) else { return }
+        let imp = method_getImplementation(method)
+        typealias Fn = @convention(c) (AnyObject, Selector, AnyObject) -> Void
+        unsafeBitCast(imp, to: Fn.self)(self, sel, paymentExtension as AnyObject)
+    }
+
+    /// Bridges `selectShoppableAds:attributes:config:onEvent:` when Swift cannot import the ObjC declaration.
+    public func selectShoppableAds(
+        _ identifier: String,
+        attributes: [String: String],
+        config: RoktConfig?,
+        onEvent: ((RoktEvent) -> Void)?
+    ) {
+        typealias EventBlock = @convention(block) (RoktEvent) -> Void
+        let sel = NSSelectorFromString("selectShoppableAds:attributes:config:onEvent:")
+        guard let method = class_getInstanceMethod(MPRokt.self, sel) else { return }
+        let imp = method_getImplementation(method)
+        typealias Fn = @convention(c) (
+            AnyObject,
+            Selector,
+            NSString,
+            NSDictionary,
+            RoktConfig?,
+            EventBlock?
+        ) -> Void
+        let block: EventBlock? = onEvent.map { $0 as EventBlock }
+        unsafeBitCast(imp, to: Fn.self)(
+            self,
+            sel,
+            identifier as NSString,
+            attributes as NSDictionary,
+            config,
+            block
+        )
+    }
+
     public func subscribeToPlacementEvents(
         _ identifier: String,
         onEvent: @escaping (RoktEvent) -> Void

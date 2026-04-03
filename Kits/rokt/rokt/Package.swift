@@ -19,13 +19,14 @@ let package = Package(
             url: "https://github.com/mParticle/mparticle-apple-sdk",
             branch: "workstation/9.0-Release"
         ),
+        // Rokt iOS SDK 5.x (Shoppable Ads, etc.): https://github.com/ROKT/rokt-sdk-ios/releases
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
-            branch: "workstation/5.0.0"
+            .upToNextMajor(from: "5.0.0")
         ),
         .package(
             url: "https://github.com/ROKT/rokt-contracts-apple.git",
-            .upToNextMajor(from: "0.1.0")
+            .upToNextMajor(from: "0.1.3")
         ),
         .package(
             url: "https://github.com/erikdoe/ocmock",
