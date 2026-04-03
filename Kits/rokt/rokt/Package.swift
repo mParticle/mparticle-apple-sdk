@@ -26,7 +26,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/ROKT/rokt-contracts-apple.git",
-            .upToNextMajor(from: "0.1.0")
+            .upToNextMajor(from: "0.1.3")
         ),
         .package(
             url: "https://github.com/erikdoe/ocmock",
