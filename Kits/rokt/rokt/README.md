@@ -50,7 +50,7 @@ MParticle.sharedInstance().rokt.selectPlacements("checkout",
 
 ### Shoppable Ads
 
-Shoppable Ads enable in-placement purchases via Apple Pay (or another registered payment extension). The `stripePublishableKey` configured in the mParticle dashboard is automatically forwarded to Rokt — no manual key management needed in code.
+Shoppable Ads enable in-placement purchases via Apple Pay (or another registered payment extension). Currently we support Stripe as a payment extension, however, if you need support for a different payment provider please reach out to your dedicated account team. The `stripePublishableKey` configured in the mParticle dashboard is automatically forwarded to Rokt — no manual key management needed in code.
 
 **Step 1 — Register a payment extension once** (e.g., at app start):
 
