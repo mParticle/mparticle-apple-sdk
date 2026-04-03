@@ -334,11 +334,11 @@ The `MPRokt` interface has been updated to align with the Rokt SDK 5.0.x API. Th
 
 #### What Has Changed
 
-- The `MPRoktEventCallback` class has been removed and replaced with MPRoktEvent
-- The `selectPlacements:` method's `callbacks:` parameter has been replaced with `onEvent:`
+- The `MPRoktEventCallback` class has been removed; the `selectPlacements:` method's `callbacks:` parameter has been replaced with `onEvent:`
+- `MPRoktEvent` and all its subclasses have been removed; event types are now provided by the `RoktContracts` library (`rokt-contracts-apple`) and are shared with the Rokt iOS SDK
 - The `purchaseFinalized:` method's `placementId:` parameter has been renamed to `identifier:`
 - A new `globalEvents:` method has been added for subscribing to global Rokt events
-- A new `MPRoktEmbeddedSizeChanged` event class has been added
+- New `registerPaymentExtension:` and `selectShoppableAds:` methods have been added for Shoppable Ads support
 
 #### Migration Steps
 
@@ -378,18 +378,18 @@ callbacks.onEmbeddedSizeChange = ^(NSString *placementId, CGFloat height) {
                                        attributes:attributes
                                     embeddedViews:embeddedViews
                                            config:config
-                                          onEvent:^(MPRoktEvent * _Nonnull event) {
-    if ([event isKindOfClass:[MPRoktShowLoadingIndicator class]]) {
+                                          onEvent:^(RoktEvent * _Nonnull event) {
+    if ([event isKindOfClass:[RoktShowLoadingIndicator class]]) {
         // Show loading indicator
-    } else if ([event isKindOfClass:[MPRoktHideLoadingIndicator class]]) {
+    } else if ([event isKindOfClass:[RoktHideLoadingIndicator class]]) {
         // Hide loading indicator
-    } else if ([event isKindOfClass:[MPRoktPlacementReady class]]) {
+    } else if ([event isKindOfClass:[RoktPlacementReady class]]) {
         // Handle load/ready
-    } else if ([event isKindOfClass:[MPRoktPlacementClosed class]]) {
+    } else if ([event isKindOfClass:[RoktPlacementClosed class]]) {
         // Handle unload/closed
-    } else if ([event isKindOfClass:[MPRoktEmbeddedSizeChanged class]]) {
-        MPRoktEmbeddedSizeChanged *sizeEvent = (MPRoktEmbeddedSizeChanged *)event;
-        // Handle size change with sizeEvent.placementId and sizeEvent.updatedHeight
+    } else if ([event isKindOfClass:[RoktEmbeddedSizeChanged class]]) {
+        RoktEmbeddedSizeChanged *sizeEvent = (RoktEmbeddedSizeChanged *)event;
+        // Handle size change with sizeEvent.identifier and sizeEvent.updatedHeight
     }
 }];
 ```
@@ -429,16 +429,16 @@ MParticle.sharedInstance().rokt.selectPlacements("checkout",
                                                   embeddedViews: embeddedViews,
                                                   config: config) { event in
     switch event {
-    case is MPRoktEvent.MPRoktShowLoadingIndicator:
+    case is RoktEvent.ShowLoadingIndicator:
         // Show loading indicator
-    case is MPRoktEvent.MPRoktHideLoadingIndicator:
+    case is RoktEvent.HideLoadingIndicator:
         // Hide loading indicator
-    case is MPRoktEvent.MPRoktPlacementReady:
+    case is RoktEvent.PlacementReady:
         // Handle load/ready
-    case is MPRoktEvent.MPRoktPlacementClosed:
+    case is RoktEvent.PlacementClosed:
         // Handle unload/closed
-    case let sizeEvent as MPRoktEvent.MPRoktEmbeddedSizeChanged:
-        // Handle size change with sizeEvent.placementId and sizeEvent.updatedHeight
+    case let sizeEvent as RoktEvent.EmbeddedSizeChanged:
+        // Handle size change with sizeEvent.identifier and sizeEvent.updatedHeight
     default:
         break
     }
@@ -464,9 +464,9 @@ The new `globalEvents:` method allows you to subscribe to global Rokt events fro
 **Objective-C:**
 
 ```objective-c
-[[MParticle sharedInstance].rokt globalEvents:^(MPRoktEvent * _Nonnull event) {
-    if ([event isKindOfClass:[MPRoktInitComplete class]]) {
-        MPRoktInitComplete *initEvent = (MPRoktInitComplete *)event;
+[[MParticle sharedInstance].rokt globalEvents:^(RoktEvent * _Nonnull event) {
+    if ([event isKindOfClass:[RoktInitComplete class]]) {
+        RoktInitComplete *initEvent = (RoktInitComplete *)event;
         if (initEvent.success) {
             // Rokt SDK initialized successfully
         }
@@ -478,7 +478,7 @@ The new `globalEvents:` method allows you to subscribe to global Rokt events fro
 
 ```swift
 MParticle.sharedInstance().rokt.globalEvents { event in
-    if let initEvent = event as? MPRoktEvent.MPRoktInitComplete {
+    if let initEvent = event as? RoktEvent.InitComplete {
         if initEvent.success {
             // Rokt SDK initialized successfully
         }
@@ -486,22 +486,81 @@ MParticle.sharedInstance().rokt.globalEvents { event in
 }
 ```
 
+##### New Shoppable Ads Methods
+
+SDK 9.0.0 adds Shoppable Ads support — in-placement purchases via a registered payment extension (e.g., Apple Pay via Stripe).
+
+**Step 1 — Register a payment extension once** (e.g., at app start). The `stripePublishableKey` configured in the mParticle dashboard is automatically forwarded to Rokt as `stripeKey`; you only need to supply platform-specific config such as an Apple Pay `merchantId`.
+
+**Objective-C:**
+
+```objective-c
+id<RoktPaymentExtension> stripeExtension = /* your payment extension */;
+[[MParticle sharedInstance].rokt registerPaymentExtension:stripeExtension];
+```
+
+**Swift:**
+
+```swift
+MParticle.sharedInstance().rokt.registerPaymentExtension(stripeExtension)
+```
+
+**Step 2 — Display Shoppable Ads** using `selectShoppableAds:attributes:` or the full variant with `config:onEvent:`.
+
+**Objective-C:**
+
+```objective-c
+// Simple
+[[MParticle sharedInstance].rokt selectShoppableAds:@"ShopView"
+                                          attributes:attributes];
+
+// With config and event callback
+[[MParticle sharedInstance].rokt selectShoppableAds:@"ShopView"
+                                          attributes:attributes
+                                             config:config
+                                            onEvent:^(RoktEvent * _Nonnull event) {
+    if ([event isKindOfClass:[RoktPlacementReady class]]) {
+        // Placement is ready
+    }
+}];
+```
+
+**Swift:**
+
+```swift
+// Simple
+MParticle.sharedInstance().rokt.selectShoppableAds("ShopView", attributes: attributes)
+
+// With config and event callback
+MParticle.sharedInstance().rokt.selectShoppableAds("ShopView",
+                                                    attributes: attributes,
+                                                    config: config) { event in
+    if event is RoktEvent.PlacementReady {
+        // Placement is ready
+    }
+}
+```
+
 #### Event Mapping Reference
 
-| Old Callback                   | New Event Class              |
-| ------------------------------ | ---------------------------- |
-| `onLoad`                       | `MPRoktPlacementReady`       |
-| `onUnLoad`                     | `MPRoktPlacementClosed`      |
-| `onShouldShowLoadingIndicator` | `MPRoktShowLoadingIndicator` |
-| `onShouldHideLoadingIndicator` | `MPRoktHideLoadingIndicator` |
-| `onEmbeddedSizeChange`         | `MPRoktEmbeddedSizeChanged`  |
+Event types are provided by the `RoktContracts` library (`rokt-contracts-apple`) and are shared with the Rokt iOS SDK. In Objective-C, use the flat class name; in Swift, use the nested form `RoktEvent.<Name>`.
+
+| Old Callback                   | ObjC Class                 | Swift Type                       |
+| ------------------------------ | -------------------------- | -------------------------------- |
+| `onLoad`                       | `RoktPlacementReady`       | `RoktEvent.PlacementReady`       |
+| `onUnLoad`                     | `RoktPlacementClosed`      | `RoktEvent.PlacementClosed`      |
+| `onShouldShowLoadingIndicator` | `RoktShowLoadingIndicator` | `RoktEvent.ShowLoadingIndicator` |
+| `onShouldHideLoadingIndicator` | `RoktHideLoadingIndicator` | `RoktEvent.HideLoadingIndicator` |
+| `onEmbeddedSizeChange`         | `RoktEmbeddedSizeChanged`  | `RoktEvent.EmbeddedSizeChanged`  |
 
 #### Notes
 
-- All `MPRoktEvent` subclasses are nested classes within `MPRoktEvent`
-- The `onEvent` callback receives all event types, so use type checking to handle specific events
-- The `MPRoktEmbeddedSizeChanged` event provides both `placementId` and `updatedHeight` properties
-- Remove any references to `MPRoktEventCallback` from your code
+- The `onEvent` callback receives all event types; use type checking to handle specific events
+- `RoktEmbeddedSizeChanged` provides `identifier` and `updatedHeight` properties
+- Shoppable Ads placements emit additional events: `RoktEvent.CartItemInstantPurchase`, `RoktEvent.CartItemInstantPurchaseFailure`, `RoktEvent.InstantPurchaseDismissal`, and `RoktEvent.CartItemDevicePay`
+- Remove any references to `MPRoktEventCallback` and `MPRoktEvent` subclasses from your code
+- Swift callers use the interop extension in `MPRokt+SwiftInterop.swift` to access `registerPaymentExtension` and `selectShoppableAds`
+- Calling `selectShoppableAds` automatically logs a `selectShoppableAds` custom event to mParticle
 
 ## Migrating from versions < 8.0.0
 
