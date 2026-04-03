@@ -122,14 +122,14 @@ static __weak MPKitRokt *roktKit = nil;
 /// @param onEvent Optional callback for RoktContracts `RoktEvent` values from the Rokt SDK.
 /// @param filteredUser The current user when this placement was requested. Filtered for the kit as per settings in the mParticle UI
 /// @return MPKitExecStatus indicating success or failure of the operation
-- (MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
+- (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
                                 attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                              embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
                                     config:(RoktConfig * _Nullable)config
                                    onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
                               filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser
                                    options:(RoktPlacementOptions * _Nullable)options {
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit recieved `executeWithIdentifier` method with the following arguments: \n identifier: %@ \n attributes: %@ \n embeddedViews: %@ \n config: %@ \n onEvent: %@ \n filteredUser identities: %@ \n options: %@", identifier, attributes, embeddedViews, config, onEvent, filteredUser.userIdentities, options]];
+    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit recieved `selectPlacementsWithIdentifier` method with the following arguments: \n identifier: %@ \n attributes: %@ \n embeddedViews: %@ \n config: %@ \n onEvent: %@ \n filteredUser identities: %@ \n options: %@", identifier, attributes, embeddedViews, config, onEvent, filteredUser.userIdentities, options]];
     NSDictionary<NSString *, NSString *> *finalAtt = [MPKitRokt prepareAttributes:attributes filteredUser:filteredUser performMapping:NO];
     
     // Log custom event for selectPlacements call

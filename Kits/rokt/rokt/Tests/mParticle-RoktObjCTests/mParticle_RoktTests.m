@@ -9,7 +9,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 @interface MPKitRokt ()
 
-- (MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
+- (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
                                 attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                              embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
                                     config:(RoktConfig * _Nullable)config
@@ -176,7 +176,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                          placementOptions:OCMOCK_ANY
                                                   onEvent:OCMOCK_ANY]);
     
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:embeddedViews
                                                              config:nil
@@ -211,7 +211,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                          placementOptions:OCMOCK_ANY
                                                   onEvent:OCMOCK_ANY]);
     
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:embeddedViews
                                                              config:nil
@@ -247,7 +247,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                          }]
                                                   onEvent:OCMOCK_ANY]);
 
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:embeddedViews
                                                              config:nil
@@ -278,7 +278,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                          }]
                                                   onEvent:OCMOCK_ANY]);
 
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:nil
                                                              config:nil
@@ -858,7 +858,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                                               onEvent:OCMOCK_ANY]);
     
     // Call executeWithIdentifier which triggers logSelectPlacementEvent with prepareAttributes
-    MPKitExecStatus *status = [self.kitInstance executeWithIdentifier:identifier
+    MPKitExecStatus *status = [self.kitInstance selectPlacementsWithIdentifier:identifier
                                                          attributes:attributes
                                                       embeddedViews:nil
                                                              config:nil
