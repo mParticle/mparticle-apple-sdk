@@ -174,10 +174,8 @@ static __weak MPKitRokt *roktKit = nil;
     NSDictionary<NSString *, NSString *> *finalAtt = [MPKitRokt prepareAttributes:attributes filteredUser:filteredUser performMapping:NO];
     [MPKitRokt logSelectShoppableAdsEvent:finalAtt];
     NSString *viewName = (identifier.length > 0) ? identifier : nil;
-    [Rokt shoppableAdsWithViewName:viewName
-                        attributes:finalAtt
-                            config:config
-                           onEvent:onEvent];
+    [Rokt selectShoppableAdsWithIdentifier:viewName attributes:finalAtt config:config onEvent:onEvent];
+    
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
