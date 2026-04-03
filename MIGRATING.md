@@ -457,6 +457,28 @@ MParticle.sharedInstance().rokt.selectPlacements("checkout",
 
 Note: The method signature remains the same, but the parameter name has changed from `placementId:` to `identifier:`. If you're using named parameters, update accordingly.
 
+##### events Method (Swift)
+
+In Swift, `events(_:onEvent:)` is not directly importable due to the `RoktEvent` block parameter. Use the `subscribeToPlacementEvents(_:onEvent:)` interop method instead.
+
+**Before (Swift):**
+
+```swift
+MParticle.sharedInstance().rokt.events("checkout") { event in
+    // Handle event
+}
+```
+
+**After (Swift):**
+
+```swift
+MParticle.sharedInstance().rokt.subscribeToPlacementEvents("checkout") { event in
+    // Handle event
+}
+```
+
+> **Note:** Objective-C callers are unaffected — `events:onEvent:` remains available in ObjC unchanged.
+
 ##### New globalEvents Method
 
 The new `globalEvents:` method allows you to subscribe to global Rokt events from all sources, including events not associated with a specific view (such as `InitComplete`).
@@ -486,64 +508,13 @@ MParticle.sharedInstance().rokt.globalEvents { event in
 }
 ```
 
-##### New Shoppable Ads Methods
+##### New Shoppable Ads APIs
 
-SDK 9.0.0 adds Shoppable Ads support — in-placement purchases via a registered payment extension (e.g., Apple Pay via Stripe).
-
-**Step 1 — Register a payment extension once** (e.g., at app start). The `stripePublishableKey` configured in the mParticle dashboard is automatically forwarded to Rokt as `stripeKey`; you only need to supply platform-specific config such as an Apple Pay `merchantId`.
-
-**Objective-C:**
-
-```objective-c
-id<RoktPaymentExtension> stripeExtension = /* your payment extension */;
-[[MParticle sharedInstance].rokt registerPaymentExtension:stripeExtension];
-```
-
-**Swift:**
-
-```swift
-MParticle.sharedInstance().rokt.registerPaymentExtension(stripeExtension)
-```
-
-**Step 2 — Display Shoppable Ads** using `selectShoppableAds:attributes:` or the full variant with `config:onEvent:`.
-
-**Objective-C:**
-
-```objective-c
-// Simple
-[[MParticle sharedInstance].rokt selectShoppableAds:@"ShopView"
-                                          attributes:attributes];
-
-// With config and event callback
-[[MParticle sharedInstance].rokt selectShoppableAds:@"ShopView"
-                                          attributes:attributes
-                                             config:config
-                                            onEvent:^(RoktEvent * _Nonnull event) {
-    if ([event isKindOfClass:[RoktPlacementReady class]]) {
-        // Placement is ready
-    }
-}];
-```
-
-**Swift:**
-
-```swift
-// Simple
-MParticle.sharedInstance().rokt.selectShoppableAds("ShopView", attributes: attributes)
-
-// With config and event callback
-MParticle.sharedInstance().rokt.selectShoppableAds("ShopView",
-                                                    attributes: attributes,
-                                                    config: config) { event in
-    if event is RoktEvent.PlacementReady {
-        // Placement is ready
-    }
-}
-```
+SDK 9.0.0 adds `registerPaymentExtension:` and `selectShoppableAds:` to `MPRokt`. For integration details and code examples, see the [Rokt Integration section in the README](README.md#rokt-integration).
 
 #### Event Mapping Reference
 
-Event types are provided by the `RoktContracts` library (`rokt-contracts-apple`) and are shared with the Rokt iOS SDK. In Objective-C, use the flat class name; in Swift, use the nested form `RoktEvent.<Name>`.
+In Objective-C, use the flat class name; in Swift, use the nested form `RoktEvent.<Name>`.
 
 | Old Callback                   | ObjC Class                 | Swift Type                       |
 | ------------------------------ | -------------------------- | -------------------------------- |
