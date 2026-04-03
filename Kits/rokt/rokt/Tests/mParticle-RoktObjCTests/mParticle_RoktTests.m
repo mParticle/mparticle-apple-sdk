@@ -1108,12 +1108,12 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 - (void)testSelectShoppableAdsInvokesRoktAndLogsEvent {
     id mockRoktSDK = OCMClassMock([Rokt class]);
-    OCMExpect([mockRoktSDK shoppableAdsWithViewName:@"ShopView"
-                                          attributes:[OCMArg checkWithBlock:^BOOL(NSDictionary *attrs) {
-                                              return [attrs[@"email"] isEqualToString:@"a@b.com"];
-                                          }]
-                                              config:nil
-                                             onEvent:nil]);
+    OCMExpect([mockRoktSDK selectShoppableAdsWithIdentifier:@"ShopView"
+                                               attributes:[OCMArg checkWithBlock:^BOOL(NSDictionary *attrs) {
+                                                   return [attrs[@"email"] isEqualToString:@"a@b.com"];
+                                               }]
+                                                   config:nil
+                                                  onEvent:nil]);
     id mockMParticleInstance = OCMClassMock([MParticle class]);
     id mockMParticleClass = OCMClassMock([MParticle class]);
     OCMStub([mockMParticleClass sharedInstance]).andReturn(mockMParticleInstance);
