@@ -340,6 +340,29 @@ The `MPRokt` interface has been updated to align with the Rokt SDK 5.0.x API. Th
 - A new `globalEvents:` method has been added for subscribing to global Rokt events
 - New `registerPaymentExtension:` and `selectShoppableAds:` methods have been added for Shoppable Ads support
 
+#### Import Changes
+
+Since event types now come from the `RoktContracts` library instead of the SDK itself, the import requirements have changed:
+
+**Objective-C:**
+
+Objective-C callers must add `@import RoktContracts;` to access `RoktEvent` types (e.g., `RoktPlacementReady`, `RoktShowLoadingIndicator`) used in the `onEvent:` callbacks:
+
+```objective-c
+@import mParticle_Apple_SDK_ObjC;
+@import RoktContracts;
+```
+
+**Swift:**
+
+A single import provides access to all `MPRokt` methods and `RoktEvent` types — no additional imports are needed:
+
+```swift
+import mParticle_Apple_SDK
+```
+
+> **Note:** In previous betas, Swift callers needed a second `import mParticle_Rokt_Swift` to access MPRokt APIs that use `RoktContracts` types. This is no longer required.
+
 #### Migration Steps
 
 ##### selectPlacements Method
@@ -459,13 +482,48 @@ Note: The method signature remains the same, but the parameter name has changed 
 
 ##### events Method
 
-The `events:onEvent:` method signature is unchanged. It works identically in both Objective-C and Swift:
+The `events:onEvent:` method name is unchanged, but the callback parameter type has changed from `MPRoktEvent` to `RoktEvent` (from the `RoktContracts` library). This aligns with the same event types used by `selectPlacements:onEvent:` and the Rokt SDK directly.
 
-**Swift:**
+**Before (Objective-C):**
+
+```objective-c
+[[MParticle sharedInstance].rokt events:@"checkout" onEvent:^(MPRoktEvent * _Nonnull event) {
+    // Handle event
+}];
+```
+
+**After (Objective-C):**
+
+```objective-c
+[[MParticle sharedInstance].rokt events:@"checkout" onEvent:^(RoktEvent * _Nonnull event) {
+    if ([event isKindOfClass:[RoktPlacementReady class]]) {
+        // Handle placement ready
+    } else if ([event isKindOfClass:[RoktPlacementClosed class]]) {
+        // Handle placement closed
+    }
+}];
+```
+
+**Before (Swift):**
+
+```swift
+MParticle.sharedInstance().rokt.events("checkout") { (event: MPRoktEvent) in
+    // Handle event
+}
+```
+
+**After (Swift):**
 
 ```swift
 MParticle.sharedInstance().rokt.events("checkout") { event in
-    // Handle event
+    switch event {
+    case is RoktEvent.PlacementReady:
+        // Handle placement ready
+    case is RoktEvent.PlacementClosed:
+        // Handle placement closed
+    default:
+        break
+    }
 }
 ```
 
