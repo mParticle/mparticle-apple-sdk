@@ -36,7 +36,7 @@ let package = Package(
         .target(
             name: "mParticle-Rokt",
             dependencies: [
-                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
+                .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
                 .product(name: "Rokt-Widget", package: "rokt-sdk-ios"),
                 .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ],
@@ -48,7 +48,7 @@ let package = Package(
             name: "mParticle-Rokt-Swift",
             dependencies: [
                 "mParticle-Rokt",
-                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
+                .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
                 .product(name: "Rokt-Widget", package: "rokt-sdk-ios"),
                 .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ],
