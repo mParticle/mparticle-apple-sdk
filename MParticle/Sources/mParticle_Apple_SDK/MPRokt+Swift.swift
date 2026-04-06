@@ -30,7 +30,15 @@ extension MPRokt {
         let attrs = attributes as NSDictionary
         let embedded = embeddedViews as NSDictionary?
         let block: EventBlock? = onEvent.map { cb in cb as EventBlock }
-        unsafeBitCast(imp, to: Fn.self)(self, sel, identifier as NSString, attrs, embedded, config, block)
+        unsafeBitCast(imp, to: Fn.self)(
+            self,
+            sel,
+            identifier as NSString,
+            attrs,
+            embedded,
+            config,
+            block
+        )
     }
 
     public func events(
