@@ -322,7 +322,7 @@
     "name": "onetrust",
     "local_path": "Kits/onetrust/onetrust",
     "podspec": "Kits/onetrust/onetrust/mParticle-OneTrust.podspec",
-    "dest_repo": "mparticle-apple-integration-onetrust",
+    "dest_repo": "mp-apple-integration-onetrust",
     "schemes": [
       {
         "scheme": "mParticle-OneTrust",
@@ -388,7 +388,7 @@
   {
     "name": "rokt",
     "local_path": "Kits/rokt/rokt",
-    "dest_repo": "mparticle-apple-integration-rokt",
+    "dest_repo": "mp-apple-integration-rokt",
     "schemes": [
       {
         "scheme": "mParticle-Rokt",
