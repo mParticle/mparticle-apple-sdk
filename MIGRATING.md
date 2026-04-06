@@ -340,6 +340,29 @@ The `MPRokt` interface has been updated to align with the Rokt SDK 5.0.x API. Th
 - A new `globalEvents:` method has been added for subscribing to global Rokt events
 - New `registerPaymentExtension:` and `selectShoppableAds:` methods have been added for Shoppable Ads support
 
+#### Import Changes
+
+Since event types now come from the `RoktContracts` library instead of the SDK itself, the import requirements have changed:
+
+**Objective-C:**
+
+Objective-C callers must add `@import RoktContracts;` to access `RoktEvent` types (e.g., `RoktPlacementReady`, `RoktShowLoadingIndicator`) used in the `onEvent:` callbacks:
+
+```objective-c
+@import mParticle_Apple_SDK_ObjC;
+@import RoktContracts;
+```
+
+**Swift:**
+
+A single import provides access to all `MPRokt` methods and `RoktEvent` types — no additional imports are needed:
+
+```swift
+import mParticle_Apple_SDK
+```
+
+> **Note:** In previous betas, Swift callers needed a second `import mParticle_Rokt_Swift` to access MPRokt APIs that use `RoktContracts` types. This is no longer required.
+
 #### Migration Steps
 
 ##### selectPlacements Method
@@ -457,14 +480,34 @@ MParticle.sharedInstance().rokt.selectPlacements("checkout",
 
 Note: The method signature remains the same, but the parameter name has changed from `placementId:` to `identifier:`. If you're using named parameters, update accordingly.
 
-##### events Method (Swift)
+##### events Method
 
-In Swift, `events(_:onEvent:)` is not directly importable due to the `RoktEvent` block parameter. Use the `subscribeToPlacementEvents(_:onEvent:)` interop method instead.
+The `events:onEvent:` method name is unchanged, but the callback parameter type has changed from `MPRoktEvent` to `RoktEvent` (from the `RoktContracts` library). This aligns with the same event types used by `selectPlacements:onEvent:` and the Rokt SDK directly.
+
+**Before (Objective-C):**
+
+```objective-c
+[[MParticle sharedInstance].rokt events:@"checkout" onEvent:^(MPRoktEvent * _Nonnull event) {
+    // Handle event
+}];
+```
+
+**After (Objective-C):**
+
+```objective-c
+[[MParticle sharedInstance].rokt events:@"checkout" onEvent:^(RoktEvent * _Nonnull event) {
+    if ([event isKindOfClass:[RoktPlacementReady class]]) {
+        // Handle placement ready
+    } else if ([event isKindOfClass:[RoktPlacementClosed class]]) {
+        // Handle placement closed
+    }
+}];
+```
 
 **Before (Swift):**
 
 ```swift
-MParticle.sharedInstance().rokt.events("checkout") { event in
+MParticle.sharedInstance().rokt.events("checkout") { (event: MPRoktEvent) in
     // Handle event
 }
 ```
@@ -472,12 +515,17 @@ MParticle.sharedInstance().rokt.events("checkout") { event in
 **After (Swift):**
 
 ```swift
-MParticle.sharedInstance().rokt.subscribeToPlacementEvents("checkout") { event in
-    // Handle event
+MParticle.sharedInstance().rokt.events("checkout") { event in
+    switch event {
+    case is RoktEvent.PlacementReady:
+        // Handle placement ready
+    case is RoktEvent.PlacementClosed:
+        // Handle placement closed
+    default:
+        break
+    }
 }
 ```
-
-> **Note:** Objective-C callers are unaffected — `events:onEvent:` remains available in ObjC unchanged.
 
 ##### New globalEvents Method
 
@@ -530,7 +578,7 @@ In Objective-C, use the flat class name; in Swift, use the nested form `RoktEven
 - `RoktEmbeddedSizeChanged` provides `identifier` and `updatedHeight` properties
 - Shoppable Ads placements emit additional events: `RoktEvent.CartItemInstantPurchase`, `RoktEvent.CartItemInstantPurchaseFailure`, `RoktEvent.InstantPurchaseDismissal`, and `RoktEvent.CartItemDevicePay`
 - Remove any references to `MPRoktEventCallback` and `MPRoktEvent` subclasses from your code
-- Swift callers use the interop extension in `MPRokt+SwiftInterop.swift` to access `registerPaymentExtension` and `selectShoppableAds`
+- All `MPRokt` methods are directly accessible in both Objective-C and Swift — no separate interop import needed
 - Calling `selectShoppableAds` automatically logs a `selectShoppableAds` custom event to mParticle
 
 ## Migrating from versions < 8.0.0
