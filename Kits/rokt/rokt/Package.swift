@@ -17,7 +17,7 @@ let package = Package(
         // .package(path: "../../../"),
         .package(
             url: "https://github.com/mParticle/mparticle-apple-sdk",
-            branch: "workstation/9.0-Release"
+            branch: "main"
         ),
         // Rokt iOS SDK 5.x (Shoppable Ads, etc.): https://github.com/ROKT/rokt-sdk-ios/releases
         .package(

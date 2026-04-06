@@ -457,27 +457,17 @@ MParticle.sharedInstance().rokt.selectPlacements("checkout",
 
 Note: The method signature remains the same, but the parameter name has changed from `placementId:` to `identifier:`. If you're using named parameters, update accordingly.
 
-##### events Method (Swift)
+##### events Method
 
-In Swift, `events(_:onEvent:)` is not directly importable due to the `RoktEvent` block parameter. Use the `subscribeToPlacementEvents(_:onEvent:)` interop method instead.
+The `events:onEvent:` method signature is unchanged. It works identically in both Objective-C and Swift:
 
-**Before (Swift):**
+**Swift:**
 
 ```swift
 MParticle.sharedInstance().rokt.events("checkout") { event in
     // Handle event
 }
 ```
-
-**After (Swift):**
-
-```swift
-MParticle.sharedInstance().rokt.subscribeToPlacementEvents("checkout") { event in
-    // Handle event
-}
-```
-
-> **Note:** Objective-C callers are unaffected — `events:onEvent:` remains available in ObjC unchanged.
 
 ##### New globalEvents Method
 
@@ -530,7 +520,7 @@ In Objective-C, use the flat class name; in Swift, use the nested form `RoktEven
 - `RoktEmbeddedSizeChanged` provides `identifier` and `updatedHeight` properties
 - Shoppable Ads placements emit additional events: `RoktEvent.CartItemInstantPurchase`, `RoktEvent.CartItemInstantPurchaseFailure`, `RoktEvent.InstantPurchaseDismissal`, and `RoktEvent.CartItemDevicePay`
 - Remove any references to `MPRoktEventCallback` and `MPRoktEvent` subclasses from your code
-- Swift callers use the interop extension in `MPRokt+SwiftInterop.swift` to access `registerPaymentExtension` and `selectShoppableAds`
+- All `MPRokt` methods are directly accessible in both Objective-C and Swift — no separate interop import needed
 - Calling `selectShoppableAds` automatically logs a `selectShoppableAds` custom event to mParticle
 
 ## Migrating from versions < 8.0.0

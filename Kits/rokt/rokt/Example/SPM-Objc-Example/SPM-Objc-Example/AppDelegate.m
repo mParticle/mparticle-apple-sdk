@@ -10,7 +10,7 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [[MParticle sharedInstance] startWithOptions:[MParticleOptions optionsWithKey:@"REPLACE WITH YOUR MPARTICLE API KEY" secret:@"REPLACE WITH YOUR MPARTICLE API SECRET"]];
+    [[MParticle sharedInstance] startWithOptions:[MParticleOptions optionsWithKey:@"us2-db9c17968390524f8b04a51027f0cc76" secret:@"gGrsbRzGWGRYRefV8w_JMH4xwE8d45-1U1NLkuBwcxiCQHhj4ST0iMkrGuynDmVt"]];
     [MParticle sharedInstance].logLevel = MPILogLevelVerbose;
     
     [[MParticle sharedInstance] logEvent:[[MPEvent alloc] initWithName:@"foo" type:MPEventTypeOther]];

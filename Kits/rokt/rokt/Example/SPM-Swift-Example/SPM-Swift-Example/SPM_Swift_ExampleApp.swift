@@ -5,8 +5,8 @@ import mParticle_Apple_SDK
 struct SPMSwiftExampleApp: App {
     init() {
         let options = MParticleOptions(
-            key: "REPLACE_ME",
-            secret: "REPLACE_ME"
+            key: "us2-db9c17968390524f8b04a51027f0cc76",
+            secret: "gGrsbRzGWGRYRefV8w_JMH4xwE8d45-1U1NLkuBwcxiCQHhj4ST0iMkrGuynDmVt"
         )
         options.environment = .development
         options.logLevel = .debug

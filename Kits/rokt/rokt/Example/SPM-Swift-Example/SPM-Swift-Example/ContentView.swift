@@ -1,8 +1,11 @@
 import SwiftUI
 import Rokt_Widget
+import mParticle_Apple_SDK
 
 struct ContentView: View {
     @State private var sdkTriggered = false
+    @State private var bottomsheetTriggered = false
+    @State private var eventLog: [String] = []
 
     private let attributes: [String: String] = [
         "email": "jenny.smith@rokt.com",
@@ -42,9 +45,75 @@ struct ContentView: View {
                 )
                 .padding(.horizontal)
 
+                Button("Load Bottomsheet Placement") {
+                    bottomsheetTriggered = true
+                    MParticle.sharedInstance().rokt.events("MSDKBottomsheetLayout") { event in
+                        let description = describeEvent(event)
+                        print("RoktEvent: \(description)")
+                        DispatchQueue.main.async {
+                            eventLog.append(description)
+                        }
+                    }
+                    MParticle.sharedInstance().rokt.selectPlacements(
+                        "MSDKBottomsheetLayout",
+                        attributes: attributes,
+                        embeddedViews: nil,
+                        config: nil,
+                        onEvent: nil
+                    )
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color(hex: "#5A2D82"))
+                .disabled(bottomsheetTriggered)
+
+                if !eventLog.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Event Log")
+                            .font(.headline)
+                        ForEach(eventLog.reversed(), id: \.self) { entry in
+                            Text(entry)
+                                .font(.system(.caption, design: .monospaced))
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                }
+
                 Spacer()
             }
             .padding()
+        }
+    }
+
+    private func describeEvent(_ event: RoktEvent) -> String {
+        switch event {
+        case is RoktEvent.ShowLoadingIndicator:
+            return "ShowLoadingIndicator"
+        case is RoktEvent.HideLoadingIndicator:
+            return "HideLoadingIndicator"
+        case let e as RoktEvent.PlacementReady:
+            return "PlacementReady - \(e.identifier ?? "")"
+        case let e as RoktEvent.PlacementInteractive:
+            return "PlacementInteractive - \(e.identifier ?? "")"
+        case let e as RoktEvent.OfferEngagement:
+            return "OfferEngagement - \(e.identifier ?? "")"
+        case let e as RoktEvent.PositiveEngagement:
+            return "PositiveEngagement - \(e.identifier ?? "")"
+        case let e as RoktEvent.FirstPositiveEngagement:
+            return "FirstPositiveEngagement - \(e.identifier ?? "")"
+        case let e as RoktEvent.OpenUrl:
+            return "OpenUrl - \(e.url)"
+        case let e as RoktEvent.PlacementClosed:
+            return "PlacementClosed - \(e.identifier ?? "")"
+        case let e as RoktEvent.PlacementCompleted:
+            return "PlacementCompleted - \(e.identifier ?? "")"
+        case let e as RoktEvent.PlacementFailure:
+            return "PlacementFailure - \(e.identifier ?? "")"
+        default:
+            return "\(type(of: event))"
         }
     }
 }
