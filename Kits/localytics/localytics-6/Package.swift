@@ -11,8 +11,8 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/mParticle/mparticle-apple-sdk",
-                 branch: "workstation/9.0-Release"),
+        // Standalone kit CI/releases: use .package(url: "https://github.com/mParticle/mparticle-apple-sdk", branch: "…").
+        .package(name: "mparticle-apple-sdk", path: "../../../"),
         .package(url: "https://github.com/localytics/Localytics-swiftpm",
                  .upToNextMajor(from: "6.0.0"))
     ],
@@ -24,7 +24,16 @@ let package = Package(
                 .product(name: "Localytics", package: "Localytics-swiftpm")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")],
-            publicHeadersPath: "include"
+            publicHeadersPath: "include",
+            cSettings: [
+                .unsafeFlags([
+                    "-Wno-non-modular-include-in-framework-module",
+                    "-Wno-error=non-modular-include-in-framework-module"
+                ])
+            ],
+            linkerSettings: [
+                .linkedFramework("CoreLocation")
+            ]
         ),
         .testTarget(
             name: "mParticle-LocalyticsTests",

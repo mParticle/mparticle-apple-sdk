@@ -1,5 +1,6 @@
 #import "MPKitLocalytics.h"
-#import <CoreLocation/CoreLocation.h>
+@import CoreLocation;
+#import "MPLocation.h"
 
 #if defined(__has_include) && __has_include(<Localytics/Localytics.h>)
     #import <Localytics/Localytics.h>

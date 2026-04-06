@@ -1,5 +1,6 @@
 #import "MPKitCleverTap.h"
-#import <CoreLocation/CoreLocation.h>
+@import CoreLocation;
+#import "MPLocation.h"
 
 #if defined(__has_include) && __has_include(<CleverTapSDK/CleverTap.h>)
     #import <CleverTapSDK/CleverTap.h>
