@@ -21,6 +21,7 @@ let package = Package(
     ],
     targets: [
         // References the xcframework built from source by measure_size.sh
+        // The NoLocation scheme produces mParticle_Apple_SDK_NoLocation.framework
         .binaryTarget(
             name: "mParticle_Apple_SDK",
             path: "../build/mParticle_Apple_SDK.xcframework"

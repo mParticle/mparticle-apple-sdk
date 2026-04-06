@@ -4,7 +4,7 @@
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle()
 
@@ -168,14 +168,6 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     }
     
     return eventDictionary;
-}
-
-- (NSDictionary *)info {
-    return [self.customAttributes copy];
-}
-
-- (void)setInfo:(NSDictionary *)info {
-    self.customAttributes = info;
 }
 
 - (void)setName:(NSString *)name {

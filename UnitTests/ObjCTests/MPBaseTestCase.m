@@ -11,6 +11,7 @@
 #import "MPConnectorProtocol.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIConstants.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle (Tests)
 @property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;

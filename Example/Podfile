@@ -1,13 +1,25 @@
-platform :ios, '15.0'
+platform :ios, '15.6'
 
 target 'mParticleExample' do
   # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
   use_frameworks!
 
-  # Pods for mParticleExample
+  # Local monorepo SDK (same checkout as this Example/ directory)
+  pod 'mParticle-Apple-SDK-Swift', :path => '../mParticle-Apple-SDK-Swift'
   pod 'mParticle-Apple-SDK', :path => '..'
-  pod 'mParticle-Rokt', '~> 8.0'
-  pod 'mParticle-Apple-Media-SDK', '~> 1.7'
+
+  pod 'mParticle-Apple-Media-SDK/mParticleMediaNoLocation', '~> 1.7.0'
+
+  # Rokt-Widget pulls in RoktUXHelper (~> 0.8) transitively. This explicit line is only to resolve it
+  # from Git (tag) instead of CocoaPods trunk when CDN/trunk is unreliable — remove it if trunk works.
+  pod 'RoktUXHelper', :git => 'https://github.com/ROKT/rokt-ux-helper-ios.git', :tag => '0.8.3'
+
+  # Rokt iOS SDK 5.x (aligned with Kits/rokt/rokt/Package.swift). Use Git branch; not on CocoaPods trunk.
+  pod 'Rokt-Widget', :git => 'https://github.com/ROKT/rokt-sdk-ios.git', :branch => 'workstation/5.0.0'
+
+  # Local Rokt kit — uses the same local mParticle-Apple-SDK above (single resolved copy via :path).
+  # RoktContracts resolves from CocoaPods trunk per podspecs (~> 0.1).
+  pod 'mParticle-Rokt', :path => '../Kits/rokt/rokt'
   #pod 'PLCrashReporter', '~> 1.11.1'
   #pod 'mParticle-UrbanAirship', :path => '../../mparticle-apple-integration-urbanairship'
   #pod 'mParticle-BranchMetrics', :path => '../../mparticle-apple-integration-branchmetrics'
@@ -26,4 +38,12 @@ target 'mParticleExample' do
       # pod 'mParticle-Apple-SDK/AppExtension', :path => '..'
   # end
 
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.6'
+    end
+  end
 end

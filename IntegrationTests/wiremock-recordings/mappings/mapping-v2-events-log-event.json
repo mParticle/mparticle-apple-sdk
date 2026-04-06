@@ -98,7 +98,7 @@
             "fi": false,
             "lud": "${json-unit.ignore}",
             "arc": "arm64",
-            "tsv": "90000",
+            "tsv": "150000",
             "apn": "com.mparticle.IntegrationTests",
             "env": 1,
             "abn": "1",
@@ -120,7 +120,7 @@
           ],
           "uitl": 60,
           "oo": false,
-          "sdk": "8.44.4",
+          "sdk": "SDK_VERSION_PLACEHOLDER",
           "di": {
             "p": "arm64",
             "bid": "${json-unit.ignore}",
@@ -138,7 +138,6 @@
             "dosv": "${json-unit.ignore}",
             "it": false,
             "dmdl": "arm64",
-            "dr": "None",
             "jb": {
               "cydia": false
             },

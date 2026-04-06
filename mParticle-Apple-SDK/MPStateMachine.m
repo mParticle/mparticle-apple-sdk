@@ -11,16 +11,14 @@
 #import <UIKit/UIKit.h>
 #import "MPForwardQueueParameters.h"
 #import "MPDataPlanFilter.h"
-#import "MParticleSwift.h"
 #import "MParticleReachability.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
 
 #if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    #import <CoreLocation/CoreLocation.h>
-#endif
 #import <AdServices/AAAttribution.h>
 #endif
+@import mParticle_Apple_SDK_Swift;
 
 static NSString *const kCookieDateKey = @"e";
 static NSString *const kMinUploadDateKey = @"MinUploadDate";
@@ -45,7 +43,7 @@ static BOOL runningInBackground = NO;
 
 @end
 
-@interface MPStateMachine_PRIVATE() {
+@interface MPStateMachine_PRIVATE()<MPStateMachineMPDeviceProtocol> {
     BOOL optOutSet;
     dispatch_queue_t messageQueue;
 }
@@ -64,7 +62,6 @@ static BOOL runningInBackground = NO;
 @synthesize deviceTokenType = _deviceTokenType;
 @synthesize firstSeenInstallation = _firstSeenInstallation;
 @synthesize installationType = _installationType;
-@synthesize locationTrackingMode = _locationTrackingMode;
 @synthesize logLevel = _logLevel;
 @synthesize optOut = _optOut;
 @synthesize attAuthorizationStatus = _attAuthorizationStatus;
@@ -76,12 +73,6 @@ static BOOL runningInBackground = NO;
 @synthesize automaticSessionTracking = _automaticSessionTracking;
 @synthesize allowASR = _allowASR;
 @synthesize networkStatus = _networkStatus;
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-@synthesize location = _location;
-#endif
-#endif
 
 - (instancetype)init {
     self = [super init];
@@ -173,7 +164,7 @@ static BOOL runningInBackground = NO;
         return _storedSDKVersion;
     }
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     _storedSDKVersion = userDefaults[@"storedSDKVersion"];
     
     return _storedSDKVersion;
@@ -186,7 +177,7 @@ static BOOL runningInBackground = NO;
 
     _storedSDKVersion = storedSDKVersion;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
 
     if (MPIsNull(_storedSDKVersion)) {
         [userDefaults removeMPObjectForKey:@"storedSDKVersion"];
@@ -419,64 +410,6 @@ static BOOL runningInBackground = NO;
     _firstSeenInstallation = @(installationType == MPInstallationTypeKnownInstall);
 }
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (CLLocation *)location {
-    if ([MPLocationManager_PRIVATE trackingLocation]) {
-        return self.locationManager.location;
-    } else {
-        return _location;
-    }
-}
-
-- (void)setLocation:(CLLocation *)location {
-    if ([MPLocationManager_PRIVATE trackingLocation]) {
-        if (self.locationManager) {
-            self.locationManager.location = location;
-        }
-        
-        _location = nil;
-    } else {
-        _location = location;
-    }
-}
-#endif
-#endif
-
-- (NSString *)locationTrackingMode {
-    if (_locationTrackingMode) {
-        return _locationTrackingMode;
-    }
-    
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    NSString *locationTrackingMode = userDefaults[kMPRemoteConfigLocationModeKey];
-    
-    [self willChangeValueForKey:@"locationTrackingMode"];
-    
-    if (locationTrackingMode) {
-        _locationTrackingMode = locationTrackingMode;
-    } else {
-        _locationTrackingMode = kMPRemoteConfigAppDefined;
-    }
-    
-    [self didChangeValueForKey:@"locationTrackingMode"];
-    
-    return _locationTrackingMode;
-}
-
-- (void)setLocationTrackingMode:(NSString *)locationTrackingMode {
-    if ([_locationTrackingMode isEqualToString:locationTrackingMode]) {
-        return;
-    }
-    
-    [self willChangeValueForKey:@"locationTrackingMode"];
-    _locationTrackingMode = locationTrackingMode;
-    [self didChangeValueForKey:@"locationTrackingMode"];
-    
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
-    userDefaults[kMPRemoteConfigLocationModeKey] = _locationTrackingMode;
-}
-
 - (NSString *)minDefaultsKeyForUploadType:(MPUploadType)uploadType {
     NSString *defaultsKey = nil;
     if (uploadType == MPUploadTypeMessage) {
@@ -488,7 +421,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (NSDate *)minUploadDateForUploadType:(MPUploadType)uploadType {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSString *defaultsKey = [self minDefaultsKeyForUploadType:uploadType];
     NSDate *minUploadDate = userDefaults[defaultsKey];
     if (minUploadDate) {
@@ -503,7 +436,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)setMinUploadDate:(NSDate *)minUploadDate uploadType:(MPUploadType)uploadType {
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSString *defaultsKey = [self minDefaultsKeyForUploadType:uploadType];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         userDefaults[defaultsKey] = minUploadDate;
@@ -517,7 +450,7 @@ static BOOL runningInBackground = NO;
         return _optOut;
     }
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *optOutNumber = userDefaults[kMPOptOutStatus];
     if (optOutNumber != nil) {
         _optOut = [optOutNumber boolValue];
@@ -534,7 +467,7 @@ static BOOL runningInBackground = NO;
     _optOut = optOut;
     optOutSet = YES;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPOptOutStatus] = @(_optOut);
 }
 
@@ -543,7 +476,7 @@ static BOOL runningInBackground = NO;
         return _attAuthorizationStatus;
     }
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *authorizationState = userDefaults[kMPATT];
     
     if (authorizationState.integerValue >= 0 && authorizationState.integerValue <= 3) {
@@ -558,7 +491,7 @@ static BOOL runningInBackground = NO;
         return _attAuthorizationTimestamp;
     }
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *authorizationStateTimestamp = userDefaults[kMPATTTimestamp];
     
     _attAuthorizationTimestamp = authorizationStateTimestamp;
@@ -571,7 +504,7 @@ static BOOL runningInBackground = NO;
         _attAuthorizationStatus = authorizationState;
         _attAuthorizationTimestamp = MPCurrentEpochInMilliseconds;
         
-        MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+        MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
         userDefaults[kMPATT] = _attAuthorizationStatus;
         userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
         
@@ -588,7 +521,7 @@ static BOOL runningInBackground = NO;
     if (timestamp.doubleValue != _attAuthorizationTimestamp.doubleValue) {
         _attAuthorizationTimestamp = timestamp;
         
-        MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+        MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
         userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
     }
 }
@@ -600,7 +533,7 @@ static BOOL runningInBackground = NO;
     
     [self willChangeValueForKey:@"pushNotificationMode"];
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSString *pushNotificationMode = userDefaults[kMPRemoteConfigPushNotificationModeKey];
     if (pushNotificationMode) {
         _pushNotificationMode = pushNotificationMode;
@@ -622,7 +555,7 @@ static BOOL runningInBackground = NO;
     _pushNotificationMode = pushNotificationMode;
     [self didChangeValueForKey:@"pushNotificationMode"];
     
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPRemoteConfigPushNotificationModeKey] = _pushNotificationMode;
 }
 
@@ -677,10 +610,16 @@ static BOOL runningInBackground = NO;
     
     BOOL dataRamped = YES;
     if (rampPercentage.integerValue != 0) {
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        MPUserDefaults* userDefaults = MPUserDefaultsConnector.userDefaults;
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:mparticle.stateMachine
+                                                     userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                           logger:logger];
         NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-        
-        uint64_t rampHash = [MPIHasher hashFNV1a:rampData];
+        MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+        uint64_t rampHash = [hasher hashFNV1a:rampData];
         NSUInteger modRampHash = rampHash % 100;
         
         dataRamped = modRampHash > [rampPercentage integerValue];
@@ -767,61 +706,59 @@ static BOOL runningInBackground = NO;
 - (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
 #if TARGET_OS_IOS == 1
     NSError *error;
-    if (@available(iOS 14.3, *)) {
-        NSString *attributionToken = [AAAttribution attributionTokenWithError:&error];
-        if (!attributionToken) {
-            completionHandler();
-            return;
-        }
+    NSString *attributionToken = [AAAttribution attributionTokenWithError:&error];
+    if (!attributionToken) {
+        completionHandler();
+        return;
+    }
+    
+    if (attributionToken) {
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]];
+        [request setHTTPMethod:@"POST"];
+        [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+        [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
         
-        if (attributionToken) {
-            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]];
-            [request setHTTPMethod:@"POST"];
-            [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
-            [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
-            
-            NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-            sessionConfiguration.timeoutIntervalForRequest = 30;
-            sessionConfiguration.timeoutIntervalForResource = 30;
-            NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
-                                                                     delegate:nil
-                                                                delegateQueue:nil];
-            dispatch_async([MParticle messageQueue], ^{
-                [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
-                    if (error) {
-                        MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
-                        if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
-                            completionHandler();
-                        } else if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
-                            completionHandler();
-                        } else {
-                            // Per Apple docs, "Handle any errors you receive and re-poll for data, if required"
-                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                                [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
-                            });
-                        }
-                    } else {
-                        NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                        // Convert the dictionary to the prior format expected by our backend
-                        NSDictionary *finalAttributionDictionary = @{
-                            @"Version4.0": @{
-                                @"iad-attribution": adAttributionDictionary[@"attribution"],
-                                @"iad-org-id": [adAttributionDictionary[@"orgId"] stringValue],
-                                @"iad-campaign-id": [adAttributionDictionary[@"campaignId"] stringValue],
-                                @"iad-conversion-type": adAttributionDictionary[@"conversionType"],
-                                @"iad-click-date": adAttributionDictionary[@"clickDate"],
-                                @"iad-adgroup-id": [adAttributionDictionary[@"adGroupId"] stringValue],
-                                @"iad-country-or-region": adAttributionDictionary[@"countryOrRegion"],
-                                @"iad-keyword-id": [adAttributionDictionary[@"keywordId"] stringValue],
-                                @"iad-ad-id": [adAttributionDictionary[@"adId"] stringValue],
-                            }
-                        };
-                        self.searchAdsInfo = [[finalAttributionDictionary mutableCopy] copy];
+        NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+        sessionConfiguration.timeoutIntervalForRequest = 30;
+        sessionConfiguration.timeoutIntervalForResource = 30;
+        NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
+                                                                 delegate:nil
+                                                            delegateQueue:nil];
+        dispatch_async([MParticle messageQueue], ^{
+            [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
+                if (error) {
+                    MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
+                    if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
                         completionHandler();
+                    } else if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
+                        completionHandler();
+                    } else {
+                        // Per Apple docs, "Handle any errors you receive and re-poll for data, if required"
+                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                            [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
+                        });
                     }
-                }];
-            });
-        }
+                } else {
+                    NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                    // Convert the dictionary to the prior format expected by our backend
+                    NSDictionary *finalAttributionDictionary = @{
+                        @"Version4.0": @{
+                            @"iad-attribution": adAttributionDictionary[@"attribution"],
+                            @"iad-org-id": [adAttributionDictionary[@"orgId"] stringValue],
+                            @"iad-campaign-id": [adAttributionDictionary[@"campaignId"] stringValue],
+                            @"iad-conversion-type": adAttributionDictionary[@"conversionType"],
+                            @"iad-click-date": adAttributionDictionary[@"clickDate"],
+                            @"iad-adgroup-id": [adAttributionDictionary[@"adGroupId"] stringValue],
+                            @"iad-country-or-region": adAttributionDictionary[@"countryOrRegion"],
+                            @"iad-keyword-id": [adAttributionDictionary[@"keywordId"] stringValue],
+                            @"iad-ad-id": [adAttributionDictionary[@"adId"] stringValue],
+                        }
+                    };
+                    self.searchAdsInfo = [[finalAttributionDictionary mutableCopy] copy];
+                    completionHandler();
+                }
+            }];
+        });
     }
 #endif
 }

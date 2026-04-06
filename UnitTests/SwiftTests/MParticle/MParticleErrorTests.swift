@@ -1,16 +1,6 @@
-//
-//  MParticleErrorTests.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Nick Dimitrakas on 11/3/25.
-//
 
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
 final class MParticleErrorTests: MParticleTestBase {
     
@@ -67,7 +57,6 @@ final class MParticleErrorTests: MParticleTestBase {
         mparticle.logError(errorMessage)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        listenerController.assertCalled(#selector(mparticle.logError(_:eventInfo:)))
         
         XCTAssertTrue(backendController.logErrorCalled)
         XCTAssertNil(backendController.logErrorExceptionParam)
@@ -88,7 +77,6 @@ final class MParticleErrorTests: MParticleTestBase {
         mparticle.logError(errorMessage, eventInfo: keyValueDict)
         
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
-        listenerController.assertCalled(#selector(mparticle.logError(_:eventInfo:)))
         
         XCTAssertTrue(backendController.logErrorCalled)
         XCTAssertNil(backendController.logErrorExceptionParam)

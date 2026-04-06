@@ -1,0 +1,216 @@
+name: Release – Publish
+# Build each kit, mirror its subtree repo, and publish a GitHub release/tag (unless dry run).
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - VERSION
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — skip creating real releases/tags"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  load-matrix:
+    name: Load kit matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: Kits/matrix.json
+          sparse-checkout-cone-mode: false
+      - id: set
+        run: echo "matrix=$(jq -c . Kits/matrix.json)" >> "$GITHUB_OUTPUT"
+
+  build-kits:
+    name: Build ${{ matrix.kit.name }}
+    needs: load-matrix
+    runs-on: macOS-latest
+    env:
+      XCODE_VERSION: "26.2"
+    strategy:
+      fail-fast: false
+      matrix:
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Build kit xcframeworks
+        shell: bash
+        run: |
+          SCHEMES_JSON='${{ toJson(matrix.kit.schemes) }}'
+          LOCAL_PATH="${{ matrix.kit.local_path }}"
+          BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
+
+          mkdir -p archives xcframeworks
+
+          MODULES=$(echo "$SCHEMES_JSON" | jq -r '.[].module' | sort -u)
+
+          for MODULE in $MODULES; do
+            XCFRAMEWORK_ARGS=""
+
+            while IFS= read -r ENTRY; do
+              SCHEME=$(echo "$ENTRY" | jq -r '.scheme')
+              DEST=$(echo "$ENTRY" | jq -r '.destination')
+
+              if [ -d "$LOCAL_PATH/$SCHEME.xcodeproj" ]; then
+                PROJECT="$LOCAL_PATH/$SCHEME.xcodeproj"
+              else
+                PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
+              fi
+
+              ARCHIVE_DEVICE="archives/${MODULE}-${DEST}"
+              ARCHIVE_SIM="archives/${MODULE}-${DEST}_Simulator"
+
+              case "$DEST" in
+                iOS)
+                  PLATFORM_DEVICE="generic/platform=iOS"
+                  PLATFORM_SIM="generic/platform=iOS Simulator"
+                  ;;
+                tvOS)
+                  PLATFORM_DEVICE="generic/platform=tvOS"
+                  PLATFORM_SIM="generic/platform=tvOS Simulator"
+                  ;;
+                *)
+                  echo "::error::Unknown destination: $DEST"
+                  exit 1
+                  ;;
+              esac
+
+              xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
+                -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" $BUILD_SETTINGS
+              xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
+                -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" $BUILD_SETTINGS
+
+              XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_DEVICE}.xcarchive -framework ${MODULE}.framework"
+              XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_SIM}.xcarchive -framework ${MODULE}.framework"
+            done < <(echo "$SCHEMES_JSON" | jq -c ".[] | select(.module == \"$MODULE\")")
+
+            xcodebuild -create-xcframework $XCFRAMEWORK_ARGS -output "xcframeworks/${MODULE}.xcframework"
+            (cd xcframeworks && zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework" && rm -rf "${MODULE}.xcframework")
+          done
+
+          rm -rf archives
+
+      - name: Upload xcframework artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcframework-${{ matrix.kit.name }}
+          path: xcframeworks/*.xcframework.zip
+
+  mirror-and-release-kits:
+    name: Mirror & Release ${{ matrix.kit.name }}
+    runs-on: macOS-latest
+    needs: [load-matrix, build-kits]
+    env:
+      DEST_ORG: mparticle-integrations
+    strategy:
+      fail-fast: false
+      matrix:
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download xcframework artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: xcframework-${{ matrix.kit.name }}
+
+      - name: Get ecosystem version
+        id: version
+        run: |
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "📌 Ecosystem version: $VERSION"
+
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SDK_RELEASE_GITHUB_APP_ID }}
+          private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ env.DEST_ORG }}
+          repositories: ${{ matrix.kit.dest_repo }}
+          permission-contents: write
+
+      - name: Extract release notes from root CHANGELOG
+        id: release-notes
+        uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105 # v3.0.0
+        with:
+          changelog_file: CHANGELOG.md
+          prerelease: true
+
+      - name: Split kit and push to mirror
+        id: mirror
+        run: |
+          SPLIT_BRANCH="split/${{ matrix.kit.name }}"
+          git subtree split --prefix ${{ matrix.kit.local_path }} -b "${SPLIT_BRANCH}"
+
+      - name: Push split to destination
+        if: env.DRY_RUN != 'true'
+        id: push
+        run: |
+          DEST_URL="https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
+          git push "$DEST_URL" "split/${{ matrix.kit.name }}:main" --force
+          echo "sha=$(git rev-parse split/${{ matrix.kit.name }})" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release on mirror
+        if: env.DRY_RUN != 'true'
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          commit: ${{ steps.push.outputs.sha }}
+          owner: ${{ env.DEST_ORG }}
+          repo: ${{ matrix.kit.dest_repo }}
+          token: ${{ steps.generate-token.outputs.token }}
+          artifacts: "*.xcframework.zip"
+          body: |
+            ${{ steps.release-notes.outputs.release_notes }}
+
+      - name: Summary
+        shell: bash
+        run: |
+          COMMITS=$(git log "split/${{ matrix.kit.name }}" --oneline -5)
+          ARTIFACTS=$(ls *.xcframework.zip 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## Kit Mirror: ${{ matrix.kit.name }}
+
+          | Property | Value |
+          |----------|-------|
+          | **Kit** | \`${{ matrix.kit.name }}\` |
+          | **Source** | \`${{ matrix.kit.local_path }}\` |
+          | **Destination** | \`${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}\` |
+          | **Tag** | \`${{ steps.version.outputs.tag }}\` |
+          | **Dry Run** | \`${{ env.DRY_RUN }}\` |
+          | **Artifacts** | \`${ARTIFACTS}\` |
+
+          ### Split branch commits
+          \`\`\`
+          ${COMMITS}
+          \`\`\`
+
+          ### Release notes
+          ${{ steps.release-notes.outputs.release_notes }}
+          EOF

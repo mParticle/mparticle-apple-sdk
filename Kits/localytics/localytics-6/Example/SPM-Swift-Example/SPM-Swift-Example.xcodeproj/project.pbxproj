@@ -1,0 +1,278 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3506C0F12F50DAF600BBD61D /* mParticle-Localytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3506C0F02F50DAF600BBD61D /* mParticle-Localytics */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		3506C0D72F50DADA00BBD61D /* SPM-Swift-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Swift-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3506C0E92F50DADB00BBD61D /* Exceptions for "SPM-Swift-Example" folder in "SPM-Swift-Example" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3506C0D62F50DADA00BBD61D /* SPM-Swift-Example */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		3506C0D92F50DADA00BBD61D /* SPM-Swift-Example */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3506C0E92F50DADB00BBD61D /* Exceptions for "SPM-Swift-Example" folder in "SPM-Swift-Example" target */,
+			);
+			path = "SPM-Swift-Example";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3506C0D42F50DADA00BBD61D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3506C0F12F50DAF600BBD61D /* mParticle-Localytics in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3506C0CE2F50DADA00BBD61D = {
+			isa = PBXGroup;
+			children = (
+				3506C0D92F50DADA00BBD61D /* SPM-Swift-Example */,
+				3506C0D82F50DADA00BBD61D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3506C0D82F50DADA00BBD61D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3506C0D72F50DADA00BBD61D /* SPM-Swift-Example.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3506C0D62F50DADA00BBD61D /* SPM-Swift-Example */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3506C0EA2F50DADB00BBD61D /* Build configuration list for PBXNativeTarget "SPM-Swift-Example" */;
+			buildPhases = (
+				3506C0D32F50DADA00BBD61D /* Sources */,
+				3506C0D42F50DADA00BBD61D /* Frameworks */,
+				3506C0D52F50DADA00BBD61D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				3506C0D92F50DADA00BBD61D /* SPM-Swift-Example */,
+			);
+			name = "SPM-Swift-Example";
+			packageProductDependencies = (
+				3506C0F02F50DAF600BBD61D /* mParticle-Localytics */,
+			);
+			productName = "SPM-Swift-Example";
+			productReference = 3506C0D72F50DADA00BBD61D /* SPM-Swift-Example.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3506C0CF2F50DADA00BBD61D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					3506C0D62F50DADA00BBD61D = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = 3506C0D22F50DADA00BBD61D /* Build configuration list for PBXProject "SPM-Swift-Example" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3506C0CE2F50DADA00BBD61D;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3506C0EF2F50DAF600BBD61D /* XCLocalSwiftPackageReference "../../../localytics-6" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3506C0D82F50DADA00BBD61D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3506C0D62F50DADA00BBD61D /* SPM-Swift-Example */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3506C0D52F50DADA00BBD61D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3506C0D32F50DADA00BBD61D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3506C0EB2F50DADB00BBD61D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SPM-Swift-Example/Info.plist";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Swift-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3506C0EC2F50DADB00BBD61D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SPM-Swift-Example/Info.plist";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Swift-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3506C0ED2F50DADB00BBD61D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		3506C0EE2F50DADB00BBD61D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3506C0D22F50DADA00BBD61D /* Build configuration list for PBXProject "SPM-Swift-Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3506C0ED2F50DADB00BBD61D /* Debug */,
+				3506C0EE2F50DADB00BBD61D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3506C0EA2F50DADB00BBD61D /* Build configuration list for PBXNativeTarget "SPM-Swift-Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3506C0EB2F50DADB00BBD61D /* Debug */,
+				3506C0EC2F50DADB00BBD61D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		3506C0EF2F50DAF600BBD61D /* XCLocalSwiftPackageReference "../../../localytics-6" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../localytics-6";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3506C0F02F50DAF600BBD61D /* mParticle-Localytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "mParticle-Localytics";
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 3506C0CF2F50DADA00BBD61D /* Project object */;
+}

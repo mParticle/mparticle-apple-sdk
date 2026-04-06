@@ -11,7 +11,8 @@
 #import "MPPersistenceController.h"
 #import "MPApplication.h"
 #import "mParticle.h"
-#import "MParticleSwift.h"
+
+@import mParticle_Apple_SDK_Swift;
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -172,7 +173,26 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     NSNumber *mainThreadFlag;
     if ([NSThread isMainThread]) {
         if (![MPStateMachine_PRIVATE isAppExtension]) {
-            UIViewController *presentedViewController = [MPApplication_PRIVATE sharedUIApplication].keyWindow.rootViewController.presentedViewController;
+            UIWindow *keyWindow = nil;
+            
+            // Get key window from active window scene (iOS 13+)
+            NSSet<UIScene *> *connectedScenes = [MPApplication_PRIVATE sharedUIApplication].connectedScenes;
+            for (UIScene *scene in connectedScenes) {
+                if ([scene isKindOfClass:[UIWindowScene class]] && scene.activationState == UISceneActivationStateForegroundActive) {
+                    UIWindowScene *windowScene = (UIWindowScene *)scene;
+                    for (UIWindow *window in windowScene.windows) {
+                        if (window.isKeyWindow) {
+                            keyWindow = window;
+                            break;
+                        }
+                    }
+                    if (keyWindow) {
+                        break;
+                    }
+                }
+            }
+            
+            UIViewController *presentedViewController = keyWindow.rootViewController.presentedViewController;
             presentedViewControllerDescription = presentedViewController ? [[presentedViewController class] description] : nil;
         } else {
             presentedViewControllerDescription = @"extension_message";
@@ -205,7 +225,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session userIdentityChange:(MPUserIdentityChange_PRIVATE *)userIdentityChange {
+- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session userIdentityChange:(MPUserIdentityChangePRIVATE *)userIdentityChange {
     self = [self initWithMessageType:messageType session:session];
     if (self && userIdentityChange) {
         [self userIdentityChange:userIdentityChange];
@@ -232,7 +252,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     _messageDictionary[kMPUserAttributeNewlyAddedKey] = oldValue ? @NO : @YES;
 }
 
-- (void)userIdentityChange:(MPUserIdentityChange_PRIVATE *)userIdentityChange {
+- (void)userIdentityChange:(MPUserIdentityChangePRIVATE *)userIdentityChange {
     NSDictionary *dictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
     if (dictionary) {
         _messageDictionary[kMPUserIdentityNewValueKey] = dictionary;
@@ -304,29 +324,5 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
                                             dataPlanVersion:_dataPlanVersion];
     return message;
 }
-
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-- (void)location:(CLLocation *)location {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    if ([MPStateMachine_PRIVATE runningInBackground] && !stateMachine.locationManager.backgroundLocationTracking) {
-        return;
-    }
-    
-    BOOL isCrashReport = _messageTypeValue == MPMessageTypeCrashReport;
-    BOOL isOptOutMessage = _messageTypeValue == MPMessageTypeOptOut;
-    
-    if (location && !isCrashReport && !isOptOutMessage) {
-        _messageDictionary[kMPLocationKey] = @{kMPHorizontalAccuracyKey:@(location.horizontalAccuracy),
-                                              kMPVerticalAccuracyKey:@(location.verticalAccuracy),
-                                              kMPLatitudeKey:@(location.coordinate.latitude),
-                                              kMPLongitudeKey:@(location.coordinate.longitude),
-                                              kMPRequestedAccuracy:@(stateMachine.locationManager.requestedAccuracy),
-                                              kMPDistanceFilter:@(stateMachine.locationManager.requestedDistanceFilter),
-                                              kMPIsForegroung:@(!stateMachine.backgrounded)};
-    }
-}
-#endif
-#endif
 
 @end

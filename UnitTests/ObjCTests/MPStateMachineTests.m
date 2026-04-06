@@ -1,18 +1,11 @@
-#ifndef MPARTICLE_LOCATION_DISABLE
 @import mParticle_Apple_SDK;
-#else
-@import mParticle_Apple_SDK_NoLocation;
-#endif
 
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
-#import "MPApplication.h"
-#import "MPPersistenceController.h"
-#import "MPIConstants.h"
-#import "MParticleSwift.h"
+@import mParticle_Apple_SDK_Swift;
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine_PRIVATE(Tests)
@@ -65,9 +58,12 @@
 
 - (void)testConfigureTriggers {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    NSString *hashEvent1 = [MPIHasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
-    NSString *hashEvent2 = [MPIHasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *hashEvent1 = [hasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
+    NSString *hashEvent2 = [hasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
     
     NSDictionary *triggerDictionary = @{@"tri":@{@"dts":@[@"e", @"pm"],
                                                  @"evts":@[hashEvent1, hashEvent2]
@@ -90,9 +86,12 @@
 
 - (void)testNullConfigureTriggers {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    NSString *hashEvent1 = [MPIHasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
-    NSString *hashEvent2 = [MPIHasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *hashEvent1 = [hasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
+    NSString *hashEvent2 = [hasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
     
     NSDictionary *triggerDictionary = @{@"tri":[NSNull null]
                                         };
@@ -137,8 +136,12 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"State transitions"];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    
     MPLaunchInfo *launchInfo = [[MPLaunchInfo alloc] initWithURL:[NSURL URLWithString:@"http://mparticle.com"]
-                                                         options:@{@"Launching":@"WooHoo"}];
+                                                         options:@{@"Launching":@"WooHoo"} logger:logger];
     stateMachine.launchInfo = launchInfo;
     XCTAssertFalse(stateMachine.backgrounded, @"Should have been false.");
     XCTAssertNotNil(stateMachine.launchInfo, @"Should not have been nil.");
@@ -197,33 +200,6 @@
     [MPStateMachine_PRIVATE setEnvironment:MPEnvironmentDevelopment];
     environment = [MPStateMachine_PRIVATE environment];
     XCTAssertEqual(environment, MPEnvironmentDevelopment, @"Should have been equal.");
-}
-
-- (void)testSetLocation {
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    id mockKitContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [MParticle sharedInstance].kitContainer_PRIVATE = mockKitContainer;
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Set Location"];
-    MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
-    
-    [MParticle sharedInstance].location = [[CLLocation alloc] init];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        OCMVerify([kitContainer forwardSDKCall:@selector(setLocation:)
-                                         event:OCMOCK_ANY
-                                    parameters:OCMOCK_ANY
-                                   messageType:MPMessageTypeEvent
-                                      userInfo:OCMOCK_ANY
-                   ]);
-        [expectation fulfill];
-    });
-
-
-    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-#endif
-#endif
 }
 
 #if TARGET_OS_IOS == 1
@@ -306,9 +282,7 @@
     [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
     [MPPersistenceController_PRIVATE setMpid:@12345];
 
-    MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
-                                                                  backendController:[MParticle sharedInstance].backendController
-                                                                           identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *defaults = MPUserDefaultsConnector.userDefaults;
 
     dispatch_queue_t sdkMessageQueue = [MParticle messageQueue];
     dispatch_group_t group = dispatch_group_create();
@@ -330,9 +304,7 @@
     }
 
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        MPUserDefaults *ud = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
-                                                                backendController:[MParticle sharedInstance].backendController
-                                                                         identity:[MParticle sharedInstance].identity];
+        MPUserDefaults *ud = MPUserDefaultsConnector.userDefaults;
         NSNumber *lastUseDate = ud[kMPAppLastUseDateKey];
         XCTAssertNotNil(lastUseDate, @"lastUseDate must be persisted after background transition");
         [expectation fulfill];
@@ -347,9 +319,7 @@
     [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
     [MPPersistenceController_PRIVATE setMpid:@42];
 
-    MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
-                                                                  backendController:[MParticle sharedInstance].backendController
-                                                                           identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *defaults = MPUserDefaultsConnector.userDefaults;
 
     dispatch_group_t group = dispatch_group_create();
     dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.subscript.concurrent", DISPATCH_QUEUE_CONCURRENT);
@@ -391,9 +361,7 @@
     [MPApplication_PRIVATE updateLastUseDate:nil];
 #pragma clang diagnostic pop
 
-    MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine
-                                                                  backendController:[MParticle sharedInstance].backendController
-                                                                           identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *defaults = MPUserDefaultsConnector.userDefaults;
     NSNumber *lastUseDate = defaults[kMPAppLastUseDateKey];
     XCTAssertNotNil(lastUseDate);
     XCTAssertEqualObjects(lastUseDate, @0);

@@ -102,14 +102,6 @@ typedef NS_ENUM(NSInteger, MPInstallationType) {
     MPInstallationTypeKnownSameVersion
 };
 
-/// Location Tracking Authorization Request
-typedef NS_ENUM(NSUInteger, MPLocationAuthorizationRequest) {
-    /** Requests authorization to always use location services */
-    MPLocationAuthorizationRequestAlways = 0,
-    /** Requests authorization to use location services when the app is in use */
-    MPLocationAuthorizationRequestWhenInUse
-};
-
 /// eCommerce Product Events
 typedef NS_ENUM(NSInteger, MPProductEvent) {
     /** To be used when a product is viewed by a user */

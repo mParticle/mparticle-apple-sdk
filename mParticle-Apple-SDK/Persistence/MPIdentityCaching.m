@@ -9,7 +9,8 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import <CommonCrypto/CommonCrypto.h>
-#import "MParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -183,11 +184,11 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
 #pragma mark - Private
 
 + (nullable NSDictionary<NSString*, NSDictionary*> *)getCache {
-    return [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] mpObjectForKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
+    return [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
 }
 
 + (void)setCache:(nullable NSDictionary<NSString*, NSDictionary*> *)cache {
-    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setMPObject:cache forKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
+    [MPUserDefaultsConnector.userDefaults setMPObject:cache forKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
 }
 
 + (nullable NSString *)keyWithEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {

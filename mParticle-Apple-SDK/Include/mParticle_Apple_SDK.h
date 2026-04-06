@@ -1,10 +1,3 @@
-//
-//  mParticle_Apple_SDK.h
-//  mParticle-Apple-SDK
-//
-//  Created by Brandon Stalnaker on 10/18/23.
-//
-
 #ifndef mParticle_Apple_SDK_h
 #define mParticle_Apple_SDK_h
 

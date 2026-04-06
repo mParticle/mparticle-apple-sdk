@@ -21,5 +21,9 @@
 - (void)setUserTag:(NSString *_Nonnull)tag forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
 - (void)removeUserAttribute:(NSString *_Nonnull)key forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
 
+#pragma mark - Date Formatting
++ (NSString *_Nullable)stringFromDateRFC3339:(NSDate *_Nonnull)date;
++ (NSDate *_Nullable)dateFromStringRFC3339:(NSString * _Nonnull)string;
++ (NSString *_Nullable)hashString:(NSString * _Nonnull)string;
 
 @end

@@ -1,12 +1,15 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
+@import RoktContracts;
 #import "MParticle.h"
+#import "MParticleUser.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
-#import "MParticleSwift.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 // Rokt kit identifier for testing
 static NSNumber * const kTestRoktKitId = @181;
@@ -27,6 +30,9 @@ static NSNumber * const kTestRoktKitId = @181;
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
 - (NSNumber *)getRoktHashedEmailUserIdentityType;
 - (void)confirmUser:(NSDictionary<NSString *, NSString *> *)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
+- (NSMutableDictionary<NSString *, NSString *> *)mapPlacementAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
+                                                             attributeMap:(NSArray<NSDictionary<NSString *, NSString *> *> *)attributeMap
+                                                                  forUser:(MParticleUser * _Nullable)user;
 @end
 
 @interface MPRokt (Testing)
@@ -104,7 +110,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -112,8 +118,9 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertEqualObjects(params[1], attributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
         // Verify placement options
-        MPRoktPlacementOptions *options = params[5];
+        RoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
         XCTAssertTrue(options.jointSdkSelectPlacements >= timeBeforeCall);
         return true;
@@ -146,45 +153,26 @@ static NSNumber * const kTestRoktKitId = @181;
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
     NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
-    MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
+    RoktEmbeddedView *exampleView = [[RoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement": exampleView};
-    __block NSUInteger loadInvocationCount = 0;
-    __block NSUInteger unLoadInvocationCount = 0;
-    __block NSUInteger showLoadingInvocationCount = 0;
-    __block NSUInteger hideLoadingInvocationCount = 0;
-    __block NSString *embeddedPlacementReceived = nil;
-    __block CGFloat embeddedSizeReceived = 0;
-    MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
-    exampleCallbacks.onLoad = ^{
-        loadInvocationCount++;
+    
+    // Create onEvent callback block
+    void (^exampleOnEvent)(RoktEvent * _Nonnull) = ^(RoktEvent * _Nonnull event) {
+        // Handle event
     };
-    exampleCallbacks.onUnLoad = ^{
-        unLoadInvocationCount++;
-    };
-    exampleCallbacks.onShouldShowLoadingIndicator = ^{
-        showLoadingInvocationCount++;
-    };
-    exampleCallbacks.onShouldHideLoadingIndicator = ^{
-        hideLoadingInvocationCount++;
-    };
-    exampleCallbacks.onEmbeddedSizeChange = ^(NSString *p, CGFloat s) {
-        embeddedPlacementReceived = [p copy];
-        embeddedSizeReceived = s;
-    };
-
-    __block MPRoktEventCallback *forwardedCallbacks = nil;
-
-    MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
-    roktConfig.colorMode = MPColorModeDark;
-    roktConfig.cacheDuration = @(60*10);
-    roktConfig.cacheAttributes = @{@"test": @"test"};
+    
+    RoktConfigBuilder *builder = [[RoktConfigBuilder alloc] init];
+    [builder colorMode:RoktColorModeDark];
+    RoktCacheConfig *cacheConfig = [[RoktCacheConfig alloc] initWithCacheDuration:60*10 cacheAttributes:@{@"test": @"test"}];
+    [builder cacheConfig:cacheConfig];
+    RoktConfig *roktConfig = [builder build];
     
     // Capture time before calling selectPlacements
     long long timeBeforeCall = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -192,16 +180,9 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertEqualObjects(params[2], embeddedViews);
         XCTAssertEqualObjects(params[3], roktConfig);
-        MPRoktEventCallback *resultCallbacks = params[4];
-        XCTAssertNotNil(resultCallbacks);
-        XCTAssertNotEqual(resultCallbacks.onLoad, exampleCallbacks.onLoad);
-        XCTAssertNotEqual(resultCallbacks.onUnLoad, exampleCallbacks.onUnLoad);
-        XCTAssertNotEqual(resultCallbacks.onShouldShowLoadingIndicator, exampleCallbacks.onShouldShowLoadingIndicator);
-        XCTAssertNotEqual(resultCallbacks.onShouldHideLoadingIndicator, exampleCallbacks.onShouldHideLoadingIndicator);
-        XCTAssertNotEqual(resultCallbacks.onEmbeddedSizeChange, exampleCallbacks.onEmbeddedSizeChange);
-        forwardedCallbacks = resultCallbacks;
+        XCTAssertNotNil(params[4]); // onEvent callback should be set
         // Verify placement options
-        MPRoktPlacementOptions *options = params[5];
+        RoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
         XCTAssertTrue(options.jointSdkSelectPlacements >= timeBeforeCall);
         return true;
@@ -216,73 +197,12 @@ static NSNumber * const kTestRoktKitId = @181;
                      attributes:attributes
                   embeddedViews:embeddedViews
                          config:roktConfig
-                      callbacks:exampleCallbacks];
+                        onEvent:exampleOnEvent];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
 
-    XCTAssertNotNil(forwardedCallbacks);
-    forwardedCallbacks.onLoad();
-    forwardedCallbacks.onUnLoad();
-    forwardedCallbacks.onShouldShowLoadingIndicator();
-    forwardedCallbacks.onShouldHideLoadingIndicator();
-    forwardedCallbacks.onEmbeddedSizeChange(@"RoktEmbedded1", 50.0);
-    XCTAssertEqual(loadInvocationCount, 1u);
-    XCTAssertEqual(unLoadInvocationCount, 1u);
-    XCTAssertEqual(showLoadingInvocationCount, 1u);
-    XCTAssertEqual(hideLoadingInvocationCount, 1u);
-    XCTAssertEqualObjects(embeddedPlacementReceived, @"RoktEmbedded1");
-    XCTAssertEqualWithAccuracy(embeddedSizeReceived, 50.0, 0.001);
-
     // Verify
-    OCMVerifyAll(self.mockContainer);
-}
-
-- (void)testSelectPlacementsMarshallsCallbacksToMainThread {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-
-    XCTestExpectation *ranOnMain = [self expectationWithDescription:@"callback on main"];
-    MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
-    exampleCallbacks.onLoad = ^{
-        XCTAssertTrue([NSThread isMainThread]);
-        [ranOnMain fulfill];
-    };
-
-    __block MPRoktEventCallback *forwardedCallbacks = nil;
-    XCTestExpectation *forwardExpectation = [self expectationWithDescription:@"forward"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
-    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
-                                      event:nil
-                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        forwardedCallbacks = params[4];
-        XCTAssertNotNil(forwardedCallbacks);
-        [forwardExpectation fulfill];
-        return YES;
-    }]
-                                messageType:MPMessageTypeEvent
-                                   userInfo:nil]);
-
-    [self.rokt selectPlacements:@"testView"
-                     attributes:@{@"key": @"value"}
-                  embeddedViews:nil
-                         config:nil
-                      callbacks:exampleCallbacks];
-
-    [self waitForExpectations:@[forwardExpectation] timeout:0.2];
-
-    XCTAssertNotEqual(forwardedCallbacks.onLoad, exampleCallbacks.onLoad);
-
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        forwardedCallbacks.onLoad();
-    });
-
-    [self waitForExpectations:@[ranOnMain] timeout:1.0];
-
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -300,7 +220,7 @@ static NSNumber * const kTestRoktKitId = @181;
     // Set up expectations BEFORE calling selectPlacements
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     NSDictionary *finalAttributes = @{@"sandbox": @"true"};
 
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
@@ -310,8 +230,9 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
         // Verify placement options exists
-        MPRoktPlacementOptions *options = params[5];
+        RoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
         return true;
     }]
@@ -325,7 +246,7 @@ static NSNumber * const kTestRoktKitId = @181;
                      attributes:nil
                   embeddedViews:nil
                          config:nil
-                      callbacks:nil];
+                        onEvent:nil];
 
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
@@ -349,7 +270,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -357,8 +278,9 @@ static NSNumber * const kTestRoktKitId = @181;
         XCTAssertEqualObjects(params[1], mappedAttributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
         // Verify placement options exists
-        MPRoktPlacementOptions *options = params[5];
+        RoktPlacementOptions *options = params[5];
         XCTAssertNotNil(options);
         return true;
     }]
@@ -385,8 +307,8 @@ static NSNumber * const kTestRoktKitId = @181;
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    
-    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
+
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMReject([self.mockContainer forwardSDKCall:roktSelector
                                       event:[OCMArg any]
                                  parameters:[OCMArg any]
@@ -532,7 +454,7 @@ static NSNumber * const kTestRoktKitId = @181;
 - (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@yahoo.com"}];
     
@@ -602,7 +524,7 @@ static NSNumber * const kTestRoktKitId = @181;
 - (void)hashedIdentityTest: (MPIdentity)mpIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:mpIdentity], @"i" : @"test@yahoo.com"}];
     
@@ -634,7 +556,7 @@ static NSNumber * const kTestRoktKitId = @181;
 - (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityType {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
     
@@ -666,7 +588,7 @@ static NSNumber * const kTestRoktKitId = @181;
 - (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityType {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
     
@@ -703,7 +625,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
     // Set up test parameters
-    NSString *placementId = @"testonversion";
+    NSString *identifier = @"testonversion";
     NSString *catalogItemId = @"testcatalogItemId";
     BOOL success = YES;
     
@@ -713,7 +635,7 @@ static NSNumber * const kTestRoktKitId = @181;
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        XCTAssertEqualObjects(params[0], placementId);
+        XCTAssertEqualObjects(params[0], identifier);
         XCTAssertEqualObjects(params[1], catalogItemId);
         XCTAssertEqualObjects(params[2], @(success));
         return true;
@@ -724,7 +646,7 @@ static NSNumber * const kTestRoktKitId = @181;
     });
     
     // Execute method
-    [[MParticle sharedInstance].rokt purchaseFinalized:placementId catalogItemId:catalogItemId success:success];
+    [[MParticle sharedInstance].rokt purchaseFinalized:identifier catalogItemId:catalogItemId success:success];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
@@ -743,9 +665,9 @@ static NSNumber * const kTestRoktKitId = @181;
     // Set up test parameters
     NSString *identifier = @"testPlacementId";
     __block BOOL callbackInvoked = NO;
-    __block MPRoktEvent *receivedEvent = nil;
+    __block RoktEvent *receivedEvent = nil;
 
-    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
+    void (^onEventCallback)(RoktEvent *) = ^(RoktEvent *event) {
         callbackInvoked = YES;
         receivedEvent = event;
     };
@@ -820,9 +742,9 @@ static NSNumber * const kTestRoktKitId = @181;
     // Set up test parameters
     NSString *identifier = @"testPlacementId";
     __block BOOL callbackInvoked = NO;
-    __block MPRoktEvent *receivedEvent = nil;
+    __block RoktEvent *receivedEvent = nil;
 
-    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
+    void (^onEventCallback)(RoktEvent *) = ^(RoktEvent *event) {
         callbackInvoked = YES;
         receivedEvent = event;
     };
@@ -835,9 +757,9 @@ static NSNumber * const kTestRoktKitId = @181;
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], identifier);
         // Simulate the kit calling the callback
-        void (^capturedCallback)(MPRoktEvent *) = params[1];
+        void (^capturedCallback)(RoktEvent *) = params[1];
         if (capturedCallback) {
-            MPRoktPlacementReady *testEvent = [[MPRoktPlacementReady alloc] initWithPlacementId:identifier];
+            RoktPlacementReady *testEvent = [[RoktPlacementReady alloc] initWithIdentifier:identifier];
             capturedCallback(testEvent);
         }
         return true;
@@ -856,10 +778,305 @@ static NSNumber * const kTestRoktKitId = @181;
     // Verify callback was invoked
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
     XCTAssertNotNil(receivedEvent, @"Should have received an event");
-    XCTAssertTrue([receivedEvent isKindOfClass:[MPRoktPlacementReady class]], @"Should receive the correct event type");
+    XCTAssertTrue([receivedEvent isKindOfClass:[RoktPlacementReady class]], @"Should receive the correct event type");
 
     // Verify
     OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testGlobalEvents {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // Set up test parameters
+    void (^onEventCallback)(RoktEvent *) = ^(RoktEvent *event) {
+        // Handle global event
+    };
+
+    // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(globalEvents:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertNotNil(params[0]);
+        return true;
+    }]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    // Execute method
+    [self.rokt globalEvents:onEventCallback];
+
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    // Verify
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testGlobalEventsCallbackInvocation {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    
+    // Set up test parameters
+    __block BOOL callbackInvoked = NO;
+    __block RoktEvent *receivedEvent = nil;
+    
+    void (^onEventCallback)(RoktEvent *) = ^(RoktEvent *event) {
+        callbackInvoked = YES;
+        receivedEvent = event;
+    };
+    
+    // Set up expectations for kit container to simulate callback invocation
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(globalEvents:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        // Simulate the kit calling the callback with InitComplete event
+        void (^capturedCallback)(RoktEvent *) = params[0];
+        if (capturedCallback) {
+            RoktInitComplete *testEvent = [[RoktInitComplete alloc] initWithSuccess:YES];
+            capturedCallback(testEvent);
+        }
+        return true;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+    
+    // Execute method
+    [self.rokt globalEvents:onEventCallback];
+    
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    
+    // Verify callback was invoked
+    XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
+    XCTAssertNotNil(receivedEvent, @"Should have received an event");
+    XCTAssertTrue([receivedEvent isKindOfClass:[RoktInitComplete class]], @"Should receive the correct event type");
+    XCTAssertTrue(((RoktInitComplete *)receivedEvent).success, @"InitComplete event should indicate success");
+    
+    // Verify
+    OCMVerifyAll(self.mockContainer);
+}
+
+#pragma mark - registerPaymentExtension & selectShoppableAds
+
+- (void)testRegisterPaymentExtensionForwardsToKitContainer {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wat-protocol"
+    id paymentExtension = OCMProtocolMock(@protocol(RoktPaymentExtension));
+#pragma clang diagnostic pop
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for message queue forward"];
+    SEL roktSelector = @selector(registerPaymentExtension:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], paymentExtension);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt registerPaymentExtension:paymentExtension];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsShortForwardsToKitWithValidParameters {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [[[self.identityMock stub] andReturn:currentUser] currentUser];
+
+    self.mockApiResult = OCMClassMock([MPIdentityApiResult class]);
+    OCMStub([self.mockApiResult user]).andReturn(currentUser);
+    [[[self.identityMock stub] andDo:^(NSInvocation *invocation) {
+        void (^completion)(MPIdentityApiResult * _Nullable, NSError * _Nullable);
+        [invocation getArgument:&completion atIndex:3];
+        completion(self.mockApiResult, nil);
+    }] identify:[OCMArg any] completion:[OCMArg any]];
+
+    NSString *identifier = @"shoppableView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for shoppable forward"];
+    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], identifier);
+        XCTAssertEqualObjects(params[1], attributes);
+        XCTAssertNil(params[2]);
+        XCTAssertNil(params[3]);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt selectShoppableAds:identifier attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsFullForwardsToKitWithConfigAndCallback {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    NSString *identifier = @"shoppableView";
+    NSDictionary *attributes = @{@"key": @"value"};
+    NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
+
+    void (^exampleOnEvent)(RoktEvent * _Nonnull) = ^(RoktEvent * _Nonnull event) {
+    };
+
+    RoktConfigBuilder *builder = [[RoktConfigBuilder alloc] init];
+    [builder colorMode:RoktColorModeDark];
+    RoktConfig *roktConfig = [builder build];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for shoppable forward"];
+    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], identifier);
+        XCTAssertEqualObjects(params[1], finalAttributes);
+        XCTAssertEqualObjects(params[2], roktConfig);
+        XCTAssertEqualObjects(params[3], exampleOnEvent);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt selectShoppableAds:identifier
+                       attributes:attributes
+                           config:roktConfig
+                          onEvent:exampleOnEvent];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsWithNilMappingDoesNotForward {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+    OCMReject([self.mockContainer forwardSDKCall:roktSelector
+                                           event:[OCMArg any]
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:[OCMArg any]]);
+
+    [self.rokt selectShoppableAds:@"shoppableView" attributes:@{@"email": @"a@b.com"}];
+
+    OCMVerifyAll((id)self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsInvokesConfirmUser {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    NSString *identifier = @"shoppableView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"confirmUser called"];
+    OCMExpect([self.mockRokt confirmUser:attributes user:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt selectShoppableAds:identifier attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+#pragma mark - mapPlacementAttributes
+
+- (void)testMapPlacementAttributesRemapsKeysPerDashboardMapping {
+    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = @[
+        @{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"},
+        @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}
+    ];
+    NSDictionary *attributes = @{@"f.name": @"Brandon", @"zip": @"12345", @"unmapped": @"keep"};
+
+    NSMutableDictionary *result = [self.rokt mapPlacementAttributes:attributes attributeMap:attributeMap forUser:nil];
+
+    XCTAssertEqualObjects(result[@"firstname"], @"Brandon");
+    XCTAssertEqualObjects(result[@"billingzipcode"], @"12345");
+    XCTAssertEqualObjects(result[@"unmapped"], @"keep");
+    XCTAssertNil(result[@"f.name"]);
+    XCTAssertNil(result[@"zip"]);
+}
+
+- (void)testMapPlacementAttributesNilAttributesReturnsEmptyMutableDictionary {
+    NSMutableDictionary *result = [self.rokt mapPlacementAttributes:nil attributeMap:@[] forUser:nil];
+
+    XCTAssertNotNil(result);
+    XCTAssertEqual(result.count, 0U);
+    XCTAssertTrue([result isKindOfClass:[NSMutableDictionary class]]);
+}
+
+- (void)testMapPlacementAttributesDoesNotSetSandboxOnUser {
+    MParticleUser *mockUser = OCMClassMock([MParticleUser class]);
+    __block NSMutableArray<NSString *> *keysSet = [NSMutableArray array];
+    OCMStub([(MParticleUser *)mockUser setUserAttribute:[OCMArg any] value:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
+        NSString *key;
+        [invocation getArgument:&key atIndex:2];
+        [keysSet addObject:key];
+    });
+
+    NSDictionary *attributes = @{@"email": @"a@b.com", @"sandbox": @"true", @"name": @"Pat"};
+    [self.rokt mapPlacementAttributes:attributes attributeMap:@[] forUser:mockUser];
+
+    XCTAssertTrue([keysSet containsObject:@"email"]);
+    XCTAssertTrue([keysSet containsObject:@"name"]);
+    XCTAssertFalse([keysSet containsObject:@"sandbox"]);
 }
 
 #pragma mark - setSessionId Tests

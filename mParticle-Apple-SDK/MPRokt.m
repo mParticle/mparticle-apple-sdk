@@ -6,6 +6,7 @@
 //
 
 #import "MPRokt.h"
+@import RoktContracts;
 #import "mParticle.h"
 #import "MPForwardQueueParameters.h"
 #import "MPILogger.h"
@@ -30,115 +31,7 @@ static const NSInteger kMPRoktKitId = 181;
 
 @end
 
-@implementation MPRoktEventCallback
-@end
-
-@implementation MPRoktEmbeddedView
-@end
-
-@implementation MPRoktConfig
-@end
-
-@interface MPRoktPlacementOptions ()
-
-@property (nonatomic, strong, nonnull) NSMutableDictionary<NSString *, NSNumber *> *mutablePerformanceMarkers;
-
-@end
-
-@implementation MPRoktPlacementOptions
-
-- (nonnull instancetype)initWithTimestamp:(long long)timestamp {
-    self = [super init];
-    if (self) {
-        _jointSdkSelectPlacements = timestamp;
-        _mutablePerformanceMarkers = [[NSMutableDictionary alloc] init];
-    }
-    return self;
-}
-
-- (nonnull NSDictionary<NSString *, NSNumber *> *)dynamicPerformanceMarkers {
-    return [self.mutablePerformanceMarkers copy];
-}
-
-- (void)setDynamicPerformanceMarkerValue:(nonnull NSNumber *)value forKey:(nonnull NSString *)key {
-    self.mutablePerformanceMarkers[key] = value;
-}
-
-@end
-
-@interface MPRokt ()
-
-/// Wraps each set callback so invocations run on the main queue when Rokt calls back from a background thread (UIKit-safe).
-- (nullable MPRoktEventCallback *)mainThreadMarshalledCallbacksFromCallbacks:(nullable MPRoktEventCallback *)callbacks;
-
-@end
-
-static void MPInvokeOnMainThread(void (^work)(void)) {
-    if (!work) {
-        return;
-    }
-    if ([NSThread isMainThread]) {
-        work();
-    } else {
-        dispatch_async(dispatch_get_main_queue(), work);
-    }
-}
-
 @implementation MPRokt
-
-- (nullable MPRoktEventCallback *)mainThreadMarshalledCallbacksFromCallbacks:(nullable MPRoktEventCallback *)callbacks {
-    if (!callbacks) {
-        return nil;
-    }
-    BOOL hasAny = callbacks.onLoad || callbacks.onUnLoad || callbacks.onShouldShowLoadingIndicator || callbacks.onShouldHideLoadingIndicator || callbacks.onEmbeddedSizeChange;
-    if (!hasAny) {
-        return nil;
-    }
-    MPRoktEventCallback *wrapped = [[MPRoktEventCallback alloc] init];
-    if (callbacks.onLoad) {
-        void (^original)(void) = [callbacks.onLoad copy];
-        wrapped.onLoad = ^{
-            MPInvokeOnMainThread(^{
-                original();
-            });
-        };
-    }
-    if (callbacks.onUnLoad) {
-        void (^original)(void) = [callbacks.onUnLoad copy];
-        wrapped.onUnLoad = ^{
-            MPInvokeOnMainThread(^{
-                original();
-            });
-        };
-    }
-    if (callbacks.onShouldShowLoadingIndicator) {
-        void (^original)(void) = [callbacks.onShouldShowLoadingIndicator copy];
-        wrapped.onShouldShowLoadingIndicator = ^{
-            MPInvokeOnMainThread(^{
-                original();
-            });
-        };
-    }
-    if (callbacks.onShouldHideLoadingIndicator) {
-        void (^original)(void) = [callbacks.onShouldHideLoadingIndicator copy];
-        wrapped.onShouldHideLoadingIndicator = ^{
-            MPInvokeOnMainThread(^{
-                original();
-            });
-        };
-    }
-    if (callbacks.onEmbeddedSizeChange) {
-        void (^original)(NSString *placement, CGFloat size) = [callbacks.onEmbeddedSizeChange copy];
-        wrapped.onEmbeddedSizeChange = ^(NSString *placement, CGFloat size) {
-            NSString *placementArg = [placement copy];
-            CGFloat sizeArg = size;
-            MPInvokeOnMainThread(^{
-                original(placementArg, sizeArg);
-            });
-        };
-    }
-    return wrapped;
-}
 
 /// Displays a Rokt ad placement with the specified identifier and user attributes.
 /// This is a convenience method that calls the full selectPlacements method with nil for optional parameters.
@@ -147,9 +40,9 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
 ///   - attributes: Optional dictionary of user attributes to pass to Rokt (e.g., email, firstName, etc.)
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    MPILogDebug(@"MPRokt selectPlacements called - identifier: %@, attributes count: %lu",
+    MPILogDebug(@"MPRokt selectPlacements (short) called - identifier: %@, attributes count: %lu",
                 identifier, (unsigned long)attributes.count);
-    [self selectPlacements:identifier attributes:attributes embeddedViews:nil config:nil callbacks:nil];
+    [self selectPlacements:identifier attributes:attributes embeddedViews:nil config:nil onEvent:nil];
 }
 
 /// Displays a Rokt ad placement with full configuration options.
@@ -160,22 +53,22 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
 ///   - attributes: Optional dictionary of user attributes (email, firstName, etc.). Attributes will be mapped according to dashboard configuration.
 ///   - embeddedViews: Optional dictionary mapping placement identifiers to embedded view containers for inline placements
 ///   - config: Optional Rokt configuration object (e.g., for dark mode or custom styling)
-///   - callbacks: Optional callback handlers for Rokt events (selection, display, completion, etc.)
+///   - onEvent: Optional callback block to handle Rokt events
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-           embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                  config:(MPRoktConfig * _Nullable)config
-               callbacks:(MPRoktEventCallback * _Nullable)callbacks {
-    MPILogDebug(@"MPRokt selectPlacements (full) - identifier: %@, attributes: %lu, embeddedViews: %lu, config: %@, callbacks: %@",
+           embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
+                  config:(RoktConfig * _Nullable)config
+                 onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
+    MPILogDebug(@"MPRokt selectPlacements (full) called - identifier: %@, attributes count: %lu, embeddedViews count: %lu, config: %@, onEvent: %@",
                 identifier,
                 (unsigned long)attributes.count,
                 (unsigned long)embeddedViews.count,
                 config ? @"present" : @"nil",
-                callbacks ? @"present" : @"nil");
+                onEvent ? @"present" : @"nil");
     
     // Capture the timestamp immediately when selectPlacements is called (in milliseconds)
     long long jointSdkSelectPlacementsTimestamp = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
-    MPRoktPlacementOptions *placementOptions = [[MPRoktPlacementOptions alloc] initWithTimestamp:jointSdkSelectPlacementsTimestamp];
+    RoktPlacementOptions *placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:jointSdkSelectPlacementsTimestamp];
     
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     if (!currentUser) {
@@ -195,22 +88,10 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
 
         // If attributeMap is nil the kit hasn't been initialized
         if (attributeMap) {
-            NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
-            for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
-                NSString *mapFrom = map[kMPAttributeMappingSourceKey];
-                NSString *mapTo = map[kMPAttributeMappingDestinationKey];
-                if (mappedAttributes[mapFrom]) {
-                    NSString * value = mappedAttributes[mapFrom];
-                    [mappedAttributes removeObjectForKey:mapFrom];
-                    mappedAttributes[mapTo] = value;
-                }
-            }
-            for (NSString *key in mappedAttributes) {
-                if (![key isEqual:kMPRoktAttributeKeySandbox]) {
-                    [resolvedUser setUserAttribute:key value:mappedAttributes[key]];
-                }
-            }
-            
+            NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
+                                                                    attributeMap:attributeMap
+                                                                         forUser:resolvedUser];
+
             dispatch_async([MParticle messageQueue], ^{
                 MPILogDebug(@"MPRokt forwarding to kit - identifier: %@, mappedAttributes count: %lu",
                             identifier, (unsigned long)mappedAttributes.count);
@@ -220,10 +101,10 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
                 [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
                 [queueParameters addParameter:embeddedViews];
                 [queueParameters addParameter:config];
-                [queueParameters addParameter:[self mainThreadMarshalledCallbacksFromCallbacks:callbacks]];
+                [queueParameters addParameter:onEvent];
                 [queueParameters addParameter:placementOptions];
                 
-                SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:options:);
+                SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
                 [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                           event:nil
                                                                      parameters:queueParameters
@@ -240,16 +121,16 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
 /// Notifies Rokt that a purchase from a placement offer has been finalized.
 /// Call this method to inform Rokt about the completion status of an offer purchase initiated from a placement.
 /// - Parameters:
-///   - placementId: The identifier of the placement where the offer was displayed
+///   - identifier: The identifier of the placement where the offer was displayed
 ///   - catalogItemId: The identifier of the catalog item that was purchased
 ///   - success: Whether the purchase was successful (YES) or failed (NO)
-- (void)purchaseFinalized:(NSString * _Nonnull)placementId catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
-    MPILogDebug(@"MPRokt purchaseFinalized - placementId: %@, catalogItemId: %@, success: %@",
-                placementId, catalogItemId, success ? @"YES" : @"NO");
+- (void)purchaseFinalized:(NSString * _Nonnull)identifier catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
+    MPILogDebug(@"MPRokt purchaseFinalized - identifier: %@, catalogItemId: %@, success: %@",
+                identifier, catalogItemId, success ? @"YES" : @"NO");
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-        [queueParameters addParameter:placementId];
+        [queueParameters addParameter:identifier];
         [queueParameters addParameter:catalogItemId];
         [queueParameters addParameter:@(success)];
         
@@ -266,8 +147,8 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
 /// Use this to listen for events like placement shown, offer selected, placement closed, etc.
 /// - Parameters:
 ///   - identifier: The Rokt placement identifier to listen for events from
-///   - onEvent: Callback block that receives MPRoktEvent objects when placement events occur
-- (void)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
+///   - onEvent: Callback block that receives RoktEvent objects when placement events occur
+- (void)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
     MPILogDebug(@"MPRokt events called - identifier: %@, onEvent: %@",
                 identifier, onEvent ? @"present" : @"nil");
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -280,6 +161,26 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                   event:nil
                                                                  parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
+/// Registers a callback to receive global events from all Rokt sources.
+/// Additional events that are not associated with a view (such as InitComplete) will also be delivered.
+/// - Parameters:
+///   - onEvent: Callback block that receives RoktEvent objects when events occur
+- (void)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:onEvent];
+
+        SEL roktSelector = @selector(globalEvents:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                             parameters:queueParameters
                                                             messageType:MPMessageTypeEvent
                                                                userInfo:nil
         ];
@@ -355,7 +256,141 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
     return result;
 }
 
+/**
+ * Registers a payment extension for Shoppable Ads.
+ * The payment extension handles payment processing (e.g., Apple Pay via Stripe).
+ *
+ * For the mParticle path, the Rokt kit reads `stripePublishableKey` from kit configuration
+ * (dashboard) and passes it to Rokt as `stripeKey`. The partner still supplies platform-specific
+ * setup in the payment extension (e.g., Apple Pay merchant ID).
+ *
+ * @param paymentExtension An object conforming to RoktPaymentExtension (PaymentExtension in Swift; from RoktContracts)
+ */
+- (void)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension {
+    dispatch_async([MParticle messageQueue], ^{
+        MPILogDebug(@"MPRokt forwarding to kit - registerPaymentExtension: %@",
+                    paymentExtension);
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:paymentExtension];
+        
+        SEL roktSelector = @selector(registerPaymentExtension:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
+/**
+ * Displays a Shoppable Ads overlay placement.
+ * Requires a payment extension to be registered first via registerPaymentExtension:.
+ *
+ * @param identifier The view name / placement identifier
+ * @param attributes User attributes for targeting
+ */
+- (void)selectShoppableAds:(NSString * _Nonnull)identifier
+                attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes {
+    MPILogDebug(@"MPRokt selectShoppableAds (short) called - identifier: %@, attributes count: %lu",
+                identifier, (unsigned long)attributes.count);
+    [self selectShoppableAds:identifier attributes:attributes config:nil onEvent:nil];
+}
+
+/**
+ * Displays a Shoppable Ads overlay placement with configuration and callbacks.
+ *
+ * @param identifier The view name / placement identifier
+ * @param attributes User attributes for targeting
+ * @param config Optional display configuration (color mode, caching)
+ * @param onEvent Optional callback block to handle Rokt events
+ */
+- (void)selectShoppableAds:(NSString * _Nonnull)identifier
+                attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                    config:(RoktConfig * _Nullable)config
+                   onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
+    MPILogDebug(@"MPRokt selectShoppableAds (full) called - identifier: %@, attributes count: %lu, config: %@, onEvent: %@",
+                identifier,
+                (unsigned long)attributes.count,
+                config ? @"present" : @"nil",
+                onEvent ? @"present" : @"nil");
+    
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    if (!currentUser) {
+        MPILogWarning(@"MPRokt selectShoppableAds - currentUser is nil, identity sync may not work as expected");
+    } else {
+        MPILogDebug(@"MPRokt current user present - userId: %@", currentUser.userId);
+    }
+    
+    // If email is passed in as an attribute and it's different than the existing identity, identify with it
+    [self confirmUser:attributes user:currentUser completion:^(MParticleUser *_Nullable resolvedUser) {
+        MPILogDebug(@"MPRokt confirmUser completed - resolvedUser: %@, userId: %@",
+                    resolvedUser ? @"present" : @"nil", resolvedUser.userId);
+        
+        NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
+
+        MPILogVerbose(@"MParticle.Rokt selectShoppableAds called with attributes: %@", attributes);
+
+        // If attributeMap is nil the kit hasn't been initialized
+        if (attributeMap) {
+            NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
+                                                                    attributeMap:attributeMap
+                                                                         forUser:resolvedUser];
+
+            dispatch_async([MParticle messageQueue], ^{
+                MPILogDebug(@"MPRokt forwarding selectShoppableAds to kit - identifier: %@, mappedAttributes count: %lu",
+                            identifier, (unsigned long)mappedAttributes.count);
+                // Forwarding call to kits
+                MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                [queueParameters addParameter:identifier];
+                [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
+                [queueParameters addParameter:config];
+                [queueParameters addParameter:onEvent];
+                
+                SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                          event:nil
+                                                                     parameters:queueParameters
+                                                                    messageType:MPMessageTypeEvent
+                                                                       userInfo:nil
+                ];
+            });
+        } else {
+            MPILogWarning(@"MPRokt selectShoppableAds not performed - Rokt Kit not configured. Check with your Rokt representative to ensure the kit is enabled.");
+        }
+    }];
+}
+
 #pragma mark - Private Helper Methods
+
+/// Applies dashboard placement attribute key mapping, then sets each non-sandbox key on the user.
+/// @return Mutable dictionary after remapping (empty when \p attributes is nil).
+- (NSMutableDictionary<NSString *, NSString *> *)mapPlacementAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
+                                                           attributeMap:(NSArray<NSDictionary<NSString *, NSString *> *> *)attributeMap
+                                                                forUser:(MParticleUser * _Nullable)user {
+    NSMutableDictionary<NSString *, NSString *> *mappedAttributes = [attributes mutableCopy];
+    if (!mappedAttributes) {
+        mappedAttributes = [[NSMutableDictionary alloc] init];
+    }
+    for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
+        NSString *mapFrom = map[kMPAttributeMappingSourceKey];
+        NSString *mapTo = map[kMPAttributeMappingDestinationKey];
+        if (mappedAttributes[mapFrom]) {
+            NSString *value = mappedAttributes[mapFrom];
+            [mappedAttributes removeObjectForKey:mapFrom];
+            mappedAttributes[mapTo] = value;
+        }
+    }
+    if (user) {
+        for (NSString *key in mappedAttributes) {
+            if (![key isEqual:kMPRoktAttributeKeySandbox]) {
+                [user setUserAttribute:key value:mappedAttributes[key]];
+            }
+        }
+    }
+    return mappedAttributes;
+}
 
 /// Retrieves the Rokt Kit configuration from the kit container.
 /// @return The Rokt Kit configuration dictionary, or nil if Rokt Kit is not configured.

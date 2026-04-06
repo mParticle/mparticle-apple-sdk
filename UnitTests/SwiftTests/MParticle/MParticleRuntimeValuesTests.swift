@@ -1,24 +1,7 @@
-//
-//  MParticleRuntimeValuesTests.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Nick Dimitrakas on 11/3/25.
-//
-
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
 final class MParticleRuntimeValuesTests: MParticleTestBase {
-    
-    func test_setSharedInstance_notifiesListener() {
-        MParticle.setSharedInstance(mparticle)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setSharedInstance:")
-        XCTAssertTrue(listenerController.onAPICalledParameter1 === mparticle)
-    }
     
     func test_setOptOutCompletion_logsMessage_onSuccess() {
         mparticle.setOptOutCompletion(.success, optOut: true)

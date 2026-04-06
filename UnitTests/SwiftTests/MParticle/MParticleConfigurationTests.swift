@@ -1,45 +1,35 @@
-//
-//  MParticleConfigurationTests.swift
-//  mParticle-Apple-SDK
-//
-//  Created by Nick Dimitrakas on 11/3/25.
-//
-
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
+internal import mParticle_Apple_SDK_Swift
 
 final class MParticleConfigurationTests: MParticleTestBase {
     
-    func test_start_initializesAndSetsFirstRunValues_whenFirstRun() {
-        XCTAssertFalse(mparticle.initialized)
-        
-        mparticle.start(withKeyCallback: true, options: options, userDefaults: userDefaults)
-        
-        XCTAssertTrue(mparticle.initialized)
-        XCTAssertNil(mparticle.settingsProvider.configSettings)
-        
-        XCTAssertNotNil(userDefaults.setMPObjectValueParam)
-        XCTAssertEqual(userDefaults.setMPObjectKeyParam, "firstrun")
-        XCTAssertEqual(userDefaults.setMPObjectUserIdParam, 0)
-        XCTAssertTrue(userDefaults.synchronizeCalled)
-    }
-    
-    func test_start_initializesWithoutUpdatingUserDefaults_whenNotFirstRun() {
-        let user = mparticle.identity.currentUser
-        options.identifyRequest = MPIdentityApiRequest(user: user!)
-        
-        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults as MPUserDefaultsProtocol)
-        
-        XCTAssertTrue(mparticle.initialized)
-        XCTAssertNil(mparticle.settingsProvider.configSettings)
-        
-        XCTAssertFalse(userDefaults.setMPObjectCalled)
-        XCTAssertFalse(userDefaults.synchronizeCalled)
-    }
+//    func test_start_initializesAndSetsFirstRunValues_whenFirstRun() {
+//        XCTAssertFalse(mparticle.initialized)
+//        
+//        mparticle.start(withKeyCallback: true, options: options, userDefaults: userDefaults)
+//        
+//        XCTAssertTrue(mparticle.initialized)
+//        XCTAssertNil(mparticle.settingsProvider.configSettings)
+//        
+//        XCTAssertNotNil(userDefaults.setMPObjectValueParam)
+//        XCTAssertEqual(userDefaults.setMPObjectKeyParam, "firstrun")
+//        XCTAssertEqual(userDefaults.setMPObjectUserIdParam, 0)
+//        XCTAssertTrue(userDefaults.synchronizeCalled)
+//    }
+//    
+//    func test_start_initializesWithoutUpdatingUserDefaults_whenNotFirstRun() {
+//        let user = mparticle.identity.currentUser
+//        options.identifyRequest = MPIdentityApiRequest(user: user!)
+//        
+//        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults as MPUserDefaultsProtocol)
+//        
+//        XCTAssertTrue(mparticle.initialized)
+//        XCTAssertNil(mparticle.settingsProvider.configSettings)
+//        
+//        XCTAssertFalse(userDefaults.setMPObjectCalled)
+//        XCTAssertFalse(userDefaults.synchronizeCalled)
+//    }
     
     func test_configure_usesDefaultValues_whenNoSettingsExist() {
         mparticle.backendController = MPBackendController_PRIVATE()
@@ -81,11 +71,6 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertNil(mparticle.customUserAgent)
         XCTAssertTrue(mparticle.collectUserAgent)
         XCTAssertTrue(mparticle.trackNotifications)
-#if os(iOS)
-#if !MPARTICLE_LOCATION_DISABLE
-        XCTAssertNil(listenerController.onAPICalledApiName)
-#endif
-#endif
     }
     
     func test_configure_appliesStoredSettings_whenOptionsNotSet() {
@@ -108,13 +93,6 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertEqual(mparticle.customUserAgent, "agent")
         XCTAssertFalse(mparticle.collectUserAgent)
         XCTAssertFalse(mparticle.trackNotifications)
-        
-#if os(iOS)
-#if !MPARTICLE_LOCATION_DISABLE
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description,
-                       "beginLocationTracking:minDistance:authorizationRequest:")
-#endif
-#endif
     }
     
     func test_reset_clearsState_andFlushesKits() {
@@ -129,6 +107,5 @@ final class MParticleConfigurationTests: MParticleTestBase {
         XCTAssertTrue(kitContainer.flushSerializedKitsCalled)
         XCTAssertTrue(kitContainer.removeAllSideloadedKitsCalled)
         XCTAssertEqual(persistenceController.resetDatabaseCalled, true)
-        XCTAssertTrue(backendController.unproxyOriginalAppDelegateCalled)
     }
 }

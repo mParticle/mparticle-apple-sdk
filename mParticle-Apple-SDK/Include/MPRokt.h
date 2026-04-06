@@ -8,57 +8,10 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-/**
- * Callback container for Rokt callbacks.
- * Used to handle various lifecycle and UI events from Rokt.
- */
-@interface MPRoktEventCallback : NSObject
-
-/** Called when the Rokt placement has finished loading */
-@property (nonatomic, copy, nullable) void (^onLoad)(void);
-/** Called when the Rokt placement is being unloaded/removed */
-@property (nonatomic, copy, nullable) void (^onUnLoad)(void);
-/** Called when Rokt reccomends the UI shows a loading indicator */
-@property (nonatomic, copy, nullable) void (^onShouldShowLoadingIndicator)(void);
-/** Called when Rokt reccomends the UI hides its loading indicator */
-@property (nonatomic, copy, nullable) void (^onShouldHideLoadingIndicator)(void);
-/** Called when the embedded view's size changes */
-@property (nonatomic, copy, nullable) void (^onEmbeddedSizeChange)(NSString * _Nonnull, CGFloat);
-
-@end
-
-/**
- * Custom view class for embedding Rokt widgets in the UI.
- * Inherits from UIView and provides container functionality for Rokt placements.
- */
-@interface MPRoktEmbeddedView : UIView
-
-@end
-
-// An enum of the possible options for an MPRoktConfig colorMode
-typedef NS_ENUM(NSInteger, MPColorMode) {
-    MPColorModeLight = 0,
-    MPColorModeDark = 1,
-    MPColorModeSystem = 2
-};
-
-/**
- * A class for customizing the UI displayed by Rokt
- */
-@interface MPRoktConfig : NSObject
-/** The max duration for the cache */
-@property (nonatomic, copy, nullable) NSNumber *cacheDuration;
-/** The attributes you would like tied to the cache */
-@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *cacheAttributes;
-/** The color mode you would like Rokt to display in */
-@property (nonatomic) MPColorMode colorMode;
-
-@end
-
-/**
- * A class for handling Rokt events
- */
-@class MPRoktEvent;
+@class RoktEmbeddedView;
+@class RoktConfig;
+@class RoktEvent;
+@protocol RoktPaymentExtension;
 
 /**
  * Main interface for interacting with Rokt functionality.
@@ -77,37 +30,46 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes;
 
 /**
- * Selects a Rokt placement with full configuration options including embedded views and callbacks.
+ * Selects a Rokt placement with full configuration options including embedded views and event callback.
  *
  * @param identifier Unique identifier for the placement
  * @param attributes Optional dictionary of attributes to customize the placement
  * @param embeddedViews Optional dictionary mapping placement names to their embedded views
- * @param roktEventCallback Optional callback object to handle widget events. The SDK dispatches these callbacks on the main queue so UI updates are safe even when the Rokt kit invokes them from a background thread.
+ * @param config Optional configuration object for customizing the placement display
+ * @param onEvent Optional callback block to handle Rokt events
  */
 - (void)selectPlacements:(NSString *_Nonnull)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-           embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
-                  config:(MPRoktConfig * _Nullable)config
-               callbacks:(MPRoktEventCallback * _Nullable)roktEventCallback;
+           embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
+                  config:(RoktConfig * _Nullable)config
+                 onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
 
 /**
  * Used to report a successful conversion without displaying a placement
  *
- * @param placementId Unique identifier for the placement
+ * @param identifier Unique identifier for the placement
  * @param catalogItemId Unique identifier for the catalog item ID
  * @param success Indicates whether or not the purchase was successful
  */
-- (void)purchaseFinalized:(NSString *_Nonnull)placementId
+- (void)purchaseFinalized:(NSString *_Nonnull)identifier
             catalogItemId:(NSString *_Nonnull)catalogItemId
                   success:(BOOL)success;
 
 /**
- * Used to subscribe to Rokt events
+ * Used to subscribe to Rokt events for a specific placement
  *
  * @param identifier The identifier of the placement to subscribe to
  * @param onEvent The block to execute when the event is triggered
  */
-- (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
+- (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
+
+/**
+ * Used to subscribe to global Rokt events from all sources.
+ * Additional events that are not associated with a view (such as InitComplete) will also be delivered.
+ *
+ * @param onEvent The block to execute when the event is triggered
+ */
+- (void)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent;
 
 /**
  * Used to close Rokt overlay placements
@@ -131,5 +93,41 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  * @return The session id or nil if no session is present.
  */
 - (NSString * _Nullable)getSessionId;
+
+/**
+ * Registers a payment extension for Shoppable Ads.
+ * The payment extension handles payment processing (e.g., Apple Pay via Stripe).
+ *
+ * For the mParticle path, the Rokt kit reads \c stripePublishableKey from kit configuration
+ * (mParticle dashboard) and passes it to Rokt as \c stripeKey. The partner still supplies
+ * platform-specific setup in the payment extension (e.g., Apple Pay merchant ID).
+ *
+ * @param paymentExtension An object conforming to RoktPaymentExtension (PaymentExtension in Swift; from RoktContracts)
+ */
+- (void)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension;
+
+/**
+ * Displays a Shoppable Ads overlay placement.
+ * Requires a payment extension to be registered first via registerPaymentExtension:.
+ *
+ * @param identifier The view name / placement identifier
+ * @param attributes User attributes for targeting
+ */
+- (void)selectShoppableAds:(NSString * _Nonnull)identifier
+                attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
+
+/**
+ * Displays a Shoppable Ads overlay placement with configuration and callbacks.
+ *
+ * @param identifier The view name / placement identifier
+ * @param attributes User attributes for targeting
+ * @param config Optional display configuration (color mode, caching)
+ * @param onEvent Optional callback block to handle Rokt events
+ */
+- (void)selectShoppableAds:(NSString * _Nonnull)identifier
+                attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                    config:(RoktConfig * _Nullable)config
+                   onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
+
 
 @end

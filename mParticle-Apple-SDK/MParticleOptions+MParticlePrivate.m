@@ -10,7 +10,6 @@
 {
     self = [super init];
     if (self) {
-        _proxyAppDelegate = YES;
         _collectUserAgent = YES;
         _collectSearchAdsAttribution = NO;
         _trackNotifications = YES;
@@ -29,11 +28,6 @@
     options.apiKey = apiKey;
     options.apiSecret = secret;
     return options;
-}
-
-- (void)setProxyAppDelegate:(BOOL)proxyAppDelegate {
-    _proxyAppDelegate = proxyAppDelegate;
-    _isProxyAppDelegateSet = YES;
 }
 
 - (void)setCollectUserAgent:(BOOL)collectUserAgent {

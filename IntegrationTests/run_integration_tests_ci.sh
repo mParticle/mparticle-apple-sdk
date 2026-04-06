@@ -21,11 +21,61 @@ WIREMOCK_JAR="${WIREMOCK_JAR:-../wiremock.jar}"
 WIREMOCK_PID_FILE="${SCRIPT_DIR}/wiremock.pid"
 WIREMOCK_LOG_FILE="${SCRIPT_DIR}/wiremock.log"
 
-# === Build framework and generate project ===
-build_framework
+# Tracks which version was injected so we can restore the placeholder on cleanup
+SDK_INJECTED_VERSION=""
 
+# === Generate project with Tuist (using source-based distribution) ===
 echo "🔄 Generating project with Tuist..."
 tuist generate --no-open
+
+inject_sdk_version() {
+	local VERSION
+	VERSION="${SDK_VERSION:-$(tr -d '[:space:]' <"${SCRIPT_DIR}/../VERSION" 2>/dev/null)}"
+
+	if [[ -z ${VERSION} ]]; then
+		echo "❌ Could not determine SDK version (set SDK_VERSION env var or ensure VERSION file exists)"
+		exit 1
+	fi
+
+	echo "🔄 Injecting SDK version ${VERSION} into mapping files..."
+	local MAPPINGS_FILES="${MAPPINGS_DIR}/mappings"
+
+	python3 - "${VERSION}" "${MAPPINGS_FILES}" <<'EOF'
+import sys, os, glob
+version, mappings_dir = sys.argv[1], sys.argv[2]
+for f in glob.glob(os.path.join(mappings_dir, '*.json')):
+    with open(f, 'r') as fh:
+        content = fh.read()
+    if 'SDK_VERSION_PLACEHOLDER' in content:
+        with open(f, 'w') as fh:
+            fh.write(content.replace('SDK_VERSION_PLACEHOLDER', version))
+EOF
+
+	SDK_INJECTED_VERSION="${VERSION}"
+	echo "✅ SDK version ${VERSION} injected"
+}
+
+restore_sdk_version_placeholder() {
+	if [[ -z ${SDK_INJECTED_VERSION} ]]; then
+		return 0
+	fi
+
+	echo "🔄 Restoring SDK_VERSION_PLACEHOLDER in mapping files..."
+	local MAPPINGS_FILES="${MAPPINGS_DIR}/mappings"
+
+	python3 - "${SDK_INJECTED_VERSION}" "${MAPPINGS_FILES}" <<'EOF'
+import sys, os, glob
+version, mappings_dir = sys.argv[1], sys.argv[2]
+for f in glob.glob(os.path.join(mappings_dir, '*.json')):
+    with open(f, 'r') as fh:
+        content = fh.read()
+    if version in content:
+        with open(f, 'w') as fh:
+            fh.write(content.replace(version, 'SDK_VERSION_PLACEHOLDER'))
+EOF
+
+	echo "✅ SDK_VERSION_PLACEHOLDER restored"
+}
 
 escape_mapping_bodies() {
 	echo "🔄 Converting mapping bodies to escaped format (WireMock-compatible)..."
@@ -228,6 +278,7 @@ verify_wiremock_results() {
 # Cleanup function
 cleanup() {
 	unescape_mapping_bodies
+	restore_sdk_version_placeholder
 	stop_wiremock_java
 }
 
@@ -238,6 +289,7 @@ error_handler() {
 	echo "❌ Script failed with exit code: ${exit_code}"
 	show_wiremock_logs_java
 	unescape_mapping_bodies
+	restore_sdk_version_placeholder
 	stop_wiremock_java
 	exit "${exit_code}"
 }
@@ -252,6 +304,7 @@ find_app_path
 reset_simulators
 find_available_device
 find_device
+inject_sdk_version
 escape_mapping_bodies
 start_wiremock_java
 wait_for_wiremock_java
@@ -265,4 +318,5 @@ launch_application
 wait_for_app_completion
 verify_wiremock_results
 unescape_mapping_bodies
+restore_sdk_version_placeholder
 stop_wiremock_java

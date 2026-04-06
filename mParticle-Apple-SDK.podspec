@@ -22,44 +22,42 @@ Pod::Spec.new do |s|
     s.documentation_url = "https://docs.mparticle.com/developers/sdk/ios/"
     s.social_media_url  = "https://twitter.com/mparticle"
     s.requires_arc      = true
-    s.default_subspec   = 'mParticle'
     s.module_name       = 'mParticle_Apple_SDK'
-    s.ios.deployment_target  = "9.0"
-    s.tvos.deployment_target = "9.0"
+    s.ios.deployment_target  = "15.6"
+    s.tvos.deployment_target = "15.6"
     s.swift_versions = ["5.0"]
 
-    s.subspec 'mParticle' do |ss|
-        ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ss.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
+    s.default_subspecs = 'mParticle'
+
+    s.subspec 'mParticle' do |mp|
+        mp.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
+        mp.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
+        mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
+        mp.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
+        mp.dependency 'mParticle-Apple-SDK-Swift'
+        mp.dependency 'RoktContracts', '~> 0.1'
     end
-    
-    s.subspec 'mParticleNoLocation' do |ss|
-        ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ss.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
-        ss.pod_target_xcconfig  = {
+
+    # Matches CocoaPods trunk layout — required by mParticle-Apple-Media-SDK when using local `:path` SDK.
+    s.subspec 'mParticleNoLocation' do |mpnl|
+        mpnl.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
+        mpnl.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
+        mpnl.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
+        mpnl.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
+        mpnl.pod_target_xcconfig = {
             'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
             'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
         }
+        mpnl.dependency 'mParticle-Apple-SDK-Swift'
+        mpnl.dependency 'RoktContracts', '~> 0.1'
     end
 
     s.subspec 'AppExtension' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-    end
-    
-    s.subspec 'AppExtensionNoLocation' do |ext|
-        ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ext.pod_target_xcconfig  = {
-            'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
-            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
-        }
+        ext.dependency 'mParticle-Apple-SDK-Swift'
+        ext.dependency 'RoktContracts', '~> 0.1'
     end
 end
 

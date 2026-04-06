@@ -1,9 +1,10 @@
 #import "MPProduct.h"
-#import "MParticleSwift.h"
 #import "MPIConstants.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPILogger.h"
 #import "mParticle.h"
+
+@import mParticle_Apple_SDK_Swift;
 
 // Internal
 NSString *const kMPProductBrand = @"br";
@@ -303,8 +304,13 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     __block id hashedValue;
     NSNumber *const zero = @0;
     
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        hashedKey = [MPIHasher hashString:key];
+        hashedKey = [hasher hashString:key];
         hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {
@@ -313,7 +319,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     }];
     
     [_userDefinedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        hashedKey = [MPIHasher hashString:key];
+        hashedKey = [hasher hashString:key];
         hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {
@@ -325,18 +331,6 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 }
 
 #pragma mark Public accessors
-- (NSString *)affiliation {
-    return self.objectDictionary[kMPProductAffiliation];
-}
-
-- (void)setAffiliation:(NSString *)affiliation {
-    if (affiliation) {
-        self.objectDictionary[kMPProductAffiliation] = affiliation;
-    } else {
-        [self.objectDictionary removeObjectForKey:kMPProductAffiliation];
-    }
-}
-
 - (NSString *)brand {
     return self.objectDictionary[kMPProductBrand];
 }
@@ -377,14 +371,6 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
         [self.objectDictionary removeObjectForKey:kMPProductCouponCode];
         [self.beautifiedAttributes removeObjectForKey:kMPExpProductCouponCode];
     }
-}
-
-- (NSString *)currency {
-    return self.objectDictionary[kMPProductCurrency];
-}
-
-- (void)setCurrency:(NSString *)currency {
-    self.objectDictionary[kMPProductCurrency] = currency ? : @"USD";
 }
 
 - (NSString *)name {
@@ -429,16 +415,6 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     }
 }
 
-- (NSString *)transactionId {
-    return self.objectDictionary[kMPProductTransactionId];
-}
-
-- (void)setTransactionId:(NSString *)transactionId {
-    if (transactionId) {
-        self.objectDictionary[kMPProductTransactionId] = transactionId;
-    }
-}
-
 - (NSString *)variant {
     return self.objectDictionary[kMPProductVariant];
 }
@@ -448,38 +424,6 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
         self.objectDictionary[kMPProductVariant] = variant;
         self.beautifiedAttributes[kMPExpProductVariant] = variant;
     }
-}
-
-- (double)shippingAmount {
-    return [self.objectDictionary[kMPProductShipping] doubleValue];
-}
-
-- (void)setShippingAmount:(double)shippingAmount {
-    self.objectDictionary[kMPProductShipping] = @(shippingAmount);
-}
-
-- (double)taxAmount {
-    return [self.objectDictionary[kMPProductTax] doubleValue];
-}
-
-- (void)setTaxAmount:(double)taxAmount {
-    self.objectDictionary[kMPProductTax] = @(taxAmount);
-}
-
-- (double)totalAmount {
-    return [self.objectDictionary[kMPProductRevenue] doubleValue];
-}
-
-- (void)setTotalAmount:(double)totalAmount {
-    self.objectDictionary[kMPProductRevenue] = @(totalAmount);
-}
-
-- (double)unitPrice {
-    return [self.price doubleValue];
-}
-
-- (void)setUnitPrice:(double)unitPrice {
-    self.price = @(unitPrice);
 }
 
 - (NSUInteger)position {

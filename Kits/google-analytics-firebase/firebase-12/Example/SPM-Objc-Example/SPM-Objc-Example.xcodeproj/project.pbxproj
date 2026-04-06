@@ -1,0 +1,245 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FB12EX02000000000000000B /* mParticle-Firebase in Frameworks */ = {isa = PBXBuildFile; productRef = FB12EX0200000000000000A0 /* mParticle-Firebase */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FB12EX02000000000000000C /* SPM-Objc-Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SPM-Objc-Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		FB12EX02000000000000000D /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = FB12EX02000000000000000E /* SPM-Objc-Example */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		FB12EX02000000000000000F /* SPM-Objc-Example */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				FB12EX02000000000000000D /* Exceptions for "SPM-Objc-Example" folder in "SPM-Objc-Example" target */,
+			);
+			path = "SPM-Objc-Example";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FB12EX020000000000000010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB12EX02000000000000000B /* mParticle-Firebase in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FB12EX020000000000000011 = {
+			isa = PBXGroup;
+			children = (
+				FB12EX02000000000000000F /* SPM-Objc-Example */,
+				FB12EX020000000000000012 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FB12EX020000000000000012 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FB12EX02000000000000000C /* SPM-Objc-Example.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FB12EX02000000000000000E /* SPM-Objc-Example */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB12EX020000000000000013 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */;
+			buildPhases = (
+				FB12EX020000000000000014 /* Sources */,
+				FB12EX020000000000000010 /* Frameworks */,
+				FB12EX020000000000000015 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				FB12EX02000000000000000F /* SPM-Objc-Example */,
+			);
+			name = "SPM-Objc-Example";
+			packageProductDependencies = (
+				FB12EX0200000000000000A0 /* mParticle-Firebase */,
+			);
+			productName = "SPM-Objc-Example";
+			productReference = FB12EX02000000000000000C /* SPM-Objc-Example.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FB12EX020000000000000016 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					FB12EX02000000000000000E = {
+						CreatedOnToolsVersion = 26.2;
+					};
+				};
+			};
+			buildConfigurationList = FB12EX020000000000000017 /* Build configuration list for PBXProject "SPM-Objc-Example" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FB12EX020000000000000011;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				FB12EX020000000000000018 /* XCLocalSwiftPackageReference "../../../firebase-12" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FB12EX020000000000000012 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FB12EX02000000000000000E /* SPM-Objc-Example */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FB12EX020000000000000015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FB12EX020000000000000014 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		FB12EX020000000000000019 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SPM-Objc-Example/Info.plist";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Objc-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FB12EX01000000000000002A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "SPM-Objc-Example/Info.plist";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle.SPM-Objc-Example";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FB12EX01000000000000002B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		FB12EX01000000000000002C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FB12EX020000000000000017 /* Build configuration list for PBXProject "SPM-Objc-Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB12EX01000000000000002B /* Debug */,
+				FB12EX01000000000000002C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB12EX020000000000000013 /* Build configuration list for PBXNativeTarget "SPM-Objc-Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB12EX020000000000000019 /* Debug */,
+				FB12EX01000000000000002A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		FB12EX020000000000000018 /* XCLocalSwiftPackageReference "../../../firebase-12" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../firebase-12";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FB12EX0200000000000000A0 /* mParticle-Firebase */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = "mParticle-Firebase";
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = FB12EX020000000000000016 /* Project object */;
+}

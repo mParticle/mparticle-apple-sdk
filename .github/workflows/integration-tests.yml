@@ -40,12 +40,16 @@ jobs:
             "https://repo1.maven.org/maven2/org/wiremock/wiremock-standalone/${{ env.WIREMOCK_VERSION }}/wiremock-standalone-${{ env.WIREMOCK_VERSION }}.jar"
           echo "✅ WireMock downloaded"
 
+      - name: Set SDK version from VERSION file
+        run: echo "SDK_VERSION=$(cat VERSION)" >> $GITHUB_ENV
+
       - name: Run Integration Tests
         id: integration_tests
         working-directory: ${{ env.WORKING_DIRECTORY }}
         env:
           CI: "true"
           WIREMOCK_JAR: ${{ github.workspace }}/wiremock.jar
+          SDK_VERSION: ${{ env.SDK_VERSION }}
         run: |
           # Make scripts executable
           chmod +x run_clean_integration_tests.sh common.sh run_integration_tests_ci.sh

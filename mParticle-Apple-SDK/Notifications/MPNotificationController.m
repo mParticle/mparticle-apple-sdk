@@ -3,7 +3,8 @@
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
-#import "MParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -33,7 +34,7 @@ static NSData *deviceToken = nil;
 #pragma mark Public static methods
 - (NSData *)deviceToken {
 #ifndef MP_UNIT_TESTING
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     deviceToken = userDefaults[kMPDeviceTokenKey];
 #else
     deviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
@@ -77,7 +78,7 @@ static NSData *deviceToken = nil;
         }
         
 #ifndef MP_UNIT_TESTING
-        MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+        MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
         userDefaults[kMPDeviceTokenKey] = deviceToken;
         [userDefaults synchronize];
 #endif

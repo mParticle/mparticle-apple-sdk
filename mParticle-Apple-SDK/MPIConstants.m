@@ -227,7 +227,6 @@ NSString *const kMPRemoteConfigRestrictIDFA = @"rdlat";
 NSString *const kMPRemoteConfigAliasMaxWindow = @"alias_max_window";
 NSString *const kMPRemoteConfigAllowASR = @"iasr";
 NSString *const kMPRemoteConfigExcludeAnonymousUsersKey = @"eau";
-NSString *const kMPRemoteConfigDirectURLRouting = @"dur";
 NSString *const kMPRemoteConfigDataPlanningResults = @"dpr";
 NSString *const kMPRemoteConfigDataPlanning = @"dtpn";
 NSString *const kMPRemoteConfigDataPlanningBlock = @"blok";
@@ -423,9 +422,6 @@ NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdentityType"
 // Primitive data type constants
 //
 const NSTimeInterval MINIMUM_SESSION_TIMEOUT = 1.0;
-
-const NSTimeInterval MAXIMUM_SESSION_TIMEOUT = DBL_MAX;
-
 const NSTimeInterval DEFAULT_SESSION_TIMEOUT = 60.0;
 
 const NSTimeInterval TWENTY_FOUR_HOURS = 86400; // database clean up interval

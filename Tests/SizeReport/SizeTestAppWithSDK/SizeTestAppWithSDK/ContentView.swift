@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  SizeTestAppWithSDK
-//
-//  Created by James Newman on 1/14/26.
-//
-
 import SwiftUI
 
 struct ContentView: View {

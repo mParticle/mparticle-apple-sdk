@@ -28,9 +28,10 @@ jobs:
     uses: ./.github/workflows/native-tests.yml
     secrets: inherit
 
-  build-secondary-platforms:
-    uses: ./.github/workflows/build-secondary-platforms.yml
-    secrets: inherit
+  # TODO: Re-enable after 9.0 release
+  # build-secondary-platforms:
+  #   uses: ./.github/workflows/build-secondary-platforms.yml
+  #   secrets: inherit
 
   integration-tests:
     uses: ./.github/workflows/integration-tests.yml
@@ -40,14 +41,19 @@ jobs:
     uses: ./.github/workflows/size-report.yml
     secrets: inherit
 
+  build-kits:
+    uses: ./.github/workflows/build-kits.yml
+    secrets: inherit
+
   pr-notify:
     if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
     needs:
       - build-and-lint
       - native-tests
-      - build-secondary-platforms
+      # - build-secondary-platforms  # TODO: Re-enable after 9.0 release
       - integration-tests
       - size-report
+      - build-kits
     name: Notify GChat
     uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main
     secrets:

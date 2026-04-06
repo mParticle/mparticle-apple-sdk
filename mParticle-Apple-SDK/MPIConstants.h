@@ -45,6 +45,26 @@ typedef NS_ENUM(NSInteger, MPDataType) {
     MPDataTypeLong = 5
 };
 
+typedef NS_ENUM(NSInteger, MPEndpoint) {
+    MPEndpointIdentityLogin = 0,
+    MPEndpointIdentityLogout,
+    MPEndpointIdentityIdentify,
+    MPEndpointIdentityModify,
+    MPEndpointEvents,
+    MPEndpointConfig,
+    MPEndpointAlias
+};
+
+typedef NS_ENUM(NSInteger, MPDatabaseTable) {
+    MPDatabaseTableAttributes = 0,
+    MPDatabaseTableBreadcrumbs,
+    MPDatabaseTableMessages,
+    MPDatabaseTableReporting,
+    MPDatabaseTableSessions,
+    MPDatabaseTableUploads,
+    MPDatabaseTableUnknown
+};
+
 // mParticle SDK Version
 extern NSString * _Nonnull const kMParticleSDKVersion;
 
@@ -274,7 +294,6 @@ extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
 extern NSString * _Nonnull const kMPRemoteConfigAliasMaxWindow;
 extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
 extern NSString * _Nonnull const kMPRemoteConfigExcludeAnonymousUsersKey;
-extern NSString * _Nonnull const kMPRemoteConfigDirectURLRouting;
 
 extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEvents;
 extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEventAttributes;
@@ -441,7 +460,6 @@ extern NSString * _Nonnull const kMPEventTypeStringMedia;
 // Primitive data type constants
 //
 extern const NSTimeInterval MINIMUM_SESSION_TIMEOUT;
-extern const NSTimeInterval MAXIMUM_SESSION_TIMEOUT DEPRECATED_MSG_ATTRIBUTE("There is no longer a maximum session timout, the value is unlimited");
 extern const NSTimeInterval DEFAULT_SESSION_TIMEOUT;
 extern const NSTimeInterval TWENTY_FOUR_HOURS; // Database clean up interval
 extern const NSTimeInterval SEVEN_DAYS;

@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "53A79A7829CCCD6400E7489F"
+               BlueprintIdentifier = "53A79D0029CE23F700E7489F"
                BuildableName = "mParticle_Apple_SDK.framework"
                BlueprintName = "mParticle-Apple-SDK"
                ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">
@@ -26,31 +26,13 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      codeCoverageEnabled = "YES"
-      onlyGenerateCoverageForSpecifiedTargets = "YES">
-      <CodeCoverageTargets>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "53A79A7829CCCD6400E7489F"
-            BuildableName = "mParticle_Apple_SDK.framework"
-            BlueprintName = "mParticle-Apple-SDK"
-            ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">
-         </BuildableReference>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "53A79D0029CE23F700E7489F"
-            BuildableName = "mParticle_Apple_SDK_NoLocation.framework"
-            BlueprintName = "mParticle-Apple-SDK-NoLocation"
-            ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">
-         </BuildableReference>
-      </CodeCoverageTargets>
+      shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "53A79A8229CCCD6400E7489F"
+               BlueprintIdentifier = "534CD26029CE2CE1008452B3"
                BuildableName = "mParticle-Apple-SDKTests.xctest"
                BlueprintName = "mParticle-Apple-SDKTests"
                ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">
@@ -78,7 +60,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "53A79A7829CCCD6400E7489F"
+            BlueprintIdentifier = "53A79D0029CE23F700E7489F"
             BuildableName = "mParticle_Apple_SDK.framework"
             BlueprintName = "mParticle-Apple-SDK"
             ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">

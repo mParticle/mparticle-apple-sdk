@@ -4,6 +4,8 @@
 # Xcode
 build/
 .build/
+**/Package.resolved
+**/package.resolved
 *.pbxuser
 !default.pbxuser
 *.mode1v3

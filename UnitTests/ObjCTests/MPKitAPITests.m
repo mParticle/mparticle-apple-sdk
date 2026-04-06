@@ -1,8 +1,4 @@
-#ifndef MPARTICLE_LOCATION_DISABLE
 @import mParticle_Apple_SDK;
-#else
-@import mParticle_Apple_SDK_NoLocation;
-#endif
 
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
@@ -11,6 +7,8 @@
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPKitContainer_PRIVATE ()
 
@@ -119,7 +117,7 @@
                                     @"f":@NO
                                     }
                                 ];
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     [userDefaults removeMPObjectForKey:@"ua"];
     
@@ -162,11 +160,14 @@
                                 @"better data":@"ABC",
                                 @"bad data":@"12345"
                                 };
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     [userDefaults setMPObject:userAttributes forKey:kMPUserAttributeKey userId:currentUser.userId];
-    
-    NSString *goodHashedKey = [MPIHasher hashString:@"good data"];
-    NSString *badHashedKey = [MPIHasher hashString:@"bad data"];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *goodHashedKey = [hasher hashString:@"good data"];
+    NSString *badHashedKey = [hasher hashString:@"bad data"];
     NSArray *configurations = @[
                                 @{
                                     @"id":@(42),
@@ -207,10 +208,14 @@
                                      @"better data":@"ABC",
                                      @"bad data":@"12345"
                                      };
-    [currentUser setUserAttributes:userAttributes];
     
-    NSString *goodHashedKey = [MPIHasher hashString:@"good data"];
-    NSString *badHashedKey = [MPIHasher hashString:@"bad data"];
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    [currentUser setUserAttributes:userAttributes];
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *goodHashedKey = [hasher hashString:@"good data"];
+    NSString *badHashedKey = [hasher hashString:@"bad data"];
     NSArray *configurations = @[
                                 @{
                                     @"id":@(42),

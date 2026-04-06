@@ -14,7 +14,8 @@
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPILogger.h"
-#import "MParticleSwift.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -67,7 +68,7 @@
     }];
     
     NSNumber *ltv;
-    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     ltv = [userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid];
     if (ltv == nil) {
         ltv = @0;
@@ -159,7 +160,14 @@
     } else {
         // If the info wasn't saved in the session, use the old behavior and grab it now
         // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+        MParticle* mparticle = MParticle.sharedInstance;
+        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+        MPUserDefaults* userDefaults = MPUserDefaultsConnector.userDefaults;
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                                                     userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                         identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                           logger:logger];
         NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
         _uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentationWithMpid:mpid];
     }

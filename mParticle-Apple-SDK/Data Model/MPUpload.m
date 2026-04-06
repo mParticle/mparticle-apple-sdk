@@ -3,7 +3,6 @@
 #import "MPIConstants.h"
 #import "mParticle.h"
 #import "MPILogger.h"
-#import "MParticleSwift.h"
 
 @interface MParticle()
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;

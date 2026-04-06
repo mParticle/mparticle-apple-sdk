@@ -1,9 +1,6 @@
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-import mParticle_Apple_SDK_NoLocation
-#else
 import mParticle_Apple_SDK
-#endif
+internal import mParticle_Apple_SDK_Swift
 
 class MPEventTests: XCTestCase {
     var sut: MPEvent!
@@ -50,7 +47,6 @@ class MPEventTests: XCTestCase {
         XCTAssertNotNil(sut)
         XCTAssertEqual(sut.name, "<<Event With No Name>>")
         XCTAssertEqual(sut.duration, 0)
-        XCTAssertNil(sut.info)
         XCTAssertNil(sut.category)
         XCTAssertNil(sut.endTime)
         XCTAssertNil(sut.startTime)
@@ -67,7 +63,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testInit_withEmptyName_returnsNil() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
             self.receivedMessage = message
@@ -78,7 +74,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testInitWithTooLongName_returnsNil() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
             self.receivedMessage = message
@@ -164,7 +160,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testSetCategory_withTooLongCategory_discardsAndLogs() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
            self.receivedMessage = message
@@ -236,14 +232,8 @@ class MPEventTests: XCTestCase {
         XCTAssertEqual(ts, expected)
     }
     
-    func testInfoAndSetInfo_mapsToCustomAttributes() {
-        sut.info = ["a": "1"]
-        XCTAssertEqual(sut.info?["a"] as? String, "1")
-        XCTAssertEqual(sut.customAttributes?["a"] as? String, "1")
-    }
-    
     func testSetName_withEmptyName_discardsAndLogs() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
             self.receivedMessage = message
@@ -254,7 +244,7 @@ class MPEventTests: XCTestCase {
     }
     
     func testSetName_withTooLongName_discardsAndLogs() {
-        let logger = MParticle.sharedInstance().getLogger()!
+        let logger = MParticle.sharedInstance().getLogger() as! MPLog
         logger.logLevel = .verbose
         logger.customLogger = { message in
             self.receivedMessage = message

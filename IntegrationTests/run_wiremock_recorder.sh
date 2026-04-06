@@ -17,9 +17,7 @@ if [[ -z ${MPARTICLE_API_KEY} ]] || [[ -z ${MPARTICLE_API_SECRET} ]]; then
 	exit 1
 fi
 
-# === Build framework and generate project ===
-build_framework
-
+# === Generate project with Tuist (using source-based distribution) ===
 echo "🔄 Generating project with Tuist..."
 tuist generate --no-open
 

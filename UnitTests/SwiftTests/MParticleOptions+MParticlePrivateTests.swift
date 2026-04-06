@@ -1,9 +1,5 @@
 import XCTest
-#if MPARTICLE_LOCATION_DISABLE
-    import mParticle_Apple_SDK_NoLocation
-#else
-    import mParticle_Apple_SDK
-#endif
+import mParticle_Apple_SDK
 
 class MParticleOptionsMParticlePrivateTests: XCTestCase {
     var sut: MParticleOptions!
@@ -15,7 +11,6 @@ class MParticleOptionsMParticlePrivateTests: XCTestCase {
 
     func testInit() {
         XCTAssertNotNil(sut)
-        XCTAssertTrue(sut.proxyAppDelegate)
         XCTAssertTrue(sut.collectUserAgent)
         XCTAssertFalse(sut.collectSearchAdsAttribution)
         XCTAssertTrue(sut.trackNotifications)
@@ -63,16 +58,6 @@ class MParticleOptionsMParticlePrivateTests: XCTestCase {
 
         XCTAssertEqual(sut.apiKey, "key")
         XCTAssertEqual(sut.apiSecret, "secret")
-    }
-
-    func testSetProxyAppDelegate() {
-        XCTAssertTrue(sut.proxyAppDelegate)
-        XCTAssertFalse(sut.isProxyAppDelegateSet)
-
-        sut.setProxyAppDelegate(false)
-
-        XCTAssertFalse(sut.proxyAppDelegate)
-        XCTAssertTrue(sut.isProxyAppDelegateSet)
     }
 
     func testSetCollectUserAgent() {

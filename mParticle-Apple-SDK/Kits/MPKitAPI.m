@@ -6,6 +6,8 @@
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
@@ -166,6 +168,25 @@
     MParticleUser *selectedUser = [[[MParticle sharedInstance] identity] getUser:filteredUser.userId];
     
     [selectedUser removeUserAttribute:key];
+}
+
+#pragma mark - Date Formatting
+
++ (NSString *)stringFromDateRFC3339:(NSDate *)date {
+    return [MPDateFormatter stringFromDateRFC3339:date];
+}
+
+
++ (NSDate *)dateFromStringRFC3339:(NSString *)string {
+    return [MPDateFormatter dateFromStringRFC3339:string];
+}
+
++ (NSString *_Nullable)hashString:(NSString * _Nonnull)string {
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
+    return [hasher hashString:string];
 }
 
 @end

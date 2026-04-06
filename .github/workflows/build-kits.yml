@@ -1,0 +1,140 @@
+name: Build Kits
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  load-matrix:
+    name: Load kit matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+      pod-matrix: ${{ steps.set.outputs.pod-matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: Kits/matrix.json
+          sparse-checkout-cone-mode: false
+      - id: set
+        run: |
+          echo "matrix=$(jq -c . Kits/matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "pod-matrix=$(jq -c '[.[] | select(.podspec)]' Kits/matrix.json)" >> "$GITHUB_OUTPUT"
+
+  pod-lint-kits:
+    name: Pod Lint ${{ matrix.kit.name }}
+    needs: load-matrix
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        kit: ${{ fromJson(needs.load-matrix.outputs.pod-matrix) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.2"
+      - name: Pod Lib Lint
+        run: |
+          # Bump local SDK versions to 9.0.0 to satisfy kit ~> 9.0 dependency constraints.
+          # v9.0 is in-progress and not yet on CocoaPods CDN. CocoaPods podspec dependencies
+          # cannot reference git branches (unlike SPM), so we supply local podspecs via
+          # --include-podspecs with a temporary version bump on the ephemeral CI runner.
+          # TODO: Remove the sed bumps and --include-podspecs once mParticle-Apple-SDK v9.0
+          # is published to CocoaPods CDN.
+          sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK.podspec
+          sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
+
+          echo "Linting: ${{ matrix.kit.podspec }}"
+          for attempt in 1 2 3; do
+            pod lib lint "${{ matrix.kit.podspec }}" \
+              --allow-warnings \
+              --skip-import-validation \
+              --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}" \
+              && break
+            [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 60s..." && sleep 60 || exit 1
+          done
+
+  build-kits:
+    name: Build ${{ matrix.kit.name }}
+    needs: load-matrix
+    runs-on: macOS-latest
+    env:
+      XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Resolve SPM dependencies
+        run: |
+          SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+
+          xcodebuild -resolvePackageDependencies -project "$PROJECT" \
+            -scheme "$SCHEME" -derivedDataPath DerivedData
+
+      - name: Build kit schemes
+        run: |
+          echo '${{ toJson(matrix.kit.schemes) }}' | jq -c '.[]' | while IFS= read -r ENTRY; do
+            SCHEME=$(echo "$ENTRY" | jq -r '.scheme')
+            DEST=$(echo "$ENTRY" | jq -r '.destination')
+
+            if [ -d "${{ matrix.kit.local_path }}/$SCHEME.xcodeproj" ]; then
+              PROJECT="${{ matrix.kit.local_path }}/$SCHEME.xcodeproj"
+            else
+              PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+            fi
+
+            xcodebuild build -project "$PROJECT" -scheme "$SCHEME" \
+              -destination "generic/platform=$DEST" \
+              -derivedDataPath DerivedData \
+              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+            xcodebuild build -project "$PROJECT" -scheme "$SCHEME" \
+              -destination "generic/platform=$DEST Simulator" \
+              -derivedDataPath DerivedData \
+              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          done
+
+      - name: Build SPM-Swift-Example
+        run: |
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Swift-Example/*.xcodeproj | head -1)"
+          xcodebuild build -project "$PROJECT" -scheme SPM-Swift-Example \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath DerivedData-Example \
+            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+      - name: Build SPM-Objc-Example
+        run: |
+          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Objc-Example/*.xcodeproj | head -1)"
+          xcodebuild build -project "$PROJECT" -scheme SPM-Objc-Example \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath DerivedData-Example \
+            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+      - name: Run SPM tests
+        run: |
+          cd ${{ matrix.kit.local_path }}
+          PACKAGE=$(grep -E '^\s*name:' Package.swift | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+          LIB_COUNT=$(grep -c '\.library' Package.swift || true)
+          if [ "$LIB_COUNT" -gt 1 ]; then
+            SCHEME="${PACKAGE}-Package"
+          else
+            SCHEME="$PACKAGE"
+          fi
+          for xc in *.xcodeproj; do [ -d "$xc" ] && mv "$xc" "${xc}.bak"; done
+          trap 'for xc in *.xcodeproj.bak; do [ -d "$xc" ] && mv "$xc" "${xc%.bak}"; done' EXIT
+          xcodebuild test -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=iPhone 16" \
+            -derivedDataPath DerivedData-Test \
+            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO

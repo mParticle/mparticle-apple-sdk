@@ -1,0 +1,318 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FB12000100000000000000A1 /* MPKitFirebase.m in Sources */ = {isa = PBXBuildFile; fileRef = FB12000100000000000000A2 /* MPKitFirebase.m */; };
+		FB12000100000000000000A3 /* MPKitFirebase.h in Headers */ = {isa = PBXBuildFile; fileRef = FB12000100000000000000A4 /* MPKitFirebase.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB12000100000000000000A5 /* mParticle_Firebase.h in Headers */ = {isa = PBXBuildFile; fileRef = FB12000100000000000000A6 /* mParticle_Firebase.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FB12000100000000000000A7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FB12000100000000000000A8 /* PrivacyInfo.xcprivacy */; };
+		FB12000100000000000000B1 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = FB12000100000000000000B2 /* FirebaseAnalytics */; };
+		FB12000100000000000000B3 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = FB12000100000000000000B4 /* mParticle-Apple-SDK */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FB12000100000000000000A2 /* MPKitFirebase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = MPKitFirebase.m; path = Sources/mParticle-Firebase/MPKitFirebase.m; sourceTree = "<group>"; };
+		FB12000100000000000000A4 /* MPKitFirebase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MPKitFirebase.h; path = Sources/mParticle-Firebase/include/MPKitFirebase.h; sourceTree = "<group>"; };
+		FB12000100000000000000A6 /* mParticle_Firebase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = mParticle_Firebase.h; path = Sources/mParticle-Firebase/include/mParticle_Firebase.h; sourceTree = "<group>"; };
+		FB12000100000000000000A8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Sources/mParticle-Firebase/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		FB12000100000000000000C1 /* mParticle_Firebase.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Firebase.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FB12000100000000000000D1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB12000100000000000000B1 /* FirebaseAnalytics in Frameworks */,
+				FB12000100000000000000B3 /* mParticle-Apple-SDK in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FB12000100000000000000E1 = {
+			isa = PBXGroup;
+			children = (
+				FB12000100000000000000E2 /* Sources */,
+				FB12000100000000000000E3 /* Products */,
+				FB12000100000000000000E4 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		FB12000100000000000000E2 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				FB12000100000000000000A2 /* MPKitFirebase.m */,
+				FB12000100000000000000A4 /* MPKitFirebase.h */,
+				FB12000100000000000000A6 /* mParticle_Firebase.h */,
+				FB12000100000000000000A8 /* PrivacyInfo.xcprivacy */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		FB12000100000000000000E3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FB12000100000000000000C1 /* mParticle_Firebase.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FB12000100000000000000E4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		FB12000100000000000000F1 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB12000100000000000000A3 /* MPKitFirebase.h in Headers */,
+				FB12000100000000000000A5 /* mParticle_Firebase.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		FB120001000000000000001C /* mParticle-Firebase */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB12000100000000000000F2 /* Build configuration list for PBXNativeTarget "mParticle-Firebase" */;
+			buildPhases = (
+				FB12000100000000000000F3 /* Sources */,
+				FB12000100000000000000D1 /* Frameworks */,
+				FB12000100000000000000F1 /* Headers */,
+				FB12000100000000000000F4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-Firebase";
+			packageProductDependencies = (
+				FB12000100000000000000B2 /* FirebaseAnalytics */,
+				FB12000100000000000000B4 /* mParticle-Apple-SDK */,
+			);
+			productName = "mParticle-Firebase";
+			productReference = FB12000100000000000000C1 /* mParticle_Firebase.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FB12000100000000000000F5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1200;
+				TargetAttributes = {
+					FB120001000000000000001C = {
+						CreatedOnToolsVersion = 12.0;
+					};
+				};
+			};
+			buildConfigurationList = FB12000100000000000000F6 /* Build configuration list for PBXProject "mParticle-Firebase" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FB12000100000000000000E1;
+			packageReferences = (
+				FB12000100000000000000F7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				FB12000100000000000000F8 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */,
+			);
+			productRefGroup = FB12000100000000000000E3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FB120001000000000000001C /* mParticle-Firebase */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FB12000100000000000000F4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB12000100000000000000A7 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FB12000100000000000000F3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB12000100000000000000A1 /* MPKitFirebase.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		FB12000100000000000000F9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Firebase";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FB12000100000000000000FA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Firebase";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = NO;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FB12000100000000000000FB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		FB12000100000000000000FC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FB12000100000000000000F6 /* Build configuration list for PBXProject "mParticle-Firebase" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB12000100000000000000FB /* Debug */,
+				FB12000100000000000000FC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB12000100000000000000F2 /* Build configuration list for PBXNativeTarget "mParticle-Firebase" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB12000100000000000000F9 /* Debug */,
+				FB12000100000000000000FA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		FB12000100000000000000F7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+		FB12000100000000000000F8 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mParticle/mparticle-apple-sdk";
+			requirement = {
+				branch = "workstation/9.0-Release";
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		FB12000100000000000000B2 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB12000100000000000000F7 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		FB12000100000000000000B4 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB12000100000000000000F8 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */;
+			productName = "mParticle-Apple-SDK";
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = FB12000100000000000000F5 /* Project object */;
+}
