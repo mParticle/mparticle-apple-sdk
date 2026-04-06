@@ -1,4 +1,5 @@
 import SwiftUI
+import mParticle_Rokt_Swift
 import Rokt_Widget
 import mParticle_Apple_SDK
 
@@ -38,12 +39,11 @@ struct ContentView: View {
                 .tint(Color(hex: "#C20075"))
                 .disabled(sdkTriggered)
 
-                RoktLayout(
+                MPRoktLayout(
                     sdkTriggered: $sdkTriggered,
                     identifier: "MSDKOverlayLayout",
                     attributes: attributes
-                )
-                .padding(.horizontal)
+                ).roktLayout
 
                 Button("Load Bottomsheet Placement") {
                     bottomsheetTriggered = true
