@@ -9,10 +9,8 @@ let package = Package(
         .library(name: "mParticle-CleverTap", targets: ["mParticle-CleverTap"])
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/mParticle/mparticle-apple-sdk",
-            branch: "workstation/9.0-Release"
-        ),
+        // Standalone kit CI/releases: use .package(url: "https://github.com/mParticle/mparticle-apple-sdk", branch: "…").
+        .package(name: "mparticle-apple-sdk", path: "../../../"),
         .package(url: "https://github.com/CleverTap/clevertap-ios-sdk", .upToNextMajor(from: "7.0.0"))
     ],
     targets: [
@@ -25,7 +23,13 @@ let package = Package(
             resources: [.process("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [
-                .unsafeFlags(["-Wno-non-modular-include-in-framework-module"])
+                .unsafeFlags([
+                    "-Wno-non-modular-include-in-framework-module",
+                    "-Wno-error=non-modular-include-in-framework-module"
+                ])
+            ],
+            linkerSettings: [
+                .linkedFramework("CoreLocation")
             ]
         ),
         .testTarget(name: "mParticle-CleverTapTests", dependencies: ["mParticle-CleverTap"])

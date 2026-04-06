@@ -4,8 +4,8 @@
 #import <Foundation/Foundation.h>
 #import "MPEnums.h"
 #import "MPForwardRecord.h"
+#import "MPLocation.h"
 #import <UIKit/UIKit.h>
-#import <CoreLocation/CoreLocation.h>
 
 @class RoktEmbeddedView;
 @class RoktConfig;
@@ -74,9 +74,9 @@
 #pragma mark Location tracking
 // We shouldn't remove this methods it is part of kit interface so MParticle will never send any event and data
 // And these methods will be required when we reimplement location support as separate module
-- (nonnull MPKitExecStatus *)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
+- (nonnull MPKitExecStatus *)beginLocationTracking:(MPLocationAccuracy)accuracy minDistance:(MPLocationDistance)distanceFilter;
 - (nonnull MPKitExecStatus *)endLocationTracking;
-- (nonnull MPKitExecStatus *)setLocation:(nonnull CLLocation *)location;
+- (nonnull MPKitExecStatus *)setLocation:(nonnull MPLocation *)location;
 
 #pragma mark Session management
 - (nonnull MPKitExecStatus *)beginSession;

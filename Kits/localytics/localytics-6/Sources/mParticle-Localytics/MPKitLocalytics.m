@@ -1,4 +1,6 @@
 #import "MPKitLocalytics.h"
+@import CoreLocation;
+#import "MPLocation.h"
 
 #if defined(__has_include) && __has_include(<Localytics/Localytics.h>)
     #import <Localytics/Localytics.h>
@@ -213,8 +215,9 @@
     return execStatus;
 }
 
-- (MPKitExecStatus *)setLocation:(CLLocation *)location {
-    [Localytics setLocation:location.coordinate];
+- (MPKitExecStatus *)setLocation:(MPLocation *)location {
+    CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake(location.latitude, location.longitude);
+    [Localytics setLocation:coordinate];
     
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLocalytics) returnCode:MPKitReturnCodeSuccess];
     return execStatus;

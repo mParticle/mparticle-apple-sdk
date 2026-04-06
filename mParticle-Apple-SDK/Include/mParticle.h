@@ -17,6 +17,7 @@
 #import "MPKitAPI.h"
 #import "MPConsentState.h"
 #import "MPForwardRecord.h"
+#import "MPLocation.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
