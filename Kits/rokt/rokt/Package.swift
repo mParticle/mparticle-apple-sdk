@@ -13,11 +13,11 @@ let package = Package(
     ],
     dependencies: [
         // For CI / release, comment out `.package(path:)` and uncomment the remote URL below.
-        .package(path: "../../../"),
-        // .package(
-        //     url: "https://github.com/mParticle/mparticle-apple-sdk",
-        //     branch: "main"
-        // ),
+        // .package(path: "../../../"),
+        .package(
+            url: "https://github.com/mParticle/mparticle-apple-sdk",
+            branch: "main"
+        ),
         // Rokt iOS SDK 5.x (Shoppable Ads, etc.): https://github.com/ROKT/rokt-sdk-ios/releases
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
