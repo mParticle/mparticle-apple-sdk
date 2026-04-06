@@ -1,4 +1,6 @@
 #import "MPKitCleverTap.h"
+@import CoreLocation;
+#import "MPLocation.h"
 
 #if defined(__has_include) && __has_include(<CleverTapSDK/CleverTap.h>)
     #import <CleverTapSDK/CleverTap.h>
@@ -131,8 +133,9 @@ static NSString *const kLibVersion = @"9.0.0";
 
 #pragma mark Location tracking
 
-- (nonnull MPKitExecStatus *)setLocation:(nonnull CLLocation *)location {
-    [CleverTap setLocation:location.coordinate];
+- (nonnull MPKitExecStatus *)setLocation:(nonnull MPLocation *)location {
+    CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake(location.latitude, location.longitude);
+    [CleverTap setLocation:coordinate];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
