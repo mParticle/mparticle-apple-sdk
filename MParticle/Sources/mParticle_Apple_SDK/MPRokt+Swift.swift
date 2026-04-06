@@ -1,6 +1,5 @@
 import Foundation
 import ObjectiveC
-import mParticle_Apple_SDK_ObjC
 
 // Swift cannot auto-import MPRokt methods whose signatures reference
 // forward-declared Swift-origin types (RoktEvent, RoktConfig, etc.)
