@@ -1,7 +1,6 @@
 import Foundation
 import ObjectiveC
 import mParticle_Apple_SDK_ObjC
-import RoktContracts
 
 // Swift cannot auto-import MPRokt methods whose signatures reference
 // forward-declared Swift-origin types (RoktEvent, RoktConfig, etc.)
@@ -21,17 +20,18 @@ extension MPRokt {
         guard let method = class_getInstanceMethod(MPRokt.self, sel) else { return }
         let imp = method_getImplementation(method)
         typealias Fn = @convention(c) (
-            AnyObject, Selector, NSString, NSDictionary?, NSDictionary?, RoktConfig?, EventBlock?
+            AnyObject,
+            Selector,
+            NSString,
+            NSDictionary?,
+            NSDictionary?,
+            RoktConfig?,
+            EventBlock?
         ) -> Void
-        let block: EventBlock? = onEvent.map { $0 as EventBlock }
-        unsafeBitCast(imp, to: Fn.self)(
-            self, sel,
-            identifier as NSString,
-            attributes as NSDictionary,
-            embeddedViews as NSDictionary?,
-            config,
-            block
-        )
+        let attrs = attributes as NSDictionary
+        let embedded = embeddedViews as NSDictionary?
+        let block: EventBlock? = onEvent.map { cb in cb as EventBlock }
+        unsafeBitCast(imp, to: Fn.self)(self, sel, identifier as NSString, attrs, embedded, config, block)
     }
 
     public func events(
@@ -74,11 +74,17 @@ extension MPRokt {
         guard let method = class_getInstanceMethod(MPRokt.self, sel) else { return }
         let imp = method_getImplementation(method)
         typealias Fn = @convention(c) (
-            AnyObject, Selector, NSString, NSDictionary, RoktConfig?, EventBlock?
+            AnyObject,
+            Selector,
+            NSString,
+            NSDictionary,
+            RoktConfig?,
+            EventBlock?
         ) -> Void
         let block: EventBlock? = onEvent.map { $0 as EventBlock }
         unsafeBitCast(imp, to: Fn.self)(
-            self, sel,
+            self,
+            sel,
             identifier as NSString,
             attributes as NSDictionary,
             config,
