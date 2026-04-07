@@ -2238,5 +2238,5 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/9.0.0...HEAD
-[9.0.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...9.0.0
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.0...HEAD
+[9.0.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...v9.0.0
