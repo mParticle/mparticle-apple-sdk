@@ -81,9 +81,6 @@ jobs:
       - name: Update version in MPIConstants.m
         run: sed -i '' "s/kMParticleSDKVersion = @\"[^\"]*\"/kMParticleSDKVersion = @\"${VERSION}\"/" mParticle-Apple-SDK/MPIConstants.m
 
-      - name: Update version in MPConstants.swift
-        run: sed -i '' "s/let kMParticleSDKVersion = \"[^\"]*\"/let kMParticleSDKVersion = \"${VERSION}\"/" mParticle-Apple-SDK/MPConstants.swift
-
       - name: Update version in Info.plist
         run: /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" Framework/Info.plist
 
@@ -120,7 +117,6 @@ jobs:
             Framework/Info.plist \
             mParticle-Apple-SDK.podspec \
             mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec \
-            mParticle-Apple-SDK/MPConstants.swift \
             mParticle-Apple-SDK/MPIConstants.m \
             IntegrationTests/wiremock-recordings/mappings/*.json \
             Kits/
@@ -149,7 +145,6 @@ jobs:
           ### Files updated
           - All podspecs (core, Swift, kits) → \`${VERSION}\`
           - \`mParticle-Apple-SDK/MPIConstants.m\`
-          - \`mParticle-Apple-SDK/MPConstants.swift\`
           - \`Framework/Info.plist\`
           - Integration test mappings
           - Kit \`Package.swift\`: \`let version\` → core SDK SPM pin (major bumps only)

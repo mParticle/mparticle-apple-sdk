@@ -22,11 +22,6 @@
         "scheme": "mParticle-Adobe",
         "module": "mParticle_Adobe",
         "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-AdobeMedia",
-        "module": "mParticle_AdobeMedia",
-        "destination": "iOS"
       }
     ]
   },
@@ -388,6 +383,7 @@
   {
     "name": "rokt",
     "local_path": "Kits/rokt/rokt",
+    "podspec": "Kits/rokt/rokt/mParticle-Rokt.podspec",
     "dest_repo": "mp-apple-integration-rokt",
     "schemes": [
       {
