@@ -203,12 +203,12 @@ jobs:
               xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
                 -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" \
                 -derivedDataPath DerivedData \
-                -packageCachePath DerivedData/SourcePackages \
+                -packageCachePath "$GITHUB_WORKSPACE/DerivedData/SourcePackages" \
                 $BUILD_SETTINGS
               xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
                 -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" \
                 -derivedDataPath DerivedData \
-                -packageCachePath DerivedData/SourcePackages \
+                -packageCachePath "$GITHUB_WORKSPACE/DerivedData/SourcePackages" \
                 $BUILD_SETTINGS
 
               XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_DEVICE}.xcarchive -framework ${MODULE}.framework"
