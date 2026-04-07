@@ -336,7 +336,7 @@
 				INFOPLIST_FILE = Sources/mParticle-ComScore/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-ComScore-tvOS";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = mParticle_ComScore;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = NO;
 				TARGETED_DEVICE_FAMILY = 3;
@@ -356,7 +356,7 @@
 				INFOPLIST_FILE = Sources/mParticle-ComScore/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-ComScore-tvOS";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = mParticle_ComScore;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = NO;
 				TARGETED_DEVICE_FAMILY = 3;

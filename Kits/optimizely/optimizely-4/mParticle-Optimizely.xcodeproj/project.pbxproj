@@ -406,7 +406,7 @@
 				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Optimizely-tvOS";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = mParticle_Optimizely;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = NO;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
@@ -427,7 +427,7 @@
 				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Optimizely-tvOS";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = mParticle_Optimizely;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = NO;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
