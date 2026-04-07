@@ -1,7 +1,24 @@
 // swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import Foundation
 import PackageDescription
+
+let version = ""
+
+let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] != nil
+
+let mParticleAppleSDK: Package.Dependency = {
+    if useLocalVersion {
+        return .package(path: "../../../")
+    }
+
+    let url = "https://github.com/mParticle/mparticle-apple-sdk"
+    if version.isEmpty {
+        return .package(url: url, branch: "main")
+    }
+    return .package(url: url, .upToNextMajor(from: Version(version)!))
+}()
 
 let package = Package(
     name: "mParticle-AppsFlyer",
@@ -13,10 +30,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/mParticle/mparticle-apple-sdk",
-            branch: "workstation/9.0-Release"
-        ),
+        mParticleAppleSDK,
         .package(url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static",
                  .upToNextMajor(from: "6.0.0")),
         .package(
@@ -28,7 +42,7 @@ let package = Package(
         .target(
             name: "mParticle-AppsFlyer",
             dependencies: [
-                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
+                .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
                 .product(name: "AppsFlyerLib-Static", package: "AppsFlyerFramework-Static")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")]

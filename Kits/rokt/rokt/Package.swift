@@ -1,6 +1,23 @@
 // swift-tools-version:5.5
 
+import Foundation
 import PackageDescription
+
+let version = ""
+
+let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] != nil
+
+let mParticleAppleSDK: Package.Dependency = {
+    if useLocalVersion {
+        return .package(path: "../../../")
+    }
+
+    let url = "https://github.com/mParticle/mparticle-apple-sdk"
+    if version.isEmpty {
+        return .package(url: url, branch: "main")
+    }
+    return .package(url: url, .upToNextMajor(from: Version(version)!))
+}()
 
 let package = Package(
     name: "mParticle-Rokt",
@@ -12,13 +29,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        // For CI / release, comment out `.package(path:)` and uncomment the remote URL below.
-        // .package(path: "../../../"),
-        .package(
-            url: "https://github.com/mParticle/mparticle-apple-sdk",
-            branch: "main"
-        ),
-        // Rokt iOS SDK 5.x (Shoppable Ads, etc.): https://github.com/ROKT/rokt-sdk-ios/releases
+        mParticleAppleSDK,
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
             .upToNextMajor(from: "5.0.0")
@@ -71,3 +82,4 @@ let package = Package(
         )
     ]
 )
+

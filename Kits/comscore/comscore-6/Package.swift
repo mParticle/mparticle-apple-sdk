@@ -1,5 +1,22 @@
 // swift-tools-version:5.5
+import Foundation
 import PackageDescription
+
+let version = ""
+
+let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] != nil
+
+let mParticleAppleSDK: Package.Dependency = {
+    if useLocalVersion {
+        return .package(path: "../../../")
+    }
+
+    let url = "https://github.com/mParticle/mparticle-apple-sdk"
+    if version.isEmpty {
+        return .package(url: url, branch: "main")
+    }
+    return .package(url: url, .upToNextMajor(from: Version(version)!))
+}()
 
 let package = Package(
     name: "mParticle-ComScore",
@@ -11,10 +28,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/mParticle/mparticle-apple-sdk",
-            branch: "workstation/9.0-Release"
-        ),
+        mParticleAppleSDK,
         .package(url: "https://github.com/comScore/Comscore-Swift-Package-Manager", .upToNextMajor(from: "6.12.3"))
     ],
     targets: [
