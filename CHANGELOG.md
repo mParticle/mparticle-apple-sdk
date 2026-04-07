@@ -10,15 +10,11 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [Unreleased]
 
-### Kits
-
-#### Added
-
-- feat: Add Urban Airship 19 kit targeting Airship SDK 19.x (iOS 15.6+)
-
 ## [9.0.0] - 2026-04-07
 
 ### Core
+
+Refer the [MIGRATING.md](./MIGRATING.md) for the migration guide from version 8.x to 9.x
 
 #### Fixed
 
@@ -32,11 +28,11 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ### Kits
 
-#### Kits
+#### Urban Airship
 
-##### Changed
+##### Added
 
-- Merge workstation/9.0 release ([#700](https://github.com/mParticle/mparticle-apple-sdk/pull/700))
+- feat: Add Urban Airship 19 kit targeting Airship SDK 19.x (iOS 15.6+)
 
 #### Adobe
 
@@ -45,6 +41,12 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 - Pre-v9 release audit fixes ([#710](https://github.com/mParticle/mparticle-apple-sdk/pull/710))
 
 #### Clevertap
+
+##### Added
+
+- Remove Core Location from MPKitProtocol; add MPLocation types ([#701](https://github.com/mParticle/mparticle-apple-sdk/pull/701))
+
+#### Localytics
 
 ##### Added
 
