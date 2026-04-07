@@ -69,11 +69,7 @@ jobs:
           security list-keychain -d user -s $KEYCHAIN_PATH
 
       - name: Build framework artifacts
-        run: |
-          chmod +x ./Scripts/make_artifacts.sh
-          chmod +x ./Scripts/carthage.sh
-          chmod +x ./Scripts/xcframework.sh
-          ./Scripts/make_artifacts.sh
+        run: ./Scripts/make_artifacts.sh
 
       - name: Extract release notes
         id: release-notes
@@ -89,7 +85,7 @@ jobs:
           tag: ${{ steps.version.outputs.tag }}
           commit: ${{ github.sha }}
           name: ${{ steps.version.outputs.tag }}
-          artifacts: "mParticle_Apple_SDK.framework.zip,mParticle_Apple_SDK.xcframework.zip,mParticle_Apple_SDK_NoLocation.framework.zip,mParticle_Apple_SDK_NoLocation.xcframework.zip,generated-docs.zip"
+          artifacts: "mParticle_Apple_SDK.xcframework.zip"
           body: |
             ${{ steps.release-notes.outputs.release_notes }}
 
