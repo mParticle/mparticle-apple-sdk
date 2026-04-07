@@ -2,10 +2,7 @@
 
 This is the [Adobe](https://www.adobe.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk).
 
-Two library products are available:
-
-- **mParticle-Adobe** — Base Adobe integration that handles Marketing Cloud ID synchronization via the Demdex endpoint. No external Adobe SDK dependency.
-- **mParticle-AdobeMedia** — Full Adobe Experience Platform media tracking integration (AEPCore, AEPMedia, AEPAnalytics, AEPUserProfile, AEPIdentity, AEPLifecycle, AEPSignal).
+The **mParticle-Adobe** library handles Marketing Cloud ID synchronization via the Demdex endpoint. No external Adobe SDK dependency.
 
 ## Installation
 
@@ -23,20 +20,14 @@ let mParticleVersion: Version = "9.0.0"
 ),
 ```
 
-Then add `mParticle-Adobe` or `mParticle-AdobeMedia` as a dependency of your target.
+Then add `mParticle-Adobe` as a dependency of your target.
 
 ### CocoaPods
 
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Adobe', '~> 9.0'
-```
-
-To send media data to Adobe, use the AdobeMedia subspec:
-
-```ruby
-pod 'mParticle-Adobe/AdobeMedia', '~> 9.0'
+pod 'mParticle-Adobe-5', '~> 9.0'
 ```
 
 ## Verifying the Integration
@@ -45,12 +36,6 @@ After installing, rebuild and launch your app. With the mParticle log level set 
 
 ```bash
 Included kits: { Adobe }
-```
-
-or for the media integration:
-
-```bash
-Included kits: { AdobeMedia }
 ```
 
 ## Platform Support
