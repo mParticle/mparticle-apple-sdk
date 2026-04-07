@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		CC0001012F50000000000001 /* mParticle-Rokt in Frameworks */ = {isa = PBXBuildFile; productRef = CC0001022F50000000000002 /* mParticle-Rokt */; };
+		CC0001032F50000000000003 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = CC0001042F50000000000004 /* mParticle-Apple-SDK */; };
+		CC0001052F50000000000005 /* RoktContracts in Frameworks */ = {isa = PBXBuildFile; productRef = CC0001062F50000000000006 /* RoktContracts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,7 +42,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CC0001032F50000000000003 /* mParticle-Apple-SDK in Frameworks */,
 				CC0001012F50000000000001 /* mParticle-Rokt in Frameworks */,
+				CC0001052F50000000000005 /* RoktContracts in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +88,8 @@
 			name = "SPM-Objc-Example";
 			packageProductDependencies = (
 				CC0001022F50000000000002 /* mParticle-Rokt */,
+				CC0001042F50000000000004 /* mParticle-Apple-SDK */,
+				CC0001062F50000000000006 /* RoktContracts */,
 			);
 			productName = "SPM-Objc-Example";
 			productReference = CC0002012F50000000000001 /* SPM-Objc-Example.app */;
@@ -114,6 +120,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				CC000A012F50000000000001 /* XCLocalSwiftPackageReference "../.." */,
+				CC000A022F50000000000002 /* XCLocalSwiftPackageReference "../../../../.." */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CC0007022F50000000000002 /* Products */;
@@ -346,12 +353,26 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../..";
 		};
+		CC000A022F50000000000002 /* XCLocalSwiftPackageReference "../../../../.." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../../..";
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		CC0001022F50000000000002 /* mParticle-Rokt */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = CC000A012F50000000000001 /* XCLocalSwiftPackageReference "../.." */;
 			productName = "mParticle-Rokt";
+		};
+		CC0001042F50000000000004 /* mParticle-Apple-SDK */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CC000A022F50000000000002 /* XCLocalSwiftPackageReference "../../../../.." */;
+			productName = "mParticle-Apple-SDK";
+		};
+		CC0001062F50000000000006 /* RoktContracts */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RoktContracts;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

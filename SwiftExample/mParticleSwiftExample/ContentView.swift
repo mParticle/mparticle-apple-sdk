@@ -2,7 +2,7 @@
 import SwiftUI
 import RoktContracts
 import mParticle_Apple_SDK
-import mParticle_Rokt_Swift
+import mParticle_Rokt_Swift // Only needed for MPRoktLayout SwiftUI component
 import Rokt_Widget
 import AdSupport
 import AppTrackingTransparency
@@ -966,7 +966,7 @@ func selectPlacementWithEventSubscription() {
 
     let placementIdentifier = "RoktLayout"
 
-    MParticle.sharedInstance().rokt.subscribeToPlacementEvents(placementIdentifier, onEvent: { event in
+    MParticle.sharedInstance().rokt.events(placementIdentifier, onEvent: { event in
         logRoktContractsExampleEvent(event)
     })
 

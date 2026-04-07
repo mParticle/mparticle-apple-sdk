@@ -12,12 +12,11 @@ let package = Package(
         )
     ],
     dependencies: [
-        // To build the Rokt kit against the monorepo SDK with `SwiftExample` (single resolved
-        // `mParticle-Apple-SDK`), comment out the block below and uncomment `.package(path:)`.
+        // For CI / release, comment out `.package(path:)` and uncomment the remote URL below.
         // .package(path: "../../../"),
         .package(
             url: "https://github.com/mParticle/mparticle-apple-sdk",
-            branch: "workstation/9.0-Release"
+            branch: "main"
         ),
         // Rokt iOS SDK 5.x (Shoppable Ads, etc.): https://github.com/ROKT/rokt-sdk-ios/releases
         .package(
