@@ -69,11 +69,13 @@ jobs:
 
       - name: Update version in all podspecs
         run: |
-          mapfile -t PODSPECS < <(
-            echo "mParticle-Apple-SDK.podspec"
-            echo "mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec"
-            jq -r '.[] | select(.podspec) | .podspec' Kits/matrix.json
+          PODSPECS=(
+            "mParticle-Apple-SDK.podspec"
+            "mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec"
           )
+          while IFS= read -r spec; do
+            PODSPECS+=("$spec")
+          done < <(jq -r '.[] | select(.podspec) | .podspec' Kits/matrix.json)
           for podspec in "${PODSPECS[@]}"; do
             sed -i '' 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"${VERSION}"'"/' "$podspec"
           done
