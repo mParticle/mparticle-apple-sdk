@@ -94,18 +94,10 @@ jobs:
           find Kits -name "*.podspec" -exec \
             sed -i '' "s/\('mParticle-Apple-SDK[^']*'\), '~> [^']*'/\1, '~> ${MAJOR}.0'/" {} +
 
-          # Package.swift: branch/upToNextMajor → .upToNextMajor(from: "MAJOR.0.0")
-          # Handles both single-line and multi-line .package() declarations
+          # Kit Package.swift: each kit uses `let version` + mParticleAppleSDK (branch main if empty,
+          # else .upToNextMajor(from: Version(version)!)). Set to the new ecosystem semver on major bump.
           find Kits -name "Package.swift" -exec \
-            sed -i '' "/mparticle-apple-sdk/{
-              s/branch: \"[^\"]*\"/.upToNextMajor(from: \"${MAJOR}.0.0\")/
-              t
-              s/.upToNextMajor(from: \"[^\"]*\")/.upToNextMajor(from: \"${MAJOR}.0.0\")/
-              t
-              n
-              s/branch: \"[^\"]*\"/.upToNextMajor(from: \"${MAJOR}.0.0\")/
-              s/.upToNextMajor(from: \"[^\"]*\")/.upToNextMajor(from: \"${MAJOR}.0.0\")/
-            }" {} +
+            sed -i '' 's/^let version = "[^"]*"/let version = "'"${VERSION}"'"/' {} +
 
       - name: Generate changelog entry
         id: changelog
@@ -160,6 +152,7 @@ jobs:
           - \`mParticle-Apple-SDK/MPConstants.swift\`
           - \`Framework/Info.plist\`
           - Integration test mappings
+          - Kit \`Package.swift\`: \`let version\` → core SDK SPM pin (major bumps only)
 
           ---
 
