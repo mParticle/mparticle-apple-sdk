@@ -1,12 +1,14 @@
+<!-- markdownlint-disable MD024 -->
+
 # Changelog
 
 All notable changes to the mParticle Apple SDK (core and integration kits) are documented in this file.
 
-**Format:** For each release, **Core** (main SDK) changes are listed first, followed by **Kits** (integration-kit–specific changes). This file is intended to be updated automatically on release via a changelog/release-notes action (e.g. [ROKT/rokt-workflows generate-changelog](https://github.com/ROKT/rokt-workflows/pull/37)).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+For each release, **Core** (main SDK) changes are listed first, followed by **Kits** (integration-kit–specific changes).
 
----
-
-# [Unreleased]
+## [Unreleased]
 
 ### Kits
 
@@ -14,27 +16,25 @@ All notable changes to the mParticle Apple SDK (core and integration kits) are d
 
 - feat: Add Urban Airship 19 kit targeting Airship SDK 19.x (iOS 15.6+)
 
----
-
-# [8.44.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.3...v8.44.4) (2026-03-30)
+## [8.44.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.3...v8.44.4) (2026-03-30)
 
 ### Bug Fixes
 
 - fix: Rokt Callback should be Called on Main (#683) ([21bd4c1b](https://github.com/mParticle/mparticle-apple-sdk/commit/21bd4c1b8d554ed77ded8d279dc43f2ac117421c))
 
-# [8.44.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.2...v8.44.3) (2026-03-23)
+## [8.44.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.2...v8.44.3) (2026-03-23)
 
 ### Bug Fixes
 
 - fix: serialize updateLastUseDate with messageQueue on background entry (#680) ([ba76afc5](https://github.com/mParticle/mparticle-apple-sdk/commit/ba76afc5c619e3fcf06acbb976e2e9e072845a7e))
 
-# [8.44.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.1...v8.44.2) (2026-03-17)
+## [8.44.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.1...v8.44.2) (2026-03-17)
 
 ### Bug Fixes
 
 - fix: serialize backgroundTimeRemaining with cancellation check (#667) ([beccd65a](https://github.com/mParticle/mparticle-apple-sdk/commit/beccd65a2d3ba77a548ca1d104a14d511174e528))
 
-# [8.44.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.0...v8.44.1) (2026-03-11)
+## [8.44.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.0...v8.44.1) (2026-03-11)
 
 ### Bug Fixes
 
@@ -43,13 +43,13 @@ All notable changes to the mParticle Apple SDK (core and integration kits) are d
 - fix: Crash in MPSession description (#661) ([dd6c80f9](https://github.com/mParticle/mparticle-apple-sdk/commit/dd6c80f9942c2ea7863b945a1a47844444e89f4a))
 - fix: Remove Outdated previousSessionSuccessfullyClosed Logic (#655) ([84ad0875](https://github.com/mParticle/mparticle-apple-sdk/commit/84ad08757b5c845dfefe9b9e1bef2655b5e8c9ed))
 
-# [8.44.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.43.1...v8.44.0) (2026-02-19)
+## [8.44.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.43.1...v8.44.0) (2026-02-19)
 
 ### Bug Fixes
 
 - fix: SceneDelegate Protocol Objc Selector Issue (#603) ([99364bfb](https://github.com/mParticle/mparticle-apple-sdk/commit/99364bfbf62401c6d53b195b63a21576baaf354b))
 
-# [8.43.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.2...v8.43.1) (2026-02-16)
+## [8.43.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.2...v8.43.1) (2026-02-16)
 
 ### Core
 
@@ -74,19 +74,13 @@ All notable changes to the mParticle Apple SDK (core and integration kits) are d
 
 - No kit-specific changes in this release.
 
----
-
-_Older releases below are in the previous flat format (no Core/Kits split). They will be normalized when the release changelog action is in place._
-
----
-
-# [8.42.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.1...v8.42.2) (2026-02-11)
+## [8.42.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.1...v8.42.2) (2026-02-11)
 
 ### Features
 
 - feat: Add placement options and update method signatures (#566) ([189ff1fe](https://github.com/mParticle/mparticle-apple-sdk/commit/189ff1fe4169f8b2d8084935fae86604c069d210))
 
-# [8.42.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.0...v8.42.1) (2026-02-06)
+## [8.42.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.42.0...v8.42.1) (2026-02-06)
 
 ### Bug Fixes
 
@@ -97,16 +91,16 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - feat: Add and align logging (#559) ([94bdc46e](https://github.com/mParticle/mparticle-apple-sdk/commit/94bdc46ea3e53030feb9b888c69b3a9fde33a4e4))
 - feat: Update logging and provide guidelines (#558) ([1cb0379a](https://github.com/mParticle/mparticle-apple-sdk/commit/1cb0379a5bd146ac84f0ae4f7c6e452f40a6fe59))
 
-# [8.42.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.41.1...v8.42.0) (2026-02-03)
+## [8.42.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.41.1...v8.42.0) (2026-02-03)
 
 ### Features
 
 - feat: Add support for Get / Set SessionId on Rokt (#536) ([30d24940](https://github.com/mParticle/mparticle-apple-sdk/commit/30d2494088397b272efe8d90836c8fdce3bcffa5))
 - feat: Update mappings during the release process (#497) ([2698a7a1](https://github.com/mParticle/mparticle-apple-sdk/commit/2698a7a1c2b7bb3fdb1a74e5d1ab5ee3c681e260))
 
-# [8.41.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.41.0...v8.41.1) (2026-01-20)
+## [8.41.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.41.0...v8.41.1) (2026-01-20)
 
-# [8.41.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.40.0...v8.41.0) (2026-01-20)
+## [8.41.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.40.0...v8.41.0) (2026-01-20)
 
 ### Bug Fixes
 
@@ -128,13 +122,13 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - feat: SDKE-528 Implement Script To Preprocess Request Recordings (#452) ([69a8ed34](https://github.com/mParticle/mparticle-apple-sdk/commit/69a8ed34a518a76934aaa807ca96a52da8a9f74e))
 - feat: Add IntegrationTests project with Tuist and WireMock setup (#451) ([a1e51fca](https://github.com/mParticle/mparticle-apple-sdk/commit/a1e51fcad9f579b08a93a93934453793a7d90156))
 
-# [8.40.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.39.0...v8.40.0) (2025-10-10)
+## [8.40.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.39.0...v8.40.0) (2025-10-10)
 
 ### Features
 
 - implement trunk tools ([#429](https://github.com/mParticle/mparticle-apple-sdk/issues/429)) ([273bd70](https://github.com/mParticle/mparticle-apple-sdk/commit/273bd703aa46820aa36998f0c4bfd45b20d3fc1b)), closes [#414](https://github.com/mParticle/mparticle-apple-sdk/issues/414) [#417](https://github.com/mParticle/mparticle-apple-sdk/issues/417) [#415](https://github.com/mParticle/mparticle-apple-sdk/issues/415) [#420](https://github.com/mParticle/mparticle-apple-sdk/issues/420)
 
-# [8.39.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.38.0...v8.39.0) (2025-09-18)
+## [8.39.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.38.0...v8.39.0) (2025-09-18)
 
 ### Bug Fixes
 
@@ -155,7 +149,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - SDKE-64 Improve mParticle.m test coverage in swift 2 ([#407](https://github.com/mParticle/mparticle-apple-sdk/issues/407)) ([b8d67ec](https://github.com/mParticle/mparticle-apple-sdk/commit/b8d67ec49dd2394a8991df04f76a590ff98d4f24))
 - SDKE-64 Improve mParticle.m test coverage in swift 3 ([#410](https://github.com/mParticle/mparticle-apple-sdk/issues/410)) ([72a111c](https://github.com/mParticle/mparticle-apple-sdk/commit/72a111c0f6d00f6d10cf5724f2164a6a5db07111))
 
-# [8.38.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.37.1...v8.38.0) (2025-08-20)
+## [8.38.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.37.1...v8.38.0) (2025-08-20)
 
 ### Features
 
@@ -168,7 +162,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Prevent Swift Name Spacing for Encodable Objects ([#385](https://github.com/mParticle/mparticle-apple-sdk/issues/385)) ([b83480e](https://github.com/mParticle/mparticle-apple-sdk/commit/b83480ea3721a9970fd3713c83701776df8a3386))
 
-# [8.37.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.36.0...v8.37.0) (2025-08-04)
+## [8.37.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.36.0...v8.37.0) (2025-08-04)
 
 ### Bug Fixes
 
@@ -179,7 +173,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - Handle Hashed Email for Rokt ([#383](https://github.com/mParticle/mparticle-apple-sdk/issues/383)) ([3b9e072](https://github.com/mParticle/mparticle-apple-sdk/commit/3b9e0727fcfd9843928ec6a2e6396d9ead1af8e7))
 - Update Hashed Email for Rokt ([#384](https://github.com/mParticle/mparticle-apple-sdk/issues/384)) ([475e5d4](https://github.com/mParticle/mparticle-apple-sdk/commit/475e5d442471e2b287e98c6effb3d14fbc6e5ed0))
 
-# [8.36.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.35.0...v8.36.0) (2025-07-25)
+## [8.36.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.35.0...v8.36.0) (2025-07-25)
 
 ### Bug Fixes
 
@@ -190,7 +184,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Create Rokt.close method ([#373](https://github.com/mParticle/mparticle-apple-sdk/issues/373)) ([cdc45bb](https://github.com/mParticle/mparticle-apple-sdk/commit/cdc45bb8b7d031902b446d5e9f480e08df0309bd))
 
-# [8.35.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.34.1...v8.35.0) (2025-06-20)
+## [8.35.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.34.1...v8.35.0) (2025-06-20)
 
 ### Features
 
@@ -202,19 +196,19 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Make selectPlacement Use The Message Queue ([#366](https://github.com/mParticle/mparticle-apple-sdk/issues/366)) ([ce1a284](https://github.com/mParticle/mparticle-apple-sdk/commit/ce1a284c7522e81c095308ec99a1bcd23602340e))
 
-# [8.34.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.33.0...v8.34.0) (2025-06-13)
+## [8.34.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.33.0...v8.34.0) (2025-06-13)
 
 ### Features
 
 - Support setWrapperSDK for Kits ([#364](https://github.com/mParticle/mparticle-apple-sdk/issues/364)) ([dcaad47](https://github.com/mParticle/mparticle-apple-sdk/commit/dcaad47152bc284ed5fc4227b74e384ae9fc8482))
 
-# [8.33.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.32.0...v8.33.0) (2025-06-12)
+## [8.33.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.32.0...v8.33.0) (2025-06-12)
 
 ### Features
 
 - Multiple select placements calls made ([#361](https://github.com/mParticle/mparticle-apple-sdk/issues/361)) ([f8d3ff8](https://github.com/mParticle/mparticle-apple-sdk/commit/f8d3ff865d5606a4c6c198511cfa21c5a04a87b7))
 
-# [8.32.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.2...v8.32.0) (2025-06-10)
+## [8.32.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.2...v8.32.0) (2025-06-10)
 
 ### Features
 
@@ -232,7 +226,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Prevent Issue When NSUserActivity webpageURL is nil ([#356](https://github.com/mParticle/mparticle-apple-sdk/issues/356)) ([4305afa](https://github.com/mParticle/mparticle-apple-sdk/commit/4305afa622b3d9249de19fa1613052b53e0efa9d))
 
-# [8.31.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.3...v8.31.0) (2025-05-21)
+## [8.31.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.3...v8.31.0) (2025-05-21)
 
 ### Bug Fixes
 
@@ -260,7 +254,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Update placementAttributes to placementAttributesMapping ([#349](https://github.com/mParticle/mparticle-apple-sdk/issues/349)) ([13ec6a2](https://github.com/mParticle/mparticle-apple-sdk/commit/13ec6a2a9758f41d865c6db22d7eba82e37f1584))
 
-# [8.30.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.29.0...v8.30.0) (2025-04-24)
+## [8.30.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.29.0...v8.30.0) (2025-04-24)
 
 ### Features
 
@@ -269,7 +263,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - Add user attribute mapping ([#343](https://github.com/mParticle/mparticle-apple-sdk/issues/343)) ([50ce934](https://github.com/mParticle/mparticle-apple-sdk/commit/50ce934e88f9b30dc0889ef7475a4cb34210acc0))
 - Automatically include sandbox in MPRokt Attributes ([#344](https://github.com/mParticle/mparticle-apple-sdk/issues/344)) ([bdf4280](https://github.com/mParticle/mparticle-apple-sdk/commit/bdf4280cf326f40ce89f9f9ec12840525317add7))
 
-# [8.29.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.28.1...v8.29.0) (2025-04-02)
+## [8.29.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.28.1...v8.29.0) (2025-04-02)
 
 ### Features
 
@@ -281,7 +275,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Ensure UserDefaults has valid instance of Identity ([#340](https://github.com/mParticle/mparticle-apple-sdk/issues/340)) ([57be42c](https://github.com/mParticle/mparticle-apple-sdk/commit/57be42cb66fc35b5efa11121299d059658d651e8))
 
-# [8.28.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.5...v8.28.0) (2025-03-19)
+## [8.28.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.5...v8.28.0) (2025-03-19)
 
 ### Bug Fixes
 
@@ -323,7 +317,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Prevent Repeated Sessions on active Background ([#290](https://github.com/mParticle/mparticle-apple-sdk/issues/290)) ([9ead27d](https://github.com/mParticle/mparticle-apple-sdk/commit/9ead27d25cf2f31cbb97f7b26216524b48afdcae))
 
-# [8.27.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.26.0...v8.27.0) (2024-09-04)
+## [8.27.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.26.0...v8.27.0) (2024-09-04)
 
 ### Bug Fixes
 
@@ -333,7 +327,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Workspace switching improvements ([#287](https://github.com/mParticle/mparticle-apple-sdk/issues/287)) ([0c8da18](https://github.com/mParticle/mparticle-apple-sdk/commit/0c8da18dd1faa701186abd6f45820fc6c54fa71f))
 
-# [8.26.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.25.1...v8.26.0) (2024-08-16)
+## [8.26.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.25.1...v8.26.0) (2024-08-16)
 
 ### Features
 
@@ -345,7 +339,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Rename internal Swift.h header to avoid Expo conflicts ([#283](https://github.com/mParticle/mparticle-apple-sdk/issues/283)) ([36c6be4](https://github.com/mParticle/mparticle-apple-sdk/commit/36c6be4c015d0e4775267dd866d123589f221447))
 
-# [8.25.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.3...v8.25.0) (2024-06-25)
+## [8.25.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.3...v8.25.0) (2024-06-25)
 
 ### Features
 
@@ -369,7 +363,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Remove unnecessary badge number functionality ([#277](https://github.com/mParticle/mparticle-apple-sdk/issues/277)) ([266612f](https://github.com/mParticle/mparticle-apple-sdk/commit/266612fc86991a44c90dc97a09ca699dcd30a34f))
 
-# [8.24.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.23.1...v8.24.0) (2024-05-01)
+## [8.24.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.23.1...v8.24.0) (2024-05-01)
 
 ### Bug Fixes
 
@@ -385,13 +379,13 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Forwarding ATT status to kits ([#276](https://github.com/mParticle/mparticle-apple-sdk/issues/276)) ([9fd95f7](https://github.com/mParticle/mparticle-apple-sdk/commit/9fd95f72a7a88bc1e1ae30d33d261098cd5bc1ee))
 
-# [8.23.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.22.0...v8.23.0) (2024-04-24)
+## [8.23.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.22.0...v8.23.0) (2024-04-24)
 
 ### Features
 
 - Add max persistence age override option ([#273](https://github.com/mParticle/mparticle-apple-sdk/issues/273)) ([241e773](https://github.com/mParticle/mparticle-apple-sdk/commit/241e7734f6b26f617afb1a4aa51af37355f05de9))
 
-# [8.22.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.21.1...v8.22.0) (2024-04-19)
+## [8.22.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.21.1...v8.22.0) (2024-04-19)
 
 ### Features
 
@@ -403,7 +397,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Type hinting MPIdentityApiRequest.identities ([#270](https://github.com/mParticle/mparticle-apple-sdk/issues/270)) ([f56879f](https://github.com/mParticle/mparticle-apple-sdk/commit/f56879f77be87d46f9d44514983c6663451862d0))
 
-# [8.21.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.20.0...v8.21.0) (2024-03-19)
+## [8.21.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.20.0...v8.21.0) (2024-03-19)
 
 ### Bug Fixes
 
@@ -414,20 +408,20 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Improve mParticle reset methods ([#263](https://github.com/mParticle/mparticle-apple-sdk/issues/263)) ([cde71a2](https://github.com/mParticle/mparticle-apple-sdk/commit/cde71a273318a64a7a76279dc5e67c6405fcf0e5))
 
-# [8.20.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.19.0...v8.20.0) (2024-03-05)
+## [8.20.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.19.0...v8.20.0) (2024-03-05)
 
 ### Features
 
 - Switch workspaces without restarting app ([#258](https://github.com/mParticle/mparticle-apple-sdk/issues/258)) ([8f0a027](https://github.com/mParticle/mparticle-apple-sdk/commit/8f0a0276a3008b3a848630d125cc41a60addaef9))
 
-# [8.19.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.18.0...v8.19.0) (2024-02-23)
+## [8.19.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.18.0...v8.19.0) (2024-02-23)
 
 ### Features
 
 - Add Privacy Manifest and Tracking Domain Logic ([#249](https://github.com/mParticle/mparticle-apple-sdk/issues/249)) ([d88acde](https://github.com/mParticle/mparticle-apple-sdk/commit/d88acdee70daa690374f2359fbc3efed7e46744d)), closes [#248](https://github.com/mParticle/mparticle-apple-sdk/issues/248)
 - Add privacy manifest to build artifacts ([#255](https://github.com/mParticle/mparticle-apple-sdk/issues/255)) ([aaeb8e4](https://github.com/mParticle/mparticle-apple-sdk/commit/aaeb8e44ab0aea152ad8704093543289801e7490))
 
-# [8.18.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.17.0...v8.18.0) (2024-01-16)
+## [8.18.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.17.0...v8.18.0) (2024-01-16)
 
 ### Bug Fixes
 
@@ -437,7 +431,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Identity API response caching ([#244](https://github.com/mParticle/mparticle-apple-sdk/issues/244)) ([9eaa0ea](https://github.com/mParticle/mparticle-apple-sdk/commit/9eaa0ea535b61bfb8d50ff447c0cc4fa505239da))
 
-# [8.17.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.16.0...v8.17.0) (2023-11-30)
+## [8.17.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.16.0...v8.17.0) (2023-11-30)
 
 ### Bug Fixes
 
@@ -450,7 +444,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - Finish Implementation of MPSideLoadedKits ([#239](https://github.com/mParticle/mparticle-apple-sdk/issues/239)) ([96e62f5](https://github.com/mParticle/mparticle-apple-sdk/commit/96e62f5763b524dcf6ddfde6037278053fd4707d))
 - Improve background batch uploading and session management ([#238](https://github.com/mParticle/mparticle-apple-sdk/issues/238)) ([dc6a9cb](https://github.com/mParticle/mparticle-apple-sdk/commit/dc6a9cb670144ebffb9cac4c28384fb75ab4e68e))
 
-# [8.16.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.15.1...v8.16.0) (2023-10-11)
+## [8.16.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.15.1...v8.16.0) (2023-10-11)
 
 ### Features
 
@@ -462,7 +456,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Push Registration events to show forwarded for kits ([#208](https://github.com/mParticle/mparticle-apple-sdk/issues/208)) ([705e568](https://github.com/mParticle/mparticle-apple-sdk/commit/705e568f68484ab0f41430832f9ed66c42a72395))
 
-# [8.15.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.2...v8.15.0) (2023-09-07)
+## [8.15.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.2...v8.15.0) (2023-09-07)
 
 ### Features
 
@@ -480,7 +474,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - crash in userIdentitiesForUserId with multiple invalid identity types ([#205](https://github.com/mParticle/mparticle-apple-sdk/issues/205)) ([9d88bcc](https://github.com/mParticle/mparticle-apple-sdk/commit/9d88bcc89cd0cb2cd8b1c58e0544c3204fe31457))
 
-# [8.14.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.13.0...v8.14.0) (2023-06-27)
+## [8.14.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.13.0...v8.14.0) (2023-06-27)
 
 ### Bug Fixes
 
@@ -492,7 +486,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - Add Sideloaded Kit flag to Batches ([#200](https://github.com/mParticle/mparticle-apple-sdk/issues/200)) ([6756d8a](https://github.com/mParticle/mparticle-apple-sdk/commit/6756d8a8dd3be806b556a026a725bbfc9c13f87e))
 - Upload build artifacts to S3 for SPM ([#199](https://github.com/mParticle/mparticle-apple-sdk/issues/199)) ([923838a](https://github.com/mParticle/mparticle-apple-sdk/commit/923838a4abbaced4da2ae1e868f2babb26366c6d))
 
-# [8.13.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.12.0...v8.13.0) (2023-04-24)
+## [8.13.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.12.0...v8.13.0) (2023-04-24)
 
 ### Features
 
@@ -500,7 +494,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - Use Apple Search Ads for Attribution ([#187](https://github.com/mParticle/mparticle-apple-sdk/issues/187)) ([e2bb3bc](https://github.com/mParticle/mparticle-apple-sdk/commit/e2bb3bcf14b1fc30a6323848b4576246cecb8261))
 - Use SPM binary targets and update release scripts ([#188](https://github.com/mParticle/mparticle-apple-sdk/issues/188)) ([e482df0](https://github.com/mParticle/mparticle-apple-sdk/commit/e482df0c9496d47e73276655afd72a4f483b2d66))
 
-# [8.12.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.2...v8.12.0) (2023-03-14)
+## [8.12.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.2...v8.12.0) (2023-03-14)
 
 ### Bug Fixes
 
@@ -523,7 +517,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Disable All Location Code with Flag ([#180](https://github.com/mParticle/mparticle-apple-sdk/issues/180)) ([3c28771](https://github.com/mParticle/mparticle-apple-sdk/commit/3c28771451c38777f8ac8d6e90c4c1511f013e56))
 
-# [8.11.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.10.0...v8.11.0) (2023-01-23)
+## [8.11.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.10.0...v8.11.0) (2023-01-23)
 
 ### Bug Fixes
 
@@ -533,7 +527,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Block writes on invalid API key based on Identity/Config responses ([#176](https://github.com/mParticle/mparticle-apple-sdk/issues/176)) ([d116872](https://github.com/mParticle/mparticle-apple-sdk/commit/d1168722da6363d5a6c41fe0fa26d27b816b98e9))
 
-# [8.10.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.9.2...v8.10.0) (2023-01-10)
+## [8.10.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.9.2...v8.10.0) (2023-01-10)
 
 ### Features
 
@@ -546,7 +540,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 
 - Roll back min deployment target to iOS/tvOS 9 ([#172](https://github.com/mParticle/mparticle-apple-sdk/issues/172)) ([dd32132](https://github.com/mParticle/mparticle-apple-sdk/commit/dd321329c7b460a3d92873ea8292dcba60fbb84b))
 
-# [8.9.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.8.1...v8.9.0) (2022-11-30)
+## [8.9.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.8.1...v8.9.0) (2022-11-30)
 
 ### Bug Fixes
 
@@ -570,7 +564,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - Add filtering check to legacy code path ([#155](https://github.com/mParticle/mparticle-apple-sdk/issues/155)) ([0212944](https://github.com/mParticle/mparticle-apple-sdk/commit/0212944ef6f3ed1849b269fcd355abdac5a4930b))
 - remove undefined hasher behavior ([#152](https://github.com/mParticle/mparticle-apple-sdk/issues/152)) ([a82b928](https://github.com/mParticle/mparticle-apple-sdk/commit/a82b9285c2844ac32638c6692fc651184b6fea81))
 
-# [8.8.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.7.0...v8.8.0) (2022-05-17)
+## [8.8.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.7.0...v8.8.0) (2022-05-17)
 
 ### Bug Fixes
 
@@ -583,7 +577,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - add conformsToProtocol forwarding to MPAppDelegateProxy ([#144](https://github.com/mParticle/mparticle-apple-sdk/issues/144)) ([40e517a](https://github.com/mParticle/mparticle-apple-sdk/commit/40e517aa0bff4ecd2368c095a1c7d35b5745ffd1))
 - add support for client side rules ([#151](https://github.com/mParticle/mparticle-apple-sdk/issues/151)) ([6a93096](https://github.com/mParticle/mparticle-apple-sdk/commit/6a93096d285546be9eda62c24bea72d2853033b0))
 
-# [8.7.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.6.0...v8.7.0) (2022-01-31)
+## [8.7.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.6.0...v8.7.0) (2022-01-31)
 
 ### Bug Fixes
 
@@ -595,7 +589,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - add custom logger ([62e830d](https://github.com/mParticle/mparticle-apple-sdk/commit/62e830d6306750cad44c97c3c8d448517c5e0482))
 - add MPKitInstance enum value for GA4 kit ([a81c871](https://github.com/mParticle/mparticle-apple-sdk/commit/a81c87157817f382d5c2e5df23cb3e633191653e))
 
-# [8.6.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.4...v8.6.0) (2022-01-13)
+## [8.6.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.4...v8.6.0) (2022-01-13)
 
 ### Bug Fixes
 
@@ -634,7 +628,7 @@ _Older releases below are in the previous flat format (no Core/Kits split). They
 - Preserve attributes when mapping commerce events ([0ff8414](https://github.com/mParticle/mparticle-apple-sdk/commit/0ff84147dc31e8c4ba64123acd5f0d99d21503c8))
 - Remove duplicate key in dictionary literal ([b1ecb17](https://github.com/mParticle/mparticle-apple-sdk/commit/b1ecb172f2204959f3dfd1153bc360d6c01a4dae))
 
-# [8.5.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.4.0...v8.5.0) (2021-07-29)
+## [8.5.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.4.0...v8.5.0) (2021-07-29)
 
 ### Bug Fixes
 
@@ -2195,3 +2189,5 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Migrated Unit Tests from SDK version 4.x to 5.x
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
+
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...HEAD
