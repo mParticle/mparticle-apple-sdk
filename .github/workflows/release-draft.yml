@@ -153,5 +153,5 @@ jobs:
 
           ---
 
-          **On merge:** The [Publish Ecosystem Releases from Main](https://github.com/mParticle/mparticle-apple-sdk/actions/workflows/release-ecosystem-from-main.yml) workflow will automatically create tags and GitHub releases for the core SDK and all mirrored kit repos." \
+          **On merge:** The [Release – Publish](https://github.com/${{ github.repository }}/actions/workflows/release-publish.yml) workflow will automatically build, tag, and create GitHub releases for the core SDK and all mirrored kit repos." \
             --reviewer mParticle/sdk-team
