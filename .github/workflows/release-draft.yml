@@ -83,6 +83,15 @@ jobs:
       - name: Update version in MPIConstants.m
         run: sed -i '' "s/kMParticleSDKVersion = @\"[^\"]*\"/kMParticleSDKVersion = @\"${VERSION}\"/" mParticle-Apple-SDK/MPIConstants.m
 
+      - name: Update hardcoded version strings in kit source files
+        run: |
+          sed -i '' "s/kMPRoktKitVersion = @\"[^\"]*\"/kMPRoktKitVersion = @\"${VERSION}\"/" \
+            Kits/rokt/rokt/Sources/mParticle-Rokt/MPKitRokt.m
+          sed -i '' "s/kLibVersion = @\"[^\"]*\"/kLibVersion = @\"${VERSION}\"/" \
+            Kits/clevertap/clevertap-7/Sources/mParticle-CleverTap/MPKitCleverTap.m
+          sed -i '' "s/registerPluginName:@\"mParticleKit\" version:@\"[^\"]*\"/registerPluginName:@\"mParticleKit\" version:@\"${VERSION}\"/" \
+            Kits/branchmetrics/branchmetrics-3/Sources/mParticle-BranchMetrics/MPKitBranchMetrics.m
+
       - name: Update version in Info.plist
         run: /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${VERSION}" Framework/Info.plist
 
@@ -147,6 +156,7 @@ jobs:
           ### Files updated
           - All podspecs (core, Swift, kits) → \`${VERSION}\`
           - \`mParticle-Apple-SDK/MPIConstants.m\`
+          - Kit source version strings (Rokt \`kMPRoktKitVersion\`, CleverTap \`kLibVersion\`, Branch \`registerPluginName\`)
           - \`Framework/Info.plist\`
           - Integration test mappings
           - Kit \`Package.swift\`: \`let version\` → core SDK SPM pin (major bumps only)
