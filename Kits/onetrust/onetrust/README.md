@@ -22,7 +22,7 @@ Add the OneTrust SDK as a direct dependency with the version from your OneTrust 
 let mParticleVersion: Version = "9.0.0"
 
 .package(
-    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust",
+    url: "https://github.com/mparticle-integrations/mp-apple-integration-onetrust",
     .upToNextMajor(from: mParticleVersion)
 ),
 .package(

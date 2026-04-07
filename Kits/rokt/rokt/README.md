@@ -10,7 +10,7 @@ Add the package dependency to your `Package.swift` or via Xcode:
 
 ```swift
 .package(
-    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-rokt",
+    url: "https://github.com/mparticle-integrations/mp-apple-integration-rokt",
     .upToNextMajor(from: "9.0.0")
 )
 ```

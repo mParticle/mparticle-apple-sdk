@@ -118,7 +118,7 @@ Several integrations require additional client-side add-on libraries called "kit
 | [Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)                                             |     ✓     |    ✓     |           ✓           |
 | [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)                                         |     ✓     |    ✓     |           ✓           |
 | [Optimizely](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely)                                         |     ✓     |    ✓     |           ✓           |
-| [OneTrust](https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust)                                             |     ✓     |    ✓     |           ✓           |
+| [OneTrust](https://github.com/mparticle-integrations/mp-apple-integration-onetrust)                                                    |     ✓     |    ✓     |           ✓           |
 | [Pilgrim](https://github.com/mparticle-integrations/mparticle-apple-integration-pilgrim)                                               |     ✓     |    ✓     |
 | [Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                                                 |     ✓     |    ✓     |
 | [Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                                                   |     ✓     |    ✓     |           ✓           |
