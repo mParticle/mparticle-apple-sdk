@@ -61,6 +61,8 @@ jobs:
     runs-on: macOS-latest
     env:
       XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
+      # Kits/adjust/... Package.swift resolves mParticle-Apple-SDK from monorepo when set.
+      USE_LOCAL_VERSION: "1"
     strategy:
       fail-fast: false
       matrix:
