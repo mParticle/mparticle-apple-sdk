@@ -16,6 +16,52 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - feat: Add Urban Airship 19 kit targeting Airship SDK 19.x (iOS 15.6+)
 
+## [9.0.0] - 2026-04-07
+
+### Core
+
+#### Fixed
+
+- Replace mapfile with bash 3.2-compatible read loop in release-draft ([#711](https://github.com/mParticle/mparticle-apple-sdk/pull/711))
+
+#### Changed
+
+- Normalize CHANGELOG.md to Keep a Changelog format ([#715](https://github.com/mParticle/mparticle-apple-sdk/pull/715))
+- Update MIGRATING.md and remove unwanted note ([#707](https://github.com/mParticle/mparticle-apple-sdk/pull/707))
+- Document MPRoktEvent → RoktEvent type change in events method migration ([#704](https://github.com/mParticle/mparticle-apple-sdk/pull/704))
+
+### Kits
+
+#### Kits
+
+##### Changed
+
+- Merge workstation/9.0 release ([#700](https://github.com/mParticle/mparticle-apple-sdk/pull/700))
+
+#### Adobe
+
+##### Fixed
+
+- Pre-v9 release audit fixes ([#710](https://github.com/mParticle/mparticle-apple-sdk/pull/710))
+
+#### Clevertap
+
+##### Added
+
+- Remove Core Location from MPKitProtocol; add MPLocation types ([#701](https://github.com/mParticle/mparticle-apple-sdk/pull/701))
+
+#### Comscore
+
+##### Fixed
+
+- Hardcode tvOS PRODUCT_NAME in kit xcodeproj files for xcframework builds ([#714](https://github.com/mParticle/mparticle-apple-sdk/pull/714))
+
+#### Rokt
+
+##### Changed
+
+- Move MPRokt Swift interop to core SDK for single-import ([#703](https://github.com/mParticle/mparticle-apple-sdk/pull/703))
+
 ## [8.44.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.3...v8.44.4) (2026-03-30)
 
 ### Bug Fixes
@@ -2190,4 +2236,5 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/9.0.0...HEAD
+[9.0.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...9.0.0

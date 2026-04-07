@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-CleverTap-7"
     s.module_name      = 'mParticle_CleverTap'
-    s.version          = "8.6.0"
+    s.version          = "9.0.0"
     s.summary          = "CleverTap integration for mParticle"
     s.description      = <<-DESC
                        This is the CleverTap integration for mParticle.
