@@ -1,6 +1,23 @@
 // swift-tools-version:5.5
 
+import Foundation
 import PackageDescription
+
+let version = ""
+
+let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] != nil
+
+let mParticleAppleSDK: Package.Dependency = {
+    if useLocalVersion {
+        return .package(path: "../../../")
+    }
+
+    let url = "https://github.com/mParticle/mparticle-apple-sdk"
+    if version.isEmpty {
+        return .package(url: url, branch: "main")
+    }
+    return .package(url: url, .upToNextMajor(from: Version(version)!))
+}()
 
 let package = Package(
     name: "mParticle-Kochava",
@@ -12,10 +29,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/mParticle/mparticle-apple-sdk",
-            branch: "workstation/9.0-Release"
-        ),
+        mParticleAppleSDK,
         .package(
             url: "https://github.com/Kochava/Apple-SwiftPackage-KochavaNetworking-XCFramework",
             .upToNextMajor(from: "9.0.0")
@@ -29,7 +43,7 @@ let package = Package(
         .target(
             name: "mParticle-Kochava",
             dependencies: [
-                .product(name: "mParticle-Apple-SDK", package: "mParticle-Apple-SDK"),
+                .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
                 .product(name: "KochavaNetworking", package: "Apple-SwiftPackage-KochavaNetworking-XCFramework"),
                 .product(name: "KochavaMeasurement", package: "Apple-SwiftPackage-KochavaMeasurement-XCFramework")
             ],

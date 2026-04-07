@@ -37,6 +37,8 @@ jobs:
     runs-on: macOS-latest
     env:
       XCODE_VERSION: "26.2"
+      # Build xcframeworks against mParticle-Apple-SDK from this checkout (same commit as VERSION).
+      USE_LOCAL_VERSION: "1"
     strategy:
       fail-fast: false
       matrix:
