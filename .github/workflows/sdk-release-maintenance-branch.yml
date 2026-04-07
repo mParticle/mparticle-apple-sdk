@@ -12,7 +12,7 @@ on:
           - minor
 
 env:
-  XCODE_VERSION: "16.4"
+  XCODE_VERSION: "26.2"
 
 jobs:
   confirm-workstation-branch:
@@ -46,7 +46,8 @@ jobs:
         id: previous-tag
         run: |
           # Latest tag reachable from this branch (compare range, commit list, semver bump base)
-          PREV=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+          PREV=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+          PREV=${PREV:-0.0.0}
           echo "version=$PREV" >> $GITHUB_OUTPUT
           echo "Previous tag (changelog baseline): v${PREV}"
 
