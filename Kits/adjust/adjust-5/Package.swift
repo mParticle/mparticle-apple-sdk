@@ -4,7 +4,7 @@
 import Foundation
 import PackageDescription
 
-let version = "main"
+let version = ""
 
 let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] != nil
 
@@ -12,10 +12,12 @@ let mParticleAppleSDK: Package.Dependency = {
     if useLocalVersion {
         return .package(path: "../../../")
     }
-    return .package(
-        url: "https://github.com/mParticle/mparticle-apple-sdk",
-        branch: version
-    )
+
+    let url = "https://github.com/mParticle/mparticle-apple-sdk"
+    if version.isEmpty {
+        return .package(url: url, branch: "main")
+    }
+    return .package(url: url, .upToNextMajor(from: Version(version)!))
 }()
 
 let package = Package(
