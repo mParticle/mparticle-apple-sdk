@@ -163,9 +163,13 @@ jobs:
         run: |
           SCHEMES_JSON='${{ toJson(matrix.kit.schemes) }}'
           LOCAL_PATH="${{ matrix.kit.local_path }}"
-          BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
+          RESOLVED_PKGS="$GITHUB_WORKSPACE/DerivedData/SourcePackages"
+          BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES COMPILER_INDEX_STORE_ENABLE=NO"
 
-          mkdir -p archives xcframeworks
+          mkdir -p archives xcframeworks logs DerivedData-device DerivedData-sim
+
+          cp -a "$RESOLVED_PKGS" DerivedData-device/SourcePackages
+          cp -a "$RESOLVED_PKGS" DerivedData-sim/SourcePackages
 
           MODULES=$(echo "$SCHEMES_JSON" | jq -r '.[].module' | sort -u)
 
@@ -200,16 +204,40 @@ jobs:
                   ;;
               esac
 
+              LOG_DEVICE="logs/${MODULE}-${DEST}-device.log"
+              LOG_SIM="logs/${MODULE}-${DEST}-simulator.log"
+
               xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
                 -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" \
-                -derivedDataPath DerivedData \
-                -packageCachePath "$GITHUB_WORKSPACE/DerivedData/SourcePackages" \
-                $BUILD_SETTINGS
+                -derivedDataPath DerivedData-device \
+                -disableAutomaticPackageResolution \
+                -skipPackagePluginValidation \
+                $BUILD_SETTINGS \
+                > "$LOG_DEVICE" 2>&1 &
+              PID_DEVICE=$!
+
               xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
                 -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" \
-                -derivedDataPath DerivedData \
-                -packageCachePath "$GITHUB_WORKSPACE/DerivedData/SourcePackages" \
-                $BUILD_SETTINGS
+                -derivedDataPath DerivedData-sim \
+                -disableAutomaticPackageResolution \
+                -skipPackagePluginValidation \
+                $BUILD_SETTINGS \
+                > "$LOG_SIM" 2>&1 &
+              PID_SIM=$!
+
+              FAILED=0
+              wait $PID_DEVICE || FAILED=1
+              wait $PID_SIM   || FAILED=$((FAILED + 1))
+
+              if [ "$FAILED" -ne 0 ]; then
+                echo "::group::Device archive log (${DEST})"
+                cat "$LOG_DEVICE"
+                echo "::endgroup::"
+                echo "::group::Simulator archive log (${DEST})"
+                cat "$LOG_SIM"
+                echo "::endgroup::"
+                exit 1
+              fi
 
               XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_DEVICE}.xcarchive -framework ${MODULE}.framework"
               XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_SIM}.xcarchive -framework ${MODULE}.framework"
@@ -219,7 +247,7 @@ jobs:
             (cd xcframeworks && zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework" && rm -rf "${MODULE}.xcframework")
           done
 
-          rm -rf archives
+          rm -rf archives logs DerivedData-device DerivedData-sim
 
       - name: Upload xcframework artifacts
         uses: actions/upload-artifact@v4
