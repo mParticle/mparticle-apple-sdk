@@ -50,7 +50,7 @@ jobs:
             pod lib lint "${{ matrix.kit.podspec }}" \
               --allow-warnings \
               --skip-import-validation \
-              --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-Media-SDK.podspec}" \
+              --include-podspecs="{mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec}" \
               && break
             [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 60s..." && sleep 60 || exit 1
           done

@@ -9,7 +9,6 @@ NOTES=$(awk '/^# \['"${VERSION}"'\]/{flag=1; next} /^# \[/{flag=0} flag' CHANGEL
 
 # Update constant in codebase
 sed -i '' 's/NSString \*const kMParticleSDKVersion = @".*/NSString *const kMParticleSDKVersion = @"'"$VERSION"'";/' mParticle-Apple-SDK/MPIConstants.m
-sed -i '' 's/let kMParticleSDKVersion = ".*/let kMParticleSDKVersion = "'"$VERSION"'"/' mParticle-Apple-SDK/MPConstants.swift
 
 # Update framework plist file
 /usr/libexec/PlistBuddy -c "Set CFBundleShortVersionString $VERSION" Framework/Info.plist
@@ -55,7 +54,6 @@ git add mParticle-Apple-SDK.podspec
 git add mParticle_Apple_SDK.json
 git add CHANGELOG.md
 git add mParticle-Apple-SDK/MPIConstants.m
-git add mParticle-Apple-SDK/MPConstants.swift
 git add Framework/Info.plist
 git add IntegrationTests/wiremock-recordings/mappings/*.json
 git commit -m "chore(release): $VERSION [skip ci]

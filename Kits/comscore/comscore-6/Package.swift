@@ -39,6 +39,7 @@ let package = Package(
                 .product(name: "ComScore", package: "Comscore-Swift-Package-Manager")
             ],
             path: "Sources/mParticle-ComScore",
+            resources: [.process("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [.headerSearchPath("include")],
             linkerSettings: [.linkedFramework("SystemConfiguration")]
