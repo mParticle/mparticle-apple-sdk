@@ -1,5 +1,6 @@
 name: Release – Publish
-# Build each kit, mirror its subtree repo, and publish a GitHub release/tag (unless dry run).
+# Release the core SDK and all kits. Triggered automatically when the release PR
+# merges to main (VERSION file change), or manually via workflow_dispatch.
 
 on:
   push:
@@ -17,7 +18,98 @@ on:
 permissions:
   contents: write
 
+env:
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
 jobs:
+  # ──────────────────────────────────────────────
+  # Core SDK: build artifacts, tag, GitHub release
+  # ──────────────────────────────────────────────
+  release-core-sdk:
+    name: Build & Release Core SDK
+    runs-on: macOS-latest
+    env:
+      XCODE_VERSION: "26.2"
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Get ecosystem version
+        id: version
+        run: |
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "📌 Core SDK version: $VERSION"
+
+      - name: Install the signing certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+      - name: Build framework artifacts
+        run: |
+          chmod +x ./Scripts/make_artifacts.sh
+          chmod +x ./Scripts/carthage.sh
+          chmod +x ./Scripts/xcframework.sh
+          ./Scripts/make_artifacts.sh
+
+      - name: Extract release notes
+        id: release-notes
+        uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105 # v3.0.0
+        with:
+          changelog_file: CHANGELOG.md
+          prerelease: true
+
+      - name: Create GitHub release
+        if: env.DRY_RUN != 'true'
+        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          commit: ${{ github.sha }}
+          name: ${{ steps.version.outputs.tag }}
+          artifacts: "mParticle_Apple_SDK.framework.zip,mParticle_Apple_SDK.xcframework.zip,mParticle_Apple_SDK_NoLocation.framework.zip,mParticle_Apple_SDK_NoLocation.xcframework.zip,generated-docs.zip"
+          body: |
+            ${{ steps.release-notes.outputs.release_notes }}
+
+      - name: Summary
+        run: |
+          ARTIFACTS=$(ls *.zip 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## Core SDK Release
+
+          | Property | Value |
+          |----------|-------|
+          | **Version** | \`${{ steps.version.outputs.version }}\` |
+          | **Tag** | \`${{ steps.version.outputs.tag }}\` |
+          | **Dry Run** | \`${{ env.DRY_RUN }}\` |
+          | **Artifacts** | \`${ARTIFACTS}\` |
+          EOF
+
+  # ──────────────────────────────────────────────
+  # Kits: build, mirror, and release
+  # ──────────────────────────────────────────────
   load-matrix:
     name: Load kit matrix
     runs-on: ubuntu-latest
@@ -119,7 +211,7 @@ jobs:
   mirror-and-release-kits:
     name: Mirror & Release ${{ matrix.kit.name }}
     runs-on: macOS-latest
-    needs: [load-matrix, build-kits]
+    needs: [load-matrix, build-kits, release-core-sdk]
     env:
       DEST_ORG: mparticle-integrations
     strategy:
