@@ -135,7 +135,7 @@
 			mainGroup = FF0003012A18050500000021;
 			packageReferences = (
 				FF0003012A18050500000050 /* XCRemoteSwiftPackageReference "ios-library" */,
-				FF0003012A18050500000051 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */,
+				FF0003012A18050500000051 /* XCLocalSwiftPackageReference "mparticle-apple-sdk" */,
 			);
 			productRefGroup = FF0003012A18050500000023 /* Products */;
 			projectDirPath = "";
@@ -294,6 +294,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		FF0003012A18050500000051 /* XCLocalSwiftPackageReference "mparticle-apple-sdk" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../..";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		FF0003012A18050500000050 /* XCRemoteSwiftPackageReference "ios-library" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -301,14 +308,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 19.0.0;
-			};
-		};
-		FF0003012A18050500000051 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mParticle/mparticle-apple-sdk";
-			requirement = {
-				branch = main;
-				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -326,7 +325,7 @@
 		};
 		FF0003012A18050500000015 /* mParticle-Apple-SDK */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FF0003012A18050500000051 /* XCRemoteSwiftPackageReference "mparticle-apple-sdk" */;
+			package = FF0003012A18050500000051 /* XCLocalSwiftPackageReference "mparticle-apple-sdk" */;
 			productName = "mParticle-Apple-SDK";
 		};
 /* End XCSwiftPackageProductDependency section */
