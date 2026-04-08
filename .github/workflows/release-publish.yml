@@ -140,64 +140,22 @@ jobs:
           fetch-depth: 0
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        run: |
+          XCODE="${{ matrix.kit.xcode_version || env.XCODE_VERSION }}"
+          sudo xcode-select -s "/Applications/Xcode_${XCODE}.app"
 
       - name: Build kit xcframeworks
         shell: bash
         run: |
-          SCHEMES_JSON='${{ toJson(matrix.kit.schemes) }}'
-          LOCAL_PATH="${{ matrix.kit.local_path }}"
-          BUILD_SETTINGS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO SKIP_INSTALL=NO BUILD_LIBRARY_FOR_DISTRIBUTION=YES"
+          PLATFORMS_JSON='${{ toJson(matrix.kit.platforms) }}'
+          PLATFORMS=$(echo "$PLATFORMS_JSON" | jq -r '.[]' | paste -sd ',' -)
 
-          mkdir -p archives xcframeworks
-
-          MODULES=$(echo "$SCHEMES_JSON" | jq -r '.[].module' | sort -u)
-
-          for MODULE in $MODULES; do
-            XCFRAMEWORK_ARGS=""
-
-            while IFS= read -r ENTRY; do
-              SCHEME=$(echo "$ENTRY" | jq -r '.scheme')
-              DEST=$(echo "$ENTRY" | jq -r '.destination')
-
-              if [ -d "$LOCAL_PATH/$SCHEME.xcodeproj" ]; then
-                PROJECT="$LOCAL_PATH/$SCHEME.xcodeproj"
-              else
-                PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
-              fi
-
-              ARCHIVE_DEVICE="archives/${MODULE}-${DEST}"
-              ARCHIVE_SIM="archives/${MODULE}-${DEST}_Simulator"
-
-              case "$DEST" in
-                iOS)
-                  PLATFORM_DEVICE="generic/platform=iOS"
-                  PLATFORM_SIM="generic/platform=iOS Simulator"
-                  ;;
-                tvOS)
-                  PLATFORM_DEVICE="generic/platform=tvOS"
-                  PLATFORM_SIM="generic/platform=tvOS Simulator"
-                  ;;
-                *)
-                  echo "::error::Unknown destination: $DEST"
-                  exit 1
-                  ;;
-              esac
-
-              xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
-                -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" $BUILD_SETTINGS
-              xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
-                -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" $BUILD_SETTINGS
-
-              XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_DEVICE}.xcarchive -framework ${MODULE}.framework"
-              XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_SIM}.xcarchive -framework ${MODULE}.framework"
-            done < <(echo "$SCHEMES_JSON" | jq -c ".[] | select(.module == \"$MODULE\")")
-
-            xcodebuild -create-xcframework $XCFRAMEWORK_ARGS -output "xcframeworks/${MODULE}.xcframework"
-            (cd xcframeworks && zip -r "${MODULE}.xcframework.zip" "${MODULE}.xcframework" && rm -rf "${MODULE}.xcframework")
-          done
-
-          rm -rf archives
+          ./Scripts/build_kit_xcframework.sh \
+            --path "${{ matrix.kit.local_path }}" \
+            --scheme "${{ matrix.kit.scheme }}" \
+            --module "${{ matrix.kit.module }}" \
+            --platforms "$PLATFORMS" \
+            --output xcframeworks
 
       - name: Upload xcframework artifacts
         uses: actions/upload-artifact@v4

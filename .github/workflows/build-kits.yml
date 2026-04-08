@@ -78,32 +78,30 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
       - name: Resolve SPM dependencies
+        working-directory: ${{ matrix.kit.local_path }}
         run: |
-          SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+          xcodebuild -resolvePackageDependencies \
+            -skipPackagePluginValidation \
+            -scheme "${{ matrix.kit.scheme }}" \
+            -derivedDataPath DerivedData
 
-          xcodebuild -resolvePackageDependencies -project "$PROJECT" \
-            -scheme "$SCHEME" -derivedDataPath DerivedData
-
-      - name: Build kit schemes
+      - name: Build kit for each platform
+        working-directory: ${{ matrix.kit.local_path }}
         run: |
-          echo '${{ toJson(matrix.kit.schemes) }}' | jq -c '.[]' | while IFS= read -r ENTRY; do
-            SCHEME=$(echo "$ENTRY" | jq -r '.scheme')
-            DEST=$(echo "$ENTRY" | jq -r '.destination')
-
-            if [ -d "${{ matrix.kit.local_path }}/$SCHEME.xcodeproj" ]; then
-              PROJECT="${{ matrix.kit.local_path }}/$SCHEME.xcodeproj"
-            else
-              PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-            fi
-
-            xcodebuild build -project "$PROJECT" -scheme "$SCHEME" \
-              -destination "generic/platform=$DEST" \
+          PLATFORMS_JSON='${{ toJson(matrix.kit.platforms) }}'
+          echo "$PLATFORMS_JSON" | jq -r '.[]' | while IFS= read -r PLATFORM; do
+            echo "==> Building ${{ matrix.kit.scheme }} for $PLATFORM..."
+            xcodebuild build \
+              -skipPackagePluginValidation \
+              -scheme "${{ matrix.kit.scheme }}" \
+              -destination "generic/platform=$PLATFORM" \
               -derivedDataPath DerivedData \
               CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
-            xcodebuild build -project "$PROJECT" -scheme "$SCHEME" \
-              -destination "generic/platform=$DEST Simulator" \
+            xcodebuild build \
+              -skipPackagePluginValidation \
+              -scheme "${{ matrix.kit.scheme }}" \
+              -destination "generic/platform=$PLATFORM Simulator" \
               -derivedDataPath DerivedData \
               CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
           done
@@ -125,18 +123,11 @@ jobs:
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Run SPM tests
+        working-directory: ${{ matrix.kit.local_path }}
         run: |
-          cd ${{ matrix.kit.local_path }}
-          PACKAGE=$(grep -E '^\s*name:' Package.swift | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
-          LIB_COUNT=$(grep -c '\.library' Package.swift || true)
-          if [ "$LIB_COUNT" -gt 1 ]; then
-            SCHEME="${PACKAGE}-Package"
-          else
-            SCHEME="$PACKAGE"
-          fi
-          for xc in *.xcodeproj; do [ -d "$xc" ] && mv "$xc" "${xc}.bak"; done
-          trap 'for xc in *.xcodeproj.bak; do [ -d "$xc" ] && mv "$xc" "${xc%.bak}"; done' EXIT
-          xcodebuild test -scheme "$SCHEME" \
+          xcodebuild test \
+            -skipPackagePluginValidation \
+            -scheme "${{ matrix.kit.scheme }}" \
             -destination "platform=iOS Simulator,name=iPhone 16" \
             -derivedDataPath DerivedData-Test \
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO

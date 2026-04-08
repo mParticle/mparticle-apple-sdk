@@ -4,78 +4,54 @@
     "local_path": "Kits/adjust/adjust-5",
     "podspec": "Kits/adjust/adjust-5/mParticle-Adjust-5.podspec",
     "dest_repo": "mparticle-apple-integration-adjust-5",
-    "schemes": [
-      {
-        "scheme": "mParticle-Adjust",
-        "module": "mParticle_Adjust",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Adjust",
+    "module": "mParticle_Adjust",
+    "platforms": ["iOS"]
   },
   {
     "name": "adobe-5",
     "local_path": "Kits/adobe/adobe-5",
     "podspec": "Kits/adobe/adobe-5/mParticle-Adobe-5.podspec",
     "dest_repo": "mparticle-apple-integration-adobe-5",
-    "schemes": [
-      {
-        "scheme": "mParticle-Adobe",
-        "module": "mParticle_Adobe",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Adobe",
+    "module": "mParticle_Adobe",
+    "platforms": ["iOS"]
   },
   {
     "name": "appsflyer-6",
     "local_path": "Kits/appsflyer/appsflyer-6",
     "podspec": "Kits/appsflyer/appsflyer-6/mParticle-AppsFlyer-6.podspec",
     "dest_repo": "mparticle-apple-integration-appsflyer-6",
-    "schemes": [
-      {
-        "scheme": "mParticle-AppsFlyer",
-        "module": "mParticle_AppsFlyer",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-AppsFlyer",
+    "module": "mParticle_AppsFlyer",
+    "platforms": ["iOS"]
   },
   {
     "name": "apptentive-6",
     "local_path": "Kits/apptentive/apptentive-6",
     "podspec": "Kits/apptentive/apptentive-6/mParticle-Apptentive-6.podspec",
     "dest_repo": "mparticle-apple-integration-apptentive-6",
-    "schemes": [
-      {
-        "scheme": "mParticle-Apptentive",
-        "module": "mParticle_Apptentive",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Apptentive",
+    "module": "mParticle_Apptentive",
+    "platforms": ["iOS"]
   },
   {
     "name": "apptimize-3",
     "local_path": "Kits/apptimize/apptimize-3",
     "podspec": "Kits/apptimize/apptimize-3/mParticle-Apptimize-3.podspec",
     "dest_repo": "mparticle-apple-integration-apptimize-3",
-    "schemes": [
-      {
-        "scheme": "mParticle-Apptimize",
-        "module": "mParticle_Apptimize",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Apptimize",
+    "module": "mParticle_Apptimize",
+    "platforms": ["iOS"]
   },
   {
     "name": "branchmetrics-3",
     "local_path": "Kits/branchmetrics/branchmetrics-3",
     "podspec": "Kits/branchmetrics/branchmetrics-3/mParticle-BranchMetrics-3.podspec",
     "dest_repo": "mparticle-apple-integration-branchmetrics-3",
-    "schemes": [
-      {
-        "scheme": "mParticle-BranchMetrics",
-        "module": "mParticle_BranchMetrics",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-BranchMetrics",
+    "module": "mParticle_BranchMetrics",
+    "platforms": ["iOS"]
   },
   {
     "name": "braze-12",
@@ -83,18 +59,9 @@
     "local_path": "Kits/braze/braze-12",
     "podspec": "Kits/braze/braze-12/mParticle-Braze-12.podspec",
     "dest_repo": "mparticle-apple-integration-braze-12",
-    "schemes": [
-      {
-        "scheme": "mParticle-Braze",
-        "module": "mParticle_Braze",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-Braze-tvOS",
-        "module": "mParticle_Braze",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-Braze",
+    "module": "mParticle_Braze",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "braze-13",
@@ -102,18 +69,9 @@
     "local_path": "Kits/braze/braze-13",
     "podspec": "Kits/braze/braze-13/mParticle-Braze-13.podspec",
     "dest_repo": "mparticle-apple-integration-braze-13",
-    "schemes": [
-      {
-        "scheme": "mParticle-Braze",
-        "module": "mParticle_Braze",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-Braze-tvOS",
-        "module": "mParticle_Braze",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-Braze",
+    "module": "mParticle_Braze",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "braze-14",
@@ -121,315 +79,186 @@
     "local_path": "Kits/braze/braze-14",
     "podspec": "Kits/braze/braze-14/mParticle-Braze-14.podspec",
     "dest_repo": "mparticle-apple-integration-braze-14",
-    "schemes": [
-      {
-        "scheme": "mParticle-Braze",
-        "module": "mParticle_Braze",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-Braze-tvOS",
-        "module": "mParticle_Braze",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-Braze",
+    "module": "mParticle_Braze",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "clevertap-7",
     "local_path": "Kits/clevertap/clevertap-7",
     "podspec": "Kits/clevertap/clevertap-7/mParticle-CleverTap-7.podspec",
     "dest_repo": "mparticle-apple-integration-clevertap-7",
-    "schemes": [
-      {
-        "scheme": "mParticle-CleverTap",
-        "module": "mParticle_CleverTap",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-CleverTap",
+    "module": "mParticle_CleverTap",
+    "platforms": ["iOS"]
   },
   {
     "name": "comscore-6",
     "local_path": "Kits/comscore/comscore-6",
     "podspec": "Kits/comscore/comscore-6/mParticle-ComScore-6.podspec",
     "dest_repo": "mparticle-apple-integration-comscore-6",
-    "schemes": [
-      {
-        "scheme": "mParticle-ComScore",
-        "module": "mParticle_ComScore",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-ComScore-tvOS",
-        "module": "mParticle_ComScore",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-ComScore",
+    "module": "mParticle_ComScore",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "google-analytics-firebase-11",
     "local_path": "Kits/google-analytics-firebase/firebase-11",
     "podspec": "Kits/google-analytics-firebase/firebase-11/mParticle-Firebase-11.podspec",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-11",
-    "schemes": [
-      {
-        "scheme": "mParticle-Firebase",
-        "module": "mParticle_Firebase",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Firebase",
+    "module": "mParticle_Firebase",
+    "platforms": ["iOS"]
   },
   {
     "name": "google-analytics-firebase-12",
     "local_path": "Kits/google-analytics-firebase/firebase-12",
     "podspec": "Kits/google-analytics-firebase/firebase-12/mParticle-Firebase-12.podspec",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-12",
-    "schemes": [
-      {
-        "scheme": "mParticle-Firebase",
-        "module": "mParticle_Firebase",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Firebase",
+    "module": "mParticle_Firebase",
+    "platforms": ["iOS"]
   },
   {
     "name": "google-analytics-firebase-ga4-11",
     "local_path": "Kits/google-analytics-firebase-ga4/firebase-ga4-11",
     "podspec": "Kits/google-analytics-firebase-ga4/firebase-ga4-11/mParticle-FirebaseGA4-11.podspec",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-11",
-    "schemes": [
-      {
-        "scheme": "mParticle-FirebaseGA4",
-        "module": "mParticle_FirebaseGA4",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-FirebaseGA4-tvOS",
-        "module": "mParticle_FirebaseGA4",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-FirebaseGA4",
+    "module": "mParticle_FirebaseGA4",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "google-analytics-firebase-ga4-12",
     "local_path": "Kits/google-analytics-firebase-ga4/firebase-ga4-12",
     "podspec": "Kits/google-analytics-firebase-ga4/firebase-ga4-12/mParticle-FirebaseGA4-12.podspec",
     "dest_repo": "mparticle-apple-integration-google-analytics-firebase-ga4-12",
-    "schemes": [
-      {
-        "scheme": "mParticle-FirebaseGA4",
-        "module": "mParticle_FirebaseGA4",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-FirebaseGA4-tvOS",
-        "module": "mParticle_FirebaseGA4",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-FirebaseGA4",
+    "module": "mParticle_FirebaseGA4",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "iterable-6",
     "local_path": "Kits/iterable/iterable-6",
     "podspec": "Kits/iterable/iterable-6/mParticle-Iterable-6.podspec",
     "dest_repo": "mparticle-apple-integration-iterable-6",
-    "schemes": [
-      {
-        "scheme": "mParticle-Iterable",
-        "module": "mParticle_Iterable",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Iterable",
+    "module": "mParticle_Iterable",
+    "platforms": ["iOS"]
   },
   {
     "name": "kochava-9",
     "local_path": "Kits/kochava/kochava-9",
     "dest_repo": "mparticle-apple-integration-kochava-9",
-    "schemes": [
-      {
-        "scheme": "mParticle-Kochava",
-        "module": "mParticle_Kochava",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-Kochava-tvOS",
-        "module": "mParticle_Kochava",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-Kochava",
+    "module": "mParticle_Kochava",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "kochava-no-tracking-9",
     "local_path": "Kits/kochava/kochava-no-tracking-9",
     "dest_repo": "mparticle-apple-integration-kochava-no-tracking-9",
-    "schemes": [
-      {
-        "scheme": "mParticle-Kochava",
-        "module": "mParticle_Kochava",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-Kochava-tvOS",
-        "module": "mParticle_Kochava",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-Kochava",
+    "module": "mParticle_Kochava",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "leanplum-6",
     "local_path": "Kits/leanplum/leanplum-6",
     "podspec": "Kits/leanplum/leanplum-6/mParticle-Leanplum-6.podspec",
     "dest_repo": "mparticle-apple-integration-leanplum-6",
-    "schemes": [
-      {
-        "scheme": "mParticle-Leanplum",
-        "module": "mParticle_Leanplum",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Leanplum",
+    "module": "mParticle_Leanplum",
+    "platforms": ["iOS"]
   },
   {
     "name": "localytics-6",
     "local_path": "Kits/localytics/localytics-6",
     "podspec": "Kits/localytics/localytics-6/mParticle-Localytics-6.podspec",
     "dest_repo": "mparticle-apple-integration-localytics-6",
-    "schemes": [
-      {
-        "scheme": "mParticle-Localytics",
-        "module": "mParticle_Localytics",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Localytics",
+    "module": "mParticle_Localytics",
+    "platforms": ["iOS"]
   },
   {
     "name": "localytics-7",
     "local_path": "Kits/localytics/localytics-7",
     "podspec": "Kits/localytics/localytics-7/mParticle-Localytics-7.podspec",
     "dest_repo": "mparticle-apple-integration-localytics-7",
-    "schemes": [
-      {
-        "scheme": "mParticle-Localytics",
-        "module": "mParticle_Localytics",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Localytics",
+    "module": "mParticle_Localytics",
+    "platforms": ["iOS"]
   },
   {
     "name": "onetrust",
     "local_path": "Kits/onetrust/onetrust",
     "podspec": "Kits/onetrust/onetrust/mParticle-OneTrust.podspec",
     "dest_repo": "mp-apple-integration-onetrust",
-    "schemes": [
-      {
-        "scheme": "mParticle-OneTrust",
-        "module": "mParticle_OneTrust",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-OneTrust-tvOS",
-        "module": "mParticle_OneTrust",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-OneTrust",
+    "module": "mParticle_OneTrust",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "optimizely-4",
     "local_path": "Kits/optimizely/optimizely-4",
     "podspec": "Kits/optimizely/optimizely-4/mParticle-Optimizely-4.podspec",
     "dest_repo": "mparticle-apple-integration-optimizely-4",
-    "schemes": [
-      {
-        "scheme": "mParticle-Optimizely",
-        "module": "mParticle_Optimizely",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-Optimizely-tvOS",
-        "module": "mParticle_Optimizely",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-Optimizely",
+    "module": "mParticle_Optimizely",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "optimizely-5",
     "local_path": "Kits/optimizely/optimizely-5",
     "podspec": "Kits/optimizely/optimizely-5/mParticle-Optimizely-5.podspec",
     "dest_repo": "mparticle-apple-integration-optimizely-5",
-    "schemes": [
-      {
-        "scheme": "mParticle-Optimizely",
-        "module": "mParticle_Optimizely",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-Optimizely-tvOS",
-        "module": "mParticle_Optimizely",
-        "destination": "tvOS"
-      }
-    ]
+    "scheme": "mParticle-Optimizely",
+    "module": "mParticle_Optimizely",
+    "platforms": ["iOS", "tvOS"]
   },
   {
     "name": "radar-3",
     "local_path": "Kits/radar/radar-3",
     "podspec": "Kits/radar/radar-3/mParticle-Radar-3.podspec",
     "dest_repo": "mparticle-apple-integration-radar-3",
-    "schemes": [
-      {
-        "scheme": "mParticle-Radar",
-        "module": "mParticle_Radar",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Radar",
+    "module": "mParticle_Radar",
+    "platforms": ["iOS"]
   },
   {
     "name": "rokt",
     "local_path": "Kits/rokt/rokt",
     "podspec": "Kits/rokt/rokt/mParticle-Rokt.podspec",
     "dest_repo": "mp-apple-integration-rokt",
-    "schemes": [
-      {
-        "scheme": "mParticle-Rokt",
-        "module": "mParticle_Rokt",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Rokt",
+    "module": "mParticle_Rokt",
+    "platforms": ["iOS"]
   },
   {
     "name": "singular-12",
     "local_path": "Kits/singular/singular-12",
     "podspec": "Kits/singular/singular-12/mParticle-Singular-12.podspec",
     "dest_repo": "mparticle-apple-integration-singular-12",
-    "schemes": [
-      {
-        "scheme": "mParticle-Singular",
-        "module": "mParticle_Singular",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-Singular",
+    "module": "mParticle_Singular",
+    "platforms": ["iOS"]
   },
   {
     "name": "urbanairship-19",
     "local_path": "Kits/urbanairship/urbanairship-19",
     "podspec": "Kits/urbanairship/urbanairship-19/mParticle-UrbanAirship-19.podspec",
     "dest_repo": "mparticle-apple-integration-urbanairship-19",
-    "schemes": [
-      {
-        "scheme": "mParticle-UrbanAirship",
-        "module": "mParticle_UrbanAirship",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-UrbanAirship",
+    "module": "mParticle_UrbanAirship",
+    "platforms": ["iOS"]
   },
   {
     "name": "urbanairship-20",
     "local_path": "Kits/urbanairship/urbanairship-20",
     "podspec": "Kits/urbanairship/urbanairship-20/mParticle-UrbanAirship-20.podspec",
     "dest_repo": "mparticle-apple-integration-urbanairship-20",
-    "schemes": [
-      {
-        "scheme": "mParticle-UrbanAirship",
-        "module": "mParticle_UrbanAirship",
-        "destination": "iOS"
-      }
-    ]
+    "scheme": "mParticle-UrbanAirship",
+    "module": "mParticle_UrbanAirship",
+    "platforms": ["iOS"]
   }
 ]
