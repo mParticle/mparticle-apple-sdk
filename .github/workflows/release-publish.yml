@@ -319,7 +319,7 @@ jobs:
     name: Publish ${{ matrix.kit.name }} to CocoaPods
     needs: [load-matrix, mirror-and-release-kits, release-core-sdk]
     runs-on: macos-15
-    if: ${{ !inputs.dry_run }}
+    if: github.event.inputs.dry_run != 'true'
     strategy:
       fail-fast: false
       matrix:
