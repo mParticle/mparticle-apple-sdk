@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.ios.deployment_target = "15.6"
-    s.ios.source_files      = 'Sources/mParticle-Iterable/**/*.{h,m,mm}'
+    s.ios.source_files      = 'Sources/mParticle-Iterable/**/*.{h,m}'
     s.ios.resource_bundles  = { 'mParticle-Iterable-6-Privacy' => ['Sources/mParticle-Iterable/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'
     s.ios.dependency 'Iterable-iOS-SDK', '~> 6.5'
