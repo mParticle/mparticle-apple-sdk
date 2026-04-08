@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-@import mParticle_Apple_SDK;
+@import mParticle_Apple_SDK_ObjC;
 @import mParticle_Localytics;
 
 @interface AppDelegate ()

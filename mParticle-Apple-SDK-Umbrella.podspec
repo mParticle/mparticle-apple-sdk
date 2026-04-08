@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
     s.documentation_url = "https://docs.mparticle.com/developers/sdk/ios/"
     s.social_media_url  = "https://twitter.com/mparticle"
     s.requires_arc      = true
-    s.module_name       = 'mParticle_Apple_SDK_Umbrella'
+    s.module_name       = 'mParticle_Apple_SDK'
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
     s.swift_versions = ["5.0"]
