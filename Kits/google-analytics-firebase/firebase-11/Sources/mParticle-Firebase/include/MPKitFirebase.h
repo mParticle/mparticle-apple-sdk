@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-@import mParticle_Apple_SDK_ObjC;
+#import "mParticle.h"
 
 @interface MPKitFirebase : NSObject <MPKitProtocol>
 

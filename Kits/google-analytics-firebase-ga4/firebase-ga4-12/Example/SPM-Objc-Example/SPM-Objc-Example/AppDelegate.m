@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-#import <mParticle_Apple_SDK.h>
+#import "mParticle.h"
 #import "MPKitFirebaseGA4Analytics.h"
 
 @interface AppDelegate ()

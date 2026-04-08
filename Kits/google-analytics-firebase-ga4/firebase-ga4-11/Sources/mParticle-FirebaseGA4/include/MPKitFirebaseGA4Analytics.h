@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-@import mParticle_Apple_SDK_ObjC;
+#import "mParticle.h"
 
 @interface MPKitFirebaseGA4Analytics : NSObject <MPKitProtocol>
 
