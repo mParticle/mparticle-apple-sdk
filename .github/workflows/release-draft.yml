@@ -71,6 +71,7 @@ jobs:
         run: |
           PODSPECS=(
             "mParticle-Apple-SDK.podspec"
+            "mParticle-Apple-SDK-Umbrella.podspec"
             "mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec"
           )
           while IFS= read -r spec; do
@@ -119,7 +120,6 @@ jobs:
           kits-path: Kits
 
       # --- Commit, push, and create PR ---
-
       - name: Commit version changes
         run: |
           git add \
@@ -127,6 +127,7 @@ jobs:
             VERSION \
             Framework/Info.plist \
             mParticle-Apple-SDK.podspec \
+            mParticle-Apple-SDK-Umbrella.podspec \
             mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec \
             mParticle-Apple-SDK/MPIConstants.m \
             IntegrationTests/wiremock-recordings/mappings/*.json \
