@@ -142,15 +142,6 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Cache SPM packages
-        uses: actions/cache@v4
-        with:
-          path: DerivedData/SourcePackages
-          key: spm-${{ runner.os }}-${{ matrix.kit.name }}-${{ hashFiles(format('{0}/Package.swift', matrix.kit.local_path)) }}
-          restore-keys: |
-            spm-${{ runner.os }}-${{ matrix.kit.name }}-
-            spm-${{ runner.os }}-
-
       - name: Resolve SPM dependencies
         run: |
           SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
