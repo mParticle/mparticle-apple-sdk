@@ -44,6 +44,7 @@ jobs:
           # is published to CocoaPods CDN.
           sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK.podspec
           sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec
+          sed -i '' 's/s\.version[[:space:]]*=.*/s.version          = "9.0.0"/' mParticle-Apple-SDK-Umbrella.podspec
 
           echo "Linting: ${{ matrix.kit.podspec }}"
           for attempt in 1 2 3; do
