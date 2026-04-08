@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-@import mParticle_Apple_SDK_ObjC;
+#import <mParticle_Apple_SDK_ObjC/mParticle.h>
 
 @interface MPKitComScore : NSObject <MPKitProtocol>
 
