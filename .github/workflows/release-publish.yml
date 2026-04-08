@@ -123,6 +123,7 @@ jobs:
     name: Build ${{ matrix.kit.name }}
     needs: load-matrix
     runs-on: macOS-latest
+    timeout-minutes: 30
     env:
       XCODE_VERSION: "26.2"
       # Build xcframeworks against mParticle-Apple-SDK from this checkout (same commit as VERSION).
