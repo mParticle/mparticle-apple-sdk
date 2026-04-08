@@ -3,7 +3,7 @@
 ## 1. Refresh the CocoaPods trunk token
 
 > [!IMPORTANT]
-> The `COCOAPODS_TRUNK_TOKEN` secret in this repository expires after ~180 days. **Refresh it before every release.**
+> The `COCOAPODS_TRUNK_TOKEN` secret in this repository expires after ~3 days. **Refresh it before every release.**
 
 1. Generate a new session token:
    ```bash
