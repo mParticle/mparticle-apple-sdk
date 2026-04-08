@@ -123,7 +123,6 @@ jobs:
     name: Build ${{ matrix.kit.name }}
     needs: load-matrix
     runs-on: macOS-latest
-    timeout-minutes: 30
     env:
       XCODE_VERSION: "26.2"
       # Build xcframeworks against mParticle-Apple-SDK from this checkout (same commit as VERSION).
@@ -141,22 +140,6 @@ jobs:
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
-
-      - name: Cache SPM packages
-        uses: actions/cache@v4
-        with:
-          path: DerivedData/SourcePackages
-          key: spm-${{ runner.os }}-${{ matrix.kit.name }}-${{ hashFiles(format('{0}/Package.swift', matrix.kit.local_path)) }}
-          restore-keys: |
-            spm-${{ runner.os }}-${{ matrix.kit.name }}-
-            spm-${{ runner.os }}-
-
-      - name: Resolve SPM dependencies
-        run: |
-          SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-          xcodebuild -resolvePackageDependencies -project "$PROJECT" \
-            -scheme "$SCHEME" -derivedDataPath DerivedData
 
       - name: Build kit xcframeworks
         shell: bash
@@ -201,15 +184,9 @@ jobs:
               esac
 
               xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
-                -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" \
-                -derivedDataPath DerivedData \
-                -packageCachePath DerivedData/SourcePackages \
-                $BUILD_SETTINGS
+                -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" $BUILD_SETTINGS
               xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
-                -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" \
-                -derivedDataPath DerivedData \
-                -packageCachePath DerivedData/SourcePackages \
-                $BUILD_SETTINGS
+                -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" $BUILD_SETTINGS
 
               XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_DEVICE}.xcarchive -framework ${MODULE}.framework"
               XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_SIM}.xcarchive -framework ${MODULE}.framework"
