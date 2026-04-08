@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
     s.swift_version    = '5.0'
     s.ios.deployment_target  = "15.6"
     s.tvos.deployment_target = "15.6"
-    s.source_files      = 'Sources/mParticle-Adobe/**/*.{h,m,mm}'
+    s.source_files      = 'Sources/mParticle-Adobe/**/*.{h,m}'
     s.resource_bundles  = { 'mParticle-Adobe-5-Privacy' => ['Sources/mParticle-Adobe/PrivacyInfo.xcprivacy'] }
     s.dependency 'mParticle-Apple-SDK', '~> 9.0'
 end

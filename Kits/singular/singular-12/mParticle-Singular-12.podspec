@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
     s.source           = { :git => "https://github.com/mparticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.static_framework = true
     s.ios.deployment_target = "15.6"
-    s.ios.source_files      = 'Sources/mParticle-Singular/**/*.{h,m,mm}'
+    s.ios.source_files      = 'Sources/mParticle-Singular/**/*.{h,m}'
     s.ios.resource_bundles  = { 'mParticle-Singular-12-Privacy' => ['Sources/mParticle-Singular/PrivacyInfo.xcprivacy'] }
     s.ios.frameworks        = 'StoreKit'
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'

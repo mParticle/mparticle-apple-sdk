@@ -32,30 +32,16 @@ Pod::Spec.new do |s|
     s.subspec 'mParticle' do |mp|
         mp.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         mp.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
+        mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
         mp.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
         mp.dependency 'mParticle-Apple-SDK-Swift'
         mp.dependency 'RoktContracts', '~> 0.1'
     end
 
-    # Matches CocoaPods trunk layout — required by mParticle-Apple-Media-SDK when using local `:path` SDK.
-    s.subspec 'mParticleNoLocation' do |mpnl|
-        mpnl.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        mpnl.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        mpnl.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        mpnl.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
-        mpnl.pod_target_xcconfig = {
-            'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
-            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
-        }
-        mpnl.dependency 'mParticle-Apple-SDK-Swift'
-        mpnl.dependency 'RoktContracts', '~> 0.1'
-    end
-
     s.subspec 'AppExtension' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
+        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
         ext.dependency 'mParticle-Apple-SDK-Swift'
         ext.dependency 'RoktContracts', '~> 0.1'
     end
