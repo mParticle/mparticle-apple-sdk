@@ -52,7 +52,6 @@ From the repository root, run:
 ```bash
 # Make the build scripts executable
 chmod +x ./Scripts/make_artifacts.sh
-chmod +x ./Scripts/carthage.sh
 chmod +x ./Scripts/xcframework.sh
 
 # Build the frameworks
