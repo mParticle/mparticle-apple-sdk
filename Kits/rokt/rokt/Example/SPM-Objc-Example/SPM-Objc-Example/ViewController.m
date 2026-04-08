@@ -1,5 +1,5 @@
 #import "ViewController.h"
-@import mParticle_Apple_SDK_ObjC;
+#import <mParticle_Apple_SDK.h>
 @import RoktContracts;
 
 @interface ViewController ()
