@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import <mParticle_Apple_SDK_ObjC/mParticle.h>
+@import mParticle_Apple_SDK_ObjC;
 
 @interface MPKitCleverTap : NSObject <MPKitProtocol>
 
