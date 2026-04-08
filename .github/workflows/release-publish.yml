@@ -89,6 +89,12 @@ jobs:
           body: |
             ${{ steps.release-notes.outputs.release_notes }}
 
+      - name: Publish to CocoaPods
+        if: env.DRY_RUN != 'true'
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: pod trunk push mParticle-Apple-SDK.podspec --allow-warnings --synchronous
+
       - name: Summary
         run: |
           ARTIFACTS=$(ls *.zip 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
@@ -305,3 +311,25 @@ jobs:
           ### Release notes
           ${{ steps.release-notes.outputs.release_notes }}
           EOF
+
+  # ──────────────────────────────────────────────
+  # CocoaPods: publish each kit to trunk
+  # ──────────────────────────────────────────────
+  publish-kit-cocoapods:
+    name: Publish ${{ matrix.kit.name }} to CocoaPods
+    needs: [load-matrix, mirror-and-release-kits, release-core-sdk]
+    runs-on: macos-15
+    if: ${{ !inputs.dry_run }}
+    strategy:
+      fail-fast: false
+      matrix:
+        kit: ${{ fromJson(needs.load-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Publish to CocoaPods
+        if: matrix.kit.podspec != ''
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: pod trunk push ${{ matrix.kit.podspec }} --allow-warnings --synchronous
