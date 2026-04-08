@@ -305,3 +305,20 @@ jobs:
           ### Release notes
           ${{ steps.release-notes.outputs.release_notes }}
           EOF
+
+  # ──────────────────────────────────────────────
+  # CocoaPods: publish core SDK to trunk
+  # ──────────────────────────────────────────────
+  publish-cocoapods:
+    name: Publish to CocoaPods
+    needs: release-core-sdk
+    runs-on: macos-15
+    if: ${{ !inputs.dry_run }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Publish to CocoaPods
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: pod trunk push mParticle-Apple-SDK.podspec --allow-warnings
