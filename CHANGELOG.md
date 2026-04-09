@@ -10,23 +10,14 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [Unreleased]
 
-### Kits
-
-#### Added
-
-- feat: Add Urban Airship 19 kit targeting Airship SDK 19.x (iOS 15.6+)
-
-## [9.0.0] - 2026-04-09
+## [9.0.0] - 2026-04-07
 
 ### Core
 
-#### Removed
-
-- "ci: cache SPM packages and add timeout in release-publish build-kits (#719)" ([#722](https://github.com/mParticle/mparticle-apple-sdk/pull/722))
+Refer the [MIGRATING.md](./MIGRATING.md) for the migration guide from version 8.x to 9.x
 
 #### Fixed
 
-- Bump hardcoded kit version strings in release-draft workflow ([#718](https://github.com/mParticle/mparticle-apple-sdk/pull/718))
 - Replace mapfile with bash 3.2-compatible read loop in release-draft ([#711](https://github.com/mParticle/mparticle-apple-sdk/pull/711))
 
 #### Changed
@@ -37,17 +28,11 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ### Kits
 
-#### Kits
-
-##### Changed
-
-- Merge workstation/9.0 release ([#700](https://github.com/mParticle/mparticle-apple-sdk/pull/700))
-
-#### Adjust
+#### Urban Airship
 
 ##### Added
 
-- Rename podspecs to umbrella + ObjC core ([#733](https://github.com/mParticle/mparticle-apple-sdk/pull/733))
+- feat: Add Urban Airship 19 kit targeting Airship SDK 19.x (iOS 15.6+)
 
 #### Adobe
 
@@ -61,21 +46,17 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Remove Core Location from MPKitProtocol; add MPLocation types ([#701](https://github.com/mParticle/mparticle-apple-sdk/pull/701))
 
+#### Localytics
+
+##### Added
+
+- Remove Core Location from MPKitProtocol; add MPLocation types ([#701](https://github.com/mParticle/mparticle-apple-sdk/pull/701))
+
 #### Comscore
 
 ##### Fixed
 
 - Hardcode tvOS PRODUCT_NAME in kit xcodeproj files for xcframework builds ([#714](https://github.com/mParticle/mparticle-apple-sdk/pull/714))
-
-#### Google-analytics-firebase-ga4
-
-##### Fixed
-
-- Update kit Xcode projects to use main branch ([#726](https://github.com/mParticle/mparticle-apple-sdk/pull/726))
-
-##### Changed
-
-- Use local SDK path in kit Xcode projects ([#727](https://github.com/mParticle/mparticle-apple-sdk/pull/727))
 
 #### Rokt
 
