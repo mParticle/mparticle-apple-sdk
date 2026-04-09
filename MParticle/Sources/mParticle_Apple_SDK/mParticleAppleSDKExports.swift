@@ -1,3 +1,4 @@
-/// Re-exports ObjC core (`mParticle_Apple_SDK_ObjC`) and `RoktContracts` under `mParticle_Apple_SDK`.
+#if !COCOAPODS
 @_exported import mParticle_Apple_SDK_ObjC
+#endif
 @_exported import RoktContracts

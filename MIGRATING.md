@@ -349,7 +349,7 @@ Since event types now come from the `RoktContracts` library instead of the SDK i
 Objective-C callers must add `@import RoktContracts;` to access `RoktEvent` types (e.g., `RoktPlacementReady`, `RoktShowLoadingIndicator`) used in the `onEvent:` callbacks:
 
 ```objective-c
-@import mParticle_Apple_SDK_ObjC;
+@import mParticle_Apple_SDK;
 @import RoktContracts;
 ```
 
@@ -556,7 +556,7 @@ MParticle.sharedInstance().rokt.globalEvents { event in
 
 ##### New Shoppable Ads APIs
 
-SDK 9.0.0 adds `registerPaymentExtension:` and `selectShoppableAds:` to `MPRokt`. For integration details and code examples, see the [Rokt Integration section in the README](README.md#rokt-integration).
+SDK 9.0.0 adds `registerPaymentExtension:` and `selectShoppableAds:` to `MPRokt`. For integration details and code examples, see the [Rokt kit README](Kits/rokt/rokt/README.md).
 
 #### Event Mapping Reference
 

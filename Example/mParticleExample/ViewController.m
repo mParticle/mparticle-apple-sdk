@@ -1,7 +1,6 @@
 #import "ViewController.h"
 #import <mParticle_Apple_SDK/mParticle.h>
 @import RoktContracts;
-#import <mParticle_Apple_Media_SDK-Swift.h>
 #import <AdSupport/AdSupport.h>
 #import "AdSupport/ASIdentifierManager.h"
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
@@ -385,19 +384,7 @@ static void MPE_LogRoktContractsExampleEvent(RoktEvent *event) {
 }
 
 - (void)logCustomMediaEvents {
-    MPMediaSession *mediaSession = [[MPMediaSession alloc]
-                                    initWithCoreSDK:[MParticle sharedInstance]
-                                    mediaContentId:@"1234567"
-                                    title:@"Sample App Video"
-                                    duration:[NSNumber numberWithInt:120000]
-                                    contentType:MPMediaContentTypeVideo
-                                    streamType:MPMediaStreamTypeOnDemand
-                                    excludeAdBreaksFromContentTime: false];
-    
-    [mediaSession logMediaSessionStartWithOptions:nil];
-    [mediaSession logPlayWithOptions:nil];
-    [mediaSession logMediaContentEndWithOptions:nil];
-    [mediaSession logMediaSessionEndWithOptions:nil];
+    NSLog(@"Media SDK not included in this example");
 }
 
 - (void)logTimedEvent {

@@ -32,7 +32,8 @@ Pod::Spec.new do |s|
     s.subspec 'mParticle' do |mp|
         mp.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         mp.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
+        mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}',
+                                  'MParticle/Sources/**/*.swift'
         mp.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
         mp.dependency 'mParticle-Apple-SDK-Swift'
         mp.dependency 'RoktContracts', '~> 0.1'
@@ -41,7 +42,8 @@ Pod::Spec.new do |s|
     s.subspec 'AppExtension' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
+        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}',
+                                   'MParticle/Sources/**/*.swift'
         ext.dependency 'mParticle-Apple-SDK-Swift'
         ext.dependency 'RoktContracts', '~> 0.1'
     end
