@@ -37,12 +37,4 @@ Pod::Spec.new do |s|
         mp.dependency 'mParticle-Apple-SDK-Swift'
         mp.dependency 'RoktContracts', '~> 0.1'
     end
-
-    s.subspec 'AppExtension' do |ext|
-        ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
-        ext.dependency 'mParticle-Apple-SDK-Swift'
-        ext.dependency 'RoktContracts', '~> 0.1'
-    end
 end
