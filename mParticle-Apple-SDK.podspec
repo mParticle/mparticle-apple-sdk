@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK"
-    s.version          = "8.44.4"
+    s.version          = "9.0.0"
     s.summary          = "Swift umbrella sources for mParticle Apple SDK (same paths as SwiftPM product `mParticle-Apple-SDK`)."
 
     s.description      = <<-DESC
