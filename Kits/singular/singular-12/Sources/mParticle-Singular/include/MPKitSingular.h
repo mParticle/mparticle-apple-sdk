@@ -1,9 +1,5 @@
 #import <Foundation/Foundation.h>
-#if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
-    #import <mParticle_Apple_SDK/mParticle.h>
-#else
-    #import "mParticle.h"
-#endif
+@import mParticle_Apple_SDK_ObjC;
 
 #define SINGULAR_DEEPLINK_KEY @"singular_deeplink"
 #define SINGULAR_PASSTHROUGH_KEY @"singular_passthrough"

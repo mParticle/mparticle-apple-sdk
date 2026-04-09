@@ -43,7 +43,7 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
   - Build: via Xcode scheme or `xcodebuild`.
   - Run unit tests: `Rokt_WidgetTests/` or via Xcode (Command + U).
   - Lint: `trunk check` (primary enforcement tool).
-  - Pod lint: `pod lib lint mParticle-Apple-SDK.podspec`.
+  - Pod lint: `pod lib lint mParticle-Apple-SDK.podspec --include-podspecs="{mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}"` (same as CI).
   - Size report: Check binary size impact via CI workflow.
 - Always validate changes with the full sequence in "Code style, quality, and validation" below before proposing or committing.
 
@@ -104,7 +104,8 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
 - `Scripts/` — Build, release, and utility scripts.
   - `xcframework.sh`, `check_coverage.sh`.
 - `Package.swift` — SPM manifest (swift-tools-version 5.5).
-- `mParticle-Apple-SDK.podspec` — CocoaPods spec (v8.41.1).
+- `mParticle-Apple-SDK.podspec` — CocoaPods umbrella (Swift sources; consumer-facing pod name `mParticle-Apple-SDK`).
+- `mParticle-Apple-SDK-ObjC.podspec` — CocoaPods ObjC core (`mParticle-Apple-SDK-ObjC`).
 - `PrivacyInfo.xcprivacy` — iOS privacy manifest.
 - `ARCHITECTURE.md` — Architecture documentation with sequence diagrams.
 - `CHANGELOG.md` — Release notes (extensive).
@@ -125,7 +126,7 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
   1. `trunk check` — to lint, format-check, and catch style/quality issues.
   2. Build the SDK: via Xcode or `xcodebuild` for both iOS and tvOS.
   3. Run unit tests: both Objective-C and Swift test suites in `UnitTests/`.
-  4. `pod lib lint mParticle-Apple-SDK.podspec` — verify CocoaPods spec is valid.
+  4. `pod lib lint` with `--include-podspecs` for Swift + ObjC + umbrella (see Quick Start) — verify CocoaPods specs.
   5. If change affects code, assets, or dependencies: check coverage via `Scripts/check_coverage.sh`.
   - Only propose / commit changes if all steps pass cleanly.
   - If `trunk check` suggests auto-fixes, apply them first and re-validate.

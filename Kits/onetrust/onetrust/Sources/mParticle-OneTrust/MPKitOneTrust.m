@@ -5,7 +5,7 @@
 #import <OTPublishersHeadlessSDKtvOS/OTPublishersHeadlessSDKtvOS-Swift.h>
 #endif
 
-@import mParticle_Apple_SDK;
+@import mParticle_Apple_SDK_ObjC;
 
 @implementation MPKitOneTrust
 

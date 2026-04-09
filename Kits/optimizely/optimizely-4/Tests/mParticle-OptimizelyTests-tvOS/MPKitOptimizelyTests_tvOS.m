@@ -14,11 +14,7 @@
 @import Optimizely;
 #endif
 
-#if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
-#import <mParticle_Apple_SDK/mParticle.h>
-#else
-#import "mParticle.h"
-#endif
+@import mParticle_Apple_SDK_ObjC;
 
 static NSString *const oiAPIKey = @"projectId";
 static NSString *const oiEventInterval = @"eventInterval";

@@ -14,7 +14,7 @@
 import SwiftUI
 import Rokt_Widget
 import RoktContracts
-import mParticle_Apple_SDK
+import mParticle_Apple_SDK_ObjC
 import mParticle_Rokt
 
 @available(iOS 15, *)

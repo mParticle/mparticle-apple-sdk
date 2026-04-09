@@ -1,4 +1,4 @@
-@import mParticle_Apple_SDK;
+@import mParticle_Apple_SDK_ObjC;
 @import mParticle_Braze;
 @import XCTest;
 @import OCMock;

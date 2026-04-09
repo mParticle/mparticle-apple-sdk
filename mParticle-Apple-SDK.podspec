@@ -1,18 +1,11 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK"
     s.version          = "8.44.4"
-    s.summary          = "mParticle Apple SDK."
+    s.summary          = "Swift umbrella sources for mParticle Apple SDK (same paths as SwiftPM product `mParticle-Apple-SDK`)."
 
     s.description      = <<-DESC
-                         This is the mParticle Apple SDK for iOS and tvOS.
-                         
-                         At mParticle our mission is straightforward: make it really easy for apps and app services to connect and allow you to take ownership of your 1st party data.
-                         Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing,
-                         monetization, etc. However, embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs.
-
-                         The mParticle platform addresses all these problems. We support an ever growing number of integrations with services and SDKs, including developer
-                         tools, analytics, attribution, messaging, advertising, and more. mParticle has been designed to be the central hub connecting all these services –
-                         read the [docs](https://docs.mparticle.com/developers/sdk/ios/) or contact us at <support@mparticle.com> to learn more.
+                         Swift-only pod packaging `MParticle/Sources/mParticle_Apple_SDK` (exports + Rokt helpers).
+                         Depends on `mParticle-Apple-SDK-ObjC` and `RoktContracts`. Intended to be versioned and tagged with the main SDK.
                          DESC
 
     s.homepage          = "https://www.mparticle.com"
@@ -27,23 +20,7 @@ Pod::Spec.new do |s|
     s.tvos.deployment_target = "15.6"
     s.swift_versions = ["5.0"]
 
-    s.default_subspecs = 'mParticle'
-
-    s.subspec 'mParticle' do |mp|
-        mp.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        mp.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
-        mp.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
-        mp.dependency 'mParticle-Apple-SDK-Swift'
-        mp.dependency 'RoktContracts', '~> 0.1'
-    end
-
-    s.subspec 'AppExtension' do |ext|
-        ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-        ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
-        ext.dependency 'mParticle-Apple-SDK-Swift'
-        ext.dependency 'RoktContracts', '~> 0.1'
-    end
+    s.source_files = 'MParticle/Sources/mParticle_Apple_SDK/**/*.swift'
+    s.dependency 'mParticle-Apple-SDK-ObjC', s.version.to_s
+    s.dependency 'RoktContracts', '~> 0.1'
 end
-

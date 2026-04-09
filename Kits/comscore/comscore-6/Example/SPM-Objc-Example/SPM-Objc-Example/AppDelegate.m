@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-@import mParticle_Apple_SDK;
+#import <mParticle_Apple_SDK.h>
 @import mParticle_ComScore;
 
 @interface AppDelegate ()
