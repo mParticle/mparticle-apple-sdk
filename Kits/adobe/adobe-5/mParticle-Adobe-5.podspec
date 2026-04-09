@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Adobe-5"
     s.module_name      = 'mParticle_Adobe'
-    s.version          = "8.2.4"
+    s.version          = "9.0.0"
     s.summary          = "Adobe integration for mParticle"
     s.description      = <<-DESC
                        This is the Adobe integration for mParticle.
