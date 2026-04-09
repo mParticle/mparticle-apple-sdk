@@ -201,13 +201,6 @@ jobs:
         run: |
           ./Scripts/update_mapping_versions.sh "${VERSION}"
 
-      - name: Update Carthage JSON manifest
-        run: |
-          jq --arg version "${VERSION}" \
-             --arg url "https://github.com/mParticle/mparticle-apple-sdk/releases/download/v${VERSION}/mParticle_Apple_SDK.framework.zip?alt=https://github.com/mParticle/mparticle-apple-sdk/releases/download/v${VERSION}/mParticle_Apple_SDK.xcframework.zip" \
-             '. + {($version): $url}' mParticle_Apple_SDK.json > /tmp/mParticle_Apple_SDK.json.tmp && \
-          mv /tmp/mParticle_Apple_SDK.json.tmp mParticle_Apple_SDK.json
-
       - name: Update Package.swift URLs (before building)
         run: |
           # Update URLs to point to new version (checksums will be updated after building)
@@ -217,7 +210,6 @@ jobs:
       - name: Build framework artifacts
         run: |
           chmod +x ./Scripts/make_artifacts.sh
-          chmod +x ./Scripts/carthage.sh
           chmod +x ./Scripts/xcframework.sh
           ./Scripts/make_artifacts.sh
 
@@ -247,7 +239,6 @@ jobs:
             mParticle-Apple-SDK.podspec \
             mParticle-Apple-SDK/MPConstants.swift \
             mParticle-Apple-SDK/MPIConstants.m \
-            mParticle_Apple_SDK.json \
             IntegrationTests/wiremock-recordings/mappings/*.json
 
           git commit -m "chore: (release) ${VERSION}
@@ -259,7 +250,6 @@ jobs:
           - mParticle-Apple-SDK.podspec
           - mParticle-Apple-SDK/MPConstants.swift
           - mParticle-Apple-SDK/MPIConstants.m
-          - mParticle_Apple_SDK.json
           - IntegrationTests/wiremock-recordings/mappings/*.json"
 
       - name: Push release branch
@@ -298,7 +288,6 @@ jobs:
           - \`mParticle-Apple-SDK.podspec\`
           - \`mParticle-Apple-SDK/MPConstants.swift\`
           - \`mParticle-Apple-SDK/MPIConstants.m\`
-          - \`mParticle_Apple_SDK.json\`
 
           ---
 
