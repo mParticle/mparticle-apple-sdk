@@ -81,7 +81,7 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
 
 - mParticle Apple SDK (Rokt fork): a comprehensive customer data platform SDK for iOS and tvOS written in Objective-C and Swift.
 - Handles event tracking, user identity management, consent management, commerce events, push notification handling, and integration kit orchestration.
-- Distributed via Swift Package Manager, CocoaPods, and Carthage.
+- Distributed via Swift Package Manager and CocoaPods.
 - Integration kits (like the Rokt kit) plug into this SDK to forward events to third-party services.
 
 ## Key paths
@@ -102,7 +102,7 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
 - `IntegrationTests/` — Integration tests (Tuist + WireMock).
 - `Example/` — Sample app (11 subdirectories).
 - `Scripts/` — Build, release, and utility scripts.
-  - `release.sh`, `xcframework.sh`, `carthage.sh`, `check_coverage.sh`.
+  - `xcframework.sh`, `check_coverage.sh`.
 - `Package.swift` — SPM manifest (swift-tools-version 5.5).
 - `mParticle-Apple-SDK.podspec` — CocoaPods umbrella (Swift sources; consumer-facing pod name `mParticle-Apple-SDK`).
 - `mParticle-Apple-SDK-ObjC.podspec` — CocoaPods ObjC core (`mParticle-Apple-SDK-ObjC`).
