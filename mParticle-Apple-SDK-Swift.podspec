@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
                          DESC
     
     s.homepage          = "https://www.mparticle.com"
-    s.license           = { :type => 'Apache 2.0', :file => '../LICENSE'}
+    s.license           = { :type => 'Apache 2.0', :file => 'LICENSE'}
     s.author            = { "mParticle" => "support@mparticle.com" }
     s.source            = { :git => "https://github.com/mParticle/mparticle-apple-sdk.git", :tag => "v" + s.version.to_s }
     s.documentation_url = "https://docs.mparticle.com/developers/sdk/ios/"
@@ -19,5 +19,5 @@ Pod::Spec.new do |s|
     s.tvos.deployment_target = "15.6"
     s.swift_versions = ["5.0"]
     
-    s.source_files = 'Sources/**/*.swift'
+    s.source_files = 'mParticle-Apple-SDK-Swift/Sources/**/*.swift'
 end
