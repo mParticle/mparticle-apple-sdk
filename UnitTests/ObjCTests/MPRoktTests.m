@@ -11,15 +11,20 @@
 // Rokt kit identifier for testing
 static NSNumber * const kTestRoktKitId = @181;
 
-// Test helper class that simulates a kit with getSessionId method
+// Test helper class that simulates a kit with getSessionId and setSessionId methods
 @interface MPRoktTestKitInstance : NSObject
 @property (nonatomic, copy) NSString *sessionIdToReturn;
+@property (nonatomic, copy) NSString *receivedSessionId;
 - (NSString *)getSessionId;
+- (void)setSessionId:(NSString *)sessionId;
 @end
 
 @implementation MPRoktTestKitInstance
 - (NSString *)getSessionId {
     return self.sessionIdToReturn;
+}
+- (void)setSessionId:(NSString *)sessionId {
+    self.receivedSessionId = sessionId;
 }
 @end
 
@@ -864,20 +869,48 @@ static NSNumber * const kTestRoktKitId = @181;
 
 #pragma mark - setSessionId Tests
 
-- (void)testSetSessionIdForwardsToKitContainer {
+- (void)testSetSessionIdSynchronousDoesNotUseForwardSDKCall {
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
-    // Set up test parameters
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+
+    NSArray *activeKits = @[mockKitRegister];
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(activeKits);
+
+    OCMReject([self.mockContainer forwardSDKCall:@selector(setSessionId:)
+                                           event:[OCMArg any]
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:[OCMArg any]]);
+
+    [self.rokt setSessionId:@"test-session-id-12345"];
+
+    XCTAssertEqualObjects(kitInstance.receivedSessionId, @"test-session-id-12345",
+        @"Should call kit directly without going through forwardSDKCall");
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSetSessionIdFallsBackToForwardSDKCallWhenKitNotAvailable {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[]);
+
     NSString *sessionId = @"test-session-id-12345";
 
-    // Set up expectations for kit container
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(setSessionId:);
-    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for fallback forwardSDKCall"];
+    OCMExpect([self.mockContainer forwardSDKCall:@selector(setSessionId:)
                                            event:nil
                                       parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], sessionId);
@@ -888,14 +921,39 @@ static NSNumber * const kTestRoktKitId = @181;
         [expectation fulfill];
     });
 
-    // Execute method
     [self.rokt setSessionId:sessionId];
 
-    // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
-
-    // Verify
     OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSetSessionIdIsReceivedByKitSynchronously {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // Set up a kit instance that records the session ID it receives
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+
+    NSArray *activeKits = @[mockKitRegister];
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(activeKits);
+
+    NSString *sessionId = @"web-session-12345";
+
+    // Call setSessionId
+    [self.rokt setSessionId:sessionId];
+
+    // The kit should have received the session ID SYNCHRONOUSLY (before this line runs).
+    // This test will FAIL with the current async implementation (proving the race condition)
+    // and PASS after the fix makes setSessionId synchronous.
+    XCTAssertEqualObjects(kitInstance.receivedSessionId, sessionId,
+        @"setSessionId must be delivered to the kit synchronously to avoid race conditions with selectPlacements/MPRoktLayout");
 }
 
 #pragma mark - getSessionId Tests

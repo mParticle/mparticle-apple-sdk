@@ -309,6 +309,22 @@ static void MPInvokeOnMainThread(void (^work)(void)) {
 ///   - sessionId: The session id to be set. Must be a non-empty string.
 - (void)setSessionId:(NSString * _Nonnull)sessionId {
     MPILogDebug(@"MPRokt setSessionId called - sessionId: %@", sessionId ? @"present" : @"nil");
+
+    NSArray<id<MPExtensionKitProtocol>> *activeKits =
+        [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+
+    for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
+        if ([kitRegister.code integerValue] == kMPRoktKitId) {
+            id kitInstance = kitRegister.wrapperInstance;
+            if (kitInstance && [kitInstance respondsToSelector:@selector(setSessionId:)]) {
+                [kitInstance performSelector:@selector(setSessionId:) withObject:sessionId];
+                MPILogDebug(@"MPRokt setSessionId - forwarded synchronously to kit");
+                return;
+            }
+        }
+    }
+
+    MPILogDebug(@"MPRokt setSessionId - kit not available, queueing for deferred execution");
     dispatch_async(dispatch_get_main_queue(), ^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:sessionId];
