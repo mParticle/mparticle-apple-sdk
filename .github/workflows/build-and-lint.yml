@@ -38,7 +38,7 @@ jobs:
         run: find . -path '*.podspec' -exec perl -pi -e 's/.+\.social_media_url.+//' {} \;
 
       - name: Lint with CocoaPods
-        run: pod lib lint --include-podspecs="{mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Umbrella.podspec}" \
+        run: pod lib lint --include-podspecs="{mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK.podspec,mParticle-Apple-SDK-Umbrella.podspec}"
 
       - name: Undo twitter change to podspec
         run: git checkout *.podspec
