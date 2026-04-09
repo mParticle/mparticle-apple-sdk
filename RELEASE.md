@@ -35,7 +35,7 @@ Review and merge the PR. On merge, the **Release – Publish** workflow runs aut
 > The Swift SDK podspec (`mParticle-Apple-SDK-Swift`) is not yet published automatically — push it manually before the core SDK if required:
 >
 > ```bash
-> pod trunk push mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec --allow-warnings
+> pod trunk push mParticle-Apple-SDK-Swift.podspec --allow-warnings
 > ```
 
 ## Post-release verification
