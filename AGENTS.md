@@ -43,7 +43,7 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
   - Build: via Xcode scheme or `xcodebuild`.
   - Run unit tests: `Rokt_WidgetTests/` or via Xcode (Command + U).
   - Lint: `trunk check` (primary enforcement tool).
-  - Pod lint: `pod lib lint mParticle-Apple-SDK.podspec --include-podspecs="{mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}"` (same as CI).
+  - Pod lint: `pod lib lint mParticle-Apple-SDK.podspec --include-podspecs="{mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}"` (same as CI).
   - Size report: Check binary size impact via CI workflow.
 - Always validate changes with the full sequence in "Code style, quality, and validation" below before proposing or committing.
 

@@ -72,7 +72,7 @@ jobs:
           PODSPECS=(
             "mParticle-Apple-SDK.podspec"
             "mParticle-Apple-SDK-ObjC.podspec"
-            "mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec"
+            "mParticle-Apple-SDK-Swift.podspec"
           )
           while IFS= read -r spec; do
             PODSPECS+=("$spec")
@@ -128,7 +128,7 @@ jobs:
             Framework/Info.plist \
             mParticle-Apple-SDK.podspec \
             mParticle-Apple-SDK-ObjC.podspec \
-            mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec \
+            mParticle-Apple-SDK-Swift.podspec \
             mParticle-Apple-SDK/MPIConstants.m \
             IntegrationTests/wiremock-recordings/mappings/*.json \
             Kits/

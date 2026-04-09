@@ -97,7 +97,7 @@ jobs:
           set -euo pipefail
           PUSH_FLAGS=(--allow-warnings --synchronous)
           # Order matters: Swift pod → ObjC core (depends on Swift) → umbrella Swift (depends on ObjC).
-          pod trunk push mParticle-Apple-SDK-Swift/mParticle-Apple-SDK-Swift.podspec "${PUSH_FLAGS[@]}"
+          pod trunk push mParticle-Apple-SDK-Swift.podspec "${PUSH_FLAGS[@]}"
           pod trunk push mParticle-Apple-SDK-ObjC.podspec "${PUSH_FLAGS[@]}"
           pod trunk push mParticle-Apple-SDK.podspec "${PUSH_FLAGS[@]}"
 
