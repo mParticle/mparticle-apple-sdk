@@ -17,8 +17,9 @@ sed -i '' 's/NSString \*const kMParticleSDKVersion = @".*/NSString *const kMPart
 jq --indent 3 '. += {'"\"$VERSION\""': "'"https://github.com/mParticle/mparticle-apple-sdk/releases/download/$PREFIXED_VERSION/mParticle_Apple_SDK.framework.zip?alt=https://github.com/mParticle/mparticle-apple-sdk/releases/download/$PREFIXED_VERSION/mParticle_Apple_SDK.xcframework.zip"'"}' mParticle_Apple_SDK.json >tmp.json
 mv tmp.json mParticle_Apple_SDK.json
 
-# Update CocoaPods podspec file
-sed -i '' 's/\(^    s.version[^=]*= \).*/\1"'"$VERSION"'"/' mParticle-Apple-SDK.podspec
+# Update CocoaPods podspec files
+sed -i '' 's/\(^    s.version[^=]*= \).*/\1"'"${VERSION}"'"/' mParticle-Apple-SDK.podspec
+sed -i '' 's/\(^    s.version[^=]*= \).*/\1"'"${VERSION}"'"/' mParticle-Apple-SDK-ObjC.podspec
 
 # Update SDK version in integration test mappings
 ./Scripts/update_mapping_versions.sh "${VERSION}"
@@ -51,6 +52,7 @@ sed -i '' 's/\(^let mParticle_Apple_SDK_NoLocation_Checksum[^=]*= \).*/\1"'"$SDK
 
 git add Package.swift
 git add mParticle-Apple-SDK.podspec
+git add mParticle-Apple-SDK-ObjC.podspec
 git add mParticle_Apple_SDK.json
 git add CHANGELOG.md
 git add mParticle-Apple-SDK/MPIConstants.m
