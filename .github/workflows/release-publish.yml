@@ -200,7 +200,7 @@ jobs:
           rm -rf archives
 
       - name: Upload xcframework artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: xcframework-${{ matrix.kit.name }}
           path: xcframeworks/*.xcframework.zip
@@ -224,7 +224,7 @@ jobs:
           persist-credentials: false
 
       - name: Download xcframework artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: xcframework-${{ matrix.kit.name }}
 
