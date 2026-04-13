@@ -64,7 +64,7 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
 - Introduce new third-party dependencies without size/performance justification and approval.
 - Block the main thread (no synchronous network, heavy computation, etc.).
 - Crash on bad input/network — always provide fallback / error callback.
-- Touch CI configs (`.github/`), release scripts (`Scripts/`), or CI YAML without explicit request.
+- Touch CI configs (`.github/`), `Scripts/` utilities, or CI YAML without explicit request.
 - Propose dropping iOS 15.6 / tvOS 15.6 support or raising min deployment target.
 - Break kit/integration compatibility without explicit coordination.
 - Modify vendored libraries in `Libraries/` without explicit request.
@@ -101,8 +101,8 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
 - `UnitTests/` — Unit tests (ObjCTests, SwiftTests, Mocks).
 - `IntegrationTests/` — Integration tests (Tuist + WireMock).
 - `Example/` — Sample app (11 subdirectories).
-- `Scripts/` — Build, release, and utility scripts.
-  - `xcframework.sh`, `check_coverage.sh`.
+- `Scripts/` — Build and utility scripts (`xcframework.sh`, `check_coverage.sh`, etc.).
+- `VERSION` — Ecosystem version advanced by the Release – Draft workflow; consumed by publish/mirror workflows.
 - `Package.swift` — SPM manifest (swift-tools-version 5.5).
 - `mParticle-Apple-SDK.podspec` — CocoaPods umbrella (Swift sources; consumer-facing pod name `mParticle-Apple-SDK`).
 - `mParticle-Apple-SDK-ObjC.podspec` — CocoaPods ObjC core (`mParticle-Apple-SDK-ObjC`).
@@ -110,7 +110,7 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
 - `ARCHITECTURE.md` — Architecture documentation with sequence diagrams.
 - `CHANGELOG.md` — Release notes (extensive).
 - `MIGRATING.md` — Migration guides for older versions.
-- `RELEASE.md` — Release process documentation.
+- `RELEASE.md` — Release process (GitHub Actions and root `VERSION` file).
 - `CONTRIBUTING.md` — Contribution guidelines.
 
 ## Code style, quality, and validation

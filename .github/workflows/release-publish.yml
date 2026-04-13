@@ -264,7 +264,7 @@ jobs:
         id: push
         run: |
           DEST_URL="https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
-          git push "$DEST_URL" "split/${{ matrix.kit.name }}:main" --force
+          git push "$DEST_URL" "split/${{ matrix.kit.name }}:main"
           echo "sha=$(git rev-parse split/${{ matrix.kit.name }})" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release on mirror
