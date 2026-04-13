@@ -64,6 +64,10 @@ Included kits: { Braze }
 - [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/client-sdks/ios/)
 - [Braze Swift SDK Documentation](https://www.braze.com/docs/)
 
+## Issues
+
+Please report bugs and feature requests to the [mparticle-apple-sdk](https://github.com/mParticle/mparticle-apple-sdk/issues) repository. This mirror repository is not actively monitored for issues.
+
 ## License
 
 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)

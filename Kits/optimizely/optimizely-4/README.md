@@ -38,6 +38,10 @@ Included kits: { Optimizely }
 - [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/client-sdks/ios/)
 - [Optimizely Swift SDK Documentation](https://docs.developers.optimizely.com/full-stack/docs/swift-sdk)
 
+## Issues
+
+Please report bugs and feature requests to the [mparticle-apple-sdk](https://github.com/mParticle/mparticle-apple-sdk/issues) repository. This mirror repository is not actively monitored for issues.
+
 ## License
 
 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
