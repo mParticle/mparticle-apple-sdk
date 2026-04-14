@@ -119,7 +119,9 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     id mockKitApi = OCMClassMock([MPKitAPI class]);
     OCMStub([mockKitApi getCurrentUserWithKit:kitInstance]).andReturn(filteredUser);
     kitInstance.kitApi = mockKitApi;
-    
+
+    id mockBraze = OCMClassMock([Braze class]);
+    [kitInstance setBrazeInstanceLocal:mockBraze];
     id mockKitInstance = OCMPartialMock(kitInstance);
     [[mockKitInstance reject] updateUser:[OCMArg any] request:[OCMArg any]];
     [kitInstance start];
@@ -148,7 +150,9 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     id mockKitApi = OCMClassMock([MPKitAPI class]);
     OCMStub([mockKitApi getCurrentUserWithKit:kitInstance]).andReturn(filteredUser);
     kitInstance.kitApi = mockKitApi;
-    
+
+    id mockBraze = OCMClassMock([Braze class]);
+    [kitInstance setBrazeInstanceLocal:mockBraze];
     id mockKitInstance = OCMPartialMock(kitInstance);
     [[mockKitInstance expect] updateUser:[OCMArg any] request:[OCMArg any]];
     [kitInstance start];
@@ -177,7 +181,9 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     id mockKitApi = OCMClassMock([MPKitAPI class]);
     OCMStub([mockKitApi getCurrentUserWithKit:kitInstance]).andReturn(filteredUser);
     kitInstance.kitApi = mockKitApi;
-    
+
+    id mockBraze = OCMClassMock([Braze class]);
+    [kitInstance setBrazeInstanceLocal:mockBraze];
     id mockKitInstance = OCMPartialMock(kitInstance);
     [[mockKitInstance expect] updateUser:[OCMArg any] request:[OCMArg any]];
     [kitInstance start];
@@ -197,9 +203,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     
@@ -228,9 +232,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     
@@ -261,9 +263,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     // subscriptionGroupMapping is applied in -start only; without -start mapped keys are handled as custom attributes (invalid subscription values would incorrectly return success).
@@ -491,9 +491,8 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
 }
 
 - (void)testSetBrazeInstance {
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    
+    id testClient = OCMClassMock([Braze class]);
+
     XCTAssertEqualObjects([MPKitBraze brazeInstance], nil);
 
     [MPKitBraze setBrazeInstance:testClient];
@@ -561,9 +560,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @0};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -603,9 +600,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -648,9 +643,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @0};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -697,9 +690,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     kit.configuration = @{@"bundleCommerceEventData" : @0,
                           @"replaceSkuWithProductName": @"True"};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -745,9 +736,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -823,9 +812,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -912,9 +899,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -956,9 +941,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -1051,9 +1034,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
 - (void)testEventWithEmptyProperties {
     MPKitBraze *kit = [[MPKitBraze alloc] init];
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);

@@ -71,6 +71,10 @@ Included kits: { Iterable }
 - [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
 - [Iterable iOS SDK Documentation](https://support.iterable.com/hc/en-us/articles/360035018152-Iterable-s-iOS-SDK-)
 
+## Issues
+
+Please report bugs and feature requests to the [mparticle-apple-sdk](https://github.com/mParticle/mparticle-apple-sdk/issues) repository. This mirror repository is not actively monitored for issues.
+
 ## License
 
 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
