@@ -107,7 +107,9 @@
     id mockKitApi = OCMClassMock([MPKitAPI class]);
     OCMStub([mockKitApi getCurrentUserWithKit:kitInstance]).andReturn(filteredUser);
     kitInstance.kitApi = mockKitApi;
-    
+
+    id mockBraze = OCMClassMock([Braze class]);
+    [kitInstance setBrazeInstanceLocal:mockBraze];
     id mockKitInstance = OCMPartialMock(kitInstance);
     [[mockKitInstance reject] updateUser:[OCMArg any] request:[OCMArg any]];
     [kitInstance start];
@@ -136,7 +138,9 @@
     id mockKitApi = OCMClassMock([MPKitAPI class]);
     OCMStub([mockKitApi getCurrentUserWithKit:kitInstance]).andReturn(filteredUser);
     kitInstance.kitApi = mockKitApi;
-    
+
+    id mockBraze = OCMClassMock([Braze class]);
+    [kitInstance setBrazeInstanceLocal:mockBraze];
     id mockKitInstance = OCMPartialMock(kitInstance);
     [[mockKitInstance expect] updateUser:[OCMArg any] request:[OCMArg any]];
     [kitInstance start];
@@ -165,7 +169,9 @@
     id mockKitApi = OCMClassMock([MPKitAPI class]);
     OCMStub([mockKitApi getCurrentUserWithKit:kitInstance]).andReturn(filteredUser);
     kitInstance.kitApi = mockKitApi;
-    
+
+    id mockBraze = OCMClassMock([Braze class]);
+    [kitInstance setBrazeInstanceLocal:mockBraze];
     id mockKitInstance = OCMPartialMock(kitInstance);
     [[mockKitInstance expect] updateUser:[OCMArg any] request:[OCMArg any]];
     [kitInstance start];
@@ -185,9 +191,7 @@
     MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     
@@ -216,9 +220,7 @@
     MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     
@@ -249,9 +251,7 @@
     MPKitBraze *kitInstance = [[MPKitBraze alloc] init];
     [kitInstance didFinishLaunchingWithConfiguration:kitConfiguration];
     
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kitInstance setBrazeInstanceLocal:mockClient];
     XCTAssertEqualObjects(mockClient, [kitInstance brazeInstanceLocal]);
     
@@ -479,9 +479,8 @@
 }
 
 - (void)testSetBrazeInstance {
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    
+    id testClient = OCMClassMock([Braze class]);
+
     XCTAssertEqualObjects([MPKitBraze brazeInstance], nil);
 
     [MPKitBraze setBrazeInstance:testClient];
@@ -549,9 +548,7 @@
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @0};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -591,9 +588,7 @@
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -636,9 +631,7 @@
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @0};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -685,9 +678,7 @@
     kit.configuration = @{@"bundleCommerceEventData" : @0,
                           @"replaceSkuWithProductName": @"True"};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -733,9 +724,7 @@
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -811,9 +800,7 @@
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -900,9 +887,7 @@
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -944,9 +929,7 @@
     MPKitBraze *kit = [[MPKitBraze alloc] init];
     kit.configuration = @{@"bundleCommerceEventData" : @1};
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
@@ -1039,9 +1022,7 @@
 - (void)testEventWithEmptyProperties {
     MPKitBraze *kit = [[MPKitBraze alloc] init];
 
-    BRZConfiguration *configuration = [[BRZConfiguration alloc] init];
-    Braze *testClient = [[Braze alloc] initWithConfiguration:configuration];
-    id mockClient = OCMPartialMock(testClient);
+    id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
 
     XCTAssertEqualObjects(mockClient, [kit brazeInstanceLocal]);
