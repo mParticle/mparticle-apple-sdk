@@ -34,14 +34,17 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: "26.2"
+      - name: Compute weekly cache key
+        run: echo "CACHE_WEEK=$(date +%Y-W%V)" >> $GITHUB_ENV
       - name: Cache CocoaPods sources
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
             ~/.cocoapods
             ~/Library/Caches/CocoaPods
-          key: cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-${{ hashFiles(format('{0}/*.podspec', matrix.kit.local_path)) }}
+          key: cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.CACHE_WEEK }}-${{ hashFiles(format('{0}/*.podspec', matrix.kit.local_path)) }}
           restore-keys: |
+            cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.CACHE_WEEK }}-
             cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-
             cocoapods-${{ runner.os }}-
       - name: Pod Lib Lint
@@ -80,7 +83,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: DerivedData
-          key: derived-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.XCODE_VERSION }}-${{ hashFiles(format('{0}/Package.resolved', matrix.kit.local_path), format('{0}/**/*.swift', matrix.kit.local_path), format('{0}/**/*.m', matrix.kit.local_path), format('{0}/**/*.h', matrix.kit.local_path)) }}
+          key: derived-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.XCODE_VERSION }}-${{ hashFiles(format('{0}/Package.resolved', matrix.kit.local_path), format('{0}/**/*.swift', matrix.kit.local_path), format('{0}/**/*.m', matrix.kit.local_path), format('{0}/**/*.h', matrix.kit.local_path), 'mParticle-Apple-SDK/**/*.m', 'mParticle-Apple-SDK/**/*.h', 'mParticle-Apple-SDK-Swift/**/*.swift') }}
           restore-keys: |
             derived-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.XCODE_VERSION }}-
             derived-${{ runner.os }}-${{ matrix.kit.name }}-
