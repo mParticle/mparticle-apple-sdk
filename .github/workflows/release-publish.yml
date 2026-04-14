@@ -73,14 +73,14 @@ jobs:
 
       - name: Extract release notes
         id: release-notes
-        uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105 # v3.0.0
+        uses: ffurrer2/extract-release-notes@273da39a24fb7db106a35526c8162815faffd31d # v3.1.0
         with:
           changelog_file: CHANGELOG.md
           prerelease: true
 
       - name: Create GitHub release
         if: env.DRY_RUN != 'true'
-        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
           tag: ${{ steps.version.outputs.tag }}
           commit: ${{ github.sha }}
@@ -200,7 +200,7 @@ jobs:
           rm -rf archives
 
       - name: Upload xcframework artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: xcframework-${{ matrix.kit.name }}
           path: xcframeworks/*.xcframework.zip
@@ -224,7 +224,7 @@ jobs:
           persist-credentials: false
 
       - name: Download xcframework artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: xcframework-${{ matrix.kit.name }}
 
@@ -248,7 +248,7 @@ jobs:
 
       - name: Extract release notes from root CHANGELOG
         id: release-notes
-        uses: ffurrer2/extract-release-notes@202313ec7461b6b9e401996714484690ab1ae105 # v3.0.0
+        uses: ffurrer2/extract-release-notes@273da39a24fb7db106a35526c8162815faffd31d # v3.1.0
         with:
           changelog_file: CHANGELOG.md
           prerelease: true
@@ -264,12 +264,12 @@ jobs:
         id: push
         run: |
           DEST_URL="https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
-          git push "$DEST_URL" "split/${{ matrix.kit.name }}:main" --force
+          git push "$DEST_URL" "split/${{ matrix.kit.name }}:main"
           echo "sha=$(git rev-parse split/${{ matrix.kit.name }})" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release on mirror
         if: env.DRY_RUN != 'true'
-        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
         with:
           tag: ${{ steps.version.outputs.tag }}
           commit: ${{ steps.push.outputs.sha }}

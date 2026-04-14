@@ -38,6 +38,10 @@ Included kits: { Apptimize }
 - [mParticle Apptimize Integration Guide](https://docs.mparticle.com/integrations/apptimize/event/)
 - [mParticle Apple SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
 
+## Issues
+
+Please report bugs and feature requests to the [mparticle-apple-sdk](https://github.com/mParticle/mparticle-apple-sdk/issues) repository. This mirror repository is not actively monitored for issues.
+
 ## License
 
 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
