@@ -342,8 +342,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Wait for core SDK on CocoaPods CDN
+        run: |
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          echo "⏳ Polling CocoaPods for mParticle-Apple-SDK $VERSION..."
+          MAX_ATTEMPTS=30
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            FOUND=$(curl -sf "https://trunk.cocoapods.org/api/v1/pods/mParticle-Apple-SDK" \
+              | jq -r --arg v "$VERSION" '.versions[] | select(.name == $v) | .name' 2>/dev/null || true)
+            if [ "$FOUND" = "$VERSION" ]; then
+              echo "✅ mParticle-Apple-SDK $VERSION confirmed on CocoaPods trunk"
+              echo "⏳ Waiting 5 minutes for CDN propagation before publishing kits..."
+              sleep 300
+              exit 0
+            fi
+            [ "$i" -eq "$MAX_ATTEMPTS" ] && echo "❌ Timed out after 30 minutes" && exit 1
+            echo "  Attempt $i/$MAX_ATTEMPTS: Not yet available. Retrying in 60s..."
+            sleep 60
+          done
+
       - name: Publish to CocoaPods
         if: matrix.kit.podspec != ''
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
-        run: pod trunk push ${{ matrix.kit.podspec }} --allow-warnings --synchronous
+        run: |
+          for attempt in 1 2 3; do
+            pod trunk push ${{ matrix.kit.podspec }} --allow-warnings --synchronous && break
+            [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 3 minutes..." && sleep 180 || exit 1
+          done
