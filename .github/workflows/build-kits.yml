@@ -79,11 +79,23 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
+      - name: Compute DerivedData cache key
+        id: derived-key
+        run: |
+          # Hash kit source files + core SDK files; gracefully handle kits with no .h/.m files
+          HASH=$(
+            {
+              find "${{ matrix.kit.local_path }}" \( -name '*.swift' -o -name '*.m' -o -name '*.h' -o -name 'Package.resolved' \) -print0 2>/dev/null | sort -z | xargs -0 shasum -a 256 2>/dev/null || true
+              find mParticle-Apple-SDK mParticle-Apple-SDK-Swift \( -name '*.swift' -o -name '*.m' -o -name '*.h' \) -print0 2>/dev/null | sort -z | xargs -0 shasum -a 256 2>/dev/null || true
+            } | shasum -a 256 | cut -c1-16
+          )
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
       - name: Cache DerivedData
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: DerivedData
-          key: derived-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.XCODE_VERSION }}-${{ hashFiles(format('{0}/Package.resolved', matrix.kit.local_path), format('{0}/**/*.swift', matrix.kit.local_path), format('{0}/**/*.m', matrix.kit.local_path), format('{0}/**/*.h', matrix.kit.local_path), 'mParticle-Apple-SDK/**/*.m', 'mParticle-Apple-SDK/**/*.h', 'mParticle-Apple-SDK-Swift/**/*.swift') }}
+          key: derived-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.XCODE_VERSION }}-${{ steps.derived-key.outputs.hash }}
           restore-keys: |
             derived-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.XCODE_VERSION }}-
             derived-${{ runner.os }}-${{ matrix.kit.name }}-
