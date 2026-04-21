@@ -1,5 +1,6 @@
 #import "MPKitAdobe.h"
 #import "MPIAdobe.h"
+#import <os/lock.h>
 
 static NSString *const marketingCloudIdIntegrationAttributeKey = @"mid";
 static NSString *const blobIntegrationAttributeKey = @"aamb";
@@ -33,6 +34,40 @@ static NSString *const audienceManagerServerConfigurationKey = @"audienceManager
 
 static NSString *_midOverride = nil;
 static BOOL _willOverrideMid = NO;
+static os_unfair_lock _midOverrideLock = OS_UNFAIR_LOCK_INIT;
+
+// Thread-safe accessors for the file-scope statics above.
+// Direct reads/writes of `_midOverride` from multiple threads race on the
+// ARC-managed retain/release of the static, which can cause a value that is
+// about to be released to be captured into an NSDictionary and later trigger
+// a use-after-free when the dictionary is serialized on the mParticle
+// message queue.
+static NSString * _Nullable MPKitAdobeCopyMidOverride(void) {
+    os_unfair_lock_lock(&_midOverrideLock);
+    NSString *snapshot = _midOverride;
+    os_unfair_lock_unlock(&_midOverrideLock);
+    return snapshot;
+}
+
+static void MPKitAdobeSetMidOverride(NSString * _Nullable value) {
+    NSString *copied = [value copy];
+    os_unfair_lock_lock(&_midOverrideLock);
+    _midOverride = copied;
+    os_unfair_lock_unlock(&_midOverrideLock);
+}
+
+static BOOL MPKitAdobeGetWillOverrideMid(void) {
+    os_unfair_lock_lock(&_midOverrideLock);
+    BOOL value = _willOverrideMid;
+    os_unfair_lock_unlock(&_midOverrideLock);
+    return value;
+}
+
+static void MPKitAdobeSetWillOverrideMid(BOOL value) {
+    os_unfair_lock_lock(&_midOverrideLock);
+    _willOverrideMid = value;
+    os_unfair_lock_unlock(&_midOverrideLock);
+}
 
 + (NSNumber *)kitCode {
     return @124;
@@ -47,15 +82,16 @@ static BOOL _willOverrideMid = NO;
 
 static __weak MPKitAdobe *_sharedInstance = nil;
 + (void)overrideMarketingCloudId:(NSString *)mid {
-    _midOverride = mid;
-    if (mid) {
-        [[MParticle sharedInstance] setIntegrationAttributes:@{marketingCloudIdIntegrationAttributeKey: mid} forKit:[[self class] kitCode]];
+    NSString *midSnapshot = [mid copy];
+    MPKitAdobeSetMidOverride(midSnapshot);
+    if (midSnapshot) {
+        [[MParticle sharedInstance] setIntegrationAttributes:@{marketingCloudIdIntegrationAttributeKey: midSnapshot} forKit:[[self class] kitCode]];
     }
     [_sharedInstance performSelectorOnMainThread:@selector(sendNetworkRequest) withObject:nil waitUntilDone:NO];
 }
 
 + (void)willOverrideMarketingCloudId:(BOOL)willOverrideMid {
-    _willOverrideMid = willOverrideMid;
+    MPKitAdobeSetWillOverrideMid(willOverrideMid);
 }
 
 #pragma mark MPKitInstanceProtocol methods
@@ -140,11 +176,12 @@ static __weak MPKitAdobe *_sharedInstance = nil;
 }
 
 - (void)sendNetworkRequest {
-    if (_willOverrideMid && !_midOverride) {
+    NSString *midOverrideSnapshot = MPKitAdobeCopyMidOverride();
+    if (MPKitAdobeGetWillOverrideMid() && !midOverrideSnapshot) {
         return;
     }
     
-    NSString *marketingCloudId = _midOverride;
+    NSString *marketingCloudId = midOverrideSnapshot;
     if (!marketingCloudId) {
         marketingCloudId = [self marketingCloudIdFromIntegrationAttributes];
         if (!marketingCloudId) {
@@ -172,9 +209,10 @@ static __weak MPKitAdobe *_sharedInstance = nil;
             return;
         }
         
+        NSString *midOverrideForCompletion = MPKitAdobeCopyMidOverride();
         NSMutableDictionary *integrationAttributes = [NSMutableDictionary dictionary];
         if (marketingCloudId.length) {
-            [integrationAttributes setObject:(_midOverride ?: marketingCloudId) forKey:marketingCloudIdIntegrationAttributeKey];
+            [integrationAttributes setObject:(midOverrideForCompletion ?: marketingCloudId) forKey:marketingCloudIdIntegrationAttributeKey];
         }
         if (locationHint.length) {
             [integrationAttributes setObject:locationHint forKey:locationHintIntegrationAttributeKey];
