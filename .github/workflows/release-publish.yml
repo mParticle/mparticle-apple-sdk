@@ -312,7 +312,7 @@ jobs:
   publish-core-cocoapods:
     name: Publish Core SDK to CocoaPods
     needs: [mirror-and-release-kits]
-    runs-on: macos-15
+    runs-on: macos-latest
     if: github.event.inputs.dry_run != 'true'
     env:
       XCODE_VERSION: "26.2"
@@ -337,7 +337,7 @@ jobs:
   publish-kit-cocoapods:
     name: Publish ${{ matrix.kit.name }} to CocoaPods
     needs: [load-matrix, publish-core-cocoapods]
-    runs-on: macos-15
+    runs-on: macos-latest
     if: github.event.inputs.dry_run != 'true'
     env:
       XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
