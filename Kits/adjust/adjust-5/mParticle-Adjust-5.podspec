@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Adjust-5"
     s.module_name      = 'mParticle_Adjust'
-    s.version          = "9.0.0"
+    s.version          = "9.0.1"
     s.summary          = "Adjust integration for mParticle"
     s.description      = <<-DESC
                        This is the Adjust integration for mParticle.

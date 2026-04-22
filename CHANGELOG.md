@@ -10,6 +10,45 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [Unreleased]
 
+## [9.0.1] - 2026-04-22
+
+### Core
+
+#### Changed
+
+- Update Apple SDK installation and kit docs ([#741](https://github.com/mParticle/mparticle-apple-sdk/pull/741))
+
+### Kits
+
+#### Adjust
+
+##### Fixed
+
+- Point kit podspec source URLs to mirror repos ([#740](https://github.com/mParticle/mparticle-apple-sdk/pull/740))
+- Add "v" prefix to git tag in all kit podspecs ([#739](https://github.com/mParticle/mparticle-apple-sdk/pull/739))
+
+##### Changed
+
+- Add issues redirect notice to all kit READMEs ([#750](https://github.com/mParticle/mparticle-apple-sdk/pull/750))
+
+#### Adobe
+
+##### Fixed
+
+- Prevent use-after-free crash in Adobe kit _midOverride ([#755](https://github.com/mParticle/mparticle-apple-sdk/pull/755))
+
+#### Braze
+
+##### Fixed
+
+- Replace real Braze instances with OCMClassMock in SPM tests ([#751](https://github.com/mParticle/mparticle-apple-sdk/pull/751))
+
+#### Google-analytics-firebase-ga4
+
+##### Fixed
+
+- Replace non-modular header imports in Firebase kit headers ([#742](https://github.com/mParticle/mparticle-apple-sdk/pull/742))
+
 ## [9.0.0] - 2026-04-07
 
 ### Core
@@ -2238,5 +2277,6 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.0...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.1...HEAD
+[9.0.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.0...v9.0.1
 [9.0.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...v9.0.0

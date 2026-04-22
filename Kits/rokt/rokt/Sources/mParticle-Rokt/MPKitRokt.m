@@ -3,7 +3,7 @@
 @import RoktContracts;
 
 // Kit version
-static NSString * const kMPRoktKitVersion = @"9.0.0";
+static NSString * const kMPRoktKitVersion = @"9.0.1";
 
 // Constants for kit configuration keys
 static NSString * const kMPKitConfigurationIdKey = @"id";
