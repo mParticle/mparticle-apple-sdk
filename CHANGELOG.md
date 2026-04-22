@@ -35,7 +35,7 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Fixed
 
-- Prevent use-after-free crash in Adobe kit _midOverride ([#755](https://github.com/mParticle/mparticle-apple-sdk/pull/755))
+- Prevent use-after-free crash in Adobe kit \_midOverride ([#755](https://github.com/mParticle/mparticle-apple-sdk/pull/755))
 
 #### Braze
 
