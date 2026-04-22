@@ -312,11 +312,16 @@ jobs:
   publish-core-cocoapods:
     name: Publish Core SDK to CocoaPods
     needs: [mirror-and-release-kits]
-    runs-on: macos-15
+    runs-on: macos-latest
     if: github.event.inputs.dry_run != 'true'
+    env:
+      XCODE_VERSION: "26.2"
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
       - name: Publish core podspecs
         env:
@@ -332,8 +337,10 @@ jobs:
   publish-kit-cocoapods:
     name: Publish ${{ matrix.kit.name }} to CocoaPods
     needs: [load-matrix, publish-core-cocoapods]
-    runs-on: macos-15
+    runs-on: macos-latest
     if: github.event.inputs.dry_run != 'true'
+    env:
+      XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
     strategy:
       fail-fast: false
       matrix:
@@ -341,6 +348,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
       - name: Wait for core SDK on CocoaPods CDN
         run: |
