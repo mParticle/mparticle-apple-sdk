@@ -71,6 +71,30 @@
     [self setIdentity:customerId identityType:MPIdentityCustomerId];
 }
 
+- (NSString *)emailSha256 {
+    NSObject *result = _mutableIdentities[@(MPIdentityOther)];
+    if ([result isKindOfClass:[NSString class]]) {
+        return (NSString *)result;
+    }
+    return nil;
+}
+
+- (void)setEmailSha256:(NSString *)emailSha256 {
+    [self setIdentity:emailSha256 identityType:MPIdentityOther];
+}
+
+- (NSString *)mobileSha256 {
+    NSObject *result = _mutableIdentities[@(MPIdentityOther)];
+    if ([result isKindOfClass:[NSString class]]) {
+        return (NSString *)result;
+    }
+    return nil;
+}
+
+- (void)setMobileSha256:(NSString *)mobileSha256 {
+    [self setIdentity:mobileSha256 identityType:MPIdentityOther];
+}
+
 - (NSDictionary<NSNumber*, NSObject*> *)identities {
     return [_mutableIdentities copy];
 }

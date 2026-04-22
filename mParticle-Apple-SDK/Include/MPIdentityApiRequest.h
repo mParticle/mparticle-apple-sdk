@@ -21,6 +21,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, nullable) NSString *email;
 @property (nonatomic, strong, nullable) NSString *customerId;
+
+/**
+ SHA-256 hashed email address for privacy-safe identity resolution.
+ Maps to the `other` identity type (@c MPIdentityOther).
+ */
+@property (nonatomic, strong, nullable) NSString *emailSha256;
+
+/**
+ SHA-256 hashed mobile number for privacy-safe identity resolution.
+ Maps to the `other` identity type (@c MPIdentityOther).
+ */
+@property (nonatomic, strong, nullable) NSString *mobileSha256;
+
 @property (nonatomic, strong, nullable, readonly) NSDictionary<NSNumber*, NSObject*> *identities;
 
 @end
