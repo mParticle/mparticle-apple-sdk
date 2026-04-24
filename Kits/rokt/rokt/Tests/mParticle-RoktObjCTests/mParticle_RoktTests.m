@@ -43,6 +43,8 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 - (MPKitExecStatus *)registerPaymentExtension:(id<RoktPaymentExtension>)paymentExtension;
 
+- (BOOL)handleURLCallback:(NSURL *)url;
+
 - (MPKitExecStatus *)selectShoppableAdsWithIdentifier:(NSString *)identifier
                                            attributes:(NSDictionary<NSString *, NSString *> *)attributes
                                                config:(RoktConfig *)config
@@ -1103,6 +1105,43 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     MPKitExecStatus *status = [self.kitInstance registerPaymentExtension:ext];
     XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
     OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testHandleURLCallbackForwardsToRoktAndReturnsYES {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    NSURL *url = [NSURL URLWithString:@"myapp://afterpay-redirect?token=xyz"];
+    OCMExpect([mockRoktSDK handleURLCallbackWith:url]).andReturn(YES);
+
+    BOOL handled = [self.kitInstance handleURLCallback:url];
+
+    XCTAssertTrue(handled);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testHandleURLCallbackForwardsToRoktAndReturnsNO {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    NSURL *url = [NSURL URLWithString:@"myapp://unrelated"];
+    OCMExpect([mockRoktSDK handleURLCallbackWith:url]).andReturn(NO);
+
+    BOOL handled = [self.kitInstance handleURLCallback:url];
+
+    XCTAssertFalse(handled);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testHandleURLCallbackNilURLReturnsNOWithoutForwarding {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMReject([mockRoktSDK handleURLCallbackWith:OCMOCK_ANY]);
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    BOOL handled = [self.kitInstance handleURLCallback:nil];
+#pragma clang diagnostic pop
+
+    XCTAssertFalse(handled);
     [mockRoktSDK stopMocking];
 }
 

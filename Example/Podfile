@@ -10,15 +10,15 @@ target 'mParticleExample' do
 
   pod 'mParticle-Apple-Media-SDK/mParticleMediaNoLocation', '~> 1.7.0'
 
-  # Rokt-Widget pulls in RoktUXHelper (~> 0.8) transitively. This explicit line is only to resolve it
+  # Rokt-Widget pulls in RoktUXHelper (~> 0.10) transitively. This explicit line is only to resolve it
   # from Git (tag) instead of CocoaPods trunk when CDN/trunk is unreliable — remove it if trunk works.
-  pod 'RoktUXHelper', :git => 'https://github.com/ROKT/rokt-ux-helper-ios.git', :tag => '0.8.3'
+  pod 'RoktUXHelper', :git => 'https://github.com/ROKT/rokt-ux-helper-ios.git', :tag => '0.10.4'
 
-  # Rokt iOS SDK 5.x (aligned with Kits/rokt/rokt/Package.swift). Use Git branch; not on CocoaPods trunk.
-  pod 'Rokt-Widget', :git => 'https://github.com/ROKT/rokt-sdk-ios.git', :branch => 'workstation/5.0.0'
+  # Rokt iOS SDK 5.1.x (aligned with Kits/rokt/rokt/Package.swift). Use Git tag; not on CocoaPods trunk.
+  pod 'Rokt-Widget', :git => 'https://github.com/ROKT/rokt-sdk-ios.git', :tag => '5.1.0'
 
   # Local Rokt kit — uses the same local mParticle-Apple-SDK above (single resolved copy via :path).
-  # RoktContracts resolves from CocoaPods trunk per podspecs (~> 0.1).
+  # RoktContracts resolves from CocoaPods trunk per podspecs (~> 2.0).
   pod 'mParticle-Rokt', :path => '../Kits/rokt/rokt'
   #pod 'PLCrashReporter', '~> 1.11.1'
   #pod 'mParticle-UrbanAirship', :path => '../../mparticle-apple-integration-urbanairship'

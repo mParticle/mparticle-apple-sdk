@@ -10,6 +10,29 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [Unreleased]
 
+### Core
+
+#### Added
+
+- Add `MPRokt.handleURLCallback:` for forwarding Afterpay/PayPal redirect URLs to the registered Rokt payment extension. Call from `application:openURL:options:` (AppDelegate) or `scene:openURLContexts:` / `.onOpenURL` (Scene/SwiftUI).
+
+#### Changed
+
+- Bump minimum `RoktContracts` to 2.0.0 (adds `PaymentMethodType.paypal` and totals on `PaymentPreparation`).
+
+### Kits
+
+#### Rokt
+
+##### Changed
+
+- Bump minimum `Rokt-Widget` to 5.1.0 (adds Afterpay payment support).
+- Bump minimum `RoktContracts` to 2.0.0.
+
+##### Added
+
+- Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
+
 ## [9.0.1] - 2026-04-22
 
 ### Core
