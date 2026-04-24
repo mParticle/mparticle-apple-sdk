@@ -149,6 +149,17 @@ static __weak MPKitRokt *roktKit = nil;
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
+/// Forwards a redirect URL to the Rokt SDK so registered payment extensions (Afterpay, PayPal) can claim it.
+/// - Parameter url: The URL received by the host app's URL handler.
+/// - Returns: YES if a registered payment extension claimed the URL.
+- (BOOL)handleURLCallback:(NSURL * _Nonnull)url {
+    if (!url) {
+        return NO;
+    }
+    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit handleURLCallback: %@", url]];
+    return [Rokt handleURLCallbackWith:url];
+}
+
 /// Forwards to Rokt Shoppable payment registration. When kit \c configuration includes \c stripePublishableKey (mParticle kit settings), it is passed to Rokt as \c stripeKey in the registration config.
 - (MPKitExecStatus *)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension {
     if (!paymentExtension) {

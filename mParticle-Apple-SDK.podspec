@@ -22,5 +22,5 @@ Pod::Spec.new do |s|
 
     s.source_files = 'MParticle/Sources/mParticle_Apple_SDK/**/*.swift'
     s.dependency 'mParticle-Apple-SDK-ObjC', s.version.to_s
-    s.dependency 'RoktContracts', '~> 0.1'
+    s.dependency 'RoktContracts', '~> 2.0'
 end
