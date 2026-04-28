@@ -103,6 +103,7 @@ static NSArray *mpStoredCertificates = nil;
     MPNetworkOptions *networkOptions = [[MParticle sharedInstance] networkOptions];
     
     BOOL isPinningHost = [host rangeOfString:@"mparticle.com"].location != NSNotFound ||
+                            (networkOptions.customBaseURL.host.length > 0 && [host isEqualToString:networkOptions.customBaseURL.host]) ||
                             (networkOptions.configHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.configHost.pathComponents[0]]) ||
                             (networkOptions.identityHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.identityHost.pathComponents[0]]) ||
                             (networkOptions.eventsHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.eventsHost.pathComponents[0]]) ||

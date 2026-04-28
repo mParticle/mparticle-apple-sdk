@@ -61,6 +61,10 @@ NSString *const kMPIdentityCachingMaxAgeHeader = @"X-MP-Max-Age";
 
 static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
+static NSString *MPCustomHost(MPNetworkOptions *options) {
+    return options.customBaseURL.host;
+}
+
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
@@ -154,7 +158,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
     MPNetworkOptions *networkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *customHost = networkOptions.customBaseURL ? networkOptions.customBaseURL.host : nil;
+    NSString *customHost = MPCustomHost(networkOptions);
     if (customHost && networkOptions.configHost) {
         MPILogWarning(@"MPNetworkOptions: customBaseURL is set; configHost is ignored.");
     }
@@ -224,7 +228,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
 
     MPNetworkOptions *audienceNetworkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *audienceCustomHost = audienceNetworkOptions.customBaseURL ? audienceNetworkOptions.customBaseURL.host : nil;
+    NSString *audienceCustomHost = MPCustomHost(audienceNetworkOptions);
+    if (audienceCustomHost && audienceNetworkOptions.eventsHost) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; eventsHost is ignored.");
+    }
     NSString *eventHost = audienceCustomHost ?: (audienceNetworkOptions.eventsHost ?: self.defaultEventHost);
     NSString *audienceURLFormat = [audienceFormat stringByAppendingString:@"?mpid=%@"];
     NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
@@ -283,7 +290,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 - (MPURL *)identityURL:(NSString *)pathComponent {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     MPNetworkOptions *identityNetworkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *identityCustomHost = identityNetworkOptions.customBaseURL ? identityNetworkOptions.customBaseURL.host : nil;
+    NSString *identityCustomHost = MPCustomHost(identityNetworkOptions);
     NSString *identityHost;
     if (identityCustomHost) {
         if (identityNetworkOptions.identityHost || identityNetworkOptions.identityTrackingHost) {
@@ -320,7 +327,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *pathComponent = @"modify";
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     MPNetworkOptions *modifyNetworkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *modifyCustomHost = modifyNetworkOptions.customBaseURL ? modifyNetworkOptions.customBaseURL.host : nil;
+    NSString *modifyCustomHost = MPCustomHost(modifyNetworkOptions);
     NSString *identityHost;
     if (modifyCustomHost) {
         if (modifyNetworkOptions.identityHost || modifyNetworkOptions.identityTrackingHost) {
