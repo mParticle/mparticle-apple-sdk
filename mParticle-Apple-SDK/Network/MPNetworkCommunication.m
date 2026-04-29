@@ -179,9 +179,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, kMPURLHostConfig, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
+    if (customHost && networkOptions.overridesConfigSubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesConfigSubdirectory is unsupported for CDN routing; overridesConfigSubdirectory will be ignored.");
+    }
+    NSString *configVersion = customHost ? @"config/v4" : kMPConfigVersion;
+    urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, configVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
 
-    if (networkOptions.overridesConfigSubdirectory) {
+    if (!customHost && networkOptions.overridesConfigSubdirectory) {
         NSString *configURLFormat = [urlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
         urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     }
@@ -207,10 +211,15 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if (mpUpload.uploadSettings.overridesEventsSubdirectory) {
+    BOOL usingCustomBaseURL = [MParticle sharedInstance].networkOptions.customBaseURL != nil;
+    if (usingCustomBaseURL && mpUpload.uploadSettings.overridesEventsSubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesEventsSubdirectory is unsupported for CDN routing; overridesEventsSubdirectory will be ignored.");
+    }
+    NSString *eventsVersion = usingCustomBaseURL ? @"nativeevents/v2" : kMPEventsVersion;
+    if (!usingCustomBaseURL && mpUpload.uploadSettings.overridesEventsSubdirectory) {
         urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     } else {
-        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
+        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, eventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -234,12 +243,16 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if (networkOptions.overridesEventsSubdirectory) {
+    if (customHost && networkOptions.overridesEventsSubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesEventsSubdirectory is unsupported for CDN routing; overridesEventsSubdirectory will be ignored.");
+    }
+    NSString *audienceVersion = customHost ? @"nativeevents/v1" : kMPAudienceVersion;
+    if (!customHost && networkOptions.overridesEventsSubdirectory) {
         audienceURLFormat = [urlFormatOverride stringByAppendingString:@"?mpid=%@"];
         urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     } else {
         audienceURLFormat = [urlFormat stringByAppendingString:@"?mpid=%@"];
-        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, audienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -303,10 +316,14 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if (identityNetworkOptions.overridesIdentitySubdirectory) {
+    if (identityCustomHost && identityNetworkOptions.overridesIdentitySubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesIdentitySubdirectory is unsupported for CDN routing; overridesIdentitySubdirectory will be ignored.");
+    }
+    NSString *identityVersion = identityCustomHost ? @"identity/v1" : kMPIdentityVersion;
+    if (!identityCustomHost && identityNetworkOptions.overridesIdentitySubdirectory) {
         urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
+        urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, identityVersion, pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -341,10 +358,14 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId],  pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if (modifyNetworkOptions.overridesIdentitySubdirectory) {
+    if (modifyCustomHost && modifyNetworkOptions.overridesIdentitySubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesIdentitySubdirectory is unsupported for CDN routing; overridesIdentitySubdirectory will be ignored.");
+    }
+    NSString *modifyVersion = modifyCustomHost ? @"identity/v1" : kMPIdentityVersion;
+    if (!modifyCustomHost && modifyNetworkOptions.overridesIdentitySubdirectory) {
         urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController_PRIVATE mpId], pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId], pathComponent];
+        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, modifyVersion, [MPPersistenceController_PRIVATE mpId], pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -371,16 +392,21 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
+    BOOL usingCustomBaseURLAlias = [MParticle sharedInstance].networkOptions.customBaseURL != nil;
     BOOL overrides = mpUpload.uploadSettings.overridesAliasSubdirectory;
     if (!mpUpload.uploadSettings.eventsOnly && !mpUpload.uploadSettings.aliasHost) {
         eventHost = mpUpload.uploadSettings.eventsHost ?: self.defaultEventHost;
         overrides = mpUpload.uploadSettings.overridesEventsSubdirectory;
     }
 
-    if (overrides) {
+    if (usingCustomBaseURLAlias && overrides) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesAliasSubdirectory/overridesEventsSubdirectory is unsupported for CDN routing; subdirectory override will be ignored.");
+    }
+    NSString *aliasVersion = usingCustomBaseURLAlias ? @"nativeevents/v1" : kMPIdentityVersion;
+    if (!usingCustomBaseURLAlias && overrides) {
         urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
+        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, aliasVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];

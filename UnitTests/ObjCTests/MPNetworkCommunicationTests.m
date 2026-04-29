@@ -342,7 +342,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     NSURL *configURL = [networkCommunication configURL].url;
     [self deswizzle];
-    XCTAssert([configURL.absoluteString rangeOfString:@"rkt.example.com/v4/"].location != NSNotFound);
+    XCTAssert([configURL.absoluteString rangeOfString:@"rkt.example.com/config/v4/"].location != NSNotFound);
     XCTAssert([configURL.absoluteString rangeOfString:@"config2.mparticle.com"].location == NSNotFound);
 }
 
@@ -355,7 +355,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     NSURL *configURL = [networkCommunication configURL].url;
     [self deswizzle];
-    XCTAssert([configURL.absoluteString rangeOfString:@"rkt.example.com/v4/"].location != NSNotFound);
+    XCTAssert([configURL.absoluteString rangeOfString:@"rkt.example.com/config/v4/"].location != NSNotFound);
     XCTAssert([configURL.absoluteString rangeOfString:@"config.mpproxy.example.com"].location == NSNotFound);
 }
 
@@ -367,7 +367,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     NSURL *modifyURL = [networkCommunication modifyURL].url;
     [self deswizzle];
-    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://rkt.example.com/v1/"].location != NSNotFound);
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://rkt.example.com/identity/v1/"].location != NSNotFound);
     XCTAssert([modifyURL.absoluteString rangeOfString:@"identity.us1.mparticle.com"].location == NSNotFound);
     XCTAssert([modifyURL.accessibilityHint isEqualToString:@"identity"]);
 }
@@ -384,7 +384,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     NSURL *modifyURL = [networkCommunication modifyURL].url;
     stateMachine.attAuthorizationStatus = nil;
     [self deswizzle];
-    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://rkt.example.com/v1/"].location != NSNotFound);
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://rkt.example.com/identity/v1/"].location != NSNotFound);
     XCTAssert([modifyURL.absoluteString rangeOfString:@"identity-tracking.mpproxy.example.com"].location == NSNotFound);
 }
 
@@ -397,7 +397,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
     [self deswizzle];
-    XCTAssert([eventURL.absoluteString rangeOfString:@"rkt.example.com/v2/"].location != NSNotFound);
+    XCTAssert([eventURL.absoluteString rangeOfString:@"rkt.example.com/nativeevents/v2/"].location != NSNotFound);
     XCTAssert([eventURL.absoluteString rangeOfString:@"nativesdks.us1.mparticle.com"].location == NSNotFound);
 }
 
@@ -413,7 +413,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
     stateMachine.attAuthorizationStatus = nil;
     [self deswizzle];
-    XCTAssert([eventURL.absoluteString rangeOfString:@"rkt.example.com/v2/"].location != NSNotFound);
+    XCTAssert([eventURL.absoluteString rangeOfString:@"rkt.example.com/nativeevents/v2/"].location != NSNotFound);
     XCTAssert([eventURL.absoluteString rangeOfString:@"tracking-nativesdks"].location == NSNotFound);
 }
 
@@ -426,7 +426,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     [self deswizzle];
-    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://rkt.example.com/v1/identity/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://rkt.example.com/nativeevents/v1/identity/"].location != NSNotFound);
     XCTAssert([aliasURL.absoluteString rangeOfString:@"nativesdks.us1.mparticle.com"].location == NSNotFound);
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
 }
@@ -455,7 +455,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     stateMachine.attAuthorizationStatus = nil;
     [self deswizzle];
-    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://rkt.example.com/v1/identity/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://rkt.example.com/nativeevents/v1/identity/"].location != NSNotFound);
     XCTAssert([aliasURL.absoluteString rangeOfString:@"nativesdks.us1.mparticle.com"].location == NSNotFound);
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
 }
