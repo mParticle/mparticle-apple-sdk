@@ -61,10 +61,6 @@ NSString *const kMPIdentityCachingMaxAgeHeader = @"X-MP-Max-Age";
 
 static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
-static NSString *MPCustomHost(MPNetworkOptions *options) {
-    return options.customBaseURL.host;
-}
-
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
@@ -155,10 +151,11 @@ static NSString *MPCustomHost(MPNetworkOptions *options) {
         return _configURL;
     }
 
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
     MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
-    MPNetworkOptions *networkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *customHost = MPCustomHost(networkOptions);
+    MPNetworkOptions *networkOptions = mParticle.networkOptions;
+    NSString *customHost = networkOptions.customBaseURL.host;
     if (customHost && networkOptions.configHost) {
         MPILogWarning(@"MPNetworkOptions: customBaseURL is set; configHost is ignored.");
     }
@@ -184,7 +181,7 @@ static NSString *MPCustomHost(MPNetworkOptions *options) {
 
     urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
 
-    if ([MParticle sharedInstance].networkOptions.overridesConfigSubdirectory) {
+    if (networkOptions.overridesConfigSubdirectory) {
         NSString *configURLFormat = [urlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
         urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     }
@@ -225,19 +222,19 @@ static NSString *MPCustomHost(MPNetworkOptions *options) {
 }
 
 - (MPURL *)audienceURL {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-
-    MPNetworkOptions *audienceNetworkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *audienceCustomHost = MPCustomHost(audienceNetworkOptions);
-    if (audienceCustomHost && audienceNetworkOptions.eventsHost) {
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPNetworkOptions *networkOptions = mParticle.networkOptions;
+    NSString *customHost = networkOptions.customBaseURL.host;
+    if (customHost && networkOptions.eventsHost) {
         MPILogWarning(@"MPNetworkOptions: customBaseURL is set; eventsHost is ignored.");
     }
-    NSString *eventHost = audienceCustomHost ?: (audienceNetworkOptions.eventsHost ?: self.defaultEventHost);
+    NSString *eventHost = customHost ?: (networkOptions.eventsHost ?: self.defaultEventHost);
     NSString *audienceURLFormat = [audienceFormat stringByAppendingString:@"?mpid=%@"];
     NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
+    if (networkOptions.overridesEventsSubdirectory) {
         audienceURLFormat = [urlFormatOverride stringByAppendingString:@"?mpid=%@"];
         urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     } else {
@@ -288,9 +285,10 @@ static NSString *MPCustomHost(MPNetworkOptions *options) {
 }
 
 - (MPURL *)identityURL:(NSString *)pathComponent {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    MPNetworkOptions *identityNetworkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *identityCustomHost = MPCustomHost(identityNetworkOptions);
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPNetworkOptions *identityNetworkOptions = mParticle.networkOptions;
+    NSString *identityCustomHost = identityNetworkOptions.customBaseURL.host;
     NSString *identityHost;
     if (identityCustomHost) {
         if (identityNetworkOptions.identityHost || identityNetworkOptions.identityTrackingHost) {
@@ -305,7 +303,7 @@ static NSString *MPCustomHost(MPNetworkOptions *options) {
     NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
+    if (identityNetworkOptions.overridesIdentitySubdirectory) {
         urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
     } else {
         urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
@@ -325,9 +323,10 @@ static NSString *MPCustomHost(MPNetworkOptions *options) {
 
 - (MPURL *)modifyURL {
     NSString *pathComponent = @"modify";
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    MPNetworkOptions *modifyNetworkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *modifyCustomHost = MPCustomHost(modifyNetworkOptions);
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPNetworkOptions *modifyNetworkOptions = mParticle.networkOptions;
+    NSString *modifyCustomHost = modifyNetworkOptions.customBaseURL.host;
     NSString *identityHost;
     if (modifyCustomHost) {
         if (modifyNetworkOptions.identityHost || modifyNetworkOptions.identityTrackingHost) {
@@ -342,7 +341,7 @@ static NSString *MPCustomHost(MPNetworkOptions *options) {
     NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId],  pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
+    if (modifyNetworkOptions.overridesIdentitySubdirectory) {
         urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController_PRIVATE mpId], pathComponent];
     } else {
         urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId], pathComponent];
