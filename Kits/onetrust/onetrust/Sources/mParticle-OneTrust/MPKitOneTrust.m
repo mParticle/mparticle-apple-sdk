@@ -42,6 +42,11 @@
 }
 
 - (void)start {
+    if (!_configuration) {
+        NSLog(@"mParticle -> OneTrust config wasn't received yet.");
+        return;
+    }
+
     static dispatch_once_t kitPredicate;
     
     dispatch_once(&kitPredicate, ^{
@@ -60,6 +65,7 @@
         [[NSUserDefaults standardUserDefaults] setObject:vendorGeneralMappingDict forKey:@"OT_Vendor_General_mP_Mapping"];
         
         self->_started = YES;
+        NSLog(@"mParticle -> OneTrust configured");
         
         // READ consent data mapping
         NSString *mpConsentMapping = [[NSUserDefaults standardUserDefaults] stringForKey:@"OT_mP_Mapping"];
