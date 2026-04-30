@@ -102,6 +102,7 @@ static __weak MPKitAdobe *_sharedInstance = nil;
     
     _organizationId = [configuration[organizationIdConfigurationKey] copy];
     if (!_organizationId.length) {
+        NSLog(@"mParticle -> Adobe config wasn't received yet.");
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
         return execStatus;
     }
@@ -130,6 +131,7 @@ static __weak MPKitAdobe *_sharedInstance = nil;
                                                             object:nil
                                                           userInfo:userInfo];
     });
+    NSLog(@"mParticle -> Adobe configured");
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
