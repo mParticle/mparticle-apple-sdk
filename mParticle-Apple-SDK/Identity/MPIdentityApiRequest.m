@@ -84,7 +84,7 @@
 }
 
 - (NSString *)mobileSha256 {
-    NSObject *result = _mutableIdentities[@(MPIdentityOther)];
+    NSObject *result = _mutableIdentities[@(MPIdentityOther2)];
     if ([result isKindOfClass:[NSString class]]) {
         return (NSString *)result;
     }
@@ -92,7 +92,7 @@
 }
 
 - (void)setMobileSha256:(NSString *)mobileSha256 {
-    [self setIdentity:mobileSha256 identityType:MPIdentityOther];
+    [self setIdentity:mobileSha256 identityType:MPIdentityOther2];
 }
 
 - (NSDictionary<NSNumber*, NSObject*> *)identities {
