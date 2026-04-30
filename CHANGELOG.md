@@ -32,6 +32,8 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 ##### Added
 
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
+- SwiftPM: declare `rokt-payment-extension-ios`; default product `mParticle-Rokt` links `RoktPaymentExtension`; optional product `mParticle-Rokt-No-Payments` omits it (no Stripe).
+- CocoaPods: default subspec `Payments` adds `RoktPaymentExtension`; subspec `No-Payments` is kit only (`Core`); subspec `Core` holds sources and base Rokt deps.
 
 ## [9.0.1] - 2026-04-22
 
