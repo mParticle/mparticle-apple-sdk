@@ -327,12 +327,35 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           PUSH_FLAGS=(--allow-warnings --synchronous)
+
+          trunk_push_with_retries() {
+            local podspec="$1"
+            local attempt status
+            for attempt in 1 2 3; do
+              pod trunk push "$podspec" "${PUSH_FLAGS[@]}" 2>&1 | tee pod_trunk_push.log
+              status=${PIPESTATUS[0]}
+              if [ "$status" -eq 0 ]; then
+                return 0
+              fi
+              if grep -qiF 'duplicate entry' pod_trunk_push.log; then
+                echo "✅ ${podspec}: already on trunk; treating push as successful."
+                return 0
+              fi
+              if [ "$attempt" -lt 3 ]; then
+                echo "Attempt $attempt failed for $podspec, retrying in 3 minutes..."
+                sleep 180
+              else
+                return 1
+              fi
+            done
+          }
+
           # Order matters: Swift pod → ObjC core (depends on Swift) → umbrella (depends on ObjC).
-          pod trunk push mParticle-Apple-SDK-Swift.podspec "${PUSH_FLAGS[@]}"
-          pod trunk push mParticle-Apple-SDK-ObjC.podspec "${PUSH_FLAGS[@]}"
-          pod trunk push mParticle-Apple-SDK.podspec "${PUSH_FLAGS[@]}"
+          trunk_push_with_retries mParticle-Apple-SDK-Swift.podspec
+          trunk_push_with_retries mParticle-Apple-SDK-ObjC.podspec
+          trunk_push_with_retries mParticle-Apple-SDK.podspec
 
   publish-kit-cocoapods:
     name: Publish ${{ matrix.kit.name }} to CocoaPods
@@ -376,7 +399,30 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          for attempt in 1 2 3; do
-            pod trunk push ${{ matrix.kit.podspec }} --allow-warnings --synchronous && break
-            [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 3 minutes..." && sleep 180 || exit 1
-          done
+          set -uo pipefail
+          PODSPEC="${{ matrix.kit.podspec }}"
+          PUSH_FLAGS=(--allow-warnings --synchronous)
+
+          trunk_push_with_retries() {
+            local podspec="$1"
+            local attempt status
+            for attempt in 1 2 3; do
+              pod trunk push "$podspec" "${PUSH_FLAGS[@]}" 2>&1 | tee pod_trunk_push.log
+              status=${PIPESTATUS[0]}
+              if [ "$status" -eq 0 ]; then
+                return 0
+              fi
+              if grep -qiF 'duplicate entry' pod_trunk_push.log; then
+                echo "✅ ${podspec}: already on trunk; treating push as successful."
+                return 0
+              fi
+              if [ "$attempt" -lt 3 ]; then
+                echo "Attempt $attempt failed for $podspec, retrying in 3 minutes..."
+                sleep 180
+              else
+                return 1
+              fi
+            done
+          }
+
+          trunk_push_with_retries "$PODSPEC"
