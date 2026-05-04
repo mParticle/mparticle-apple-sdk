@@ -25,6 +25,7 @@ jobs:
     name: Pod Lint ${{ matrix.kit.name }}
     needs: load-matrix
     runs-on: macos-15
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -34,6 +35,19 @@ jobs:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: "26.2"
+      - name: Compute weekly cache key
+        run: echo "CACHE_WEEK=$(date +%Y-W%V)" >> $GITHUB_ENV
+      - name: Cache CocoaPods sources
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: |
+            ~/.cocoapods
+            ~/Library/Caches/CocoaPods
+          key: cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.CACHE_WEEK }}-${{ hashFiles(format('{0}/*.podspec', matrix.kit.local_path)) }}
+          restore-keys: |
+            cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.CACHE_WEEK }}-
+            cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-
+            cocoapods-${{ runner.os }}-
       - name: Pod Lib Lint
         run: |
           echo "Linting: ${{ matrix.kit.podspec }}"
@@ -49,6 +63,7 @@ jobs:
     name: Build ${{ matrix.kit.name }}
     needs: load-matrix
     runs-on: macOS-latest
+    timeout-minutes: 30
     env:
       XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
       USE_LOCAL_VERSION: "1"
@@ -61,10 +76,31 @@ jobs:
       - name: Checkout monorepo
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Compute DerivedData cache key
+        id: derived-key
+        run: |
+          # Hash kit source files + core SDK files; gracefully handle kits with no .h/.m files
+          HASH=$(
+            {
+              find "${{ matrix.kit.local_path }}" \( -name '*.swift' -o -name '*.m' -o -name '*.h' -o -name 'Package.resolved' \) -print0 2>/dev/null | sort -z | xargs -0 shasum -a 256 2>/dev/null || true
+              find mParticle-Apple-SDK mParticle-Apple-SDK-Swift \( -name '*.swift' -o -name '*.m' -o -name '*.h' \) -print0 2>/dev/null | sort -z | xargs -0 shasum -a 256 2>/dev/null || true
+            } | shasum -a 256 | cut -c1-16
+          )
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Cache DerivedData
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: DerivedData
+          key: derived-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.XCODE_VERSION }}-${{ steps.derived-key.outputs.hash }}
+          restore-keys: |
+            derived-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.XCODE_VERSION }}-
+            derived-${{ runner.os }}-${{ matrix.kit.name }}-
 
       - name: Resolve SPM dependencies
         run: |
