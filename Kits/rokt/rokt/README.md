@@ -15,14 +15,39 @@ Add the package dependency to your `Package.swift` or via Xcode:
 )
 ```
 
-Then add `mParticle-Rokt` as a dependency of your target.
+Then add a **product** to your target’s dependencies:
+
+- **`mParticle-Rokt`** (default) — includes [`RoktPaymentExtension`](https://github.com/ROKT/rokt-payment-extension-ios) so Shoppable Ads works without declaring that package yourself. Imports stay the same (`mParticle_Rokt`, etc.).
+- **`mParticle-Rokt-No-Payments`** — same kit **without** linking the payment extension (smaller dependency graph, no Stripe). Use this only if you do not need Shoppable Ads / `RoktPaymentExtension`, or you will add `rokt-payment-extension-ios` to your app separately.
+
+```swift
+.target(
+    name: "YourApp",
+    dependencies: [
+        .product(name: "mParticle-Rokt", package: "mp-apple-integration-rokt"),
+        // …
+    ]
+)
+```
+
+No-payments example:
+
+```swift
+.product(name: "mParticle-Rokt-No-Payments", package: "mp-apple-integration-rokt"),
+```
 
 ### CocoaPods
 
-Add the kit dependency to your app's Podfile:
+Default install includes the payment extension (for Shoppable Ads):
 
 ```ruby
 pod 'mParticle-Rokt', '~> 9.0'
+```
+
+To use the kit **without** `RoktPaymentExtension` / Stripe:
+
+```ruby
+pod 'mParticle-Rokt/No-Payments', '~> 9.0'
 ```
 
 ## Verifying the Integration

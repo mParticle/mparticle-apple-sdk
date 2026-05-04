@@ -11,9 +11,22 @@ Pod::Spec.new do |s|
     s.source           = { :git => "https://github.com/mparticle-integrations/mp-apple-integration-rokt.git", :tag => "v" + s.version.to_s }
     s.swift_version = "5.5"
     s.ios.deployment_target = "15.6"
-    s.ios.source_files      = 'Sources/mParticle-Rokt/**/*.{h,m}', 'Sources/mParticle-Rokt-Swift/**/*.swift'
-    s.ios.resource_bundles  = { 'mParticle-Rokt-Privacy' => ['Sources/mParticle-Rokt/PrivacyInfo.xcprivacy'] }
-    s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'
-    s.ios.dependency 'RoktContracts', '~> 2.0'
-    s.ios.dependency 'Rokt-Widget', '~> 5.1'
+    s.default_subspec = "Payments"
+
+    s.subspec "Core" do |ss|
+        ss.ios.source_files      = 'Sources/mParticle-Rokt/**/*.{h,m}', 'Sources/mParticle-Rokt-Swift/**/*.swift'
+        ss.ios.resource_bundles  = { 'mParticle-Rokt-Privacy' => ['Sources/mParticle-Rokt/PrivacyInfo.xcprivacy'] }
+        ss.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'
+        ss.ios.dependency 'RoktContracts', '~> 2.0'
+        ss.ios.dependency 'Rokt-Widget', '~> 5.1'
+    end
+
+    s.subspec "Payments" do |ss|
+        ss.ios.dependency 'mParticle-Rokt/Core', s.version.to_s
+        ss.ios.dependency 'RoktPaymentExtension', '~> 2.0'
+    end
+
+    s.subspec "No-Payments" do |ss|
+        ss.ios.dependency 'mParticle-Rokt/Core', s.version.to_s
+    end
 end

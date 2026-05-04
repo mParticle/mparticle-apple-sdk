@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.9
 
 import Foundation
 import PackageDescription
@@ -25,6 +25,10 @@ let package = Package(
     products: [
         .library(
             name: "mParticle-Rokt",
+            targets: ["mParticle-Rokt-Swift", "mParticle-Rokt-PaymentLinkage"]
+        ),
+        .library(
+            name: "mParticle-Rokt-No-Payments",
             targets: ["mParticle-Rokt-Swift"]
         )
     ],
@@ -36,6 +40,10 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/ROKT/rokt-contracts-apple.git",
+            .upToNextMajor(from: "2.0.0")
+        ),
+        .package(
+            url: "https://github.com/ROKT/rokt-payment-extension-ios.git",
             .upToNextMajor(from: "2.0.0")
         ),
         .package(
@@ -64,6 +72,13 @@ let package = Package(
                 .product(name: "RoktContracts", package: "rokt-contracts-apple")
             ],
             path: "Sources/mParticle-Rokt-Swift"
+        ),
+        .target(
+            name: "mParticle-Rokt-PaymentLinkage",
+            dependencies: [
+                .product(name: "RoktPaymentExtension", package: "rokt-payment-extension-ios")
+            ],
+            path: "Sources/mParticle-Rokt-PaymentLinkage"
         ),
         .testTarget(
             name: "mParticle-RoktObjCTests",
