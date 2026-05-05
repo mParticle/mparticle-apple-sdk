@@ -33,6 +33,32 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
 
+## [9.1.0] - 2026-05-04
+
+### Core
+
+#### Added
+
+- Simplify collection of email and mobile sha256 ([#756](https://github.com/mParticle/mparticle-apple-sdk/pull/756))
+
+#### Fixed
+
+- Map mobileSha256 to MPIdentityOther2 instead of MPIdentityOther ([#761](https://github.com/mParticle/mparticle-apple-sdk/pull/761))
+
+### Kits
+
+#### Adobe
+
+##### Fixed
+
+- Add startup logging for OneTrust and Adobe kits ([#762](https://github.com/mParticle/mparticle-apple-sdk/pull/762))
+
+#### Rokt
+
+##### Added
+
+- Adopt Rokt SDK 5.1.0 and add MPRokt.handleURLCallback ([#759](https://github.com/mParticle/mparticle-apple-sdk/pull/759))
+
 ## [9.0.1] - 2026-04-22
 
 ### Core
@@ -2300,6 +2326,7 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.1...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.1.0...HEAD
+[9.1.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.1...v9.1.0
 [9.0.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.0...v9.0.1
 [9.0.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...v9.0.0

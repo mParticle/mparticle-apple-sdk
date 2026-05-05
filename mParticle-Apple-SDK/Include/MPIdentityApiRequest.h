@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  SHA-256 hashed mobile number for privacy-safe identity resolution.
- Maps to the `other` identity type (@c MPIdentityOther).
+ Maps to the `other2` identity type (@c MPIdentityOther2).
  */
 @property (nonatomic, strong, nullable) NSString *mobileSha256;
 

@@ -100,28 +100,27 @@
     XCTAssertNil(request.mobileSha256);
     request.mobileSha256 = @"mobilehash456";
     XCTAssertEqualObjects(@"mobilehash456", request.mobileSha256);
-    XCTAssertEqualObjects(@"mobilehash456", request.mutableIdentities[@(MPIdentityOther)]);
+    XCTAssertEqualObjects(@"mobilehash456", request.mutableIdentities[@(MPIdentityOther2)]);
 
     request.mobileSha256 = nil;
     XCTAssertNil(request.mobileSha256);
-    XCTAssertEqualObjects(request.mutableIdentities[@(MPIdentityOther)], [NSNull null]);
+    XCTAssertEqualObjects(request.mutableIdentities[@(MPIdentityOther2)], [NSNull null]);
 }
 
-- (void)testMobileSha256DelegatesToSetIdentityOther {
+- (void)testMobileSha256DelegatesToSetIdentityOther2 {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     request.mobileSha256 = @"mobilehash";
-    XCTAssertEqualObjects(@"mobilehash", [request.identities objectForKey:@(MPIdentityOther)]);
+    XCTAssertEqualObjects(@"mobilehash", [request.identities objectForKey:@(MPIdentityOther2)]);
 }
 
-- (void)testEmailSha256AndMobileSha256ShareOtherSlot {
+- (void)testEmailSha256AndMobileSha256UseDistinctSlots {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     request.emailSha256 = @"emailhash";
-    XCTAssertEqualObjects(@"emailhash", request.emailSha256);
-    XCTAssertEqualObjects(@"emailhash", request.mobileSha256);
-
     request.mobileSha256 = @"mobilehash";
+    XCTAssertEqualObjects(@"emailhash", request.emailSha256);
     XCTAssertEqualObjects(@"mobilehash", request.mobileSha256);
-    XCTAssertEqualObjects(@"mobilehash", request.emailSha256);
+    XCTAssertEqualObjects(@"emailhash", request.mutableIdentities[@(MPIdentityOther)]);
+    XCTAssertEqualObjects(@"mobilehash", request.mutableIdentities[@(MPIdentityOther2)]);
 }
 
 @end

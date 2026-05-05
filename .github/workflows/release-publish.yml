@@ -327,12 +327,16 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          set -euo pipefail
-          PUSH_FLAGS=(--allow-warnings --synchronous)
+          # Default run shell is bash -e; disable errexit so retry / duplicate handling in Scripts/pod_push.sh runs.
+          set +e
+          set -uo pipefail
+          . Scripts/pod_push.sh
+
           # Order matters: Swift pod → ObjC core (depends on Swift) → umbrella (depends on ObjC).
-          pod trunk push mParticle-Apple-SDK-Swift.podspec "${PUSH_FLAGS[@]}"
-          pod trunk push mParticle-Apple-SDK-ObjC.podspec "${PUSH_FLAGS[@]}"
-          pod trunk push mParticle-Apple-SDK.podspec "${PUSH_FLAGS[@]}"
+          # With set +e, propagate failures so later pushes do not run after an earlier failure.
+          trunk_push_with_retries mParticle-Apple-SDK-Swift.podspec || exit 1
+          trunk_push_with_retries mParticle-Apple-SDK-ObjC.podspec || exit 1
+          trunk_push_with_retries mParticle-Apple-SDK.podspec || exit 1
 
   publish-kit-cocoapods:
     name: Publish ${{ matrix.kit.name }} to CocoaPods
@@ -376,7 +380,10 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          for attempt in 1 2 3; do
-            pod trunk push ${{ matrix.kit.podspec }} --allow-warnings --synchronous && break
-            [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 3 minutes..." && sleep 180 || exit 1
-          done
+          # Default run shell is bash -e; disable errexit so retry / duplicate handling in Scripts/pod_push.sh runs.
+          set +e
+          set -uo pipefail
+          . Scripts/pod_push.sh
+          PODSPEC="${{ matrix.kit.podspec }}"
+
+          trunk_push_with_retries "$PODSPEC" || exit 1
