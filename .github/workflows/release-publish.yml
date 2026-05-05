@@ -327,6 +327,8 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
+          # Default run shell is bash -e: a failed `pod | tee` exits before PIPESTATUS / duplicate handling.
+          set +e
           set -uo pipefail
           PUSH_FLAGS=(--allow-warnings --synchronous)
 
@@ -353,9 +355,10 @@ jobs:
           }
 
           # Order matters: Swift pod → ObjC core (depends on Swift) → umbrella (depends on ObjC).
-          trunk_push_with_retries mParticle-Apple-SDK-Swift.podspec
-          trunk_push_with_retries mParticle-Apple-SDK-ObjC.podspec
-          trunk_push_with_retries mParticle-Apple-SDK.podspec
+          # With set +e, propagate failures so later pushes do not run after an earlier failure.
+          trunk_push_with_retries mParticle-Apple-SDK-Swift.podspec || exit 1
+          trunk_push_with_retries mParticle-Apple-SDK-ObjC.podspec || exit 1
+          trunk_push_with_retries mParticle-Apple-SDK.podspec || exit 1
 
   publish-kit-cocoapods:
     name: Publish ${{ matrix.kit.name }} to CocoaPods
@@ -399,6 +402,8 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
+          # Default run shell is bash -e: a failed `pod | tee` exits before PIPESTATUS / duplicate handling.
+          set +e
           set -uo pipefail
           PODSPEC="${{ matrix.kit.podspec }}"
           PUSH_FLAGS=(--allow-warnings --synchronous)
@@ -425,4 +430,4 @@ jobs:
             done
           }
 
-          trunk_push_with_retries "$PODSPEC"
+          trunk_push_with_retries "$PODSPEC" || exit 1
