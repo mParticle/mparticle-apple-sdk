@@ -328,6 +328,138 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
+- (void)testCustomBaseURLRejectsNonHTTPS {
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"http://rkt.example.com"];
+    XCTAssertNil(options.customBaseURL, @"Non-HTTPS customBaseURL should be rejected");
+}
+
+- (void)testConfigURLWithCustomBaseURL {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    NSURL *configURL = [networkCommunication configURL].url;
+    [self deswizzle];
+    XCTAssert([configURL.absoluteString rangeOfString:@"rkt.example.com/config/v4/"].location != NSNotFound);
+    XCTAssert([configURL.absoluteString rangeOfString:@"config2.mparticle.com"].location == NSNotFound);
+}
+
+- (void)testConfigURLCustomBaseURLOverridesConfigHost {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    options.configHost = @"config.mpproxy.example.com";
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    NSURL *configURL = [networkCommunication configURL].url;
+    [self deswizzle];
+    XCTAssert([configURL.absoluteString rangeOfString:@"rkt.example.com/config/v4/"].location != NSNotFound);
+    XCTAssert([configURL.absoluteString rangeOfString:@"config.mpproxy.example.com"].location == NSNotFound);
+}
+
+- (void)testModifyURLWithCustomBaseURL {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    NSURL *modifyURL = [networkCommunication modifyURL].url;
+    [self deswizzle];
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://rkt.example.com/identity/v1/"].location != NSNotFound);
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"identity.us1.mparticle.com"].location == NSNotFound);
+    XCTAssert([modifyURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
+- (void)testModifyURLCustomBaseURLOverridesIdentityTrackingHost {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    options.identityTrackingHost = @"identity-tracking.mpproxy.example.com";
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    NSURL *modifyURL = [networkCommunication modifyURL].url;
+    stateMachine.attAuthorizationStatus = nil;
+    [self deswizzle];
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://rkt.example.com/identity/v1/"].location != NSNotFound);
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"identity-tracking.mpproxy.example.com"].location == NSNotFound);
+}
+
+- (void)testEventURLWithCustomBaseURL {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
+    [self deswizzle];
+    XCTAssert([eventURL.absoluteString rangeOfString:@"rkt.example.com/nativeevents/v2/"].location != NSNotFound);
+    XCTAssert([eventURL.absoluteString rangeOfString:@"nativesdks.us1.mparticle.com"].location == NSNotFound);
+}
+
+- (void)testEventURLCustomBaseURLAppliesToTrackingHost {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
+    stateMachine.attAuthorizationStatus = nil;
+    [self deswizzle];
+    XCTAssert([eventURL.absoluteString rangeOfString:@"rkt.example.com/nativeevents/v2/"].location != NSNotFound);
+    XCTAssert([eventURL.absoluteString rangeOfString:@"tracking-nativesdks"].location == NSNotFound);
+}
+
+- (void)testAliasURLWithCustomBaseURL {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
+    [self deswizzle];
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://rkt.example.com/nativeevents/v1/identity/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"nativesdks.us1.mparticle.com"].location == NSNotFound);
+    XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
+- (void)testAudienceURLWithCustomBaseURL {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    NSURL *audienceURL = [networkCommunication audienceURL].url;
+    [self deswizzle];
+    XCTAssert([audienceURL.absoluteString rangeOfString:@"rkt.example.com"].location != NSNotFound);
+    XCTAssert([audienceURL.absoluteString rangeOfString:@"mparticle.com"].location == NSNotFound);
+}
+
+- (void)testAliasURLWithCustomBaseURLAndATTAuthorized {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
+    stateMachine.attAuthorizationStatus = nil;
+    [self deswizzle];
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://rkt.example.com/nativeevents/v1/identity/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"nativesdks.us1.mparticle.com"].location == NSNotFound);
+    XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
 - (void)testEmptyUploadsArray {
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     NSArray *uploads = @[];

@@ -1,5 +1,6 @@
 @import Foundation;
 #import "mParticle.h"
+#import "MPILogger.h"
 
 
 @implementation MPNetworkOptions
@@ -19,8 +20,19 @@
     return self;
 }
 
+- (void)setCustomBaseURL:(NSURL *)customBaseURL {
+    if (customBaseURL && ![customBaseURL.scheme isEqualToString:@"https"]) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL must use HTTPS — value ignored.");
+        return;
+    }
+    _customBaseURL = customBaseURL;
+}
+
 - (NSString *)description {
     NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPNetworkOptions {\n"];
+    if (_customBaseURL) {
+        [description appendFormat:@"  customBaseURL: %@\n", _customBaseURL];
+    }
     [description appendFormat:@"  configHost: %@\n", _configHost];
     [description appendFormat:@"  overridesConfigSubdirectory: %s\n", _overridesConfigSubdirectory ? "true" : "false"];
     [description appendFormat:@"  eventsHost: %@\n", _eventsHost];
