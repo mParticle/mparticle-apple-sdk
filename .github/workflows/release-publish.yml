@@ -327,32 +327,10 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          # Default run shell is bash -e: a failed `pod | tee` exits before PIPESTATUS / duplicate handling.
+          # Default run shell is bash -e; disable errexit so retry / duplicate handling in Scripts/pod_push.sh runs.
           set +e
           set -uo pipefail
-          PUSH_FLAGS=(--allow-warnings --synchronous)
-
-          trunk_push_with_retries() {
-            local podspec="$1"
-            local attempt status
-            for attempt in 1 2 3; do
-              pod trunk push "$podspec" "${PUSH_FLAGS[@]}" 2>&1 | tee pod_trunk_push.log
-              status=${PIPESTATUS[0]}
-              if [ "$status" -eq 0 ]; then
-                return 0
-              fi
-              if grep -qiF 'duplicate entry' pod_trunk_push.log; then
-                echo "✅ ${podspec}: already on trunk; treating push as successful."
-                return 0
-              fi
-              if [ "$attempt" -lt 3 ]; then
-                echo "Attempt $attempt failed for $podspec, retrying in 3 minutes..."
-                sleep 180
-              else
-                return 1
-              fi
-            done
-          }
+          . Scripts/pod_push.sh
 
           # Order matters: Swift pod → ObjC core (depends on Swift) → umbrella (depends on ObjC).
           # With set +e, propagate failures so later pushes do not run after an earlier failure.
@@ -402,32 +380,10 @@ jobs:
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
-          # Default run shell is bash -e: a failed `pod | tee` exits before PIPESTATUS / duplicate handling.
+          # Default run shell is bash -e; disable errexit so retry / duplicate handling in Scripts/pod_push.sh runs.
           set +e
           set -uo pipefail
+          . Scripts/pod_push.sh
           PODSPEC="${{ matrix.kit.podspec }}"
-          PUSH_FLAGS=(--allow-warnings --synchronous)
-
-          trunk_push_with_retries() {
-            local podspec="$1"
-            local attempt status
-            for attempt in 1 2 3; do
-              pod trunk push "$podspec" "${PUSH_FLAGS[@]}" 2>&1 | tee pod_trunk_push.log
-              status=${PIPESTATUS[0]}
-              if [ "$status" -eq 0 ]; then
-                return 0
-              fi
-              if grep -qiF 'duplicate entry' pod_trunk_push.log; then
-                echo "✅ ${podspec}: already on trunk; treating push as successful."
-                return 0
-              fi
-              if [ "$attempt" -lt 3 ]; then
-                echo "Attempt $attempt failed for $podspec, retrying in 3 minutes..."
-                sleep 180
-              else
-                return 1
-              fi
-            done
-          }
 
           trunk_push_with_retries "$PODSPEC" || exit 1
