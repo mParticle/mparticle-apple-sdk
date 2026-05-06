@@ -162,8 +162,10 @@ jobs:
 
               if [ -d "$LOCAL_PATH/$SCHEME.xcodeproj" ]; then
                 PROJECT="$LOCAL_PATH/$SCHEME.xcodeproj"
-              else
+              elif compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
                 PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
+              else
+                PROJECT=""
               fi
 
               ARCHIVE_DEVICE="archives/${MODULE}-${DEST}"
@@ -184,10 +186,18 @@ jobs:
                   ;;
               esac
 
-              xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
-                -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" $BUILD_SETTINGS
-              xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
-                -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" $BUILD_SETTINGS
+              REPO_ROOT="$PWD"
+              if [ -n "$PROJECT" ]; then
+                xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
+                  -destination "$PLATFORM_DEVICE" -archivePath "$ARCHIVE_DEVICE" $BUILD_SETTINGS
+                xcodebuild archive -project "$PROJECT" -scheme "$SCHEME" \
+                  -destination "$PLATFORM_SIM" -archivePath "$ARCHIVE_SIM" $BUILD_SETTINGS
+              else
+                (cd "$LOCAL_PATH" && xcodebuild archive -scheme "$SCHEME" \
+                  -destination "$PLATFORM_DEVICE" -archivePath "$REPO_ROOT/$ARCHIVE_DEVICE" $BUILD_SETTINGS)
+                (cd "$LOCAL_PATH" && xcodebuild archive -scheme "$SCHEME" \
+                  -destination "$PLATFORM_SIM" -archivePath "$REPO_ROOT/$ARCHIVE_SIM" $BUILD_SETTINGS)
+              fi
 
               XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_DEVICE}.xcarchive -framework ${MODULE}.framework"
               XCFRAMEWORK_ARGS+=" -archive ${ARCHIVE_SIM}.xcarchive -framework ${MODULE}.framework"
@@ -210,7 +220,7 @@ jobs:
     runs-on: macOS-latest
     needs: [load-matrix, build-kits, release-core-sdk]
     env:
-      DEST_ORG: mparticle-integrations
+      DEST_ORG: ${{ matrix.kit.dest_org || 'mparticle-integrations' }}
     strategy:
       fail-fast: false
       matrix:
@@ -242,7 +252,7 @@ jobs:
         with:
           client-id: ${{ secrets.SDK_RELEASE_GITHUB_CLIENT_ID }}
           private-key: ${{ secrets.SDK_RELEASE_GITHUB_APP_PRIVATE_KEY }}
-          owner: ${{ env.DEST_ORG }}
+          owner: ${{ matrix.kit.dest_org || 'mparticle-integrations' }}
           repositories: ${{ matrix.kit.dest_repo }}
           permission-contents: write
 
@@ -371,6 +381,24 @@ jobs:
               exit 0
             fi
             [ "$i" -eq "$MAX_ATTEMPTS" ] && echo "❌ Timed out after 30 minutes" && exit 1
+            echo "  Attempt $i/$MAX_ATTEMPTS: Not yet available. Retrying in 60s..."
+            sleep 60
+          done
+
+      - name: Wait for mParticle-Rokt on CocoaPods CDN (RoktSDKPlus)
+        if: matrix.kit.name == 'rokt-sdk-plus-ios'
+        run: |
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          echo "⏳ Polling CocoaPods for mParticle-Rokt $VERSION (RoktSDKPlus dependency)..."
+          MAX_ATTEMPTS=30
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            FOUND=$(curl -sf "https://trunk.cocoapods.org/api/v1/pods/mParticle-Rokt" \
+              | jq -r --arg v "$VERSION" '.versions[] | select(.name == $v) | .name' 2>/dev/null || true)
+            if [ "$FOUND" = "$VERSION" ]; then
+              echo "✅ mParticle-Rokt $VERSION confirmed on CocoaPods trunk"
+              exit 0
+            fi
+            [ "$i" -eq "$MAX_ATTEMPTS" ] && echo "❌ Timed out waiting for mParticle-Rokt" && exit 1
             echo "  Attempt $i/$MAX_ATTEMPTS: Not yet available. Retrying in 60s..."
             sleep 60
           done
