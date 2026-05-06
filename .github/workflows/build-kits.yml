@@ -37,10 +37,15 @@ jobs:
       - name: Pod Lib Lint
         run: |
           echo "Linting: ${{ matrix.kit.podspec }}"
+          INCLUDES="mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec"
+          if [ -n "${{ matrix.kit.pod_lint_include_podspecs }}" ]; then
+            INCLUDES="${INCLUDES},${{ matrix.kit.pod_lint_include_podspecs }}"
+          fi
+          INCLUDES="{${INCLUDES}}"
           for attempt in 1 2 3; do
             pod lib lint "${{ matrix.kit.podspec }}" \
               --allow-warnings \
-              --include-podspecs="{mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}" \
+              --include-podspecs="$INCLUDES" \
               && break
             [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 60s..." && sleep 60 || exit 1
           done
@@ -69,35 +74,55 @@ jobs:
       - name: Resolve SPM dependencies
         run: |
           SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-
-          xcodebuild -resolvePackageDependencies -project "$PROJECT" \
-            -scheme "$SCHEME" -derivedDataPath DerivedData
+          LOCAL_PATH="${{ matrix.kit.local_path }}"
+          if compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
+            PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
+            xcodebuild -resolvePackageDependencies -project "$PROJECT" \
+              -scheme "$SCHEME" -derivedDataPath DerivedData
+          else
+            (cd "$LOCAL_PATH" && xcodebuild -resolvePackageDependencies -scheme "$SCHEME" -derivedDataPath "$OLDPWD/DerivedData")
+          fi
 
       - name: Build kit schemes
         run: |
+          LOCAL_PATH="${{ matrix.kit.local_path }}"
           echo '${{ toJson(matrix.kit.schemes) }}' | jq -c '.[]' | while IFS= read -r ENTRY; do
             SCHEME=$(echo "$ENTRY" | jq -r '.scheme')
             DEST=$(echo "$ENTRY" | jq -r '.destination')
 
-            if [ -d "${{ matrix.kit.local_path }}/$SCHEME.xcodeproj" ]; then
-              PROJECT="${{ matrix.kit.local_path }}/$SCHEME.xcodeproj"
+            if [ -d "$LOCAL_PATH/$SCHEME.xcodeproj" ]; then
+              PROJECT="$LOCAL_PATH/$SCHEME.xcodeproj"
+              XB=(xcodebuild build -project "$PROJECT" -scheme "$SCHEME")
+            elif compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
+              PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
+              XB=(xcodebuild build -project "$PROJECT" -scheme "$SCHEME")
             else
-              PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+              XB=(xcodebuild build -scheme "$SCHEME")
             fi
 
-            xcodebuild build -project "$PROJECT" -scheme "$SCHEME" \
-              -destination "generic/platform=$DEST" \
-              -derivedDataPath DerivedData \
-              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-
-            xcodebuild build -project "$PROJECT" -scheme "$SCHEME" \
-              -destination "generic/platform=$DEST Simulator" \
-              -derivedDataPath DerivedData \
-              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+            if compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
+              "${XB[@]}" \
+                -destination "generic/platform=$DEST" \
+                -derivedDataPath DerivedData \
+                CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+              "${XB[@]}" \
+                -destination "generic/platform=$DEST Simulator" \
+                -derivedDataPath DerivedData \
+                CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+            else
+              (cd "$LOCAL_PATH" && "${XB[@]}" \
+                -destination "generic/platform=$DEST" \
+                -derivedDataPath "$OLDPWD/DerivedData" \
+                CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO)
+              (cd "$LOCAL_PATH" && "${XB[@]}" \
+                -destination "generic/platform=$DEST Simulator" \
+                -derivedDataPath "$OLDPWD/DerivedData" \
+                CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO)
+            fi
           done
 
       - name: Build SPM-Swift-Example
+        if: ${{ matrix.kit.skip_example_builds != true }}
         run: |
           PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Swift-Example/*.xcodeproj | head -1)"
           xcodebuild build -project "$PROJECT" -scheme SPM-Swift-Example \
@@ -106,6 +131,7 @@ jobs:
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Build SPM-Objc-Example
+        if: ${{ matrix.kit.skip_example_builds != true }}
         run: |
           PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Objc-Example/*.xcodeproj | head -1)"
           xcodebuild build -project "$PROJECT" -scheme SPM-Objc-Example \
@@ -114,6 +140,7 @@ jobs:
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Run SPM tests
+        if: ${{ matrix.kit.skip_spm_tests != true }}
         run: |
           cd ${{ matrix.kit.local_path }}
           PACKAGE=$(grep -E '^\s*name:' Package.swift | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
