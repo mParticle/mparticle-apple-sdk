@@ -394,6 +394,24 @@
     ]
   },
   {
+    "name": "rokt-sdk-plus-ios",
+    "local_path": "Kits/rokt-sdk-plus/rokt-sdk-plus-ios",
+    "podspec": "Kits/rokt-sdk-plus/rokt-sdk-plus-ios/RoktSDKPlus.podspec",
+    "dest_repo": "rokt-sdk-plus-ios",
+    "dest_org": "ROKT",
+    "spm_package_only": true,
+    "skip_example_builds": true,
+    "skip_spm_tests": true,
+    "pod_lint_include_podspecs": "Kits/rokt/rokt/mParticle-Rokt.podspec",
+    "schemes": [
+      {
+        "scheme": "RoktSDKPlus",
+        "module": "RoktSDKPlus",
+        "destination": "iOS"
+      }
+    ]
+  },
+  {
     "name": "singular-12",
     "local_path": "Kits/singular/singular-12",
     "podspec": "Kits/singular/singular-12/mParticle-Singular-12.podspec",
