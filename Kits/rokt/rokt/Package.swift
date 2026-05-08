@@ -32,7 +32,7 @@ let package = Package(
         mParticleAppleSDK,
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
-            .upToNextMajor(from: "5.1.0")
+            .upToNextMajor(from: "5.2.0")
         ),
         .package(
             url: "https://github.com/ROKT/rokt-contracts-apple.git",
