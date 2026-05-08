@@ -150,6 +150,23 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 */
 @property (nonatomic) BOOL eventsOnly;
 
+/**
+ Routes all mParticle endpoint traffic (config, events, identity, alias) through
+ a single CNAME domain. Must be an HTTPS URL, e.g. https://rkt.example.com.
+ Non-HTTPS values are rejected with a warning log and the property is left unchanged.
+
+ When set, this property takes priority over all individual host properties
+ (configHost, eventsHost, eventsTrackingHost, identityHost, identityTrackingHost,
+ aliasHost, aliasTrackingHost). Setting both customBaseURL and any individual host
+ property will log a warning and the individual property will be ignored.
+ Use customBaseURL exclusively for CNAME-based traffic routing.
+
+ Certificate pinning: if certificate pinning is enabled (the default), you must
+ either supply certificates for your CNAME domain via the @c certificates property,
+ or disable pinning via @c pinningDisabled / @c pinningDisabledInDevelopment.
+ */
+@property (nonatomic, nullable) NSURL *customBaseURL;
+
 @end
 
 /**

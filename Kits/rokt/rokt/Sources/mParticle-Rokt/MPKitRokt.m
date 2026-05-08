@@ -91,6 +91,11 @@ static __weak MPKitRokt *roktKit = nil;
         }
     }];
 
+    NSURL *customBaseURL = [MParticle sharedInstance].networkOptions.customBaseURL;
+    if (customBaseURL) {
+        [Rokt setCustomBaseURL:customBaseURL];
+    }
+
     [Rokt initWithRoktTagId:partnerId mParticleSdkVersion:sdkVersion mParticleKitVersion:kMPRoktKitVersion];
     
     return [self execStatus:MPKitReturnCodeSuccess];
