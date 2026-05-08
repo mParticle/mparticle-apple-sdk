@@ -6,10 +6,11 @@ import PackageDescription
 let version = "9.0.0"
 
 let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] != nil
+let buildXCFramework = ProcessInfo.processInfo.environment["BUILD_XCFRAMEWORK"] != nil
 
 let mParticleAppleSDK: Package.Dependency = {
     if useLocalVersion {
-        return .package(path: "../../../")
+        return .package(name: "mparticle-apple-sdk", path: "../../../")
     }
 
     let url = "https://github.com/mParticle/mparticle-apple-sdk"
@@ -23,7 +24,7 @@ let package = Package(
     name: "mParticle-CleverTap",
     platforms: [ .iOS(.v15) ],
     products: [
-        .library(name: "mParticle-CleverTap", targets: ["mParticle-CleverTap"])
+        .library(name: "mParticle-CleverTap", type: buildXCFramework ? .dynamic : nil, targets: ["mParticle-CleverTap"])
     ],
     dependencies: [
         mParticleAppleSDK,
