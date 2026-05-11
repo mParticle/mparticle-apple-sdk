@@ -22,6 +22,10 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ### Kits
 
+#### Added
+
+- **Rokt SDK+ (`RoktSDKPlus`)** — Umbrella Swift package and CocoaPods pod at `Kits/rokt-sdk-plus/rokt-sdk-plus-ios`, versioned with the core SDK and mirrored to [ROKT/rokt-sdk-plus-ios](https://github.com/ROKT/rokt-sdk-plus-ios).
+
 #### Rokt
 
 ##### Changed
