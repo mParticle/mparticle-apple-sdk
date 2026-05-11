@@ -80,6 +80,7 @@ jobs:
             xcodebuild -resolvePackageDependencies -project "$PROJECT" \
               -scheme "$SCHEME" -derivedDataPath DerivedData
           else
+            # Swift package without .xcodeproj (see rokt-sdk-plus-ios).
             (cd "$LOCAL_PATH" && xcodebuild -resolvePackageDependencies -scheme "$SCHEME" -derivedDataPath "$OLDPWD/DerivedData")
           fi
 
@@ -110,6 +111,7 @@ jobs:
                 -derivedDataPath DerivedData \
                 CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
             else
+              # Package.swift only (e.g. rokt-sdk-plus-ios): xcodebuild must run from the package root; no -project.
               (cd "$LOCAL_PATH" && "${XB[@]}" \
                 -destination "generic/platform=$DEST" \
                 -derivedDataPath "$OLDPWD/DerivedData" \
