@@ -36,7 +36,7 @@ let package = Package(
         mParticleRoktDependency,
         .package(
             url: "https://github.com/ROKT/rokt-payment-extension-ios.git",
-            .upToNextMajor(from: "2.0.0")
+            .upToNextMajor(from: "2.0.2")
         )
     ],
     targets: [
