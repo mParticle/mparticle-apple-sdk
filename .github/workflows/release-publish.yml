@@ -151,6 +151,15 @@ jobs:
 
           mkdir -p archives xcframeworks
 
+          SKIP_XCF="${{ matrix.kit.skip_xcframework }}"
+          if [ "$SKIP_XCF" = "true" ]; then
+            MODULE=$(echo "$SCHEMES_JSON" | jq -r '.[0].module')
+            echo "Skipping xcframework: Swift package archives for this target do not emit Products/Library/Frameworks/*.framework (object files only). Use SwiftPM/CocoaPods from the tag." \
+              >"xcframeworks/${MODULE}-distribution.txt"
+            (cd xcframeworks && zip -r "${MODULE}.xcframework.zip" "${MODULE}-distribution.txt")
+            exit 0
+          fi
+
           MODULES=$(echo "$SCHEMES_JSON" | jq -r '.[].module' | sort -u)
 
           for MODULE in $MODULES; do

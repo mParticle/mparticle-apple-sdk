@@ -26,6 +26,10 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - **Rokt SDK+ (`RoktSDKPlus`)** — Umbrella Swift package and CocoaPods pod at `Kits/rokt-sdk-plus/rokt-sdk-plus-ios`, versioned with the core SDK and mirrored to [ROKT/rokt-sdk-plus-ios](https://github.com/ROKT/rokt-sdk-plus-ios).
 
+#### Fixed
+
+- **Rokt SDK+** — Release **Build rokt-sdk-plus-ios** no longer runs `xcodebuild -create-xcframework` for this Swift-package-only target (archives do not produce `*.framework` under `Products/Library/Frameworks/`). CI uploads a small placeholder zip so mirror artifact steps still succeed; integrate via SwiftPM or CocoaPods from the tag.
+
 #### Rokt
 
 ##### Changed
