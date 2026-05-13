@@ -26,7 +26,7 @@ In `Package.swift` or Xcode → _Package Dependencies_:
 ```swift
 .package(
     url: "https://github.com/ROKT/rokt-sdk-plus-ios.git",
-    .upToNextMajor(from: "9.1.0")
+    .upToNextMajor(from: "9.2.0")
 )
 ```
 
