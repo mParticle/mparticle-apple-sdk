@@ -41,6 +41,22 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
 
+## [9.2.0] - 2026-05-13
+
+### Kits
+
+#### Kits
+
+##### Added
+
+- Add Rokt SDK+ repo to mono repo ([#766](https://github.com/mParticle/mparticle-apple-sdk/pull/766))
+
+#### Rokt
+
+##### Added
+
+- Global CNAME support and Rokt Kit passthrough ([#760](https://github.com/mParticle/mparticle-apple-sdk/pull/760))
+
 ## [9.1.0] - 2026-05-04
 
 ### Core
@@ -2334,7 +2350,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.1.0...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.0...HEAD
+[9.2.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.1...v9.1.0
 [9.0.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.0...v9.0.1
 [9.0.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...v9.0.0
