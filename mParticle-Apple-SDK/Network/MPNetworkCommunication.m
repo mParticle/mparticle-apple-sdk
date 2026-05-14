@@ -435,6 +435,24 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 #pragma mark Private methods
+- (BOOL)isRetriableTransportError:(NSError *)error {
+    return [MPTransportErrorDetector isRetriableTransportError:error];
+}
+
+- (void)throttleForTransportError:(NSError *)error uploadType:(MPUploadType)uploadType httpResponse:(NSHTTPURLResponse *)httpResponse {
+    if (!error) {
+        return;
+    }
+
+    NSString *uploadLabel = uploadType == MPUploadTypeAlias ? @"alias requests" : @"uploads";
+    MPILogWarning(@"Throttling %@ after transport error: %@ (domain: %@, code: %ld)",
+                  uploadLabel,
+                  error.localizedDescription,
+                  error.domain,
+                  (long)error.code);
+    [self throttleWithHTTPResponse:httpResponse uploadType:uploadType];
+}
+
 - (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
     NSDate *now = [NSDate date];
     NSDictionary *httpHeaders = [httpResponse allHeaderFields];
@@ -681,7 +699,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (BOOL)performMessageUpload:(MPUpload *)upload {
-    NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
+    MParticle *mParticle = MParticle.sharedInstance;
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPPersistenceController_PRIVATE *persistenceController = mParticle.persistenceController;
+
+    NSDate *minUploadDate = [stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return YES;  //stop upload loop
     }
@@ -694,8 +716,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
 
     NSData *zipUploadData;
-    NSNumber *authTimestamp = [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp;
-    NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    NSNumber *authTimestamp = stateMachine.attAuthorizationTimestamp;
+    NSNumber *authStatus = stateMachine.attAuthorizationStatus;
 
     if (authStatus != nil && authTimestamp != nil) {
         NSDictionary *uploadDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
@@ -736,7 +758,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 
     if (zipUploadData == nil || zipUploadData.length <= 0) {
-        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        [persistenceController deleteUpload:upload];
         return NO;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
@@ -746,6 +768,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                                                              serializedParams:zipUploadData
                                                                                        secret:upload.uploadSettings.secret];
     NSData *data = response.data;
+    NSError *error = response.error;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
 
     NSInteger responseCode = [httpResponse statusCode];
@@ -753,9 +776,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
     if (isSuccessCode || isInvalidCode) {
-        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        [persistenceController deleteUpload:upload];
         if (isSuccessCode && uploadString.length) {
-            [[MParticle sharedInstance] logKitBatch:uploadString];
+            [mParticle logKitBatch:uploadString];
         }
     }
 
@@ -786,6 +809,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
+        if ([self isRetriableTransportError:error]) {
+            [self throttleForTransportError:error uploadType:MPUploadTypeMessage httpResponse:httpResponse];
+        }
         return YES;
     }
 
@@ -818,6 +844,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                                                              serializedParams:upload.uploadData
                                                                                        secret:upload.uploadSettings.secret];
     NSData *data = response.data;
+    NSError *error = response.error;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
 
     NSInteger responseCode = [httpResponse statusCode];
@@ -874,6 +901,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
+        if ([self isRetriableTransportError:error]) {
+            [self throttleForTransportError:error uploadType:upload.uploadType httpResponse:httpResponse];
+        }
         return YES;
     }
 

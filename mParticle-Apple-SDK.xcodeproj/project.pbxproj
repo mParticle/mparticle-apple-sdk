@@ -14,6 +14,7 @@
 		351779502E706BF8004BF05E /* ExecutorMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3517794C2E706BE4004BF05E /* ExecutorMock.swift */; };
 		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
+		35A1B2C32F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A1B2C22F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift */; };
 		35329FF02E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */; };
 		35329FF32E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */; };
 		35329FF52E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
@@ -334,6 +335,7 @@
 		3517794C2E706BE4004BF05E /* ExecutorMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExecutorMock.swift; sourceTree = "<group>"; };
 		35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPNetworkOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
+		35A1B2C22F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPTransportErrorDetectorTests.swift; sourceTree = "<group>"; };
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
 		35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MParticleOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MParticleOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
@@ -1178,6 +1180,7 @@
 				35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */,
 				72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */,
 				72D356522E8460020012A0C2 /* MPEventTests.swift */,
+				35A1B2C22F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift */,
 			);
 			path = SwiftTests;
 			sourceTree = "<group>";
@@ -1562,6 +1565,7 @@
 				534CD28D29CE2CE1008452B3 /* MPUploadBuilderTests.m in Sources */,
 				534CD28E29CE2CE1008452B3 /* MPBaseTestCase.m in Sources */,
 				35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */,
+				35A1B2C32F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift in Sources */,
 				7231B8352EB95F9F001565E5 /* MParticleBreadcrumbTests.swift in Sources */,
 				534CD28F29CE2CE1008452B3 /* MPIdentityApiRequestTests.m in Sources */,
 				534CD29029CE2CE1008452B3 /* MPKitAppsFlyerTest.m in Sources */,
