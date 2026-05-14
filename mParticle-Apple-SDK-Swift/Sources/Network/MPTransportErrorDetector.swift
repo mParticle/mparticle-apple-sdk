@@ -15,9 +15,7 @@ import Foundation
 
         if error.domain == NSURLErrorDomain {
             switch error.code {
-            case NSURLErrorNotConnectedToInternet,
-                NSURLErrorTimedOut,
-                NSURLErrorCannotFindHost,
+            case NSURLErrorCannotFindHost,
                 NSURLErrorCannotConnectToHost,
                 NSURLErrorNetworkConnectionLost,
                 NSURLErrorDNSLookupFailed,
