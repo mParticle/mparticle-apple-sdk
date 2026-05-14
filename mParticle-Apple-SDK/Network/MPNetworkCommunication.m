@@ -439,20 +439,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     return [MPTransportErrorDetector isRetriableTransportError:error];
 }
 
-- (void)throttleForTransportError:(NSError *)error uploadType:(MPUploadType)uploadType httpResponse:(NSHTTPURLResponse *)httpResponse {
-    if (!error) {
-        return;
-    }
-
-    NSString *uploadLabel = uploadType == MPUploadTypeAlias ? @"alias requests" : @"uploads";
-    MPILogWarning(@"Throttling %@ after transport error: %@ (domain: %@, code: %ld)",
-                  uploadLabel,
-                  error.localizedDescription,
-                  error.domain,
-                  (long)error.code);
-    [self throttleWithHTTPResponse:httpResponse uploadType:uploadType];
-}
-
 - (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
     NSDate *now = [NSDate date];
     NSDictionary *httpHeaders = [httpResponse allHeaderFields];
@@ -810,7 +796,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
         if ([self isRetriableTransportError:error]) {
-            [self throttleForTransportError:error uploadType:MPUploadTypeMessage httpResponse:httpResponse];
+            MPILogWarning(@"Throttling uploads after transport error.");
+            [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeMessage];
         }
         return YES;
     }
@@ -902,7 +889,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
         if ([self isRetriableTransportError:error]) {
-            [self throttleForTransportError:error uploadType:upload.uploadType httpResponse:httpResponse];
+            MPILogWarning(@"Throttling alias requests after transport error.");
+            [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeAlias];
         }
         return YES;
     }
