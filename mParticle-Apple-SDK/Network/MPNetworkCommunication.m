@@ -440,29 +440,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     return [MPTransportErrorDetector isRetriableTransportError:error];
 }
 
-- (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
+- (void)throttleWithRetryAfter:(NSTimeInterval)retryAfter uploadType:(MPUploadType)uploadType {
     MPLog *logger = MParticle.sharedInstance.getLogger;
     NSDate *now = [NSDate date];
-    NSDictionary *httpHeaders = [httpResponse allHeaderFields];
-    NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
-
-    NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
-    if ([minUploadDate compare:now] == NSOrderedAscending) {
-        [MParticle.sharedInstance.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
-        if (uploadType == MPUploadTypeMessage) {
-            NSString *messageThrottleLog = [NSString stringWithFormat:@"Throttling uploads for %.0f seconds", retryAfter];
-            [logger debug:messageThrottleLog];
-        } else if (uploadType == MPUploadTypeAlias) {
-            NSString *aliasThrottleLog = [NSString stringWithFormat:@"Throttling alias requests for %.0f seconds", retryAfter];
-            [logger debug:aliasThrottleLog];
-        }
-    }
-}
-
-- (void)throttleWithHTTPResponseForErrors:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
-    MPLog *logger = MParticle.sharedInstance.getLogger;
-    NSDate *now = [NSDate date];
-    NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
 
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
     if ([minUploadDate compare:now] == NSOrderedAscending) {
@@ -789,7 +769,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-        [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeMessage];
+        NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+        NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
+        [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeMessage];
         return YES;
     }
 
@@ -797,7 +779,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!isSuccessCode && !isInvalidCode) {
         if ([self isRetriableTransportError:error]) {
             MPILogWarning(@"Throttling uploads after transport error.");
-            [self throttleWithHTTPResponseForErrors:httpResponse uploadType:MPUploadTypeMessage];
+            NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
+            [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeMessage];
         }
         return YES;
     }
@@ -885,7 +868,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
         aliasResponse.willRetry = YES;
-        [self throttleWithHTTPResponse:httpResponse uploadType:upload.uploadType];
+        NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+        NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
+        [self throttleWithRetryAfter:retryAfter uploadType:upload.uploadType];
         return YES;
     }
 
@@ -893,7 +878,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!isSuccessCode && !isInvalidCode) {
         if ([self isRetriableTransportError:error]) {
             MPILogWarning(@"Throttling alias requests after transport error.");
-            [self throttleWithHTTPResponseForErrors:httpResponse uploadType:MPUploadTypeAlias];
+            NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
+            [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeAlias];
         }
         return YES;
     }
