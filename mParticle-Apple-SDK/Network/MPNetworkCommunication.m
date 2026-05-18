@@ -444,16 +444,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPLog *logger = MParticle.sharedInstance.getLogger;
     NSDate *now = [NSDate date];
     NSDictionary *httpHeaders = [httpResponse allHeaderFields];
-    NSDate *retryAfterDate = [httpHeaders retryDate];
-    NSTimeInterval retryAfter = 7200; // Default of 2 hours
-    NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
-    NSNumber *retryAfterSeconds = [httpHeaders retrySeconds];
-    if (retryAfterDate) {
-        retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
-        retryAfter = retryAfter > 0 ? retryAfter : 7200;
-    } else if (retryAfterSeconds) {
-        retryAfter = MIN(retryAfterSeconds.doubleValue, maxRetryAfter);
-    }
+    NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
 
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
     if ([minUploadDate compare:now] == NSOrderedAscending) {
