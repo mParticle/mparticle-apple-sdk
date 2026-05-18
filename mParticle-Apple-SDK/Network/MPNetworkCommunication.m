@@ -67,6 +67,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 
+- (MPLog *)getLogger;
 - (void)logKitBatch:(NSString *)batch;
 + (void)executeOnMain:(void(^)(void))block;
 + (void)executeOnMainSync:(void(^)(void))block;
@@ -440,6 +441,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
+    MPLog *logger = MParticle.sharedInstance.getLogger;
     NSDate *now = [NSDate date];
     NSDictionary *httpHeaders = [httpResponse allHeaderFields];
     NSTimeInterval retryAfter = 7200; // Default of 2 hours
@@ -454,14 +456,16 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                     retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
                     retryAfter = retryAfter > 0 ? retryAfter : 7200;
                 } else {
-                    MPILogError(@"Invalid 'Retry-After' date: %@ - using default retry interval", suggestedRetryAfter);
+                    NSString *invalidRetryAfterDateMessage = [NSString stringWithFormat:@"Invalid 'Retry-After' date: %@ - using default retry interval", suggestedRetryAfter];
+                    [logger error:invalidRetryAfterDateMessage];
                 }
             } else { // Number of seconds
                 @try {
                     retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
                 } @catch (NSException *exception) {
                     retryAfter = 7200;
-                    MPILogError(@"Invalid 'Retry-After' value: %@ - using default retry interval", suggestedRetryAfter);
+                    NSString *invalidRetryAfterValueMessage = [NSString stringWithFormat:@"Invalid 'Retry-After' value: %@ - using default retry interval", suggestedRetryAfter];
+                    [logger error:invalidRetryAfterValueMessage];
                 }
             }
         } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
@@ -473,9 +477,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if ([minUploadDate compare:now] == NSOrderedAscending) {
         [MParticle.sharedInstance.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
         if (uploadType == MPUploadTypeMessage) {
-            MPILogDebug(@"Throttling uploads for %.0f seconds", retryAfter);
+            NSString *messageThrottleLog = [NSString stringWithFormat:@"Throttling uploads for %.0f seconds", retryAfter];
+            [logger debug:messageThrottleLog];
         } else if (uploadType == MPUploadTypeAlias) {
-            MPILogDebug(@"Throttling alias requests for %.0f seconds", retryAfter);
+            NSString *aliasThrottleLog = [NSString stringWithFormat:@"Throttling alias requests for %.0f seconds", retryAfter];
+            [logger debug:aliasThrottleLog];
         }
     }
 }
