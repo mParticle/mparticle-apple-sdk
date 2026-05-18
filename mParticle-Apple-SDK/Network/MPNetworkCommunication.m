@@ -441,12 +441,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)throttleWithRetryAfter:(NSTimeInterval)retryAfter uploadType:(MPUploadType)uploadType {
-    MPLog *logger = MParticle.sharedInstance.getLogger;
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog *logger = mparticle.getLogger;
     NSDate *now = [NSDate date];
 
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
     if ([minUploadDate compare:now] == NSOrderedAscending) {
-        [MParticle.sharedInstance.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
+        [mparticle.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
         if (uploadType == MPUploadTypeMessage) {
             NSString *messageThrottleLog = [NSString stringWithFormat:@"Throttling uploads for %.0f seconds", retryAfter];
             [logger debug:messageThrottleLog];
