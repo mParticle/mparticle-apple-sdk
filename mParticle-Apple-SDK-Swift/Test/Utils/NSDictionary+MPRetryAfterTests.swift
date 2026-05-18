@@ -2,6 +2,18 @@ import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 final class NSDictionaryMPRetryAfterTests: XCTestCase {
+    func testRetryDateParsesRFC1123String() {
+        let headers: NSDictionary = ["Retry-After": "Wed, 21 Oct 2015 07:28:00 GMT"]
+
+        XCTAssertNotNil(headers.retryDate())
+    }
+
+    func testRetryDateReturnsNilForInvalidString() {
+        let headers: NSDictionary = ["Retry-After": "not-a-date"]
+
+        XCTAssertNil(headers.retryDate())
+    }
+
     func testRetrySecondsReturnsNumberValue() {
         let headers: NSDictionary = ["Retry-After": NSNumber(value: 42)]
 

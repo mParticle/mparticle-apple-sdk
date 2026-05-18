@@ -444,33 +444,15 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPLog *logger = MParticle.sharedInstance.getLogger;
     NSDate *now = [NSDate date];
     NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+    NSDate *retryAfterDate = [httpHeaders retryDate];
     NSTimeInterval retryAfter = 7200; // Default of 2 hours
     NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
-    id suggestedRetryAfter = httpHeaders[@"Retry-After"];
-
-    if (!MPIsNull(suggestedRetryAfter)) {
-        if ([suggestedRetryAfter isKindOfClass:[NSString class]]) {
-            if ([suggestedRetryAfter containsString:@":"]) { // Date
-                NSDate *retryAfterDate = [MPDateFormatter dateFromStringRFC1123:(NSString *)suggestedRetryAfter];
-                if (retryAfterDate) {
-                    retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
-                    retryAfter = retryAfter > 0 ? retryAfter : 7200;
-                } else {
-                    NSString *invalidRetryAfterDateMessage = [NSString stringWithFormat:@"Invalid 'Retry-After' date: %@ - using default retry interval", suggestedRetryAfter];
-                    [logger error:invalidRetryAfterDateMessage];
-                }
-            } else { // Number of seconds
-                @try {
-                    retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
-                } @catch (NSException *exception) {
-                    retryAfter = 7200;
-                    NSString *invalidRetryAfterValueMessage = [NSString stringWithFormat:@"Invalid 'Retry-After' value: %@ - using default retry interval", suggestedRetryAfter];
-                    [logger error:invalidRetryAfterValueMessage];
-                }
-            }
-        } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
-            retryAfter = MIN([(NSNumber *)suggestedRetryAfter doubleValue], maxRetryAfter);
-        }
+    NSNumber *retryAfterSeconds = [httpHeaders retrySeconds];
+    if (retryAfterDate) {
+        retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
+        retryAfter = retryAfter > 0 ? retryAfter : 7200;
+    } else if (retryAfterSeconds) {
+        retryAfter = MIN(retryAfterSeconds.doubleValue, maxRetryAfter);
     }
 
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];

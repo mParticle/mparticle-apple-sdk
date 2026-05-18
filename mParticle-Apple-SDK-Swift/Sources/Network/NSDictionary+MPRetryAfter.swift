@@ -1,6 +1,14 @@
 import Foundation
 
 @objc public extension NSDictionary {
+    func retryDate() -> Date? {
+        guard let headerValue = self["Retry-After"] as? String else {
+            return nil
+        }
+
+        return MPDateFormatter.dateFromStringRFC1123(headerValue)
+    }
+
     func retrySeconds() -> NSNumber? {
         let headerValue = self["Retry-After"]
 
