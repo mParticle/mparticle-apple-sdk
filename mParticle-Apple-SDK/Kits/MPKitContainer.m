@@ -2084,6 +2084,22 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                     if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
                         [kitInstance setConfiguration:configuration];
                     }
+
+                    // If the kit has not been started yet, set the launch options and start it
+                    // This is the same logic which exists in the else block below.         
+                    if (![kitInstance started]) {
+                        if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
+                            [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
+                        }
+                        if ([kitInstance respondsToSelector:@selector(start)]) {
+                            @try {
+                                [kitInstance start];
+                            } @catch (NSException *exception) {
+                                MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
+                            }
+                        }
+                    }
+
                 }
                 
             } else {
