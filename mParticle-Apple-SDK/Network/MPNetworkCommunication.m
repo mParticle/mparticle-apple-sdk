@@ -459,6 +459,24 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 }
 
+- (void)throttleWithHTTPResponseForErrors:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
+    MPLog *logger = MParticle.sharedInstance.getLogger;
+    NSDate *now = [NSDate date];
+    NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
+
+    NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
+    if ([minUploadDate compare:now] == NSOrderedAscending) {
+        [MParticle.sharedInstance.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
+        if (uploadType == MPUploadTypeMessage) {
+            NSString *messageThrottleLog = [NSString stringWithFormat:@"Throttling uploads for %.0f seconds", retryAfter];
+            [logger debug:messageThrottleLog];
+        } else if (uploadType == MPUploadTypeAlias) {
+            NSString *aliasThrottleLog = [NSString stringWithFormat:@"Throttling alias requests for %.0f seconds", retryAfter];
+            [logger debug:aliasThrottleLog];
+        }
+    }
+}
+
 - (NSNumber *)maxAgeForCache:(nonnull NSString *)cache {
     NSNumber *maxAge;
     cache = cache.lowercaseString;
@@ -740,6 +758,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
+    if (isSuccessCode) {
+        [MPTransportErrorDetector resetTransportErrorCounter];
+    }
     if (isSuccessCode || isInvalidCode) {
         [persistenceController deleteUpload:upload];
         if (isSuccessCode && uploadString.length) {
@@ -776,7 +797,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!isSuccessCode && !isInvalidCode) {
         if ([self isRetriableTransportError:error]) {
             MPILogWarning(@"Throttling uploads after transport error.");
-            [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeMessage];
+            [self throttleWithHTTPResponseForErrors:httpResponse uploadType:MPUploadTypeMessage];
         }
         return YES;
     }
@@ -818,6 +839,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
+    if (isSuccessCode) {
+        [MPTransportErrorDetector resetTransportErrorCounter];
+    }
     if (isSuccessCode || isInvalidCode) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
@@ -869,7 +893,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!isSuccessCode && !isInvalidCode) {
         if ([self isRetriableTransportError:error]) {
             MPILogWarning(@"Throttling alias requests after transport error.");
-            [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeAlias];
+            [self throttleWithHTTPResponseForErrors:httpResponse uploadType:MPUploadTypeAlias];
         }
         return YES;
     }
