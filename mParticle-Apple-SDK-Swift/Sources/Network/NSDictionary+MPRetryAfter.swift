@@ -6,7 +6,7 @@ import Foundation
             return nil
         }
 
-        return MPDateFormatter.dateFromStringRFC1123(headerValue)
+        return MPDateFormatter.date(fromStringRFC1123: headerValue)
     }
 
     func retrySeconds() -> NSNumber? {
