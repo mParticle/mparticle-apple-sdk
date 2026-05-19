@@ -1,9 +1,9 @@
 import Foundation
 
 @objc public class MPTransportErrorDetector: NSObject {
-    private static let maxRetryAfter: Double = 86400
+    private static let maxRetryAfter: Double = 300
     private static let maxErrorCountBeforeMaxRetry = 5
-    private static let retryAfterSchedule: [Double] = [60, 300, 1800, 21600]
+    private static let retryAfterSchedule: [Double] = [5, 15, 60, 120, 300]
     private static var consecutiveTransportErrorCount = 0
     private static let backoffQueue = DispatchQueue(label: "com.mparticle.transport-error-backoff")
     private static let semaphoreTimeoutErrorDomain = "com.mparticle"

@@ -47,7 +47,7 @@ final class MPTransportErrorDetectorTests: XCTestCase {
     }
 
     func test_calculateRetryTimeForTransportError_usesSmallValueForFirstError() {
-        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 60)
+        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 5)
     }
 
     func test_calculateRetryTimeForTransportError_reachesMaxAtFiveErrors() {
@@ -55,15 +55,15 @@ final class MPTransportErrorDetectorTests: XCTestCase {
             _ = MPTransportErrorDetector.calculateRetryTimeForTransportError()
         }
 
-        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 86400)
+        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 300)
     }
 
     func test_calculateRetryTimeForTransportError_usesExpectedBackoffSchedule() {
+        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 5)
+        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 15)
         XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 60)
+        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 120)
         XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 300)
-        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 1800)
-        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 21600)
-        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 86400)
     }
 
     func test_calculateRetryTimeForTransportError_staysAtMaxAfterThreshold() {
@@ -71,7 +71,7 @@ final class MPTransportErrorDetectorTests: XCTestCase {
             _ = MPTransportErrorDetector.calculateRetryTimeForTransportError()
         }
 
-        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 86400)
+        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 300)
     }
 
     func test_resetTransportErrorCounter_resetsBackoff() {
@@ -79,6 +79,6 @@ final class MPTransportErrorDetectorTests: XCTestCase {
         _ = MPTransportErrorDetector.calculateRetryTimeForTransportError()
         MPTransportErrorDetector.resetTransportErrorCounter()
 
-        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 60)
+        XCTAssertEqual(MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue, 5)
     }
 }
