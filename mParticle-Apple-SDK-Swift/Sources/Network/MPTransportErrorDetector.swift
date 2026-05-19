@@ -6,8 +6,18 @@ import Foundation
     private static let retryAfterSchedule: [Double] = [5, 15, 60, 120, 300]
     private static var consecutiveTransportErrorCount = 0
     private static let backoffQueue = DispatchQueue(label: "com.mparticle.transport-error-backoff")
-    private static let semaphoreTimeoutErrorDomain = "com.mparticle"
-    private static let semaphoreTimeoutErrorCode = 0
+    private static let semaphoreTimeoutErrorDomainValue = "com.mparticle"
+    private static let semaphoreTimeoutErrorCodeValue = 0
+
+    @objc(semaphoreTimeoutErrorDomain)
+    public static func semaphoreTimeoutErrorDomain() -> NSString {
+        semaphoreTimeoutErrorDomainValue as NSString
+    }
+
+    @objc(semaphoreTimeoutErrorCode)
+    public static func semaphoreTimeoutErrorCode() -> NSNumber {
+        NSNumber(value: semaphoreTimeoutErrorCodeValue)
+    }
 
     @objc(isRetriableTransportError:)
     public static func isRetriableTransportError(_ error: NSError?) -> Bool {
@@ -35,8 +45,8 @@ import Foundation
             }
         }
 
-        return error.domain == semaphoreTimeoutErrorDomain
-            && error.code == semaphoreTimeoutErrorCode
+        return error.domain == semaphoreTimeoutErrorDomainValue
+            && error.code == semaphoreTimeoutErrorCodeValue
     }
 
     @objc(calculateRetryTimeForTransportError)

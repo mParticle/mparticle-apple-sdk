@@ -37,7 +37,10 @@ final class MPTransportErrorDetectorTests: XCTestCase {
     }
 
     func test_isRetriableTransportError_returnsTrue_forMParticleTimeoutError() {
-        let error = NSError(domain: "com.mparticle", code: 0)
+        let error = NSError(
+            domain: MPTransportErrorDetector.semaphoreTimeoutErrorDomain() as String,
+            code: MPTransportErrorDetector.semaphoreTimeoutErrorCode().intValue
+        )
         XCTAssertTrue(MPTransportErrorDetector.isRetriableTransportError(error))
     }
 
