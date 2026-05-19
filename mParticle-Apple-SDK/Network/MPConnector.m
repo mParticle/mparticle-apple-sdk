@@ -8,6 +8,8 @@
 #import "MPURL.h"
 
 static NSArray *mpStoredCertificates = nil;
+NSErrorDomain const MPConnectorSemaphoreTimeoutErrorDomain = @"com.mparticle";
+NSInteger const MPConnectorSemaphoreTimeoutErrorCode = 0;
 
 @implementation MPConnectorResponse
 
@@ -273,7 +275,9 @@ static NSArray *mpStoredCertificates = nil;
                           (long)completionHttpResponse.statusCode, (unsigned long)completionData.length);
         } else {
             MPILogError(@"GET request timed out after %ld seconds - host: %@", (long)(NETWORK_REQUEST_MAX_WAIT_SECONDS + 1), url.url.host);
-            response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
+            response.error = [NSError errorWithDomain:MPConnectorSemaphoreTimeoutErrorDomain
+                                                 code:MPConnectorSemaphoreTimeoutErrorCode
+                                             userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
             [_urlSession invalidateAndCancel];
         }
         
@@ -318,7 +322,9 @@ static NSArray *mpStoredCertificates = nil;
                           (long)completionHttpResponse.statusCode, (unsigned long)completionData.length);
         } else {
             MPILogError(@"POST request timed out after %ld seconds - host: %@", (long)(NETWORK_REQUEST_MAX_WAIT_SECONDS + 1), url.url.host);
-            response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
+            response.error = [NSError errorWithDomain:MPConnectorSemaphoreTimeoutErrorDomain
+                                                 code:MPConnectorSemaphoreTimeoutErrorCode
+                                             userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
             [_urlSession invalidateAndCancel];
         }
     } else {

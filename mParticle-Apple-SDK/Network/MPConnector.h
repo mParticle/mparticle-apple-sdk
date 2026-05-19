@@ -4,6 +4,9 @@
 
 @class MPURL;
 
+FOUNDATION_EXPORT NSErrorDomain const MPConnectorSemaphoreTimeoutErrorDomain;
+FOUNDATION_EXPORT NSInteger const MPConnectorSemaphoreTimeoutErrorCode;
+
 typedef NS_ENUM(NSInteger, HTTPStatusCode) {
     HTTPStatusCodeSuccess = 200,
     HTTPStatusCodeCreated = 201,

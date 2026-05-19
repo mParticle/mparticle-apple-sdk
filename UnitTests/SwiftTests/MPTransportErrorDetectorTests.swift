@@ -36,9 +36,9 @@ final class MPTransportErrorDetectorTests: XCTestCase {
         XCTAssertFalse(MPTransportErrorDetector.isRetriableTransportError(error))
     }
 
-    func test_isRetriableTransportError_returnsFalse_forMParticleTimeoutError() {
+    func test_isRetriableTransportError_returnsTrue_forMParticleTimeoutError() {
         let error = NSError(domain: "com.mparticle", code: 0)
-        XCTAssertFalse(MPTransportErrorDetector.isRetriableTransportError(error))
+        XCTAssertTrue(MPTransportErrorDetector.isRetriableTransportError(error))
     }
 
     func test_isRetriableTransportError_returnsFalse_forUnknownError() {
