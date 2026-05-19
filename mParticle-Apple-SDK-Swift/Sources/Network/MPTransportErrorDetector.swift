@@ -37,8 +37,7 @@ import Foundation
                 NSURLErrorSecureConnectionFailed,
                 NSURLErrorInternationalRoamingOff,
                 NSURLErrorDataNotAllowed,
-                NSURLErrorCallIsActive,
-                NSURLErrorAppTransportSecurityRequiresSecureConnection:
+                NSURLErrorCallIsActive:
                 return true
             default:
                 return false

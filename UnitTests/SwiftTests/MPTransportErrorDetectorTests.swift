@@ -36,6 +36,14 @@ final class MPTransportErrorDetectorTests: XCTestCase {
         XCTAssertTrue(MPTransportErrorDetector.isRetriableTransportError(error))
     }
 
+    func test_isRetriableTransportError_returnsFalse_whenNSURLErrorIsAppTransportSecurityRequiresSecureConnection() {
+        let error = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorAppTransportSecurityRequiresSecureConnection
+        )
+        XCTAssertFalse(MPTransportErrorDetector.isRetriableTransportError(error))
+    }
+
     func test_isRetriableTransportError_returnsTrue_forMParticleTimeoutError() {
         let error = NSError(
             domain: MPTransportErrorDetector.semaphoreTimeoutErrorDomain() as String,
