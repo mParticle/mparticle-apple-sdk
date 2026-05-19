@@ -33,13 +33,13 @@ let package = Package(
         // iOS OneTrust
         .package(
             url: "https://github.com/Zentrust/OTPublishersHeadlessSDK",
-            "0.0.0"..<"202503.0.0"
+            "202502.1.0"..<"202503.0.0"
         ),
 
         // tvOS OneTrust
         .package(
             url: "https://github.com/Zentrust/OTPublishersHeadlessSDKtvOS",
-            "0.0.0"..<"202503.0.0"
+            "202502.1.0"..<"202503.0.0"
         )
     ],
     targets: [
