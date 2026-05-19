@@ -196,7 +196,7 @@
                                        :(MPConsentState *)consentState {
     for(NSString *consentKey in [consentMapping allKeys]) {
         // Fetch consent keys from one trust and pre-populate
-        NSNumber *status = [OTPublishersHeadlessSDK.shared getVendorDetailsWithVendorId:consentKey for:mode][@"consent"];
+        NSNumber *status = [OTPublishersHeadlessSDK.shared getVendorDetailsWithVendorID:consentKey for:mode][@"consent"];
         consentState = [self createConsentEvent:consentKey :consentMapping :status :consentState];
     }
     return consentState;
