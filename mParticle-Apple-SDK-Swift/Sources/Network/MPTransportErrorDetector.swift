@@ -48,7 +48,14 @@ import Foundation
                 return NSNumber(value: maxRetryAfter)
             }
 
-            let scheduleIndex = max(0, consecutiveTransportErrorCount - 1)
+            guard !retryAfterSchedule.isEmpty else {
+                return NSNumber(value: maxRetryAfter)
+            }
+
+            let scheduleIndex = min(
+                max(0, consecutiveTransportErrorCount - 1),
+                retryAfterSchedule.count - 1
+            )
             return NSNumber(value: retryAfterSchedule[scheduleIndex])
         }
     }
