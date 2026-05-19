@@ -26,14 +26,14 @@ final class MPTransportErrorDetectorTests: XCTestCase {
         XCTAssertFalse(MPTransportErrorDetector.isRetriableTransportError(error))
     }
 
-    func test_isRetriableTransportError_returnsFalse_whenNSURLErrorIsNotConnectedToInternet() {
+    func test_isRetriableTransportError_returnsTrue_whenNSURLErrorIsNotConnectedToInternet() {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
-        XCTAssertFalse(MPTransportErrorDetector.isRetriableTransportError(error))
+        XCTAssertTrue(MPTransportErrorDetector.isRetriableTransportError(error))
     }
 
-    func test_isRetriableTransportError_returnsFalse_whenNSURLErrorIsTimedOut() {
+    func test_isRetriableTransportError_returnsTrue_whenNSURLErrorIsTimedOut() {
         let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut)
-        XCTAssertFalse(MPTransportErrorDetector.isRetriableTransportError(error))
+        XCTAssertTrue(MPTransportErrorDetector.isRetriableTransportError(error))
     }
 
     func test_isRetriableTransportError_returnsTrue_forMParticleTimeoutError() {

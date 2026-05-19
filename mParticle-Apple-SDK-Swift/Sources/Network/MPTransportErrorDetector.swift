@@ -19,8 +19,10 @@ import Foundation
             switch error.code {
             case NSURLErrorCannotFindHost,
                 NSURLErrorCannotConnectToHost,
+                NSURLErrorNotConnectedToInternet,
                 NSURLErrorNetworkConnectionLost,
                 NSURLErrorDNSLookupFailed,
+                NSURLErrorTimedOut,
                 NSURLErrorCannotLoadFromNetwork,
                 NSURLErrorSecureConnectionFailed,
                 NSURLErrorInternationalRoamingOff,
