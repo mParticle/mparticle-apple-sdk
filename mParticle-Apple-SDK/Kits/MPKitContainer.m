@@ -2072,9 +2072,9 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             
             MPILogDebug(@"configureKits - configuring kit %@ (existing instance: %@)", integrationId, kitInstance ? @"YES" : @"NO");
             
+            BOOL disabled = [self isKitDisabled:kitRegister.code];
+
             if (kitInstance) {
-                
-                BOOL disabled = [self isKitDisabled:kitRegister.code];
                 if (disabled) {
                     kitRegister.wrapperInstance = nil;
                 } else {
@@ -2093,26 +2093,27 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                 
                 if (kitInstance) {
                     [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration integrationId:integrationId];
-                    if (![kitInstance started]) {
-                        if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
-                            [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
-                        }
-                        
-                        if ([kitInstance respondsToSelector:@selector(start)]) {
-                            @try {
-                                [kitInstance start];
-                            }
-                            @catch (NSException *exception) {
-                                MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
-                            }
-                        }
-                    }
                 }
                 
                 [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration integrationId:integrationId];
             }
             
             if (kitInstance) {
+                if (![kitInstance started] && !disabled) {
+                    if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
+                        [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
+                    }
+                    
+                    if ([kitInstance respondsToSelector:@selector(start)]) {
+                        @try {
+                            [kitInstance start];
+                        }
+                        @catch (NSException *exception) {
+                            MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
+                        }
+                    }
+                }
+                
                 NSArray *alreadySynchedUserAttributes = userDefaults[kMPSynchedUserAttributesKey];
                 if (userAttributes && ![alreadySynchedUserAttributes containsObject:integrationId]) {
                     NSMutableArray *synchedUserAttributes = [[NSMutableArray alloc] initWithCapacity:alreadySynchedUserAttributes.count + 1];
