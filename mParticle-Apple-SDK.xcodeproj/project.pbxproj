@@ -25,6 +25,7 @@
 		359BAFFC2E56335300A8A704 /* SettingsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFB2E56335300A8A704 /* SettingsProvider.m */; };
 		359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
 		359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
+		35A1B2C32F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A1B2C22F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift */; };
 		35C3DE702F2919B40077C0FD /* MPCCPAConsent.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C3DE6F2F2919B40077C0FD /* MPCCPAConsent.m */; };
 		35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = 35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		35C3DE732F291DA40077C0FD /* MPGDPRConsent.m in Sources */ = {isa = PBXBuildFile; fileRef = 35C3DE722F291DA40077C0FD /* MPGDPRConsent.m */; };
@@ -346,6 +347,7 @@
 		359BAFFB2E56335300A8A704 /* SettingsProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsProvider.m; sourceTree = "<group>"; };
 		359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderTests.swift; sourceTree = "<group>"; };
 		359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserDefaultsMock.swift; sourceTree = "<group>"; };
+		35A1B2C22F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPTransportErrorDetectorTests.swift; sourceTree = "<group>"; };
 		35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPCCPAConsent.h; sourceTree = "<group>"; };
 		35C3DE6F2F2919B40077C0FD /* MPCCPAConsent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPCCPAConsent.m; sourceTree = "<group>"; };
 		35C3DE722F291DA40077C0FD /* MPGDPRConsent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPGDPRConsent.m; sourceTree = "<group>"; };
@@ -630,11 +632,13 @@
 				Test/Utils/MPDateFormatterTests.swift,
 				Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
+				Test/Utils/MPNetworkCommunicationHelperTests.swift,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPUserAttributeChangeTests.m,
 				Test/Utils/MPUserDefaultsTests.swift,
 				Test/Utils/MPZipTests.m,
 				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
+				"Test/Utils/NSDictionary+MPRetryAfterTests.swift",
 				"Test/Utils/NSNumber+MPFormatterTests.m",
 				"Test/Utils/NSString+MPPercentEscapeTests.swift",
 			);
@@ -649,11 +653,13 @@
 				Test/Utils/MPDateFormatterTests.swift,
 				Test/Utils/MPDeviceTests.swift,
 				Test/Utils/MPLaunchInfoTests.m,
+				Test/Utils/MPNetworkCommunicationHelperTests.swift,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPUserAttributeChangeTests.m,
 				Test/Utils/MPUserDefaultsTests.swift,
 				Test/Utils/MPZipTests.m,
 				"Test/Utils/NSArray+MPCaseInsensitiveTests.swift",
+				"Test/Utils/NSDictionary+MPRetryAfterTests.swift",
 				"Test/Utils/NSNumber+MPFormatterTests.m",
 				"Test/Utils/NSString+MPPercentEscapeTests.swift",
 			);
@@ -1178,6 +1184,7 @@
 				35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */,
 				72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */,
 				72D356522E8460020012A0C2 /* MPEventTests.swift */,
+				35A1B2C22F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift */,
 			);
 			path = SwiftTests;
 			sourceTree = "<group>";
@@ -1562,6 +1569,7 @@
 				534CD28D29CE2CE1008452B3 /* MPUploadBuilderTests.m in Sources */,
 				534CD28E29CE2CE1008452B3 /* MPBaseTestCase.m in Sources */,
 				35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */,
+				35A1B2C32F50011100A1B2C3 /* MPTransportErrorDetectorTests.swift in Sources */,
 				7231B8352EB95F9F001565E5 /* MParticleBreadcrumbTests.swift in Sources */,
 				534CD28F29CE2CE1008452B3 /* MPIdentityApiRequestTests.m in Sources */,
 				534CD29029CE2CE1008452B3 /* MPKitAppsFlyerTest.m in Sources */,

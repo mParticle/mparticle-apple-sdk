@@ -67,6 +67,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 
+- (MPLog *)getLogger;
 - (void)logKitBatch:(NSString *)batch;
 + (void)executeOnMain:(void(^)(void))block;
 + (void)executeOnMainSync:(void(^)(void))block;
@@ -435,43 +436,24 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 #pragma mark Private methods
-- (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
-    NSDate *now = [NSDate date];
-    NSDictionary *httpHeaders = [httpResponse allHeaderFields];
-    NSTimeInterval retryAfter = 7200; // Default of 2 hours
-    NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
-    id suggestedRetryAfter = httpHeaders[@"Retry-After"];
+- (BOOL)isRetriableTransportError:(NSError *)error {
+    return [MPTransportErrorDetector isRetriableTransportError:error];
+}
 
-    if (!MPIsNull(suggestedRetryAfter)) {
-        if ([suggestedRetryAfter isKindOfClass:[NSString class]]) {
-            if ([suggestedRetryAfter containsString:@":"]) { // Date
-                NSDate *retryAfterDate = [MPDateFormatter dateFromStringRFC1123:(NSString *)suggestedRetryAfter];
-                if (retryAfterDate) {
-                    retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
-                    retryAfter = retryAfter > 0 ? retryAfter : 7200;
-                } else {
-                    MPILogError(@"Invalid 'Retry-After' date: %@ - using default retry interval", suggestedRetryAfter);
-                }
-            } else { // Number of seconds
-                @try {
-                    retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
-                } @catch (NSException *exception) {
-                    retryAfter = 7200;
-                    MPILogError(@"Invalid 'Retry-After' value: %@ - using default retry interval", suggestedRetryAfter);
-                }
-            }
-        } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
-            retryAfter = MIN([(NSNumber *)suggestedRetryAfter doubleValue], maxRetryAfter);
-        }
-    }
+- (void)throttleWithRetryAfter:(NSTimeInterval)retryAfter uploadType:(MPUploadType)uploadType {
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog *logger = mparticle.getLogger;
+    NSDate *now = [NSDate date];
 
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
     if ([minUploadDate compare:now] == NSOrderedAscending) {
-        [MParticle.sharedInstance.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
+        [mparticle.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
         if (uploadType == MPUploadTypeMessage) {
-            MPILogDebug(@"Throttling uploads for %.0f seconds", retryAfter);
+            NSString *messageThrottleLog = [NSString stringWithFormat:@"Throttling uploads for %.0f seconds", retryAfter];
+            [logger debug:messageThrottleLog];
         } else if (uploadType == MPUploadTypeAlias) {
-            MPILogDebug(@"Throttling alias requests for %.0f seconds", retryAfter);
+            NSString *aliasThrottleLog = [NSString stringWithFormat:@"Throttling alias requests for %.0f seconds", retryAfter];
+            [logger debug:aliasThrottleLog];
         }
     }
 }
@@ -681,7 +663,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (BOOL)performMessageUpload:(MPUpload *)upload {
-    NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
+    MParticle *mParticle = MParticle.sharedInstance;
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPPersistenceController_PRIVATE *persistenceController = mParticle.persistenceController;
+
+    NSDate *minUploadDate = [stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return YES;  //stop upload loop
     }
@@ -694,8 +680,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
 
     NSData *zipUploadData;
-    NSNumber *authTimestamp = [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp;
-    NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    NSNumber *authTimestamp = stateMachine.attAuthorizationTimestamp;
+    NSNumber *authStatus = stateMachine.attAuthorizationStatus;
 
     if (authStatus != nil && authTimestamp != nil) {
         NSDictionary *uploadDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
@@ -736,7 +722,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 
     if (zipUploadData == nil || zipUploadData.length <= 0) {
-        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        [persistenceController deleteUpload:upload];
         return NO;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
@@ -746,16 +732,20 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                                                              serializedParams:zipUploadData
                                                                                        secret:upload.uploadSettings.secret];
     NSData *data = response.data;
+    NSError *error = response.error;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
 
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
+    if (isSuccessCode) {
+        [MPTransportErrorDetector resetTransportErrorCounter];
+    }
     if (isSuccessCode || isInvalidCode) {
-        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        [persistenceController deleteUpload:upload];
         if (isSuccessCode && uploadString.length) {
-            [[MParticle sharedInstance] logKitBatch:uploadString];
+            [mParticle logKitBatch:uploadString];
         }
     }
 
@@ -780,12 +770,19 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-        [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeMessage];
+        NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+        NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
+        [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeMessage];
         return YES;
     }
 
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
+        if ([self isRetriableTransportError:error]) {
+            MPILogWarning(@"Throttling uploads after transport error.");
+            NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
+            [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeMessage];
+        }
         return YES;
     }
 
@@ -818,6 +815,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                                                              serializedParams:upload.uploadData
                                                                                        secret:upload.uploadSettings.secret];
     NSData *data = response.data;
+    NSError *error = response.error;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
 
     NSInteger responseCode = [httpResponse statusCode];
@@ -825,6 +823,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
+    if (isSuccessCode) {
+        [MPTransportErrorDetector resetTransportErrorCounter];
+    }
     if (isSuccessCode || isInvalidCode) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
@@ -868,12 +869,19 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
         aliasResponse.willRetry = YES;
-        [self throttleWithHTTPResponse:httpResponse uploadType:upload.uploadType];
+        NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+        NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
+        [self throttleWithRetryAfter:retryAfter uploadType:upload.uploadType];
         return YES;
     }
 
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
+        if ([self isRetriableTransportError:error]) {
+            MPILogWarning(@"Throttling alias requests after transport error.");
+            NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
+            [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeAlias];
+        }
         return YES;
     }
 

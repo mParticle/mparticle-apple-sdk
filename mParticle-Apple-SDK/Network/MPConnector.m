@@ -6,6 +6,12 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPURL.h"
+@import mParticle_Apple_SDK_Swift;
+
+@interface MPTransportErrorDetector (MPConnectorTimeout)
++ (NSString *)semaphoreTimeoutErrorDomain;
++ (NSNumber *)semaphoreTimeoutErrorCode;
+@end
 
 static NSArray *mpStoredCertificates = nil;
 
@@ -273,7 +279,9 @@ static NSArray *mpStoredCertificates = nil;
                           (long)completionHttpResponse.statusCode, (unsigned long)completionData.length);
         } else {
             MPILogError(@"GET request timed out after %ld seconds - host: %@", (long)(NETWORK_REQUEST_MAX_WAIT_SECONDS + 1), url.url.host);
-            response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
+            response.error = [NSError errorWithDomain:[MPTransportErrorDetector semaphoreTimeoutErrorDomain]
+                                                 code:[MPTransportErrorDetector semaphoreTimeoutErrorCode].integerValue
+                                             userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
             [_urlSession invalidateAndCancel];
         }
         
@@ -318,7 +326,9 @@ static NSArray *mpStoredCertificates = nil;
                           (long)completionHttpResponse.statusCode, (unsigned long)completionData.length);
         } else {
             MPILogError(@"POST request timed out after %ld seconds - host: %@", (long)(NETWORK_REQUEST_MAX_WAIT_SECONDS + 1), url.url.host);
-            response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
+            response.error = [NSError errorWithDomain:[MPTransportErrorDetector semaphoreTimeoutErrorDomain]
+                                                 code:[MPTransportErrorDetector semaphoreTimeoutErrorCode].integerValue
+                                             userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
             [_urlSession invalidateAndCancel];
         }
     } else {
