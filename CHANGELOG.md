@@ -29,6 +29,7 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 #### Fixed
 
 - **Rokt SDK+** — Release **Build rokt-sdk-plus-ios** no longer runs `xcodebuild -create-xcframework` for this Swift-package-only target (archives do not produce `*.framework` under `Products/Library/Frameworks/`). CI uploads a small placeholder zip so mirror artifact steps still succeed; integrate via SwiftPM or CocoaPods from the tag.
+- **Rokt SDK+** — Align `RoktSDKPlus.podspec` with the ecosystem version (double-quoted `s.version`, same as other kits). Release – Draft now bumps single-quoted `s.version = '…'` podspec lines so `mParticle-Rokt` and `RoktSDKPlus` stay in sync for `pod lib lint`.
 
 #### Rokt
 
