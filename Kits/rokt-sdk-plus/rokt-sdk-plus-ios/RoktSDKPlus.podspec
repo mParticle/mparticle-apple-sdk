@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'RoktSDKPlus'
-  s.version = '9.2.0'
+  s.version = "9.2.1"
   s.summary = 'Rokt SDK+ umbrella: mParticle Apple SDK, mParticle–Rokt kit, and Rokt Payment Extension.'
   s.description = <<-DESC
     Single CocoaPods entry point for the mParticle Apple SDK, the mParticle Rokt integration kit

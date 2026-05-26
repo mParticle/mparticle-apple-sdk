@@ -79,6 +79,8 @@ jobs:
           done < <(jq -r '.[] | select(.podspec) | .podspec' Kits/matrix.json)
           for podspec in "${PODSPECS[@]}"; do
             sed -i '' 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"${VERSION}"'"/' "$podspec"
+            # CocoaPods allows s.version = 'x.y.z'; the double-quote sed above skips those files.
+            sed -i '' "s/\(s\.version[^=]*=[[:space:]]*\)'[^']*'/\1\"${VERSION}\"/" "$podspec"
           done
 
       - name: Update version in MPIConstants.m
