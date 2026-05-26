@@ -41,6 +41,23 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
 
+## [9.2.1] - 2026-05-26
+
+### Core
+
+#### Fixed
+
+- Call start on kits configured from cache ([#774](https://github.com/mParticle/mparticle-apple-sdk/pull/774))
+- Throttle retriable transport upload failures ([#770](https://github.com/mParticle/mparticle-apple-sdk/pull/770))
+
+### Kits
+
+#### Onetrust
+
+##### Fixed
+
+- Cap OneTrust SDK versions to avoid ObjC selector mismatch ([#773](https://github.com/mParticle/mparticle-apple-sdk/pull/773))
+
 ## [9.2.0] - 2026-05-13
 
 ### Kits
@@ -2350,7 +2367,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.0...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.1...HEAD
+[9.2.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.0...v9.2.1
 [9.2.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.1...v9.1.0
 [9.0.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.0...v9.0.1
