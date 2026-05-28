@@ -21,7 +21,7 @@ let mParticleAppleSDK: Package.Dependency = {
 
 let package = Package(
     name: "mParticle-Radar",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS("15.6")],
     products: [
         .library(name: "mParticle-Radar", targets: ["mParticle-Radar"])
     ],

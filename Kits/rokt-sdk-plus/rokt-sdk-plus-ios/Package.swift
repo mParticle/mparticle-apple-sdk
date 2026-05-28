@@ -25,7 +25,7 @@ let mParticleRoktProduct: Target.Dependency = useLocalVersion
 
 let package = Package(
     name: "RoktSDKPlus",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS("15.6")],
     products: [
         .library(
             name: "RoktSDKPlus",
