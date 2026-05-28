@@ -394,16 +394,36 @@
     ]
   },
   {
+    "name": "rokt-payment-extension-ios",
+    "local_path": "Kits/rokt-payment-extension/rokt-payment-extension-ios",
+    "podspec": "Kits/rokt-payment-extension/rokt-payment-extension-ios/RoktPaymentExtension.podspec",
+    "dest_repo": "rokt-payment-extension-ios",
+    "dest_org": "ROKT",
+    "mirror_force_push_main": true,
+    "pod_lint_standalone": true,
+    "spm_package_only": true,
+    "skip_xcframework": true,
+    "skip_example_builds": true,
+    "schemes": [
+      {
+        "scheme": "RoktPaymentExtension",
+        "module": "RoktPaymentExtension",
+        "destination": "iOS"
+      }
+    ]
+  },
+  {
     "name": "rokt-sdk-plus-ios",
     "local_path": "Kits/rokt-sdk-plus/rokt-sdk-plus-ios",
     "podspec": "Kits/rokt-sdk-plus/rokt-sdk-plus-ios/RoktSDKPlus.podspec",
     "dest_repo": "rokt-sdk-plus-ios",
     "dest_org": "ROKT",
+    "mirror_force_push_main": true,
     "spm_package_only": true,
     "skip_xcframework": true,
     "skip_example_builds": true,
     "skip_spm_tests": true,
-    "pod_lint_include_podspecs": "Kits/rokt/rokt/mParticle-Rokt.podspec",
+    "pod_lint_include_podspecs": "Kits/rokt/rokt/mParticle-Rokt.podspec,Kits/rokt-payment-extension/rokt-payment-extension-ios/RoktPaymentExtension.podspec",
     "schemes": [
       {
         "scheme": "RoktSDKPlus",

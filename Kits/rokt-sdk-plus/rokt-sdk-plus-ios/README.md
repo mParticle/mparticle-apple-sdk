@@ -17,7 +17,7 @@ Official documentation: [mParticle iOS SDK](https://docs.mparticle.com/developer
 
 ## Versioning
 
-**RoktSDKPlus**, **mParticle-Rokt**, and **mParticle-Apple-SDK** share the same semver for each monorepo release. **RoktPaymentExtension** remains on its own 2.x line.
+**RoktSDKPlus**, **mParticle-Rokt**, **mParticle-Apple-SDK**, and **RoktPaymentExtension** share the same semver for each monorepo release (see `Kits/rokt-payment-extension/rokt-payment-extension-ios` on the mirror).
 
 ## Swift Package Manager
 
@@ -26,7 +26,7 @@ In `Package.swift` or Xcode → _Package Dependencies_:
 ```swift
 .package(
     url: "https://github.com/ROKT/rokt-sdk-plus-ios.git",
-    .upToNextMajor(from: "9.2.0")
+    .upToNextMajor(from: "9.2.1")
 )
 ```
 

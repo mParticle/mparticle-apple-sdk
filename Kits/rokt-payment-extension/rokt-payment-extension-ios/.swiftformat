@@ -1,0 +1,117 @@
+--swiftversion 5.9
+--acronyms ID,URL,UUID
+--allman false
+--anonymousforeach convert
+--assetliterals visual-width
+--asynccapturing
+--beforemarks
+--binarygrouping none
+--callsiteparen default
+--categorymark "MARK: %c"
+--classthreshold 0
+--closingparen balanced
+--closurevoid remove
+--commas inline
+--complexattrs preserve
+--computedvarattrs preserve
+--condassignment after-property
+--conflictmarkers reject
+--dateformat system
+--decimalgrouping none
+--doccomments before-declarations
+--elseposition same-line
+--emptybraces no-space
+--enumnamespaces always
+--enumthreshold 0
+--exponentcase lowercase
+--exponentgrouping disabled
+--extensionacl on-extension
+--extensionlength 0
+--extensionmark "MARK: - %t + %c"
+--fractiongrouping disabled
+--fragment false
+--funcattributes preserve
+--generictypes
+--groupedextension "MARK: %c"
+--guardelse auto
+--header ignore
+--hexgrouping none
+--hexliteralcase uppercase
+--ifdef no-indent
+--importgrouping alpha
+--indent 4
+--indentcase false
+--indentstrings false
+--initcodernil false
+--lifecycle
+--lineaftermarks true
+--linebreaks lf
+--markcategories true
+--markextensions always
+--marktypes always
+
+# Wrap lines that exceed the specified maximum width.
+--rules wrap
+--maxwidth 130
+
+--modifierorder
+--nevertrailing
+--nilinit remove
+--noncomplexattrs
+--nospaceoperators ...,..<,/
+--nowrapoperators
+--octalgrouping none
+--onelineforeach ignore
+--operatorfunc spaced
+--organizationmode visibility
+--organizetypes actor,class,enum,struct
+--patternlet inline
+--ranges spaced
+--redundanttype infer-locals-only
+--self remove
+--selfrequired
+--semicolons never
+--shortoptionals except-properties
+--smarttabs enabled
+--someany true
+--storedvarattrs preserve
+--stripunusedargs closure-only
+--structthreshold 0
+--tabwidth unspecified
+--throwcapturing
+--timezone system
+--trailingclosures
+--trimwhitespace always
+--typeattributes preserve
+--typeblanklines remove
+--typedelimiter space-after
+--typemark "MARK: - %t"
+--voidtype void
+--wraparguments preserve
+--wrapcollections preserve
+--wrapconditions preserve
+--wrapeffects preserve
+--wrapenumcases always
+--wrapparameters default
+--wrapreturntype preserve
+--wrapternary default
+--wraptypealiases preserve
+--xcodeindentation disabled
+--yodaswap always
+--rules blankLinesAroundMark
+--rules isEmpty
+# Replace consecutive blank lines with a single blank line.
+--rules consecutiveBlankLines
+
+# Replace consecutive spaces with a single space.
+--rules consecutiveSpaces
+--rules spaceAroundOperators
+--operatorfunc spaced
+
+# Add or remove space around parentheses.
+--rules spaceAroundParens
+--rules spaceInsideParens
+
+# Mark unused function arguments with _.
+--rules unusedArguments
+--stripunusedargs closure-only
