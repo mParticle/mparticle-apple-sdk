@@ -20,7 +20,7 @@ let mParticleAppleSDK: Package.Dependency = {
 
 let package = Package(
     name: "mParticle-Localytics",
-    platforms: [ .iOS(.v15) ],
+    platforms: [ .iOS("15.6") ],
     products: [
         .library(
             name: "mParticle-Localytics",

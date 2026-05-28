@@ -12,7 +12,7 @@ import PackageDescription
 
 let package = Package(
     name: "LocalSDK",
-    platforms: [.iOS(.v15), .tvOS(.v15)],
+    platforms: [.iOS("15.6"), .tvOS("15.6")],
     products: [
         .library(
             name: "mParticle-Apple-SDK",
