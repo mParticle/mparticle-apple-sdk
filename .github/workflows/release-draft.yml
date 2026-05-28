@@ -94,8 +94,6 @@ jobs:
             Kits/rokt-sdk-plus/rokt-sdk-plus-ios/Sources/RoktSDKPlus/RoktSDKPlus.swift
           sed -i '' 's/^let version = "[^"]*"/let version = "'"${VERSION}"'"/' \
             Kits/rokt-sdk-plus/rokt-sdk-plus-ios/Package.swift
-          sed -i '' 's/^let version = "[^"]*"/let version = "'"${VERSION}"'"/' \
-            Kits/rokt-payment-extension/rokt-payment-extension-ios/Package.swift
           sed -i '' "s/kLibVersion = @\"[^\"]*\"/kLibVersion = @\"${VERSION}\"/" \
             Kits/clevertap/clevertap-7/Sources/mParticle-CleverTap/MPKitCleverTap.m
           sed -i '' "s/registerPluginName:@\"mParticleKit\" version:@\"[^\"]*\"/registerPluginName:@\"mParticleKit\" version:@\"${VERSION}\"/" \
@@ -168,7 +166,7 @@ jobs:
           - Kit source version strings (Rokt \`kMPRoktKitVersion\`, RoktSDKPlus \`RoktSDKPlus.version\`, CleverTap \`kLibVersion\`, Branch \`registerPluginName\`)
           - \`Framework/Info.plist\`
           - Integration test mappings
-          - Kit \`Package.swift\`: \`let version\` for \`Kits/rokt-sdk-plus/rokt-sdk-plus-ios\` and \`Kits/rokt-payment-extension/rokt-payment-extension-ios\` on every release; other kits’ \`let version\` only on **major** bumps (core SDK SPM pin)
+          - Kit \`Package.swift\`: \`let version\` for \`Kits/rokt-sdk-plus/rokt-sdk-plus-ios\` on every release; other kits’ \`let version\` only on **major** bumps (core SDK SPM pin)
 
           ---
 

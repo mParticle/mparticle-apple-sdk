@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.source_files = 'Sources/RoktSDKPlus/**/*.swift'
   s.dependency 'mParticle-Rokt', s.version.to_s
-  s.dependency 'RoktPaymentExtension', s.version.to_s
+  s.dependency 'RoktPaymentExtension', '~> 2.0'
 end
