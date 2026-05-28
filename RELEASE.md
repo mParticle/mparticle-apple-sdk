@@ -27,12 +27,12 @@ This bumps versions across podspecs, `Package.swift`, constants files, and `CHAN
 Review and merge the PR. On merge, the **Release – Publish** workflow runs automatically:
 
 - Builds xcframeworks for every kit
-- Mirrors each kit subtree to its own repo under `mparticle-integrations/` (and **RoktSDKPlus** to `ROKT/rokt-sdk-plus-ios`)
+- Mirrors each kit subtree to its own repo under `mparticle-integrations/` (and **Rokt** packages to **ROKT**: `rokt-payment-extension-ios`, `rokt-sdk-plus-ios`)
 - Creates GitHub releases and tags (used by SPM consumers)
 - Publishes the core SDK and all kit podspecs to CocoaPods trunk
 
 > [!NOTE]
-> The release GitHub App must be installed on **ROKT** with access to `rokt-sdk-plus-ios` for that mirror push to succeed (same app credentials as `mparticle-integrations` mirrors).
+> **ROKT mirrors:** The release GitHub App must be installed on **ROKT** with access to `rokt-payment-extension-ios` and `rokt-sdk-plus-ios`. Rows with **`mirror_force_push_main`** use `git push --force` when the mirror `main` is not subtree-only (e.g. initial README commit). Prefer an empty mirror repo for first publish, or force-push once.
 
 > [!NOTE]
 > The Swift SDK podspec (`mParticle-Apple-SDK-Swift`) is not yet published automatically — push it manually before the core SDK if required:

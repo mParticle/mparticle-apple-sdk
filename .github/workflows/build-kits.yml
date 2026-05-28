@@ -37,15 +37,25 @@ jobs:
       - name: Pod Lib Lint
         run: |
           echo "Linting: ${{ matrix.kit.podspec }}"
-          INCLUDES="mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec"
-          if [ -n "${{ matrix.kit.pod_lint_include_podspecs }}" ]; then
-            INCLUDES="${INCLUDES},${{ matrix.kit.pod_lint_include_podspecs }}"
+          INCLUDES=""
+          if [ "${{ matrix.kit.pod_lint_standalone }}" != "true" ]; then
+            INCLUDES="mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec"
           fi
-          INCLUDES="{${INCLUDES}}"
+          if [ -n "${{ matrix.kit.pod_lint_include_podspecs }}" ]; then
+            if [ -n "$INCLUDES" ]; then
+              INCLUDES="${INCLUDES},${{ matrix.kit.pod_lint_include_podspecs }}"
+            else
+              INCLUDES="${{ matrix.kit.pod_lint_include_podspecs }}"
+            fi
+          fi
+          INCLUDE_ARGS=()
+          if [ -n "$INCLUDES" ]; then
+            INCLUDE_ARGS=(--include-podspecs="{${INCLUDES}}")
+          fi
           for attempt in 1 2 3; do
             pod lib lint "${{ matrix.kit.podspec }}" \
               --allow-warnings \
-              --include-podspecs="$INCLUDES" \
+              "${INCLUDE_ARGS[@]}" \
               && break
             [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 60s..." && sleep 60 || exit 1
           done

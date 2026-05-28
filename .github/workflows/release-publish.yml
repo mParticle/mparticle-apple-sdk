@@ -284,7 +284,11 @@ jobs:
         id: push
         run: |
           DEST_URL="https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
-          git push "$DEST_URL" "split/${{ matrix.kit.name }}:main"
+          if [ "${{ matrix.kit.mirror_force_push_main }}" = "true" ]; then
+            git push --force "$DEST_URL" "split/${{ matrix.kit.name }}:main"
+          else
+            git push "$DEST_URL" "split/${{ matrix.kit.name }}:main"
+          fi
           echo "sha=$(git rev-parse split/${{ matrix.kit.name }})" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release on mirror
@@ -388,6 +392,13 @@ jobs:
           VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
           . Scripts/pod_push.sh
           wait_for_pod_version_on_trunk mParticle-Rokt "$VERSION"
+
+      - name: Wait for RoktPaymentExtension on CocoaPods CDN (RoktSDKPlus)
+        if: matrix.kit.name == 'rokt-sdk-plus-ios'
+        run: |
+          VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
+          . Scripts/pod_push.sh
+          wait_for_pod_version_on_trunk RoktPaymentExtension "$VERSION"
 
       - name: Publish to CocoaPods
         if: matrix.kit.podspec != ''
