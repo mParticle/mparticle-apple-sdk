@@ -31,8 +31,14 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
+      - name: Cache Ruby gems
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.gem
+          key: gems-xcodeproj-${{ runner.os }}
+
       - name: Update xcodeproj gem
-        run: sudo gem install xcodeproj
+        run: gem install xcodeproj --user-install
 
       - name: Prevent social URL warnings if twitter is unreachable
         run: find . -path '*.podspec' -exec perl -pi -e 's/.+\.social_media_url.+//' {} \;
