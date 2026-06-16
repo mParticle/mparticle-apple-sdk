@@ -10,6 +10,7 @@
 #import "MPBaseTestCase.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
+#import "MPConsumerInfo.h"
 #import "MPKitContainer.h"
 #import "MPPersistenceController.h"
 #import "MPStateMachine.h"
@@ -59,6 +60,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
@@ -1095,6 +1097,14 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     XCTAssertEqualObjects(dictionary[@"data"][@"start_unixtime_ms"], @100000);
     XCTAssertEqualObjects(dictionary[@"data"][@"end_unixtime_ms"], @200000);
     XCTAssertNotNil(dictionary[@"request_id"]);
+}
+
+- (void)testDeviceApplicationStampMatchesConsumerInfo {
+    MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
+    NSString *expected = consumerInfo.deviceApplicationStamp;
+
+    XCTAssertNotNil(expected);
+    XCTAssertEqualObjects([MParticle sharedInstance].identity.deviceApplicationStamp, expected);
 }
 
 @end

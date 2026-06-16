@@ -20,6 +20,10 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Bump minimum `RoktContracts` to 2.0.0 (adds `PaymentMethodType.paypal` and totals on `PaymentPreparation`).
 
+#### Fixed
+
+- `MParticle.sharedInstance.identity.deviceApplicationStamp` now returns the same value sent on the wire as `device_application_stamp` (`mp_deviceid`). Previously it returned the unrelated `MPDevice.deviceIdentifier` used for ramp bucketing.
+
 ### Kits
 
 #### Added

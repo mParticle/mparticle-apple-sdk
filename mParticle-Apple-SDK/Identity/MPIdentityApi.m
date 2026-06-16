@@ -365,16 +365,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (NSString *)deviceApplicationStamp {
-    MParticle* mparticle = MParticle.sharedInstance;
-    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-    logger.customLogger = mparticle.customLogger;
-    MPUserDefaults* userDefaults = MPUserDefaultsConnector.userDefaults;
-    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
-                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
-                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
-                                                       logger:logger];
-
-    return device.deviceIdentifier;
+    return [MParticle sharedInstance].stateMachine.consumerInfo.deviceApplicationStamp;
 }
 
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
