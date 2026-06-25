@@ -297,6 +297,31 @@ MPLog* logger;
                     }];
 }
 
+- (MPConsentState *)deviceConsentState {
+    return [MPPersistenceController_PRIVATE deviceConsentState];
+}
+
+- (void)setDeviceConsentState:(MPConsentState *)deviceConsentState {
+    [MPPersistenceController_PRIVATE setDeviceConsentState:deviceConsentState];
+
+    NSArray<NSDictionary *> *kitConfig = [self.kitContainer_PRIVATE.originalConfig copy];
+    if (kitConfig) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.kitContainer_PRIVATE configureKits:kitConfig];
+        });
+    }
+
+    MPConsentState *effectiveConsentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:self.identity.currentUser.userId];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.kitContainer_PRIVATE forwardSDKCall:@selector(setConsentState:) consentState:effectiveConsentState kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
+            MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
+            if (!status.success) {
+                MPILogError(@"Failed to set consent state for kit=%@", status.integrationId);
+            }
+        }];
+    });
+}
+
 - (NSTimeInterval)sessionTimeout {
     return self.backendController.sessionTimeout;
 }
@@ -504,7 +529,13 @@ MPLog* logger;
     self.customLogger = options.customLogger;
     
     MPConsentState *consentState = self.options.consentState;
-    
+
+    // NSNull means the developer never set deviceConsentState; an explicit value (incl. nil) is applied
+    // through the shared setter so it persists device-wide and supersedes user/MPID-level consent.
+    if ((NSNull *)self.options.deviceConsentState != [NSNull null]) {
+        self.deviceConsentState = self.options.deviceConsentState;
+    }
+
     [userDefaults setSharedGroupIdentifier:self.options.sharedGroupID];
 
     if (environment == MPEnvironmentDevelopment) {

@@ -2572,6 +2572,42 @@
     XCTAssertTrue(isDisabled);
 }
 
+- (void)testIsDisabledByConsentKitFilterUsesDeviceConsent {
+    MPConsentKitFilter *filter = [[MPConsentKitFilter alloc] init];
+    filter.shouldIncludeOnMatch = YES;
+
+    MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
+    item.consented = YES;
+    item.javascriptHash = -1729075708;
+    filter.filterItems = @[item];
+
+    // User-level consent does NOT match the filter (not consented) -> kit disabled.
+    MPConsentState *userState = [[MPConsentState alloc] init];
+    MPGDPRConsent *userConsent = [[MPGDPRConsent alloc] init];
+    userConsent.consented = NO;
+    userConsent.document = @"user-document";
+    [userState addGDPRConsentState:userConsent purpose:@"Processing"];
+
+    [MPPersistenceController_PRIVATE setConsentState:userState forMpid:[MPPersistenceController_PRIVATE mpId]];
+    MParticle.sharedInstance.identity.currentUser.consentState = userState;
+
+    XCTAssertTrue([[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter]);
+
+    // Device-level consent matches the filter (consented) -> supersedes user, kit enabled.
+    MPConsentState *deviceState = [[MPConsentState alloc] init];
+    MPGDPRConsent *deviceConsent = [[MPGDPRConsent alloc] init];
+    deviceConsent.consented = YES;
+    deviceConsent.document = @"device-document";
+    [deviceState addGDPRConsentState:deviceConsent purpose:@"Processing"];
+    [MParticle sharedInstance].deviceConsentState = deviceState;
+
+    XCTAssertFalse([[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter]);
+
+    // Clearing device consent reverts to user-level behavior.
+    [MParticle sharedInstance].deviceConsentState = nil;
+    XCTAssertTrue([[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter]);
+}
+
 - (void)testInitializeKitsWhenNilSupportedKits {
     MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
     MPKitContainer_PRIVATE *mockKitContainer = OCMPartialMock(kitContainer);

@@ -19,6 +19,8 @@
         _logLevel = MPILogLevelNone;
         _uploadInterval = 0.0;
         _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
+        // Sentinel distinguishes "not provided" (NSNull) from an explicit nil that clears device consent.
+        _deviceConsentState = (MPConsentState *)[NSNull null];
     }
     return self;
 }

@@ -155,6 +155,43 @@ const int MaxBreadcrumbs = 50;
     [userDefaults synchronize];
 }
 
++ (nullable MPConsentState *)deviceConsentState {
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    NSString *string = [userDefaults mpObjectForKey:kMPConsentDeviceStateKey userId:@0];
+    if (!string) {
+        return nil;
+    }
+
+    return [MPConsentSerialization consentStateFromString:string];
+}
+
++ (void)setDeviceConsentState:(nullable MPConsentState *)state {
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    if (!state) {
+        [userDefaults removeMPObjectForKey:kMPConsentDeviceStateKey userId:@0];
+        [userDefaults synchronize];
+        return;
+    }
+
+    NSString *string = [MPConsentSerialization stringFromConsentState:state];
+    if (!string) {
+        return;
+    }
+    [userDefaults setMPObject:string forKey:kMPConsentDeviceStateKey userId:@0];
+    [userDefaults synchronize];
+}
+
++ (nullable MPConsentState *)effectiveConsentStateForMpid:(nullable NSNumber *)mpid {
+    MPConsentState *deviceConsentState = [self deviceConsentState];
+    if (deviceConsentState != nil) {
+        return deviceConsentState;
+    }
+    if (mpid == nil) {
+        return nil;
+    }
+    return [self consentStateForMpid:mpid];
+}
+
 + (NSInteger)maxBytesPerEvent:(NSString *)messageType {
     return [messageType isEqualToString:kMPMessageTypeStringCrashReport] ? MAX_BYTES_PER_EVENT_CRASH : MAX_BYTES_PER_EVENT;
 }

@@ -360,10 +360,20 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 /**
  Consent state.
- 
+
  Allows you to record one or more consent purposes and whether or not the user agreed to each one.
  */
 @property (nonatomic, strong, nullable) MPConsentState *consentState;
+
+/**
+ Device-level consent state.
+
+ When set, this consent state supersedes any user/MPID-level consent everywhere consent is
+ evaluated: kit enablement, consent forwarding to kits, and the consent included in uploads for
+ all MPIDs. It is persisted device-wide (independent of the active user). Set it to `nil` to clear
+ the device-level consent and revert to user/MPID-level consent.
+ */
+@property (nonatomic, strong, nullable) MPConsentState *deviceConsentState;
 
 /**
  Data Plan ID.
@@ -540,6 +550,17 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  The default value is NO (opt-in of event tracking)
  */
 @property (nonatomic, readwrite) BOOL optOut;
+
+/**
+ Gets/Sets the device-level consent state.
+
+ When set, this consent state supersedes any user/MPID-level consent everywhere consent is
+ evaluated: kit enablement, consent forwarding to kits, and the consent included in uploads for
+ all MPIDs. It is persisted device-wide (independent of the active user). Set it to `nil` to clear
+ the device-level consent and revert to user/MPID-level consent.
+ @see MParticleOptions
+ */
+@property (nonatomic, strong, nullable) MPConsentState *deviceConsentState;
 
 /**
  A flag indicating whether the mParticle Apple SDK is using

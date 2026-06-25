@@ -383,6 +383,92 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+- (void)testOptionsDeviceConsentStateApplied {
+    [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+
+    MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+    ccpaConsent.consented = YES;
+    ccpaConsent.document = @"device_ccpa_v1";
+    MPConsentState *deviceConsentState = [[MPConsentState alloc] init];
+    [deviceConsentState setCCPAConsentState:ccpaConsent];
+    options.deviceConsentState = deviceConsentState;
+
+    [instance startWithOptions:options];
+    dispatch_async([MParticle messageQueue], ^{
+        MPConsentState *stored = [MPPersistenceController_PRIVATE deviceConsentState];
+        XCTAssertNotNil(stored);
+        XCTAssertTrue(stored.ccpaConsentState.consented);
+        [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+- (void)testOptionsDeviceConsentStateUntouchedPreservesPersisted {
+    MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+    ccpaConsent.consented = YES;
+    ccpaConsent.document = @"device_ccpa_persisted";
+    MPConsentState *persisted = [[MPConsentState alloc] init];
+    [persisted setCCPAConsentState:ccpaConsent];
+    [MPPersistenceController_PRIVATE setDeviceConsentState:persisted];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    // options.deviceConsentState intentionally left untouched (NSNull sentinel) -> persisted value survives.
+
+    [instance startWithOptions:options];
+    dispatch_async([MParticle messageQueue], ^{
+        MPConsentState *stored = [MPPersistenceController_PRIVATE deviceConsentState];
+        XCTAssertNotNil(stored);
+        XCTAssertTrue(stored.ccpaConsentState.consented);
+        [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+- (void)testOptionsDeviceConsentStateExplicitNilClears {
+    MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+    ccpaConsent.consented = YES;
+    MPConsentState *persisted = [[MPConsentState alloc] init];
+    [persisted setCCPAConsentState:ccpaConsent];
+    [MPPersistenceController_PRIVATE setDeviceConsentState:persisted];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.deviceConsentState = nil; // explicit clear
+
+    [instance startWithOptions:options];
+    dispatch_async([MParticle messageQueue], ^{
+        XCTAssertNil([MPPersistenceController_PRIVATE deviceConsentState]);
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+- (void)testDeviceConsentStateSingletonSetterAndClear {
+    MParticle *instance = [MParticle sharedInstance];
+    [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+
+    MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+    ccpaConsent.consented = YES;
+    MPConsentState *deviceState = [[MPConsentState alloc] init];
+    [deviceState setCCPAConsentState:ccpaConsent];
+
+    instance.deviceConsentState = deviceState;
+    XCTAssertNotNil(instance.deviceConsentState);
+    XCTAssertTrue(instance.deviceConsentState.ccpaConsentState.consented);
+
+    instance.deviceConsentState = nil;
+    XCTAssertNil(instance.deviceConsentState);
+}
+
 - (void)handleTestSessionStart:(NSNotification *)notification {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:mParticleSessionDidBeginNotification object:nil];
     lastNotification = notification;

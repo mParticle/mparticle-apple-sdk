@@ -80,6 +80,7 @@ NSString *const kMPConsentStateHardwareId = @"h";
 
 // Consent serialization
 NSString *const kMPConsentStateKey = @"consent_state";
+NSString *const kMPConsentDeviceStateKey = @"device_consent_state";
 NSString *const kMPConsentStateGDPRKey = @"gdpr";
 NSString *const kMPConsentStateConsentedKey = @"consented";
 NSString *const kMPConsentStateDocumentKey = @"document";
