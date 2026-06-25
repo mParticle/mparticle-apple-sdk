@@ -8,9 +8,10 @@ permissions:
   contents: read
 
 env:
-  XCODE_VERSION: 16.4
+  XCODE_VERSION: "26.2"
   WORKING_DIRECTORY: IntegrationTests
   WIREMOCK_VERSION: 3.9.1
+  TOOLCHAINS: com.apple.dt.toolchain.XcodeDefault
 
 jobs:
   integration-tests:
@@ -23,10 +24,15 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+          echo "DYLD_FALLBACK_LIBRARY_PATH=$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx" >> "$GITHUB_ENV"
 
       - name: Install Tuist
         run: brew install tuist
+
+      - name: Verify Tuist
+        run: tuist version
 
       - name: Setup Java
         uses: actions/setup-java@v5
