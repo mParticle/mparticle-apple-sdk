@@ -47,6 +47,36 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
 
+## [9.2.2] - 2026-06-25
+
+### Core
+
+#### Added
+
+- Device-based consent ([#784](https://github.com/mParticle/mparticle-apple-sdk/pull/784))
+
+#### Fixed
+
+- Align identity.deviceApplicationStamp with wire value (TRIAGE-713) ([#781](https://github.com/mParticle/mparticle-apple-sdk/pull/781))
+
+### Kits
+
+#### Kits
+
+##### Added
+
+- Add PaymentExtension-to-Mono-Repo ([#776](https://github.com/mParticle/mparticle-apple-sdk/pull/776))
+
+##### Changed
+
+- Revert "feat: Add PaymentExtension-to-Mono-Repo" ([#777](https://github.com/mParticle/mparticle-apple-sdk/pull/777))
+
+#### Adjust
+
+##### Fixed
+
+- Align minimum OS deployment target to 15.6 across the monorepo ([#779](https://github.com/mParticle/mparticle-apple-sdk/pull/779))
+
 ## [9.2.1] - 2026-05-26
 
 ### Core
@@ -2373,7 +2403,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.1...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.2...HEAD
+[9.2.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.1...v9.2.2
 [9.2.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.0...v9.2.1
 [9.2.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.1.0...v9.2.0
 [9.1.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.1...v9.1.0
