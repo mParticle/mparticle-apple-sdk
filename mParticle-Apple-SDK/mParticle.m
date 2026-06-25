@@ -530,9 +530,9 @@ MPLog* logger;
     
     MPConsentState *consentState = self.options.consentState;
 
-    // NSNull means the developer never set deviceConsentState; an explicit value (incl. nil) is applied
-    // through the shared setter so it persists device-wide and supersedes user/MPID-level consent.
-    if ((NSNull *)self.options.deviceConsentState != [NSNull null]) {
+    // When deviceConsentState was explicitly set (including nil to clear), apply through the shared setter
+    // so it persists device-wide and supersedes user/MPID-level consent.
+    if (self.options.isDeviceConsentStateSet) {
         self.deviceConsentState = self.options.deviceConsentState;
     }
 

@@ -419,7 +419,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-    // options.deviceConsentState intentionally left untouched (NSNull sentinel) -> persisted value survives.
+    // options.deviceConsentState intentionally left untouched -> persisted value survives.
 
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
