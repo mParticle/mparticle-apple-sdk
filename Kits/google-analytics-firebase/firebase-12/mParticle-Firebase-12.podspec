@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Firebase-12"
     s.module_name      = 'mParticle_Firebase'
-    s.version          = "9.2.1"
+    s.version          = "9.2.2"
     s.summary          = "Firebase Analytics integration for mParticle"
     s.description      = <<-DESC
                        This is the Firebase Analytics integration for mParticle.

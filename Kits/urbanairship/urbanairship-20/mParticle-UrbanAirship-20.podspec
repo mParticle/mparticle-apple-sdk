@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-UrbanAirship-20"
     s.module_name      = 'mParticle_UrbanAirship'
-    s.version          = "9.2.1"
+    s.version          = "9.2.2"
     s.summary          = "Airship integration for mParticle"
     s.description      = <<-DESC
                        This is the Airship (Urban Airship) integration for mParticle.

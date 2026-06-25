@@ -3,7 +3,7 @@
 import Foundation
 import PackageDescription
 
-let version = "9.2.1"
+let version = "9.2.2"
 
 let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] != nil
 
