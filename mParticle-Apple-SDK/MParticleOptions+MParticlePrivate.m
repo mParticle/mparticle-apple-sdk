@@ -65,6 +65,11 @@
     _isSessionTimeoutSet = YES;
 }
 
+- (void)setDeviceConsentState:(MPConsentState *)deviceConsentState {
+    _deviceConsentState = deviceConsentState;
+    _isDeviceConsentStateSet = YES;
+}
+
 - (void)setConfigMaxAgeSeconds:(NSNumber *)configMaxAgeSeconds {
     if (configMaxAgeSeconds != nil && [configMaxAgeSeconds doubleValue] <= 0) {
         MPILogWarning(@"Config Max Age must be a positive number, disregarding value.");

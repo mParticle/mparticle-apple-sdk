@@ -10,6 +10,10 @@
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
+#import "MPConsentState.h"
+#import "MPCCPAConsent.h"
+#import "MPConsentSerialization.h"
+#import "MPUploadSettings.h"
 
 @interface MParticle ()
 
@@ -808,6 +812,34 @@
     [uploadBuilder build:^(MPUpload * _Nullable upload) {
         XCTAssert(NO, @"Builder completion should not have been called since batch was blocked by customer");
     }];
+}
+
+- (void)testUploadUsesDeviceConsent {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload uses device consent"];
+
+    // The current user has no consent of its own; only the device-level consent is set.
+    [MPPersistenceController_PRIVATE setConsentState:nil forMpid:[MPPersistenceController_PRIVATE mpId]];
+
+    MPConsentState *deviceState = [[MPConsentState alloc] init];
+    MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+    ccpaConsent.consented = YES;
+    ccpaConsent.document = @"device-ccpa-document";
+    [deviceState setCCPAConsentState:ccpaConsent];
+    [MPPersistenceController_PRIVATE setDeviceConsentState:deviceState];
+
+    MPUploadBuilder *uploadBuilder = [self createTestUploadBuilder];
+
+    [uploadBuilder build:^(MPUpload * _Nullable upload) {
+        XCTAssertNotNil(upload);
+        NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
+        NSDictionary *expectedConsent = [MPConsentSerialization serverDictionaryFromConsentState:deviceState];
+        XCTAssertNotNil(uploadDictionary[kMPConsentState]);
+        XCTAssertEqualObjects(uploadDictionary[kMPConsentState], expectedConsent);
+        [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 

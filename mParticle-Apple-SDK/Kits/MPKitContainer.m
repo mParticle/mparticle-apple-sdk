@@ -453,7 +453,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             NSString *hashString = @(hash).stringValue;
             BOOL consented = item.consented;
             
-            MPConsentState *state = [MParticle sharedInstance].identity.currentUser.consentState;
+            MPConsentState *state = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:[MParticle sharedInstance].identity.currentUser.userId];
             
             if (state != nil) {
                 NSDictionary<NSString *, MPGDPRConsent *> *gdprConsentState = [state.gdprConsentState copy];

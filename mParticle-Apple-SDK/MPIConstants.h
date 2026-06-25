@@ -147,6 +147,7 @@ extern NSString * _Nonnull const kMPConsentStateHardwareId;
 
 // Consent serialization
 extern NSString * _Nonnull const kMPConsentStateKey;
+extern NSString * _Nonnull const kMPConsentDeviceStateKey;
 extern NSString * _Nonnull const kMPConsentStateGDPRKey;
 extern NSString * _Nonnull const kMPConsentStateConsentedKey;
 extern NSString * _Nonnull const kMPConsentStateDocumentKey;

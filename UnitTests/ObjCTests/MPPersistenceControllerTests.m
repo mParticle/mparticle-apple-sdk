@@ -17,6 +17,8 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitFilter.h"
+#import "MPConsentState.h"
+#import "MPCCPAConsent.h"
 #import "UploadSettingsUtils.h"
 #import "MPUploadSettings.h"
 
@@ -82,6 +84,44 @@
     });
     workBlock();
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+- (void)testDeviceConsentStateRoundTripAndResolver {
+    [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+
+    NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
+
+    // User-level consent for the current mpid.
+    MPConsentState *userState = [[MPConsentState alloc] init];
+    MPCCPAConsent *userConsent = [[MPCCPAConsent alloc] init];
+    userConsent.consented = NO;
+    userConsent.document = @"user-doc";
+    [userState setCCPAConsentState:userConsent];
+    [MPPersistenceController_PRIVATE setConsentState:userState forMpid:mpid];
+
+    // Without device consent, the resolver falls back to the per-mpid user consent.
+    MPConsentState *effective = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:mpid];
+    XCTAssertNotNil(effective);
+    XCTAssertFalse(effective.ccpaConsentState.consented);
+
+    // Device consent round-trips and supersedes the user consent for any mpid.
+    MPConsentState *deviceState = [[MPConsentState alloc] init];
+    MPCCPAConsent *deviceConsent = [[MPCCPAConsent alloc] init];
+    deviceConsent.consented = YES;
+    deviceConsent.document = @"device-doc";
+    [deviceState setCCPAConsentState:deviceConsent];
+    [MPPersistenceController_PRIVATE setDeviceConsentState:deviceState];
+
+    XCTAssertTrue([MPPersistenceController_PRIVATE deviceConsentState].ccpaConsentState.consented);
+    XCTAssertTrue([MPPersistenceController_PRIVATE effectiveConsentStateForMpid:mpid].ccpaConsentState.consented);
+    XCTAssertTrue([MPPersistenceController_PRIVATE effectiveConsentStateForMpid:@123456].ccpaConsentState.consented);
+
+    // Clearing device consent reverts to the per-mpid user consent.
+    [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+    XCTAssertNil([MPPersistenceController_PRIVATE deviceConsentState]);
+    XCTAssertFalse([MPPersistenceController_PRIVATE effectiveConsentStateForMpid:mpid].ccpaConsentState.consented);
+
+    [MPPersistenceController_PRIVATE setConsentState:nil forMpid:mpid];
 }
 
 - (void)testMigrateMessagesWithNullSessions {
