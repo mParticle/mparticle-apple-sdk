@@ -66,6 +66,9 @@ const int MaxBreadcrumbs = 50;
 
 @property (nonatomic, strong) NSString *databasePath;
 
+- (BOOL)insertUpload:(nonnull MPUpload *)upload;
+- (BOOL)deleteMessagesReturningStatus:(nonnull NSArray<MPMessage *> *)messages;
+
 @end
 
 @implementation MPPersistenceController_PRIVATE
@@ -707,26 +710,36 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages {
+    [self deleteMessagesReturningStatus:messages];
+}
+
+- (BOOL)deleteMessagesReturningStatus:(nonnull NSArray<MPMessage *> *)messages {
     if (messages.count == 0) {
-        return;
+        return YES;
     }
-    
+
     NSMutableArray *messageIds = [[NSMutableArray alloc] initWithCapacity:messages.count];
     for (MPMessage *message in messages) {
         [messageIds addObject:@(message.messageId)];
     }
-    
+
     NSString *idsString = [NSString stringWithFormat:@"%@", [messageIds componentsJoinedByString:@","]];
     NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", idsString];
     sqlite3_stmt *preparedStatement;
-    
+    BOOL success = NO;
+
     if (sqlite3_prepare_v2(mParticleDB, [sqlString UTF8String], (int)[sqlString length], &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
+        } else {
+            success = YES;
         }
+    } else {
+        MPILogError(@"Error while preparing to delete messages: %s", sqlite3_errmsg(mParticleDB));
     }
-    
+
     sqlite3_finalize(preparedStatement);
+    return success;
 }
 
 - (void)deleteNetworkPerformanceMessages {
@@ -1681,14 +1694,19 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveUpload:(nonnull MPUpload *)upload {
+    [self insertUpload:upload];
+}
+
+- (BOOL)insertUpload:(nonnull MPUpload *)upload {
     // Save upload
     if ([MParticle sharedInstance].stateMachine.optOut && !upload.containsOptOutMessage) {
-        return;
+        return YES;
     }
-    
+
     sqlite3_stmt *preparedStatement;
+    BOOL success = NO;
     const char *sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    
+
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         const char *uuid = [upload.uuid UTF8String];
         sqlite3_bind_text(preparedStatement, 1, uuid, -1, SQLITE_TRANSIENT);
@@ -1724,26 +1742,58 @@ const int MaxBreadcrumbs = 50;
             MPILogError(@"Error archiving upload settings: %@", error);
             sqlite3_clear_bindings(preparedStatement);
             sqlite3_finalize(preparedStatement);
-            return;
+            return NO;
         }
 
         sqlite3_bind_blob(preparedStatement, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
-        
+
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
             sqlite3_clear_bindings(preparedStatement);
             sqlite3_finalize(preparedStatement);
-            return;
+            return NO;
         }
-        
+
         upload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
+        success = YES;
 
         sqlite3_clear_bindings(preparedStatement);
     } else {
         MPILogError(@"could not prepare statement: %s\n", sqlite3_errmsg(mParticleDB));
     }
-    
+
     sqlite3_finalize(preparedStatement);
+    return success;
+}
+
+- (BOOL)saveUploads:(nonnull NSArray<MPUpload *> *)uploads deleteMessages:(nonnull NSArray<MPMessage *> *)messages {
+    char *errMsg = NULL;
+    if (sqlite3_exec(mParticleDB, "BEGIN TRANSACTION", NULL, NULL, &errMsg) != SQLITE_OK) {
+        MPILogError(@"Problem beginning batch-creation transaction: %s", errMsg ? errMsg : "");
+        sqlite3_free(errMsg);
+        return NO;
+    }
+
+    BOOL success = YES;
+    for (MPUpload *upload in uploads) {
+        if (![self insertUpload:upload]) {
+            success = NO;
+            break;
+        }
+    }
+
+    if (success) {
+        success = [self deleteMessagesReturningStatus:messages];
+    }
+
+    const char *finalizeStatement = success ? "COMMIT" : "ROLLBACK";
+    if (sqlite3_exec(mParticleDB, finalizeStatement, NULL, NULL, &errMsg) != SQLITE_OK) {
+        MPILogError(@"Problem finalizing batch-creation transaction (%s): %s", finalizeStatement, errMsg ? errMsg : "");
+        sqlite3_free(errMsg);
+        return NO;
+    }
+
+    return success;
 }
 
 - (void)updateConsumerInfo:(MPConsumerInfo *)consumerInfo {

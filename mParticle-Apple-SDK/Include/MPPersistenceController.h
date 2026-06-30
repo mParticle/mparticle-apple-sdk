@@ -75,6 +75,7 @@
 - (void)saveMessage:(nonnull MPMessage *)message;
 - (void)saveSession:(nonnull MPSession *)session;
 - (void)saveUpload:(nonnull MPUpload *)upload;
+- (BOOL)saveUploads:(nonnull NSArray<MPUpload *> *)uploads deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)updateSession:(nonnull MPSession *)session;
 - (nonnull NSDictionary<NSString *, NSDictionary *> *)appAndDeviceInfoForSessionId:(nonnull NSNumber *)sessionId;

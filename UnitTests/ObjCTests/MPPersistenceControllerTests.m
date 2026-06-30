@@ -599,6 +599,67 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+- (NSArray<MPMessage *> *)uploadableMessagesForMpid:(NSNumber *)mpid session:(MPSession *)session {
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[mpid];
+    NSMutableDictionary *dataPlanIdDictionary = [sessionsDictionary objectForKey:@(session.sessionId)];
+    NSMutableDictionary *dataPlanVersionDictionary = [dataPlanIdDictionary objectForKey:@"0"];
+    return [dataPlanVersionDictionary objectForKey:@0];
+}
+
+- (void)testSaveUploadsAndDeleteMessagesPersistsBatchAndClearsMessages {
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    [MPPersistenceController_PRIVATE setMpid:@1];
+    NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
+
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:mpid];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    [persistence saveMessage:[messageBuilder build]];
+
+    NSArray<MPMessage *> *messages = [self uploadableMessagesForMpid:mpid session:session];
+    XCTAssertEqual(messages.count, 1);
+
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:@(session.sessionId) messages:messages sessionTimeout:120 uploadInterval:10 dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    __block MPUpload *builtUpload = nil;
+    [uploadBuilder build:^(MPUpload *upload) {
+        builtUpload = upload;
+    }];
+    XCTAssertNotNil(builtUpload);
+
+    BOOL success = [persistence saveUploads:@[builtUpload] deleteMessages:messages];
+    XCTAssertTrue(success);
+
+    XCTAssertTrue(builtUpload.uploadId > 0);
+    NSArray<MPUpload *> *uploads = [persistence fetchUploads];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uploadId == %lld", builtUpload.uploadId];
+    XCTAssertEqual([uploads filteredArrayUsingPredicate:predicate].count, 1);
+
+    XCTAssertEqual([self uploadableMessagesForMpid:mpid session:session].count, 0);
+}
+
+- (void)testSaveUploadsWithNoUploadsStillDeletesMessages {
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    [MPPersistenceController_PRIVATE setMpid:@1];
+    NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
+
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:mpid];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    [persistence saveMessage:[messageBuilder build]];
+
+    NSArray<MPMessage *> *messages = [self uploadableMessagesForMpid:mpid session:session];
+    XCTAssertEqual(messages.count, 1);
+
+    BOOL success = [persistence saveUploads:@[] deleteMessages:messages];
+    XCTAssertTrue(success);
+
+    XCTAssertEqual([self uploadableMessagesForMpid:mpid session:session].count, 0);
+}
+
 - (void)testAudiences {
     MPAudience *audience = [[MPAudience alloc] initWithAudienceId:@2];
     XCTAssertTrue(audience.audienceId.intValue == 2);
