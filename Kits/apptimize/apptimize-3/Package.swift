@@ -20,7 +20,7 @@ let mParticleAppleSDK: Package.Dependency = {
 
 let package = Package(
     name: "mParticle-Apptimize",
-    platforms: [.iOS("15.6")],
+    platforms: [.iOS(.v15)],
     products: [
         .library(
             name: "mParticle-Apptimize",
