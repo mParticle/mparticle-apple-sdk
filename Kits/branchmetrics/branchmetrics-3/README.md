@@ -25,7 +25,7 @@ Then add `mParticle-BranchMetrics` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-BranchMetrics', '~> 9.0'
+pod 'mParticle-BranchMetrics-3', '~> 9.0'
 ```
 
 ## Verifying the Integration

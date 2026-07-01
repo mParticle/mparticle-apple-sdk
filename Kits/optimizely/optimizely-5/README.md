@@ -17,6 +17,14 @@ Add the Optimizely kit package dependency in Xcode or in your `Package.swift`:
 
 Then add `mParticle-Optimizely` as a dependency of your target.
 
+### CocoaPods
+
+Add the kit dependency to your app's Podfile:
+
+```ruby
+pod 'mParticle-Optimizely-5', '~> 9.0'
+```
+
 ## Verifying the Integration
 
 After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:

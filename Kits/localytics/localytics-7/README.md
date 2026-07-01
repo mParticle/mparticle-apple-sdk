@@ -22,7 +22,7 @@ Then add `mParticle-Localytics` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Localytics', '~> 9.0'
+pod 'mParticle-Localytics-7', '~> 9.0'
 ```
 
 ## Verifying the Integration

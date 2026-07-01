@@ -27,6 +27,11 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ### Kits
 
+#### Fixed
+
+- Use dual-path core SDK imports in kit public headers so manual xcframework consumers resolve `mParticle_Apple_SDK` (xcframework/CocoaPods framework) or `mParticle_Apple_SDK_ObjC` (SPM/CocoaPods ObjC). CI smoke-tests kit headers against the core SDK xcframework.
+- Correct kit README CocoaPods pod names and mirror repository URLs to match versioned podspecs and CI mirror destinations.
+
 #### Added
 
 - **Rokt SDK+ (`RoktSDKPlus`)** — Umbrella Swift package and CocoaPods pod at `Kits/rokt-sdk-plus/rokt-sdk-plus-ios`, versioned with the core SDK and mirrored to [ROKT/rokt-sdk-plus-ios](https://github.com/ROKT/rokt-sdk-plus-ios).

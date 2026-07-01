@@ -25,7 +25,7 @@ Then add `mParticle-AppsFlyer` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-AppsFlyer', '~> 9.0'
+pod 'mParticle-AppsFlyer-6', '~> 9.0'
 ```
 
 ## Verifying the Integration

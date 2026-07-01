@@ -9,10 +9,18 @@ This kit integrates [Firebase Analytics (GA4)](https://firebase.google.com/docs/
 Add the `mParticle-FirebaseGA4` product from this package to your Xcode project or `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/mParticle/mparticle-apple-integration-google-analytics-firebase-ga4-12", .upToNextMajor(from: "9.0.0"))
+.package(url: "https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-ga4-12", .upToNextMajor(from: "9.0.0"))
 ```
 
 Then add `mParticle-FirebaseGA4` as a dependency of your target.
+
+### CocoaPods
+
+Add the kit dependency to your app's Podfile:
+
+```ruby
+pod 'mParticle-FirebaseGA4-12', '~> 9.0'
+```
 
 ## Verifying the Integration
 

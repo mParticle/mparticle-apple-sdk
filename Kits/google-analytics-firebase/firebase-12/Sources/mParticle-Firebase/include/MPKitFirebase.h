@@ -1,8 +1,10 @@
 #import <Foundation/Foundation.h>
-#if __has_feature(modules)
+#if defined(__has_include) && __has_include(<mParticle_Apple_SDK/mParticle.h>)
+@import mParticle_Apple_SDK;
+#elif __has_feature(objc_modules)
 @import mParticle_Apple_SDK_ObjC;
 #else
-#import "mParticle.h"
+#import <mParticle_Apple_SDK/mParticle.h>
 #endif
 
 @interface MPKitFirebase : NSObject <MPKitProtocol>

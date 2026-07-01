@@ -22,7 +22,7 @@ Then add `mParticle-Leanplum` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Leanplum', '~> 9.0'
+pod 'mParticle-Leanplum-6', '~> 9.0'
 ```
 
 ## Verifying the Integration

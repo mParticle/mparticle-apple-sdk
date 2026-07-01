@@ -1,5 +1,4 @@
 #import "MPKitComScore.h"
-@import mParticle_Apple_SDK_ObjC;
 #if defined(__has_include) && __has_include(<ComScore/ComScore.h>)
 #import <ComScore/ComScore.h>
 #else
