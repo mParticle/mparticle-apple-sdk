@@ -8,5 +8,5 @@ import Foundation
 /// upstream modules you use alongside `RoktSDKPlus` as needed.
 public enum RoktSDKPlus {
     /// Umbrella package version for **Rokt SDK+** (module `RoktSDKPlus`), aligned with the mParticle Apple SDK ecosystem.
-    public static let version = "9.2.2"
+    public static let version = "9.3.0"
 }
