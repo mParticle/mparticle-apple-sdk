@@ -59,6 +59,8 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 + (void)applyMParticleLogLevel;
 
+- (void)stop;
+
 @end
 
 @interface mParticle_RoktTests : XCTestCase
@@ -108,6 +110,45 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     
     XCTAssertNotNil(status);
     XCTAssertEqual(status.returnCode, MPKitReturnCodeRequirementsNotMet);
+}
+
+- (void)testStopResetsKitState {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMExpect([mockRoktSDK close]);
+
+    [self.kitInstance didFinishLaunchingWithConfiguration:self.configuration];
+    [self.kitInstance start];
+
+    XCTAssertTrue(self.kitInstance.started);
+    XCTAssertNotNil(self.kitInstance.configuration);
+
+    [self.kitInstance stop];
+
+    XCTAssertFalse(self.kitInstance.started);
+    XCTAssertNil(self.kitInstance.configuration);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testStartCanBeCalledAgainAfterStop {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMStub([mockRoktSDK close]);
+
+    [self.kitInstance didFinishLaunchingWithConfiguration:self.configuration];
+    [self.kitInstance start];
+    XCTAssertTrue(self.kitInstance.started);
+
+    [self.kitInstance stop];
+    XCTAssertFalse(self.kitInstance.started);
+
+    [self.kitInstance start];
+    XCTAssertTrue(self.kitInstance.started);
+
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testKitImplementsStopForWorkspaceSwitching {
+    XCTAssertTrue([self.kitInstance respondsToSelector:@selector(stop)]);
 }
 
 - (void)testConfirmEmbeddedViews_ValidEmbeddedViews {

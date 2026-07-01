@@ -76,20 +76,23 @@ static __weak MPKitRokt *roktKit = nil;
     
     [MPKitRokt applyMParticleLogLevel];
     
-    // Subscribe to global events to receive RoktInitComplete
-    [Rokt globalEventsOnEvent:^(RoktEvent * _Nonnull event) {
-        if ([event isKindOfClass:[RoktInitComplete class]]) {
-            RoktInitComplete *initComplete = (RoktInitComplete *)event;
-            if (initComplete.success) {
-                [self start];
-                [MPKitRokt MPLog:@"Rokt Init Complete"];
-                NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"mParticle.Rokt.Initialized"
-                                                                    object:nil
-                                                                  userInfo:userInfo];
+    static dispatch_once_t globalEventsOnceToken;
+    dispatch_once(&globalEventsOnceToken, ^{
+        [Rokt globalEventsOnEvent:^(RoktEvent * _Nonnull event) {
+            if ([event isKindOfClass:[RoktInitComplete class]]) {
+                RoktInitComplete *initComplete = (RoktInitComplete *)event;
+                MPKitRokt *kit = roktKit;
+                if (initComplete.success && kit) {
+                    [kit start];
+                    [MPKitRokt MPLog:@"Rokt Init Complete"];
+                    NSDictionary *userInfo = @{mParticleKitInstanceKey:[[kit class] kitCode]};
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"mParticle.Rokt.Initialized"
+                                                                        object:nil
+                                                                      userInfo:userInfo];
+                }
             }
-        }
-    }];
+        }];
+    });
 
     NSURL *customBaseURL = [MParticle sharedInstance].networkOptions.customBaseURL;
     if (customBaseURL) {
@@ -102,19 +105,29 @@ static __weak MPKitRokt *roktKit = nil;
 }
 
 - (void)start {
-    static dispatch_once_t kitPredicate;
+    if (_started) {
+        return;
+    }
 
-    dispatch_once(&kitPredicate, ^{
-        self->_started = YES;
+    _started = YES;
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
 
-            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
-                                                                object:nil
-                                                              userInfo:userInfo];
-        });
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
+                                                            object:nil
+                                                          userInfo:userInfo];
     });
+}
+
+- (void)stop {
+    [MPKitRokt MPLog:@"Stopping Rokt Kit for workspace switch"];
+    [Rokt close];
+    if (roktKit == self) {
+        roktKit = nil;
+    }
+    _started = NO;
+    _configuration = nil;
 }
 
 /// Displays a Rokt ad placement with full configuration options.

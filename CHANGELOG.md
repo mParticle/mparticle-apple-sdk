@@ -46,6 +46,7 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 ##### Added
 
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
+- Implement `stop` on `MPKitRokt` so the kit remains active across `switchWorkspaceWithOptions:` without requiring an app restart.
 
 ## [9.2.2] - 2026-06-25
 
