@@ -69,7 +69,9 @@ jobs:
           fetch-depth: 0
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Resolve SPM dependencies
         run: |
@@ -154,7 +156,38 @@ jobs:
           fi
           for xc in *.xcodeproj; do [ -d "$xc" ] && mv "$xc" "${xc}.bak"; done
           trap 'for xc in *.xcodeproj.bak; do [ -d "$xc" ] && mv "$xc" "${xc%.bak}"; done' EXIT
-          xcodebuild test -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=iPhone 17" \
-            -derivedDataPath DerivedData-Test \
-            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+          run_spm_tests() {
+            xcodebuild test -scheme "$SCHEME" \
+              -destination "$1" \
+              -derivedDataPath DerivedData-Test \
+              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          }
+
+          DESTINATION="generic/platform=iOS Simulator"
+          set +e
+          run_spm_tests "$DESTINATION"
+          TEST_EXIT=$?
+          set -e
+          if [ "$TEST_EXIT" -eq 0 ]; then
+            exit 0
+          fi
+          if [ "$TEST_EXIT" -ne 70 ]; then
+            echo "::error::SPM tests failed (exit $TEST_EXIT); not retrying with a different simulator"
+            exit "$TEST_EXIT"
+          fi
+
+          echo "generic/platform=iOS Simulator unavailable (exit 70); resolving a concrete iPhone simulator..."
+          AVAILABLE_DEVICES=$(xcrun simctl list devices iPhone available | grep "iPhone" | grep -v "==" || true)
+          DEVICE_NAME=""
+          for device_pattern in "iPhone 17" "iPhone 16" "iPhone 15" "iPhone"; do
+            DEVICE_NAME=$(echo "$AVAILABLE_DEVICES" | grep "$device_pattern" | head -1 | sed 's/^[[:space:]]*//' | sed 's/ (.*//')
+            [ -n "$DEVICE_NAME" ] && break
+          done
+          if [ -z "$DEVICE_NAME" ]; then
+            echo "::error::No suitable iPhone simulator found for SPM tests"
+            exit 1
+          fi
+          echo "Retrying SPM tests on: $DEVICE_NAME"
+          DESTINATION="platform=iOS Simulator,name=${DEVICE_NAME}"
+          run_spm_tests "$DESTINATION"
