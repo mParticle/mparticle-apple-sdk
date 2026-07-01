@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-FirebaseGA4-12"
     s.module_name      = 'mParticle_FirebaseGA4'
-    s.version          = "9.2.2"
+    s.version          = "9.3.0"
     s.summary          = "Firebase Analytics (GA4) integration for mParticle"
     s.description      = <<-DESC
                        This is the Firebase Analytics (GA4) integration for mParticle.

@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-BranchMetrics-3"
     s.module_name      = 'mParticle_BranchMetrics'
-    s.version          = "9.2.2"
+    s.version          = "9.3.0"
     s.summary          = "Branch Metrics integration for mParticle"
     s.description      = <<-DESC
                        This is the Branch Metrics integration for mParticle.
