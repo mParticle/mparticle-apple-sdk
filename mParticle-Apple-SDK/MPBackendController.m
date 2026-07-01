@@ -550,7 +550,8 @@ static BOOL skipNextUpload = NO;
                         
                         //Within a session, within a data plan ID, within a version, we also break up based on limits for messages per batch and (approximately) bytes per batch
                         NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
-                        
+
+                        NSMutableArray<MPUpload *> *uploads = [[NSMutableArray alloc] initWithCapacity:batchMessageArrays.count];
                         for (int i = 0; i < batchMessageArrays.count; i += 1) {
                             NSArray *limitedMessages = batchMessageArrays[i];
                             MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid
@@ -565,15 +566,16 @@ static BOOL skipNextUpload = NO;
                             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
                             [uploadBuilder build:^(MPUpload *upload) {
                                 if (upload) {
-                                    //Save the Upload to the Database (3)
-                                    [persistence saveUpload:upload];
+                                    [uploads addObject:upload];
                                 }
                             }];
                         }
-                        
-                        //Delete all messages associated with the batches (4)
-                        [persistence deleteMessages:messages];
-                        
+
+                        //Atomically persist the batches (3) and delete the messages they were built from (4),
+                        //so messages are only removed once their upload is durably stored. A failure rolls
+                        //both back, leaving the messages to be retried instead of re-batched into a duplicate.
+                        [persistence saveUploads:uploads deleteMessages:messages];
+
                         self.deletedUserAttributes = nil;
                     }];
                 }];
