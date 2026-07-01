@@ -26,7 +26,7 @@ BUILD_SETTINGS=(
 
 framework_search_path() {
 	local xcf="$1"
-	find "${xcf}" -path '*simulator*/*.framework' -type d | head -1 | xargs dirname
+	find "${xcf}" -type d -path '*/ios-*simulator/*.framework' -maxdepth 2 | head -1 | xargs dirname
 }
 
 build_core_xcframework() {
