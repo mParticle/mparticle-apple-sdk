@@ -8,6 +8,7 @@ Kits are versioned by the partner SDK major:
 
 - `braze-13` → Braze Swift SDK 13.x
 - `braze-14` → Braze Swift SDK 14.x
+- `braze-16` → Braze Swift SDK 16.x
 
 Pick the kit that matches the partner SDK major you want in your app.
 
@@ -32,6 +33,7 @@ Each kit has its own README with installation and configuration steps.
 | Braze 12                  | [`mparticle-apple-integration-braze-12`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-12)                                                 | [Braze Swift SDK 12.x](https://github.com/braze-inc/braze-swift-sdk)            |
 | Braze 13                  | [`mparticle-apple-integration-braze-13`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-13)                                                 | [Braze Swift SDK 13.x](https://github.com/braze-inc/braze-swift-sdk)            |
 | Braze 14                  | [`mparticle-apple-integration-braze-14`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-14)                                                 | [Braze Swift SDK 14.x](https://github.com/braze-inc/braze-swift-sdk)            |
+| Braze 16                  | [`mparticle-apple-integration-braze-16`](https://github.com/mparticle-integrations/mparticle-apple-integration-braze-16)                                                 | [Braze Swift SDK 16.x](https://github.com/braze-inc/braze-swift-sdk)            |
 | CleverTap 7               | [`mparticle-apple-integration-clevertap-7`](https://github.com/mparticle-integrations/mparticle-apple-integration-clevertap-7)                                           | [CleverTap SDK 7.x](https://github.com/CleverTap/clevertap-ios-sdk)             |
 | ComScore 6                | [`mparticle-apple-integration-comscore-6`](https://github.com/mparticle-integrations/mparticle-apple-integration-comscore-6)                                             | [ComScore SDK 6.x](https://github.com/comScore/Comscore-Swift-Package-Manager)  |
 | Firebase Analytics 11     | [`mparticle-apple-integration-google-analytics-firebase-11`](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-11)         | [Firebase 11.x](https://github.com/firebase/firebase-ios-sdk)                   |

@@ -34,6 +34,7 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 #### Added
 
+- **Braze 16** — Add `braze-16` kit track for [Braze Swift SDK 16.x](https://github.com/braze-inc/braze-swift-sdk/releases).
 - **Rokt SDK+ (`RoktSDKPlus`)** — Umbrella Swift package and CocoaPods pod at `Kits/rokt-sdk-plus/rokt-sdk-plus-ios`, versioned with the core SDK and mirrored to [ROKT/rokt-sdk-plus-ios](https://github.com/ROKT/rokt-sdk-plus-ios).
 
 #### Fixed
