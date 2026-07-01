@@ -21,7 +21,7 @@ let mParticleAppleSDK: Package.Dependency = {
 
 let package = Package(
     name: "mParticle-Kochava",
-    platforms: [ .iOS("15.6"), .tvOS("15.6") ],
+    platforms: [ .iOS(.v15), .tvOS(.v15) ],
     products: [
         .library(
             name: "mParticle-Kochava",

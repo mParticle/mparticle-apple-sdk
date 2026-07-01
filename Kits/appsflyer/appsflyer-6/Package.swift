@@ -22,7 +22,7 @@ let mParticleAppleSDK: Package.Dependency = {
 
 let package = Package(
     name: "mParticle-AppsFlyer",
-    platforms: [ .iOS("15.6") ],
+    platforms: [ .iOS(.v15) ],
     products: [
         .library(
             name: "mParticle-AppsFlyer",

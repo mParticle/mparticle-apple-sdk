@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.author = { 'ROKT' => 'nativeappsdev@rokt.com' }
   s.source = { :git => 'https://github.com/ROKT/rokt-sdk-plus-ios.git', :tag => 'v' + s.version.to_s }
   s.swift_version = '5.9'
-  s.ios.deployment_target = '15.6'
+  s.ios.deployment_target = '15.0'
   s.requires_arc = true
   s.source_files = 'Sources/RoktSDKPlus/**/*.swift'
   s.dependency 'mParticle-Rokt', s.version.to_s

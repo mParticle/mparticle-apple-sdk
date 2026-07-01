@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
     s.license          = { :type => 'Apache 2.0', :file => 'LICENSE' }
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum-6.git", :tag => "v" + s.version.to_s }
-    s.ios.deployment_target = "15.6"
+    s.ios.deployment_target = "15.0"
     s.ios.source_files      = 'Sources/mParticle-Leanplum/**/*.{h,m}'
     s.ios.resource_bundles  = { 'mParticle-Leanplum-6-Privacy' => ['Sources/mParticle-Leanplum/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'

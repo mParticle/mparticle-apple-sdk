@@ -23,8 +23,8 @@ Pod::Spec.new do |s|
     s.social_media_url  = "https://twitter.com/mparticle"
     s.requires_arc      = true
     s.module_name       = 'mParticle_Apple_SDK_ObjC'
-    s.ios.deployment_target  = "15.6"
-    s.tvos.deployment_target = "15.6"
+    s.ios.deployment_target  = "15.0"
+    s.tvos.deployment_target = "15.0"
     s.swift_versions = ["5.0"]
 
     s.default_subspecs = 'mParticle'
