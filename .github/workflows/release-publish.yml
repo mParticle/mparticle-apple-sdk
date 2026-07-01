@@ -225,10 +225,29 @@ jobs:
           name: xcframework-${{ matrix.kit.name }}
           path: xcframeworks/*.xcframework.zip
 
+  verify-kit-xcframework-import:
+    name: Verify kit xcframework ObjC imports
+    runs-on: macOS-latest
+    timeout-minutes: 45
+    env:
+      XCODE_VERSION: "26.2"
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+
+      - name: Verify kit headers compile against core SDK xcframework
+        run: |
+          chmod +x ./Scripts/verify_kit_xcframework_import.sh
+          ./Scripts/verify_kit_xcframework_import.sh
+
   mirror-and-release-kits:
     name: Mirror & Release ${{ matrix.kit.name }}
     runs-on: macOS-latest
-    needs: [load-matrix, build-kits, release-core-sdk]
+    needs:
+      [load-matrix, build-kits, release-core-sdk, verify-kit-xcframework-import]
     env:
       DEST_ORG: ${{ matrix.kit.dest_org || 'mparticle-integrations' }}
     strategy:

@@ -25,7 +25,7 @@ Then add `mParticle-CleverTap` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-CleverTap', '~> 9.0'
+pod 'mParticle-CleverTap-7', '~> 9.0'
 ```
 
 ## Verifying the Integration

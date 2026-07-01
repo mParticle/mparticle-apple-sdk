@@ -22,6 +22,14 @@ Then add `mParticle-Braze` as a dependency of your target.
 
 > **Note:** Add the `-ObjC` flag to your target's **Other Linker Flags** build setting, per the [Braze documentation](https://www.braze.com/docs/developer_guide/platform_integration_guides/ios/initial_sdk_setup/installation_methods/swift_package_manager#step-2-configuring-your-project).
 
+### CocoaPods
+
+Add the kit dependency to your app's Podfile:
+
+```ruby
+pod 'mParticle-Braze-14', '~> 9.0'
+```
+
 For iOS push-launch tracking, initialize Braze in `application(_:didFinishLaunchingWithOptions:)` **before** starting mParticle, then pass the instance to the kit:
 
 ```swift
