@@ -191,3 +191,21 @@ jobs:
           echo "Retrying SPM tests on: $DEVICE_NAME"
           DESTINATION="platform=iOS Simulator,name=${DEVICE_NAME}"
           run_spm_tests "$DESTINATION"
+
+  verify-kit-xcframework-import:
+    name: Verify kit xcframework ObjC imports
+    runs-on: macOS-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.2"
+
+      - name: Verify kit headers compile against core SDK xcframework
+        run: |
+          chmod +x ./Scripts/verify_kit_xcframework_import.sh
+          ./Scripts/verify_kit_xcframework_import.sh

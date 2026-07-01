@@ -25,7 +25,7 @@ Then add `mParticle-Adjust` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Adjust', '~> 9.0'
+pod 'mParticle-Adjust-5', '~> 9.0'
 ```
 
 ## Verifying the Integration
