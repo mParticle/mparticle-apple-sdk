@@ -87,6 +87,13 @@ MParticle.sharedInstance().rokt.selectShoppableAds("ShopView",
 
 For the full event type reference, see [MIGRATING.md](../../MIGRATING.md).
 
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
+
 ## Documentation
 
 - [Rokt mParticle Integration](https://docs.rokt.com/developers/integration-guides/rokt-ads/customer-data-platforms/mparticle/)
