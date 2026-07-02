@@ -16,6 +16,13 @@ static NSString *const enableTypeDetectionKey = @"enableTypeDetection";
 static NSString *const bundleCommerceEventData = @"bundleCommerceEventData";
 static NSString *const replaceSkuWithProductName = @"replaceSkuWithProductName";
 static NSString *const subscriptionGroupMapping = @"subscriptionGroupMapping";
+static NSString *const useEcommerceRecommendedEventsKey = @"useEcommerceRecommendedEvents";
+
+// Projection keys for Braze-only product fields supplied via MPProduct custom attributes
+static NSString *const kMPBrazeProductImageURLKey = @"$braze_image_url";
+static NSString *const kMPBrazeProductProductURLKey = @"$braze_product_url";
+static NSString *const kMPBrazeEcommerceSource = @"ios";
+static NSString *const kMPBrazeEcommerceOrderRefundedEventName = @"ecommerce.order_refunded";
 
 // The possible values for userIdentificationType
 static NSString *const userIdValueOther = @"Other";
@@ -511,6 +518,13 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (MPKitExecStatus *)routeCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    if ([self useEcommerceRecommendedEventsEnabled]) {
+        MPKitExecStatus *recommendedStatus = [self routeRecommendedCommerceEvent:commerceEvent];
+        if (recommendedStatus.returnCode != MPKitReturnCodeCannotExecute) {
+            return recommendedStatus;
+        }
+    }
+
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess forwardCount:0];
     
     if (commerceEvent.action == MPCommerceEventActionPurchase) {
@@ -1299,6 +1313,297 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     }
     
     return actionNames[(NSUInteger)action];
+}
+
+#pragma mark Braze recommended eCommerce events
+
+- (BOOL)useEcommerceRecommendedEventsEnabled {
+    return [_configuration[useEcommerceRecommendedEventsKey] boolValue];
+}
+
+- (NSString *)brazeCurrencyForCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    return commerceEvent.currency.length ? commerceEvent.currency : @"USD";
+}
+
+- (NSString *)brazeCartIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    if (commerceEvent.transactionAttributes.transactionId.length) {
+        return commerceEvent.transactionAttributes.transactionId;
+    }
+    return [[NSUUID UUID] UUIDString];
+}
+
+- (NSString *)brazeCheckoutIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    if (commerceEvent.transactionAttributes.transactionId.length) {
+        return commerceEvent.transactionAttributes.transactionId;
+    }
+    return [NSString stringWithFormat:@"checkout_%@", [[NSUUID UUID] UUIDString]];
+}
+
+- (NSString *)brazeOrderIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    if (commerceEvent.transactionAttributes.transactionId.length) {
+        return commerceEvent.transactionAttributes.transactionId;
+    }
+    return [NSString stringWithFormat:@"order_%@", [[NSUUID UUID] UUIDString]];
+}
+
+- (NSString *)brazeVariantIdForProduct:(MPProduct *)product {
+    if (product.variant.length) {
+        return product.variant;
+    }
+    return product.sku;
+}
+
+- (NSString *)brazeProductImageURLForProduct:(MPProduct *)product {
+    id imageURL = product[kMPBrazeProductImageURLKey] ?: product[@"image_url"] ?: product[@"Image URL"];
+    return [self stringRepresentation:imageURL];
+}
+
+- (NSString *)brazeProductURLForProduct:(MPProduct *)product {
+    id productURL = product[kMPBrazeProductProductURLKey] ?: product[@"product_url"] ?: product[@"Product URL"];
+    return [self stringRepresentation:productURL];
+}
+
+- (NSDictionary<NSString *, id> *)brazeProductMetadataFromProduct:(MPProduct *)product {
+    NSMutableDictionary<NSString *, id> *metadata = [[NSMutableDictionary alloc] init];
+    if (product.brand.length) {
+        metadata[@"brand"] = product.brand;
+    }
+    if (product.category.length) {
+        metadata[@"category"] = product.category;
+    }
+    if (product.couponCode.length) {
+        metadata[@"coupon_code"] = product.couponCode;
+    }
+    if (product.position > 0) {
+        metadata[@"position"] = @(product.position);
+    }
+    metadata[@"sku"] = product.sku;
+    [product.userDefinedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+        if ([key isEqualToString:kMPBrazeProductImageURLKey] || [key isEqualToString:kMPBrazeProductProductURLKey]) {
+            return;
+        }
+        NSString *value = [self stringRepresentation:obj];
+        if (value.length) {
+            metadata[key] = value;
+        }
+    }];
+    // TODO: Extend with full mParticle → Braze product metadata mapping from property reference doc.
+    return metadata.count > 0 ? metadata : nil;
+}
+
+- (NSDictionary<NSString *, id> *)brazeEventMetadataFromCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    NSMutableDictionary<NSString *, id> *metadata = [[NSMutableDictionary alloc] init];
+    NSDictionary *customAttributes = [commerceEvent.customAttributes transformValuesToString];
+    if (customAttributes.count > 0) {
+        [metadata addEntriesFromDictionary:customAttributes];
+    }
+    NSDictionary *commerceEventAttributes = [commerceEvent beautifiedAttributes];
+    NSArray *eventLevelKeys = @[kMPExpCECheckoutOptions, kMPExpCECheckoutStep, kMPExpCEProductListName, kMPExpCEProductListSource];
+    for (NSString *key in eventLevelKeys) {
+        id value = commerceEventAttributes[key];
+        if (value) {
+            metadata[key] = value;
+        }
+    }
+    MPTransactionAttributes *transactionAttributes = commerceEvent.transactionAttributes;
+    if (transactionAttributes.affiliation.length) {
+        metadata[@"affiliation"] = transactionAttributes.affiliation;
+    }
+    if (transactionAttributes.couponCode.length) {
+        metadata[@"coupon_code"] = transactionAttributes.couponCode;
+    }
+    // TODO: Map remaining event-level Braze-only fields (checkout_url, order_status_url, tags, etc.) from property reference doc.
+    return metadata.count > 0 ? metadata : nil;
+}
+
+- (BRZEcommerceLineItem *)brazeLineItemFromProduct:(MPProduct *)product {
+    BRZEcommerceLineItem *lineItem = [[BRZEcommerceLineItem alloc] initWithProductId:product.sku
+                                                                         productName:product.name
+                                                                           variantId:[self brazeVariantIdForProduct:product]
+                                                                            imageUrl:[self brazeProductImageURLForProduct:product]
+                                                                           productUrl:[self brazeProductURLForProduct:product]
+                                                                             quantity:MAX([product.quantity integerValue], 1)
+                                                                                price:[product.price doubleValue]
+                                                                             metadata:[self brazeProductMetadataFromProduct:product]];
+    return lineItem;
+}
+
+- (NSArray<BRZEcommerceLineItem *> *)brazeLineItemsFromProducts:(NSArray<MPProduct *> *)products {
+    NSMutableArray<BRZEcommerceLineItem *> *lineItems = [[NSMutableArray alloc] initWithCapacity:products.count];
+    for (MPProduct *product in products) {
+        [lineItems addObject:[self brazeLineItemFromProduct:product]];
+    }
+    return lineItems;
+}
+
+- (double)brazeTotalValueForProducts:(NSArray<MPProduct *> *)products transactionAttributes:(MPTransactionAttributes *)transactionAttributes {
+    if (transactionAttributes.revenue != nil) {
+        return transactionAttributes.revenue.doubleValue;
+    }
+    double total = 0;
+    for (MPProduct *product in products) {
+        NSInteger quantity = MAX([product.quantity integerValue], 1);
+        total += [product.price doubleValue] * quantity;
+    }
+    return total;
+}
+
+- (NSNumber *)brazeSubtotalValueForCommerceEvent:(MPCommerceEvent *)commerceEvent totalValue:(double)totalValue {
+    MPTransactionAttributes *transactionAttributes = commerceEvent.transactionAttributes;
+    if (transactionAttributes.revenue != nil && transactionAttributes.tax != nil && transactionAttributes.shipping != nil) {
+        return @(transactionAttributes.revenue.doubleValue - transactionAttributes.tax.doubleValue - transactionAttributes.shipping.doubleValue);
+    }
+    // TODO: Derive subtotal from product line totals when property reference doc defines precedence.
+    return totalValue > 0 ? @(totalValue) : nil;
+}
+
+- (NSArray<NSDictionary *> *)brazeProductDictionariesFromProducts:(NSArray<MPProduct *> *)products {
+    NSMutableArray<NSDictionary *> *productDictionaries = [[NSMutableArray alloc] initWithCapacity:products.count];
+    for (MPProduct *product in products) {
+        NSMutableDictionary *productDictionary = [@{
+            @"product_id": product.sku,
+            @"product_name": product.name,
+            @"variant_id": [self brazeVariantIdForProduct:product],
+            @"quantity": @(MAX([product.quantity integerValue], 1)),
+            @"price": @([product.price doubleValue])
+        } mutableCopy];
+        NSString *imageURL = [self brazeProductImageURLForProduct:product];
+        if (imageURL.length) {
+            productDictionary[@"image_url"] = imageURL;
+        }
+        NSString *productURL = [self brazeProductURLForProduct:product];
+        if (productURL.length) {
+            productDictionary[@"product_url"] = productURL;
+        }
+        NSDictionary *metadata = [self brazeProductMetadataFromProduct:product];
+        if (metadata.count > 0) {
+            productDictionary[@"metadata"] = metadata;
+        }
+        [productDictionaries addObject:productDictionary];
+    }
+    return productDictionaries;
+}
+
+- (MPKitExecStatus *)routeRecommendedCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    NSArray<MPProduct *> *products = commerceEvent.products;
+    if (products.count == 0) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeCannotExecute];
+    }
+
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess forwardCount:0];
+    NSString *currency = [self brazeCurrencyForCommerceEvent:commerceEvent];
+    MPTransactionAttributes *transactionAttributes = commerceEvent.transactionAttributes;
+    NSDictionary *eventMetadata = [self brazeEventMetadataFromCommerceEvent:commerceEvent];
+
+    switch (commerceEvent.action) {
+        case MPCommerceEventActionAddToCart:
+        case MPCommerceEventActionRemoveFromCart: {
+            BRZEcommerceCartUpdatedEvent *payload = [[BRZEcommerceCartUpdatedEvent alloc] init];
+            payload.cartId = [self brazeCartIdForCommerceEvent:commerceEvent];
+            payload.action = commerceEvent.action == MPCommerceEventActionAddToCart ? @"add" : @"remove";
+            payload.currency = currency;
+            payload.source = kMPBrazeEcommerceSource;
+            payload.products = [self brazeLineItemsFromProducts:products];
+            payload.totalValue = @([self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes]);
+            if (transactionAttributes.tax != nil) {
+                payload.tax = transactionAttributes.tax;
+            }
+            if (transactionAttributes.shipping != nil) {
+                payload.shipping = transactionAttributes.shipping;
+            }
+            payload.subtotalValue = [self brazeSubtotalValueForCommerceEvent:commerceEvent totalValue:payload.totalValue.doubleValue];
+            payload.metadata = eventMetadata;
+            [brazeInstanceLocal logEcommerceCartUpdated:payload];
+            [execStatus incrementForwardCount];
+            break;
+        }
+        case MPCommerceEventActionCheckout: {
+            BRZEcommerceCheckoutStartedEvent *payload = [[BRZEcommerceCheckoutStartedEvent alloc] init];
+            payload.checkoutId = [self brazeCheckoutIdForCommerceEvent:commerceEvent];
+            payload.cartId = [self brazeCartIdForCommerceEvent:commerceEvent];
+            payload.currency = currency;
+            payload.source = kMPBrazeEcommerceSource;
+            payload.products = [self brazeLineItemsFromProducts:products];
+            payload.totalValue = [self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes];
+            if (transactionAttributes.tax != nil) {
+                payload.tax = transactionAttributes.tax;
+            }
+            if (transactionAttributes.shipping != nil) {
+                payload.shipping = transactionAttributes.shipping;
+            }
+            payload.subtotalValue = [self brazeSubtotalValueForCommerceEvent:commerceEvent totalValue:payload.totalValue];
+            payload.metadata = eventMetadata;
+            [brazeInstanceLocal logEcommerceCheckoutStarted:payload];
+            [execStatus incrementForwardCount];
+            break;
+        }
+        case MPCommerceEventActionViewDetail: {
+            for (MPProduct *product in products) {
+                BRZEcommerceProductViewedEvent *payload = [[BRZEcommerceProductViewedEvent alloc] init];
+                payload.productId = product.sku;
+                payload.productName = product.name;
+                payload.variantId = [self brazeVariantIdForProduct:product];
+                payload.imageUrl = [self brazeProductImageURLForProduct:product];
+                payload.productUrl = [self brazeProductURLForProduct:product];
+                payload.price = [product.price doubleValue];
+                payload.currency = currency;
+                payload.source = kMPBrazeEcommerceSource;
+                NSMutableDictionary *metadata = [[self brazeProductMetadataFromProduct:product] mutableCopy] ?: [NSMutableDictionary dictionary];
+                if (eventMetadata.count > 0) {
+                    [metadata addEntriesFromDictionary:eventMetadata];
+                }
+                payload.metadata = metadata.count > 0 ? metadata : nil;
+                // TODO: Map catalog trigger type identifiers from property reference doc.
+                [brazeInstanceLocal logEcommerceProductViewed:payload];
+                [execStatus incrementForwardCount];
+            }
+            break;
+        }
+        case MPCommerceEventActionPurchase: {
+            BRZEcommerceOrderPlacedEvent *payload = [[BRZEcommerceOrderPlacedEvent alloc] init];
+            payload.orderId = [self brazeOrderIdForCommerceEvent:commerceEvent];
+            payload.cartId = [self brazeCartIdForCommerceEvent:commerceEvent];
+            payload.currency = currency;
+            payload.source = kMPBrazeEcommerceSource;
+            payload.products = [self brazeLineItemsFromProducts:products];
+            payload.totalValue = [self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes];
+            if (transactionAttributes.tax != nil) {
+                payload.tax = transactionAttributes.tax;
+            }
+            if (transactionAttributes.shipping != nil) {
+                payload.shipping = transactionAttributes.shipping;
+            }
+            payload.subtotalValue = [self brazeSubtotalValueForCommerceEvent:commerceEvent totalValue:payload.totalValue];
+            if (transactionAttributes.couponCode.length) {
+                // TODO: Map structured discounts from property reference doc.
+                payload.totalDiscounts = @0;
+            }
+            payload.metadata = eventMetadata;
+            [brazeInstanceLocal logEcommerceOrderPlaced:payload];
+            [execStatus incrementForwardCount];
+            break;
+        }
+        case MPCommerceEventActionRefund: {
+            NSMutableDictionary *properties = [@{
+                @"order_id": [self brazeOrderIdForCommerceEvent:commerceEvent],
+                @"total_value": @([self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes]),
+                @"currency": currency,
+                @"source": kMPBrazeEcommerceSource,
+                @"products": [self brazeProductDictionariesFromProducts:products]
+            } mutableCopy];
+            if (eventMetadata.count > 0) {
+                properties[@"metadata"] = eventMetadata;
+            }
+            // TODO: Map refund-specific fields (total_discounts, discounts) from property reference doc.
+            [brazeInstanceLocal logCustomEvent:kMPBrazeEcommerceOrderRefundedEventName properties:properties];
+            [execStatus incrementForwardCount];
+            break;
+        }
+        default:
+            return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeCannotExecute];
+    }
+
+    return execStatus;
 }
 
 @end

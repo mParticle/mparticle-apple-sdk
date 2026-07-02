@@ -35,6 +35,7 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 #### Added
 
 - **Braze 16** — Add `braze-16` kit track for [Braze Swift SDK 16.x](https://github.com/braze-inc/braze-swift-sdk/releases).
+- **Braze 16** — When `useEcommerceRecommendedEvents` is enabled in kit configuration, forward supported mParticle commerce events to Braze recommended eCommerce events (`ecommerce.cart_updated`, `ecommerce.checkout_started`, `ecommerce.product_viewed`, `ecommerce.order_placed`, `ecommerce.order_refunded`).
 - **Rokt SDK+ (`RoktSDKPlus`)** — Umbrella Swift package and CocoaPods pod at `Kits/rokt-sdk-plus/rokt-sdk-plus-ios`, versioned with the core SDK and mirrored to [ROKT/rokt-sdk-plus-ios](https://github.com/ROKT/rokt-sdk-plus-ios).
 
 #### Fixed

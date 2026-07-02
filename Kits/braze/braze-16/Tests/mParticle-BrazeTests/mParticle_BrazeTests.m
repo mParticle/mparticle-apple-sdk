@@ -1061,4 +1061,133 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     [mockClient stopMocking];
 }
 
+- (void)testRecommendedEcommerceAddToCart {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@2 price:@13];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    event.currency = @"USD";
+    event.transactionAttributes = [[MPTransactionAttributes alloc] init];
+    event.transactionAttributes.transactionId = @"cart-123";
+
+    [[mockClient expect] logEcommerceCartUpdated:[OCMArg checkWithBlock:^BOOL(BRZEcommerceCartUpdatedEvent *payload) {
+        return [payload.action isEqualToString:@"add"]
+            && [payload.cartId isEqualToString:@"cart-123"]
+            && [payload.currency isEqualToString:@"USD"]
+            && [payload.source isEqualToString:@"ios"]
+            && payload.products.count == 1
+            && [payload.products.firstObject.productId isEqualToString:@"1131331343"];
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual(execStatus.forwardCount, 1);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommercePurchase {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
+    event.currency = @"USD";
+    event.transactionAttributes = [[MPTransactionAttributes alloc] init];
+    event.transactionAttributes.transactionId = @"order-456";
+    event.transactionAttributes.revenue = @13;
+
+    [[mockClient expect] logEcommerceOrderPlaced:[OCMArg checkWithBlock:^BOOL(BRZEcommerceOrderPlacedEvent *payload) {
+        return [payload.orderId isEqualToString:@"order-456"]
+            && payload.totalValue == 13
+            && [payload.currency isEqualToString:@"USD"]
+            && payload.products.count == 1;
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual(execStatus.forwardCount, 1);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceRefund {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionRefund product:product];
+    event.currency = @"USD";
+    event.transactionAttributes = [[MPTransactionAttributes alloc] init];
+    event.transactionAttributes.transactionId = @"order-456";
+    event.transactionAttributes.revenue = @13;
+
+    [[mockClient expect] logCustomEvent:@"ecommerce.order_refunded" properties:[OCMArg checkWithBlock:^BOOL(NSDictionary *properties) {
+        return [properties[@"order_id"] isEqualToString:@"order-456"]
+            && [properties[@"currency"] isEqualToString:@"USD"]
+            && [properties[@"source"] isEqualToString:@"ios"]
+            && [properties[@"products"] isKindOfClass:[NSArray class]];
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual(execStatus.forwardCount, 1);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceViewDetail {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
+    product.variant = @"variant-1";
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
+    event.currency = @"EUR";
+
+    [[mockClient expect] logEcommerceProductViewed:[OCMArg checkWithBlock:^BOOL(BRZEcommerceProductViewedEvent *payload) {
+        return [payload.productId isEqualToString:@"1131331343"]
+            && [payload.variantId isEqualToString:@"variant-1"]
+            && [payload.currency isEqualToString:@"EUR"]
+            && payload.price == 13;
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual(execStatus.forwardCount, 1);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceUnsupportedActionFallsBackToLegacy {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES, @"bundleCommerceEventData": @0};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionClick product:product];
+
+    [[mockClient expect] logCustomEvent:@"eCommerce - click - Item" properties:[OCMArg any]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
 @end
