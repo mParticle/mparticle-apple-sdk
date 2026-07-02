@@ -12,7 +12,7 @@ jobs:
       matrix: ${{ steps.set.outputs.matrix }}
       pod-matrix: ${{ steps.set.outputs.pod-matrix }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: Kits/matrix.json
           sparse-checkout-cone-mode: false
@@ -30,7 +30,7 @@ jobs:
       matrix:
         kit: ${{ fromJson(needs.load-matrix.outputs.pod-matrix) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: "26.2"
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout monorepo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -198,7 +198,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout monorepo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@v1
