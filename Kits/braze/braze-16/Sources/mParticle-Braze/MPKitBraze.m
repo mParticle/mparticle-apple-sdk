@@ -1325,25 +1325,50 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     return commerceEvent.currency.length ? commerceEvent.currency : @"USD";
 }
 
+- (NSString *)brazeSessionIdString {
+    MParticleSession *session = [MParticle sharedInstance].currentSession;
+    if (session.sessionID) {
+        return session.sessionID.stringValue;
+    }
+    if (session.UUID.length) {
+        return session.UUID;
+    }
+    return nil;
+}
+
 - (NSString *)brazeCartIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
-    if (commerceEvent.transactionAttributes.transactionId.length) {
-        return commerceEvent.transactionAttributes.transactionId;
+    NSString *cartId = [self stringRepresentation:commerceEvent.customAttributes[@"cart_id"]];
+    if (cartId.length) {
+        return cartId;
+    }
+    NSString *sessionId = [self brazeSessionIdString];
+    if (sessionId.length) {
+        return sessionId;
     }
     return [[NSUUID UUID] UUIDString];
 }
 
 - (NSString *)brazeCheckoutIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
-    if (commerceEvent.transactionAttributes.transactionId.length) {
-        return commerceEvent.transactionAttributes.transactionId;
+    NSString *checkoutId = [self stringRepresentation:commerceEvent.customAttributes[@"checkout_id"]];
+    if (checkoutId.length) {
+        return checkoutId;
     }
-    return [NSString stringWithFormat:@"checkout_%@", [[NSUUID UUID] UUIDString]];
+    NSString *sessionId = [self brazeSessionIdString];
+    if (sessionId.length) {
+        return sessionId;
+    }
+    return [[NSUUID UUID] UUIDString];
 }
 
 - (NSString *)brazeOrderIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
     if (commerceEvent.transactionAttributes.transactionId.length) {
         return commerceEvent.transactionAttributes.transactionId;
     }
-    return [NSString stringWithFormat:@"order_%@", [[NSUUID UUID] UUIDString]];
+    NSString *sessionId = [self brazeSessionIdString];
+    if (sessionId.length) {
+        return sessionId;
+    }
+    return [[NSUUID UUID] UUIDString];
 }
 
 - (NSString *)brazeVariantIdForProduct:(MPProduct *)product {
@@ -1387,7 +1412,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             metadata[key] = value;
         }
     }];
-    // TODO: Extend with full mParticle → Braze product metadata mapping from property reference doc.
+
     return metadata.count > 0 ? metadata : nil;
 }
 
@@ -1412,7 +1437,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     if (transactionAttributes.couponCode.length) {
         metadata[@"coupon_code"] = transactionAttributes.couponCode;
     }
-    // TODO: Map remaining event-level Braze-only fields (checkout_url, order_status_url, tags, etc.) from property reference doc.
+
     return metadata.count > 0 ? metadata : nil;
 }
 
@@ -1446,15 +1471,6 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         total += [product.price doubleValue] * quantity;
     }
     return total;
-}
-
-- (NSNumber *)brazeSubtotalValueForCommerceEvent:(MPCommerceEvent *)commerceEvent totalValue:(double)totalValue {
-    MPTransactionAttributes *transactionAttributes = commerceEvent.transactionAttributes;
-    if (transactionAttributes.revenue != nil && transactionAttributes.tax != nil && transactionAttributes.shipping != nil) {
-        return @(transactionAttributes.revenue.doubleValue - transactionAttributes.tax.doubleValue - transactionAttributes.shipping.doubleValue);
-    }
-    // TODO: Derive subtotal from product line totals when property reference doc defines precedence.
-    return totalValue > 0 ? @(totalValue) : nil;
 }
 
 - (NSArray<NSDictionary *> *)brazeProductDictionariesFromProducts:(NSArray<MPProduct *> *)products {
@@ -1511,7 +1527,6 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             if (transactionAttributes.shipping != nil) {
                 payload.shipping = transactionAttributes.shipping;
             }
-            payload.subtotalValue = [self brazeSubtotalValueForCommerceEvent:commerceEvent totalValue:payload.totalValue.doubleValue];
             payload.metadata = eventMetadata;
             [brazeInstanceLocal logEcommerceCartUpdated:payload];
             [execStatus incrementForwardCount];
@@ -1531,7 +1546,6 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             if (transactionAttributes.shipping != nil) {
                 payload.shipping = transactionAttributes.shipping;
             }
-            payload.subtotalValue = [self brazeSubtotalValueForCommerceEvent:commerceEvent totalValue:payload.totalValue];
             payload.metadata = eventMetadata;
             [brazeInstanceLocal logEcommerceCheckoutStarted:payload];
             [execStatus incrementForwardCount];
@@ -1553,7 +1567,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                     [metadata addEntriesFromDictionary:eventMetadata];
                 }
                 payload.metadata = metadata.count > 0 ? metadata : nil;
-                // TODO: Map catalog trigger type identifiers from property reference doc.
+
                 [brazeInstanceLocal logEcommerceProductViewed:payload];
                 [execStatus incrementForwardCount];
             }
@@ -1573,10 +1587,9 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             if (transactionAttributes.shipping != nil) {
                 payload.shipping = transactionAttributes.shipping;
             }
-            payload.subtotalValue = [self brazeSubtotalValueForCommerceEvent:commerceEvent totalValue:payload.totalValue];
-            if (transactionAttributes.couponCode.length) {
-                // TODO: Map structured discounts from property reference doc.
-                payload.totalDiscounts = @0;
+            NSString *totalDiscountsString = [self stringRepresentation:commerceEvent.customAttributes[@"total_discounts"]];
+            if (totalDiscountsString.length) {
+                payload.totalDiscounts = @(totalDiscountsString.doubleValue);
             }
             payload.metadata = eventMetadata;
             [brazeInstanceLocal logEcommerceOrderPlaced:payload];
@@ -1591,10 +1604,13 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 @"source": kMPBrazeEcommerceSource,
                 @"products": [self brazeProductDictionariesFromProducts:products]
             } mutableCopy];
+            NSString *totalDiscountsString = [self stringRepresentation:commerceEvent.customAttributes[@"total_discounts"]];
+            if (totalDiscountsString.length) {
+                properties[@"total_discounts"] = @(totalDiscountsString.doubleValue);
+            }
             if (eventMetadata.count > 0) {
                 properties[@"metadata"] = eventMetadata;
             }
-            // TODO: Map refund-specific fields (total_discounts, discounts) from property reference doc.
             [brazeInstanceLocal logCustomEvent:kMPBrazeEcommerceOrderRefundedEventName properties:properties];
             [execStatus incrementForwardCount];
             break;

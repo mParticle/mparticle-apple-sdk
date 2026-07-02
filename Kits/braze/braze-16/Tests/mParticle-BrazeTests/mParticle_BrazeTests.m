@@ -1071,8 +1071,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@2 price:@13];
     MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     event.currency = @"USD";
-    event.transactionAttributes = [[MPTransactionAttributes alloc] init];
-    event.transactionAttributes.transactionId = @"cart-123";
+    event.customAttributes = @{@"cart_id": @"cart-123"};
 
     [[mockClient expect] logEcommerceCartUpdated:[OCMArg checkWithBlock:^BOOL(BRZEcommerceCartUpdatedEvent *payload) {
         return [payload.action isEqualToString:@"add"]
@@ -1100,6 +1099,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
     MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
     event.currency = @"USD";
+    event.customAttributes = @{@"total_discounts": @"10.50"};
     event.transactionAttributes = [[MPTransactionAttributes alloc] init];
     event.transactionAttributes.transactionId = @"order-456";
     event.transactionAttributes.revenue = @13;
@@ -1107,6 +1107,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     [[mockClient expect] logEcommerceOrderPlaced:[OCMArg checkWithBlock:^BOOL(BRZEcommerceOrderPlacedEvent *payload) {
         return [payload.orderId isEqualToString:@"order-456"]
             && payload.totalValue == 13
+            && payload.totalDiscounts.doubleValue == 10.50
             && [payload.currency isEqualToString:@"USD"]
             && payload.products.count == 1;
     }]];
@@ -1128,12 +1129,14 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
     MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionRefund product:product];
     event.currency = @"USD";
+    event.customAttributes = @{@"total_discounts": @"5.25"};
     event.transactionAttributes = [[MPTransactionAttributes alloc] init];
     event.transactionAttributes.transactionId = @"order-456";
     event.transactionAttributes.revenue = @13;
 
     [[mockClient expect] logCustomEvent:@"ecommerce.order_refunded" properties:[OCMArg checkWithBlock:^BOOL(NSDictionary *properties) {
         return [properties[@"order_id"] isEqualToString:@"order-456"]
+            && [properties[@"total_discounts"] doubleValue] == 5.25
             && [properties[@"currency"] isEqualToString:@"USD"]
             && [properties[@"source"] isEqualToString:@"ios"]
             && [properties[@"products"] isKindOfClass:[NSArray class]];
@@ -1170,6 +1173,39 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     XCTAssertEqual(execStatus.forwardCount, 1);
     [mockClient verify];
     [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceCheckoutUsesSessionIdFallback {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    id mockMParticle = OCMClassMock([MParticle class]);
+    id mockSession = OCMClassMock([MParticleSession class]);
+    OCMStub([mockSession sessionID]).andReturn(@424242);
+    OCMStub([mockMParticle currentSession]).andReturn(mockSession);
+    OCMStub([mockMParticle sharedInstance]).andReturn(mockMParticle);
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionCheckout product:product];
+    event.currency = @"USD";
+    event.transactionAttributes = [[MPTransactionAttributes alloc] init];
+    event.transactionAttributes.revenue = @13;
+
+    [[mockClient expect] logEcommerceCheckoutStarted:[OCMArg checkWithBlock:^BOOL(BRZEcommerceCheckoutStartedEvent *payload) {
+        return [payload.checkoutId isEqualToString:@"424242"]
+            && [payload.cartId isEqualToString:@"424242"]
+            && payload.products.count == 1;
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual(execStatus.forwardCount, 1);
+    [mockClient verify];
+    [mockClient stopMocking];
+    [mockMParticle stopMocking];
 }
 
 - (void)testRecommendedEcommerceUnsupportedActionFallsBackToLegacy {
