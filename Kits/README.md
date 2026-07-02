@@ -2,6 +2,13 @@
 
 Kits forward events from the mParticle Apple SDK to partner services. To use a partner integration, add mParticle core plus the kit that matches the partner SDK major version you use.
 
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
+
 ## How to Choose a Kit
 
 Kits are versioned by the partner SDK major:

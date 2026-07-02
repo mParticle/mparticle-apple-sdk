@@ -33,6 +33,13 @@ After installing, rebuild and launch your app. With the mParticle log level set 
 Included kits: { Apptimize }
 ```
 
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
+
 ## Documentation
 
 - [mParticle Apptimize Integration Guide](https://docs.mparticle.com/integrations/apptimize/event/)

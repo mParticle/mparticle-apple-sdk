@@ -42,7 +42,7 @@ In your `Podfile`:
 pod 'RoktSDKPlus', '~> 9.1'
 ```
 
-Match deployment target and Swift version expectations to the upstream podspecs (this podspec uses **iOS 15.6** and **Swift 5.9**).
+Match deployment target and Swift version expectations to the upstream podspecs (this podspec uses **iOS 15.0** and **tvOS 15.0** and **Swift 5.9**).
 
 ## mParticle core (essential)
 
@@ -85,6 +85,13 @@ MParticle.sharedInstance().rokt.selectPlacements(
 ```
 
 **Shoppable Ads** use a registered payment extension (for example Stripe) and `selectShoppableAds`; see the [Rokt kit README](https://github.com/mparticle-integrations/mp-apple-integration-rokt/blob/main/README.md) for `registerPaymentExtension` / `selectShoppableAds` snippets and [MIGRATING.md](https://github.com/mparticle-integrations/mp-apple-integration-rokt/blob/main/MIGRATING.md) for event types.
+
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
 
 ## License
 
