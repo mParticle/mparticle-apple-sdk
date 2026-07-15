@@ -20,7 +20,7 @@ let mParticleAppleSDK: Package.Dependency = {
 
 let package = Package(
     name: "mParticle-Adobe",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS(.v15), .tvOS(.v15)],
     products: [
         .library(
             name: "mParticle-Adobe",
