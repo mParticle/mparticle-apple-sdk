@@ -14,6 +14,13 @@
 		A40010005F50000000000005 /* mParticle_Adobe.h in Headers */ = {isa = PBXBuildFile; fileRef = A40020005F50000000000005 /* mParticle_Adobe.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A40010006F50000000000006 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A40020006F50000000000006 /* PrivacyInfo.xcprivacy */; };
 		A40010007F50000000000007 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = A40030001F50000000000001 /* mParticle-Apple-SDK */; };
+		A40010008F50000000000008 /* MPKitAdobe.m in Sources */ = {isa = PBXBuildFile; fileRef = A40020001F50000000000001 /* MPKitAdobe.m */; };
+		A40010009F50000000000009 /* MPIAdobe.m in Sources */ = {isa = PBXBuildFile; fileRef = A40020002F50000000000002 /* MPIAdobe.m */; };
+		A40010010F50000000000010 /* MPKitAdobe.h in Headers */ = {isa = PBXBuildFile; fileRef = A40020003F50000000000003 /* MPKitAdobe.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A40010011F50000000000011 /* MPIAdobe.h in Headers */ = {isa = PBXBuildFile; fileRef = A40020004F50000000000004 /* MPIAdobe.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A40010012F50000000000012 /* mParticle_Adobe.h in Headers */ = {isa = PBXBuildFile; fileRef = A40020005F50000000000005 /* mParticle_Adobe.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A40010013F50000000000013 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A40020006F50000000000006 /* PrivacyInfo.xcprivacy */; };
+		A40010014F50000000000014 /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = A40030001F50000000000001 /* mParticle-Apple-SDK */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +32,7 @@
 		A40020006F50000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A40020007F50000000000007 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A40020008F50000000000008 /* mParticle_Adobe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Adobe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A40020009F50000000000009 /* mParticle_Adobe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Adobe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +41,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				A40010007F50000000000007 /* mParticle-Apple-SDK in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A40040005F50000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A40010014F50000000000014 /* mParticle-Apple-SDK in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				A40020008F50000000000008 /* mParticle_Adobe.framework */,
+				A40020009F50000000000009 /* mParticle_Adobe.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +112,16 @@
 				A40010003F50000000000003 /* MPKitAdobe.h in Headers */,
 				A40010004F50000000000004 /* MPIAdobe.h in Headers */,
 				A40010005F50000000000005 /* mParticle_Adobe.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A40040006F50000000000006 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A40010010F50000000000010 /* MPKitAdobe.h in Headers */,
+				A40010011F50000000000011 /* MPIAdobe.h in Headers */,
+				A40010012F50000000000012 /* mParticle_Adobe.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,6 +149,27 @@
 			productReference = A40020008F50000000000008 /* mParticle_Adobe.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		A40060002F50000000000002 /* mParticle-Adobe-tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A40070003F50000000000003 /* Build configuration list for PBXNativeTarget "mParticle-Adobe-tvOS" */;
+			buildPhases = (
+				A40040007F50000000000007 /* Sources */,
+				A40040005F50000000000005 /* Frameworks */,
+				A40040006F50000000000006 /* Headers */,
+				A40040008F50000000000008 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-Adobe-tvOS";
+			packageProductDependencies = (
+				A40030001F50000000000001 /* mParticle-Apple-SDK */,
+			);
+			productName = "mParticle-Adobe-tvOS";
+			productReference = A40020009F50000000000009 /* mParticle_Adobe.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -130,6 +178,14 @@
 			attributes = {
 				LastUpgradeCheck = 1600;
 				ORGANIZATIONNAME = mParticle;
+				TargetAttributes = {
+					A40060001F50000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					A40060002F50000000000002 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
 			};
 			buildConfigurationList = A40090001F50000000000002 /* Build configuration list for PBXProject "mParticle-Adobe" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -146,7 +202,10 @@
 			productRefGroup = A40050005F50000000000005 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
-			targets = (A40060001F50000000000001 /* mParticle-Adobe */);
+			targets = (
+				A40060001F50000000000001 /* mParticle-Adobe */,
+				A40060002F50000000000002 /* mParticle-Adobe-tvOS */,
+			);
 		};
 /* End PBXProject section */
 
@@ -155,6 +214,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (A40010006F50000000000006 /* PrivacyInfo.xcprivacy in Resources */);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A40040008F50000000000008 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (A40010013F50000000000013 /* PrivacyInfo.xcprivacy in Resources */);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
@@ -166,6 +231,15 @@
 			files = (
 				A40010001F50000000000001 /* MPKitAdobe.m in Sources */,
 				A40010002F50000000000002 /* MPIAdobe.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A40040007F50000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A40010008F50000000000008 /* MPKitAdobe.m in Sources */,
+				A40010009F50000000000009 /* MPIAdobe.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,6 +278,7 @@
 				DEFINES_MODULE = YES;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = Sources/mParticle-Adobe/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Adobe";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = NO;
@@ -216,9 +291,41 @@
 				DEFINES_MODULE = YES;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = Sources/mParticle-Adobe/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Adobe";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = NO;
+			};
+			name = Release;
+		};
+		A400B005F50000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/mParticle-Adobe/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Adobe-tvOS";
+				PRODUCT_NAME = mParticle_Adobe;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 15.0;
+			};
+			name = Debug;
+		};
+		A400B006F50000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = Sources/mParticle-Adobe/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Adobe-tvOS";
+				PRODUCT_NAME = mParticle_Adobe;
+				SDKROOT = appletvos;
+				SKIP_INSTALL = NO;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 15.0;
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -234,6 +341,12 @@
 		A40070002F50000000000002 /* Build configuration list for PBXNativeTarget "mParticle-Adobe" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (A400B003F50000000000003 /* Debug */, A400B004F50000000000004 /* Release */);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A40070003F50000000000003 /* Build configuration list for PBXNativeTarget "mParticle-Adobe-tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (A400B005F50000000000005 /* Debug */, A400B006F50000000000006 /* Release */);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
