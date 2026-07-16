@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
     s.ios.resource_bundles  = { 'mParticle-Rokt-Privacy' => ['Sources/mParticle-Rokt/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.1'
     s.ios.dependency 'RoktContracts', '~> 2.0'
-    s.ios.dependency 'Rokt-Widget', '~> 5.2'
+    s.ios.dependency 'Rokt-Widget', '~> 5.3'
 end
