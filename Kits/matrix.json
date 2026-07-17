@@ -132,24 +132,6 @@
     ]
   },
   {
-    "name": "braze-16",
-    "local_path": "Kits/braze/braze-16",
-    "podspec": "Kits/braze/braze-16/mParticle-Braze-16.podspec",
-    "dest_repo": "mparticle-apple-integration-braze-16",
-    "schemes": [
-      {
-        "scheme": "mParticle-Braze",
-        "module": "mParticle_Braze",
-        "destination": "iOS"
-      },
-      {
-        "scheme": "mParticle-Braze-tvOS",
-        "module": "mParticle_Braze",
-        "destination": "tvOS"
-      }
-    ]
-  },
-  {
     "name": "clevertap-7",
     "local_path": "Kits/clevertap/clevertap-7",
     "podspec": "Kits/clevertap/clevertap-7/mParticle-CleverTap-7.podspec",
