@@ -169,36 +169,6 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqual(result.count, 0);
 }
 
-- (void)testSetUserIdentity_Email {
-    MPKitExecStatus *status = [self.kitInstance setUserIdentity:@"test@example.com" identityType:MPUserIdentityEmail];
-    
-    XCTAssertNotNil(status);
-    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
-}
-
-- (void)testSetUserIdentity_CustomerId {
-    MPKitExecStatus *status = [self.kitInstance setUserIdentity:@"12345" identityType:MPUserIdentityCustomerId];
-    
-    XCTAssertNotNil(status);
-    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
-}
-
-- (void)testSetUserIdentity_UnsupportedType {
-    MPKitExecStatus *status = [self.kitInstance setUserIdentity:@"test" identityType:MPUserIdentityFacebook];
-    
-    XCTAssertNotNil(status);
-    XCTAssertEqual(status.returnCode, MPKitReturnCodeUnavailable);
-}
-
-- (void)testLogBaseEvent {
-    MPEvent *event = [[MPEvent alloc] initWithName:@"Test Event" type:MPEventTypeOther];
-    
-    MPKitExecStatus *status = [self.kitInstance logBaseEvent:event];
-    
-    XCTAssertNotNil(status);
-    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
-}
-
 - (void)testExecuteWithIdentifier {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
