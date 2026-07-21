@@ -56,6 +56,32 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
 - Implement `stop` on `MPKitRokt` so the kit remains active across `switchWorkspaceWithOptions:` without requiring an app restart.
 
+## [9.3.1] - 2026-07-21
+
+### Kits
+
+#### Kits
+
+##### Changed
+
+- Align kit README platform support with iOS/tvOS 15.0 ([#794](https://github.com/mParticle/mparticle-apple-sdk/pull/794))
+
+#### Adobe
+
+##### Added
+
+- Add tvOS Support to Adobe ([#795](https://github.com/mParticle/mparticle-apple-sdk/pull/795))
+
+#### Rokt
+
+##### Changed
+
+- Bump Rokt SDK dependency (`Rokt-Widget`) to 5.3.0 for SwiftPM and CocoaPods ([#796](https://github.com/mParticle/mparticle-apple-sdk/pull/796))
+
+##### Removed
+
+- Remove unused no-op `MPKitProtocol` stubs from the Rokt kit ([#798](https://github.com/mParticle/mparticle-apple-sdk/pull/798))
+
 ## [9.3.0] - 2026-07-01
 
 ### Core
@@ -2438,7 +2464,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.0...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.1...HEAD
+[9.3.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.0...v9.3.1
 [9.3.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.2...v9.3.0
 [9.2.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.1...v9.2.2
 [9.2.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.0...v9.2.1

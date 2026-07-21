@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-OneTrust"
-    s.version          = "9.3.0"
+    s.version          = "9.3.1"
     s.summary          = "OneTrust integration for mParticle"
     s.description      = <<-DESC
                        This is the OneTrust integration for mParticle.
