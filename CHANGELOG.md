@@ -62,12 +62,6 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 #### Kits
 
-##### Added
-
-- Support Braze 16 and eCommerce Update ([#793](https://github.com/mParticle/mparticle-apple-sdk/pull/793))
-
-#### Adjust
-
 ##### Changed
 
 - Align kit README platform support with iOS/tvOS 15.0 ([#794](https://github.com/mParticle/mparticle-apple-sdk/pull/794))
@@ -77,6 +71,16 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 ##### Added
 
 - Add tvOS Support to Adobe ([#795](https://github.com/mParticle/mparticle-apple-sdk/pull/795))
+
+#### Rokt
+
+##### Changed
+
+- Bump Rokt SDK dependency (`Rokt-Widget`) to 5.3.0 for SwiftPM and CocoaPods ([#796](https://github.com/mParticle/mparticle-apple-sdk/pull/796))
+
+##### Removed
+
+- Remove unused no-op `MPKitProtocol` stubs from the Rokt kit ([#798](https://github.com/mParticle/mparticle-apple-sdk/pull/798))
 
 ## [9.3.0] - 2026-07-01
 
