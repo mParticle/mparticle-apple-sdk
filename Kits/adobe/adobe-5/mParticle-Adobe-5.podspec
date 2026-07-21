@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Adobe-5"
     s.module_name      = 'mParticle_Adobe'
-    s.version          = "9.0.0"
+    s.version          = "9.3.1"
     s.summary          = "Adobe integration for mParticle"
     s.description      = <<-DESC
                        This is the Adobe integration for mParticle.
@@ -12,8 +12,8 @@ Pod::Spec.new do |s|
     s.source           = { :git => "https://github.com/mparticle-integrations/mparticle-apple-integration-adobe-5.git", :tag => "v" + s.version.to_s }
     s.static_framework = true
     s.swift_version    = '5.0'
-    s.ios.deployment_target  = "15.6"
-    s.tvos.deployment_target = "15.6"
+    s.ios.deployment_target  = "15.0"
+    s.tvos.deployment_target = "15.0"
     s.source_files      = 'Sources/mParticle-Adobe/**/*.{h,m}'
     s.resource_bundles  = { 'mParticle-Adobe-5-Privacy' => ['Sources/mParticle-Adobe/PrivacyInfo.xcprivacy'] }
     s.dependency 'mParticle-Apple-SDK', '~> 9.0'

@@ -6,6 +6,12 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPURL.h"
+@import mParticle_Apple_SDK_Swift;
+
+@interface MPTransportErrorDetector (MPConnectorTimeout)
++ (NSString *)semaphoreTimeoutErrorDomain;
++ (NSNumber *)semaphoreTimeoutErrorCode;
+@end
 
 static NSArray *mpStoredCertificates = nil;
 
@@ -103,6 +109,7 @@ static NSArray *mpStoredCertificates = nil;
     MPNetworkOptions *networkOptions = [[MParticle sharedInstance] networkOptions];
     
     BOOL isPinningHost = [host rangeOfString:@"mparticle.com"].location != NSNotFound ||
+                            (networkOptions.customBaseURL.host.length > 0 && [host isEqualToString:networkOptions.customBaseURL.host]) ||
                             (networkOptions.configHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.configHost.pathComponents[0]]) ||
                             (networkOptions.identityHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.identityHost.pathComponents[0]]) ||
                             (networkOptions.eventsHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.eventsHost.pathComponents[0]]) ||
@@ -272,7 +279,9 @@ static NSArray *mpStoredCertificates = nil;
                           (long)completionHttpResponse.statusCode, (unsigned long)completionData.length);
         } else {
             MPILogError(@"GET request timed out after %ld seconds - host: %@", (long)(NETWORK_REQUEST_MAX_WAIT_SECONDS + 1), url.url.host);
-            response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
+            response.error = [NSError errorWithDomain:[MPTransportErrorDetector semaphoreTimeoutErrorDomain]
+                                                 code:[MPTransportErrorDetector semaphoreTimeoutErrorCode].integerValue
+                                             userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
             [_urlSession invalidateAndCancel];
         }
         
@@ -317,7 +326,9 @@ static NSArray *mpStoredCertificates = nil;
                           (long)completionHttpResponse.statusCode, (unsigned long)completionData.length);
         } else {
             MPILogError(@"POST request timed out after %ld seconds - host: %@", (long)(NETWORK_REQUEST_MAX_WAIT_SECONDS + 1), url.url.host);
-            response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
+            response.error = [NSError errorWithDomain:[MPTransportErrorDetector semaphoreTimeoutErrorDomain]
+                                                 code:[MPTransportErrorDetector semaphoreTimeoutErrorCode].integerValue
+                                             userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
             [_urlSession invalidateAndCancel];
         }
     } else {

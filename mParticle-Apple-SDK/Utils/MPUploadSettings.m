@@ -1,6 +1,7 @@
 #import "MPUploadSettings.h"
 #import "MPStateMachine.h"
 #import "mParticle.h"
+#import "MPILogger.h"
 
 static NSString *const kApiKey = @"apiKey";
 static NSString *const kSecret = @"secret";
@@ -90,13 +91,28 @@ static NSString *const kEventsOnly = @"eventsOnly";
 - (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey
                                  secret:(nonnull NSString *)secret
                          networkOptions:(nonnull MPNetworkOptions *)networkOptions {
+    NSString *customHost = networkOptions.customBaseURL ? networkOptions.customBaseURL.host : nil;
+    if (customHost) {
+        if (networkOptions.eventsHost) {
+            MPILogWarning(@"MPNetworkOptions: customBaseURL is set; eventsHost is ignored.");
+        }
+        if (networkOptions.eventsTrackingHost) {
+            MPILogWarning(@"MPNetworkOptions: customBaseURL is set; eventsTrackingHost is ignored.");
+        }
+        if (networkOptions.aliasHost) {
+            MPILogWarning(@"MPNetworkOptions: customBaseURL is set; aliasHost is ignored.");
+        }
+        if (networkOptions.aliasTrackingHost) {
+            MPILogWarning(@"MPNetworkOptions: customBaseURL is set; aliasTrackingHost is ignored.");
+        }
+    }
     return [self initWithApiKey:apiKey
                          secret:secret
-                    eventsHost:networkOptions.eventsHost
-             eventsTrackingHost:networkOptions.eventsTrackingHost
+                    eventsHost:customHost ?: networkOptions.eventsHost
+             eventsTrackingHost:customHost ?: networkOptions.eventsTrackingHost
   overridesEventsSubdirectory:networkOptions.overridesEventsSubdirectory
-                     aliasHost:networkOptions.aliasHost
-              aliasTrackingHost:networkOptions.aliasTrackingHost
+                     aliasHost:customHost ?: networkOptions.aliasHost
+              aliasTrackingHost:customHost ?: networkOptions.aliasTrackingHost
    overridesAliasSubdirectory:networkOptions.overridesAliasSubdirectory
                    eventsOnly:networkOptions.eventsOnly];
 }

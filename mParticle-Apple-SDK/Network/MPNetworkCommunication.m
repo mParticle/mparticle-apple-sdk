@@ -67,6 +67,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 
+- (MPLog *)getLogger;
 - (void)logKitBatch:(NSString *)batch;
 + (void)executeOnMain:(void(^)(void))block;
 + (void)executeOnMainSync:(void(^)(void))block;
@@ -151,9 +152,15 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         return _configURL;
     }
 
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
     MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
-    NSString *configHost = [MParticle sharedInstance].networkOptions.configHost ?: kMPURLHostConfig;
+    MPNetworkOptions *networkOptions = mParticle.networkOptions;
+    NSString *customHost = networkOptions.customBaseURL.host;
+    if (customHost && networkOptions.configHost) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; configHost is ignored.");
+    }
+    NSString *configHost = customHost ?: (networkOptions.configHost ?: kMPURLHostConfig);
 
     NSString *dataPlanConfigString;
     NSString *dataPlanId = MParticle.sharedInstance.dataPlanId;
@@ -173,9 +180,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, kMPURLHostConfig, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
+    if (customHost && networkOptions.overridesConfigSubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesConfigSubdirectory is unsupported for CDN routing; overridesConfigSubdirectory will be ignored.");
+    }
+    NSString *configVersion = customHost ? @"config/v4" : kMPConfigVersion;
+    urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, configVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
 
-    if ([MParticle sharedInstance].networkOptions.overridesConfigSubdirectory) {
+    if (!customHost && networkOptions.overridesConfigSubdirectory) {
         NSString *configURLFormat = [urlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
         urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     }
@@ -201,10 +212,15 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if (mpUpload.uploadSettings.overridesEventsSubdirectory) {
+    BOOL usingCustomBaseURL = [MParticle sharedInstance].networkOptions.customBaseURL != nil;
+    if (usingCustomBaseURL && mpUpload.uploadSettings.overridesEventsSubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesEventsSubdirectory is unsupported for CDN routing; overridesEventsSubdirectory will be ignored.");
+    }
+    NSString *eventsVersion = usingCustomBaseURL ? @"nativeevents/v2" : kMPEventsVersion;
+    if (!usingCustomBaseURL && mpUpload.uploadSettings.overridesEventsSubdirectory) {
         urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     } else {
-        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
+        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, eventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -216,19 +232,28 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)audienceURL {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-
-    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPNetworkOptions *networkOptions = mParticle.networkOptions;
+    NSString *customHost = networkOptions.customBaseURL.host;
+    if (customHost && networkOptions.eventsHost) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; eventsHost is ignored.");
+    }
+    NSString *eventHost = customHost ?: (networkOptions.eventsHost ?: self.defaultEventHost);
     NSString *audienceURLFormat = [audienceFormat stringByAppendingString:@"?mpid=%@"];
     NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
+    if (customHost && networkOptions.overridesEventsSubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesEventsSubdirectory is unsupported for CDN routing; overridesEventsSubdirectory will be ignored.");
+    }
+    NSString *audienceVersion = customHost ? @"nativeevents/v1" : kMPAudienceVersion;
+    if (!customHost && networkOptions.overridesEventsSubdirectory) {
         audienceURLFormat = [urlFormatOverride stringByAppendingString:@"?mpid=%@"];
         urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     } else {
         audienceURLFormat = [urlFormat stringByAppendingString:@"?mpid=%@"];
-        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, audienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -274,20 +299,32 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)identityURL:(NSString *)pathComponent {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPNetworkOptions *identityNetworkOptions = mParticle.networkOptions;
+    NSString *identityCustomHost = identityNetworkOptions.customBaseURL.host;
     NSString *identityHost;
-    if ([MParticle sharedInstance].networkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        identityHost = [MParticle sharedInstance].networkOptions.identityTrackingHost;
+    if (identityCustomHost) {
+        if (identityNetworkOptions.identityHost || identityNetworkOptions.identityTrackingHost) {
+            MPILogWarning(@"MPNetworkOptions: customBaseURL is set; identityHost/identityTrackingHost are ignored.");
+        }
+        identityHost = identityCustomHost;
+    } else if (identityNetworkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        identityHost = identityNetworkOptions.identityTrackingHost;
     } else {
-        identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
+        identityHost = identityNetworkOptions.identityHost ?: self.defaultIdentityHost;
     }
     NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
+    if (identityCustomHost && identityNetworkOptions.overridesIdentitySubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesIdentitySubdirectory is unsupported for CDN routing; overridesIdentitySubdirectory will be ignored.");
+    }
+    NSString *identityVersion = identityCustomHost ? @"identity/v1" : kMPIdentityVersion;
+    if (!identityCustomHost && identityNetworkOptions.overridesIdentitySubdirectory) {
         urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
+        urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, identityVersion, pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -304,20 +341,32 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (MPURL *)modifyURL {
     NSString *pathComponent = @"modify";
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPNetworkOptions *modifyNetworkOptions = mParticle.networkOptions;
+    NSString *modifyCustomHost = modifyNetworkOptions.customBaseURL.host;
     NSString *identityHost;
-    if ([MParticle sharedInstance].networkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        identityHost = [MParticle sharedInstance].networkOptions.identityTrackingHost;
+    if (modifyCustomHost) {
+        if (modifyNetworkOptions.identityHost || modifyNetworkOptions.identityTrackingHost) {
+            MPILogWarning(@"MPNetworkOptions: customBaseURL is set; identityHost/identityTrackingHost are ignored.");
+        }
+        identityHost = modifyCustomHost;
+    } else if (modifyNetworkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        identityHost = modifyNetworkOptions.identityTrackingHost;
     } else {
-        identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
+        identityHost = modifyNetworkOptions.identityHost ?: self.defaultIdentityHost;
     }
     NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId],  pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
-    if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
+    if (modifyCustomHost && modifyNetworkOptions.overridesIdentitySubdirectory) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesIdentitySubdirectory is unsupported for CDN routing; overridesIdentitySubdirectory will be ignored.");
+    }
+    NSString *modifyVersion = modifyCustomHost ? @"identity/v1" : kMPIdentityVersion;
+    if (!modifyCustomHost && modifyNetworkOptions.overridesIdentitySubdirectory) {
         urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController_PRIVATE mpId], pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId], pathComponent];
+        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, modifyVersion, [MPPersistenceController_PRIVATE mpId], pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -344,16 +393,21 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
+    BOOL usingCustomBaseURLAlias = [MParticle sharedInstance].networkOptions.customBaseURL != nil;
     BOOL overrides = mpUpload.uploadSettings.overridesAliasSubdirectory;
     if (!mpUpload.uploadSettings.eventsOnly && !mpUpload.uploadSettings.aliasHost) {
         eventHost = mpUpload.uploadSettings.eventsHost ?: self.defaultEventHost;
         overrides = mpUpload.uploadSettings.overridesEventsSubdirectory;
     }
 
-    if (overrides) {
+    if (usingCustomBaseURLAlias && overrides) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesAliasSubdirectory/overridesEventsSubdirectory is unsupported for CDN routing; subdirectory override will be ignored.");
+    }
+    NSString *aliasVersion = usingCustomBaseURLAlias ? @"nativeevents/v1" : kMPIdentityVersion;
+    if (!usingCustomBaseURLAlias && overrides) {
         urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
+        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, aliasVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -382,43 +436,24 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 #pragma mark Private methods
-- (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
-    NSDate *now = [NSDate date];
-    NSDictionary *httpHeaders = [httpResponse allHeaderFields];
-    NSTimeInterval retryAfter = 7200; // Default of 2 hours
-    NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
-    id suggestedRetryAfter = httpHeaders[@"Retry-After"];
+- (BOOL)isRetriableTransportError:(NSError *)error {
+    return [MPTransportErrorDetector isRetriableTransportError:error];
+}
 
-    if (!MPIsNull(suggestedRetryAfter)) {
-        if ([suggestedRetryAfter isKindOfClass:[NSString class]]) {
-            if ([suggestedRetryAfter containsString:@":"]) { // Date
-                NSDate *retryAfterDate = [MPDateFormatter dateFromStringRFC1123:(NSString *)suggestedRetryAfter];
-                if (retryAfterDate) {
-                    retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
-                    retryAfter = retryAfter > 0 ? retryAfter : 7200;
-                } else {
-                    MPILogError(@"Invalid 'Retry-After' date: %@ - using default retry interval", suggestedRetryAfter);
-                }
-            } else { // Number of seconds
-                @try {
-                    retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
-                } @catch (NSException *exception) {
-                    retryAfter = 7200;
-                    MPILogError(@"Invalid 'Retry-After' value: %@ - using default retry interval", suggestedRetryAfter);
-                }
-            }
-        } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
-            retryAfter = MIN([(NSNumber *)suggestedRetryAfter doubleValue], maxRetryAfter);
-        }
-    }
+- (void)throttleWithRetryAfter:(NSTimeInterval)retryAfter uploadType:(MPUploadType)uploadType {
+    MParticle* mparticle = MParticle.sharedInstance;
+    MPLog *logger = mparticle.getLogger;
+    NSDate *now = [NSDate date];
 
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
     if ([minUploadDate compare:now] == NSOrderedAscending) {
-        [MParticle.sharedInstance.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
+        [mparticle.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
         if (uploadType == MPUploadTypeMessage) {
-            MPILogDebug(@"Throttling uploads for %.0f seconds", retryAfter);
+            NSString *messageThrottleLog = [NSString stringWithFormat:@"Throttling uploads for %.0f seconds", retryAfter];
+            [logger debug:messageThrottleLog];
         } else if (uploadType == MPUploadTypeAlias) {
-            MPILogDebug(@"Throttling alias requests for %.0f seconds", retryAfter);
+            NSString *aliasThrottleLog = [NSString stringWithFormat:@"Throttling alias requests for %.0f seconds", retryAfter];
+            [logger debug:aliasThrottleLog];
         }
     }
 }
@@ -628,7 +663,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (BOOL)performMessageUpload:(MPUpload *)upload {
-    NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
+    MParticle *mParticle = MParticle.sharedInstance;
+    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
+    MPPersistenceController_PRIVATE *persistenceController = mParticle.persistenceController;
+
+    NSDate *minUploadDate = [stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return YES;  //stop upload loop
     }
@@ -641,8 +680,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
 
     NSData *zipUploadData;
-    NSNumber *authTimestamp = [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp;
-    NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    NSNumber *authTimestamp = stateMachine.attAuthorizationTimestamp;
+    NSNumber *authStatus = stateMachine.attAuthorizationStatus;
 
     if (authStatus != nil && authTimestamp != nil) {
         NSDictionary *uploadDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
@@ -683,7 +722,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 
     if (zipUploadData == nil || zipUploadData.length <= 0) {
-        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        [persistenceController deleteUpload:upload];
         return NO;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
@@ -693,16 +732,20 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                                                              serializedParams:zipUploadData
                                                                                        secret:upload.uploadSettings.secret];
     NSData *data = response.data;
+    NSError *error = response.error;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
 
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
+    if (isSuccessCode) {
+        [MPTransportErrorDetector resetTransportErrorCounter];
+    }
     if (isSuccessCode || isInvalidCode) {
-        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        [persistenceController deleteUpload:upload];
         if (isSuccessCode && uploadString.length) {
-            [[MParticle sharedInstance] logKitBatch:uploadString];
+            [mParticle logKitBatch:uploadString];
         }
     }
 
@@ -727,12 +770,19 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-        [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeMessage];
+        NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+        NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
+        [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeMessage];
         return YES;
     }
 
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
+        if ([self isRetriableTransportError:error]) {
+            MPILogWarning(@"Throttling uploads after transport error.");
+            NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
+            [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeMessage];
+        }
         return YES;
     }
 
@@ -765,6 +815,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                                                              serializedParams:upload.uploadData
                                                                                        secret:upload.uploadSettings.secret];
     NSData *data = response.data;
+    NSError *error = response.error;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
 
     NSInteger responseCode = [httpResponse statusCode];
@@ -772,6 +823,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
+    if (isSuccessCode) {
+        [MPTransportErrorDetector resetTransportErrorCounter];
+    }
     if (isSuccessCode || isInvalidCode) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
@@ -815,12 +869,19 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     // 429, 503
     if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
         aliasResponse.willRetry = YES;
-        [self throttleWithHTTPResponse:httpResponse uploadType:upload.uploadType];
+        NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+        NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
+        [self throttleWithRetryAfter:retryAfter uploadType:upload.uploadType];
         return YES;
     }
 
     //5xx, 0, 999, -1, etc
     if (!isSuccessCode && !isInvalidCode) {
+        if ([self isRetriableTransportError:error]) {
+            MPILogWarning(@"Throttling alias requests after transport error.");
+            NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
+            [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeAlias];
+        }
         return YES;
     }
 

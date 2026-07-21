@@ -43,6 +43,8 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 - (MPKitExecStatus *)registerPaymentExtension:(id<RoktPaymentExtension>)paymentExtension;
 
+- (BOOL)handleURLCallback:(NSURL *)url;
+
 - (MPKitExecStatus *)selectShoppableAdsWithIdentifier:(NSString *)identifier
                                            attributes:(NSDictionary<NSString *, NSString *> *)attributes
                                                config:(RoktConfig *)config
@@ -56,6 +58,8 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 + (RoktLogLevel)roktLogLevelFromMParticleLogLevel:(MPILogLevel)mpLogLevel;
 
 + (void)applyMParticleLogLevel;
+
+- (void)stop;
 
 @end
 
@@ -108,6 +112,45 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqual(status.returnCode, MPKitReturnCodeRequirementsNotMet);
 }
 
+- (void)testStopResetsKitState {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMExpect([mockRoktSDK close]);
+
+    [self.kitInstance didFinishLaunchingWithConfiguration:self.configuration];
+    [self.kitInstance start];
+
+    XCTAssertTrue(self.kitInstance.started);
+    XCTAssertNotNil(self.kitInstance.configuration);
+
+    [self.kitInstance stop];
+
+    XCTAssertFalse(self.kitInstance.started);
+    XCTAssertNil(self.kitInstance.configuration);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testStartCanBeCalledAgainAfterStop {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMStub([mockRoktSDK close]);
+
+    [self.kitInstance didFinishLaunchingWithConfiguration:self.configuration];
+    [self.kitInstance start];
+    XCTAssertTrue(self.kitInstance.started);
+
+    [self.kitInstance stop];
+    XCTAssertFalse(self.kitInstance.started);
+
+    [self.kitInstance start];
+    XCTAssertTrue(self.kitInstance.started);
+
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testKitImplementsStopForWorkspaceSwitching {
+    XCTAssertTrue([self.kitInstance respondsToSelector:@selector(stop)]);
+}
+
 - (void)testConfirmEmbeddedViews_ValidEmbeddedViews {
     RoktEmbeddedView *view = [[RoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement1": view};
@@ -124,36 +167,6 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     NSDictionary *result = [self.kitInstance confirmEmbeddedViews:embeddedViews];
     
     XCTAssertEqual(result.count, 0);
-}
-
-- (void)testSetUserIdentity_Email {
-    MPKitExecStatus *status = [self.kitInstance setUserIdentity:@"test@example.com" identityType:MPUserIdentityEmail];
-    
-    XCTAssertNotNil(status);
-    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
-}
-
-- (void)testSetUserIdentity_CustomerId {
-    MPKitExecStatus *status = [self.kitInstance setUserIdentity:@"12345" identityType:MPUserIdentityCustomerId];
-    
-    XCTAssertNotNil(status);
-    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
-}
-
-- (void)testSetUserIdentity_UnsupportedType {
-    MPKitExecStatus *status = [self.kitInstance setUserIdentity:@"test" identityType:MPUserIdentityFacebook];
-    
-    XCTAssertNotNil(status);
-    XCTAssertEqual(status.returnCode, MPKitReturnCodeUnavailable);
-}
-
-- (void)testLogBaseEvent {
-    MPEvent *event = [[MPEvent alloc] initWithName:@"Test Event" type:MPEventTypeOther];
-    
-    MPKitExecStatus *status = [self.kitInstance logBaseEvent:event];
-    
-    XCTAssertNotNil(status);
-    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
 }
 
 - (void)testExecuteWithIdentifier {
@@ -1103,6 +1116,43 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     MPKitExecStatus *status = [self.kitInstance registerPaymentExtension:ext];
     XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
     OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testHandleURLCallbackForwardsToRoktAndReturnsYES {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    NSURL *url = [NSURL URLWithString:@"myapp://afterpay-redirect?token=xyz"];
+    OCMExpect([mockRoktSDK handleURLCallbackWith:url]).andReturn(YES);
+
+    BOOL handled = [self.kitInstance handleURLCallback:url];
+
+    XCTAssertTrue(handled);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testHandleURLCallbackForwardsToRoktAndReturnsNO {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    NSURL *url = [NSURL URLWithString:@"myapp://unrelated"];
+    OCMExpect([mockRoktSDK handleURLCallbackWith:url]).andReturn(NO);
+
+    BOOL handled = [self.kitInstance handleURLCallback:url];
+
+    XCTAssertFalse(handled);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testHandleURLCallbackNilURLReturnsNOWithoutForwarding {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMReject([mockRoktSDK handleURLCallbackWith:OCMOCK_ANY]);
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    BOOL handled = [self.kitInstance handleURLCallback:nil];
+#pragma clang diagnostic pop
+
+    XCTAssertFalse(handled);
     [mockRoktSDK stopMocking];
 }
 

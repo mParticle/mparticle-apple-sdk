@@ -153,6 +153,7 @@
                                                        config:(RoktConfig * _Nullable)config
                                                       onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
                                                  filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
+- (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
 
 @end
 

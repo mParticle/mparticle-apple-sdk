@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK-ObjC"
-    s.version          = "9.0.0"
+    s.version          = "9.3.1"
     s.summary          = "mParticle Apple SDK."
 
     s.description      = <<-DESC
@@ -23,8 +23,8 @@ Pod::Spec.new do |s|
     s.social_media_url  = "https://twitter.com/mparticle"
     s.requires_arc      = true
     s.module_name       = 'mParticle_Apple_SDK_ObjC'
-    s.ios.deployment_target  = "15.6"
-    s.tvos.deployment_target = "15.6"
+    s.ios.deployment_target  = "15.0"
+    s.tvos.deployment_target = "15.0"
     s.swift_versions = ["5.0"]
 
     s.default_subspecs = 'mParticle'
@@ -35,6 +35,6 @@ Pod::Spec.new do |s|
         mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
         mp.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
         mp.dependency 'mParticle-Apple-SDK-Swift'
-        mp.dependency 'RoktContracts', '~> 0.1'
+        mp.dependency 'RoktContracts', '~> 2.0'
     end
 end

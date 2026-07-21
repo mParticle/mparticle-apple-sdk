@@ -4,6 +4,57 @@
 
 This document provides migration guidance for breaking changes in the mParticle Apple SDK.
 
+## Migrating from 9.0.x to 9.1.0
+
+### Rokt SDK 5.1.0 + RoktContracts 2.0.0
+
+SDK 9.1.0 bumps the Rokt dependencies to pick up Afterpay payment support shipped in Rokt SDK 5.1.0 and PayPal / payment‑preparation totals shipped in RoktContracts 2.0.0. The dependency minimums moved from:
+
+- `Rokt-Widget` `~> 5.0` → `~> 5.1`
+- `RoktContracts` `~> 0.1` → `~> 2.0`
+
+If your `Podfile` pins `RoktContracts '~> 0.1'` transitively, loosen it to `'~> 2.0'` so CocoaPods can resolve the new minimum. SPM users using the mParticle manifest inherit the new bound automatically.
+
+The payment extension package previously published at `https://github.com/ROKT/rokt-stripe-payment-extension-ios` has been **renamed to `https://github.com/ROKT/rokt-payment-extension-ios`** (the old name implied Stripe‑only, but it now supports Afterpay and PayPal). Update any `Package.swift` / `Podfile` references to the new URL. mParticle does not depend on this package directly — it is pulled in by partners alongside `mParticle-Rokt`.
+
+### New `MPRokt.handleURLCallback:` API
+
+Redirect‑based payment flows (Afterpay, PayPal) send users into a web view and then back into your app via a registered URL scheme. To complete the round trip, forward the incoming URL to Rokt via `MPRokt.handleURLCallback:`. Call it from your URL handler and return the `BOOL` it produces so the system knows the URL was handled.
+
+**Objective‑C (AppDelegate):**
+
+```objective-c
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+    if ([[MParticle sharedInstance].rokt handleURLCallback:url]) {
+        return YES;
+    }
+    return NO;
+}
+```
+
+**Swift (SceneDelegate):**
+
+```swift
+func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    for urlContext in URLContexts {
+        _ = MParticle.sharedInstance().rokt.handleURLCallback(with: urlContext.url)
+    }
+}
+```
+
+**Swift (SwiftUI):**
+
+```swift
+WindowGroup {
+    ContentView()
+        .onOpenURL { url in
+            _ = MParticle.sharedInstance().rokt.handleURLCallback(with: url)
+        }
+}
+```
+
+Your `Info.plist` setup is unchanged — register the URL scheme you pass to your `RoktPaymentExtension` initializer under `CFBundleURLTypes` exactly as in a direct‑Rokt integration.
+
 ## Migrating from versions < 9.0.0
 
 ### Removed AppDelegateProxy

@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Firebase-12"
     s.module_name      = 'mParticle_Firebase'
-    s.version          = "9.0.0"
+    s.version          = "9.3.1"
     s.summary          = "Firebase Analytics integration for mParticle"
     s.description      = <<-DESC
                        This is the Firebase Analytics integration for mParticle.
@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-12.git", :tag => "v" + s.version.to_s }
     s.static_framework = true
-    s.ios.deployment_target = "15.6"
+    s.ios.deployment_target = "15.0"
     s.ios.source_files      = 'Sources/mParticle-Firebase/**/*.{h,m}'
     s.ios.resource_bundles  = { 'mParticle-Google-Analytics-Firebase-12-Privacy' => ['Sources/mParticle-Firebase/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'

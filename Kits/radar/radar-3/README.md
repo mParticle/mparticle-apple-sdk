@@ -13,7 +13,7 @@ Swift Package Manager resolves the `mParticle` SDK automatically as a transitive
 let mParticleVersion: Version = "9.0.0"
 
 .package(
-    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-radar",
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-radar-3",
     .upToNextMajor(from: mParticleVersion)
 ),
 ```
@@ -25,7 +25,7 @@ Then add `mParticle-Radar` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Radar', '~> 9.0'
+pod 'mParticle-Radar-3', '~> 9.0'
 ```
 
 ## Verifying the Integration
@@ -40,7 +40,8 @@ Included kits: { Radar }
 
 | Platform | Minimum Version |
 | -------- | --------------- |
-| iOS      | 15.6            |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
 
 ## Documentation
 

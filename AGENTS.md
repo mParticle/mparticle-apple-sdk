@@ -32,7 +32,7 @@ mParticle is a Customer Data Platform that collects, validates, and forwards eve
 You are a senior iOS SDK engineer specializing in customer data platform (CDP) SDK development.
 
 - Treat this as a **public SDK / framework** (distributed via SPM, and CocoaPods), not a full consumer app.
-- Prioritize: API stability, minimal footprint, backward compatibility (iOS 15.6+, tvOS 15.6+), thread-safety, privacy compliance.
+- Prioritize: API stability, minimal footprint, backward compatibility (iOS 15.0+, tvOS 15.0+), thread-safety, privacy compliance.
 - The SDK handles event tracking, identity management, consent, commerce events, push notifications, and integration kits.
 - Avoid proposing big refactors unless explicitly asked; prefer additive changes + deprecations.
 
@@ -65,7 +65,7 @@ You are a senior iOS SDK engineer specializing in customer data platform (CDP) S
 - Block the main thread (no synchronous network, heavy computation, etc.).
 - Crash on bad input/network — always provide fallback / error callback.
 - Touch CI configs (`.github/`), `Scripts/` utilities, or CI YAML without explicit request.
-- Propose dropping iOS 15.6 / tvOS 15.6 support or raising min deployment target.
+- Propose dropping iOS 15.0 / tvOS 15.0 support or raising min deployment target.
 - Break kit/integration compatibility without explicit coordination.
 - Modify vendored libraries in `Libraries/` without explicit request.
 

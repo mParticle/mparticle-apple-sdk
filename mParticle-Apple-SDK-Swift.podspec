@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK-Swift"
-    s.version          = "9.0.0"
+    s.version          = "9.3.1"
     s.summary          = "mParticle Apple SDK Swift components."
     
     s.description      = <<-DESC
@@ -15,8 +15,8 @@ Pod::Spec.new do |s|
     s.documentation_url = "https://docs.mparticle.com/developers/sdk/ios/"
     s.requires_arc      = true
     s.module_name       = 'mParticle_Apple_SDK_Swift'
-    s.ios.deployment_target  = "15.6"
-    s.tvos.deployment_target = "15.6"
+    s.ios.deployment_target  = "15.0"
+    s.tvos.deployment_target = "15.0"
     s.swift_versions = ["5.0"]
     
     s.source_files = 'mParticle-Apple-SDK-Swift/Sources/**/*.swift'

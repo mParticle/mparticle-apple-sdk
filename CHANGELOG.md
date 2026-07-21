@@ -10,6 +10,232 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [Unreleased]
 
+### Core
+
+#### Added
+
+- Add device-level consent via `MParticleOptions.deviceConsentState` and `MParticle.sharedInstance.deviceConsentState`. When set, it supersedes user/MPID-level consent everywhere consent is evaluated (kit enablement, consent forwarding to kits, and the consent included in uploads for all MPIDs), is persisted device-wide independent of the active user, and triggers the same kit refresh as a user consent change. Set it to `nil` to clear and revert to user/MPID-level consent.
+- Add `MPRokt.handleURLCallback:` for forwarding Afterpay/PayPal redirect URLs to the registered Rokt payment extension. Call from `application:openURL:options:` (AppDelegate) or `scene:openURLContexts:` / `.onOpenURL` (Scene/SwiftUI).
+
+#### Changed
+
+- Bump minimum `RoktContracts` to 2.0.0 (adds `PaymentMethodType.paypal` and totals on `PaymentPreparation`).
+
+#### Fixed
+
+- `MParticle.sharedInstance.identity.deviceApplicationStamp` now returns the same value sent on the wire as `device_application_stamp` (`mp_deviceid`). Previously it returned the unrelated `MPDevice.deviceIdentifier` used for ramp bucketing.
+
+### Kits
+
+#### Fixed
+
+- Use dual-path core SDK imports in kit public headers so manual xcframework consumers resolve `mParticle_Apple_SDK` (xcframework/CocoaPods framework) or `mParticle_Apple_SDK_ObjC` (SPM/CocoaPods ObjC). CI smoke-tests kit headers against the core SDK xcframework.
+- Correct kit README CocoaPods pod names and mirror repository URLs to match versioned podspecs and CI mirror destinations.
+
+#### Added
+
+- **Adobe 5** — Add tvOS 15.0+ support for CocoaPods and Swift Package Manager.
+- **Braze 16** — Add `braze-16` kit track for [Braze Swift SDK 16.x](https://github.com/braze-inc/braze-swift-sdk/releases).
+- **Braze 16** — When `useEcommerceRecommendedEvents` is enabled in kit configuration, forward supported mParticle commerce events to Braze recommended eCommerce events (`ecommerce.cart_updated`, `ecommerce.checkout_started`, `ecommerce.product_viewed`, `ecommerce.order_placed`, `ecommerce.order_refunded`).
+- **Rokt SDK+ (`RoktSDKPlus`)** — Umbrella Swift package and CocoaPods pod at `Kits/rokt-sdk-plus/rokt-sdk-plus-ios`, versioned with the core SDK and mirrored to [ROKT/rokt-sdk-plus-ios](https://github.com/ROKT/rokt-sdk-plus-ios).
+
+#### Fixed
+
+- **Rokt SDK+** — Release **Build rokt-sdk-plus-ios** no longer runs `xcodebuild -create-xcframework` for this Swift-package-only target (archives do not produce `*.framework` under `Products/Library/Frameworks/`). CI uploads a small placeholder zip so mirror artifact steps still succeed; integrate via SwiftPM or CocoaPods from the tag.
+- **Rokt SDK+** — Align `RoktSDKPlus.podspec` with the ecosystem version (double-quoted `s.version`, same as other kits). Release – Draft now bumps single-quoted `s.version = '…'` podspec lines so `mParticle-Rokt` and `RoktSDKPlus` stay in sync for `pod lib lint`.
+
+#### Rokt
+
+##### Changed
+
+- Bump minimum `Rokt-Widget` to 5.1.0 (adds Afterpay payment support).
+- Bump minimum `RoktContracts` to 2.0.0.
+
+##### Added
+
+- Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
+- Implement `stop` on `MPKitRokt` so the kit remains active across `switchWorkspaceWithOptions:` without requiring an app restart.
+
+## [9.3.1] - 2026-07-21
+
+### Kits
+
+#### Kits
+
+##### Changed
+
+- Align kit README platform support with iOS/tvOS 15.0 ([#794](https://github.com/mParticle/mparticle-apple-sdk/pull/794))
+
+#### Adobe
+
+##### Added
+
+- Add tvOS Support to Adobe ([#795](https://github.com/mParticle/mparticle-apple-sdk/pull/795))
+
+#### Rokt
+
+##### Changed
+
+- Bump Rokt SDK dependency (`Rokt-Widget`) to 5.3.0 for SwiftPM and CocoaPods ([#796](https://github.com/mParticle/mparticle-apple-sdk/pull/796))
+
+##### Removed
+
+- Remove unused no-op `MPKitProtocol` stubs from the Rokt kit ([#798](https://github.com/mParticle/mparticle-apple-sdk/pull/798))
+
+## [9.3.0] - 2026-07-01
+
+### Core
+
+#### Fixed
+
+- Persist event batches and delete source messages atomically ([#787](https://github.com/mParticle/mparticle-apple-sdk/pull/787))
+
+### Kits
+
+#### Adjust
+
+##### Removed
+
+- Roll back minimum iOS/tvOS deployment target to 15.0 ([#791](https://github.com/mParticle/mparticle-apple-sdk/pull/791))
+
+##### Fixed
+
+- Fix Kit Imports for Manual xcframeworks ([#790](https://github.com/mParticle/mparticle-apple-sdk/pull/790))
+
+#### Rokt
+
+##### Added
+
+- Add Workspace Switching Support to Rokt Kit ([#789](https://github.com/mParticle/mparticle-apple-sdk/pull/789))
+
+## [9.2.2] - 2026-06-25
+
+### Core
+
+#### Added
+
+- Device-based consent ([#784](https://github.com/mParticle/mparticle-apple-sdk/pull/784))
+
+#### Fixed
+
+- Align identity.deviceApplicationStamp with wire value (TRIAGE-713) ([#781](https://github.com/mParticle/mparticle-apple-sdk/pull/781))
+
+### Kits
+
+#### Kits
+
+##### Added
+
+- Add PaymentExtension-to-Mono-Repo ([#776](https://github.com/mParticle/mparticle-apple-sdk/pull/776))
+
+##### Changed
+
+- Revert "feat: Add PaymentExtension-to-Mono-Repo" ([#777](https://github.com/mParticle/mparticle-apple-sdk/pull/777))
+
+#### Adjust
+
+##### Fixed
+
+- Align minimum OS deployment target to 15.6 across the monorepo ([#779](https://github.com/mParticle/mparticle-apple-sdk/pull/779))
+
+## [9.2.1] - 2026-05-26
+
+### Core
+
+#### Fixed
+
+- Call start on kits configured from cache ([#774](https://github.com/mParticle/mparticle-apple-sdk/pull/774))
+- Throttle retriable transport upload failures ([#770](https://github.com/mParticle/mparticle-apple-sdk/pull/770))
+
+### Kits
+
+#### Onetrust
+
+##### Fixed
+
+- Cap OneTrust SDK versions to avoid ObjC selector mismatch ([#773](https://github.com/mParticle/mparticle-apple-sdk/pull/773))
+
+## [9.2.0] - 2026-05-13
+
+### Kits
+
+#### Kits
+
+##### Added
+
+- Add Rokt SDK+ repo to mono repo ([#766](https://github.com/mParticle/mparticle-apple-sdk/pull/766))
+
+#### Rokt
+
+##### Added
+
+- Global CNAME support and Rokt Kit passthrough ([#760](https://github.com/mParticle/mparticle-apple-sdk/pull/760))
+
+## [9.1.0] - 2026-05-04
+
+### Core
+
+#### Added
+
+- Simplify collection of email and mobile sha256 ([#756](https://github.com/mParticle/mparticle-apple-sdk/pull/756))
+
+#### Fixed
+
+- Map mobileSha256 to MPIdentityOther2 instead of MPIdentityOther ([#761](https://github.com/mParticle/mparticle-apple-sdk/pull/761))
+
+### Kits
+
+#### Adobe
+
+##### Fixed
+
+- Add startup logging for OneTrust and Adobe kits ([#762](https://github.com/mParticle/mparticle-apple-sdk/pull/762))
+
+#### Rokt
+
+##### Added
+
+- Adopt Rokt SDK 5.1.0 and add MPRokt.handleURLCallback ([#759](https://github.com/mParticle/mparticle-apple-sdk/pull/759))
+
+## [9.0.1] - 2026-04-22
+
+### Core
+
+#### Changed
+
+- Update Apple SDK installation and kit docs ([#741](https://github.com/mParticle/mparticle-apple-sdk/pull/741))
+
+### Kits
+
+#### Adjust
+
+##### Fixed
+
+- Point kit podspec source URLs to mirror repos ([#740](https://github.com/mParticle/mparticle-apple-sdk/pull/740))
+- Add "v" prefix to git tag in all kit podspecs ([#739](https://github.com/mParticle/mparticle-apple-sdk/pull/739))
+
+##### Changed
+
+- Add issues redirect notice to all kit READMEs ([#750](https://github.com/mParticle/mparticle-apple-sdk/pull/750))
+
+#### Adobe
+
+##### Fixed
+
+- Prevent use-after-free crash in Adobe kit \_midOverride ([#755](https://github.com/mParticle/mparticle-apple-sdk/pull/755))
+
+#### Braze
+
+##### Fixed
+
+- Replace real Braze instances with OCMClassMock in SPM tests ([#751](https://github.com/mParticle/mparticle-apple-sdk/pull/751))
+
+#### Google-analytics-firebase-ga4
+
+##### Fixed
+
+- Replace non-modular header imports in Firebase kit headers ([#742](https://github.com/mParticle/mparticle-apple-sdk/pull/742))
+
 ## [9.0.0] - 2026-04-07
 
 ### Core
@@ -2238,5 +2464,12 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.0...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.1...HEAD
+[9.3.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.0...v9.3.1
+[9.3.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.2...v9.3.0
+[9.2.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.1...v9.2.2
+[9.2.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.0...v9.2.1
+[9.2.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.1.0...v9.2.0
+[9.1.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.1...v9.1.0
+[9.0.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.0.0...v9.0.1
 [9.0.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v8.44.4...v9.0.0

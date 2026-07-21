@@ -20,6 +20,14 @@ let mParticleVersion: Version = "9.0.0"
 
 Then add `mParticle-ComScore` as a dependency of your target.
 
+### CocoaPods
+
+Add the kit dependency to your app's Podfile:
+
+```ruby
+pod 'mParticle-ComScore-6', '~> 9.0'
+```
+
 ## Verifying the Integration
 
 After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:
@@ -32,8 +40,8 @@ Included kits: { ComScore }
 
 | Platform | Minimum Version |
 | -------- | --------------- |
-| iOS      | 15.6            |
-| tvOS     | 15.6            |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
 
 ## Documentation
 

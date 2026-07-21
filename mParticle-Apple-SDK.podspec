@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK"
-    s.version          = "9.0.0"
+    s.version          = "9.3.1"
     s.summary          = "Swift umbrella sources for mParticle Apple SDK (same paths as SwiftPM product `mParticle-Apple-SDK`)."
 
     s.description      = <<-DESC
@@ -16,11 +16,11 @@ Pod::Spec.new do |s|
     s.social_media_url  = "https://twitter.com/mparticle"
     s.requires_arc      = true
     s.module_name       = 'mParticle_Apple_SDK'
-    s.ios.deployment_target  = "15.6"
-    s.tvos.deployment_target = "15.6"
+    s.ios.deployment_target  = "15.0"
+    s.tvos.deployment_target = "15.0"
     s.swift_versions = ["5.0"]
 
     s.source_files = 'MParticle/Sources/mParticle_Apple_SDK/**/*.swift'
     s.dependency 'mParticle-Apple-SDK-ObjC', s.version.to_s
-    s.dependency 'RoktContracts', '~> 0.1'
+    s.dependency 'RoktContracts', '~> 2.0'
 end

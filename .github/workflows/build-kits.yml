@@ -51,10 +51,15 @@ jobs:
       - name: Pod Lib Lint
         run: |
           echo "Linting: ${{ matrix.kit.podspec }}"
+          INCLUDES="mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec"
+          if [ -n "${{ matrix.kit.pod_lint_include_podspecs }}" ]; then
+            INCLUDES="${INCLUDES},${{ matrix.kit.pod_lint_include_podspecs }}"
+          fi
+          INCLUDES="{${INCLUDES}}"
           for attempt in 1 2 3; do
             pod lib lint "${{ matrix.kit.podspec }}" \
               --allow-warnings \
-              --include-podspecs="{mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}" \
+              --include-podspecs="$INCLUDES" \
               && break
             [ $attempt -lt 3 ] && echo "Attempt $attempt failed, retrying in 60s..." && sleep 60 || exit 1
           done
@@ -79,7 +84,9 @@ jobs:
           fetch-depth: 1
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Compute DerivedData cache key
         id: derived-key
@@ -105,35 +112,57 @@ jobs:
       - name: Resolve SPM dependencies
         run: |
           SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
-          PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
-
-          xcodebuild -resolvePackageDependencies -project "$PROJECT" \
-            -scheme "$SCHEME" -derivedDataPath DerivedData
+          LOCAL_PATH="${{ matrix.kit.local_path }}"
+          if compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
+            PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
+            xcodebuild -resolvePackageDependencies -project "$PROJECT" \
+              -scheme "$SCHEME" -derivedDataPath DerivedData
+          else
+            # Swift package without .xcodeproj (see rokt-sdk-plus-ios).
+            (cd "$LOCAL_PATH" && xcodebuild -resolvePackageDependencies -scheme "$SCHEME" -derivedDataPath "$OLDPWD/DerivedData")
+          fi
 
       - name: Build kit schemes
         run: |
+          LOCAL_PATH="${{ matrix.kit.local_path }}"
           echo '${{ toJson(matrix.kit.schemes) }}' | jq -c '.[]' | while IFS= read -r ENTRY; do
             SCHEME=$(echo "$ENTRY" | jq -r '.scheme')
             DEST=$(echo "$ENTRY" | jq -r '.destination')
 
-            if [ -d "${{ matrix.kit.local_path }}/$SCHEME.xcodeproj" ]; then
-              PROJECT="${{ matrix.kit.local_path }}/$SCHEME.xcodeproj"
+            if [ -d "$LOCAL_PATH/$SCHEME.xcodeproj" ]; then
+              PROJECT="$LOCAL_PATH/$SCHEME.xcodeproj"
+              XB=(xcodebuild build -project "$PROJECT" -scheme "$SCHEME")
+            elif compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
+              PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
+              XB=(xcodebuild build -project "$PROJECT" -scheme "$SCHEME")
             else
-              PROJECT="$(ls -d ${{ matrix.kit.local_path }}/*.xcodeproj | head -1)"
+              XB=(xcodebuild build -scheme "$SCHEME")
             fi
 
-            xcodebuild build -project "$PROJECT" -scheme "$SCHEME" \
-              -destination "generic/platform=$DEST" \
-              -derivedDataPath DerivedData \
-              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
-
-            xcodebuild build -project "$PROJECT" -scheme "$SCHEME" \
-              -destination "generic/platform=$DEST Simulator" \
-              -derivedDataPath DerivedData \
-              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+            if compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
+              "${XB[@]}" \
+                -destination "generic/platform=$DEST" \
+                -derivedDataPath DerivedData \
+                CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+              "${XB[@]}" \
+                -destination "generic/platform=$DEST Simulator" \
+                -derivedDataPath DerivedData \
+                CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+            else
+              # Package.swift only (e.g. rokt-sdk-plus-ios): xcodebuild must run from the package root; no -project.
+              (cd "$LOCAL_PATH" && "${XB[@]}" \
+                -destination "generic/platform=$DEST" \
+                -derivedDataPath "$OLDPWD/DerivedData" \
+                CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO)
+              (cd "$LOCAL_PATH" && "${XB[@]}" \
+                -destination "generic/platform=$DEST Simulator" \
+                -derivedDataPath "$OLDPWD/DerivedData" \
+                CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO)
+            fi
           done
 
       - name: Build SPM-Swift-Example
+        if: ${{ matrix.kit.skip_example_builds != true }}
         run: |
           PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Swift-Example/*.xcodeproj | head -1)"
           xcodebuild build -project "$PROJECT" -scheme SPM-Swift-Example \
@@ -142,6 +171,7 @@ jobs:
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Build SPM-Objc-Example
+        if: ${{ matrix.kit.skip_example_builds != true }}
         run: |
           PROJECT="$(ls -d ${{ matrix.kit.local_path }}/Example/SPM-Objc-Example/*.xcodeproj | head -1)"
           xcodebuild build -project "$PROJECT" -scheme SPM-Objc-Example \
@@ -150,6 +180,7 @@ jobs:
             CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Run SPM tests
+        if: ${{ matrix.kit.skip_spm_tests != true }}
         run: |
           cd ${{ matrix.kit.local_path }}
           PACKAGE=$(grep -E '^\s*name:' Package.swift | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
@@ -161,7 +192,56 @@ jobs:
           fi
           for xc in *.xcodeproj; do [ -d "$xc" ] && mv "$xc" "${xc}.bak"; done
           trap 'for xc in *.xcodeproj.bak; do [ -d "$xc" ] && mv "$xc" "${xc%.bak}"; done' EXIT
-          xcodebuild test -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=iPhone 16" \
-            -derivedDataPath DerivedData-Test \
-            CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+          run_spm_tests() {
+            xcodebuild test -scheme "$SCHEME" \
+              -destination "$1" \
+              -derivedDataPath DerivedData-Test \
+              CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          }
+
+          DESTINATION="generic/platform=iOS Simulator"
+          set +e
+          run_spm_tests "$DESTINATION"
+          TEST_EXIT=$?
+          set -e
+          if [ "$TEST_EXIT" -eq 0 ]; then
+            exit 0
+          fi
+          if [ "$TEST_EXIT" -ne 70 ]; then
+            echo "::error::SPM tests failed (exit $TEST_EXIT); not retrying with a different simulator"
+            exit "$TEST_EXIT"
+          fi
+
+          echo "generic/platform=iOS Simulator unavailable (exit 70); resolving a concrete iPhone simulator..."
+          AVAILABLE_DEVICES=$(xcrun simctl list devices iPhone available | grep "iPhone" | grep -v "==" || true)
+          DEVICE_NAME=""
+          for device_pattern in "iPhone 17" "iPhone 16" "iPhone 15" "iPhone"; do
+            DEVICE_NAME=$(echo "$AVAILABLE_DEVICES" | grep "$device_pattern" | head -1 | sed 's/^[[:space:]]*//' | sed 's/ (.*//')
+            [ -n "$DEVICE_NAME" ] && break
+          done
+          if [ -z "$DEVICE_NAME" ]; then
+            echo "::error::No suitable iPhone simulator found for SPM tests"
+            exit 1
+          fi
+          echo "Retrying SPM tests on: $DEVICE_NAME"
+          DESTINATION="platform=iOS Simulator,name=${DEVICE_NAME}"
+          run_spm_tests "$DESTINATION"
+
+  verify-kit-xcframework-import:
+    name: Verify kit xcframework ObjC imports
+    runs-on: macOS-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v6
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.2"
+
+      - name: Verify kit headers compile against core SDK xcframework
+        run: |
+          chmod +x ./Scripts/verify_kit_xcframework_import.sh
+          ./Scripts/verify_kit_xcframework_import.sh

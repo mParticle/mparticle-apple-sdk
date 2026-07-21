@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-UrbanAirship-19"
     s.module_name      = 'mParticle_UrbanAirship'
-    s.version          = "9.0.0"
+    s.version          = "9.3.1"
     s.summary          = "Airship integration for mParticle"
     s.description      = <<-DESC
                        This is the Airship (Urban Airship) integration for mParticle.
@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
     s.license          = { :type => 'Apache 2.0', :file => 'LICENSE' }
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship-19.git", :tag => "v" + s.version.to_s }
-    s.ios.deployment_target = "15.6"
+    s.ios.deployment_target = "15.0"
     s.ios.source_files      = 'Sources/mParticle-UrbanAirship/**/*.{h,m}'
     s.ios.resource_bundles  = { 'mParticle-UrbanAirship-19-Privacy' => ['Sources/mParticle-UrbanAirship/PrivacyInfo.xcprivacy'] }
     s.ios.pod_target_xcconfig = { 'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) AIRSHIP_COCOAPODS=1' }

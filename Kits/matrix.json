@@ -79,7 +79,6 @@
   },
   {
     "name": "braze-12",
-    "xcode_version": "16.4",
     "local_path": "Kits/braze/braze-12",
     "podspec": "Kits/braze/braze-12/mParticle-Braze-12.podspec",
     "dest_repo": "mparticle-apple-integration-braze-12",
@@ -98,7 +97,6 @@
   },
   {
     "name": "braze-13",
-    "xcode_version": "16.4",
     "local_path": "Kits/braze/braze-13",
     "podspec": "Kits/braze/braze-13/mParticle-Braze-13.podspec",
     "dest_repo": "mparticle-apple-integration-braze-13",
@@ -117,7 +115,6 @@
   },
   {
     "name": "braze-14",
-    "xcode_version": "16.4",
     "local_path": "Kits/braze/braze-14",
     "podspec": "Kits/braze/braze-14/mParticle-Braze-14.podspec",
     "dest_repo": "mparticle-apple-integration-braze-14",
@@ -389,6 +386,25 @@
       {
         "scheme": "mParticle-Rokt",
         "module": "mParticle_Rokt",
+        "destination": "iOS"
+      }
+    ]
+  },
+  {
+    "name": "rokt-sdk-plus-ios",
+    "local_path": "Kits/rokt-sdk-plus/rokt-sdk-plus-ios",
+    "podspec": "Kits/rokt-sdk-plus/rokt-sdk-plus-ios/RoktSDKPlus.podspec",
+    "dest_repo": "rokt-sdk-plus-ios",
+    "dest_org": "ROKT",
+    "spm_package_only": true,
+    "skip_xcframework": true,
+    "skip_example_builds": true,
+    "skip_spm_tests": true,
+    "pod_lint_include_podspecs": "Kits/rokt/rokt/mParticle-Rokt.podspec",
+    "schemes": [
+      {
+        "scheme": "RoktSDKPlus",
+        "module": "RoktSDKPlus",
         "destination": "iOS"
       }
     ]

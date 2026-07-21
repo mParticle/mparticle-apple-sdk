@@ -9,10 +9,18 @@ This kit integrates [Firebase Analytics](https://firebase.google.com/docs/analyt
 Add the `mParticle-Firebase` product from this package to your Xcode project or `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/mParticle/mparticle-apple-integration-google-analytics-firebase-12", .upToNextMajor(from: "9.0.0"))
+.package(url: "https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-12", .upToNextMajor(from: "9.0.0"))
 ```
 
 Then add `mParticle-Firebase` as a dependency of your target.
+
+### CocoaPods
+
+Add the kit dependency to your app's Podfile:
+
+```ruby
+pod 'mParticle-Firebase-12', '~> 9.0'
+```
 
 ## Verifying the Integration
 
@@ -26,8 +34,8 @@ Included kits: { Firebase }
 
 | Platform | Minimum Version |
 | -------- | --------------- |
-| iOS      | 15.6            |
-| tvOS     | 15.6            |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
 
 ## Documentation
 

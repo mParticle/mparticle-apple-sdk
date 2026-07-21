@@ -362,6 +362,47 @@ static const NSInteger kMPRoktKitId = 181;
     }];
 }
 
+/// Forwards a redirect URL (e.g. Afterpay, PayPal) to the registered Rokt payment extension(s) via the Rokt Kit.
+/// Uses a synchronous kit lookup (not \c forwardSDKCall) because the caller relies on the BOOL return value.
+/// - Parameter url: The URL received by the app's URL handler.
+/// - Returns: YES if a registered payment extension claimed the URL; NO otherwise (including when the Rokt Kit is not registered).
+- (BOOL)handleURLCallback:(NSURL * _Nonnull)url {
+    MPILogDebug(@"MPRokt handleURLCallback called - url: %@", url);
+    if (!url) {
+        return NO;
+    }
+
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+    if (!activeKits || activeKits.count == 0) {
+        MPILogDebug(@"MPRokt handleURLCallback - no active kits found");
+        return NO;
+    }
+
+    for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
+        if ([kitRegister.code integerValue] == kMPRoktKitId) {
+            id kitInstance = kitRegister.wrapperInstance;
+            SEL sel = @selector(handleURLCallback:);
+            if (kitInstance && [kitInstance respondsToSelector:sel]) {
+                NSMethodSignature *signature = [kitInstance methodSignatureForSelector:sel];
+                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+                [invocation setSelector:sel];
+                [invocation setTarget:kitInstance];
+                [invocation setArgument:&url atIndex:2];
+                [invocation invoke];
+                BOOL handled = NO;
+                [invocation getReturnValue:&handled];
+                MPILogDebug(@"MPRokt handleURLCallback returning: %@", handled ? @"YES" : @"NO");
+                return handled;
+            }
+            MPILogDebug(@"MPRokt handleURLCallback - kit found but doesn't respond to handleURLCallback:");
+            return NO;
+        }
+    }
+
+    MPILogDebug(@"MPRokt handleURLCallback - Rokt Kit not found in active kits");
+    return NO;
+}
+
 #pragma mark - Private Helper Methods
 
 /// Applies dashboard placement attribute key mapping, then sets each non-sandbox key on the user.

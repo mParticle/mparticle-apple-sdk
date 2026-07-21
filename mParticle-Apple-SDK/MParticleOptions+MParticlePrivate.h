@@ -7,6 +7,7 @@
 @property (nonatomic, readwrite) BOOL isStartKitsAsyncSet;
 @property (nonatomic, readwrite) BOOL isUploadIntervalSet;
 @property (nonatomic, readwrite) BOOL isSessionTimeoutSet;
+@property (nonatomic, readwrite) BOOL isDeviceConsentStateSet;
 
 + (id)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
 
@@ -17,6 +18,7 @@
 - (void)setStartKitsAsync:(BOOL)startKitsAsync;
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval;
 - (void)setSessionTimeout:(NSTimeInterval)sessionTimeout;
+- (void)setDeviceConsentState:(MPConsentState *)deviceConsentState;
 - (void)setConfigMaxAgeSeconds:(NSNumber *)configMaxAgeSeconds;
 - (void)setPersistenceMaxAgeSeconds:(NSNumber *)persistenceMaxAgeSeconds;
 

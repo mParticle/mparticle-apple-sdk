@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Iterable-6"
     s.module_name      = 'mParticle_Iterable'
-    s.version          = "9.0.0"
+    s.version          = "9.3.1"
     s.summary          = "Iterable integration for mParticle"
     s.description      = <<-DESC
                        This is the Iterable integration for mParticle.
@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
     s.license          = { :type => 'Apache 2.0', :file => 'LICENSE' }
     s.author           = { "mParticle" => "support@mparticle.com" }
     s.source           = { :git => "https://github.com/mparticle-integrations/mparticle-apple-integration-iterable-6.git", :tag => "v" + s.version.to_s }
-    s.ios.deployment_target = "15.6"
+    s.ios.deployment_target = "15.0"
     s.ios.source_files      = 'Sources/mParticle-Iterable/**/*.{h,m}'
     s.ios.resource_bundles  = { 'mParticle-Iterable-6-Privacy' => ['Sources/mParticle-Iterable/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'

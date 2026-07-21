@@ -911,6 +911,40 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+// Regression: when message deletion does not durably remove the rows (the
+// production failure mode), the same messages must not be re-batched into a
+// second upload on a later cycle. Pre-fix this produced a duplicate batch
+// (same source_message_id, new batch_id); the atomic save+delete prevents it.
+- (void)testMessagesAreNotReBatchedIntoDuplicateUploadWhenDeleteFails {
+    dispatch_sync(messageQueue, ^{
+        NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
+        MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+
+        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:mpid];
+        [persistence saveSession:session];
+        for (NSString *value in @[@"v1", @"v2"]) {
+            MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                                     session:session
+                                                                                 messageInfo:@{@"MessageKey1":value}];
+            [persistence saveMessage:[messageBuilder build]];
+        }
+
+        // Simulate the source messages surviving deletion (silent SQLite failure
+        // pre-fix / process kill in the non-transactional window).
+        id persistenceMock = OCMPartialMock(persistence);
+        OCMStub([persistenceMock deleteMessages:[OCMArg any]]);
+
+        MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions];
+        [self.backendController prepareBatchesForUpload:uploadSettings];
+        [self.backendController prepareBatchesForUpload:uploadSettings];
+
+        NSArray<MPUpload *> *uploads = [persistence fetchUploads];
+        XCTAssertEqual(uploads.count, 1, @"The same messages were uploaded in %lu batches - a duplicate.", (unsigned long)uploads.count);
+
+        [persistenceMock stopMocking];
+    });
+}
+
 - (void)testDidBecomeActiveWithAppLink {
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];

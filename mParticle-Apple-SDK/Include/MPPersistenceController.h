@@ -31,6 +31,9 @@
 + (void)setMpid:(nonnull NSNumber *)mpId;
 + (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
 + (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;
++ (nullable MPConsentState *)deviceConsentState;
++ (void)setDeviceConsentState:(nullable MPConsentState *)state;
++ (nullable MPConsentState *)effectiveConsentStateForMpid:(nullable NSNumber *)mpid;
 + (NSInteger)maxBytesPerEvent:(nullable NSString *)messageType;
 + (NSInteger)maxBytesPerBatch:(nullable NSString *)messageType;
 - (nullable MPSession *)archiveSession:(nonnull MPSession *)session;
@@ -72,6 +75,7 @@
 - (void)saveMessage:(nonnull MPMessage *)message;
 - (void)saveSession:(nonnull MPSession *)session;
 - (void)saveUpload:(nonnull MPUpload *)upload;
+- (BOOL)saveUploads:(nonnull NSArray<MPUpload *> *)uploads deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)updateSession:(nonnull MPSession *)session;
 - (nonnull NSDictionary<NSString *, NSDictionary *> *)appAndDeviceInfoForSessionId:(nonnull NSNumber *)sessionId;

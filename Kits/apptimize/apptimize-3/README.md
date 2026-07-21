@@ -22,7 +22,7 @@ Then add `mParticle-Apptimize` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Apptimize', '~> 9.0'
+pod 'mParticle-Apptimize-3', '~> 9.0'
 ```
 
 ## Verifying the Integration
@@ -32,6 +32,13 @@ After installing, rebuild and launch your app. With the mParticle log level set 
 ```bash
 Included kits: { Apptimize }
 ```
+
+## Platform Support
+
+| Platform | Minimum Version |
+| -------- | --------------- |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
 
 ## Documentation
 

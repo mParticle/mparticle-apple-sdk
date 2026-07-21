@@ -24,7 +24,7 @@ Then add `mParticle-UrbanAirship` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-UrbanAirship', '~> 9'
+pod 'mParticle-UrbanAirship-20', '~> 9'
 ```
 
 ## Verifying the Integration
@@ -84,8 +84,8 @@ private func removeTag(key: String) {
 
 | Platform | Minimum Version |
 | -------- | --------------- |
-| iOS      | 15.6            |
-| tvOS     | 15.6            |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
 
 ## Documentation
 

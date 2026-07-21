@@ -39,6 +39,8 @@ class MParticleOptionsMParticlePrivateTests: XCTestCase {
         XCTAssertNil(sut.networkOptions)
 
         XCTAssertNil(sut.consentState)
+        XCTAssertNil(sut.deviceConsentState)
+        XCTAssertFalse(sut.isDeviceConsentStateSet)
         XCTAssertNil(sut.dataPlanId)
         XCTAssertNil(sut.dataPlanVersion)
         XCTAssertNil(sut.dataPlanOptions)
@@ -128,6 +130,22 @@ class MParticleOptionsMParticlePrivateTests: XCTestCase {
 
         XCTAssertEqual(sut.sessionTimeout, 1.0)
         XCTAssertTrue(sut.isSessionTimeoutSet)
+    }
+
+    func testSetDeviceConsentState() {
+        XCTAssertNil(sut.deviceConsentState)
+        XCTAssertFalse(sut.isDeviceConsentStateSet)
+
+        let consentState = MPConsentState()
+        sut.setDeviceConsentState(consentState)
+
+        XCTAssertEqual(sut.deviceConsentState, consentState)
+        XCTAssertTrue(sut.isDeviceConsentStateSet)
+
+        sut.setDeviceConsentState(nil)
+
+        XCTAssertNil(sut.deviceConsentState)
+        XCTAssertTrue(sut.isDeviceConsentStateSet)
     }
 
     func testSetConfigMaxAgeSeconds() {

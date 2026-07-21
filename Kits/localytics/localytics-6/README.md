@@ -22,7 +22,7 @@ Then add `mParticle-Localytics` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Localytics', '~> 9.0'
+pod 'mParticle-Localytics-6', '~> 9.0'
 ```
 
 ## Verifying the Integration
@@ -37,7 +37,8 @@ Included kits: { Localytics }
 
 | Platform | Minimum Version |
 | -------- | --------------- |
-| iOS      | 15.6            |
+| iOS      | 15.0            |
+| tvOS     | 15.0            |
 
 ## Documentation
 

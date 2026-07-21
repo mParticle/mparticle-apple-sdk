@@ -129,5 +129,15 @@
                     config:(RoktConfig * _Nullable)config
                    onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
 
+/**
+ * Forwards a redirect URL (e.g. Afterpay, PayPal) to the registered Rokt payment extension(s).
+ * Call from your AppDelegate's application:openURL:options: or SceneDelegate's scene:openURLContexts:
+ * (SwiftUI: onOpenURL) so Rokt can complete redirect-based payment flows.
+ *
+ * @param url The URL received by your app.
+ * @return YES if a registered payment extension claimed the URL; NO otherwise.
+ */
+- (BOOL)handleURLCallback:(NSURL * _Nonnull)url NS_SWIFT_NAME(handleURLCallback(with:));
+
 
 @end

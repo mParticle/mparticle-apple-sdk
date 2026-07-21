@@ -229,7 +229,7 @@
         _uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
     }
     
-    MPConsentState *consentState = [MPPersistenceController_PRIVATE consentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
+    MPConsentState *consentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
     if (consentState) {
         NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
         if (consentStateDictionary) {

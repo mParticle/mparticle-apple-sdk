@@ -14,15 +14,22 @@
 // Rokt kit identifier for testing
 static NSNumber * const kTestRoktKitId = @181;
 
-// Test helper class that simulates a kit with getSessionId method
+// Test helper class that simulates a kit with getSessionId and handleURLCallback methods
 @interface MPRoktTestKitInstance : NSObject
 @property (nonatomic, copy) NSString *sessionIdToReturn;
+@property (nonatomic, assign) BOOL handleURLCallbackReturn;
+@property (nonatomic, strong) NSURL *lastHandleURLCallbackURL;
 - (NSString *)getSessionId;
+- (BOOL)handleURLCallback:(NSURL *)url;
 @end
 
 @implementation MPRoktTestKitInstance
 - (NSString *)getSessionId {
     return self.sessionIdToReturn;
+}
+- (BOOL)handleURLCallback:(NSURL *)url {
+    self.lastHandleURLCallbackURL = url;
+    return self.handleURLCallbackReturn;
 }
 @end
 
@@ -1168,4 +1175,92 @@ static NSNumber * const kTestRoktKitId = @181;
     XCTAssertNil(result, @"Should return nil when kit wrapper instance is nil");
 }
 
-@end 
+#pragma mark - handleURLCallback Tests
+
+- (void)testHandleURLCallbackReturnsYESWhenKitClaimsURL {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+    kitInstance.handleURLCallbackReturn = YES;
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    NSURL *url = [NSURL URLWithString:@"myapp://afterpay-redirect?token=abc"];
+    BOOL result = [self.rokt handleURLCallback:url];
+
+    XCTAssertTrue(result, @"Should return YES when the kit claims the URL");
+    XCTAssertEqualObjects(kitInstance.lastHandleURLCallbackURL, url, @"Kit should have received the URL");
+}
+
+- (void)testHandleURLCallbackReturnsNOWhenKitDoesNotClaimURL {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+    kitInstance.handleURLCallbackReturn = NO;
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    NSURL *url = [NSURL URLWithString:@"myapp://unrelated"];
+    BOOL result = [self.rokt handleURLCallback:url];
+
+    XCTAssertFalse(result, @"Should return NO when the kit does not claim the URL");
+}
+
+- (void)testHandleURLCallbackReturnsNOWhenNoActiveKits {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[]);
+
+    NSURL *url = [NSURL URLWithString:@"myapp://afterpay-redirect"];
+    BOOL result = [self.rokt handleURLCallback:url];
+
+    XCTAssertFalse(result, @"Should return NO when no kits are active");
+}
+
+- (void)testHandleURLCallbackReturnsNOWhenRoktKitNotRegistered {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // A non-Rokt kit is registered
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(@999);
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    NSURL *url = [NSURL URLWithString:@"myapp://afterpay-redirect"];
+    BOOL result = [self.rokt handleURLCallback:url];
+
+    XCTAssertFalse(result, @"Should return NO when the Rokt Kit is not registered");
+}
+
+- (void)testHandleURLCallbackReturnsNOForNilURL {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    BOOL result = [self.rokt handleURLCallback:nil];
+#pragma clang diagnostic pop
+    XCTAssertFalse(result, @"Should return NO when url is nil");
+}
+
+@end
