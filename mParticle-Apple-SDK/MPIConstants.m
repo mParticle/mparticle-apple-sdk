@@ -164,6 +164,7 @@ NSString *const kMPHTTPCacheControlHeaderKey = @"Cache-Control";
 NSString *const kMPHTTPAgeHeaderKey = @"Age";
 NSString *const kMResponseConfigurationKey = @"responseConfiguration";
 NSString *const kMResponseConfigurationMigrationKey = @"responseConfigurationMigrated";
+NSString *const kMResponseConfigurationCompressedKey = @"responseConfigurationCompressed";
 NSString *const kMPAppSearchAdsAttributionKey = @"asaa";
 NSString *const kMPSynchedUserAttributesKey = @"SynchedUserAttributes";
 NSString *const kMPSynchedUserIdentitiesKey = @"SynchedUserIdentities";

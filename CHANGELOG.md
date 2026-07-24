@@ -15,7 +15,7 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 #### Added
 
 - Add device-level consent via `MParticleOptions.deviceConsentState` and `MParticle.sharedInstance.deviceConsentState`. When set, it supersedes user/MPID-level consent everywhere consent is evaluated (kit enablement, consent forwarding to kits, and the consent included in uploads for all MPIDs), is persisted device-wide independent of the active user, and triggers the same kit refresh as a user consent change. Set it to `nil` to clear and revert to user/MPID-level consent.
-- Add `MParticleOptions.compressConfigurationStorage` (default `NO`) to optionally gzip-compress the archived configuration blob before storing it in `NSUserDefaults`. Intended as an opt-in tvOS workaround for the platform's 1 MB local defaults limit.
+- Add `MParticleOptions.compressConfigurationStorage` (default `NO`) to optionally gzip-compress the archived configuration blob before storing it in `NSUserDefaults`. Intended as an opt-in tvOS workaround for the platform's 1 MB local defaults limit. Existing uncompressed configuration is migrated to compressed storage on read when the option is enabled.
 - Add `MPRokt.handleURLCallback:` for forwarding Afterpay/PayPal redirect URLs to the registered Rokt payment extension. Call from `application:openURL:options:` (AppDelegate) or `scene:openURLContexts:` / `.onOpenURL` (Scene/SwiftUI).
 
 #### Changed
