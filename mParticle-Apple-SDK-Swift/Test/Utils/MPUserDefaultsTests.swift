@@ -179,6 +179,75 @@ class MPUserDefaultsTests: XCTestCase {
         )
     }
 
+    func testCompressionFlagMirroredToSharedGroup() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
+
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        userDefaults.setSharedGroupIdentifier("groupID")
+
+        let groupDefaults = UserDefaults(suiteName: "groupID")
+        XCTAssertEqual(
+            groupDefaults?.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+    }
+
+    func testConfigurationRestoreReadsCompressionFlagFromSharedGroup() {
+        connector.compressConfigurationStorageReturnValue = true
+        connector.canCreateConfigurationReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
+        let standardDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
+
+        standardDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        standardDefaults.setSharedGroupIdentifier("groupID")
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        let restoredResponseConfig = MPUserDefaults.restore()
+        XCTAssertNotNil(restoredResponseConfig)
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            restoredResponseConfig?.configuration as NSDictionary?
+        )
+    }
+
+    func testDeleteConfigurationRemovesCompressionFlagFromSharedGroup() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        userDefaults.setSharedGroupIdentifier("groupID")
+
+        userDefaults.deleteConfiguration()
+
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+        XCTAssertNil(UserDefaults(suiteName: "groupID")?.object(forKey: kMResponseConfigurationCompressedKey))
+    }
+
     func testMigrateUncompressedConfigurationToCompressed() {
         let requestTimestamp = Date().timeIntervalSince1970
         connector.compressConfigurationStorageReturnValue = false
