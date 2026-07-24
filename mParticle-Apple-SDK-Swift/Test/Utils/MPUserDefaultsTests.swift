@@ -280,7 +280,31 @@ class MPUserDefaultsTests: XCTestCase {
         )
     }
 
-    func testLegacyCompressedConfigurationWithoutStoredFlag() {
+    func testMissingCompressionFlagTreatedAsUncompressed() throws {
+        let largeConfiguration = buildLargeFilterConfiguration()
+        let userID = connector.userId() ?? 0
+        let archivedData = try NSKeyedArchiver.archivedData(
+            withRootObject: largeConfiguration,
+            requiringSecureCoding: true
+        )
+
+        userDefaults.setMPObject(archivedData, forKey: kMResponseConfigurationKey, userId: userID)
+        userDefaults.setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        connector.compressConfigurationStorageReturnValue = false
+
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            false
+        )
+    }
+
+    func testMissingCompressionFlagDoesNotTreatGzipDataAsCompressed() {
         connector.compressConfigurationStorageReturnValue = true
         let requestTimestamp = Date().timeIntervalSince1970
         let largeConfiguration = buildLargeFilterConfiguration()
@@ -301,20 +325,10 @@ class MPUserDefaultsTests: XCTestCase {
             return
         }
 
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(compressedData))
         UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
 
-        XCTAssertEqual(
-            largeConfiguration as NSDictionary,
-            userDefaults.getConfiguration() as NSDictionary?
-        )
-        XCTAssertEqual(
-            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
-            true
-        )
-        XCTAssertEqual(compressedData, userDefaults.mpObject(
-            forKey: kMResponseConfigurationKey,
-            userId: connector.userId() ?? 0
-        ) as? Data)
+        XCTAssertNil(userDefaults.getConfiguration())
     }
 
     func testMigrateUncompressedLegacyWithoutStoredFlag() throws {

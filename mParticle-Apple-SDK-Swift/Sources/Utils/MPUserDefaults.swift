@@ -162,7 +162,7 @@ public protocol MPUserDefaultsProtocol {
         let configurationData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data
         guard let configurationData = configurationData else { return nil }
 
-        let isCompressed = Self.isStoredConfigurationCompressed(storedData: configurationData)
+        let isCompressed = Self.isStoredConfigurationCompressed()
         guard let archivedConfigurationData = Self.archivedConfigurationData(
             from: configurationData,
             isCompressed: isCompressed,
@@ -266,7 +266,8 @@ public protocol MPUserDefaultsProtocol {
         guard let storedData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data else { return }
 
         let shouldCompress = connector.compressConfigurationStorage()
-        let isCompressed = Self.isStoredConfigurationCompressed(storedData: storedData)
+        let hasCompressionFlag = UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) != nil
+        let isCompressed = Self.isStoredConfigurationCompressed()
 
         if shouldCompress, !isCompressed {
             let compressedData = Self.storedConfigurationData(
@@ -285,8 +286,8 @@ public protocol MPUserDefaultsProtocol {
             setMPObject(decompressedData, forKey: kMResponseConfigurationKey, userId: userID)
             setConfigurationCompressedFlag(false)
             connector.logger.debug("Configuration decompression migration complete")
-        } else if UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) == nil {
-            setConfigurationCompressedFlag(isCompressed)
+        } else if !hasCompressionFlag {
+            setConfigurationCompressedFlag(false)
         }
     }
 
@@ -466,12 +467,8 @@ public protocol MPUserDefaultsProtocol {
         UserDefaults.standard.set(isCompressed, forKey: kMResponseConfigurationCompressedKey)
     }
 
-    private static func isStoredConfigurationCompressed(storedData: Data) -> Bool {
-        if let isCompressed = UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool {
-            return isCompressed
-        }
-
-        return MPZipPRIVATE.isGzipCompressedData(storedData)
+    private static func isStoredConfigurationCompressed() -> Bool {
+        UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool ?? false
     }
 
     private static func archivedConfigurationData(from storedData: Data, isCompressed: Bool, logger: MPLog) -> Data? {
