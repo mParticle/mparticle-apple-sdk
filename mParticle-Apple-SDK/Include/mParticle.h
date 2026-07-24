@@ -444,6 +444,14 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, nullable) NSNumber *persistenceMaxAgeSeconds;
 
 /**
+ When enabled, gzip-compresses the archived configuration blob before storing it in `NSUserDefaults`.
+
+ Disabled by default. Intended as an opt-in workaround for tvOS, where the system terminates apps when
+ local defaults exceed 1 MB. This option may be removed once the behavior is validated and enabled by default.
+ */
+@property (nonatomic, readwrite) BOOL compressConfigurationStorage;
+
+/**
  Set an array of instances of kit (MPKitProtocol wrapped in MPSideloadedKit) objects to be "sideloaded".
  
  The difference between these kits and mParticle UI enabled kits is that they do not receive a server side configuration and are always activated.
@@ -670,6 +678,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MParticleOptions
  */
 @property (nonatomic, readonly, nullable) NSNumber *persistenceMaxAgeSeconds;
+
+/**
+ Whether stored configuration is gzip-compressed before writing to `NSUserDefaults`.
+ @see MParticleOptions
+ */
+@property (nonatomic, readonly) BOOL compressConfigurationStorage;
 
 /**
  The instance which manages all initialized kits. For internal use only

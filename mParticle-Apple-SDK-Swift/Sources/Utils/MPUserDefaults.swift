@@ -159,6 +159,13 @@ public protocol MPUserDefaultsProtocol {
         let configurationData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data
         guard let configurationData = configurationData else { return nil }
 
+        guard let archivedConfigurationData = Self.archivedConfigurationData(
+            from: configurationData,
+            logger: connector.logger
+        ) else {
+            return nil
+        }
+
         do {
             let allowedClasses: [AnyClass] = [
                 NSDictionary.self,
@@ -173,7 +180,7 @@ public protocol MPUserDefaultsProtocol {
 
             if let nsDict = try NSKeyedUnarchiver.unarchivedObject(
                 ofClasses: allowedClasses,
-                from: configurationData
+                from: archivedConfigurationData
             ) as? NSDictionary {
                 // Manually convert NSDictionary to Swift Dictionary
                 var swiftDict: [AnyHashable: Any] = [:]
@@ -206,10 +213,15 @@ public protocol MPUserDefaultsProtocol {
                 withRootObject: responseConfiguration,
                 requiringSecureCoding: true
             )
+            let storedConfigurationData = Self.storedConfigurationData(
+                from: configurationData,
+                compress: connector.compressConfigurationStorage(),
+                logger: connector.logger
+            )
             let userID = connector.userId() ?? 0
 
             setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
-            setMPObject(configurationData, forKey: kMResponseConfigurationKey, userId: userID)
+            setMPObject(storedConfigurationData, forKey: kMResponseConfigurationKey, userId: userID)
             setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
             setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
         } catch {
@@ -412,5 +424,35 @@ public protocol MPUserDefaultsProtocol {
         } else {
             return .standard
         }
+    }
+
+    private static func archivedConfigurationData(from storedData: Data, logger: MPLog) -> Data? {
+        if MPZipPRIVATE.isGzipCompressedData(storedData) {
+            guard let decompressedData = MPZipPRIVATE.decompressedData(from: storedData) else {
+                logger.error("Failed to decompress stored configuration")
+                return nil
+            }
+            return decompressedData
+        }
+
+        return storedData
+    }
+
+    private static func storedConfigurationData(from archivedData: Data, compress: Bool, logger: MPLog) -> Data {
+        guard compress else {
+            return archivedData
+        }
+
+        guard let compressedData = MPZipPRIVATE.compressedData(from: archivedData) else {
+            logger.warning("Failed to compress configuration; storing uncompressed data")
+            return archivedData
+        }
+
+        if compressedData.count >= archivedData.count {
+            logger.debug("Configuration compression did not reduce size; storing uncompressed data")
+            return archivedData
+        }
+
+        return compressedData
     }
 }

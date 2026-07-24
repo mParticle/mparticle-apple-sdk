@@ -130,6 +130,77 @@ class MPUserDefaultsTests: XCTestCase {
         )
     }
 
+    func testCompressedConfigurationRoundTrip() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let storedData = userDefaults.mpObject(forKey: "responseConfiguration", userId: connector.userId() ?? 0) as? Data
+            else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(storedData))
+        XCTAssertEqual(
+            responseConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+    }
+
+    func testLargeFilterConfigurationCompressionReducesStoredSize() {
+        connector.compressConfigurationStorageReturnValue = true
+
+        var filterHashes: [String: Int] = [:]
+        for index in 0..<5000 {
+            filterHashes["\(index)"] = 0
+        }
+
+        let brazeConfiguration: [String: Any] = [
+            "id": 28,
+            "as": ["apiKey": "test-key"],
+            "hs": [
+                "ec": filterHashes,
+                "ea": filterHashes
+            ]
+        ]
+
+        let largeConfiguration = buildResponseConfiguration(for: [brazeConfiguration])
+        let requestTimestamp = Date().timeIntervalSince1970
+
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let storedData = userDefaults.mpObject(forKey: "responseConfiguration", userId: connector.userId() ?? 0) as? Data
+            else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        guard let archivedData = MPZipPRIVATE.decompressedData(from: storedData) else {
+            XCTFail("Expected compressed stored configuration data")
+            return
+        }
+
+        XCTAssertLessThan(storedData.count, archivedData.count)
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+    }
+
     func testNullConfig() {
         let configuration1: [String: Any] = [
             "id": 42,

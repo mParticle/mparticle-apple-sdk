@@ -62,4 +62,64 @@ import zlib
 
         return failed ? nil : output
     }
+
+    @objc(decompressedDataFromData:) public static func decompressedData(from data: Data?) -> Data? {
+        guard let data = data, !data.isEmpty else {
+            return nil
+        }
+
+        return data.withUnsafeBytes { inputPointer -> Data? in
+            guard let inputBaseAddress = inputPointer.bindMemory(to: Bytef.self).baseAddress else {
+                return nil
+            }
+
+            var stream = z_stream()
+            stream.next_in = UnsafeMutablePointer<Bytef>(mutating: inputBaseAddress)
+            stream.avail_in = uInt(truncatingIfNeeded: data.count)
+            stream.total_out = 0
+            stream.zalloc = nil
+            stream.zfree = nil
+
+            guard inflateInit2_(&stream, 15 + 32, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.stride)) == Z_OK else {
+                return nil
+            }
+
+            defer {
+                inflateEnd(&stream)
+            }
+
+            let halfLength = max(data.count/2, 1)
+            let output = NSMutableData(capacity: data.count + halfLength)!
+            var done = false
+
+            while !done {
+                if stream.total_out >= output.length {
+                    output.length += halfLength
+                }
+
+                stream.next_out = output.mutableBytes
+                    .advanced(by: Int(truncatingIfNeeded: stream.total_out))
+                    .assumingMemoryBound(to: Bytef.self)
+                stream.avail_out = uInt(truncatingIfNeeded: output.length - Int(truncatingIfNeeded: stream.total_out))
+
+                let status = inflate(&stream, Z_SYNC_FLUSH)
+                if status == Z_STREAM_END {
+                    done = true
+                } else if status != Z_OK {
+                    return nil
+                }
+            }
+
+            output.length = Int(truncatingIfNeeded: stream.total_out)
+            return output as Data
+        }
+    }
+
+    @objc public static func isGzipCompressedData(_ data: Data?) -> Bool {
+        guard let data = data, data.count >= 2 else {
+            return false
+        }
+
+        return data[data.startIndex] == 0x1f && data[data.startIndex.advanced(by: 1)] == 0x8b
+    }
 }
