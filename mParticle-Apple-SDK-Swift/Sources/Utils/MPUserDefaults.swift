@@ -274,7 +274,6 @@ public protocol MPUserDefaultsProtocol {
         guard let storedData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data else { return }
 
         let shouldCompress = connector.compressConfigurationStorage()
-        let hasCompressionFlag = hasConfigurationCompressedFlag()
         let isCompressed = isStoredConfigurationCompressed()
 
         if shouldCompress, !isCompressed {
@@ -294,8 +293,6 @@ public protocol MPUserDefaultsProtocol {
             setMPObject(decompressedData, forKey: kMResponseConfigurationKey, userId: userID)
             setConfigurationCompressedFlag(false)
             connector.logger.debug("Configuration decompression migration complete")
-        } else if !hasCompressionFlag {
-            setConfigurationCompressedFlag(false)
         }
     }
 
@@ -483,6 +480,12 @@ public protocol MPUserDefaultsProtocol {
     }
 
     private func setConfigurationCompressedFlag(_ isCompressed: Bool) {
+        // Absent key means uncompressed. Do not persist an explicit `false` unless
+        // the key already exists (e.g. migrating away from compressed storage).
+        if !isCompressed, !hasConfigurationCompressedFlag() {
+            return
+        }
+
         UserDefaults.standard.set(isCompressed, forKey: kMResponseConfigurationCompressedKey)
         if let groupID = activeSharedGroupIdentifier() {
             UserDefaults(suiteName: groupID)?.set(isCompressed, forKey: kMResponseConfigurationCompressedKey)

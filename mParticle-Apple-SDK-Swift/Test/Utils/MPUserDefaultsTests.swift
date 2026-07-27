@@ -272,10 +272,7 @@ class MPUserDefaultsTests: XCTestCase {
         }
 
         XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(uncompressedData))
-        XCTAssertEqual(
-            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
-            false
-        )
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
 
         connector.compressConfigurationStorageReturnValue = true
 
@@ -367,10 +364,27 @@ class MPUserDefaultsTests: XCTestCase {
             largeConfiguration as NSDictionary,
             userDefaults.getConfiguration() as NSDictionary?
         )
-        XCTAssertEqual(
-            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
-            false
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+    }
+
+    func testUncompressedConfigurationDoesNotPersistCompressionFlag() {
+        connector.compressConfigurationStorageReturnValue = false
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: Date().timeIntervalSince1970,
+            currentAge: 0,
+            maxAge: nil
         )
+
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+        XCTAssertEqual(
+            responseConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
     }
 
     func testMissingCompressionFlagDoesNotTreatGzipDataAsCompressed() {
@@ -566,7 +580,7 @@ class MPUserDefaultsTests: XCTestCase {
         )
     }
 
-    func testMigrateConfigurationCompressionSyncsUncompressedFlag() {
+    func testMigrateConfigurationCompressionDoesNotCreateUncompressedFlag() {
         let requestTimestamp = Date().timeIntervalSince1970
         connector.compressConfigurationStorageReturnValue = false
 
@@ -581,14 +595,12 @@ class MPUserDefaultsTests: XCTestCase {
 
         userDefaults.migrateConfigurationCompression()
 
-        XCTAssertEqual(
-            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
-            false
-        )
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
         XCTAssertEqual(
             responseConfiguration as NSDictionary,
             userDefaults.getConfiguration() as NSDictionary?
         )
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
     }
 
     func testLargeFilterConfigurationCompressionReducesStoredSize() {
