@@ -274,9 +274,13 @@ public protocol MPUserDefaultsProtocol {
         guard let storedData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data else { return }
 
         let shouldCompress = connector.compressConfigurationStorage()
+        let hasCompressionFlag = hasConfigurationCompressedFlag()
         let isCompressed = isStoredConfigurationCompressed()
 
-        if shouldCompress, !isCompressed {
+        // Only attempt compression when we have never recorded a decision for this blob.
+        // If gzip does not shrink the payload we still persist `false` so this does not
+        // re-run and rewrite UserDefaults on every getConfiguration().
+        if shouldCompress, !hasCompressionFlag {
             let compressedData = Self.storedConfigurationData(
                 from: storedData,
                 compress: true,
@@ -483,9 +487,12 @@ public protocol MPUserDefaultsProtocol {
     }
 
     private func setConfigurationCompressedFlag(_ isCompressed: Bool) {
-        // Absent key means uncompressed. Do not persist an explicit `false` unless
-        // the key already exists (e.g. migrating away from compressed storage).
-        if !isCompressed, !hasConfigurationCompressedFlag() {
+        // Absent key means uncompressed. When compression is disabled, do not create an
+        // explicit `false` marker. When compression is enabled, always persist the outcome
+        // (including `false` when gzip does not shrink) so migration does not re-run.
+        if !isCompressed,
+           !hasConfigurationCompressedFlag(),
+           !connector.compressConfigurationStorage() {
             return
         }
 

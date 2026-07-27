@@ -538,6 +538,59 @@ class MPUserDefaultsTests: XCTestCase {
         )
     }
 
+    func testNonShrinkingCompressionMigrationIsIdempotent() {
+        let userID = connector.userId() ?? 0
+        var randomBytes = [UInt8](repeating: 0, count: 4096)
+        for index in randomBytes.indices {
+            randomBytes[index] = UInt8.random(in: 0...255)
+        }
+        let storedData = Data(randomBytes)
+
+        // Confirm gzip does not shrink this payload so migration keeps it uncompressed.
+        guard let gzipAttempt = MPZipPRIVATE.compressedData(from: storedData) else {
+            XCTFail("Expected gzip attempt to succeed")
+            return
+        }
+        XCTAssertGreaterThanOrEqual(gzipAttempt.count, storedData.count)
+
+        userDefaults.setMPObject(storedData, forKey: kMResponseConfigurationKey, userId: userID)
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+        connector.compressConfigurationStorageReturnValue = true
+
+        userDefaults.migrateConfigurationCompression()
+
+        guard let firstStoredData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: userID
+        ) as? Data else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        XCTAssertEqual(firstStoredData, storedData)
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(firstStoredData))
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            false
+        )
+
+        userDefaults.migrateConfigurationCompression()
+
+        guard let secondStoredData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: userID
+        ) as? Data else {
+            XCTFail("Expected stored configuration data after second migration")
+            return
+        }
+
+        XCTAssertEqual(firstStoredData, secondStoredData)
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            false
+        )
+    }
+
     func testRestoreMigratesUncompressedConfigurationToCompressed() {
         let standardDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
         standardDefaults.deleteConfiguration()
