@@ -59,6 +59,14 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
 - Implement `stop` on `MPKitRokt` so the kit remains active across `switchWorkspaceWithOptions:` without requiring an app restart.
 
+## [9.3.2] - 2026-07-27
+
+### Core
+
+#### Fixed
+
+- Add opt-in gzip compression for stored SDK configuration ([#801](https://github.com/mParticle/mparticle-apple-sdk/pull/801))
+
 ## [9.3.1] - 2026-07-21
 
 ### Kits
@@ -2467,7 +2475,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.1...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.2...HEAD
+[9.3.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.1...v9.3.2
 [9.3.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.0...v9.3.1
 [9.3.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.2...v9.3.0
 [9.2.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.1...v9.2.2
