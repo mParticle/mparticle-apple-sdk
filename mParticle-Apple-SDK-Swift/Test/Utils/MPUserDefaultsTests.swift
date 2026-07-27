@@ -538,56 +538,60 @@ class MPUserDefaultsTests: XCTestCase {
         )
     }
 
-    func testNonShrinkingCompressionMigrationIsIdempotent() {
-        let userID = connector.userId() ?? 0
-        var randomBytes = [UInt8](repeating: 0, count: 4096)
-        for index in randomBytes.indices {
-            randomBytes[index] = UInt8.random(in: 0...255)
-        }
-        let storedData = Data(randomBytes)
+    func testReenablingCompressionMigratesExistingUncompressedConfiguration() {
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
 
-        // Confirm gzip does not shrink this payload so migration keeps it uncompressed.
-        guard let gzipAttempt = MPZipPRIVATE.compressedData(from: storedData) else {
-            XCTFail("Expected gzip attempt to succeed")
-            return
-        }
-        XCTAssertGreaterThanOrEqual(gzipAttempt.count, storedData.count)
-
-        userDefaults.setMPObject(storedData, forKey: kMResponseConfigurationKey, userId: userID)
-        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
         connector.compressConfigurationStorageReturnValue = true
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
 
-        userDefaults.migrateConfigurationCompression()
-
-        guard let firstStoredData = userDefaults.mpObject(
-            forKey: kMResponseConfigurationKey,
-            userId: userID
-        ) as? Data else {
-            XCTFail("Expected stored configuration data")
-            return
-        }
-
-        XCTAssertEqual(firstStoredData, storedData)
-        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(firstStoredData))
+        connector.compressConfigurationStorageReturnValue = false
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
         XCTAssertEqual(
             UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
             false
         )
-
-        userDefaults.migrateConfigurationCompression()
-
-        guard let secondStoredData = userDefaults.mpObject(
+        guard let uncompressedData = userDefaults.mpObject(
             forKey: kMResponseConfigurationKey,
-            userId: userID
+            userId: connector.userId() ?? 0
         ) as? Data else {
-            XCTFail("Expected stored configuration data after second migration")
+            XCTFail("Expected uncompressed configuration data")
             return
         }
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(uncompressedData))
 
-        XCTAssertEqual(firstStoredData, secondStoredData)
+        // Re-enable compression: existing uncompressed blob should be migrated again.
+        connector.compressConfigurationStorageReturnValue = true
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+
+        guard let recompressedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected recompressed configuration data")
+            return
+        }
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(recompressedData))
+        XCTAssertLessThan(recompressedData.count, uncompressedData.count)
         XCTAssertEqual(
             UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
-            false
+            true
         )
     }
 
