@@ -64,11 +64,6 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Add `MParticleOptions.compressConfigurationStorage` (default `NO`) to optionally gzip-compress the archived configuration blob before storing it in `NSUserDefaults`. Intended as an opt-in tvOS workaround for the platform's 1 MB local defaults limit. Existing uncompressed configuration is migrated to compressed storage on read when the option is enabled. ([#801](https://github.com/mParticle/mparticle-apple-sdk/pull/801))
 
-#### Fixed
-
-- Treat gzip magic bytes (`1f 8b`) as the source of truth for compressed configuration storage, reconciling a missing or stale `responseConfigurationCompressed` flag so upgrade/downgrade mismatch and crash mid-write no longer leave config unreadable or double-gzipped. ([#801](https://github.com/mParticle/mparticle-apple-sdk/pull/801))
-- Skip rewriting cached configuration on HTTP 304 when `getConfiguration` returns nil. ([#801](https://github.com/mParticle/mparticle-apple-sdk/pull/801))
-
 ## [9.3.1] - 2026-07-21
 
 ### Kits
