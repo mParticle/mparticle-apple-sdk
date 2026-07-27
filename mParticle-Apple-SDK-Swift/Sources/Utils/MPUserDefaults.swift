@@ -312,6 +312,9 @@ public protocol MPUserDefaultsProtocol {
         let predicate = NSPredicate(format: "SELF CONTAINS %@", NSUserDefaultsPrefix)
         let mParticleKeys = dict.keys.filter { predicate.evaluate(with: $0) }
 
+        // Clear while the shared group is still active so both suites are wiped.
+        removeConfigurationCompressedFlag()
+
         if sharedGroupID != nil {
             setSharedGroupIdentifier(nil)
         }

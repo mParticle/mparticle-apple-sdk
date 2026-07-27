@@ -89,6 +89,12 @@ class MPUserDefaultsTests: XCTestCase {
         userDefaults.setMPObject(Date(), forKey: "lud", userId: NSNumber(value: Int64.min))
 
         UserDefaults.standard.set("userSetting", forKey: "userKey")
+        UserDefaults.standard.set(true, forKey: kMResponseConfigurationCompressedKey)
+        userDefaults.setSharedGroupIdentifier("groupID")
+        XCTAssertEqual(
+            UserDefaults(suiteName: "groupID")?.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
 
         userDefaults.resetDefaults()
 
@@ -99,6 +105,8 @@ class MPUserDefaultsTests: XCTestCase {
         XCTAssertFalse(array.contains(NSNumber(value: Int64.min)))
 
         XCTAssertNotNil(UserDefaults.standard.object(forKey: "userKey"))
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+        XCTAssertNil(UserDefaults(suiteName: "groupID")?.object(forKey: kMResponseConfigurationCompressedKey))
     }
 
     func testMigrate() {
