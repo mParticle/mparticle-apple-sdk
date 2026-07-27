@@ -358,6 +358,10 @@ MPLog* logger;
     return self.options.persistenceMaxAgeSeconds;
 }
 
+- (BOOL)compressConfigurationStorage {
+    return self.options.compressConfigurationStorage;
+}
+
 #pragma mark Initialization
 + (instancetype)sharedInstance {
     dispatch_once(&predicate, ^{

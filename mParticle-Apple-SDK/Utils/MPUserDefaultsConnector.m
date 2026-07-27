@@ -128,4 +128,8 @@
     return MParticle.sharedInstance.configMaxAgeSeconds;
 }
 
+- (BOOL)compressConfigurationStorage {
+    return MParticle.sharedInstance.compressConfigurationStorage;
+}
+
 @end

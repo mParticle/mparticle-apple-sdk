@@ -231,6 +231,7 @@ extern NSString * _Nonnull const kMPHTTPCacheControlHeaderKey;
 extern NSString * _Nonnull const kMPHTTPAgeHeaderKey;
 extern NSString * _Nonnull const kMResponseConfigurationKey;
 extern NSString * _Nonnull const kMResponseConfigurationMigrationKey;
+extern NSString * _Nonnull const kMResponseConfigurationCompressedKey;
 extern NSString * _Nonnull const kMPAppSearchAdsAttributionKey;
 extern NSString * _Nonnull const kMPSynchedUserAttributesKey;
 extern NSString * _Nonnull const kMPSynchedUserIdentitiesKey;

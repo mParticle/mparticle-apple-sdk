@@ -22,6 +22,9 @@ class MPUserDefaultsTests: XCTestCase {
         return [configuration1, configuration2]
     }
 
+    private let kMResponseConfigurationKey = "responseConfiguration"
+    private let kMResponseConfigurationCompressedKey = "responseConfigurationCompressed"
+
     private func buildResponseConfiguration(for kitConfigs: [[String: Any]]) -> [String: Any] {
         return [
             RemoteConfig.kMPRemoteConfigKitsKey: kitConfigs,
@@ -33,6 +36,22 @@ class MPUserDefaultsTests: XCTestCase {
 
     private var responseConfiguration: [String: Any] {
         return buildResponseConfiguration(for: kitConfigs)
+    }
+
+    private func buildLargeFilterConfiguration() -> [String: Any] {
+        var filterHashes: [String: Int] = [:]
+        for index in 0..<5000 {
+            filterHashes["\(index)"] = 0
+        }
+
+        return buildResponseConfiguration(for: [[
+            "id": 28,
+            "as": ["apiKey": "test-key"],
+            "hs": [
+                "ec": filterHashes,
+                "ea": filterHashes
+            ]
+        ]])
     }
 
     var connector: MPUserDefaultsConnectorMock!
@@ -47,6 +66,7 @@ class MPUserDefaultsTests: XCTestCase {
     override func tearDown() {
         userDefaults.setSharedGroupIdentifier(nil)
         userDefaults.resetDefaults()
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
         super.tearDown()
     }
 
@@ -69,6 +89,12 @@ class MPUserDefaultsTests: XCTestCase {
         userDefaults.setMPObject(Date(), forKey: "lud", userId: NSNumber(value: Int64.min))
 
         UserDefaults.standard.set("userSetting", forKey: "userKey")
+        UserDefaults.standard.set(true, forKey: kMResponseConfigurationCompressedKey)
+        userDefaults.setSharedGroupIdentifier("groupID")
+        XCTAssertEqual(
+            UserDefaults(suiteName: "groupID")?.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
 
         userDefaults.resetDefaults()
 
@@ -79,6 +105,8 @@ class MPUserDefaultsTests: XCTestCase {
         XCTAssertFalse(array.contains(NSNumber(value: Int64.min)))
 
         XCTAssertNotNil(UserDefaults.standard.object(forKey: "userKey"))
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+        XCTAssertNil(UserDefaults(suiteName: "groupID")?.object(forKey: kMResponseConfigurationCompressedKey))
     }
 
     func testMigrate() {
@@ -126,6 +154,599 @@ class MPUserDefaultsTests: XCTestCase {
 
         XCTAssertEqual(
             responseConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+    }
+
+    func testCompressedConfigurationRoundTrip() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let storedData = userDefaults.mpObject(forKey: "responseConfiguration", userId: connector.userId() ?? 0) as? Data
+            else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(storedData))
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+        XCTAssertEqual(
+            responseConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+    }
+
+    func testCompressionFlagMirroredToSharedGroup() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
+
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        userDefaults.setSharedGroupIdentifier("groupID")
+
+        let groupDefaults = UserDefaults(suiteName: "groupID")
+        XCTAssertEqual(
+            groupDefaults?.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+    }
+
+    func testConfigurationRestoreReadsCompressionFlagFromSharedGroup() {
+        connector.compressConfigurationStorageReturnValue = true
+        connector.canCreateConfigurationReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
+        let standardDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
+
+        standardDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        standardDefaults.setSharedGroupIdentifier("groupID")
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        let restoredResponseConfig = MPUserDefaults.restore()
+        XCTAssertNotNil(restoredResponseConfig)
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            restoredResponseConfig?.configuration as NSDictionary?
+        )
+    }
+
+    func testDeleteConfigurationRemovesCompressionFlagFromSharedGroup() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        userDefaults.setSharedGroupIdentifier("groupID")
+
+        userDefaults.deleteConfiguration()
+
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+        XCTAssertNil(UserDefaults(suiteName: "groupID")?.object(forKey: kMResponseConfigurationCompressedKey))
+    }
+
+    func testMigrateUncompressedConfigurationToCompressed() {
+        let requestTimestamp = Date().timeIntervalSince1970
+        connector.compressConfigurationStorageReturnValue = false
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        let largeConfiguration = buildLargeFilterConfiguration()
+
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let uncompressedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(uncompressedData))
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+
+        connector.compressConfigurationStorageReturnValue = true
+
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+
+        guard let migratedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected migrated configuration data")
+            return
+        }
+
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(migratedData))
+        XCTAssertLessThan(migratedData.count, uncompressedData.count)
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+    }
+
+    func testMigrateCompressedConfigurationToUncompressed() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
+
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let compressedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(compressedData))
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+
+        connector.compressConfigurationStorageReturnValue = false
+
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+
+        guard let migratedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected migrated configuration data")
+            return
+        }
+
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(migratedData))
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            false
+        )
+    }
+
+    func testMissingCompressionFlagTreatedAsUncompressed() throws {
+        let largeConfiguration = buildLargeFilterConfiguration()
+        let userID = connector.userId() ?? 0
+        let archivedData = try NSKeyedArchiver.archivedData(
+            withRootObject: largeConfiguration,
+            requiringSecureCoding: true
+        )
+
+        userDefaults.setMPObject(archivedData, forKey: kMResponseConfigurationKey, userId: userID)
+        userDefaults.setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        connector.compressConfigurationStorageReturnValue = false
+
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+    }
+
+    func testUncompressedConfigurationDoesNotPersistCompressionFlag() {
+        connector.compressConfigurationStorageReturnValue = false
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: Date().timeIntervalSince1970,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+        XCTAssertEqual(
+            responseConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+    }
+
+    func testGzipBlobWithoutFlagRemainsReadableAndIsNotDoubleCompressed() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
+
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let compressedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(compressedData))
+        // Simulate crash between writing gzip blob and persisting the flag.
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+
+        guard let storedAfterRead = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected stored configuration data after read")
+            return
+        }
+
+        // Must not gzip an already-gzipped blob during migration.
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(storedAfterRead))
+        guard let onceInflated = MPZipPRIVATE.decompressedData(from: storedAfterRead) else {
+            XCTFail("Expected single gzip layer to inflate")
+            return
+        }
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(onceInflated))
+    }
+
+    func testStaleTrueFlagWithUncompressedBlobRemainsReadable() throws {
+        let largeConfiguration = buildLargeFilterConfiguration()
+        let userID = connector.userId() ?? 0
+        let archivedData = try NSKeyedArchiver.archivedData(
+            withRootObject: largeConfiguration,
+            requiringSecureCoding: true
+        )
+
+        // Simulate downgrade rewrite: uncompressed blob left behind with stale true flag.
+        userDefaults.setMPObject(archivedData, forKey: kMResponseConfigurationKey, userId: userID)
+        userDefaults.setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
+        UserDefaults.standard.set(true, forKey: kMResponseConfigurationCompressedKey)
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(archivedData))
+
+        connector.compressConfigurationStorageReturnValue = false
+
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+    }
+
+    func testMigrateUncompressedLegacyWithoutStoredFlag() throws {
+        let largeConfiguration = buildLargeFilterConfiguration()
+        let userID = connector.userId() ?? 0
+        let archivedData = try NSKeyedArchiver.archivedData(
+            withRootObject: largeConfiguration,
+            requiringSecureCoding: true
+        )
+
+        userDefaults.setMPObject(archivedData, forKey: kMResponseConfigurationKey, userId: userID)
+        userDefaults.setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        connector.compressConfigurationStorageReturnValue = true
+
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+
+        guard let migratedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: userID
+        ) as? Data else {
+            XCTFail("Expected migrated configuration data")
+            return
+        }
+
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(migratedData))
+        XCTAssertLessThan(migratedData.count, archivedData.count)
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+    }
+
+    func testMigrateConfigurationCompressionDirectCall() {
+        let requestTimestamp = Date().timeIntervalSince1970
+        connector.compressConfigurationStorageReturnValue = false
+        let largeConfiguration = buildLargeFilterConfiguration()
+
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let uncompressedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        connector.compressConfigurationStorageReturnValue = true
+        userDefaults.migrateConfigurationCompression()
+
+        guard let migratedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected migrated configuration data")
+            return
+        }
+
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(migratedData))
+        XCTAssertLessThan(migratedData.count, uncompressedData.count)
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+    }
+
+    func testConfigurationCompressionMigrationIsIdempotent() {
+        let requestTimestamp = Date().timeIntervalSince1970
+        connector.compressConfigurationStorageReturnValue = false
+
+        userDefaults.setConfiguration(
+            buildLargeFilterConfiguration(),
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        connector.compressConfigurationStorageReturnValue = true
+        _ = userDefaults.getConfiguration()
+
+        guard let migratedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected migrated configuration data")
+            return
+        }
+
+        _ = userDefaults.getConfiguration()
+        userDefaults.migrateConfigurationCompression()
+
+        guard let secondReadData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected stored configuration data after second read")
+            return
+        }
+
+        XCTAssertEqual(migratedData, secondReadData)
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+    }
+
+    func testReenablingCompressionMigratesExistingUncompressedConfiguration() {
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
+
+        connector.compressConfigurationStorageReturnValue = true
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+
+        connector.compressConfigurationStorageReturnValue = false
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            false
+        )
+        guard let uncompressedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected uncompressed configuration data")
+            return
+        }
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(uncompressedData))
+
+        // Re-enable compression: existing uncompressed blob should be migrated again.
+        connector.compressConfigurationStorageReturnValue = true
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+
+        guard let recompressedData = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected recompressed configuration data")
+            return
+        }
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(recompressedData))
+        XCTAssertLessThan(recompressedData.count, uncompressedData.count)
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+    }
+
+    func testRestoreMigratesUncompressedConfigurationToCompressed() {
+        let standardDefaults = MPUserDefaults.standardUserDefaults(connector: connector)
+        standardDefaults.deleteConfiguration()
+        connector.canCreateConfigurationReturnValue = true
+
+        let requestTimestamp = Date().timeIntervalSince1970
+        let largeConfiguration = buildLargeFilterConfiguration()
+        connector.compressConfigurationStorageReturnValue = false
+
+        standardDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let uncompressedData = standardDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        connector.compressConfigurationStorageReturnValue = true
+
+        let restoredResponseConfig = MPUserDefaults.restore()
+        XCTAssertNotNil(restoredResponseConfig)
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            restoredResponseConfig?.configuration as NSDictionary?
+        )
+
+        guard let migratedData = standardDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected migrated configuration data")
+            return
+        }
+
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(migratedData))
+        XCTAssertLessThan(migratedData.count, uncompressedData.count)
+        XCTAssertEqual(
+            UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool,
+            true
+        )
+    }
+
+    func testMigrateConfigurationCompressionDoesNotCreateUncompressedFlag() {
+        let requestTimestamp = Date().timeIntervalSince1970
+        connector.compressConfigurationStorageReturnValue = false
+
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+
+        userDefaults.migrateConfigurationCompression()
+
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+        XCTAssertEqual(
+            responseConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+    }
+
+    func testLargeFilterConfigurationCompressionReducesStoredSize() {
+        connector.compressConfigurationStorageReturnValue = true
+
+        let brazeConfiguration: [String: Any] = [
+            "id": 28,
+            "as": ["apiKey": "test-key"],
+            "hs": [
+                "ec": (0..<5000).reduce(into: [String: Int]()) { $0["\($1)"] = 0 },
+                "ea": (0..<5000).reduce(into: [String: Int]()) { $0["\($1)"] = 0 }
+            ]
+        ]
+
+        let largeConfiguration = buildResponseConfiguration(for: [brazeConfiguration])
+        let requestTimestamp = Date().timeIntervalSince1970
+
+        userDefaults.setConfiguration(
+            largeConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        guard let storedData = userDefaults.mpObject(forKey: "responseConfiguration", userId: connector.userId() ?? 0) as? Data
+            else {
+            XCTFail("Expected stored configuration data")
+            return
+        }
+
+        guard let archivedData = MPZipPRIVATE.decompressedData(from: storedData) else {
+            XCTFail("Expected compressed stored configuration data")
+            return
+        }
+
+        XCTAssertLessThan(storedData.count, archivedData.count)
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
             userDefaults.getConfiguration() as NSDictionary?
         )
     }
@@ -213,8 +834,21 @@ class MPUserDefaultsTests: XCTestCase {
     }
 
     func testDeleteConfiguration() {
+        connector.compressConfigurationStorageReturnValue = true
+        let requestTimestamp = Date().timeIntervalSince1970
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: requestTimestamp,
+            currentAge: 0,
+            maxAge: nil
+        )
+
+        XCTAssertNotNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
+
         userDefaults.deleteConfiguration()
         XCTAssertNil(userDefaults.getConfiguration())
+        XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
     }
 
     func testValidExpandedConfigurationNoMaxAge() {

@@ -72,4 +72,10 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func configMaxAgeSeconds() -> NSNumber? {
         configMaxAgeSecondsReturnValue
     }
+
+    var compressConfigurationStorageReturnValue = false
+
+    func compressConfigurationStorage() -> Bool {
+        compressConfigurationStorageReturnValue
+    }
 }

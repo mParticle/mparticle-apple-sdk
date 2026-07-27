@@ -538,7 +538,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (responseCode == HTTPStatusCodeNotModified) {
         MPILogDebug(@"Config response 304 Not Modified - using cached config");
         MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-        [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
+        NSDictionary *configuration = [userDefaults getConfiguration];
+        if (configuration != nil) {
+            [userDefaults setConfiguration:configuration eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
+        }
 
         completionHandler(YES);
         return;

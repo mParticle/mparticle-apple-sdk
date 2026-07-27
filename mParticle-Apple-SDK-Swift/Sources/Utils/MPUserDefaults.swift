@@ -19,6 +19,7 @@ private let userSpecificKeys = ["lud", /* kMPAppLastUseDateKey */
 private let kMPUserIdentitySharedGroupIdentifier = "sgi"
 private let kMResponseConfigurationKey = "responseConfiguration"
 private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated"
+private let kMResponseConfigurationCompressedKey = "responseConfigurationCompressed"
 
 @objc
 public protocol MPUserDefaultsProtocol {
@@ -130,6 +131,12 @@ public protocol MPUserDefaultsProtocol {
         for key in mParticleKeys {
             groupUserDefaults?.set(standardUserDefaults.object(forKey: key), forKey: key)
         }
+
+        if let compressedFlag = standardUserDefaults.object(forKey: kMResponseConfigurationCompressedKey) {
+            groupUserDefaults?.set(compressedFlag, forKey: kMResponseConfigurationCompressedKey)
+        }
+
+        sharedGroupID = groupIdentifier
     }
 
     @objc public func migrateFromSharedGroupIdentifier() {
@@ -147,6 +154,8 @@ public protocol MPUserDefaultsProtocol {
             MPUserDefaults.prefixedKey(kMPUserIdentitySharedGroupIdentifier, userId: connector.mpId())
         standardUserDefaults.removeObject(forKey: prefixedKey)
         groupUserDefaults?.removeObject(forKey: prefixedKey)
+        groupUserDefaults?.removeObject(forKey: kMResponseConfigurationCompressedKey)
+        sharedGroupID = nil
     }
 
     @objc public func getConfiguration() -> [AnyHashable: Any]? {
@@ -156,8 +165,20 @@ public protocol MPUserDefaultsProtocol {
             migrateConfiguration()
         }
 
+        migrateConfigurationCompression()
+
         let configurationData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data
         guard let configurationData = configurationData else { return nil }
+
+        // Content sniff is the source of truth; the persisted flag can be stale or missing.
+        let isCompressed = MPZipPRIVATE.isGzipCompressedData(configurationData)
+        guard let archivedConfigurationData = Self.archivedConfigurationData(
+            from: configurationData,
+            isCompressed: isCompressed,
+            logger: connector.logger
+        ) else {
+            return nil
+        }
 
         do {
             let allowedClasses: [AnyClass] = [
@@ -173,7 +194,7 @@ public protocol MPUserDefaultsProtocol {
 
             if let nsDict = try NSKeyedUnarchiver.unarchivedObject(
                 ofClasses: allowedClasses,
-                from: configurationData
+                from: archivedConfigurationData
             ) as? NSDictionary {
                 // Manually convert NSDictionary to Swift Dictionary
                 var swiftDict: [AnyHashable: Any] = [:]
@@ -206,10 +227,16 @@ public protocol MPUserDefaultsProtocol {
                 withRootObject: responseConfiguration,
                 requiringSecureCoding: true
             )
+            let storedConfigurationData = Self.storedConfigurationData(
+                from: configurationData,
+                compress: connector.compressConfigurationStorage(),
+                logger: connector.logger
+            )
             let userID = connector.userId() ?? 0
 
             setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
-            setMPObject(configurationData, forKey: kMResponseConfigurationKey, userId: userID)
+            setMPObject(storedConfigurationData, forKey: kMResponseConfigurationKey, userId: userID)
+            setConfigurationCompressedFlag(MPZipPRIVATE.isGzipCompressedData(storedConfigurationData))
             setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
             setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
         } catch {
@@ -243,12 +270,44 @@ public protocol MPUserDefaultsProtocol {
         UserDefaults.standard.set(1, forKey: kMResponseConfigurationMigrationKey)
     }
 
+    @objc public func migrateConfigurationCompression() {
+        guard let userID = connector.userId() else { return }
+        guard let storedData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data else { return }
+
+        let shouldCompress = connector.compressConfigurationStorage()
+        let isGzipData = MPZipPRIVATE.isGzipCompressedData(storedData)
+
+        if shouldCompress, !isGzipData {
+            let compressedData = Self.storedConfigurationData(
+                from: storedData,
+                compress: true,
+                logger: connector.logger
+            )
+            setMPObject(compressedData, forKey: kMResponseConfigurationKey, userId: userID)
+            setConfigurationCompressedFlag(MPZipPRIVATE.isGzipCompressedData(compressedData))
+            connector.logger.debug("Configuration compression migration complete")
+        } else if !shouldCompress, isGzipData {
+            guard let decompressedData = MPZipPRIVATE.decompressedData(from: storedData) else {
+                connector.logger.error("Failed to decompress configuration during migration")
+                return
+            }
+            setMPObject(decompressedData, forKey: kMResponseConfigurationKey, userId: userID)
+            setConfigurationCompressedFlag(false)
+            connector.logger.debug("Configuration decompression migration complete")
+        } else if isStoredConfigurationCompressed() != isGzipData {
+            // Reconcile a missing/stale flag with the actual blob (e.g. crash mid-write,
+            // or an older SDK rewrite that left uncompressed data behind a true flag).
+            setConfigurationCompressedFlag(isGzipData)
+        }
+    }
+
     @objc public func deleteConfiguration() {
         removeMPObject(forKey: kMResponseConfigurationKey)
         removeMPObject(forKey: Miscellaneous.kMPHTTPETagHeaderKey)
         removeMPObject(forKey: Miscellaneous.kMPConfigProvisionedTimestampKey)
         removeMPObject(forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey)
         removeMPObject(forKey: Miscellaneous.kMPConfigParameters)
+        removeConfigurationCompressedFlag()
 
         connector.logger.debug("Configuration Deleted")
     }
@@ -257,6 +316,9 @@ public protocol MPUserDefaultsProtocol {
         let dict = UserDefaults.standard.dictionaryRepresentation()
         let predicate = NSPredicate(format: "SELF CONTAINS %@", NSUserDefaultsPrefix)
         let mParticleKeys = dict.keys.filter { predicate.evaluate(with: $0) }
+
+        // Clear while the shared group is still active so both suites are wiped.
+        removeConfigurationCompressedFlag()
 
         if sharedGroupID != nil {
             setSharedGroupIdentifier(nil)
@@ -412,5 +474,86 @@ public protocol MPUserDefaultsProtocol {
         } else {
             return .standard
         }
+    }
+
+    private func activeSharedGroupIdentifier() -> String? {
+        if let sharedGroupID = sharedGroupID {
+            return sharedGroupID
+        }
+
+        return mpObject(
+            forKey: kMPUserIdentitySharedGroupIdentifier,
+            userId: connector.mpId()
+        ) as? String
+    }
+
+    private func setConfigurationCompressedFlag(_ isCompressed: Bool) {
+        // Absent key means uncompressed. When compression is disabled, do not create an
+        // explicit `false` marker unless the key already exists (e.g. after opting out).
+        if !isCompressed,
+           !hasConfigurationCompressedFlag(),
+           !connector.compressConfigurationStorage() {
+            return
+        }
+
+        UserDefaults.standard.set(isCompressed, forKey: kMResponseConfigurationCompressedKey)
+        if let groupID = activeSharedGroupIdentifier() {
+            UserDefaults(suiteName: groupID)?.set(isCompressed, forKey: kMResponseConfigurationCompressedKey)
+        }
+    }
+
+    private func removeConfigurationCompressedFlag() {
+        UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
+        if let groupID = activeSharedGroupIdentifier() {
+            UserDefaults(suiteName: groupID)?.removeObject(forKey: kMResponseConfigurationCompressedKey)
+        }
+    }
+
+    private func configurationCompressedFlagValue() -> Bool? {
+        if let groupID = activeSharedGroupIdentifier(),
+           let groupValue = UserDefaults(suiteName: groupID)?.object(forKey: kMResponseConfigurationCompressedKey) {
+            return groupValue as? Bool
+        }
+
+        return UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) as? Bool
+    }
+
+    private func hasConfigurationCompressedFlag() -> Bool {
+        if let groupID = activeSharedGroupIdentifier(),
+           UserDefaults(suiteName: groupID)?.object(forKey: kMResponseConfigurationCompressedKey) != nil {
+            return true
+        }
+
+        return UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey) != nil
+    }
+
+    private func isStoredConfigurationCompressed() -> Bool {
+        configurationCompressedFlagValue() ?? false
+    }
+
+    private static func archivedConfigurationData(from storedData: Data, isCompressed: Bool, logger: MPLog) -> Data? {
+        guard isCompressed else {
+            return storedData
+        }
+
+        guard let decompressedData = MPZipPRIVATE.decompressedData(from: storedData) else {
+            logger.error("Failed to decompress stored configuration")
+            return nil
+        }
+
+        return decompressedData
+    }
+
+    private static func storedConfigurationData(from archivedData: Data, compress: Bool, logger: MPLog) -> Data {
+        guard compress else {
+            return archivedData
+        }
+
+        guard let compressedData = MPZipPRIVATE.compressedData(from: archivedData) else {
+            logger.warning("Failed to compress configuration; storing uncompressed data")
+            return archivedData
+        }
+
+        return compressedData
     }
 }

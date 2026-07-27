@@ -87,7 +87,7 @@
     XCTAssertTrue(hasGzipHeader);
     XCTAssertLessThan(compressedData.length, originalData.length);
     
-    NSData *expandedData = [MPZipTestHelper inflatedDataFromData:compressedData];
+    NSData *expandedData = [MPZipPRIVATE decompressedDataFromData:compressedData];
     XCTAssertEqualObjects(originalData, expandedData);
 }
 
@@ -98,7 +98,7 @@
     XCTAssertNotNil(compressedData, @"Error compressing data.");
     XCTAssertGreaterThanOrEqual(originalData.length, compressedData.length, @"Compression is not being efficient.");
     
-    NSData *expandedData = [MPZipTestHelper inflatedDataFromData:compressedData];
+    NSData *expandedData = [MPZipPRIVATE decompressedDataFromData:compressedData];
     XCTAssertNotNil(expandedData, @"Error expanding data.");
     NSString *expandedString = [[NSString alloc] initWithData:expandedData encoding:NSUTF8StringEncoding];
     XCTAssertEqualObjects(originalString, expandedString, @"Strings are not the same.");
@@ -112,7 +112,7 @@
     XCTAssertNotNil(compressedData, @"Error compressing data.");
     XCTAssertLessThanOrEqual(originalData.length, compressedData.length, @"Compression is more efficient than expected.");
 
-    NSData *expandedData = [MPZipTestHelper inflatedDataFromData:compressedData];
+    NSData *expandedData = [MPZipPRIVATE decompressedDataFromData:compressedData];
     XCTAssertNotNil(expandedData, @"Error expanding data.");
     NSString *expandedString = [[NSString alloc] initWithData:expandedData encoding:NSUTF8StringEncoding];
     XCTAssertEqualObjects(originalString, expandedString, @"Strings are not the same.");
@@ -124,7 +124,7 @@
     NSData *compressedData = [MPZipPRIVATE compressedDataFromData:originalData];
     XCTAssertNil(compressedData, @"Error compressing data.");
     
-    NSData *expandedData = [MPZipTestHelper inflatedDataFromData:compressedData];
+    NSData *expandedData = [MPZipPRIVATE decompressedDataFromData:compressedData];
     XCTAssertNil(expandedData, @"Error expanding data.");
 }
 
