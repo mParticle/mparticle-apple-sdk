@@ -170,7 +170,8 @@ public protocol MPUserDefaultsProtocol {
         let configurationData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data
         guard let configurationData = configurationData else { return nil }
 
-        let isCompressed = isStoredConfigurationCompressed()
+        // Content sniff is the source of truth; the persisted flag can be stale or missing.
+        let isCompressed = MPZipPRIVATE.isGzipCompressedData(configurationData)
         guard let archivedConfigurationData = Self.archivedConfigurationData(
             from: configurationData,
             isCompressed: isCompressed,
@@ -274,9 +275,9 @@ public protocol MPUserDefaultsProtocol {
         guard let storedData = mpObject(forKey: kMResponseConfigurationKey, userId: userID) as? Data else { return }
 
         let shouldCompress = connector.compressConfigurationStorage()
-        let isCompressed = isStoredConfigurationCompressed()
+        let isGzipData = MPZipPRIVATE.isGzipCompressedData(storedData)
 
-        if shouldCompress, !isCompressed {
+        if shouldCompress, !isGzipData {
             let compressedData = Self.storedConfigurationData(
                 from: storedData,
                 compress: true,
@@ -285,7 +286,7 @@ public protocol MPUserDefaultsProtocol {
             setMPObject(compressedData, forKey: kMResponseConfigurationKey, userId: userID)
             setConfigurationCompressedFlag(MPZipPRIVATE.isGzipCompressedData(compressedData))
             connector.logger.debug("Configuration compression migration complete")
-        } else if !shouldCompress, isCompressed {
+        } else if !shouldCompress, isGzipData {
             guard let decompressedData = MPZipPRIVATE.decompressedData(from: storedData) else {
                 connector.logger.error("Failed to decompress configuration during migration")
                 return
@@ -293,6 +294,10 @@ public protocol MPUserDefaultsProtocol {
             setMPObject(decompressedData, forKey: kMResponseConfigurationKey, userId: userID)
             setConfigurationCompressedFlag(false)
             connector.logger.debug("Configuration decompression migration complete")
+        } else if isStoredConfigurationCompressed() != isGzipData {
+            // Reconcile a missing/stale flag with the actual blob (e.g. crash mid-write,
+            // or an older SDK rewrite that left uncompressed data behind a true flag).
+            setConfigurationCompressedFlag(isGzipData)
         }
     }
 

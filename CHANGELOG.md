@@ -24,6 +24,8 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 #### Fixed
 
+- Treat gzip magic bytes (`1f 8b`) as the source of truth for compressed configuration storage, reconciling a missing or stale `responseConfigurationCompressed` flag so upgrade/downgrade mismatch and crash mid-write no longer leave config unreadable or double-gzipped.
+- Skip rewriting cached configuration on HTTP 304 when `getConfiguration` returns nil.
 - `MParticle.sharedInstance.identity.deviceApplicationStamp` now returns the same value sent on the wire as `device_application_stamp` (`mp_deviceid`). Previously it returned the unrelated `MPDevice.deviceIdentifier` used for ramp bucketing.
 
 ### Kits

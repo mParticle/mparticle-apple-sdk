@@ -395,7 +395,7 @@ class MPUserDefaultsTests: XCTestCase {
         XCTAssertNil(UserDefaults.standard.object(forKey: kMResponseConfigurationCompressedKey))
     }
 
-    func testMissingCompressionFlagDoesNotTreatGzipDataAsCompressed() {
+    func testGzipBlobWithoutFlagRemainsReadableAndIsNotDoubleCompressed() {
         connector.compressConfigurationStorageReturnValue = true
         let requestTimestamp = Date().timeIntervalSince1970
         let largeConfiguration = buildLargeFilterConfiguration()
@@ -417,9 +417,51 @@ class MPUserDefaultsTests: XCTestCase {
         }
 
         XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(compressedData))
+        // Simulate crash between writing gzip blob and persisting the flag.
         UserDefaults.standard.removeObject(forKey: kMResponseConfigurationCompressedKey)
 
-        XCTAssertNil(userDefaults.getConfiguration())
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
+
+        guard let storedAfterRead = userDefaults.mpObject(
+            forKey: kMResponseConfigurationKey,
+            userId: connector.userId() ?? 0
+        ) as? Data else {
+            XCTFail("Expected stored configuration data after read")
+            return
+        }
+
+        // Must not gzip an already-gzipped blob during migration.
+        XCTAssertTrue(MPZipPRIVATE.isGzipCompressedData(storedAfterRead))
+        guard let onceInflated = MPZipPRIVATE.decompressedData(from: storedAfterRead) else {
+            XCTFail("Expected single gzip layer to inflate")
+            return
+        }
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(onceInflated))
+    }
+
+    func testStaleTrueFlagWithUncompressedBlobRemainsReadable() throws {
+        let largeConfiguration = buildLargeFilterConfiguration()
+        let userID = connector.userId() ?? 0
+        let archivedData = try NSKeyedArchiver.archivedData(
+            withRootObject: largeConfiguration,
+            requiringSecureCoding: true
+        )
+
+        // Simulate downgrade rewrite: uncompressed blob left behind with stale true flag.
+        userDefaults.setMPObject(archivedData, forKey: kMResponseConfigurationKey, userId: userID)
+        userDefaults.setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
+        UserDefaults.standard.set(true, forKey: kMResponseConfigurationCompressedKey)
+        XCTAssertFalse(MPZipPRIVATE.isGzipCompressedData(archivedData))
+
+        connector.compressConfigurationStorageReturnValue = false
+
+        XCTAssertEqual(
+            largeConfiguration as NSDictionary,
+            userDefaults.getConfiguration() as NSDictionary?
+        )
     }
 
     func testMigrateUncompressedLegacyWithoutStoredFlag() throws {
