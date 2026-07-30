@@ -37,6 +37,8 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 - **Adobe 5** — Add tvOS 15.0+ support for CocoaPods and Swift Package Manager.
 - **Braze 17** — Add `braze-17` kit track for [Braze Swift SDK 17.x](https://github.com/braze-inc/braze-swift-sdk/releases/tag/17.0.0).
 - **Braze 17** — When `useEcommerceRecommendedEvents` is enabled in kit configuration, forward supported mParticle commerce events to Braze recommended eCommerce events (`ecommerce.cart_updated`, `ecommerce.checkout_started`, `ecommerce.product_viewed`, `ecommerce.order_placed`, `ecommerce.order_refunded`).
+- **Braze 17** — When `useEcommerceRecommendedEvents` is enabled, set Braze `subtotalValue` from the commerce event custom attribute named by the kit `subtotal_value` configuration setting (cart updated, checkout started, order placed, and order refunded).
+- **Braze 17** — When `useEcommerceRecommendedEvents` is enabled, resolve `cart_id`, `checkout_id`, `image_url`, `product_url`, and `source` from kit-mapped custom attribute keys when configured; fall back to session ID for cart/checkout IDs, `nil` for image/product URLs, and `"iOS"` for source when unmapped or missing.
 - **Rokt SDK+ (`RoktSDKPlus`)** — Umbrella Swift package and CocoaPods pod at `Kits/rokt-sdk-plus/rokt-sdk-plus-ios`, versioned with the core SDK and mirrored to [ROKT/rokt-sdk-plus-ios](https://github.com/ROKT/rokt-sdk-plus-ios).
 
 #### Fixed

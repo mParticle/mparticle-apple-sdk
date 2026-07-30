@@ -1063,7 +1063,10 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
 
 - (void)testRecommendedEcommerceAddToCart {
     MPKitBraze *kit = [[MPKitBraze alloc] init];
-    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+    kit.configuration = @{
+        @"useEcommerceRecommendedEvents": @YES,
+        @"cart_id": @"cart_id"
+    };
 
     id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
@@ -1077,9 +1080,11 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
         return [payload.action isEqualToString:@"add"]
             && [payload.cartId isEqualToString:@"cart-123"]
             && [payload.currency isEqualToString:@"USD"]
-            && [payload.source isEqualToString:@"ios"]
+            && [payload.source isEqualToString:@"iOS"]
             && payload.products.count == 1
-            && [payload.products.firstObject.productId isEqualToString:@"1131331343"];
+            && [payload.products.firstObject.productId isEqualToString:@"1131331343"]
+            && payload.products.firstObject.imageUrl == nil
+            && payload.products.firstObject.productUrl == nil;
     }]];
 
     MPKitExecStatus *execStatus = [kit logBaseEvent:event];
@@ -1091,7 +1096,10 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
 
 - (void)testRecommendedEcommercePurchase {
     MPKitBraze *kit = [[MPKitBraze alloc] init];
-    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+    kit.configuration = @{
+        @"useEcommerceRecommendedEvents": @YES,
+        @"subtotal_value": @"order_subtotal"
+    };
 
     id mockClient = OCMClassMock([Braze class]);
     [kit setBrazeInstanceLocal:mockClient];
@@ -1099,7 +1107,10 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
     MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
     event.currency = @"USD";
-    event.customAttributes = @{@"total_discounts": @"10.50"};
+    event.customAttributes = @{
+        @"total_discounts": @"10.50",
+        @"order_subtotal": @"89.99"
+    };
     event.transactionAttributes = [[MPTransactionAttributes alloc] init];
     event.transactionAttributes.transactionId = @"order-456";
     event.transactionAttributes.revenue = @13;
@@ -1108,8 +1119,83 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
         return [payload.orderId isEqualToString:@"order-456"]
             && payload.totalValue == 13
             && payload.totalDiscounts.doubleValue == 10.50
+            && payload.subtotalValue.doubleValue == 89.99
             && [payload.currency isEqualToString:@"USD"]
             && payload.products.count == 1;
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual(execStatus.forwardCount, 1);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceAddToCartIncludesSubtotalValue {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{
+        @"useEcommerceRecommendedEvents": @YES,
+        @"subtotal_value": @"cart_subtotal",
+        @"cart_id": @"cart_id"
+    };
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@2 price:@13];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    event.currency = @"USD";
+    event.customAttributes = @{
+        @"cart_id": @"cart-123",
+        @"cart_subtotal": @"26.00"
+    };
+
+    [[mockClient expect] logEcommerceCartUpdated:[OCMArg checkWithBlock:^BOOL(BRZEcommerceCartUpdatedEvent *payload) {
+        return [payload.action isEqualToString:@"add"]
+            && [payload.cartId isEqualToString:@"cart-123"]
+            && payload.subtotalValue.doubleValue == 26.00
+            && payload.products.count == 1;
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual(execStatus.forwardCount, 1);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceMappedCustomAttributes {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{
+        @"useEcommerceRecommendedEvents": @YES,
+        @"cart_id": @"mapped_cart_id",
+        @"checkout_id": @"mapped_checkout_id",
+        @"source": @"mapped_source",
+        @"image_url": @"mapped_image_url",
+        @"product_url": @"mapped_product_url"
+    };
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
+    product[@"mapped_image_url"] = @"https://example.com/mapped-image.png";
+    product[@"mapped_product_url"] = @"https://example.com/mapped-product";
+    product[@"image_url"] = @"https://example.com/unmapped-image.png";
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionCheckout product:product];
+    event.currency = @"USD";
+    event.customAttributes = @{
+        @"mapped_cart_id": @"mapped-cart-1",
+        @"mapped_checkout_id": @"mapped-checkout-1",
+        @"mapped_source": @"mobile_app"
+    };
+
+    [[mockClient expect] logEcommerceCheckoutStarted:[OCMArg checkWithBlock:^BOOL(BRZEcommerceCheckoutStartedEvent *payload) {
+        return [payload.cartId isEqualToString:@"mapped-cart-1"]
+            && [payload.checkoutId isEqualToString:@"mapped-checkout-1"]
+            && [payload.source isEqualToString:@"mobile_app"]
+            && [payload.products.firstObject.imageUrl isEqualToString:@"https://example.com/mapped-image.png"]
+            && [payload.products.firstObject.productUrl isEqualToString:@"https://example.com/mapped-product"];
     }]];
 
     MPKitExecStatus *execStatus = [kit logBaseEvent:event];
@@ -1138,7 +1224,7 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
         return [properties[@"order_id"] isEqualToString:@"order-456"]
             && [properties[@"total_discounts"] doubleValue] == 5.25
             && [properties[@"currency"] isEqualToString:@"USD"]
-            && [properties[@"source"] isEqualToString:@"ios"]
+            && [properties[@"source"] isEqualToString:@"iOS"]
             && [properties[@"products"] isKindOfClass:[NSArray class]];
     }]];
 

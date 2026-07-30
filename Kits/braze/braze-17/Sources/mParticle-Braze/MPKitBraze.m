@@ -17,11 +17,17 @@ static NSString *const bundleCommerceEventData = @"bundleCommerceEventData";
 static NSString *const replaceSkuWithProductName = @"replaceSkuWithProductName";
 static NSString *const subscriptionGroupMapping = @"subscriptionGroupMapping";
 static NSString *const useEcommerceRecommendedEventsKey = @"useEcommerceRecommendedEvents";
+static NSString *const mappingSubtotalValueKey = @"subtotal_value";
+static NSString *const mappingCartIdKey = @"cart_id";
+static NSString *const mappingCheckoutIdKey = @"checkout_id";
+static NSString *const mappingImageUrlKey = @"image_url";
+static NSString *const mappingProductUrlKey = @"product_url";
+static NSString *const mappingSourceKey = @"source";
 
 // Projection keys for Braze-only product fields supplied via MPProduct custom attributes
 static NSString *const kMPBrazeProductImageURLKey = @"$braze_image_url";
 static NSString *const kMPBrazeProductProductURLKey = @"$braze_product_url";
-static NSString *const kMPBrazeEcommerceSource = @"ios";
+static NSString *const kMPBrazeEcommerceSource = @"iOS";
 static NSString *const kMPBrazeEcommerceOrderRefundedEventName = @"ecommerce.order_refunded";
 
 // The possible values for userIdentificationType
@@ -1336,28 +1342,32 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     return nil;
 }
 
+- (NSString *)mappedCustomAttributeValueForConfigKey:(NSString *)mappingConfigKey
+                                 fromCustomAttributes:(NSDictionary *)customAttributes {
+    NSString *attributeKey = [self stringRepresentation:_configuration[mappingConfigKey]];
+    if (!attributeKey.length) {
+        return nil;
+    }
+    NSString *value = [self stringRepresentation:customAttributes[attributeKey]];
+    return value.length ? value : nil;
+}
+
 - (NSString *)brazeCartIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
-    NSString *cartId = [self stringRepresentation:commerceEvent.customAttributes[@"cart_id"]];
-    if (cartId.length) {
-        return cartId;
+    NSString *mappedCartId = [self mappedCustomAttributeValueForConfigKey:mappingCartIdKey
+                                                     fromCustomAttributes:commerceEvent.customAttributes];
+    if (mappedCartId.length) {
+        return mappedCartId;
     }
-    NSString *sessionId = [self brazeSessionIdString];
-    if (sessionId.length) {
-        return sessionId;
-    }
-    return [[NSUUID UUID] UUIDString];
+    return [self brazeSessionIdString];
 }
 
 - (NSString *)brazeCheckoutIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
-    NSString *checkoutId = [self stringRepresentation:commerceEvent.customAttributes[@"checkout_id"]];
-    if (checkoutId.length) {
-        return checkoutId;
+    NSString *mappedCheckoutId = [self mappedCustomAttributeValueForConfigKey:mappingCheckoutIdKey
+                                                         fromCustomAttributes:commerceEvent.customAttributes];
+    if (mappedCheckoutId.length) {
+        return mappedCheckoutId;
     }
-    NSString *sessionId = [self brazeSessionIdString];
-    if (sessionId.length) {
-        return sessionId;
-    }
-    return [[NSUUID UUID] UUIDString];
+    return [self brazeSessionIdString];
 }
 
 - (NSString *)brazeOrderIdForCommerceEvent:(MPCommerceEvent *)commerceEvent {
@@ -1379,13 +1389,30 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (NSString *)brazeProductImageURLForProduct:(MPProduct *)product {
-    id imageURL = product[kMPBrazeProductImageURLKey] ?: product[@"image_url"] ?: product[@"Image URL"];
-    return [self stringRepresentation:imageURL];
+    NSString *attributeKey = [self stringRepresentation:_configuration[mappingImageUrlKey]];
+    if (!attributeKey.length) {
+        return nil;
+    }
+    NSString *mappedImageURL = [self stringRepresentation:product[attributeKey]];
+    return mappedImageURL.length ? mappedImageURL : nil;
 }
 
 - (NSString *)brazeProductURLForProduct:(MPProduct *)product {
-    id productURL = product[kMPBrazeProductProductURLKey] ?: product[@"product_url"] ?: product[@"Product URL"];
-    return [self stringRepresentation:productURL];
+    NSString *attributeKey = [self stringRepresentation:_configuration[mappingProductUrlKey]];
+    if (!attributeKey.length) {
+        return nil;
+    }
+    NSString *mappedProductURL = [self stringRepresentation:product[attributeKey]];
+    return mappedProductURL.length ? mappedProductURL : nil;
+}
+
+- (NSString *)brazeSourceForCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    NSString *mappedSource = [self mappedCustomAttributeValueForConfigKey:mappingSourceKey
+                                                     fromCustomAttributes:commerceEvent.customAttributes];
+    if (mappedSource.length) {
+        return mappedSource;
+    }
+    return kMPBrazeEcommerceSource;
 }
 
 - (NSDictionary<NSString *, id> *)brazeProductMetadataFromProduct:(MPProduct *)product {
@@ -1473,6 +1500,15 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     return total;
 }
 
+- (NSNumber *)brazeSubtotalValueForCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    NSString *subtotalString = [self mappedCustomAttributeValueForConfigKey:mappingSubtotalValueKey
+                                                       fromCustomAttributes:commerceEvent.customAttributes];
+    if (!subtotalString.length) {
+        return nil;
+    }
+    return @(subtotalString.doubleValue);
+}
+
 - (NSArray<NSDictionary *> *)brazeProductDictionariesFromProducts:(NSArray<MPProduct *> *)products {
     NSMutableArray<NSDictionary *> *productDictionaries = [[NSMutableArray alloc] initWithCapacity:products.count];
     for (MPProduct *product in products) {
@@ -1508,8 +1544,10 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess forwardCount:0];
     NSString *currency = [self brazeCurrencyForCommerceEvent:commerceEvent];
+    NSString *source = [self brazeSourceForCommerceEvent:commerceEvent];
     MPTransactionAttributes *transactionAttributes = commerceEvent.transactionAttributes;
     NSDictionary *eventMetadata = [self brazeEventMetadataFromCommerceEvent:commerceEvent];
+    NSNumber *subtotalValue = [self brazeSubtotalValueForCommerceEvent:commerceEvent];
 
     switch (commerceEvent.action) {
         case MPCommerceEventActionAddToCart:
@@ -1518,9 +1556,12 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.cartId = [self brazeCartIdForCommerceEvent:commerceEvent];
             payload.action = commerceEvent.action == MPCommerceEventActionAddToCart ? @"add" : @"remove";
             payload.currency = currency;
-            payload.source = kMPBrazeEcommerceSource;
+            payload.source = source;
             payload.products = [self brazeLineItemsFromProducts:products];
             payload.totalValue = @([self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes]);
+            if (subtotalValue != nil) {
+                payload.subtotalValue = subtotalValue;
+            }
             if (transactionAttributes.tax != nil) {
                 payload.tax = transactionAttributes.tax;
             }
@@ -1537,9 +1578,12 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.checkoutId = [self brazeCheckoutIdForCommerceEvent:commerceEvent];
             payload.cartId = [self brazeCartIdForCommerceEvent:commerceEvent];
             payload.currency = currency;
-            payload.source = kMPBrazeEcommerceSource;
+            payload.source = source;
             payload.products = [self brazeLineItemsFromProducts:products];
             payload.totalValue = [self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes];
+            if (subtotalValue != nil) {
+                payload.subtotalValue = subtotalValue;
+            }
             if (transactionAttributes.tax != nil) {
                 payload.tax = transactionAttributes.tax;
             }
@@ -1561,7 +1605,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 payload.productUrl = [self brazeProductURLForProduct:product];
                 payload.price = [product.price doubleValue];
                 payload.currency = currency;
-                payload.source = kMPBrazeEcommerceSource;
+                payload.source = source;
                 NSMutableDictionary *metadata = [[self brazeProductMetadataFromProduct:product] mutableCopy] ?: [NSMutableDictionary dictionary];
                 if (eventMetadata.count > 0) {
                     [metadata addEntriesFromDictionary:eventMetadata];
@@ -1578,9 +1622,12 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.orderId = [self brazeOrderIdForCommerceEvent:commerceEvent];
             payload.cartId = [self brazeCartIdForCommerceEvent:commerceEvent];
             payload.currency = currency;
-            payload.source = kMPBrazeEcommerceSource;
+            payload.source = source;
             payload.products = [self brazeLineItemsFromProducts:products];
             payload.totalValue = [self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes];
+            if (subtotalValue != nil) {
+                payload.subtotalValue = subtotalValue;
+            }
             if (transactionAttributes.tax != nil) {
                 payload.tax = transactionAttributes.tax;
             }
@@ -1601,9 +1648,12 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 @"order_id": [self brazeOrderIdForCommerceEvent:commerceEvent],
                 @"total_value": @([self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes]),
                 @"currency": currency,
-                @"source": kMPBrazeEcommerceSource,
+                @"source": source,
                 @"products": [self brazeProductDictionariesFromProducts:products]
             } mutableCopy];
+            if (subtotalValue != nil) {
+                properties[@"subtotal_value"] = subtotalValue;
+            }
             NSString *totalDiscountsString = [self stringRepresentation:commerceEvent.customAttributes[@"total_discounts"]];
             if (totalDiscountsString.length) {
                 properties[@"total_discounts"] = @(totalDiscountsString.doubleValue);
