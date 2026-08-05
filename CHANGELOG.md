@@ -10,53 +10,15 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [Unreleased]
 
-### Core
-
-#### Added
-
-- Add device-level consent via `MParticleOptions.deviceConsentState` and `MParticle.sharedInstance.deviceConsentState`. When set, it supersedes user/MPID-level consent everywhere consent is evaluated (kit enablement, consent forwarding to kits, and the consent included in uploads for all MPIDs), is persisted device-wide independent of the active user, and triggers the same kit refresh as a user consent change. Set it to `nil` to clear and revert to user/MPID-level consent.
-- Add `MPRokt.handleURLCallback:` for forwarding Afterpay/PayPal redirect URLs to the registered Rokt payment extension. Call from `application:openURL:options:` (AppDelegate) or `scene:openURLContexts:` / `.onOpenURL` (Scene/SwiftUI).
-
-#### Changed
-
-- Bump minimum `RoktContracts` to 2.0.0 (adds `PaymentMethodType.paypal` and totals on `PaymentPreparation`).
-
-#### Fixed
-
-- `MParticle.sharedInstance.identity.deviceApplicationStamp` now returns the same value sent on the wire as `device_application_stamp` (`mp_deviceid`). Previously it returned the unrelated `MPDevice.deviceIdentifier` used for ramp bucketing.
+## [9.3.3] - 2026-08-05
 
 ### Kits
 
-#### Fixed
-
-- Use dual-path core SDK imports in kit public headers so manual xcframework consumers resolve `mParticle_Apple_SDK` (xcframework/CocoaPods framework) or `mParticle_Apple_SDK_ObjC` (SPM/CocoaPods ObjC). CI smoke-tests kit headers against the core SDK xcframework.
-- Correct kit README CocoaPods pod names and mirror repository URLs to match versioned podspecs and CI mirror destinations.
-
-#### Added
-
-- **Adobe 5** — Add tvOS 15.0+ support for CocoaPods and Swift Package Manager.
-- **Braze 17** — Add `braze-17` kit track for [Braze Swift SDK 17.x](https://github.com/braze-inc/braze-swift-sdk/releases/tag/17.0.0).
-- **Braze 17** — When `useEcommerceRecommendedEvents` is enabled in kit configuration, forward supported mParticle commerce events to Braze recommended eCommerce events (`ecommerce.cart_updated`, `ecommerce.checkout_started`, `ecommerce.product_viewed`, `ecommerce.order_placed`, `ecommerce.order_refunded`).
-- **Braze 17** — When `useEcommerceRecommendedEvents` is enabled, set Braze `subtotalValue` from the commerce event custom attribute named by the kit `subtotalValueAttribute` mapping (JSON `value` field).
-- **Braze 17** — When `useEcommerceRecommendedEvents` is enabled, resolve cart/checkout IDs and product image/product URLs from kit attribute mappings (`cartIdAttribute`, `checkoutIdAttribute`, `imageUrlAttribute`, `productUrlAttribute`) by parsing the JSON `value` field; use kit `source` as a direct value when set. Fall back to session ID for cart/checkout IDs, `nil` for image/product URLs, and `"iOS"` for source when unmapped or missing. Mapped attribute keys are excluded from Braze event/product `metadata` once promoted to typed fields.
-- **Rokt SDK+ (`RoktSDKPlus`)** — Umbrella Swift package and CocoaPods pod at `Kits/rokt-sdk-plus/rokt-sdk-plus-ios`, versioned with the core SDK and mirrored to [ROKT/rokt-sdk-plus-ios](https://github.com/ROKT/rokt-sdk-plus-ios).
-
-#### Fixed
-
-- **Rokt SDK+** — Release **Build rokt-sdk-plus-ios** no longer runs `xcodebuild -create-xcframework` for this Swift-package-only target (archives do not produce `*.framework` under `Products/Library/Frameworks/`). CI uploads a small placeholder zip so mirror artifact steps still succeed; integrate via SwiftPM or CocoaPods from the tag.
-- **Rokt SDK+** — Align `RoktSDKPlus.podspec` with the ecosystem version (double-quoted `s.version`, same as other kits). Release – Draft now bumps single-quoted `s.version = '…'` podspec lines so `mParticle-Rokt` and `RoktSDKPlus` stay in sync for `pod lib lint`.
-
-#### Rokt
-
-##### Changed
-
-- Bump minimum `Rokt-Widget` to 5.1.0 (adds Afterpay payment support).
-- Bump minimum `RoktContracts` to 2.0.0.
+#### Kits
 
 ##### Added
 
-- Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
-- Implement `stop` on `MPKitRokt` so the kit remains active across `switchWorkspaceWithOptions:` without requiring an app restart.
+- Add Braze 17 Support ([#803](https://github.com/mParticle/mparticle-apple-sdk/pull/803))
 
 ## [9.3.2] - 2026-07-27
 
@@ -2474,7 +2436,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.2...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.3...HEAD
+[9.3.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.2...v9.3.3
 [9.3.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.1...v9.3.2
 [9.3.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.0...v9.3.1
 [9.3.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.2...v9.3.0
