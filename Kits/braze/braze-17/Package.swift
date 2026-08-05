@@ -33,7 +33,7 @@ let package = Package(
         mParticleAppleSDK,
         .package(
             url: "https://github.com/braze-inc/braze-swift-sdk",
-            .upToNextMajor(from: "16.0.0")
+            .upToNextMajor(from: "17.0.0")
         ),
         .package(
             url: "https://github.com/erikdoe/ocmock",

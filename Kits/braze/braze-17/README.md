@@ -1,6 +1,6 @@
-# mParticle Braze Kit (Braze Swift SDK 16.x)
+# mParticle Braze Kit (Braze Swift SDK 17.x)
 
-This is the [Braze](https://www.braze.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Braze Swift SDK 16.x](https://github.com/braze-inc/braze-swift-sdk).
+This is the [Braze](https://www.braze.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Braze Swift SDK 17.x](https://github.com/braze-inc/braze-swift-sdk).
 
 ## Installation
 
@@ -13,7 +13,7 @@ Swift Package Manager resolves the `mParticle` SDK automatically as a transitive
 let mParticleVersion: Version = "9.0.0"
 
 .package(
-    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-16",
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-braze-17",
     .upToNextMajor(from: mParticleVersion)
 ),
 ```
@@ -27,7 +27,7 @@ Then add `mParticle-Braze` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Braze-16', '~> 9.0'
+pod 'mParticle-Braze-17', '~> 9.0'
 ```
 
 For iOS push-launch tracking, initialize Braze in `application(_:didFinishLaunchingWithOptions:)` **before** starting mParticle, then pass the instance to the kit:

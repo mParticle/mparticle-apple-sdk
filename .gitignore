@@ -19,6 +19,8 @@ xcuserdata
 profile
 *.moved-aside
 DerivedData
+DerivedData-*/
+*.xcodeproj.bak
 *.hmap
 *.ipa
 

@@ -114,7 +114,7 @@
 			mainGroup = 35CCA5D82F44CF3900550EBC;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				35CCA5F92F44CF5200550EBC /* XCLocalSwiftPackageReference "../../../braze-16" */,
+				35CCA5F92F44CF5200550EBC /* XCLocalSwiftPackageReference "../../../braze-17" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 35CCA5E22F44CF3900550EBC /* Products */;
@@ -352,9 +352,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		35CCA5F92F44CF5200550EBC /* XCLocalSwiftPackageReference "../../../braze-16" */ = {
+		35CCA5F92F44CF5200550EBC /* XCLocalSwiftPackageReference "../../../braze-17" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../braze-16";
+			relativePath = "../../../braze-17";
 		};
 /* End XCLocalSwiftPackageReference section */
 
