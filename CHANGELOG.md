@@ -58,6 +58,16 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 - Pass through `handleURLCallback:` to `Rokt.handleURLCallback(with:)` on the Rokt SDK.
 - Implement `stop` on `MPKitRokt` so the kit remains active across `switchWorkspaceWithOptions:` without requiring an app restart.
 
+## [9.3.3] - 2026-08-05
+
+### Kits
+
+#### Kits
+
+##### Added
+
+- Add Braze 17 Support ([#803](https://github.com/mParticle/mparticle-apple-sdk/pull/803))
+
 ## [9.3.2] - 2026-07-27
 
 ### Core
@@ -2474,7 +2484,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.2...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.3...HEAD
+[9.3.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.2...v9.3.3
 [9.3.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.1...v9.3.2
 [9.3.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.0...v9.3.1
 [9.3.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.2.2...v9.3.0
