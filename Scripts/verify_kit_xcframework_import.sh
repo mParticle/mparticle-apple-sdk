@@ -2,71 +2,46 @@
 #
 # verify_kit_xcframework_import.sh
 #
-# Ensures kit public headers compile against the core SDK xcframework module
-# (mParticle_Apple_SDK), not only the SPM/CocoaPods ObjC module name.
+# Builds the distributable AppsFlyer kit xcframework (representative kit) and
+# checks two things manual xcframework consumers depend on:
+#
+#   1. The kit does not redefine symbols from the core SDK or AppsFlyer, which
+#      would give an app two copies of those classes. Enforced by the build.
+#   2. Kit public headers compile against the core SDK xcframework module
+#      (mParticle_Apple_SDK), not only the SPM/CocoaPods ObjC module name.
 #
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-${ROOT}/build/xcframework-import-smoke}"
-CORE_SCHEME="mParticle-Apple-SDK"
 CORE_MODULE="mParticle_Apple_SDK"
-KIT_PROJECT="${ROOT}/Kits/appsflyer/appsflyer-6/mParticle-AppsFlyer.xcodeproj"
-KIT_SCHEME="mParticle-AppsFlyer"
+KIT_NAME="appsflyer-6"
 KIT_MODULE="mParticle_AppsFlyer"
 SMOKE_SOURCE="${ROOT}/Tests/XCFrameworkImportSmoke/smoke.m"
 
-BUILD_SETTINGS=(
-	CODE_SIGN_IDENTITY=""
-	CODE_SIGNING_REQUIRED=NO
-	CODE_SIGNING_ALLOWED=NO
-	SKIP_INSTALL=NO
-	BUILD_LIBRARY_FOR_DISTRIBUTION=YES
-)
+# build_kit_xcframework.sh builds the core SDK here when it is not given a
+# prebuilt one.
+CORE_XCFRAMEWORK="${ROOT}/build/kit-xcframework/${KIT_NAME}/${CORE_MODULE}.xcframework"
+KIT_XCFRAMEWORK="${BUILD_DIR}/${KIT_MODULE}.xcframework"
 
 framework_search_path() {
 	local xcf="$1"
 	find "${xcf}" -type d -path '*/ios-*simulator/*.framework' -maxdepth 2 | head -1 | xargs dirname
 }
 
-build_core_xcframework() {
-	echo "🏗️  Building core SDK xcframework..."
-	cd "${ROOT}"
-	chmod +x ./Scripts/xcframework.sh
-	rm -rf archives "${CORE_MODULE}.xcframework"
-	./Scripts/xcframework.sh "${CORE_SCHEME}" "${CORE_MODULE}"
-	mv "${CORE_MODULE}.xcframework" "${BUILD_DIR}/"
-	rm -rf archives
-}
-
-build_kit_xcframework() {
-	echo "🏗️  Building AppsFlyer kit xcframework (representative kit)..."
-	local archive_root="${BUILD_DIR}/archives"
-	mkdir -p "${archive_root}"
-	rm -rf "${archive_root}" "${BUILD_DIR}/${KIT_MODULE}.xcframework"
-
-	xcodebuild archive -project "${KIT_PROJECT}" -scheme "${KIT_SCHEME}" \
-		-destination "generic/platform=iOS Simulator" \
-		-archivePath "${archive_root}/${KIT_MODULE}-iOS_Simulator" \
-		"${BUILD_SETTINGS[@]}"
-
-	xcodebuild -create-xcframework \
-		-archive "${archive_root}/${KIT_MODULE}-iOS_Simulator.xcarchive" -framework "${KIT_MODULE}.framework" \
-		-output "${BUILD_DIR}/${KIT_MODULE}.xcframework"
-
-	rm -rf "${archive_root}"
+build_xcframeworks() {
+	echo "🏗️  Building distributable ${KIT_NAME} kit xcframework..."
+	chmod +x "${ROOT}/Scripts/build_kit_xcframework.sh"
+	rm -rf "${KIT_XCFRAMEWORK}"
+	OUTPUT_DIR="${BUILD_DIR}" "${ROOT}/Scripts/build_kit_xcframework.sh" "${KIT_NAME}"
 }
 
 compile_smoke_test() {
 	echo "🧪 Compiling ObjC smoke test against xcframework modules..."
-	local core_xcf="${BUILD_DIR}/${CORE_MODULE}.xcframework"
-	local kit_xcf="${BUILD_DIR}/${KIT_MODULE}.xcframework"
-	local core_fw_path
-	local kit_fw_path
-	local sdk_path
+	local core_fw_path kit_fw_path sdk_path
 
-	core_fw_path="$(framework_search_path "${core_xcf}")"
-	kit_fw_path="$(framework_search_path "${kit_xcf}")"
+	core_fw_path="$(framework_search_path "${CORE_XCFRAMEWORK}")"
+	kit_fw_path="$(framework_search_path "${KIT_XCFRAMEWORK}")"
 	sdk_path="$(xcrun --sdk iphonesimulator --show-sdk-path)"
 
 	if [[ -z ${core_fw_path} || -z ${kit_fw_path} ]]; then
@@ -84,6 +59,5 @@ compile_smoke_test() {
 }
 
 mkdir -p "${BUILD_DIR}"
-build_core_xcframework
-build_kit_xcframework
+build_xcframeworks
 compile_smoke_test

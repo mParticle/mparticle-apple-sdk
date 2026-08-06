@@ -30,6 +30,17 @@
     "local_path": "Kits/appsflyer/appsflyer-6",
     "podspec": "Kits/appsflyer/appsflyer-6/mParticle-AppsFlyer-6.podspec",
     "dest_repo": "mparticle-apple-integration-appsflyer-6",
+    "dynamic_xcframework": {
+      "scheme": "mParticle-AppsFlyer-Dynamic",
+      "module": "mParticle_AppsFlyer",
+      "dependencies": [
+        {
+          "framework": "AppsFlyerLib",
+          "package_identity": "appsflyerframework",
+          "url": "https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases/download/{version}/AppsFlyerLib-Dynamic.xcframework.zip"
+        }
+      ]
+    },
     "schemes": [
       {
         "scheme": "mParticle-AppsFlyer",

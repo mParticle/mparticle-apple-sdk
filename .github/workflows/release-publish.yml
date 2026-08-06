@@ -151,6 +151,14 @@ jobs:
 
           mkdir -p archives xcframeworks
 
+          # Kits with dynamic_xcframework link partner SDKs at runtime instead of
+          # absorbing static SPM products into the kit binary.
+          if echo '${{ toJson(matrix.kit.dynamic_xcframework) }}' | jq -e . >/dev/null 2>&1; then
+            chmod +x ./Scripts/build_kit_xcframework.sh
+            OUTPUT_DIR="$PWD/xcframeworks" ./Scripts/build_kit_xcframework.sh "${{ matrix.kit.name }}"
+            exit 0
+          fi
+
           SKIP_XCF="${{ matrix.kit.skip_xcframework }}"
           if [ "$SKIP_XCF" = "true" ]; then
             MODULE=$(echo "$SCHEMES_JSON" | jq -r '.[0].module')
