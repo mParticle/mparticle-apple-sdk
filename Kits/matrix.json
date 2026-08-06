@@ -136,7 +136,6 @@
     "local_path": "Kits/braze/braze-17",
     "podspec": "Kits/braze/braze-17/mParticle-Braze-17.podspec",
     "dest_repo": "mparticle-apple-integration-braze-17",
-    "mirror_force_push_main": true,
     "schemes": [
       {
         "scheme": "mParticle-Braze",
