@@ -28,6 +28,20 @@ Add the kit dependency to your app's Podfile:
 pod 'mParticle-AppsFlyer-6', '~> 9.0'
 ```
 
+### Prebuilt xcframework
+
+Each release attaches `mParticle_AppsFlyer.xcframework.zip`. The kit links its dependencies dynamically, so embed all three frameworks in your app target:
+
+| Framework                         | Source                                                                                                                                 |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `mParticle_AppsFlyer.xcframework` | This repository's releases                                                                                                             |
+| `mParticle_Apple_SDK.xcframework` | [mparticle-apple-sdk releases](https://github.com/mParticle/mparticle-apple-sdk/releases), matching version                            |
+| `AppsFlyerLib.xcframework`        | `AppsFlyerLib-Dynamic.xcframework.zip` from [AppsFlyerFramework releases](https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases) |
+
+Set all three to **Embed & Sign**. Use the dynamic `AppsFlyerLib-Dynamic.xcframework.zip` rather than the static build; the static variant does not provide the dynamic library the kit loads at runtime.
+
+Prefer Swift Package Manager or CocoaPods unless your build requires prebuilt binaries — those integrations resolve these dependencies for you.
+
 ## Verifying the Integration
 
 After installing, rebuild and launch your app. With the mParticle log level set to Debug or higher, you should see the following in your Xcode console:

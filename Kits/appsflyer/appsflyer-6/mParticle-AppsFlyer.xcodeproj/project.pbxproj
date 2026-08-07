@@ -13,6 +13,10 @@
 		58F939FA48A08B9D29822BDF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3FD23FABD83AEB8A58E427C6 /* PrivacyInfo.xcprivacy */; };
 		32611EB3492425C687D8F69C /* mParticle-Apple-SDK in Frameworks */ = {isa = PBXBuildFile; productRef = 8625D1443F52E7A698A680A8 /* mParticle-Apple-SDK */; };
 		87C4E16CCDAD49D90C643460 /* AppsFlyerLib-Static in Frameworks */ = {isa = PBXBuildFile; productRef = 6634F5559F44CCAFA10F5747 /* AppsFlyerLib-Static */; };
+		78473C7B513E4351A7578761 /* MPKitAppsFlyer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6BDAB6ACE0557CED9BE8FA64 /* MPKitAppsFlyer.m */; };
+		9A8BE0A3C3B7489291AEA10C /* MPKitAppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = D332A9834DC984DB4FD934C6 /* MPKitAppsFlyer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D24E5D7B12C84EA5BFEC06B6 /* mParticle_AppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = 40D0122E117E63949D3A1019 /* mParticle_AppsFlyer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		E7E139C8F55D4595B9C9CD43 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 3FD23FABD83AEB8A58E427C6 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +26,7 @@
 		3FD23FABD83AEB8A58E427C6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		4A731C6E443066D2D5A02B67 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D3BFFD6271B0312661864F2D /* mParticle_AppsFlyer.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_AppsFlyer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		0FED57E4AC724DAAB618031C /* mParticle_AppsFlyer.framework (Dynamic) */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_AppsFlyer.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				D3BFFD6271B0312661864F2D /* mParticle_AppsFlyer.framework */,
+				0FED57E4AC724DAAB618031C /* mParticle_AppsFlyer.framework (Dynamic) */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -90,6 +96,15 @@
 			files = (
 				0A859A3F5E4C5C1D8752AAC2 /* MPKitAppsFlyer.h in Headers */,
 				8CA05B821916C4FFC15062C8 /* mParticle_AppsFlyer.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1720ABD9D73A466592CD5DB6 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9A8BE0A3C3B7489291AEA10C /* MPKitAppsFlyer.h in Headers */,
+				D24E5D7B12C84EA5BFEC06B6 /* mParticle_AppsFlyer.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,6 +131,25 @@
 			);
 			productName = "mParticle-AppsFlyer";
 			productReference = D3BFFD6271B0312661864F2D /* mParticle_AppsFlyer.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		8A0E4DED3B5F47A1B9AF76DF /* mParticle-AppsFlyer-Dynamic */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 397B0FFC31F74E739E601A8B /* Build configuration list for PBXNativeTarget "mParticle-AppsFlyer-Dynamic" */;
+			buildPhases = (
+				029A39FC8F6742C0B785D34C /* Sources */,
+				1720ABD9D73A466592CD5DB6 /* Headers */,
+				76AD581017A64FB3B78F293C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "mParticle-AppsFlyer-Dynamic";
+			packageProductDependencies = (
+			);
+			productName = "mParticle-AppsFlyer";
+			productReference = 0FED57E4AC724DAAB618031C /* mParticle_AppsFlyer.framework (Dynamic) */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -150,6 +184,7 @@
 			projectRoot = "";
 			targets = (
 				AECD3EA4B54953C844B5BC75 /* mParticle-AppsFlyer */,
+				8A0E4DED3B5F47A1B9AF76DF /* mParticle-AppsFlyer-Dynamic */,
 			);
 		};
 /* End PBXProject section */
@@ -163,6 +198,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		76AD581017A64FB3B78F293C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7E139C8F55D4595B9C9CD43 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -171,6 +214,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				890E16DE853441BF79AB1314 /* MPKitAppsFlyer.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		029A39FC8F6742C0B785D34C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				78473C7B513E4351A7578761 /* MPKitAppsFlyer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,6 +378,72 @@
 			};
 			name = Release;
 		};
+		76D0AB0E8753423D9038089C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(MPARTICLE_DEPENDENCY_FRAMEWORK_PATHS)",
+				);
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					mParticle_Apple_SDK,
+					"-framework",
+					AppsFlyerLib,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-AppsFlyer";
+				PRODUCT_NAME = mParticle_AppsFlyer;
+				SKIP_INSTALL = NO;
+			};
+			name = Debug;
+		};
+		38C2D6F5CFB24EC3BE67A2B4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGN_IDENTITY = "";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(MPARTICLE_DEPENDENCY_FRAMEWORK_PATHS)",
+				);
+				INFOPLIST_FILE = Sources/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					mParticle_Apple_SDK,
+					"-framework",
+					AppsFlyerLib,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-AppsFlyer";
+				PRODUCT_NAME = mParticle_AppsFlyer;
+				SKIP_INSTALL = NO;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -344,6 +461,15 @@
 			buildConfigurations = (
 				0B877BB7B096E20BEC4E2C71 /* Debug */,
 				080C267847E0F0E2EBD2B737 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		397B0FFC31F74E739E601A8B /* Build configuration list for PBXNativeTarget "mParticle-AppsFlyer-Dynamic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				76D0AB0E8753423D9038089C /* Debug */,
+				38C2D6F5CFB24EC3BE67A2B4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
