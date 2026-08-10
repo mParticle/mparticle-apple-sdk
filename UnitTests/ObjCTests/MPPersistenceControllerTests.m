@@ -49,12 +49,19 @@
 - (void)setUp {
     [super setUp];
     
-    // Ensure documents directory exists (may not exist on tvOS simulators)
+    // Ensure database directories exist (Application Support may not exist yet; Documents needed for location-migration tests)
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    [[NSFileManager defaultManager] createDirectoryAtPath:databaseDirectory
+                              withIntermediateDirectories:YES
+                                               attributes:nil
+                                                    error:nil];
+#if TARGET_OS_IOS == 1
     NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
     [[NSFileManager defaultManager] createDirectoryAtPath:documentsDirectory
                               withIntermediateDirectories:YES
                                                attributes:nil
                                                     error:nil];
+#endif
     
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
     MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
@@ -1090,10 +1097,14 @@
 #pragma mark - Database Migration Tests
 
 - (void)testNeedsMigration_NoOldDatabaseExists {
-    // Ensure no v30 database exists
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    // Ensure no v30 database exists in Application Support or Documents
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *oldDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle30.db"];
     [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
+#if TARGET_OS_IOS == 1
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    [[NSFileManager defaultManager] removeItemAtPath:[documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"] error:nil];
+#endif
     
     MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
     NSNumber *needsMigration = [migrationController needsMigration];
@@ -1103,8 +1114,8 @@
 
 - (void)testNeedsMigration_OldDatabaseExists {
     // Create a v30 database file
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *oldDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle30.db"];
     
     // Create a file with content to simulate old database
     NSData *dummyData = [@"test" dataUsingEncoding:NSUTF8StringEncoding];
@@ -1122,11 +1133,108 @@
     [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
 }
 
+#if TARGET_OS_IOS == 1
+- (void)testNeedsMigration_OldDatabaseExistsInDocuments {
+    // Simulate a leftover v30 DB still in Documents after directory migration failed.
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *documentsOldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    NSString *appSupportOldDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+
+    [fileManager removeItemAtPath:documentsOldDbPath error:nil];
+    [fileManager removeItemAtPath:appSupportOldDbPath error:nil];
+
+    NSData *dummyData = [@"test" dataUsingEncoding:NSUTF8StringEncoding];
+    XCTAssertTrue([fileManager createFileAtPath:documentsOldDbPath contents:dummyData attributes:nil]);
+
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    NSNumber *needsMigration = [migrationController needsMigration];
+
+    XCTAssertEqualObjects(needsMigration, @30, @"needsMigration should find a v30 database left in Documents");
+
+    [fileManager removeItemAtPath:documentsOldDbPath error:nil];
+}
+
+- (void)testSchemaMigrationReadsLegacyDatabaseFromDocuments {
+    // If directory migration left mParticle30.db in Documents, schema migration must still
+    // promote its queued data into Application Support/mParticle31.db.
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *documentsOldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    NSString *appSupportOldDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    NSString *appSupportNewDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSString *sessionUUID = [[NSUUID UUID] UUIDString];
+
+    [[MParticle sharedInstance].persistenceController closeDatabase];
+    [fileManager removeItemAtPath:documentsOldDbPath error:nil];
+    [fileManager removeItemAtPath:appSupportOldDbPath error:nil];
+    [fileManager removeItemAtPath:appSupportNewDbPath error:nil];
+
+    // Bootstrap current-version schema in Application Support first.
+    MPPersistenceController_PRIVATE *bootstrap = [[MPPersistenceController_PRIVATE alloc] init];
+    [bootstrap closeDatabase];
+    [fileManager removeItemAtPath:appSupportOldDbPath error:nil];
+    XCTAssertTrue([fileManager fileExistsAtPath:appSupportNewDbPath], @"Bootstrap should create Application Support v31");
+
+    // Create a Documents-only v30 AFTER bootstrap so directory migration does not move it first.
+    sqlite3 *oldDb;
+    XCTAssertEqual(sqlite3_open_v2([documentsOldDbPath UTF8String], &oldDb, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL), SQLITE_OK);
+    const char *createSessions = "CREATE TABLE IF NOT EXISTS sessions (uuid TEXT, start_time REAL, end_time REAL, attributes_data BLOB, session_number INTEGER, background_time REAL, number_interruptions INTEGER, event_count INTEGER, suspend_time REAL, length REAL, mpid INTEGER, session_user_ids TEXT, app_info BLOB, device_info BLOB, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+    const char *createMessages = "CREATE TABLE IF NOT EXISTS messages (message_type TEXT, session_id INTEGER, uuid TEXT, timestamp REAL, message_data TEXT, upload_status INTEGER, data_plan_id TEXT, data_plan_version INTEGER, mpid INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+    const char *createUploads = "CREATE TABLE IF NOT EXISTS uploads (uuid TEXT, message_data TEXT, timestamp REAL, session_id INTEGER, upload_type INTEGER, data_plan_id TEXT, data_plan_version INTEGER, _id INTEGER PRIMARY KEY AUTOINCREMENT)";
+    const char *createForwarding = "CREATE TABLE IF NOT EXISTS forwarding_records (_id INTEGER PRIMARY KEY, forwarding_data BLOB, mpid INTEGER)";
+    const char *createConsumerInfo = "CREATE TABLE IF NOT EXISTS consumer_info (_id INTEGER PRIMARY KEY, mpid INTEGER, unique_identifier TEXT)";
+    const char *createCookies = "CREATE TABLE IF NOT EXISTS cookies (_id INTEGER PRIMARY KEY, consumer_info_id INTEGER, content TEXT, domain TEXT, expiration TEXT, name TEXT, mpid INTEGER)";
+    const char *createIntegration = "CREATE TABLE IF NOT EXISTS integration_attributes (_id INTEGER PRIMARY KEY, kit_code INTEGER, attributes_data BLOB)";
+    sqlite3_exec(oldDb, createSessions, NULL, NULL, NULL);
+    sqlite3_exec(oldDb, createMessages, NULL, NULL, NULL);
+    sqlite3_exec(oldDb, createUploads, NULL, NULL, NULL);
+    sqlite3_exec(oldDb, createForwarding, NULL, NULL, NULL);
+    sqlite3_exec(oldDb, createConsumerInfo, NULL, NULL, NULL);
+    sqlite3_exec(oldDb, createCookies, NULL, NULL, NULL);
+    sqlite3_exec(oldDb, createIntegration, NULL, NULL, NULL);
+
+    NSData *attributesData = [NSJSONSerialization dataWithJSONObject:@{} options:0 error:nil];
+    sqlite3_stmt *insertSession = NULL;
+    XCTAssertEqual(sqlite3_prepare_v2(oldDb, "INSERT INTO sessions (uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info) VALUES (?, ?, ?, ?, 0, 0, 0, 0, 0, 0, 42, '42', NULL, NULL)", -1, &insertSession, NULL), SQLITE_OK);
+    sqlite3_bind_text(insertSession, 1, sessionUUID.UTF8String, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_double(insertSession, 2, [[NSDate date] timeIntervalSince1970]);
+    sqlite3_bind_double(insertSession, 3, [[NSDate date] timeIntervalSince1970]);
+    sqlite3_bind_blob(insertSession, 4, attributesData.bytes, (int)attributesData.length, SQLITE_TRANSIENT);
+    XCTAssertEqual(sqlite3_step(insertSession), SQLITE_DONE);
+    sqlite3_finalize(insertSession);
+    sqlite3_close(oldDb);
+
+    XCTAssertFalse([fileManager fileExistsAtPath:appSupportOldDbPath], @"v30 must not exist in Application Support for this scenario");
+    XCTAssertTrue([fileManager fileExistsAtPath:documentsOldDbPath], @"v30 must remain only in Documents for this scenario");
+
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
+    XCTAssertEqualObjects([migrationController needsMigration], @30, @"Schema migration should detect Documents-only v30");
+    [migrationController migrateDatabaseFromVersion:@30 deleteDbFile:YES];
+
+    XCTAssertFalse([fileManager fileExistsAtPath:documentsOldDbPath], @"Documents v30 should be deleted after successful schema migration");
+    XCTAssertTrue([fileManager fileExistsAtPath:appSupportNewDbPath], @"Migrated data should land in Application Support v31");
+
+    sqlite3 *newDb;
+    XCTAssertEqual(sqlite3_open_v2([appSupportNewDbPath UTF8String], &newDb, SQLITE_OPEN_READONLY, NULL), SQLITE_OK);
+    sqlite3_stmt *selectSession = NULL;
+    XCTAssertEqual(sqlite3_prepare_v2(newDb, "SELECT uuid FROM sessions WHERE uuid = ? LIMIT 1", -1, &selectSession, NULL), SQLITE_OK);
+    sqlite3_bind_text(selectSession, 1, sessionUUID.UTF8String, -1, SQLITE_TRANSIENT);
+    XCTAssertEqual(sqlite3_step(selectSession), SQLITE_ROW, @"Session queued in Documents v30 should be migrated into Application Support v31");
+    sqlite3_finalize(selectSession);
+    sqlite3_close(newDb);
+
+    [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
+}
+#endif
+
 - (void)testMigrationDeletesOldDatabase {
     // Setup: Create a v30 database with the correct schema
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
-    NSString *newDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *oldDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    NSString *newDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle31.db"];
     
     // Cleanup any existing databases
     [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
@@ -1168,9 +1276,9 @@
 
 - (void)testMigrationPreservesOldDatabaseWhenRequested {
     // Setup: Create a v30 database with the correct schema
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSString *oldDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle30.db"];
-    NSString *newDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *oldDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle30.db"];
+    NSString *newDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle31.db"];
     
     // Cleanup any existing databases
     [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
@@ -1203,7 +1311,7 @@
     MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@30, @31]];
     [migrationController migrateDatabaseFromVersion:@30 deleteDbFile:NO];
     
-    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:oldDbPath], @"Old database should be preserved when deleteDbFile:NO");
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:oldDbPath], @"Old database should be preserved when deleteDbFile is NO");
     
     // Cleanup
     [[NSFileManager defaultManager] removeItemAtPath:oldDbPath error:nil];
@@ -1429,6 +1537,224 @@
     XCTAssertTrue(openedSuccessfully, @"Database should open successfully");
     XCTAssertTrue([persistence isDatabaseOpen], @"Database should be open after openDatabase");
 }
+
+- (void)testDatabaseExcludedFromBackup {
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    NSString *dbPath = [persistence valueForKey:@"databasePath"];
+
+    XCTAssertNotNil(dbPath, @"Database path should not be nil");
+    XCTAssertTrue([[NSFileManager defaultManager] fileExistsAtPath:dbPath], @"Database file should exist");
+
+    NSURL *databaseURL = [NSURL fileURLWithPath:dbPath];
+    NSNumber *excludedFromBackup = nil;
+    NSError *error = nil;
+    BOOL success = [databaseURL getResourceValue:&excludedFromBackup forKey:NSURLIsExcludedFromBackupKey error:&error];
+
+    XCTAssertTrue(success, @"Should read NSURLIsExcludedFromBackupKey without error: %@", error);
+    XCTAssertTrue(excludedFromBackup.boolValue, @"Event queue database should be excluded from iCloud/iTunes backups");
+}
+
+- (void)testDatabaseExcludedFromBackupAfterReopen {
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+
+    [persistence closeDatabase];
+    BOOL openedSuccessfully = [persistence openDatabase];
+    XCTAssertTrue(openedSuccessfully, @"Database should reopen successfully");
+
+    NSString *dbPath = [persistence valueForKey:@"databasePath"];
+    NSURL *databaseURL = [NSURL fileURLWithPath:dbPath];
+    NSNumber *excludedFromBackup = nil;
+    NSError *error = nil;
+    BOOL success = [databaseURL getResourceValue:&excludedFromBackup forKey:NSURLIsExcludedFromBackupKey error:&error];
+
+    XCTAssertTrue(success, @"Should read NSURLIsExcludedFromBackupKey without error: %@", error);
+    XCTAssertTrue(excludedFromBackup.boolValue, @"Event queue database should remain excluded from backup after reopen");
+}
+
+#if TARGET_OS_IOS == 1
+- (void)testDatabasePathUsesApplicationSupport {
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    NSString *dbPath = [persistence valueForKey:@"databasePath"];
+    NSString *applicationSupportDirectory = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
+    NSString *expectedDirectory = [applicationSupportDirectory stringByAppendingPathComponent:@"mParticle"];
+
+    XCTAssertTrue([dbPath hasPrefix:expectedDirectory], @"Database should live under Application Support/mParticle. path=%@", dbPath);
+    XCTAssertFalse([dbPath containsString:@"/Documents/"], @"Database should not live under Documents");
+}
+
+- (void)testMigrateDatabaseDirectoryMovesFilesFromDocuments {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *legacyDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSString *currentDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSData *legacyContents = [@"legacy-db-contents" dataUsingEncoding:NSUTF8StringEncoding];
+
+    [[MParticle sharedInstance].persistenceController closeDatabase];
+    [fileManager removeItemAtPath:currentDbPath error:nil];
+    [fileManager removeItemAtPath:legacyDbPath error:nil];
+
+    BOOL created = [fileManager createFileAtPath:legacyDbPath contents:legacyContents attributes:nil];
+    XCTAssertTrue(created, @"Failed to create legacy Documents database at %@", legacyDbPath);
+
+    MPPersistenceController_PRIVATE *persistence = [[MPPersistenceController_PRIVATE alloc] init];
+    [MParticle sharedInstance].persistenceController = persistence;
+
+    XCTAssertFalse([fileManager fileExistsAtPath:legacyDbPath], @"Legacy Documents database should be removed after migration");
+    XCTAssertTrue([fileManager fileExistsAtPath:currentDbPath], @"Database should exist in Application Support after migration");
+
+    NSString *dbPath = [persistence valueForKey:@"databasePath"];
+    XCTAssertEqualObjects(dbPath, currentDbPath, @"Persistence controller should point at migrated Application Support database");
+}
+
+- (void)testMigrateDatabaseDirectoryPrefersExistingApplicationSupportCopy {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *legacyDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSString *currentDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSData *legacyContents = [@"legacy" dataUsingEncoding:NSUTF8StringEncoding];
+
+    [[MParticle sharedInstance].persistenceController closeDatabase];
+    [fileManager removeItemAtPath:currentDbPath error:nil];
+    [fileManager removeItemAtPath:legacyDbPath error:nil];
+
+    XCTAssertTrue([fileManager createFileAtPath:legacyDbPath contents:legacyContents attributes:nil]);
+
+    sqlite3 *currentDb;
+    XCTAssertEqual(sqlite3_open_v2([currentDbPath UTF8String], &currentDb, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(currentDb, "PRAGMA user_version = 31", NULL, NULL, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(currentDb, "CREATE TABLE IF NOT EXISTS marker (value TEXT)", NULL, NULL, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(currentDb, "INSERT INTO marker (value) VALUES ('preserve-me')", NULL, NULL, NULL), SQLITE_OK);
+    sqlite3_close(currentDb);
+
+    MPPersistenceController_PRIVATE *persistence = [[MPPersistenceController_PRIVATE alloc] init];
+    [MParticle sharedInstance].persistenceController = persistence;
+
+    XCTAssertFalse([fileManager fileExistsAtPath:legacyDbPath], @"Legacy Documents database should be deleted when Application Support copy already exists");
+
+    sqlite3 *verifyDb;
+    XCTAssertEqual(sqlite3_open_v2([currentDbPath UTF8String], &verifyDb, SQLITE_OPEN_READONLY, NULL), SQLITE_OK);
+    sqlite3_stmt *statement = NULL;
+    XCTAssertEqual(sqlite3_prepare_v2(verifyDb, "SELECT value FROM marker LIMIT 1", -1, &statement, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW);
+    const char *text = (const char *)sqlite3_column_text(statement, 0);
+    NSString *value = text ? @(text) : nil;
+    XCTAssertEqualObjects(value, @"preserve-me", @"Existing Application Support database should be preserved");
+    sqlite3_finalize(statement);
+    sqlite3_close(verifyDb);
+}
+
+- (void)testMigrateDatabaseDirectoryDoesNotAttachOrphanSidecars {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *legacyDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSString *currentDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSString *legacyWalPath = [legacyDbPath stringByAppendingString:@"-wal"];
+    NSString *currentWalPath = [currentDbPath stringByAppendingString:@"-wal"];
+
+    [[MParticle sharedInstance].persistenceController closeDatabase];
+    [fileManager removeItemAtPath:currentDbPath error:nil];
+    [fileManager removeItemAtPath:currentWalPath error:nil];
+    [fileManager removeItemAtPath:legacyDbPath error:nil];
+    [fileManager removeItemAtPath:legacyWalPath error:nil];
+
+    sqlite3 *currentDb;
+    XCTAssertEqual(sqlite3_open_v2([currentDbPath UTF8String], &currentDb, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(currentDb, "PRAGMA user_version = 31", NULL, NULL, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(currentDb, "CREATE TABLE IF NOT EXISTS marker (value TEXT)", NULL, NULL, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(currentDb, "INSERT INTO marker (value) VALUES ('keep-me')", NULL, NULL, NULL), SQLITE_OK);
+    sqlite3_close(currentDb);
+
+    NSData *staleWal = [@"stale-wal" dataUsingEncoding:NSUTF8StringEncoding];
+    XCTAssertTrue([fileManager createFileAtPath:legacyWalPath contents:staleWal attributes:nil]);
+
+    MPPersistenceController_PRIVATE *persistence = [[MPPersistenceController_PRIVATE alloc] init];
+    [MParticle sharedInstance].persistenceController = persistence;
+
+    XCTAssertFalse([fileManager fileExistsAtPath:legacyWalPath], @"Orphan Documents sidecar should be deleted");
+    XCTAssertFalse([fileManager fileExistsAtPath:currentWalPath], @"Orphan sidecar must not be attached to the Application Support DB");
+
+    sqlite3 *verifyDb;
+    XCTAssertEqual(sqlite3_open_v2([currentDbPath UTF8String], &verifyDb, SQLITE_OPEN_READONLY, NULL), SQLITE_OK);
+    sqlite3_stmt *statement = NULL;
+    XCTAssertEqual(sqlite3_prepare_v2(verifyDb, "SELECT value FROM marker LIMIT 1", -1, &statement, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW);
+    const char *text = (const char *)sqlite3_column_text(statement, 0);
+    NSString *value = text ? @(text) : nil;
+    XCTAssertEqualObjects(value, @"keep-me", @"Existing Application Support database should remain intact");
+    sqlite3_finalize(statement);
+    sqlite3_close(verifyDb);
+}
+
+- (void)testMigrateDatabaseDirectoryKeepsDocumentsWhenMoveFails {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *legacyDbPath = [documentsDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+    NSString *currentDbPath = [databaseDirectory stringByAppendingPathComponent:@"mParticle31.db"];
+
+    [[MParticle sharedInstance].persistenceController closeDatabase];
+    [fileManager removeItemAtPath:currentDbPath error:nil];
+    [fileManager removeItemAtPath:legacyDbPath error:nil];
+
+    sqlite3 *legacyDb;
+    XCTAssertEqual(sqlite3_open_v2([legacyDbPath UTF8String], &legacyDb, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(legacyDb, "PRAGMA user_version = 31", NULL, NULL, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(legacyDb, "CREATE TABLE IF NOT EXISTS marker (value TEXT)", NULL, NULL, NULL), SQLITE_OK);
+    XCTAssertEqual(sqlite3_exec(legacyDb, "INSERT INTO marker (value) VALUES ('queued-events')", NULL, NULL, NULL), SQLITE_OK);
+    sqlite3_close(legacyDb);
+
+    // Make Application Support/mParticle non-writable so move/copy into it fails.
+    XCTAssertTrue([fileManager setAttributes:@{NSFilePosixPermissions: @0555}
+                                ofItemAtPath:databaseDirectory
+                                       error:nil]);
+
+    MPPersistenceController_PRIVATE *persistence = nil;
+    @try {
+        persistence = [[MPPersistenceController_PRIVATE alloc] init];
+        [MParticle sharedInstance].persistenceController = persistence;
+
+        XCTAssertTrue([fileManager fileExistsAtPath:legacyDbPath], @"Documents DB must be preserved when migration fails");
+        XCTAssertFalse([fileManager fileExistsAtPath:currentDbPath], @"Should not create an empty Application Support DB after a failed migrate");
+        XCTAssertEqualObjects([persistence valueForKey:@"databasePath"], legacyDbPath, @"SDK should keep using Documents until migration succeeds");
+
+        sqlite3 *verifyDb;
+        XCTAssertEqual(sqlite3_open_v2([legacyDbPath UTF8String], &verifyDb, SQLITE_OPEN_READONLY, NULL), SQLITE_OK);
+        sqlite3_stmt *statement = NULL;
+        XCTAssertEqual(sqlite3_prepare_v2(verifyDb, "SELECT value FROM marker LIMIT 1", -1, &statement, NULL), SQLITE_OK);
+        XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW);
+        const char *text = (const char *)sqlite3_column_text(statement, 0);
+        NSString *value = text ? @(text) : nil;
+        XCTAssertEqualObjects(value, @"queued-events", @"Queued events in Documents must survive a failed migration attempt");
+        sqlite3_finalize(statement);
+        sqlite3_close(verifyDb);
+    } @finally {
+        [fileManager setAttributes:@{NSFilePosixPermissions: @0755}
+                      ofItemAtPath:databaseDirectory
+                             error:nil];
+        [persistence closeDatabase];
+    }
+}
+
+- (void)testRemoveLegacySessionNumberFile {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *sessionNumberPath = [documentsDirectory stringByAppendingPathComponent:@"SessionNumber"];
+    NSDictionary *legacyContents = @{@"sessionNumber": @42};
+
+    [[MParticle sharedInstance].persistenceController closeDatabase];
+    [fileManager removeItemAtPath:sessionNumberPath error:nil];
+    XCTAssertTrue([legacyContents writeToFile:sessionNumberPath atomically:YES], @"Failed to create legacy SessionNumber file");
+    XCTAssertTrue([fileManager fileExistsAtPath:sessionNumberPath], @"Legacy SessionNumber file should exist before cleanup");
+
+    MPPersistenceController_PRIVATE *persistence = [[MPPersistenceController_PRIVATE alloc] init];
+    [MParticle sharedInstance].persistenceController = persistence;
+
+    XCTAssertFalse([fileManager fileExistsAtPath:sessionNumberPath], @"Legacy SessionNumber file should be deleted on startup");
+}
+#endif
 
 - (void)testCloseAlreadyClosedDatabase {
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;

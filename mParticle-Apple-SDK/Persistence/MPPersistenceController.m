@@ -66,6 +66,11 @@ const int MaxBreadcrumbs = 50;
 
 @property (nonatomic, strong) NSString *databasePath;
 
+- (void)excludeDatabaseFromBackup;
+- (void)migrateDatabaseDirectoryIfNeeded;
+- (void)removeLegacySessionNumberFile;
+- (void)removeItemAtPathIfExists:(nonnull NSString *)path fileManager:(nonnull NSFileManager *)fileManager;
+- (BOOL)moveOrCopyItemAtPath:(nonnull NSString *)sourcePath toPath:(nonnull NSString *)destinationPath fileManager:(nonnull NSFileManager *)fileManager;
 - (BOOL)insertUpload:(nonnull MPUpload *)upload;
 - (BOOL)deleteMessagesReturningStatus:(nonnull NSArray<MPMessage *> *)messages;
 
@@ -86,6 +91,8 @@ const int MaxBreadcrumbs = 50;
     if (self) {
         databaseOpen = NO;
         
+        [self migrateDatabaseDirectoryIfNeeded];
+        [self removeLegacySessionNumberFile];
         [self setupDatabase];
         [self migrateDatabaseIfNeeded];
         [self openDatabase];
@@ -109,6 +116,103 @@ const int MaxBreadcrumbs = 50;
             [self openDatabase];
         }
     }
+}
+
+- (void)migrateDatabaseDirectoryIfNeeded {
+#if TARGET_OS_IOS == 1
+    NSString *legacyDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *currentDirectory = [[self class] databaseDirectoryPath];
+    if (MPIsNull(legacyDirectory) || [legacyDirectory isEqualToString:currentDirectory]) {
+        return;
+    }
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray<NSString *> *sidecarSuffixes = @[@"-journal", @"-wal", @"-shm"];
+
+    for (NSNumber *version in databaseVersions) {
+        NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", version];
+        NSString *legacyDatabasePath = [legacyDirectory stringByAppendingPathComponent:databaseName];
+        NSString *currentDatabasePath = [currentDirectory stringByAppendingPathComponent:databaseName];
+        BOOL currentMainExists = [fileManager fileExistsAtPath:currentDatabasePath];
+        BOOL legacyMainExists = [fileManager fileExistsAtPath:legacyDatabasePath];
+
+        if (currentMainExists) {
+            // Prefer Application Support. Remove leftover Documents files and never
+            // attach orphan sidecars to an existing database.
+            [self removeItemAtPathIfExists:legacyDatabasePath fileManager:fileManager];
+            for (NSString *suffix in sidecarSuffixes) {
+                [self removeItemAtPathIfExists:[legacyDatabasePath stringByAppendingString:suffix] fileManager:fileManager];
+            }
+            continue;
+        }
+
+        if (!legacyMainExists) {
+            // No main DB to migrate — drop orphan Documents sidecars only.
+            for (NSString *suffix in sidecarSuffixes) {
+                [self removeItemAtPathIfExists:[legacyDatabasePath stringByAppendingString:suffix] fileManager:fileManager];
+            }
+            continue;
+        }
+
+        // Migrate the main DB first. If this fails, leave Documents untouched so we
+        // do not create an empty Application Support DB and later delete the real one.
+        if (![self moveOrCopyItemAtPath:legacyDatabasePath toPath:currentDatabasePath fileManager:fileManager]) {
+            MPILogError(@"Failed to migrate database from Documents to Application Support: %@", legacyDatabasePath);
+            continue;
+        }
+
+        for (NSString *suffix in sidecarSuffixes) {
+            NSString *legacySidecarPath = [legacyDatabasePath stringByAppendingString:suffix];
+            NSString *currentSidecarPath = [currentDatabasePath stringByAppendingString:suffix];
+            if (![fileManager fileExistsAtPath:legacySidecarPath]) {
+                continue;
+            }
+            if ([fileManager fileExistsAtPath:currentSidecarPath]) {
+                [self removeItemAtPathIfExists:legacySidecarPath fileManager:fileManager];
+                continue;
+            }
+            if (![self moveOrCopyItemAtPath:legacySidecarPath toPath:currentSidecarPath fileManager:fileManager]) {
+                [self removeItemAtPathIfExists:legacySidecarPath fileManager:fileManager];
+            }
+        }
+    }
+#endif
+}
+
+- (void)removeItemAtPathIfExists:(NSString *)path fileManager:(NSFileManager *)fileManager {
+    if ([fileManager fileExistsAtPath:path]) {
+        [fileManager removeItemAtPath:path error:nil];
+    }
+}
+
+- (BOOL)moveOrCopyItemAtPath:(NSString *)sourcePath toPath:(NSString *)destinationPath fileManager:(NSFileManager *)fileManager {
+    NSError *error = nil;
+    if ([fileManager moveItemAtPath:sourcePath toPath:destinationPath error:&error]) {
+        return YES;
+    }
+    if ([fileManager copyItemAtPath:sourcePath toPath:destinationPath error:&error]) {
+        [fileManager removeItemAtPath:sourcePath error:nil];
+        return YES;
+    }
+    return NO;
+}
+
+- (void)removeLegacySessionNumberFile {
+#if TARGET_OS_IOS == 1
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    if (MPIsNull(documentsDirectory)) {
+        return;
+    }
+
+    NSString *sessionNumberPath = [documentsDirectory stringByAppendingPathComponent:@"SessionNumber"];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:sessionNumberPath]) {
+        NSError *error = nil;
+        if (![fileManager removeItemAtPath:sessionNumberPath error:&error]) {
+            MPILogError(@"Failed to remove legacy SessionNumber file: %@", error);
+        }
+    }
+#endif
 }
 
 + (NSNumber *)mpId {
@@ -204,33 +308,81 @@ const int MaxBreadcrumbs = 50;
 }
 
 #pragma mark Accessors
++ (NSString *)databaseDirectoryPath {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *directory;
+    
+#if TARGET_OS_TV == 1
+    directory = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0];
+#else
+    NSString *applicationSupportDirectory = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
+    directory = [applicationSupportDirectory stringByAppendingPathComponent:@"mParticle"];
+#endif
+    
+    if (![fileManager fileExistsAtPath:directory]) {
+        NSError *error = nil;
+        if (![fileManager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error]) {
+            MPILogError(@"Failed to create database directory: %@ - %@", directory, error);
+        }
+    }
+
+#if TARGET_OS_TV != 1
+    NSURL *directoryURL = [NSURL fileURLWithPath:directory isDirectory:YES];
+    NSError *exclusionError = nil;
+    if (![directoryURL setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:&exclusionError]) {
+        MPILogError(@"Failed to exclude database directory from backup: %@", exclusionError);
+    }
+#endif
+
+    return directory;
+}
+
 - (NSString *)databasePath {
     if (_databasePath) {
         return _databasePath;
     }
     
-    NSString *documentsDirectory;
-#if TARGET_OS_IOS == 1
-    documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-#elif TARGET_OS_TV == 1
-    documentsDirectory = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0];
-#else
-    documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-#endif
-    
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    if (![fileManager fileExistsAtPath:documentsDirectory]) {
-        [fileManager createDirectoryAtPath:documentsDirectory withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-    
     NSNumber *currentDatabaseVersion = [databaseVersions lastObject];
     NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];
-    _databasePath = [documentsDirectory stringByAppendingPathComponent:databaseName];
-    
+    NSString *preferredPath = [[[self class] databaseDirectoryPath] stringByAppendingPathComponent:databaseName];
+
+#if TARGET_OS_IOS == 1
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:preferredPath]) {
+        NSString *legacyDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+        NSString *legacyPath = [legacyDirectory stringByAppendingPathComponent:databaseName];
+        if ([fileManager fileExistsAtPath:legacyPath]) {
+            // Migration incomplete — keep using Documents until the move succeeds.
+            _databasePath = legacyPath;
+            return _databasePath;
+        }
+    }
+#endif
+
+    _databasePath = preferredPath;
     return _databasePath;
 }
 
 #pragma mark Private methods
+- (void)excludeDatabaseFromBackup {
+    NSString *path = self.databasePath;
+    if (MPIsNull(path) || path.length == 0) {
+        return;
+    }
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:path]) {
+        return;
+    }
+
+    NSURL *databaseURL = [NSURL fileURLWithPath:path];
+    NSError *error = nil;
+    BOOL success = [databaseURL setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:&error];
+    if (!success) {
+        MPILogError(@"Failed to exclude mParticle database from backup: %@", error);
+    }
+}
+
 - (void)deleteCookie:(MPCookie *)cookie {
     sqlite3_stmt *preparedStatement;
     const char *sqlStatement = "DELETE FROM cookies WHERE _id = ?";
@@ -1405,6 +1557,8 @@ const int MaxBreadcrumbs = 50;
         MPILogError(@"Error opening database: %d - %s", statusCode, sqlite3_errmsg(mParticleDB));
         sqlite3_close(mParticleDB);
         mParticleDB = NULL;
+    } else {
+        [self excludeDatabaseFromBackup];
     }
     
     return databaseOpen;
