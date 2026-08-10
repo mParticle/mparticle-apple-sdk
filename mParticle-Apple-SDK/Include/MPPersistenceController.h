@@ -29,6 +29,10 @@
 
 + (NSNumber *_Nonnull)mpId;
 + (void)setMpid:(nonnull NSNumber *)mpId;
+/// Directory used for the local event queue database.
+/// iOS: Library/Application Support/mParticle
+/// tvOS: Library/Caches
++ (nonnull NSString *)databaseDirectoryPath;
 + (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
 + (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;
 + (nullable MPConsentState *)deviceConsentState;

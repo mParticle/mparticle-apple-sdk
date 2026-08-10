@@ -38,6 +38,26 @@
 
 #pragma mark Private methods
 
+- (nullable NSString *)existingPathForDatabaseName:(NSString *)databaseName {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *preferredPath = [[MPPersistenceController_PRIVATE databaseDirectoryPath] stringByAppendingPathComponent:databaseName];
+    if ([fileManager fileExistsAtPath:preferredPath]) {
+        return preferredPath;
+    }
+
+#if TARGET_OS_IOS == 1
+    // Directory migration may have left an older-version DB in Documents (e.g. move failed).
+    // Schema migration must still find it so queued events are not abandoned.
+    NSString *legacyDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *legacyPath = [legacyDirectory stringByAppendingPathComponent:databaseName];
+    if ([fileManager fileExistsAtPath:legacyPath]) {
+        return legacyPath;
+    }
+#endif
+
+    return nil;
+}
+
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp fromDatabase:(sqlite3 *)mParticleDB {
     char *errMsg;
     NSString *sqlStatement = @"BEGIN TRANSACTION";
@@ -317,23 +337,22 @@
 }
 
 - (void)migrateDatabaseFromVersion:(NSNumber *)oldVersion deleteDbFile:(BOOL)deleteDbFile {
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
     NSNumber *currentDatabaseVersion = [self.databaseVersions lastObject];
     NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];
-    NSString *databasePath = [documentsDirectory stringByAppendingPathComponent:databaseName];
+    NSString *databasePath = [databaseDirectory stringByAppendingPathComponent:databaseName];
     NSFileManager *fileManager = [NSFileManager defaultManager];
     sqlite3 *oldmParticleDB;
     sqlite3 *mParticleDB;
-    NSString *dbPath;
     
     if (sqlite3_open_v2([databasePath UTF8String], &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK) {
         return;
     }
     
     databaseName = [NSString stringWithFormat:@"mParticle%@.db", oldVersion];
-    dbPath = [documentsDirectory stringByAppendingPathComponent:databaseName];
+    NSString *dbPath = [self existingPathForDatabaseName:databaseName];
     
-    if (![fileManager fileExistsAtPath:dbPath] || (sqlite3_open_v2([dbPath UTF8String], &oldmParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK)) {
+    if (dbPath == nil || (sqlite3_open_v2([dbPath UTF8String], &oldmParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK)) {
         sqlite3_close(mParticleDB);
         return;
     }
@@ -362,15 +381,10 @@
         return nil;
     }
     
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    
     // Only check for v30 database (the only version we migrate from)
     NSNumber *databaseVersion = oldDatabaseVersions[0];
     NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", databaseVersion];
-    NSString *dbPath = [documentsDirectory stringByAppendingPathComponent:databaseName];
-    
-    if ([fileManager fileExistsAtPath:dbPath]) {
+    if ([self existingPathForDatabaseName:databaseName] != nil) {
         return databaseVersion;
     }
     
