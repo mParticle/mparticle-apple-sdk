@@ -71,4 +71,25 @@
     XCTAssertEqualObjects(expected, actual);
 }
 
+- (void)testNormalizeServiceRegionDefaultsToUS {
+    XCTAssertEqualObjects(@"us", MPKitApptentiveNormalizeServiceRegion(nil));
+    XCTAssertEqualObjects(@"us", MPKitApptentiveNormalizeServiceRegion(@""));
+    XCTAssertEqualObjects(@"us", MPKitApptentiveNormalizeServiceRegion(@"   "));
+    XCTAssertEqualObjects(@"us", MPKitApptentiveNormalizeServiceRegion(@"US"));
+    XCTAssertEqualObjects(@"us", MPKitApptentiveNormalizeServiceRegion(@"us"));
+}
+
+- (void)testNormalizeServiceRegionMapsSupportedRegions {
+    XCTAssertEqualObjects(@"eu", MPKitApptentiveNormalizeServiceRegion(@"EU"));
+    XCTAssertEqualObjects(@"eu", MPKitApptentiveNormalizeServiceRegion(@"eu"));
+    XCTAssertEqualObjects(@"au", MPKitApptentiveNormalizeServiceRegion(@"AU"));
+    XCTAssertEqualObjects(@"au", MPKitApptentiveNormalizeServiceRegion(@"au"));
+}
+
+- (void)testNormalizeServiceRegionFallsBackForUnsupportedValues {
+    XCTAssertEqualObjects(@"us", MPKitApptentiveNormalizeServiceRegion(@"CA"));
+    XCTAssertEqualObjects(@"us", MPKitApptentiveNormalizeServiceRegion(@"ca"));
+    XCTAssertEqualObjects(@"us", MPKitApptentiveNormalizeServiceRegion(@"APAC"));
+}
+
 @end
