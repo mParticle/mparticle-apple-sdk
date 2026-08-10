@@ -63,6 +63,20 @@
     ]
   },
   {
+    "name": "apptentive-7",
+    "local_path": "Kits/apptentive/apptentive-7",
+    "podspec": "Kits/apptentive/apptentive-7/mParticle-Apptentive-7.podspec",
+    "dest_repo": "mparticle-apple-integration-apptentive-7",
+    "mirror_force_push_main": true,
+    "schemes": [
+      {
+        "scheme": "mParticle-Apptentive",
+        "module": "mParticle_Apptentive",
+        "destination": "iOS"
+      }
+    ]
+  },
+  {
     "name": "apptimize-3",
     "local_path": "Kits/apptimize/apptimize-3",
     "podspec": "Kits/apptimize/apptimize-3/mParticle-Apptimize-3.podspec",

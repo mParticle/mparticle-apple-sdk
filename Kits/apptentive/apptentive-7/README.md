@@ -1,6 +1,6 @@
-# mParticle Apptentive Kit (Apptentive SDK 6.x)
+# mParticle Apptentive Kit (Apptentive SDK 7.x)
 
-This is the [Apptentive](https://www.apptentive.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Apptentive SDK 6.x](https://github.com/apptentive/apptentive-kit-ios).
+This is the [Apptentive](https://www.apptentive.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against the [Apptentive SDK 7.x](https://github.com/apptentive/apptentive-kit-ios).
 
 ## Installation
 
@@ -13,7 +13,7 @@ Swift Package Manager resolves the `mParticle` SDK automatically as a transitive
 let mParticleVersion: Version = "9.0.0"
 
 .package(
-    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive-6",
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive-7",
     .upToNextMajor(from: mParticleVersion)
 ),
 ```
@@ -25,7 +25,7 @@ Then add `mParticle-Apptentive` as a dependency of your target.
 Add the kit dependency to your app's Podfile:
 
 ```ruby
-pod 'mParticle-Apptentive-6', '~> 9.0'
+pod 'mParticle-Apptentive-7', '~> 9.0'
 ```
 
 ## Verifying the Integration
@@ -47,6 +47,7 @@ Included kits: { Apptentive }
 - [mParticle Apptentive Integration Guide](https://docs.mparticle.com/integrations/apptentive/event/)
 - [mParticle iOS SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
 - [Apptentive iOS SDK Documentation](https://github.com/apptentive/apptentive-kit-ios)
+- [Apptentive iOS SDK 7 Migration Guide](https://help.alchemer.com/help/new-ios-sdk-6-native-alchemer-mobile-ios-sdk-migration-guide)
 
 ## Issues
 
