@@ -44,6 +44,18 @@ static NSString * _apptentiveSignature = nil;
 
 @end
 
+static void MPKitApptentivePerformOnMain(void (^block)(void)) {
+    if (!block) {
+        return;
+    }
+
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), block);
+    }
+}
+
 @implementation MPKitApptentive
 
 + (NSNumber *)kitCode {
@@ -68,14 +80,14 @@ static NSString * _apptentiveSignature = nil;
 
     if (appKey == nil || appSignature == nil) {
         if (appKey == nil) {
-            NSLog(@"No Apptentive App Key provided.");
+            NSLog(@"mParticle -> No Apptentive App Key provided.");
         }
 
         if (appSignature == nil) {
-            NSLog(@"No Apptentive App Signature provided.");
+            NSLog(@"mParticle -> No Apptentive App Signature provided.");
         }
 
-        NSLog(@"Please see the Apptentive mParticle integration guide: https://learn.apptentive.com/knowledge-base/mparticle-integration-ios/");
+        NSLog(@"mParticle -> Please see the Apptentive mParticle integration guide: https://learn.apptentive.com/knowledge-base/mparticle-integration-ios/");
     }
 
     if (!appKey || !appSignature) {
@@ -105,7 +117,7 @@ static NSString * _apptentiveSignature = nil;
         if (initOnStart) {
             [[self class] registerSDK];
         } else {
-            NSLog(@"Apptentive SDK was not initialized on startup");
+            NSLog(@"mParticle -> Apptentive SDK was not initialized on startup");
         }
 
         self->_started = YES;
@@ -134,73 +146,63 @@ static NSString * _apptentiveSignature = nil;
 
 + (BOOL)registerSDK {
     if (_apptentiveKey.length == 0) {
-        NSLog(@"Unable to initialize Apptentive SDK: apptentive key is nil or empty");
+        NSLog(@"mParticle -> Unable to initialize Apptentive SDK: apptentive key is nil or empty");
         return NO;
     }
 
     if (_apptentiveSignature.length == 0) {
-        NSLog(@"Unable to initialize Apptentive SDK: apptentive signature is nil or empty");
+        NSLog(@"mParticle -> Unable to initialize Apptentive SDK: apptentive signature is nil or empty");
         return NO;
     }
 
-    NSLog(@"Registering Apptentive SDK");
-    ApptentiveConfiguration *apptentiveConfig = [ApptentiveConfiguration configurationWithApptentiveKey:_apptentiveKey apptentiveSignature:_apptentiveSignature];
+    __block BOOL registered = NO;
+    void (^registerBlock)(void) = ^{
+        NSLog(@"mParticle -> Registering Apptentive SDK");
 
-    apptentiveConfig.distributionName = @"mParticle";
-    apptentiveConfig.distributionVersion = [MParticle sharedInstance].version;
+        // ApptentiveKit 7 public APIs are MainActor-isolated; set distribution metadata
+        // on the shared instance before registering.
+        Apptentive.shared.distributionName = @"mParticle";
+        Apptentive.shared.distributionVersion = [MParticle sharedInstance].version;
 
-    switch ([MParticle sharedInstance].logLevel) {
-        case MPILogLevelNone:
-            apptentiveConfig.logLevel = ApptentiveLogLevelCrit;
-            break;
+        ApptentiveConfiguration *apptentiveConfig = [ApptentiveConfiguration configurationWithApptentiveKey:_apptentiveKey apptentiveSignature:_apptentiveSignature];
+        [Apptentive.shared registerWithConfiguration:apptentiveConfig completion:nil];
+        registered = YES;
+    };
 
-        case MPILogLevelError:
-            apptentiveConfig.logLevel = ApptentiveLogLevelError;
-            break;
-
-        case MPILogLevelWarning:
-            apptentiveConfig.logLevel = ApptentiveLogLevelWarn;
-            break;
-
-        case MPILogLevelDebug:
-            apptentiveConfig.logLevel = ApptentiveLogLevelDebug;
-            break;
-
-        case MPILogLevelVerbose:
-            apptentiveConfig.logLevel = ApptentiveLogLevelVerbose;
-            break;
+    if ([NSThread isMainThread]) {
+        registerBlock();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), registerBlock);
     }
 
-    [Apptentive.shared registerWithConfiguration:apptentiveConfig completion:nil];
-
-    return YES;
+    return registered;
 }
 
 #pragma mark Application
 
 // NOTE: Called when a remote notification is received
 - (MPKitExecStatus *)receivedUserNotification:(NSDictionary *)userInfo {
-    BOOL handledByApptentive = [Apptentive.shared didReceiveRemoteNotification:userInfo fetchCompletionHandler:^(UIBackgroundFetchResult result) {}];
-
-    NSLog(@"Apptentive %@ handle remote notification.", handledByApptentive ? @"did" : @"did not");
+    MPKitApptentivePerformOnMain(^{
+        BOOL handledByApptentive = [Apptentive.shared didReceiveRemoteNotification:userInfo fetchCompletionHandler:^(UIBackgroundFetchResult result) {}];
+        NSLog(@"mParticle -> Apptentive %@ handle remote notification.", handledByApptentive ? @"did" : @"did not");
+    });
 
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
 - (MPKitExecStatus *)setDeviceToken:(NSData *)deviceToken {
-    // TODO: use `setRemoteNotificationToken` after next ApptentiveKit release (missing @objc annotation).
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [Apptentive.shared setPushProvider:ApptentivePushProviderApptentive deviceToken:deviceToken];
-#pragma clang diagnostic pop
+    MPKitApptentivePerformOnMain(^{
+        [Apptentive.shared setRemoteNotificationDeviceToken:deviceToken];
+    });
 
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
 - (MPKitExecStatus *)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
-    BOOL handledByApptentive = [Apptentive.shared didReceveUserNotificationResponse:response withCompletionHandler:^{}];
-
-    NSLog(@"Apptentive %@ handle user notification response.", handledByApptentive ? @"did" : @"did not");
+    MPKitApptentivePerformOnMain(^{
+        BOOL handledByApptentive = [Apptentive.shared didReceveUserNotificationResponse:response withCompletionHandler:^{}];
+        NSLog(@"mParticle -> Apptentive %@ handle user notification response.", handledByApptentive ? @"did" : @"did not");
+    });
 
     return [self execStatus:MPKitReturnCodeSuccess];
 }
@@ -213,30 +215,37 @@ static NSString * _apptentiveSignature = nil;
     } else if ([key isEqualToString:mParticleUserAttributeLastName]) {
         self.nameComponents.familyName = value;
     } else {
-        [Apptentive.shared addCustomPersonDataString:value withKey:key];
-        if (self.enableTypeDetection) {
-            id typedValue = MPKitApptentiveParseValue(value);
-            if ([typedValue isKindOfClass:[NSNumber class]]) {
-                if ([typedValue apptentive_isBoolean]) {
-                    [Apptentive.shared addCustomPersonDataBool:typedValue withKey:[NSString stringWithFormat:@"%@_flag", key]];
-                } else {
-                    [Apptentive.shared addCustomPersonDataNumber:typedValue withKey:[NSString stringWithFormat:@"%@_number", key]];
+        BOOL enableTypeDetection = self.enableTypeDetection;
+        MPKitApptentivePerformOnMain(^{
+            [Apptentive.shared addCustomPersonDataString:value withKey:key];
+            if (enableTypeDetection) {
+                id typedValue = MPKitApptentiveParseValue(value);
+                if ([typedValue isKindOfClass:[NSNumber class]]) {
+                    if ([typedValue apptentive_isBoolean]) {
+                        [Apptentive.shared addCustomPersonDataBool:[typedValue boolValue] withKey:[NSString stringWithFormat:@"%@_flag", key]];
+                    } else {
+                        [Apptentive.shared addCustomPersonDataNumber:typedValue withKey:[NSString stringWithFormat:@"%@_number", key]];
+                    }
                 }
             }
-        }
+        });
     }
 
     NSString *name = [self.nameFormatter stringFromPersonNameComponents:self.nameComponents];
 
     if (name) {
-        Apptentive.shared.personName = name;
+        MPKitApptentivePerformOnMain(^{
+            Apptentive.shared.personName = name;
+        });
     }
 
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
 - (MPKitExecStatus *)removeUserAttribute:(NSString *)key {
-    [Apptentive.shared removeCustomPersonDataWithKey:key];
+    MPKitApptentivePerformOnMain(^{
+        [Apptentive.shared removeCustomPersonDataWithKey:key];
+    });
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
@@ -244,12 +253,16 @@ static NSString * _apptentiveSignature = nil;
     MPKitReturnCode returnCode;
 
     if (identityType == MPUserIdentityEmail) {
-        Apptentive.shared.personEmailAddress = identityString;
+        MPKitApptentivePerformOnMain(^{
+            Apptentive.shared.personEmailAddress = identityString;
+        });
         returnCode = MPKitReturnCodeSuccess;
     } else if (identityType == MPUserIdentityCustomerId) {
-        if (Apptentive.shared.personName.length == 0) {
-            Apptentive.shared.personName = identityString;
-        }
+        MPKitApptentivePerformOnMain(^{
+            if (Apptentive.shared.personName.length == 0) {
+                Apptentive.shared.personName = identityString;
+            }
+        });
         returnCode = MPKitReturnCodeSuccess;
     } else {
         returnCode = MPKitReturnCodeRequirementsNotMet;
@@ -272,11 +285,16 @@ static NSString * _apptentiveSignature = nil;
 
 - (MPKitExecStatus *)routeEvent:(MPEvent *)event {
     NSDictionary *eventValues = event.customAttributes;
-    if ([eventValues count] > 0) {
-        [Apptentive.shared engage:event.name withCustomData:[self parseEventInfoDictionary:eventValues] fromViewController:nil];
-    } else {
-        [Apptentive.shared engage:event.name fromViewController:nil];
-    }
+    NSString *eventName = event.name;
+    NSDictionary *customData = ([eventValues count] > 0) ? [self parseEventInfoDictionary:eventValues] : nil;
+
+    MPKitApptentivePerformOnMain(^{
+        if (customData) {
+            [Apptentive.shared engage:eventName withCustomData:customData fromViewController:nil];
+        } else {
+            [Apptentive.shared engage:eventName fromViewController:nil];
+        }
+    });
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
