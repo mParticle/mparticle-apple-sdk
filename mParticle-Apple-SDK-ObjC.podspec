@@ -34,7 +34,7 @@ Pod::Spec.new do |s|
         mp.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         mp.source_files         = 'mParticle-Apple-SDK/**/*.{h,m}'
         mp.resource_bundles = {'mParticle-Privacy' => ['PrivacyInfo.xcprivacy']}
-        mp.dependency 'mParticle-Apple-SDK-Swift'
+        mp.dependency 'mParticle-Apple-SDK-Swift', s.version.to_s
         mp.dependency 'RoktContracts', '~> 2.0'
     end
 end
