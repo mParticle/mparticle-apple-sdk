@@ -33,3 +33,27 @@ id MPKitApptentiveParseValue(NSString *value) {
     
     return value;
 }
+
+NSString * MPKitApptentiveNormalizeServiceRegion(NSString * _Nullable region) {
+    NSString *trimmed = [region stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (trimmed.length == 0) {
+        return @"us";
+    }
+
+    if ([trimmed caseInsensitiveCompare:@"US"] == NSOrderedSame) {
+        return @"us";
+    }
+    if ([trimmed caseInsensitiveCompare:@"EU"] == NSOrderedSame) {
+        return @"eu";
+    }
+    if ([trimmed caseInsensitiveCompare:@"AU"] == NSOrderedSame) {
+        return @"au";
+    }
+    if ([trimmed caseInsensitiveCompare:@"CA"] == NSOrderedSame) {
+        NSLog(@"mParticle -> Apptentive serviceRegion 'CA' is not supported by the current Apptentive iOS SDK; defaulting to US.");
+        return @"us";
+    }
+
+    NSLog(@"mParticle -> Unrecognized Apptentive serviceRegion '%@'; defaulting to US.", trimmed);
+    return @"us";
+}

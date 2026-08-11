@@ -13,3 +13,9 @@ FOUNDATION_EXPORT const unsigned char mParticle_ApptentiveVersionString[];
 #else
     #import "MPKitApptentive.h"
 #endif
+
+#if defined(__has_include) && __has_include(<mParticle_Apptentive/MPKitApptentiveUtils.h>)
+    #import <mParticle_Apptentive/MPKitApptentiveUtils.h>
+#else
+    #import "MPKitApptentiveUtils.h"
+#endif

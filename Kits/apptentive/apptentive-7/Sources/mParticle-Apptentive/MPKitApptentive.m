@@ -15,10 +15,12 @@ static NSString * const apptentiveAppKeyKey = @"apptentiveAppKey";
 static NSString * const apptentiveAppSignatureKey = @"apptentiveAppSignature";
 static NSString * const apptentiveInitOnStart = @"apptentiveInitOnStart";
 static NSString * const apptentiveEnableTypeDetectionKey = @"enableTypeDetection";
+static NSString * const apptentiveServiceRegionKey = @"serviceRegion";
 
 // we need to keep the credentials in order to init the SDK later on
 static NSString * _apptentiveKey = nil;
 static NSString * _apptentiveSignature = nil;
+static NSString * _apptentiveServiceRegion = nil;
 
 @interface MPKitApptentive ()
 
@@ -109,6 +111,7 @@ static void MPKitApptentivePerformOnMain(void (^block)(void)) {
     dispatch_once(&kitPredicate, ^{
         _apptentiveKey = self.configuration[apptentiveAppKeyKey];
         _apptentiveSignature = self.configuration[apptentiveAppSignatureKey];
+        _apptentiveServiceRegion = self.configuration[apptentiveServiceRegionKey];
 
         // do we need to init the SDK while the Kit starts
         BOOL initOnStart = self.configuration[apptentiveInitOnStart] == nil ||   // if flag is missing
@@ -157,14 +160,15 @@ static void MPKitApptentivePerformOnMain(void (^block)(void)) {
 
     __block BOOL registered = NO;
     void (^registerBlock)(void) = ^{
-        NSLog(@"mParticle -> Registering Apptentive SDK");
-
         // ApptentiveKit 7 public APIs are MainActor-isolated; set distribution metadata
         // on the shared instance before registering.
         Apptentive.shared.distributionName = @"mParticle";
         Apptentive.shared.distributionVersion = [MParticle sharedInstance].version;
 
         ApptentiveConfiguration *apptentiveConfig = [ApptentiveConfiguration configurationWithApptentiveKey:_apptentiveKey apptentiveSignature:_apptentiveSignature];
+        NSString *normalizedRegion = MPKitApptentiveNormalizeServiceRegion(_apptentiveServiceRegion);
+        apptentiveConfig.region = normalizedRegion;
+        NSLog(@"mParticle -> Registering Apptentive SDK with serviceRegion '%@'", normalizedRegion);
         [Apptentive.shared registerWithConfiguration:apptentiveConfig completion:nil];
         registered = YES;
     };
