@@ -581,15 +581,7 @@ static __weak MPKitRokt *roktKit = nil;
 
 /// Forwards a bounded public-API-usage diagnostic code from mParticle core into the Rokt SDK.
 - (void)logMParticleApiDiagnostic:(NSString *)code {
-    Class roktClass = [Rokt class];
-    SEL selector = NSSelectorFromString(@"logMParticleApiCall:additionalInfo:");
-    if (![roktClass respondsToSelector:selector]) {
-        return;
-    }
-
-    typedef void (*MPRoktDiagnosticLogger)(id, SEL, NSString *, NSDictionary<NSString *, NSString *> *);
-    MPRoktDiagnosticLogger logger = (MPRoktDiagnosticLogger)[roktClass methodForSelector:selector];
-    logger(roktClass, selector, code, @{});
+    [Rokt logMParticleApiCall:code additionalInfo:@{}];
 }
 
 + (void)MPLog:(NSString *)string {
