@@ -9,7 +9,7 @@ let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] !
 
 let mParticleAppleSDK: Package.Dependency = {
     if useLocalVersion {
-        return .package(path: "../../../")
+        return .package(name: "mparticle-apple-sdk", path: "../../../")
     }
 
     let url = "https://github.com/mParticle/mparticle-apple-sdk"

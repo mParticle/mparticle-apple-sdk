@@ -22,6 +22,7 @@
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
 #import "SceneDelegateHandler.h"
+#import "MPRokt+MParticlePrivate.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -248,11 +249,13 @@ MPLog* logger;
 }
 
 - (void)setCustomLogger:(void (^)(NSString * _Nonnull))customLogger {
+    [self.rokt logRoktApiDiagnostic:@"SET_CUSTOM_LOGGER"];
     _customLogger = customLogger;
     logger.customLogger = customLogger;
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
+    [self.rokt logRoktApiDiagnostic:@"SET_LOG_LEVEL"];
     logger.logLevel = [MPLog fromRawValue: logLevel];
     self.stateMachine.logLevel = logLevel;
 }
@@ -272,6 +275,7 @@ MPLog* logger;
 }
 
 - (void)setOptOut:(BOOL)optOut {
+    [self.rokt logRoktApiDiagnostic:@"SET_OPT_OUT"];
     if (self.stateMachine.optOut == optOut) {
         return;
     }
@@ -302,6 +306,7 @@ MPLog* logger;
 }
 
 - (void)setDeviceConsentState:(MPConsentState *)deviceConsentState {
+    [self.rokt logRoktApiDiagnostic:@"SET_DEVICE_CONSENT_STATE"];
     [MPPersistenceController_PRIVATE setDeviceConsentState:deviceConsentState];
 
     NSArray<NSDictionary *> *kitConfig = [self.kitContainer_PRIVATE.originalConfig copy];
@@ -331,6 +336,7 @@ MPLog* logger;
 }
 
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval {
+    [self.rokt logRoktApiDiagnostic:@"SET_UPLOAD_INTERVAL"];
     if (uploadInterval >= 1.0 && uploadInterval != self.backendController.uploadInterval) {
         [self upload];
         self.backendController.uploadInterval = uploadInterval;
@@ -620,6 +626,7 @@ MPLog* logger;
 }
 
 - (void)switchWorkspaceWithOptions:(MParticleOptions *)options {
+    [self.rokt logRoktApiDiagnostic:@"SWITCH_WORKSPACE"];
     void (^finishReset)(void) = ^void(void) {
         // Reset SDK (config, database--except uploads, user defaults, kits, etc)
         [self resetForSwitchingWorkspaces:^{
@@ -657,51 +664,60 @@ MPLog* logger;
 }
 
 - (void)setPushNotificationToken:(NSData *)pushNotificationToken {
+    [self.rokt logRoktApiDiagnostic:@"SET_PUSH_NOTIFICATION_TOKEN"];
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.notificationController setDeviceToken:pushNotificationToken];
     }
 }
 
 - (void)didReceiveRemoteNotification:(NSDictionary *)userInfo {
+    [self.rokt logRoktApiDiagnostic:@"DID_RECEIVE_REMOTE_NOTIFICATION"];
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didReceiveRemoteNotification:userInfo];
     }
 }
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    [self.rokt logRoktApiDiagnostic:@"PUSH_REGISTRATION_FAILED"];
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     }
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    [self.rokt logRoktApiDiagnostic:@"DID_REGISTER_FOR_REMOTE_NOTIFICATIONS"];
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     }
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
+    [self.rokt logRoktApiDiagnostic:@"HANDLE_ACTION_FOR_REMOTE_NOTIFICATION"];
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
     }
 }
 
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo {
+    [self.rokt logRoktApiDiagnostic:@"HANDLE_ACTION_FOR_REMOTE_NOTIFICATION"];
     if (![self.appEnvironmentProvider isAppExtension]) {
         [self.appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
 }
 
 - (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
+    [self.rokt logRoktApiDiagnostic:@"HANDLE_URL_CONTEXT"];
     [self.sceneDelegateHandler handleURLContext:urlContext];
 }
 #endif
 
 - (void)handleUserActivity:(NSUserActivity *)userActivity {
+    [self.rokt logRoktApiDiagnostic:@"HANDLE_USER_ACTIVITY"];
     [self.sceneDelegateHandler handleUserActivity:userActivity];
 }
 
 - (void)reset:(void (^)(void))completion {
+    [self.rokt logRoktApiDiagnostic:@"RESET"];
     [executor executeOnMessage:^{
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
@@ -718,6 +734,7 @@ MPLog* logger;
 }
 
 - (void)reset {
+    [self.rokt logRoktApiDiagnostic:@"RESET"];
     [executor executeOnMessageSync:^{
         [MPUserDefaultsConnector.userDefaults resetDefaults];
         [[MParticle sharedInstance].persistenceController resetDatabase];
@@ -727,6 +744,7 @@ MPLog* logger;
 
 #pragma mark Basic tracking
 - (nullable NSSet *)activeTimedEvents {
+    [self.rokt logRoktApiDiagnostic:@"GET_ACTIVE_TIMED_EVENTS"];
     return self.backendController.eventSet;
 }
 
@@ -754,6 +772,7 @@ MPLog* logger;
 }
 
 - (void)beginTimedEvent:(MPEvent *)event {
+    [self.rokt logRoktApiDiagnostic:@"BEGIN_TIMED_EVENT"];
     [self.backendController beginTimedEvent:event
                           completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                               [self beginTimedEventCompletionHandler:event execStatus:execStatus];
@@ -788,6 +807,7 @@ MPLog* logger;
 }
 
 - (void)endTimedEvent:(MPEvent *)event {
+    [self.rokt logRoktApiDiagnostic:@"END_TIMED_EVENT"];
     [event endTiming];
     [executor executeOnMessage: ^{
         [self.backendController logEvent:event
@@ -798,16 +818,18 @@ MPLog* logger;
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
+    [self.rokt logRoktApiDiagnostic:@"GET_TIMED_EVENT"];
     return [self.backendController eventWithName:eventName];
 }
 
 - (void)logEvent:(MPBaseEvent *)event {
+    [self.rokt logRoktApiDiagnostic:@"LOG_EVENT"];
     if ([event isKindOfClass:[MPEvent class]]) {
         [self logCustomEvent:(MPEvent *)event];
     } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        [self logCommerceEvent:(MPCommerceEvent *)event];
+        [self logCommerceEventWithoutDiagnostic:(MPCommerceEvent *)event];
 #pragma clang diagnostic pop
     } else {
         [executor executeOnMessage: ^{
@@ -945,6 +967,7 @@ MPLog* logger;
 }
 
 - (void)logScreenEvent:(MPEvent *)event {
+    [self.rokt logRoktApiDiagnostic:@"LOG_SCREEN"];
     [executor executeOnMessage: ^{
         [self.backendController logScreen:event
                         completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
@@ -975,6 +998,7 @@ MPLog* logger;
 }
 
 - (void)setATTStatus:(MPATTAuthorizationStatus)status withATTStatusTimestampMillis:(NSNumber *)attStatusTimestampMillis {
+    [self.rokt logRoktApiDiagnostic:@"SET_ATT_STATUS"];
     NSNumber *currentStatus = self.stateMachine.attAuthorizationStatus;
     if (currentStatus == nil || currentStatus.integerValue != status) {
         self.stateMachine.attAuthorizationStatus = @(status);
@@ -999,6 +1023,7 @@ MPLog* logger;
 
 #pragma mark Attribution
 - (nullable NSDictionary<NSNumber *, MPAttributionResult *> *)attributionInfo {
+    [self.rokt logRoktApiDiagnostic:@"GET_ATTRIBUTION_INFO"];
     return [self.kitContainer.attributionInfo copy];
 }
 
@@ -1031,6 +1056,7 @@ MPLog* logger;
 }
 
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
+    [self.rokt logRoktApiDiagnostic:@"LEAVE_BREADCRUMB"];
     if (!breadcrumbName) {
         [logger error:@"Breadcrumb name is required."];
         return;
@@ -1079,6 +1105,7 @@ MPLog* logger;
 }
 
 - (void)logError:(NSString *)message eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
+    [self.rokt logRoktApiDiagnostic:@"LOG_ERROR"];
     if ([message isEqual: @""]) {
         NSString *message = [NSString stringWithFormat:@"'message' is required for %@", NSStringFromSelector(_cmd)];
         [logger error:message];
@@ -1119,6 +1146,7 @@ MPLog* logger;
 }
 
 - (void)logException:(NSException *)exception topmostContext:(id)topmostContext {
+    [self.rokt logRoktApiDiagnostic:@"LOG_EXCEPTION"];
     [executor executeOnMessage: ^{
         [self.backendController logError:nil
                                exception:exception
@@ -1141,6 +1169,7 @@ MPLog* logger;
       stackTrace:(nullable NSString *)stackTrace
    plCrashReport:(NSString *)plCrashReport
 {
+    [self.rokt logRoktApiDiagnostic:@"LOG_CRASH"];
     if (!plCrashReport) {
         NSString *message = [NSString stringWithFormat:@"'plCrashReport' is required for %@", NSStringFromSelector(_cmd)];
         [logger error:message];
@@ -1167,6 +1196,11 @@ MPLog* logger;
 }
 
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    [self.rokt logRoktApiDiagnostic:@"LOG_COMMERCE_EVENT"];
+    [self logCommerceEventWithoutDiagnostic:commerceEvent];
+}
+
+- (void)logCommerceEventWithoutDiagnostic:(MPCommerceEvent *)commerceEvent {
     if (!commerceEvent.timestamp) {
         commerceEvent.timestamp = [NSDate date];
     }
@@ -1213,6 +1247,7 @@ MPLog* logger;
 }
 
 - (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
+    [self.rokt logRoktApiDiagnostic:@"LOG_LTV_INCREASE"];
     NSMutableDictionary *eventDictionary = [@{@"$Amount":@(increaseAmount),
                                               kMPMethodName:@"LogLTVIncrease"}
                                             mutableCopy];
@@ -1244,6 +1279,7 @@ MPLog* logger;
 
 #pragma mark Integration attributes
 - (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)integrationId {
+    [self.rokt logRoktApiDiagnostic:@"SET_INTEGRATION_ATTRIBUTES"];
     __block MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
 
     MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
@@ -1261,6 +1297,7 @@ MPLog* logger;
 }
 
 - (nonnull MPKitExecStatus *)clearIntegrationAttributesForKit:(nonnull NSNumber *)integrationId {
+    [self.rokt logRoktApiDiagnostic:@"CLEAR_INTEGRATION_ATTRIBUTES"];
     [executor executeOnMessage: ^{
         [[MParticle sharedInstance].persistenceController deleteIntegrationAttributesForIntegrationId:integrationId];
     }];
@@ -1269,12 +1306,14 @@ MPLog* logger;
 }
 
 - (nullable NSDictionary *)integrationAttributesForKit:(nonnull NSNumber *)integrationId {
+    [self.rokt logRoktApiDiagnostic:@"GET_INTEGRATION_ATTRIBUTES"];
     return [[MParticle sharedInstance].persistenceController fetchIntegrationAttributesForId:integrationId];
 }
 
 #pragma mark Kits
 
 - (void)onKitsInitialized:(void(^)(void))block {
+    [self.rokt logRoktApiDiagnostic:@"ON_KITS_INITIALIZED"];
     BOOL kitsInitialized = self.kitContainer.kitsInitialized;
     if (kitsInitialized) {
         block();
@@ -1291,14 +1330,17 @@ MPLog* logger;
 }
 
 - (BOOL)isKitActive:(nonnull NSNumber *)kitCode {
+    [self.rokt logRoktApiDiagnostic:@"IS_KIT_ACTIVE"];
     return [self.kitActivity isKitActive:kitCode];
 }
 
 - (nullable id const)kitInstance:(nonnull NSNumber *)kitCode {
+    [self.rokt logRoktApiDiagnostic:@"GET_KIT_INSTANCE"];
     return [self.kitActivity kitInstance:kitCode];
 }
 
 - (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler {
+    [self.rokt logRoktApiDiagnostic:@"GET_KIT_INSTANCE_ASYNC"];
     BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]];
     BOOL isValidCompletionHandler = completionHandler != nil;
     NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
@@ -1318,6 +1360,7 @@ MPLog* logger;
 }
 
 - (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived {
+    [self.rokt logRoktApiDiagnostic:@"LOG_NETWORK_PERFORMANCE"];
     NSURL *url = [NSURL URLWithString:urlString];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
     MPNetworkPerformance *networkPerformance = [[MPNetworkPerformance alloc] initWithURLRequest:urlRequest networkMeasurementMode:MPNetworkMeasurementModePreserveQuery];
@@ -1338,6 +1381,7 @@ MPLog* logger;
 
 #pragma mark Session management
 - (NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value {
+    [self.rokt logRoktApiDiagnostic:@"INCREMENT_SESSION_ATTRIBUTE"];
     [executor executeOnMessage: ^{
         NSNumber *newValue = [self.backendController incrementSessionAttribute:[MParticle sharedInstance].stateMachine.currentSession key:key byValue:value];
         NSString *message = [NSString stringWithFormat:@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue];
@@ -1348,6 +1392,7 @@ MPLog* logger;
 }
 
 - (void)setSessionAttribute:(NSString *)key value:(id)value {
+    [self.rokt logRoktApiDiagnostic:@"SET_SESSION_ATTRIBUTE"];
     [executor executeOnMessage: ^{
         MPExecStatus execStatus = [self.backendController setSessionAttribute:[MParticle sharedInstance].stateMachine.currentSession key:key value:value];
         if (execStatus == MPExecStatusSuccess) {
@@ -1361,6 +1406,7 @@ MPLog* logger;
 }
 
 - (void)beginSession {
+    [self.rokt logRoktApiDiagnostic:@"BEGIN_SESSION"];
     if (self.backendController.tempSession != nil || self.backendController.session != nil) {
         return;
     }
@@ -1372,6 +1418,7 @@ MPLog* logger;
 }
 
 - (void)endSession {
+    [self.rokt logRoktApiDiagnostic:@"END_SESSION"];
     [executor executeOnMessage: ^{
         if (self.backendController.session == nil) {
             return;
@@ -1381,6 +1428,7 @@ MPLog* logger;
 }
 
 - (void)upload {
+    [self.rokt logRoktApiDiagnostic:@"UPLOAD"];
     __weak MParticle *weakSelf = self;
     
     [executor executeOnMessage: ^{
@@ -1399,6 +1447,7 @@ MPLog* logger;
 
 #pragma mark Surveys
 - (NSString *)surveyURL:(MPSurveyProvider)surveyProvider {
+    [self.rokt logRoktApiDiagnostic:@"GET_SURVEY_URL"];
     NSMutableDictionary *userAttributes = nil;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSDictionary *savedUserAttributes = userDefaults[kMPUserAttributeKey];
@@ -1439,6 +1488,7 @@ MPLog* logger;
 #pragma mark User Notifications
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification {
+    [self.rokt logRoktApiDiagnostic:@"WILL_PRESENT_NOTIFICATION"];
     if (!notification.request.content.userInfo) {
         return;
     }
@@ -1446,6 +1496,7 @@ MPLog* logger;
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
+    [self.rokt logRoktApiDiagnostic:@"DID_RECEIVE_NOTIFICATION_RESPONSE"];
     if (!response.notification.request.content.userInfo) {
         return;
     }
@@ -1489,6 +1540,7 @@ MPLog* logger;
 
 #if TARGET_OS_IOS == 1
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(NSString *)bridgeName {
+    [self.rokt logRoktApiDiagnostic:@"REGISTER_WEBVIEW"];
     NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
     if (bridgeValue == nil) {
         [logger error:@"Unable to initialize webview due to missing or invalid bridgeName"];
@@ -1714,6 +1766,7 @@ MPLog* logger;
  Logs a Notification event for a notification that has been reviewed but not acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
  */
 - (void)logNotificationReceivedWithUserInfo:(nonnull NSDictionary *)userInfo {
+    [self.rokt logRoktApiDiagnostic:@"LOG_NOTIFICATION"];
     if (userInfo == nil) {
         return;
     }
@@ -1724,6 +1777,7 @@ MPLog* logger;
  Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
  */
 - (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo andActionIdentifier:(nullable NSString *)actionIdentifier {
+    [self.rokt logRoktApiDiagnostic:@"LOG_NOTIFICATION_OPENED"];
     if (userInfo == nil) {
         return;
     }

@@ -17,15 +17,20 @@ static NSNumber * const kTestRoktKitId = @181;
 // Test helper class that simulates a kit with getSessionId and handleURLCallback methods
 @interface MPRoktTestKitInstance : NSObject
 @property (nonatomic, copy) NSString *sessionIdToReturn;
+@property (nonatomic, copy) NSString *lastDiagnosticCode;
 @property (nonatomic, assign) BOOL handleURLCallbackReturn;
 @property (nonatomic, strong) NSURL *lastHandleURLCallbackURL;
 - (NSString *)getSessionId;
+- (void)logMParticleApiDiagnostic:(NSString *)code;
 - (BOOL)handleURLCallback:(NSURL *)url;
 @end
 
 @implementation MPRoktTestKitInstance
 - (NSString *)getSessionId {
     return self.sessionIdToReturn;
+}
+- (void)logMParticleApiDiagnostic:(NSString *)code {
+    self.lastDiagnosticCode = code;
 }
 - (BOOL)handleURLCallback:(NSURL *)url {
     self.lastHandleURLCallbackURL = url;
@@ -43,6 +48,7 @@ static NSNumber * const kTestRoktKitId = @181;
 @end
 
 @interface MPRokt (Testing)
+- (void)logRoktApiDiagnostic:(NSString *)code;
 @end
 
 @interface MParticle ()
@@ -1120,6 +1126,39 @@ static NSNumber * const kTestRoktKitId = @181;
 
     // Verify
     OCMVerifyAll(self.mockContainer);
+}
+
+#pragma mark - Public API Diagnostics Tests
+
+- (void)testLogRoktApiDiagnosticForwardsToActiveRoktKit {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    [self.rokt logRoktApiDiagnostic:@"LOG_EVENT"];
+
+    XCTAssertEqualObjects(kitInstance.lastDiagnosticCode, @"LOG_EVENT");
+}
+
+- (void)testLogRoktApiDiagnosticDoesNothingWithoutActiveRoktKit {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[]);
+
+    [self.rokt logRoktApiDiagnostic:@"LOG_EVENT"];
+
+    OCMVerify([self.mockContainer activeKitsRegistry]);
 }
 
 #pragma mark - getSessionId Tests

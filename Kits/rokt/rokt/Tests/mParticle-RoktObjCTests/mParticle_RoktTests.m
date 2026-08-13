@@ -4,6 +4,12 @@
 @import RoktContracts;
 @import mParticle_Rokt;
 
+@interface Rokt (MParticleDiagnosticsTesting)
+
++ (void)logMParticleApiCall:(NSString *)code additionalInfo:(NSDictionary<NSString *, NSString *> *)additionalInfo;
+
+@end
+
 static NSInteger const kMPRoktKitCode = 181;
 static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
 
@@ -126,6 +132,21 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
     XCTAssertFalse(self.kitInstance.started);
     XCTAssertNil(self.kitInstance.configuration);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testLogMParticleApiDiagnostic_forwardsCodeWhenSupported {
+    if (![Rokt respondsToSelector:@selector(logMParticleApiCall:additionalInfo:)]) {
+        XCTAssertNoThrow([self.kitInstance logMParticleApiDiagnostic:@"LOG_EVENT"]);
+        return;
+    }
+
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMExpect([mockRoktSDK logMParticleApiCall:@"LOG_EVENT" additionalInfo:@{}]);
+
+    [self.kitInstance logMParticleApiDiagnostic:@"LOG_EVENT"];
+
     OCMVerifyAll(mockRoktSDK);
     [mockRoktSDK stopMocking];
 }
