@@ -321,7 +321,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (MParticleUser *)getUser:(NSNumber *)mpId {
-    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"GET_USER"];
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     if ([userDefaults isExistingUserId:mpId]) {
         MParticleUser *user = [[MParticleUser alloc] init];
