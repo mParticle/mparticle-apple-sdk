@@ -268,7 +268,6 @@
 }
 
 - (void)setUserAttribute:(nonnull NSString *)key value:(nonnull id)value {
-    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"SET_USER_ATTRIBUTE"];
     if ([value isKindOfClass:[NSString class]] && (((NSString *)value).length <= 0)) {
         MPILogDebug(@"User attribute not updated. Please use removeUserAttribute.");
         
