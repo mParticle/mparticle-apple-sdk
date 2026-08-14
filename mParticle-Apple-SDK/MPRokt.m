@@ -59,6 +59,7 @@ static const NSInteger kMPRoktKitId = 181;
            embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
                   config:(RoktConfig * _Nullable)config
                  onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
+    [self logRoktApiDiagnostic:@"SELECT_PLACEMENTS"];
     MPILogDebug(@"MPRokt selectPlacements (full) called - identifier: %@, attributes count: %lu, embeddedViews count: %lu, config: %@, onEvent: %@",
                 identifier,
                 (unsigned long)attributes.count,
@@ -125,6 +126,7 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - catalogItemId: The identifier of the catalog item that was purchased
 ///   - success: Whether the purchase was successful (YES) or failed (NO)
 - (void)purchaseFinalized:(NSString * _Nonnull)identifier catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
+    [self logRoktApiDiagnostic:@"PURCHASE_FINALIZED"];
     MPILogDebug(@"MPRokt purchaseFinalized - identifier: %@, catalogItemId: %@, success: %@",
                 identifier, catalogItemId, success ? @"YES" : @"NO");
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -149,6 +151,7 @@ static const NSInteger kMPRoktKitId = 181;
 ///   - identifier: The Rokt placement identifier to listen for events from
 ///   - onEvent: Callback block that receives RoktEvent objects when placement events occur
 - (void)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
+    [self logRoktApiDiagnostic:@"ROKT_EVENTS"];
     MPILogDebug(@"MPRokt events called - identifier: %@, onEvent: %@",
                 identifier, onEvent ? @"present" : @"nil");
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -172,6 +175,7 @@ static const NSInteger kMPRoktKitId = 181;
 /// - Parameters:
 ///   - onEvent: Callback block that receives RoktEvent objects when events occur
 - (void)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent {
+    [self logRoktApiDiagnostic:@"ROKT_GLOBAL_EVENTS"];
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -190,6 +194,7 @@ static const NSInteger kMPRoktKitId = 181;
 /// Closes any currently displayed Rokt placement.
 /// Call this method to programmatically dismiss an active Rokt overlay or embedded placement.
 - (void)close {
+    [self logRoktApiDiagnostic:@"ROKT_CLOSE"];
     MPILogDebug(@"MPRokt close called");
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
@@ -209,6 +214,7 @@ static const NSInteger kMPRoktKitId = 181;
 /// - Parameters:
 ///   - sessionId: The session id to be set. Must be a non-empty string.
 - (void)setSessionId:(NSString * _Nonnull)sessionId {
+    [self logRoktApiDiagnostic:@"ROKT_SET_SESSION_ID"];
     MPILogDebug(@"MPRokt setSessionId called - sessionId: %@", sessionId ? @"present" : @"nil");
     dispatch_async(dispatch_get_main_queue(), ^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -226,6 +232,7 @@ static const NSInteger kMPRoktKitId = 181;
 /// Get the session id to use within a non-native integration e.g. WebView.
 /// - Returns: The session id or nil if no session is present.
 - (NSString * _Nullable)getSessionId {
+    [self logRoktApiDiagnostic:@"ROKT_GET_SESSION_ID"];
     MPILogDebug(@"MPRokt getSessionId called");
     __block NSString *result = nil;
 
@@ -256,6 +263,22 @@ static const NSInteger kMPRoktKitId = 181;
     return result;
 }
 
+- (void)logRoktApiDiagnostic:(NSString *)code {
+    if (code.length == 0) {
+        return;
+    }
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+    for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
+        if ([kitRegister.code integerValue] == kMPRoktKitId) {
+            id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
+            if (kitInstance && [kitInstance respondsToSelector:@selector(logMParticleApiDiagnostic:)]) {
+                [kitInstance logMParticleApiDiagnostic:code];
+            }
+            break;
+        }
+    }
+}
+
 /**
  * Registers a payment extension for Shoppable Ads.
  * The payment extension handles payment processing (e.g., Apple Pay via Stripe).
@@ -267,6 +290,7 @@ static const NSInteger kMPRoktKitId = 181;
  * @param paymentExtension An object conforming to RoktPaymentExtension (PaymentExtension in Swift; from RoktContracts)
  */
 - (void)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension {
+    [self logRoktApiDiagnostic:@"REGISTER_PAYMENT_EXTENSION"];
     dispatch_async([MParticle messageQueue], ^{
         MPILogDebug(@"MPRokt forwarding to kit - registerPaymentExtension: %@",
                     paymentExtension);
@@ -310,6 +334,7 @@ static const NSInteger kMPRoktKitId = 181;
                 attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                     config:(RoktConfig * _Nullable)config
                    onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
+    [self logRoktApiDiagnostic:@"SELECT_SHOPPABLE_ADS"];
     MPILogDebug(@"MPRokt selectShoppableAds (full) called - identifier: %@, attributes count: %lu, config: %@, onEvent: %@",
                 identifier,
                 (unsigned long)attributes.count,
@@ -367,6 +392,7 @@ static const NSInteger kMPRoktKitId = 181;
 /// - Parameter url: The URL received by the app's URL handler.
 /// - Returns: YES if a registered payment extension claimed the URL; NO otherwise (including when the Rokt Kit is not registered).
 - (BOOL)handleURLCallback:(NSURL * _Nonnull)url {
+    [self logRoktApiDiagnostic:@"ROKT_HANDLE_URL_CALLBACK"];
     MPILogDebug(@"MPRokt handleURLCallback called - url: %@", url);
     if (!url) {
         return NO;

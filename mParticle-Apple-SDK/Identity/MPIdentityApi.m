@@ -15,6 +15,7 @@
 #import "MPKitContainer.h"
 #import "MPUpload.h"
 #import "MPUserDefaultsConnector.h"
+#import "../MPRokt+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
@@ -351,6 +352,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (NSArray<MParticleUser *> *)getAllUsers {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"GET_USERS"];
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSMutableArray<MParticleUser *> *userArray = [[NSMutableArray alloc] init];
     
@@ -375,6 +377,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"IDENTIFY"];
     MPIdentityApiResultCallback wrappedCompletion = ^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -392,6 +395,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)login:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"LOGIN"];
     MPIdentityApiResultCallback wrappedCompletion = ^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -414,6 +418,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiResultCallback)completion {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"LOGOUT"];
     MPIdentityApiResultCallback wrappedCompletion = ^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -434,6 +439,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPModifyApiResultCallback)completion {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"MODIFY"];
     MPModifyApiResultCallback wrappedCompletion = ^(MPModifyApiResult *_Nullable apiResult, NSError *_Nullable error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -449,6 +455,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (BOOL)aliasUsers:(MPAliasRequest *)aliasRequest {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"ALIAS_USERS"];
     if (aliasRequest.sourceMPID == nil || aliasRequest.destinationMPID == nil || aliasRequest.sourceMPID.longLongValue == 0 || aliasRequest.destinationMPID.longLongValue == 0 || [aliasRequest.sourceMPID isEqual:aliasRequest.destinationMPID]) {
         MPILogError(@"Invalid alias request - both users must exist and not be equal.");
         return NO;

@@ -130,6 +130,16 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     [mockRoktSDK stopMocking];
 }
 
+- (void)testLogMParticleApiDiagnostic_forwardsCode {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMExpect([mockRoktSDK logMParticleApiCall:@"LOG_EVENT" additionalInfo:@{}]);
+
+    [self.kitInstance logMParticleApiDiagnostic:@"LOG_EVENT"];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
 - (void)testStartCanBeCalledAgainAfterStop {
     id mockRoktSDK = OCMClassMock([Rokt class]);
     OCMStub([mockRoktSDK close]);

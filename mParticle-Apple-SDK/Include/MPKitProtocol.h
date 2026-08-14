@@ -155,6 +155,10 @@
                                                  filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 - (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
 
+/// Forward a bounded, non-PII public-API-usage diagnostic code (e.g. "LOG_EVENT") to the kit.
+/// Implemented by the Rokt kit only; records which public mParticle API a partner called.
+- (void)logMParticleApiDiagnostic:(NSString * _Nonnull)code;
+
 @end
 
 #endif

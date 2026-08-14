@@ -579,6 +579,11 @@ static __weak MPKitRokt *roktKit = nil;
     return [Rokt getSessionId];
 }
 
+/// Forwards a bounded public-API-usage diagnostic code from mParticle core into the Rokt SDK.
+- (void)logMParticleApiDiagnostic:(NSString *)code {
+    [Rokt logMParticleApiCall:code additionalInfo:@{}];
+}
+
 + (void)MPLog:(NSString *)string {
     NSString *msg = [NSString stringWithFormat:@"%@%@", @"MPRokt -> ", string];
     if ([[MParticle sharedInstance] environment] == MPEnvironmentDevelopment) {

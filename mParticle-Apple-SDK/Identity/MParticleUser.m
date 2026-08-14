@@ -11,6 +11,7 @@
 #import "MPIConstants.h"
 #import "MPKitContainer.h"
 #import "MPUserDefaultsConnector.h"
+#import "../MPRokt+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticleUser ()
@@ -216,6 +217,7 @@
 }
 
 - (nullable NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"INCREMENT_USER_ATTRIBUTE"];
     dispatch_async([MParticle messageQueue], ^{
         MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         if (stateMachine.optOut) {
@@ -312,6 +314,7 @@
 }
 
 - (void)setUserAttributeList:(nonnull NSString *)key values:(nonnull NSArray<NSString *> *)values {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"SET_USER_ATTRIBUTE_LIST"];
     if (values.count == 0) {
         MPILogDebug(@"User attribute not updated. Please use removeUserAttribute.");
         return;
@@ -364,6 +367,7 @@
 }
 
 - (void)setUserTag:(nonnull NSString *)tag {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"SET_USER_TAG"];
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
     dispatch_async([MParticle messageQueue], ^{
@@ -399,6 +403,7 @@
 }
 
 - (void)removeUserAttribute:(nonnull NSString *)key {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"REMOVE_USER_ATTRIBUTE"];
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
     dispatch_async([MParticle messageQueue], ^{
@@ -436,6 +441,7 @@
 
 #pragma mark - User Segments
 - (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSError * _Nullable error))completionHandler {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"GET_USER_AUDIENCES"];
     if ([MParticle sharedInstance].stateMachine.enableAudienceAPI) {
         dispatch_async([MParticle messageQueue], ^{
             [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
@@ -451,7 +457,8 @@
 #pragma mark - Consent State
 
 - (void)setConsentState:(MPConsentState *)state {
-    
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"SET_CONSENT_STATE"];
+
     [MPPersistenceController_PRIVATE setConsentState:state forMpid:self.userId];
     
     NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer_PRIVATE.originalConfig copy];
@@ -474,6 +481,7 @@
 }
 
 - (nullable MPConsentState *)consentState {
+    [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"GET_CONSENT_STATE"];
     return [MPPersistenceController_PRIVATE consentStateForMpid:self.userId];
 }
 

@@ -9,7 +9,7 @@ let useLocalVersion = ProcessInfo.processInfo.environment["USE_LOCAL_VERSION"] !
 
 let mParticleAppleSDK: Package.Dependency = {
     if useLocalVersion {
-        return .package(path: "../../../")
+        return .package(name: "mparticle-apple-sdk", path: "../../../")
     }
 
     let url = "https://github.com/mParticle/mparticle-apple-sdk"
@@ -32,7 +32,7 @@ let package = Package(
         mParticleAppleSDK,
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
-            .upToNextMajor(from: "5.3.0")
+            .upToNextMajor(from: "5.3.2")
         ),
         .package(
             url: "https://github.com/ROKT/rokt-contracts-apple.git",

@@ -10,6 +10,14 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [Unreleased]
 
+### Kits
+
+#### Rokt
+
+##### Added
+
+- Report non-sensitive mParticle public API usage diagnostics when the Rokt kit is active.
+
 ## [9.3.4] - 2026-08-07
 
 ### Kits
