@@ -24,6 +24,36 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Report non-sensitive mParticle public API usage diagnostics when the Rokt kit is active.
 
+## [9.3.5] - 2026-08-14
+
+### Core
+
+#### Fixed
+
+- Notify callers when a Rokt placement cannot be requested ([#814](https://github.com/mParticle/mparticle-apple-sdk/pull/814))
+- Prevent mixed SDK component versions ([#811](https://github.com/mParticle/mparticle-apple-sdk/pull/811))
+- Store event queue DB outside Documents and exclude from backup ([#810](https://github.com/mParticle/mparticle-apple-sdk/pull/810))
+
+### Kits
+
+#### Kits
+
+##### Added
+
+- Apptentive V7 Support ([#809](https://github.com/mParticle/mparticle-apple-sdk/pull/809))
+
+#### Apptentive
+
+##### Added
+
+- Support Apptentive Region Settings ([#812](https://github.com/mParticle/mparticle-apple-sdk/pull/812))
+
+#### Rokt
+
+##### Added
+
+- Report mParticle API usage through the Rokt kit ([#813](https://github.com/mParticle/mparticle-apple-sdk/pull/813))
+
 ## [9.3.4] - 2026-08-07
 
 ### Kits
@@ -2460,7 +2490,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.4...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.5...HEAD
+[9.3.5]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.4...v9.3.5
 [9.3.4]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.3...v9.3.4
 [9.3.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.2...v9.3.3
 [9.3.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.1...v9.3.2
