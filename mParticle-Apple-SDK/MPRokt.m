@@ -115,6 +115,7 @@ static const NSInteger kMPRoktKitId = 181;
             });
         } else {
             MPILogWarning(@"MPRokt selectPlacements not performed - Rokt Kit not configured. Check with your Rokt representative to ensure the kit is enabled.");
+            [self notifyPlacementFailure:identifier onEvent:onEvent];
         }
     }];
 }
@@ -383,6 +384,7 @@ static const NSInteger kMPRoktKitId = 181;
             });
         } else {
             MPILogWarning(@"MPRokt selectShoppableAds not performed - Rokt Kit not configured. Check with your Rokt representative to ensure the kit is enabled.");
+            [self notifyPlacementFailure:identifier onEvent:onEvent];
         }
     }];
 }
@@ -430,6 +432,22 @@ static const NSInteger kMPRoktKitId = 181;
 }
 
 #pragma mark - Private Helper Methods
+
+/// Delivers a \c RoktPlacementFailure to the caller so a placement request that cannot be served never
+/// completes silently. Dispatched to the main queue because callers drive UI from this handler.
+/// - Parameters:
+///   - identifier: The placement identifier the caller requested
+///   - onEvent: The caller's event handler; nothing is delivered when it is nil
+- (void)notifyPlacementFailure:(NSString * _Nullable)identifier
+                       onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
+    if (!onEvent) {
+        return;
+    }
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        onEvent([[RoktPlacementFailure alloc] initWithIdentifier:identifier]);
+    });
+}
 
 /// Applies dashboard placement attribute key mapping, then sets each non-sandbox key on the user.
 /// @return Mutable dictionary after remapping (empty when \p attributes is nil).

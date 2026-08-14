@@ -340,6 +340,43 @@ static NSNumber * const kTestRoktKitId = @181;
     OCMVerifyAll((id)self.mockContainer);
 }
 
+- (void)testSelectPlacementsWithNilMappingInvokesOnEventWithPlacementFailure {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    NSString *identifier = @"testView";
+    XCTestExpectation *expectation = [self expectationWithDescription:@"onEvent called"];
+    __block RoktEvent *receivedEvent = nil;
+
+    [self.rokt selectPlacements:identifier
+                     attributes:@{@"f.name": @"Brandon"}
+                  embeddedViews:nil
+                         config:nil
+                        onEvent:^(RoktEvent * _Nonnull event) {
+        receivedEvent = event;
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    XCTAssertTrue([receivedEvent isKindOfClass:[RoktPlacementFailure class]]);
+    XCTAssertEqualObjects(((RoktPlacementFailure *)receivedEvent).identifier, identifier);
+}
+
+- (void)testSelectPlacementsWithNilMappingAndNilOnEventDoesNotCrash {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    XCTAssertNoThrow([self.rokt selectPlacements:@"testView" attributes:@{@"f.name": @"Brandon"}]);
+}
+
 - (void)testGetRoktPlacementAttributesMapping {
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
@@ -1025,6 +1062,31 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt selectShoppableAds:@"shoppableView" attributes:@{@"email": @"a@b.com"}];
 
     OCMVerifyAll((id)self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsWithNilMappingInvokesOnEventWithPlacementFailure {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    NSString *identifier = @"shoppableView";
+    XCTestExpectation *expectation = [self expectationWithDescription:@"onEvent called"];
+    __block RoktEvent *receivedEvent = nil;
+
+    [self.rokt selectShoppableAds:identifier
+                       attributes:@{@"f.name": @"Brandon"}
+                           config:nil
+                          onEvent:^(RoktEvent * _Nonnull event) {
+        receivedEvent = event;
+        [expectation fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    XCTAssertTrue([receivedEvent isKindOfClass:[RoktPlacementFailure class]]);
+    XCTAssertEqualObjects(((RoktPlacementFailure *)receivedEvent).identifier, identifier);
 }
 
 - (void)testSelectShoppableAdsInvokesConfirmUser {
