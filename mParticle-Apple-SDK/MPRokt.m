@@ -6,6 +6,7 @@
 //
 
 #import "MPRokt.h"
+#import "MPRoktSession.h"
 @import RoktContracts;
 #import "mParticle.h"
 #import "MPForwardQueueParameters.h"
@@ -201,10 +202,73 @@ static const NSInteger kMPRoktKitId = 181;
     });
 }
 
+/// Set the session (id + token) to use for the next execute call.
+/// Use this when you have a session from a non-native integration (e.g. WebView)
+/// and want Bearer-authorized offers/events to stay consistent across integrations.
+/// - Note: Matches Web launcher options — pass a non-empty sessionId with optional sessionToken.
+///   Id + token seeds Bearer; id-only applies the session id; empty sessionId is ignored.
+/// - Parameters:
+///   - session: The session id and optional JWT session token to apply (optional expiry).
+- (void)setSession:(MPRoktSession * _Nonnull)session {
+    [self logRoktApiDiagnostic:@"ROKT_SET_SESSION"];
+    MPILogDebug(@"MPRokt setSession called - sessionId: %@, sessionToken: %@",
+                session.sessionId.length ? @"present" : @"nil",
+                session.sessionToken.length ? @"present" : @"nil");
+    dispatch_async(dispatch_get_main_queue(), ^{
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:session];
+
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setSession:)
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
+/// Get the current session (id + token) for use within a non-native integration e.g. WebView.
+/// - Returns: The session, or nil if no session is present or the token has expired.
+- (MPRoktSession * _Nullable)getSession {
+    [self logRoktApiDiagnostic:@"ROKT_GET_SESSION"];
+    MPILogDebug(@"MPRokt getSession called");
+    __block MPRoktSession *result = nil;
+
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+
+    if (!activeKits || activeKits.count == 0) {
+        MPILogDebug(@"MPRokt getSession - no active kits found");
+        return nil;
+    }
+
+    for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
+        if ([kitRegister.code integerValue] == kMPRoktKitId) {
+            id kitInstance = kitRegister.wrapperInstance;
+            if (kitInstance && [kitInstance respondsToSelector:@selector(getSession)]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                result = [kitInstance performSelector:@selector(getSession)];
+#pragma clang diagnostic pop
+                MPILogDebug(@"MPRokt getSession returning: %@", result ? @"session present" : @"nil");
+                break;
+            } else {
+                MPILogDebug(@"MPRokt getSession - kit found but doesn't respond to getSession");
+            }
+        }
+    }
+
+    if (!result) {
+        MPILogDebug(@"MPRokt getSession - Rokt Kit not found in active kits");
+    }
+
+    return result;
+}
+
 /// Set the session id to use for the next execute call.
 /// This is useful for cases where you have a session id from a non-native integration,
 /// e.g. WebView, and you want the session to be consistent across integrations.
 /// - Note: Empty strings are ignored and will not update the session.
+/// Prefer `-setSession:` so the session token is also applied for offers and events.
 /// - Parameters:
 ///   - sessionId: The session id to be set. Must be a non-empty string.
 - (void)setSessionId:(NSString * _Nonnull)sessionId {

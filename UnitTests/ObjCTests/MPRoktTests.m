@@ -1321,6 +1321,38 @@ static NSNumber * const kTestRoktKitId = @181;
     XCTAssertFalse([keysSet containsObject:@"sandbox"]);
 }
 
+#pragma mark - setSession Tests
+
+- (void)testSetSessionForwardsToKitContainer {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:@"sid"
+                                                         sessionToken:@"jwt"
+                                                            expiresAt:@(123)];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(setSession:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], session);
+        return true;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt setSession:session];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
 #pragma mark - setSessionId Tests
 
 - (void)testSetSessionIdForwardsToKitContainer {
