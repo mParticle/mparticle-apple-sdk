@@ -210,9 +210,7 @@ static const NSInteger kMPRoktKitId = 181;
 - (void)setSessionId:(NSString * _Nonnull)sessionId {
     [self logRoktApiDiagnostic:@"ROKT_SET_SESSION_ID"];
     MPILogDebug(@"MPRokt setSessionId called - sessionId: %@", sessionId ? @"present" : @"nil");
-    // Message queue, matching clearSession and selectPlacements, so the session APIs stay ordered
-    // with each other. On main this could apply before a preceding clearSession and be wiped.
-    dispatch_async([MParticle messageQueue], ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:sessionId];
 
