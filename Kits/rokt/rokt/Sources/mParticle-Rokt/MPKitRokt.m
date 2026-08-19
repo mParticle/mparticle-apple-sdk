@@ -117,6 +117,12 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
 
     _started = YES;
 
+    // mParticle forwards identity callbacks only to kits that are already started
+    // (MPKitContainer isActiveAndNotDisabled), so any identify/login/logout that completed while
+    // Rokt was still initialising never reached us. Reconcile against the current user here, or
+    // the first callback we *do* receive looks like a first observation and skips the reset.
+    [self clearRoktSessionIfMpidChanged:[MParticle sharedInstance].identity.currentUser.userId];
+
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
 
@@ -617,36 +623,32 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
     cannot change the MPID and would never pass the check below.
 */
 - (MPKitExecStatus *)onIdentifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
-    [self clearRoktSessionIfMpidChanged:user];
+    [self clearRoktSessionIfMpidChanged:user.userId];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
 - (MPKitExecStatus *)onLoginComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
-    [self clearRoktSessionIfMpidChanged:user];
+    [self clearRoktSessionIfMpidChanged:user.userId];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
 - (MPKitExecStatus *)onLogoutComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
-    [self clearRoktSessionIfMpidChanged:user];
+    [self clearRoktSessionIfMpidChanged:user.userId];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
-/// Resets the Rokt session when this identity call produced a different MPID than the last one
-/// seen. The first MPID ever observed is recorded without resetting: there is no previous customer
-/// to separate from, and resetting there would discard a session the host app may have only just
-/// established.
-- (void)clearRoktSessionIfMpidChanged:(FilteredMParticleUser *)user {
-    NSNumber *mpid = user.userId;
+/// Resets the Rokt session when [mpid] differs from the last one this kit acted on. The first MPID
+/// ever observed is recorded without resetting: there is no previous customer to separate from.
+///
+/// Persisted rather than held in memory so a terminal relaunched mid-queue still recognises the
+/// next customer as a different person.
+- (void)clearRoktSessionIfMpidChanged:(NSNumber *)mpid {
     if (mpid == nil || [mpid isKindOfClass:[NSNull class]]) {
         return;
     }
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSNumber *lastSeenMpid = [defaults objectForKey:kMPRoktLastSeenMpidKey];
-    // Recorded unconditionally, and deliberately before any readiness check. Identity callbacks
-    // routinely land before Rokt finishes initialising; skipping the write there would leave the
-    // *next* customer looking like the first observation, so their arrival would not reset and
-    // they would inherit the previous customer's session.
     [defaults setObject:mpid forKey:kMPRoktLastSeenMpidKey];
 
     if (lastSeenMpid == nil) {
@@ -659,9 +661,6 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
     }
 
     [MPKitRokt MPLog:@"Rokt Kit detected an MPID change; resetting the Rokt session"];
-    // No `started` check: clearing only touches stored session state, so it is safe before Rokt
-    // finishes initialising, and it is exactly what a terminal relaunched mid-queue needs — a
-    // session persisted for the previous customer is dropped rather than restored.
     [MPKitRokt clearRoktSession];
 }
 
