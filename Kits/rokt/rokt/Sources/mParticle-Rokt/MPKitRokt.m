@@ -643,7 +643,9 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
 /// Persisted rather than held in memory so a terminal relaunched mid-queue still recognises the
 /// next customer as a different person.
 - (void)clearRoktSessionIfMpidChanged:(NSNumber *)mpid {
-    if (mpid == nil || [mpid isKindOfClass:[NSNull class]]) {
+    // 0 is mParticle's "no MPID assigned yet" sentinel, not a customer. Recording it would make
+    // the first real identify look like a change and drop a session the host had already opened.
+    if (mpid == nil || [mpid isKindOfClass:[NSNull class]] || mpid.longLongValue == 0) {
         return;
     }
 
