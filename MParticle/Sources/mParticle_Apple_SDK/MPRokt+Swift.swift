@@ -62,6 +62,22 @@ extension MPRokt {
         unsafeBitCast(imp, to: Fn.self)(self, sel, onEvent as Block)
     }
 
+    public func setSession(_ session: AnyObject) {
+        let sel = NSSelectorFromString("setSession:")
+        guard let method = class_getInstanceMethod(MPRokt.self, sel) else { return }
+        let imp = method_getImplementation(method)
+        typealias Fn = @convention(c) (AnyObject, Selector, AnyObject) -> Void
+        unsafeBitCast(imp, to: Fn.self)(self, sel, session)
+    }
+
+    public func getSession() -> AnyObject? {
+        let sel = NSSelectorFromString("getSession")
+        guard let method = class_getInstanceMethod(MPRokt.self, sel) else { return nil }
+        let imp = method_getImplementation(method)
+        typealias Fn = @convention(c) (AnyObject, Selector) -> AnyObject?
+        return unsafeBitCast(imp, to: Fn.self)(self, sel)
+    }
+
     public func registerPaymentExtension(_ paymentExtension: PaymentExtension) {
         let sel = NSSelectorFromString("registerPaymentExtension:")
         guard let method = class_getInstanceMethod(MPRokt.self, sel) else { return }

@@ -11,6 +11,7 @@
 @class RoktConfig;
 @class RoktEvent;
 @class RoktPlacementOptions;
+@class RoktSession;
 @protocol RoktPaymentExtension;
 
 @class MPCommerceEvent;
@@ -148,6 +149,10 @@
 - (nonnull MPKitExecStatus *)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
 - (nonnull MPKitExecStatus *)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent;
 - (nonnull MPKitExecStatus *)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension;
+- (nonnull MPKitExecStatus *)setSession:(RoktSession * _Nonnull)session;
+- (nullable RoktSession *)getSession;
+- (nonnull MPKitExecStatus *)setSessionId:(NSString * _Nonnull)sessionId;
+- (nullable NSString *)getSessionId;
 - (nonnull MPKitExecStatus *)selectShoppableAdsWithIdentifier:(nonnull NSString *)identifier
                                                    attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                                                        config:(RoktConfig * _Nullable)config

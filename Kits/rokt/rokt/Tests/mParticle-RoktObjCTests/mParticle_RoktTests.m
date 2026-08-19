@@ -7,6 +7,27 @@
 static NSInteger const kMPRoktKitCode = 181;
 static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
 
+// TODO: Remove this category and MPRoktSessionHandoffMock once Rokt-Widget ships
+// `+[Rokt setSession:]` / `+[Rokt getSession]` (rokt-sdk-ios#280) and the kit pin is bumped.
+// Until then, OCMock cannot stub those selectors on the real Rokt class.
+@interface Rokt (MPRoktSessionHandoff)
++ (void)setSession:(id)session;
++ (nullable id)getSession;
+@end
+
+@implementation Rokt (MPRoktSessionHandoff)
++ (void)setSession:(id)session {
+}
++ (nullable id)getSession {
+    return nil;
+}
+@end
+
+@protocol MPRoktSessionHandoffMock <NSObject>
+- (void)setSession:(id)session;
+- (nullable id)getSession;
+@end
+
 @interface MPKitRokt ()
 
 - (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
@@ -22,6 +43,8 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                          catalogItemId:(NSString *)catalogItemId
                                success:(NSNumber *)success;
 
+- (MPKitExecStatus *)setSession:(RoktSession *)session;
+- (RoktSession *)getSession;
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId;
 - (NSString *)getSessionId;
 
@@ -899,6 +922,53 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     [mockRoktSDK stopMocking];
     [mockMParticleClass stopMocking];
     [mockMParticleInstance stopMocking];
+}
+
+#pragma mark - setSession tests
+
+- (void)testSetSessionCallsRoktSDK {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    id session = [[NSObject alloc] init];
+
+    OCMExpect([(id<MPRoktSessionHandoffMock>)mockRoktSDK setSession:session]);
+
+    MPKitExecStatus *status = [self.kitInstance setSession:session];
+
+    XCTAssertNotNil(status);
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqualObjects(status.integrationId, @181);
+    OCMVerifyAll(mockRoktSDK);
+
+    [mockRoktSDK stopMocking];
+}
+
+#pragma mark - getSession tests
+
+- (void)testGetSessionReturnsSessionFromRoktSDK {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    id expectedSession = [[NSObject alloc] init];
+
+    OCMStub([(id<MPRoktSessionHandoffMock>)mockRoktSDK getSession]).andReturn(expectedSession);
+
+    id result = [self.kitInstance getSession];
+
+    XCTAssertEqual(result, expectedSession, @"Should return the session from the Rokt SDK");
+
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testGetSessionReturnsNilWhenRoktSDKReturnsNil {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    OCMStub([(id<MPRoktSessionHandoffMock>)mockRoktSDK getSession]).andReturn(nil);
+
+    id result = [self.kitInstance getSession];
+
+    XCTAssertNil(result, @"Should return nil when Rokt SDK returns nil");
+
+    [mockRoktSDK stopMocking];
 }
 
 #pragma mark - setSessionId tests

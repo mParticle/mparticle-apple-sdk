@@ -14,13 +14,15 @@
 // Rokt kit identifier for testing
 static NSNumber * const kTestRoktKitId = @181;
 
-// Test helper class that simulates a kit with getSessionId and handleURLCallback methods
+// Test helper class that simulates a kit with getSessionId, getSession, and handleURLCallback methods
 @interface MPRoktTestKitInstance : NSObject
 @property (nonatomic, copy) NSString *sessionIdToReturn;
+@property (nonatomic, strong) id sessionToReturn;
 @property (nonatomic, copy) NSString *lastDiagnosticCode;
 @property (nonatomic, assign) BOOL handleURLCallbackReturn;
 @property (nonatomic, strong) NSURL *lastHandleURLCallbackURL;
 - (NSString *)getSessionId;
+- (id)getSession;
 - (void)logMParticleApiDiagnostic:(NSString *)code;
 - (BOOL)handleURLCallback:(NSURL *)url;
 @end
@@ -28,6 +30,9 @@ static NSNumber * const kTestRoktKitId = @181;
 @implementation MPRoktTestKitInstance
 - (NSString *)getSessionId {
     return self.sessionIdToReturn;
+}
+- (id)getSession {
+    return self.sessionToReturn;
 }
 - (void)logMParticleApiDiagnostic:(NSString *)code {
     self.lastDiagnosticCode = code;
@@ -1154,6 +1159,37 @@ static NSNumber * const kTestRoktKitId = @181;
     XCTAssertFalse([keysSet containsObject:@"sandbox"]);
 }
 
+#pragma mark - setSession Tests
+
+- (void)testSetSessionForwardsToKitContainer {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id session = [[NSObject alloc] init];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(setSession:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqual(params[0], session);
+        return true;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt setSession:session];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    OCMVerifyAll(self.mockContainer);
+}
+
 #pragma mark - setSessionId Tests
 
 - (void)testSetSessionIdForwardsToKitContainer {
@@ -1181,7 +1217,10 @@ static NSNumber * const kTestRoktKitId = @181;
     });
 
     // Execute method
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [self.rokt setSessionId:sessionId];
+#pragma clang diagnostic pop
 
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
@@ -1223,6 +1262,48 @@ static NSNumber * const kTestRoktKitId = @181;
     OCMVerify([self.mockContainer activeKitsRegistry]);
 }
 
+#pragma mark - getSession Tests
+
+- (void)testGetSessionReturnsSessionFromKit {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+
+    id expectedSession = [[NSObject alloc] init];
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+    kitInstance.sessionToReturn = expectedSession;
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    id result = [self.rokt getSession];
+
+    XCTAssertEqual(result, expectedSession, @"Should return the session from the kit");
+}
+
+- (void)testGetSessionReturnsNilWhenKitInstanceIsNil {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(nil);
+
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    id result = [self.rokt getSession];
+
+    XCTAssertNil(result, @"Should return nil when kit wrapper instance is nil");
+}
+
 #pragma mark - getSessionId Tests
 
 - (void)testGetSessionIdReturnsSessionIdFromKit {
@@ -1247,7 +1328,10 @@ static NSNumber * const kTestRoktKitId = @181;
     OCMStub([self.mockContainer activeKitsRegistry]).andReturn(activeKits);
 
     // Execute method
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSString *result = [self.rokt getSessionId];
+#pragma clang diagnostic pop
 
     // Verify
     XCTAssertEqualObjects(result, expectedSessionId, @"Should return the session id from the kit");
@@ -1270,7 +1354,10 @@ static NSNumber * const kTestRoktKitId = @181;
     OCMStub([self.mockContainer activeKitsRegistry]).andReturn(activeKits);
 
     // Execute method
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSString *result = [self.rokt getSessionId];
+#pragma clang diagnostic pop
 
     // Verify
     XCTAssertNil(result, @"Should return nil when kit wrapper instance is nil");

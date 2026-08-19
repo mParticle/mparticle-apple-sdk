@@ -11,6 +11,7 @@
 @class RoktEmbeddedView;
 @class RoktConfig;
 @class RoktEvent;
+@class RoktSession;
 @protocol RoktPaymentExtension;
 
 /**
@@ -77,22 +78,41 @@
 - (void)close;
 
 /**
+ * Set the session (id + token) to use for the next execute call.
+ * Use this when you have a session from a non-native integration (e.g. WebView)
+ * and want the session — including Bearer authorization for offers and events —
+ * to stay consistent across integrations.
+ *
+ * @param session The session id and JWT session token to apply (optional expiry).
+ */
+- (void)setSession:(RoktSession * _Nonnull)session;
+
+/**
+ * Get the current session (id + token) for use within a non-native integration e.g. WebView.
+ *
+ * @return The session, or nil if the Rokt kit is not active, no session is present, or the persisted token has expired.
+ */
+- (RoktSession * _Nullable)getSession;
+
+/**
  * Set the session id to use for the next execute call.
  * This is useful for cases where you have a session id from a non-native integration,
  * e.g. WebView, and you want the session to be consistent across integrations.
  *
  * @note Empty strings are ignored and will not update the session.
+ * @note Prefer setSession: so the session token is also applied for offers and events.
  *
  * @param sessionId The session id to be set. Must be a non-empty string.
  */
-- (void)setSessionId:(NSString * _Nonnull)sessionId;
+- (void)setSessionId:(NSString * _Nonnull)sessionId DEPRECATED_MSG_ATTRIBUTE("Use setSession: to set session id and session token.");
 
 /**
  * Get the session id to use within a non-native integration e.g. WebView.
  *
  * @return The session id or nil if no session is present.
+ * @note Prefer getSession to also read the session token.
  */
-- (NSString * _Nullable)getSessionId;
+- (NSString * _Nullable)getSessionId DEPRECATED_MSG_ATTRIBUTE("Use getSession to read session id and session token.");
 
 /**
  * Registers a payment extension for Shoppable Ads.

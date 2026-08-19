@@ -2,6 +2,15 @@
 @import Rokt_Widget;
 @import RoktContracts;
 
+@class RoktSession;
+
+// TODO: Remove this category once Rokt-Widget ships `+[Rokt setSession:]` / `+[Rokt getSession]`
+// (rokt-sdk-ios#280) and the kit pin is bumped to that release.
+@interface Rokt (MPRoktSessionHandoff)
++ (void)setSession:(RoktSession *)session;
++ (nullable RoktSession *)getSession;
+@end
+
 // Kit version
 static NSString * const kMPRoktKitVersion = @"9.3.5";
 
@@ -560,6 +569,21 @@ static __weak MPKitRokt *roktKit = nil;
 - (MPKitExecStatus *)close {
     [Rokt close];
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+
+/// Set the session (id + token) to use for the next execute call.
+///
+/// @param session The session id and JWT session token to apply (optional expiry).
+- (MPKitExecStatus *)setSession:(RoktSession *)session {
+    [Rokt setSession:session];
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+
+/// Get the current session (id + token) for use within a non-native integration e.g. WebView.
+///
+/// @return The session, or nil if no session is present or the persisted token has expired.
+- (RoktSession *)getSession {
+    return [Rokt getSession];
 }
 
 /// Set the session id to use for the next execute call.
