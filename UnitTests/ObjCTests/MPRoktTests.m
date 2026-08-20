@@ -1357,6 +1357,55 @@ static NSNumber * const kTestRoktKitId = @181;
     OCMVerifyAll(self.mockContainer);
 }
 
+#pragma mark - clearSession Tests
+
+- (void)testClearSessionLogsApiDiagnostic {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    [self.rokt clearSession];
+
+    // The diagnostic is recorded synchronously, before the forward is dispatched, so it is
+    // observable as soon as the call returns.
+    XCTAssertEqualObjects(kitInstance.lastDiagnosticCode, @"ROKT_CLEAR_SESSION");
+}
+
+- (void)testClearSessionForwardsToKitContainer {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[]);
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    OCMExpect([self.mockContainer forwardSDKCall:@selector(clearSession)
+                                           event:nil
+                                      parameters:nil
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt clearSession];
+
+    // Longer than the 0.2s used elsewhere in this file: those forwards are dispatched on the
+    // main queue, whereas clearSession goes through [MParticle messageQueue], which may already
+    // have work queued ahead of it. The wait returns as soon as the forward lands.
+    [self waitForExpectationsWithTimeout:2.0 handler:nil];
+
+    OCMVerifyAll(self.mockContainer);
+}
+
 #pragma mark - Public API Diagnostics Tests
 
 - (void)testLogRoktApiDiagnosticForwardsToActiveRoktKit {

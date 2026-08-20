@@ -229,6 +229,7 @@ static const NSInteger kMPRoktKitId = 181;
 /// device. Fire-and-forget, mirroring `close`: the kit performs the reset synchronously on
 /// its side, so there is nothing to return here.
 - (void)clearSession {
+    [self logRoktApiDiagnostic:@"ROKT_CLEAR_SESSION"];
     MPILogDebug(@"MPRokt clearSession called");
     // Dispatched on the message queue, not the main queue, so it stays ordered with
     // selectPlacements. Both forwards ultimately hop to main inside the kit container, so
