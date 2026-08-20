@@ -1,7 +1,11 @@
 #import "ViewController.h"
-#import <mParticle_Apple_SDK/mParticle.h>
+#import "RoktHybridWebViewController.h"
+#import <mParticle_Apple_SDK_ObjC/mParticle.h>
 @import RoktContracts;
+#if __has_include(<mParticle_Apple_Media_SDK-Swift.h>)
 #import <mParticle_Apple_Media_SDK-Swift.h>
+#define MPE_HAS_MEDIA_SDK 1
+#endif
 #import <AdSupport/AdSupport.h>
 #import "AdSupport/ASIdentifierManager.h"
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
@@ -170,7 +174,7 @@ static void MPE_LogRoktContractsExampleEvent(RoktEvent *event) {
         // Debug & Info
         @[@"Display Current User", @"Force Upload", @"Check Kit Status"],
         // Rokt
-        @[@"Display Rokt Overlay Placement", @"Display Rokt Dark Mode Overlay", @"Display Rokt Embedded Placement", @"Display Rokt Overlay (auto close)"]
+        @[@"Display Rokt Overlay Placement", @"Display Rokt Dark Mode Overlay", @"Display Rokt Embedded Placement", @"Display Rokt Overlay (auto close)", @"Show Rokt Session", @"Open WebView with Native Session"]
     ];
     
     _sectionSelectorNames = @[
@@ -190,7 +194,7 @@ static void MPE_LogRoktContractsExampleEvent(RoktEvent *event) {
         // Debug & Info
         @[@"displayCurrentUser", @"forceUpload", @"checkKitStatus"],
         // Rokt
-        @[@"selectOverlayPlacement", @"selectDarkOverlayPlacement", @"selectEmbeddedPlacement", @"selectOverlayPlacementAutoClose"]
+        @[@"selectOverlayPlacement", @"selectDarkOverlayPlacement", @"selectEmbeddedPlacement", @"selectOverlayPlacementAutoClose", @"showRoktSession", @"openWebViewWithNativeSession"]
     ];
 }
 
@@ -306,7 +310,7 @@ static void MPE_LogRoktContractsExampleEvent(RoktEvent *event) {
                                                                @"mobile": @"(555)867-5309"
     };
 
-    [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout" attributes:customAttributes];
+    [[MParticle sharedInstance].rokt selectPlacements:@"MSDKOverlayLayout" attributes:customAttributes];
 }
 
 - (void)selectDarkOverlayPlacement {
@@ -372,6 +376,46 @@ static void MPE_LogRoktContractsExampleEvent(RoktEvent *event) {
     });
 }
 
+- (NSString *)truncatedRoktSessionToken:(NSString *)token {
+    if (token.length == 0) {
+        return @"(none)";
+    }
+    if (token.length <= 16) {
+        return [NSString stringWithFormat:@"%@ (len %lu)", token, (unsigned long)token.length];
+    }
+    return [NSString stringWithFormat:@"%@… (len %lu)", [token substringToIndex:12], (unsigned long)token.length];
+}
+
+- (void)showRoktSession {
+    MPRoktSession *session = [[MParticle sharedInstance].rokt getSession];
+    if (!session) {
+        [self showAlertWithTitle:@"Rokt Session"
+                         message:@"No Rokt session yet. Display a native placement first, then try again. getSession also returns nil after the token expires."];
+        return;
+    }
+
+    NSString *message = [NSString stringWithFormat:@"sessionId: %@\nsessionToken: %@\nexpiresAt: %@",
+                         session.sessionId,
+                         [self truncatedRoktSessionToken:session.sessionToken],
+                         session.expiresAt ?: @"(none)"];
+    NSLog(@"Rokt session handoff:\n%@", message);
+    [self showAlertWithTitle:@"Rokt Session" message:message];
+}
+
+- (void)openWebViewWithNativeSession {
+    MPRoktSession *session = [[MParticle sharedInstance].rokt getSession];
+    if (!session) {
+        [self showAlertWithTitle:@"Rokt Session"
+                         message:@"No Rokt session yet. Display a native placement first so getSession can return an id and token."];
+        return;
+    }
+
+    RoktHybridWebViewController *hybrid = [[RoktHybridWebViewController alloc] initWithSession:session];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:hybrid];
+    nav.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:nav animated:YES completion:nil];
+}
+
 - (void)getAudience {
     MParticle *mParticle = [MParticle sharedInstance];
     
@@ -385,6 +429,7 @@ static void MPE_LogRoktContractsExampleEvent(RoktEvent *event) {
 }
 
 - (void)logCustomMediaEvents {
+#if MPE_HAS_MEDIA_SDK
     MPMediaSession *mediaSession = [[MPMediaSession alloc]
                                     initWithCoreSDK:[MParticle sharedInstance]
                                     mediaContentId:@"1234567"
@@ -398,6 +443,9 @@ static void MPE_LogRoktContractsExampleEvent(RoktEvent *event) {
     [mediaSession logPlayWithOptions:nil];
     [mediaSession logMediaContentEndWithOptions:nil];
     [mediaSession logMediaSessionEndWithOptions:nil];
+#else
+    NSLog(@"mParticle Media SDK is not linked in this Example Podfile (incompatible with SDK 9).");
+#endif
 }
 
 - (void)logTimedEvent {
