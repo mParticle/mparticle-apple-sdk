@@ -44,6 +44,12 @@ static __weak MPKitRokt *roktKit = nil;
 // customer inherit the previous one's Rokt session.
 static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid";
 
+// Whether the last-seen user was identified (held any user identity, or was logged in).
+// This types the MPID transition: an anonymous user acquiring an identity is the SAME person
+// being named (payment page → confirmation page), so the Rokt session must survive it; only a
+// KNOWN user leaving — replaced by another user or logged out — ends the session.
+static NSString * const kMPRoktLastSeenIdentifiedKey = @"mParticle::rokt::lastSeenMpidWasIdentified";
+
 @implementation MPKitRokt
 
 /*
@@ -121,7 +127,11 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
     // (MPKitContainer isActiveAndNotDisabled), so any identify/login/logout that completed while
     // Rokt was still initialising never reached us. Reconcile against the current user here, or
     // the first callback we *do* receive looks like a first observation and skips the reset.
-    [self clearRoktSessionIfMpidChanged:[MParticle sharedInstance].identity.currentUser.userId];
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    if (currentUser != nil) {
+        [self clearRoktSessionIfKnownUserChanged:currentUser.userId
+                                    isIdentified:[MPKitRokt isIdentifiedUser:currentUser]];
+    }
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
@@ -610,9 +620,18 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
 #pragma mark - Identity
 
 /*
-    A change of MPID means a different person is using the device. On a self-service terminal —
-    a kiosk, counter tablet or shared point-of-sale device — that is the transaction boundary, so
-    the Rokt session must end or the next customer is folded into the previous customer's session.
+    The MPID transition is TYPED — not every change of MPID means a different person:
+
+      anonymous → known   same person acquiring an identity (unknown on the payment page,
+                          known on the confirmation page) — the session MUST survive, or a
+                          single shopper's journey is split and attribution breaks.
+      known → known′      a different person (the kiosk case) — reset.
+      known → anonymous   a logout — the known user departed — reset.
+      anonymous → anon′   placeholder churn — nobody was known — no-op.
+
+    So the reset condition is "a KNOWN user left", not "the MPID moved". "Known" means the user
+    held any user identity or was logged in; identity-set emptiness is used rather than
+    isLoggedIn alone because kiosk customers identify() without ever logging in.
 
     The kit is never told "the MPID changed" directly: MPIdentityApi fires that branch internally
     and then forwards the identity completion unconditionally. So the comparison is made here,
@@ -623,26 +642,52 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
     cannot change the MPID and would never pass the check below.
 */
 - (MPKitExecStatus *)onIdentifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
-    [self clearRoktSessionIfMpidChanged:user.userId];
+    [self clearRoktSessionIfKnownUserChanged:user.userId isIdentified:[MPKitRokt isIdentifiedFilteredUser:user]];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
 - (MPKitExecStatus *)onLoginComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
-    [self clearRoktSessionIfMpidChanged:user.userId];
+    [self clearRoktSessionIfKnownUserChanged:user.userId isIdentified:[MPKitRokt isIdentifiedFilteredUser:user]];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
 - (MPKitExecStatus *)onLogoutComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
-    [self clearRoktSessionIfMpidChanged:user.userId];
+    [self clearRoktSessionIfKnownUserChanged:user.userId isIdentified:[MPKitRokt isIdentifiedFilteredUser:user]];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
-/// Resets the Rokt session when [mpid] differs from the last one this kit acted on. The first MPID
-/// ever observed is recorded without resetting: there is no previous customer to separate from.
+/// A user is "identified" when they hold any USER identity (email, customer id, …) or are logged
+/// in. Both identity dictionaries include device identities (IDFV, push token, device application
+/// stamp — every key from MPIdentityIOSAdvertiserId up), which exist for anonymous users too, so
+/// counting the raw dictionary would make everyone read as known. Only user-identity keys count.
++ (BOOL)isIdentifiedFromIdentities:(NSDictionary<NSNumber *, NSString *> *)identities
+                        isLoggedIn:(BOOL)isLoggedIn {
+    if (isLoggedIn) {
+        return YES;
+    }
+    for (NSNumber *identityType in identities) {
+        if (identityType.unsignedIntegerValue < MPIdentityIOSAdvertiserId) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
++ (BOOL)isIdentifiedFilteredUser:(FilteredMParticleUser *)user {
+    return [MPKitRokt isIdentifiedFromIdentities:user.userIdentities isLoggedIn:user.isLoggedIn];
+}
+
++ (BOOL)isIdentifiedUser:(MParticleUser *)user {
+    return [MPKitRokt isIdentifiedFromIdentities:user.identities isLoggedIn:user.isLoggedIn];
+}
+
+/// Resets the Rokt session when a KNOWN user is replaced or departs. The first MPID ever observed
+/// is recorded without resetting: there is no previous customer to separate from. An anonymous
+/// user acquiring an identity is the same person and never resets.
 ///
 /// Persisted rather than held in memory so a terminal relaunched mid-queue still recognises the
 /// next customer as a different person.
-- (void)clearRoktSessionIfMpidChanged:(NSNumber *)mpid {
+- (void)clearRoktSessionIfKnownUserChanged:(NSNumber *)mpid isIdentified:(BOOL)isIdentified {
     // 0 is mParticle's "no MPID assigned yet" sentinel, not a customer. Recording it would make
     // the first real identify look like a change and drop a session the host had already opened.
     if (mpid == nil || [mpid isKindOfClass:[NSNull class]] || mpid.longLongValue == 0) {
@@ -651,7 +696,9 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSNumber *lastSeenMpid = [defaults objectForKey:kMPRoktLastSeenMpidKey];
+    BOOL lastSeenIdentified = [defaults boolForKey:kMPRoktLastSeenIdentifiedKey];
     [defaults setObject:mpid forKey:kMPRoktLastSeenMpidKey];
+    [defaults setBool:isIdentified forKey:kMPRoktLastSeenIdentifiedKey];
 
     if (lastSeenMpid == nil) {
         [MPKitRokt MPLog:@"Rokt Kit recording first observed MPID; no session reset"];
@@ -662,7 +709,12 @@ static NSString * const kMPRoktLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid
         return;
     }
 
-    [MPKitRokt MPLog:@"Rokt Kit detected an MPID change; resetting the Rokt session"];
+    if (!lastSeenIdentified) {
+        [MPKitRokt MPLog:@"Rokt Kit: anonymous user was identified; keeping the Rokt session"];
+        return;
+    }
+
+    [MPKitRokt MPLog:@"Rokt Kit: known user changed; resetting the Rokt session"];
     [MPKitRokt clearRoktSession];
 }
 
