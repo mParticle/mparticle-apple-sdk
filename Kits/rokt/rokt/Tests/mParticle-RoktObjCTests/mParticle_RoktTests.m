@@ -7,6 +7,11 @@
 static NSInteger const kMPRoktKitCode = 181;
 static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
 
+// Mirrored from MPKitRokt.m — the session-boundary state is persisted, so every test in this file
+// must start from a clean slate or the transition assertions become order-dependent.
+static NSString * const kTestLastSeenMpidKey = @"mParticle::rokt::lastSeenMpid";
+static NSString * const kTestLastSeenIdentifiedKey = @"mParticle::rokt::lastSeenMpidWasIdentified";
+
 @interface MPKitRokt ()
 
 - (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
@@ -61,6 +66,14 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 - (void)stop;
 
+- (void)start;
+- (MPKitExecStatus *)onIdentifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request;
+- (MPKitExecStatus *)onLoginComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request;
+- (MPKitExecStatus *)onLogoutComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request;
+- (MPKitExecStatus *)onModifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request;
+- (MPKitExecStatus *)beginSession;
+- (MPKitExecStatus *)endSession;
+
 @end
 
 @interface mParticle_RoktTests : XCTestCase
@@ -76,12 +89,20 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     [super setUp];
     self.kitInstance = [[MPKitRokt alloc] init];
     self.configuration = @{@"accountId": @"test_account_id"};
+    [self clearPersistedSessionBoundaryState];
 }
 
 - (void)tearDown {
+    [self clearPersistedSessionBoundaryState];
     self.kitInstance = nil;
     self.configuration = nil;
     [super tearDown];
+}
+
+- (void)clearPersistedSessionBoundaryState {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults removeObjectForKey:kTestLastSeenMpidKey];
+    [defaults removeObjectForKey:kTestLastSeenIdentifiedKey];
 }
 
 - (void)testKitCode {
@@ -1247,6 +1268,275 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     [mockRoktSDK stopMocking];
     [mockMParticleClass stopMocking];
     [mockMParticleInstance stopMocking];
+}
+
+#pragma mark - Session boundary helpers
+
+/// A stubbed FilteredMParticleUser. `identities` is what the kit sees AFTER kit-config and
+/// data-plan filtering, which is the distinction several of the tests below turn on.
+- (id)filteredUserWithMpid:(long long)mpid
+                identities:(NSDictionary<NSNumber *, NSString *> *)identities
+                isLoggedIn:(BOOL)isLoggedIn {
+    FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
+    id mockUser = OCMPartialMock(user);
+    [[[mockUser stub] andReturn:@(mpid)] userId];
+    [[[mockUser stub] andReturn:identities] userIdentities];
+    [[[mockUser stub] andReturnValue:@(isLoggedIn)] isLoggedIn];
+    return mockUser;
+}
+
+- (id)knownUserWithMpid:(long long)mpid {
+    return [self filteredUserWithMpid:mpid
+                           identities:@{@(MPIdentityEmail): @"customer@example.com"}
+                           isLoggedIn:NO];
+}
+
+/// Anonymous users still carry device identities, which is why the kit counts only user-identity
+/// keys rather than the raw dictionary being non-empty.
+- (id)anonymousUserWithMpid:(long long)mpid {
+    return [self filteredUserWithMpid:mpid
+                           identities:@{@(MPIdentityIOSVendorId): @"test-idfv",
+                                        @(MPIdentityDeviceApplicationStamp): @"test-das"}
+                           isLoggedIn:NO];
+}
+
+#pragma mark - Identity transition tests
+
+- (void)testIdentity_FirstObservedMpid_RecordsWithoutReset {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMReject([mockRoktSDK clearSession]);
+
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:100] request:nil];
+
+    XCTAssertEqualObjects([[NSUserDefaults standardUserDefaults] objectForKey:kTestLastSeenMpidKey], @100);
+    XCTAssertTrue([[NSUserDefaults standardUserDefaults] boolForKey:kTestLastSeenIdentifiedKey]);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testIdentity_AnonymousToKnown_KeepsSession {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    [self.kitInstance onIdentifyComplete:[self anonymousUserWithMpid:100] request:nil];
+
+    // The same shopper acquiring an identity mid-journey — unknown on the payment page, known on
+    // the confirmation page. Severing here would split one person's attribution.
+    OCMReject([mockRoktSDK clearSession]);
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:200] request:nil];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testIdentity_KnownToDifferentKnown_ResetsSession {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:100] request:nil];
+
+    // The kiosk case: one customer finishes, the next steps up to the same terminal.
+    OCMExpect([mockRoktSDK clearSession]);
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:200] request:nil];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testIdentity_KnownToAnonymousLogout_ResetsSession {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:100] request:nil];
+
+    OCMExpect([mockRoktSDK clearSession]);
+    [self.kitInstance onLogoutComplete:[self anonymousUserWithMpid:200] request:nil];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testIdentity_AnonymousToAnonymous_KeepsSession {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    [self.kitInstance onIdentifyComplete:[self anonymousUserWithMpid:100] request:nil];
+
+    // Placeholder churn — nobody was ever known, so there is no customer boundary here.
+    OCMReject([mockRoktSDK clearSession]);
+    [self.kitInstance onIdentifyComplete:[self anonymousUserWithMpid:200] request:nil];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testIdentity_SentinelMpidZero_IsNotRecorded {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMReject([mockRoktSDK clearSession]);
+
+    // 0 is mParticle's "no MPID assigned yet" sentinel. Recording it would make the first real
+    // identify look like a customer change and drop a session the host had already opened.
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:0] request:nil];
+
+    XCTAssertNil([[NSUserDefaults standardUserDefaults] objectForKey:kTestLastSeenMpidKey]);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testOnLoginComplete_KnownToDifferentKnown_ResetsSession {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    // login() forwards onLoginComplete and ONLY that — onIdentifyComplete does not fire for a
+    // login, so a partner who uses login() for the returning customer needs this override or the
+    // transition is never observed.
+    [self.kitInstance onLoginComplete:[self knownUserWithMpid:100] request:nil];
+
+    OCMExpect([mockRoktSDK clearSession]);
+    [self.kitInstance onLoginComplete:[self knownUserWithMpid:200] request:nil];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+#pragma mark - onModifyComplete
+
+- (void)testOnModifyComplete_MarksIdentifiedWithoutResetting {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMReject([mockRoktSDK clearSession]);
+
+    [self.kitInstance onIdentifyComplete:[self anonymousUserWithMpid:100] request:nil];
+    XCTAssertFalse([[NSUserDefaults standardUserDefaults] boolForKey:kTestLastSeenIdentifiedKey]);
+
+    // modify() cannot change the MPID, so it must never reset — but it IS how a host attaches an
+    // email to the current user, so it must upgrade the identified flag.
+    [self.kitInstance onModifyComplete:[self knownUserWithMpid:100] request:nil];
+
+    XCTAssertTrue([[NSUserDefaults standardUserDefaults] boolForKey:kTestLastSeenIdentifiedKey]);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testOnModifyComplete_IdentityAttachedByModify_StillResetsForNextCustomer {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    // The regression this guards: without onModifyComplete the kit still believes MPID 100 was
+    // anonymous, so customer 2 below reads as anonymous churn and inherits customer 1's session.
+    [self.kitInstance onIdentifyComplete:[self anonymousUserWithMpid:100] request:nil];
+    [self.kitInstance onModifyComplete:[self knownUserWithMpid:100] request:nil];
+
+    OCMExpect([mockRoktSDK clearSession]);
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:200] request:nil];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+#pragma mark - Filtered identities
+
+- (void)testIdentity_FilteredIdentitiesFallBackToUnfilteredCurrentUser {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    // A partner who filters email off this kit sees an EMPTY filtered identity set for a user who
+    // is genuinely known. Taken at face value that records them as anonymous and no later
+    // transition ever resets.
+    MParticleUser *currentUser = [[MParticleUser alloc] init];
+    id mockCurrentUser = OCMPartialMock(currentUser);
+    [[[mockCurrentUser stub] andReturn:@100] userId];
+    [[[mockCurrentUser stub] andReturn:@{@(MPIdentityEmail): @"customer@example.com"}] identities];
+    [[[mockCurrentUser stub] andReturnValue:@NO] isLoggedIn];
+
+    id mockIdentityApi = OCMClassMock([MPIdentityApi class]);
+    OCMStub([mockIdentityApi currentUser]).andReturn(mockCurrentUser);
+    id mockMParticleInstance = OCMClassMock([MParticle class]);
+    OCMStub([(MParticle *)mockMParticleInstance identity]).andReturn(mockIdentityApi);
+    id mockMParticleClass = OCMClassMock([MParticle class]);
+    OCMStub([mockMParticleClass sharedInstance]).andReturn(mockMParticleInstance);
+
+    id filteredButKnown = [self filteredUserWithMpid:100 identities:@{} isLoggedIn:NO];
+    [self.kitInstance onIdentifyComplete:filteredButKnown request:nil];
+
+    XCTAssertTrue([[NSUserDefaults standardUserDefaults] boolForKey:kTestLastSeenIdentifiedKey],
+                  @"A user filtered down to no identities must still resolve as known via the unfiltered current user");
+
+    [mockMParticleClass stopMocking];
+    [mockMParticleInstance stopMocking];
+    [mockIdentityApi stopMocking];
+    [mockCurrentUser stopMocking];
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testIdentity_IdentifiedFlagIsNotDowngradedWithinOneMpid {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:100] request:nil];
+    XCTAssertTrue([[NSUserDefaults standardUserDefaults] boolForKey:kTestLastSeenIdentifiedKey]);
+
+    // A second, under-reporting read of the SAME user must not erase the fact that a known person
+    // occupied this device — otherwise their departure would stop resetting.
+    [self.kitInstance onIdentifyComplete:[self anonymousUserWithMpid:100] request:nil];
+    XCTAssertTrue([[NSUserDefaults standardUserDefaults] boolForKey:kTestLastSeenIdentifiedKey]);
+
+    OCMExpect([mockRoktSDK clearSession]);
+    [self.kitInstance onIdentifyComplete:[self knownUserWithMpid:200] request:nil];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+#pragma mark - Manual session boundaries
+
+- (void)testSessionBoundary_IgnoredUnderAutomaticSessionTracking {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    id mockMParticleInstance = OCMClassMock([MParticle class]);
+    OCMStub([(MParticle *)mockMParticleInstance automaticSessionTracking]).andReturn(YES);
+    OCMStub([(MParticle *)mockMParticleInstance identity]).andReturn(nil);
+    id mockMParticleClass = OCMClassMock([MParticle class]);
+    OCMStub([mockMParticleClass sharedInstance]).andReturn(mockMParticleInstance);
+
+    [self.kitInstance start];
+
+    // Under automatic tracking a session ends after a BACKGROUND timeout — a statement about app
+    // lifecycle, not about who is using the device. Acting on it would fragment sessions for every
+    // existing partner.
+    OCMReject([mockRoktSDK clearSession]);
+    [self.kitInstance endSession];
+    [self.kitInstance beginSession];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockMParticleClass stopMocking];
+    [mockMParticleInstance stopMocking];
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testSessionBoundary_ResetsWhenHostDrivesSessions {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    id mockMParticleInstance = OCMClassMock([MParticle class]);
+    OCMStub([(MParticle *)mockMParticleInstance automaticSessionTracking]).andReturn(NO);
+    OCMStub([(MParticle *)mockMParticleInstance identity]).andReturn(nil);
+    id mockMParticleClass = OCMClassMock([MParticle class]);
+    OCMStub([mockMParticleClass sharedInstance]).andReturn(mockMParticleInstance);
+
+    [self.kitInstance start];
+
+    OCMExpect([mockRoktSDK clearSession]);
+    [self.kitInstance endSession];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockMParticleClass stopMocking];
+    [mockMParticleInstance stopMocking];
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testSessionBoundary_IgnoredBeforeKitStarts {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    id mockMParticleInstance = OCMClassMock([MParticle class]);
+    OCMStub([(MParticle *)mockMParticleInstance automaticSessionTracking]).andReturn(NO);
+    id mockMParticleClass = OCMClassMock([MParticle class]);
+    OCMStub([mockMParticleClass sharedInstance]).andReturn(mockMParticleInstance);
+
+    OCMReject([mockRoktSDK clearSession]);
+    [self.kitInstance endSession];
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockMParticleClass stopMocking];
+    [mockMParticleInstance stopMocking];
+    [mockRoktSDK stopMocking];
 }
 
 @end

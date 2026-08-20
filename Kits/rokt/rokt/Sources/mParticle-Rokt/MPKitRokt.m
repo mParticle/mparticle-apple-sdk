@@ -637,9 +637,11 @@ static NSString * const kMPRoktLastSeenIdentifiedKey = @"mParticle::rokt::lastSe
     and then forwards the identity completion unconditionally. So the comparison is made here,
     against the last MPID this kit acted on.
 
-    onModifyComplete is deliberately not implemented: modify() resolves through
-    onModifyRequestComplete with a response carrying no mpid and forwards the current user, so it
-    cannot change the MPID and would never pass the check below.
+    onModifyComplete is implemented for the identified flag alone. modify() resolves through
+    onModifyRequestComplete with a response carrying no mpid, so it can never change the MPID and
+    never reaches the reset below — but it IS how a host attaches an email or customer id to the
+    current user. Without it, an anonymous MPID that later acquires an identity stays recorded as
+    anonymous, and the next customer's arrival reads as anonymous churn and skips the reset.
 */
 - (MPKitExecStatus *)onIdentifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
     [self clearRoktSessionIfKnownUserChanged:user.userId isIdentified:[MPKitRokt isIdentifiedFilteredUser:user]];
@@ -652,6 +654,11 @@ static NSString * const kMPRoktLastSeenIdentifiedKey = @"mParticle::rokt::lastSe
 }
 
 - (MPKitExecStatus *)onLogoutComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
+    [self clearRoktSessionIfKnownUserChanged:user.userId isIdentified:[MPKitRokt isIdentifiedFilteredUser:user]];
+    return [self execStatus:MPKitReturnCodeSuccess];
+}
+
+- (MPKitExecStatus *)onModifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
     [self clearRoktSessionIfKnownUserChanged:user.userId isIdentified:[MPKitRokt isIdentifiedFilteredUser:user]];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
@@ -674,7 +681,22 @@ static NSString * const kMPRoktLastSeenIdentifiedKey = @"mParticle::rokt::lastSe
 }
 
 + (BOOL)isIdentifiedFilteredUser:(FilteredMParticleUser *)user {
-    return [MPKitRokt isIdentifiedFromIdentities:user.userIdentities isLoggedIn:user.isLoggedIn];
+    if ([MPKitRokt isIdentifiedFromIdentities:user.userIdentities isLoggedIn:user.isLoggedIn]) {
+        return YES;
+    }
+
+    // FilteredMParticleUser.userIdentities drops kit-filtered and data-plan-blocked identities, so
+    // it can only ever under-report: a NO here may just mean the partner filtered email/customer id
+    // off this kit, which would make every known user read as anonymous and stop the reset from
+    // ever firing. Re-check against the unfiltered current user — the same source `start` uses, so
+    // the two paths agree — but only when it is demonstrably the same user this callback is about,
+    // since kit forwarding is dispatched async and currentUser may already have moved on.
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    if (currentUser != nil && currentUser.userId != nil && [currentUser.userId isEqualToNumber:user.userId]) {
+        return [MPKitRokt isIdentifiedUser:currentUser];
+    }
+
+    return NO;
 }
 
 + (BOOL)isIdentifiedUser:(MParticleUser *)user {
@@ -697,15 +719,21 @@ static NSString * const kMPRoktLastSeenIdentifiedKey = @"mParticle::rokt::lastSe
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSNumber *lastSeenMpid = [defaults objectForKey:kMPRoktLastSeenMpidKey];
     BOOL lastSeenIdentified = [defaults boolForKey:kMPRoktLastSeenIdentifiedKey];
+    BOOL sameMpid = (lastSeenMpid != nil && [lastSeenMpid isEqualToNumber:mpid]);
+
+    // The flag answers "did a known person occupy this device", so within one MPID it only ever
+    // ratchets up. A user who identified and later had an identity removed still needs their
+    // departure to reset, and no single under-reporting read can downgrade an established YES.
     [defaults setObject:mpid forKey:kMPRoktLastSeenMpidKey];
-    [defaults setBool:isIdentified forKey:kMPRoktLastSeenIdentifiedKey];
+    [defaults setBool:(sameMpid ? (lastSeenIdentified || isIdentified) : isIdentified)
+               forKey:kMPRoktLastSeenIdentifiedKey];
 
     if (lastSeenMpid == nil) {
         [MPKitRokt MPLog:@"Rokt Kit recording first observed MPID; no session reset"];
         return;
     }
 
-    if ([lastSeenMpid isEqualToNumber:mpid]) {
+    if (sameMpid) {
         return;
     }
 
