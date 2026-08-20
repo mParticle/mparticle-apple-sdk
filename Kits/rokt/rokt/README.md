@@ -87,6 +87,34 @@ MParticle.sharedInstance().rokt.selectShoppableAds("ShopView",
 
 For the full event type reference, see [MIGRATING.md](../../MIGRATING.md).
 
+## Session management
+
+Rokt sessions are managed automatically. Placements shown to the same user share one session, and **the kit ends the Rokt session whenever the mParticle user changes**:
+
+| Identity transition | Rokt session |
+|---|---|
+| Anonymous user is identified (e.g. unknown on the payment page, known on the confirmation page) | **Kept** — same person, in-session state survives |
+| A different user identifies or logs in | **Ended** — the next placement starts a new session |
+| The current user logs out | **Ended** |
+
+No integration code is needed for this behaviour.
+
+### Self-service terminals (kiosks, shared devices)
+
+Where a queue of unrelated customers uses one device, the recommended pattern is to **log the user out (or identify the next customer) between transactions** — the kit resets the Rokt session at that boundary, so each customer's placements and events land on their own session.
+
+A manual reset is also available for explicit control:
+
+```swift
+MParticle.sharedInstance().rokt.clearSession()
+```
+
+Notes:
+
+- The new session begins on the **next** `selectPlacements` call; `clearSession` only ends the current one.
+- Calling `clearSession` with no active session is a no-op, and it is safe to combine with the automatic behaviour — both converge on the same idempotent reset.
+- Avoid enabling Rokt experience caching on shared terminals: a cached experience belongs to the customer it was fetched for.
+
 ## Platform Support
 
 | Platform | Minimum Version |
