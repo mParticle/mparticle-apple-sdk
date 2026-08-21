@@ -214,7 +214,12 @@ static const NSInteger kMPRoktKitId = 181;
     MPILogDebug(@"MPRokt setSession called - sessionId: %@, sessionToken: %@",
                 session.sessionId.length ? @"present" : @"nil",
                 session.sessionToken.length ? @"present" : @"nil");
-    dispatch_async(dispatch_get_main_queue(), ^{
+    // Dispatched on the message queue, not the main queue, so it stays ordered with
+    // selectPlacements. Both forwards ultimately hop to main inside the kit container, so
+    // dispatching from two different queues would leave the order down to which one drains
+    // first — and a partner calling setSession then selectPlacements would sometimes run
+    // the placement before the handed-off token was seeded.
+    dispatch_async([MParticle messageQueue], ^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:session];
 
@@ -274,7 +279,8 @@ static const NSInteger kMPRoktKitId = 181;
 - (void)setSessionId:(NSString * _Nonnull)sessionId {
     [self logRoktApiDiagnostic:@"ROKT_SET_SESSION_ID"];
     MPILogDebug(@"MPRokt setSessionId called - sessionId: %@", sessionId ? @"present" : @"nil");
-    dispatch_async(dispatch_get_main_queue(), ^{
+    // Same queue as setSession:/selectPlacements so id-only handoff stays ordered too.
+    dispatch_async([MParticle messageQueue], ^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:sessionId];
 

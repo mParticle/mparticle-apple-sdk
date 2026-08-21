@@ -133,16 +133,14 @@ static NSString *const kRoktHybridHTMLResource = @"rokt-hybrid";
           session.sessionToken.length > 0 ? @"present" : @"nil");
 
     [[MParticle sharedInstance].rokt setSession:session];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary<NSString *, NSString *> *attributes = @{
-            @"email": @"j.smit@example.com",
-            @"firstname": @"Jenny",
-            @"lastname": @"Smith",
-            @"sandbox": @"true",
-            @"mobile": @"(555)867-5309"
-        };
-        [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout" attributes:attributes];
-    });
+    NSDictionary<NSString *, NSString *> *attributes = @{
+        @"email": @"j.smit@example.com",
+        @"firstname": @"Jenny",
+        @"lastname": @"Smith",
+        @"sandbox": @"true",
+        @"mobile": @"(555)867-5309"
+    };
+    [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout" attributes:attributes];
 }
 
 - (nullable NSString *)stringValue:(id)value {
