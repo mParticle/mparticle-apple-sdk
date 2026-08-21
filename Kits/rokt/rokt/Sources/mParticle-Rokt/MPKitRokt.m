@@ -565,7 +565,7 @@ static __weak MPKitRokt *roktKit = nil;
 /// Set the session to use for the next execute call.
 /// Matches Web launcher options: id + token → `+[Rokt setSession:]`; id only → `setSessionId`.
 /// Token without a non-empty id is ignored.
-/// Requires a Rokt iOS SDK that exposes `+[Rokt setSession:]` (Brandon `feat/Set-Session` and successors).
+/// Requires Rokt iOS SDK 5.4.0+ (`+[Rokt setSession:]`).
 ///
 /// @param session The mParticle session handoff value (id + optional JWT + optional expiry).
 - (MPKitExecStatus *)setSession:(MPRoktSession *)session {
