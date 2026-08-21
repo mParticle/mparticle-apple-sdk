@@ -468,7 +468,14 @@ static NSNumber * const kTestRoktKitId = @181;
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
-    XCTAssertNoThrow([self.rokt selectPlacements:@"testView" attributes:@{@"f.name": @"Brandon"}]);
+    NSString *identifier = @"testView";
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    [self mp_expectSelectPlacementsForwardWithIdentifier:identifier unmappedAttributes:attributes];
+
+    XCTAssertNoThrow([self.rokt selectPlacements:identifier attributes:attributes]);
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
 }
 
 - (void)testGetRoktPlacementAttributesMapping {
