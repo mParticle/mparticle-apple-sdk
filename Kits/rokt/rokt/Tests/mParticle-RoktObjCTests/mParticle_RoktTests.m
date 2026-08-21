@@ -574,6 +574,105 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(passedAttributes[@"device_application_stamp"], @"Test DAS");
 }
 
+- (void)testAddIdentityAttributesIncludesAlias {
+    NSMutableDictionary<NSString *, NSString *> *passedAttributes = [[NSMutableDictionary alloc] init];
+    NSDictionary<NSNumber *, NSString *> *testIdentities = @{@(MPIdentityCustomerId): @"testCustomerID",
+                                                             @(MPIdentityAlias): @"testCustomerID",
+                                                             @(MPIdentityEmail): @"testEmail@gmail.com"};
+
+    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] init];
+    id mockfilteredUser = OCMPartialMock(filteredUser);
+    [[[mockfilteredUser stub] andReturn:testIdentities] userIdentities];
+    id mockMPKitRoktClass = OCMClassMock([MPKitRokt class]);
+    [[[mockMPKitRoktClass stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
+
+    XCTAssertNoThrow([MPKitRokt addIdentityAttributes:passedAttributes filteredUser:filteredUser]);
+
+    XCTAssertEqualObjects(passedAttributes[@"alias"], @"testCustomerID");
+    XCTAssertEqualObjects(passedAttributes[@"customerid"], @"testCustomerID");
+    XCTAssertEqualObjects(passedAttributes[@"email"], @"testEmail@gmail.com");
+
+    [mockMPKitRoktClass stopMocking];
+    [mockfilteredUser stopMocking];
+}
+
+- (void)testAddIdentityAttributesSkipsUnmappedIdentityTypeWithoutThrowing {
+    NSMutableDictionary<NSString *, NSString *> *passedAttributes = [[NSMutableDictionary alloc] init];
+    NSDictionary<NSNumber *, NSString *> *testIdentities = @{@(MPIdentityEmail): @"testEmail@gmail.com",
+                                                             @(9999): @"unmappedIdentityValue"};
+
+    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] init];
+    id mockfilteredUser = OCMPartialMock(filteredUser);
+    [[[mockfilteredUser stub] andReturn:testIdentities] userIdentities];
+    id mockMPKitRoktClass = OCMClassMock([MPKitRokt class]);
+    [[[mockMPKitRoktClass stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
+
+    XCTAssertNoThrow([MPKitRokt addIdentityAttributes:passedAttributes filteredUser:filteredUser]);
+
+    XCTAssertEqualObjects(passedAttributes[@"email"], @"testEmail@gmail.com");
+    XCTAssertEqual([passedAttributes.allValues containsObject:@"unmappedIdentityValue"], NO);
+
+    [mockMPKitRoktClass stopMocking];
+    [mockfilteredUser stopMocking];
+}
+
+- (void)testSelectPlacementsWithAliasIdentityStillForwardsToRoktAndLogsEvent {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    id mockMParticleInstance = OCMClassMock([MParticle class]);
+    id mockMParticleClass = OCMClassMock([MParticle class]);
+    OCMStub([mockMParticleClass sharedInstance]).andReturn(mockMParticleInstance);
+    OCMStub([(MParticle *)mockMParticleInstance environment]).andReturn(MPEnvironmentDevelopment);
+
+    NSString *identifier = @"TestView";
+    NSDictionary *attributes = @{@"email": @"test@example.com"};
+
+    FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
+    id mockUser = OCMPartialMock(user);
+    OCMStub([mockUser userId]).andReturn(@(123456));
+    NSDictionary<NSNumber *, NSString *> *aliasedIdentities = @{@(MPIdentityCustomerId): @"a-customer-uuid",
+                                                                @(MPIdentityAlias): @"a-customer-uuid",
+                                                                @(MPIdentityEmail): @"test@example.com"};
+    OCMStub([mockUser userIdentities]).andReturn(aliasedIdentities);
+    OCMStub([mockUser userAttributes]).andReturn(@{});
+
+    OCMExpect([(MParticle *)mockMParticleInstance logEvent:[OCMArg checkWithBlock:^BOOL(MPEvent *event) {
+        XCTAssertEqualObjects(event.name, @"selectPlacements");
+        XCTAssertEqualObjects(event.customAttributes[@"alias"], @"a-customer-uuid");
+        XCTAssertEqualObjects(event.customAttributes[@"customerid"], @"a-customer-uuid");
+        return YES;
+    }]]);
+
+    OCMExpect([mockRoktSDK selectPlacementsWithIdentifier:identifier
+                                               attributes:[OCMArg checkWithBlock:^BOOL(NSDictionary *finalAttributes) {
+        XCTAssertEqualObjects(finalAttributes[@"alias"], @"a-customer-uuid");
+        return YES;
+    }]
+                                               placements:OCMOCK_ANY
+                                                   config:OCMOCK_ANY
+                                         placementOptions:OCMOCK_ANY
+                                                  onEvent:OCMOCK_ANY]);
+
+    MPKitExecStatus *status = nil;
+    XCTAssertNoThrow(status = [self.kitInstance selectPlacementsWithIdentifier:identifier
+                                                                   attributes:attributes
+                                                                embeddedViews:nil
+                                                                       config:nil
+                                                                      onEvent:nil
+                                                                 filteredUser:user
+                                                                      options:nil]);
+
+    OCMVerifyAll(mockMParticleInstance);
+    OCMVerifyAll(mockRoktSDK);
+
+    XCTAssertNotNil(status);
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+
+    [mockRoktSDK stopMocking];
+    [mockMParticleClass stopMocking];
+    [mockMParticleInstance stopMocking];
+    [mockUser stopMocking];
+}
+
 - (void)runSetWrapperSdkTestWithProvidedMPWrapperType:(MPWrapperSdk)providedMPWrapperType expectedRoktFrameworkType:(RoktFrameworkType)expectedRoktFrameworkType {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
