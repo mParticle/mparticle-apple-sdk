@@ -40,6 +40,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
+- (NSDictionary * _Nullable)getRoktKitConfiguration;
 - (NSNumber *)getRoktHashedEmailUserIdentityType;
 - (void)confirmUser:(NSDictionary<NSString *, NSString *> *)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
 - (NSMutableDictionary<NSString *, NSString *> *)mapPlacementAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
@@ -313,34 +314,39 @@ static NSNumber * const kTestRoktKitId = @181;
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)testSelectPlacementsSimpleWithNilMapping {
-    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
+- (void)mp_stubSharedInstanceWithOriginalConfig:(NSArray *)kitConfig kitsInitialized:(BOOL)kitsInitialized {
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
+    [[[self.mockContainer stub] andReturnValue:OCMOCK_VALUE(kitsInitialized)] kitsInitialized];
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-
-    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
-    OCMReject([self.mockContainer forwardSDKCall:roktSelector
-                                      event:[OCMArg any]
-                                 parameters:[OCMArg any]
-                                messageType:MPMessageTypeEvent
-                                   userInfo:[OCMArg any]]);
-    
-    // Set up test parameters
-    NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"f.name": @"Brandon"};
-    
-    // Execute method
-    [self.rokt selectPlacements:identifier
-                     attributes:attributes];
-
-    // Verify
-    OCMVerifyAll((id)self.mockContainer);
 }
 
-- (void)testSelectPlacementsWithNilMappingInvokesOnEventWithPlacementFailure {
+- (void)mp_expectSelectPlacementsForwardWithIdentifier:(NSString *)identifier
+                                    unmappedAttributes:(NSDictionary *)attributes {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"forwarded to kit container"];
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], identifier);
+        NSDictionary *forwarded = params[1];
+        for (NSString *key in attributes) {
+            XCTAssertEqualObjects(forwarded[key], attributes[key], @"unmapped key %@ should be preserved", key);
+        }
+        XCTAssertNotNil(forwarded[@"sandbox"]);
+        XCTAssertNotNil(params[5]);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+}
+
+- (void)testSelectPlacementsSimpleWithNilMappingForwardsUnmappedAttributes {
     [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
@@ -349,21 +355,109 @@ static NSNumber * const kTestRoktKitId = @181;
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
     NSString *identifier = @"testView";
-    XCTestExpectation *expectation = [self expectationWithDescription:@"onEvent called"];
-    __block RoktEvent *receivedEvent = nil;
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    [self mp_expectSelectPlacementsForwardWithIdentifier:identifier unmappedAttributes:attributes];
+
+    [self.rokt selectPlacements:identifier attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testGetRoktKitConfigurationReturnsNilWhenOriginalConfigEmpty {
+    [self mp_stubSharedInstanceWithOriginalConfig:@[] kitsInitialized:NO];
+    XCTAssertNil([self.rokt getRoktKitConfiguration]);
+    XCTAssertNil([self.rokt getRoktPlacementAttributesMapping]);
+}
+
+- (void)testGetRoktKitConfigurationReturnsNilWhenOriginalConfigLacksKit181 {
+    NSArray *kitConfig = @[@{@"id": @80, kMPRemoteConfigKitConfigurationKey: @{}}];
+    [self mp_stubSharedInstanceWithOriginalConfig:kitConfig kitsInitialized:YES];
+    XCTAssertNil([self.rokt getRoktKitConfiguration]);
+}
+
+- (void)testSelectPlacementsForwardsWhenOriginalConfigEmptyBeforeKitsInitialized {
+    [self mp_stubSharedInstanceWithOriginalConfig:@[] kitsInitialized:NO];
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    [self mp_expectSelectPlacementsForwardWithIdentifier:@"checkout" unmappedAttributes:attributes];
+
+    [self.rokt selectPlacements:@"checkout" attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectPlacementsForwardsWhenKitsInitializedFromCacheButOriginalConfigEmpty {
+    [self mp_stubSharedInstanceWithOriginalConfig:@[] kitsInitialized:YES];
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    [self mp_expectSelectPlacementsForwardWithIdentifier:@"checkout" unmappedAttributes:attributes];
+
+    [self.rokt selectPlacements:@"checkout" attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectPlacementsForwardsWhenOriginalConfigLacksKit181 {
+    NSArray *kitConfig = @[@{@"id": @80, kMPRemoteConfigKitConfigurationKey: @{}}];
+    [self mp_stubSharedInstanceWithOriginalConfig:kitConfig kitsInitialized:YES];
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    [self mp_expectSelectPlacementsForwardWithIdentifier:@"checkout" unmappedAttributes:attributes];
+
+    [self.rokt selectPlacements:@"checkout" attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectPlacementsForwardsWhenKit181IsInOriginalConfigEvenWithoutAttributeMap {
+    NSArray *kitConfig = @[@{
+        @"id": kTestRoktKitId,
+        kMPRemoteConfigKitConfigurationKey: @{}
+    }];
+    [self mp_stubSharedInstanceWithOriginalConfig:kitConfig kitsInitialized:YES];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"forwarded to kit container"];
+    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg isNotNil]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt selectPlacements:@"checkout" attributes:@{@"f.name": @"Brandon"}];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectPlacementsWithNilMappingDoesNotInvokeOnEventWithPlacementFailure {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    NSString *identifier = @"testView";
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    [self mp_expectSelectPlacementsForwardWithIdentifier:identifier unmappedAttributes:attributes];
+
+    XCTestExpectation *noFailure = [self expectationWithDescription:@"onEvent must not fire from core"];
+    noFailure.inverted = YES;
 
     [self.rokt selectPlacements:identifier
-                     attributes:@{@"f.name": @"Brandon"}
+                     attributes:attributes
                   embeddedViews:nil
                          config:nil
                         onEvent:^(RoktEvent * _Nonnull event) {
-        receivedEvent = event;
-        [expectation fulfill];
+        [noFailure fulfill];
     }];
 
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
-    XCTAssertTrue([receivedEvent isKindOfClass:[RoktPlacementFailure class]]);
-    XCTAssertEqualObjects(((RoktPlacementFailure *)receivedEvent).identifier, identifier);
+    OCMVerifyAll(self.mockContainer);
 }
 
 - (void)testSelectPlacementsWithNilMappingAndNilOnEventDoesNotCrash {
@@ -374,7 +468,14 @@ static NSNumber * const kTestRoktKitId = @181;
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
-    XCTAssertNoThrow([self.rokt selectPlacements:@"testView" attributes:@{@"f.name": @"Brandon"}]);
+    NSString *identifier = @"testView";
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    [self mp_expectSelectPlacementsForwardWithIdentifier:identifier unmappedAttributes:attributes];
+
+    XCTAssertNoThrow([self.rokt selectPlacements:identifier attributes:attributes]);
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
 }
 
 - (void)testGetRoktPlacementAttributesMapping {
@@ -1044,27 +1145,7 @@ static NSNumber * const kTestRoktKitId = @181;
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)testSelectShoppableAdsWithNilMappingDoesNotForward {
-    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-
-    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
-    OCMReject([self.mockContainer forwardSDKCall:roktSelector
-                                           event:[OCMArg any]
-                                      parameters:[OCMArg any]
-                                     messageType:MPMessageTypeEvent
-                                        userInfo:[OCMArg any]]);
-
-    [self.rokt selectShoppableAds:@"shoppableView" attributes:@{@"email": @"a@b.com"}];
-
-    OCMVerifyAll((id)self.mockContainer);
-}
-
-- (void)testSelectShoppableAdsWithNilMappingInvokesOnEventWithPlacementFailure {
+- (void)testSelectShoppableAdsWithNilMappingForwardsUnmappedAttributes {
     [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
@@ -1073,20 +1154,60 @@ static NSNumber * const kTestRoktKitId = @181;
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
 
     NSString *identifier = @"shoppableView";
-    XCTestExpectation *expectation = [self expectationWithDescription:@"onEvent called"];
-    __block RoktEvent *receivedEvent = nil;
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    XCTestExpectation *expectation = [self expectationWithDescription:@"forwarded shoppable ads"];
+    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], identifier);
+        NSDictionary *forwarded = params[1];
+        XCTAssertEqualObjects(forwarded[@"f.name"], @"Brandon");
+        XCTAssertNotNil(forwarded[@"sandbox"]);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt selectShoppableAds:identifier attributes:attributes];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSelectShoppableAdsWithNilMappingDoesNotInvokeOnEventWithPlacementFailure {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    NSString *identifier = @"shoppableView";
+    XCTestExpectation *forwarded = [self expectationWithDescription:@"forwarded shoppable ads"];
+    SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg isNotNil]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [forwarded fulfill];
+    });
+
+    XCTestExpectation *noFailure = [self expectationWithDescription:@"onEvent must not fire from core"];
+    noFailure.inverted = YES;
 
     [self.rokt selectShoppableAds:identifier
                        attributes:@{@"f.name": @"Brandon"}
                            config:nil
                           onEvent:^(RoktEvent * _Nonnull event) {
-        receivedEvent = event;
-        [expectation fulfill];
+        [noFailure fulfill];
     }];
 
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
-    XCTAssertTrue([receivedEvent isKindOfClass:[RoktPlacementFailure class]]);
-    XCTAssertEqualObjects(((RoktPlacementFailure *)receivedEvent).identifier, identifier);
+    OCMVerifyAll(self.mockContainer);
 }
 
 - (void)testSelectShoppableAdsInvokesConfirmUser {
@@ -1109,6 +1230,52 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
     OCMVerifyAll(self.mockContainer);
+}
+
+#pragma mark - confirmUser nil-user path
+
+- (void)testIdentityCurrentUserGetterNeverReturnsNil {
+    MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+    XCTAssertNotNil(user, @"iOS currentUser synthesizes an MParticleUser from persisted MPID; a nil-user Android-style guard would not fire after identity is accessed");
+}
+
+- (void)testConfirmUserNilUserWithoutEmailCompletesImmediately {
+    __block BOOL completed = NO;
+    [self.rokt confirmUser:@{@"f.name": @"Brandon"} user:nil completion:^(MParticleUser *resolved) {
+        completed = YES;
+        XCTAssertNil(resolved);
+    }];
+    XCTAssertTrue(completed);
+}
+
+- (void)testConfirmUserNilUserWithEmailCallsIdentifyAndBlocksUntilCompletion {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    __block BOOL identifyCalled = NO;
+    __block BOOL identifyCompletionInvokedBySDK = NO;
+    [[[self.identityMock stub] andDo:^(NSInvocation *invocation) {
+        identifyCalled = YES;
+        void (^identityCompletion)(MPIdentityApiResult *_Nullable, NSError *_Nullable);
+        [invocation getArgument:&identityCompletion atIndex:3];
+        identifyCompletionInvokedBySDK = identityCompletion != nil;
+        // Intentionally do not invoke identityCompletion — hang, matching a stuck identify.
+    }] identify:[OCMArg any] completion:[OCMArg any]];
+
+    XCTestExpectation *didNotComplete = [self expectationWithDescription:@"confirmUser must not complete while identify hangs"];
+    didNotComplete.inverted = YES;
+
+    [self.rokt confirmUser:@{@"email": @"a@b.com"} user:nil completion:^(MParticleUser *resolved) {
+        (void)resolved;
+        [didNotComplete fulfill];
+    }];
+
+    [self waitForExpectationsWithTimeout:0.3 handler:nil];
+    XCTAssertTrue(identifyCalled);
+    XCTAssertTrue(identifyCompletionInvokedBySDK);
 }
 
 #pragma mark - mapPlacementAttributes

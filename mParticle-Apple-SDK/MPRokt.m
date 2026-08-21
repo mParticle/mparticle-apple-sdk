@@ -83,40 +83,33 @@ static const NSInteger kMPRoktKitId = 181;
         MPILogDebug(@"MPRokt confirmUser completed - resolvedUser: %@, userId: %@",
                     resolvedUser ? @"present" : @"nil", resolvedUser.userId);
         
-        NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
+        NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping] ?: @[];
 
         MPILogVerbose(@"MParticle.Rokt selectPlacements called with attributes: %@", attributes);
 
-        // If attributeMap is nil the kit hasn't been initialized
-        if (attributeMap) {
-            NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
-                                                                    attributeMap:attributeMap
-                                                                         forUser:resolvedUser];
+        NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
+                                                                attributeMap:attributeMap
+                                                                     forUser:resolvedUser];
 
-            dispatch_async([MParticle messageQueue], ^{
-                MPILogDebug(@"MPRokt forwarding to kit - identifier: %@, mappedAttributes count: %lu",
-                            identifier, (unsigned long)mappedAttributes.count);
-                // Forwarding call to kits
-                MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-                [queueParameters addParameter:identifier];
-                [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
-                [queueParameters addParameter:embeddedViews];
-                [queueParameters addParameter:config];
-                [queueParameters addParameter:onEvent];
-                [queueParameters addParameter:placementOptions];
-                
-                SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
-                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                          event:nil
-                                                                     parameters:queueParameters
-                                                                    messageType:MPMessageTypeEvent
-                                                                       userInfo:nil
-                ];
-            });
-        } else {
-            MPILogWarning(@"MPRokt selectPlacements not performed - Rokt Kit not configured. Check with your Rokt representative to ensure the kit is enabled.");
-            [self notifyPlacementFailure:identifier onEvent:onEvent];
-        }
+        dispatch_async([MParticle messageQueue], ^{
+            MPILogDebug(@"MPRokt forwarding to kit - identifier: %@, mappedAttributes count: %lu",
+                        identifier, (unsigned long)mappedAttributes.count);
+            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+            [queueParameters addParameter:identifier];
+            [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
+            [queueParameters addParameter:embeddedViews];
+            [queueParameters addParameter:config];
+            [queueParameters addParameter:onEvent];
+            [queueParameters addParameter:placementOptions];
+            
+            SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                      event:nil
+                                                                 parameters:queueParameters
+                                                                messageType:MPMessageTypeEvent
+                                                                   userInfo:nil
+            ];
+        });
     }];
 }
 
@@ -354,38 +347,31 @@ static const NSInteger kMPRoktKitId = 181;
         MPILogDebug(@"MPRokt confirmUser completed - resolvedUser: %@, userId: %@",
                     resolvedUser ? @"present" : @"nil", resolvedUser.userId);
         
-        NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
+        NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping] ?: @[];
 
         MPILogVerbose(@"MParticle.Rokt selectShoppableAds called with attributes: %@", attributes);
 
-        // If attributeMap is nil the kit hasn't been initialized
-        if (attributeMap) {
-            NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
-                                                                    attributeMap:attributeMap
-                                                                         forUser:resolvedUser];
+        NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
+                                                                attributeMap:attributeMap
+                                                                     forUser:resolvedUser];
 
-            dispatch_async([MParticle messageQueue], ^{
-                MPILogDebug(@"MPRokt forwarding selectShoppableAds to kit - identifier: %@, mappedAttributes count: %lu",
-                            identifier, (unsigned long)mappedAttributes.count);
-                // Forwarding call to kits
-                MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-                [queueParameters addParameter:identifier];
-                [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
-                [queueParameters addParameter:config];
-                [queueParameters addParameter:onEvent];
-                
-                SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
-                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                          event:nil
-                                                                     parameters:queueParameters
-                                                                    messageType:MPMessageTypeEvent
-                                                                       userInfo:nil
-                ];
-            });
-        } else {
-            MPILogWarning(@"MPRokt selectShoppableAds not performed - Rokt Kit not configured. Check with your Rokt representative to ensure the kit is enabled.");
-            [self notifyPlacementFailure:identifier onEvent:onEvent];
-        }
+        dispatch_async([MParticle messageQueue], ^{
+            MPILogDebug(@"MPRokt forwarding selectShoppableAds to kit - identifier: %@, mappedAttributes count: %lu",
+                        identifier, (unsigned long)mappedAttributes.count);
+            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+            [queueParameters addParameter:identifier];
+            [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
+            [queueParameters addParameter:config];
+            [queueParameters addParameter:onEvent];
+            
+            SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                      event:nil
+                                                                 parameters:queueParameters
+                                                                messageType:MPMessageTypeEvent
+                                                                   userInfo:nil
+            ];
+        });
     }];
 }
 
@@ -432,22 +418,6 @@ static const NSInteger kMPRoktKitId = 181;
 }
 
 #pragma mark - Private Helper Methods
-
-/// Delivers a \c RoktPlacementFailure to the caller so a placement request that cannot be served never
-/// completes silently. Dispatched to the main queue because callers drive UI from this handler.
-/// - Parameters:
-///   - identifier: The placement identifier the caller requested
-///   - onEvent: The caller's event handler; nothing is delivered when it is nil
-- (void)notifyPlacementFailure:(NSString * _Nullable)identifier
-                       onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
-    if (!onEvent) {
-        return;
-    }
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        onEvent([[RoktPlacementFailure alloc] initWithIdentifier:identifier]);
-    });
-}
 
 /// Applies dashboard placement attribute key mapping, then sets each non-sandbox key on the user.
 /// @return Mutable dictionary after remapping (empty when \p attributes is nil).
