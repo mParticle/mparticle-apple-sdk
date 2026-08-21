@@ -24,6 +24,34 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Report non-sensitive mParticle public API usage diagnostics when the Rokt kit is active.
 
+## [9.3.6] - 2026-08-21
+
+### Core
+
+#### Added
+
+- Add MPRokt clearSession passthrough ([#818](https://github.com/mParticle/mparticle-apple-sdk/pull/818))
+
+#### Fixed
+
+- Mapping should not gate forwardSDKCall ([#822](https://github.com/mParticle/mparticle-apple-sdk/pull/822))
+
+### Kits
+
+#### Rokt
+
+##### Added
+
+- Forward MPRokt.clearSession to the Rokt SDK ([#819](https://github.com/mParticle/mparticle-apple-sdk/pull/819))
+
+##### Fixed
+
+- Map the alias user identity so placements are not dropped ([#823](https://github.com/mParticle/mparticle-apple-sdk/pull/823))
+
+##### Changed
+
+- Session management guidance for the kit ([#821](https://github.com/mParticle/mparticle-apple-sdk/pull/821))
+
 ## [9.3.5] - 2026-08-14
 
 ### Core
@@ -2490,7 +2518,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.5...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.6...HEAD
+[9.3.6]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.5...v9.3.6
 [9.3.5]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.4...v9.3.5
 [9.3.4]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.3...v9.3.4
 [9.3.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.2...v9.3.3
