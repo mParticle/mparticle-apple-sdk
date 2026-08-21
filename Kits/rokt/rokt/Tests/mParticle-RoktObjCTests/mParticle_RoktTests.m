@@ -35,6 +35,10 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 + (NSNumber *)getRoktHashedEmailUserIdentityType;
 
++ (NSString *)stringForIdentityType:(MPIdentity)identityType;
+
++ (NSNumber *)identityTypeForString:(NSString *)identityString;
+
 + (NSDictionary<NSString *, NSString *> *)transformValuesToString:(NSDictionary<NSString *, id> * _Nullable)originalDictionary;
 
 + (void)logSelectPlacementEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes;
@@ -320,6 +324,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     NSDictionary<NSNumber *, NSString *> *testIdentities = @{@(MPIdentityCustomerId): @"testCustomerID",
                                                              @(MPIdentityEmail): @"testEmail@gmail.com",
                                                              @(MPIdentityFacebook): @"testFacebook",
+                                                             @(MPIdentityAlias): @"testAlias",
                                                              @(MPIdentityFacebookCustomAudienceId): @"testCustomAudienceID",
                                                              @(MPIdentityGoogle): @"testGoogle",
                                                              @(MPIdentityMicrosoft): @"testMicrosoft",
@@ -354,6 +359,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(passedAttributes[@"customerid"], @"testCustomerID");
     XCTAssertEqualObjects(passedAttributes[@"email"], @"testEmail@gmail.com");
     XCTAssertEqualObjects(passedAttributes[@"facebook"], @"testFacebook");
+    XCTAssertEqualObjects(passedAttributes[@"alias"], @"testAlias");
     XCTAssertEqualObjects(passedAttributes[@"facebookcustomaudienceid"], @"testCustomAudienceID");
     XCTAssertEqualObjects(passedAttributes[@"google"], @"testGoogle");
     XCTAssertEqualObjects(passedAttributes[@"microsoft"], @"testMicrosoft");
@@ -384,6 +390,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     NSDictionary<NSNumber *, NSString *> *testIdentities = @{@(MPIdentityCustomerId): @"testCustomerID",
                                                              @(MPIdentityEmail): @"testEmail@gmail.com",
                                                              @(MPIdentityFacebook): @"testFacebook",
+                                                             @(MPIdentityAlias): @"testAlias",
                                                              @(MPIdentityFacebookCustomAudienceId): @"testCustomAudienceID",
                                                              @(MPIdentityGoogle): @"testGoogle",
                                                              @(MPIdentityMicrosoft): @"testMicrosoft",
@@ -418,6 +425,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(passedAttributes[@"customerid"], @"testCustomerID");
     XCTAssertEqualObjects(passedAttributes[@"email"], @"testEmail@gmail.com");
     XCTAssertEqualObjects(passedAttributes[@"facebook"], @"testFacebook");
+    XCTAssertEqualObjects(passedAttributes[@"alias"], @"testAlias");
     XCTAssertEqualObjects(passedAttributes[@"facebookcustomaudienceid"], @"testCustomAudienceID");
     XCTAssertEqualObjects(passedAttributes[@"google"], @"testGoogle");
     XCTAssertEqualObjects(passedAttributes[@"microsoft"], @"testMicrosoft");
@@ -448,6 +456,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     NSDictionary<NSNumber *, NSString *> *testIdentities = @{@(MPIdentityCustomerId): @"testCustomerID",
                                                              @(MPIdentityEmail): @"testEmail@gmail.com",
                                                              @(MPIdentityFacebook): @"testFacebook",
+                                                             @(MPIdentityAlias): @"testAlias",
                                                              @(MPIdentityFacebookCustomAudienceId): @"testCustomAudienceID",
                                                              @(MPIdentityGoogle): @"testGoogle",
                                                              @(MPIdentityMicrosoft): @"testMicrosoft",
@@ -483,6 +492,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(passedAttributes[@"customerid"], @"testCustomerID");
     XCTAssertEqualObjects(passedAttributes[@"email"], @"testEmail@gmail.com");
     XCTAssertEqualObjects(passedAttributes[@"facebook"], @"testFacebook");
+    XCTAssertEqualObjects(passedAttributes[@"alias"], @"testAlias");
     XCTAssertEqualObjects(passedAttributes[@"facebookcustomaudienceid"], @"testCustomAudienceID");
     XCTAssertEqualObjects(passedAttributes[@"google"], @"testGoogle");
     XCTAssertEqualObjects(passedAttributes[@"microsoft"], @"testMicrosoft");
@@ -514,6 +524,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     NSDictionary<NSNumber *, NSString *> *testIdentities = @{@(MPIdentityCustomerId): @"testCustomerID",
                                                              @(MPIdentityEmail): @"testEmail@gmail.com",
                                                              @(MPIdentityFacebook): @"testFacebook",
+                                                             @(MPIdentityAlias): @"testAlias",
                                                              @(MPIdentityFacebookCustomAudienceId): @"testCustomAudienceID",
                                                              @(MPIdentityGoogle): @"testGoogle",
                                                              @(MPIdentityMicrosoft): @"testMicrosoft",
@@ -549,6 +560,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(passedAttributes[@"customerid"], @"testCustomerID");
     XCTAssertEqualObjects(passedAttributes[@"email"], @"testEmail@gmail.com");
     XCTAssertEqualObjects(passedAttributes[@"facebook"], @"testFacebook");
+    XCTAssertEqualObjects(passedAttributes[@"alias"], @"testAlias");
     XCTAssertEqualObjects(passedAttributes[@"facebookcustomaudienceid"], @"testCustomAudienceID");
     XCTAssertEqualObjects(passedAttributes[@"google"], @"testGoogle");
     XCTAssertEqualObjects(passedAttributes[@"microsoft"], @"testMicrosoft");
@@ -610,7 +622,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertNoThrow([MPKitRokt addIdentityAttributes:passedAttributes filteredUser:filteredUser]);
 
     XCTAssertEqualObjects(passedAttributes[@"email"], @"testEmail@gmail.com");
-    XCTAssertEqual([passedAttributes.allValues containsObject:@"unmappedIdentityValue"], NO);
+    XCTAssertFalse([passedAttributes.allValues containsObject:@"unmappedIdentityValue"]);
 
     [mockMPKitRoktClass stopMocking];
     [mockfilteredUser stopMocking];
@@ -671,6 +683,16 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     [mockMParticleClass stopMocking];
     [mockMParticleInstance stopMocking];
     [mockUser stopMocking];
+}
+
+- (void)testAliasIdentityTypeRoundTripsThroughBothMaps {
+    id mockMPKitRoktClass = OCMClassMock([MPKitRokt class]);
+    [[[mockMPKitRoktClass stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
+
+    XCTAssertEqualObjects([MPKitRokt stringForIdentityType:MPIdentityAlias], @"alias");
+    XCTAssertEqualObjects([MPKitRokt identityTypeForString:@"alias"], @(MPIdentityAlias));
+
+    [mockMPKitRoktClass stopMocking];
 }
 
 - (void)runSetWrapperSdkTestWithProvidedMPWrapperType:(MPWrapperSdk)providedMPWrapperType expectedRoktFrameworkType:(RoktFrameworkType)expectedRoktFrameworkType {
