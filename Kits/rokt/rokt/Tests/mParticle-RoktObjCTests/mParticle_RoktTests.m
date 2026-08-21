@@ -923,6 +923,43 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     [mockRoktSDK stopMocking];
 }
 
+- (void)testClearSessionForwardsToRoktSDK {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    OCMExpect([mockRoktSDK clearSession]);
+
+    // Invoked dynamically on purpose. Declaring -clearSession on MPKitRokt here would put a
+    // second `clearSession` with a different return type in this translation unit, alongside
+    // Rokt's +clearSession, and sending it to OCMock's id receiver above then fails to compile
+    // with "multiple methods named 'clearSession' ... mismatched result". A selector carries no
+    // return type, so this stays unambiguous.
+    MPKitExecStatus *status = [self.kitInstance performSelector:@selector(clearSession)];
+
+    XCTAssertNotNil(status);
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqualObjects(status.integrationId, @181);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testClearSessionIsNotTriggeredByIdentityOrSessionCallbacks {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+
+    // The kit resets ONLY when the host names the boundary via MPRokt.clearSession. Inferring it
+    // from identity or session callbacks would change session behaviour for every partner on this
+    // kit, so those selectors are deliberately not implemented — mParticle skips what a kit does
+    // not respond to.
+    XCTAssertFalse([self.kitInstance respondsToSelector:@selector(onIdentifyComplete:request:)]);
+    XCTAssertFalse([self.kitInstance respondsToSelector:@selector(onLoginComplete:request:)]);
+    XCTAssertFalse([self.kitInstance respondsToSelector:@selector(onLogoutComplete:request:)]);
+    XCTAssertFalse([self.kitInstance respondsToSelector:@selector(onModifyComplete:request:)]);
+    XCTAssertFalse([self.kitInstance respondsToSelector:@selector(beginSession)]);
+    XCTAssertFalse([self.kitInstance respondsToSelector:@selector(endSession)]);
+
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
 - (void)testSetSessionIdWithEmptyString {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
