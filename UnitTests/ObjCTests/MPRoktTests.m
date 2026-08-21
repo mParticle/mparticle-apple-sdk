@@ -55,6 +55,7 @@ static NSNumber * const kTestRoktKitId = @181;
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
++ (dispatch_queue_t)messageQueue;
 @end
 
 @interface MPIdentityApi ()
@@ -91,6 +92,26 @@ static NSNumber * const kTestRoktKitId = @181;
     self.identityMock = nil;
     self.mockApiResult = nil;
     [super tearDown];
+}
+
+/// clearSession is fire-and-forget on [MParticle messageQueue], so a test can return before its
+/// dispatched block has run. Any test that calls it must drain before returning, so the block stays
+/// inside the lifetime of the mocks it touches. Without this it lands on a torn-down mock, OCMock
+/// raises on the message queue where XCTest has no handler for it, and the whole test process
+/// aborts — taking unrelated suites with it, at a point that moves with timing.
+///
+/// Called from the individual tests rather than tearDown: enqueueing a sentinel on every teardown
+/// adds message-queue traffic for the ~60 tests here that never touch it.
+- (void)drainMessageQueue {
+    dispatch_semaphore_t drained = dispatch_semaphore_create(0);
+    dispatch_async([MParticle messageQueue], ^{
+        dispatch_semaphore_signal(drained);
+    });
+    // The queue is serial, so once this sentinel runs everything queued ahead of it has run too.
+    // Bounded rather than dispatch_sync: a stalled queue should fail slowly, not deadlock the run.
+    if (dispatch_semaphore_wait(drained, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC))) != 0) {
+        XCTFail(@"mParticle message queue did not drain within 5s; a dispatched block may outlive its mocks");
+    }
 }
 
 - (void)testSelectPlacementsSimpleWithValidParameters {
@@ -1377,6 +1398,9 @@ static NSNumber * const kTestRoktKitId = @181;
     // The diagnostic is recorded synchronously, before the forward is dispatched, so it is
     // observable as soon as the call returns.
     XCTAssertEqualObjects(kitInstance.lastDiagnosticCode, @"ROKT_CLEAR_SESSION");
+
+    // This test asserts only the synchronous half, so the dispatched forward is still in flight.
+    [self drainMessageQueue];
 }
 
 - (void)testClearSessionForwardsToKitContainer {
