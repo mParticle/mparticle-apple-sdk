@@ -2,6 +2,7 @@
 
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
+#import <objc/runtime.h>
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
@@ -218,18 +219,47 @@
 
 #pragma mark - Thread Safety Tests
 
+/// Regression guard for #578. `MPURLRequestBuilder` reads `apiKey` and `secret` on every signed
+/// request, from background queues. Declared `nonatomic`, the synthesized getter returns the ivar
+/// without retaining it, so a concurrent setter can release the string in the window before the
+/// reader retains it — a use-after-free inside request signing. `atomic` is the fix, because
+/// `objc_getProperty` retains and autoreleases before returning.
+///
+/// Asserted against the declaration rather than by racing threads: the fault is a memory error, not
+/// an `NSException`, so it can only ever kill the test runner. `testApiKeySecretThreadSafety` below
+/// exercises the same contract at runtime, but only this assertion can name the regression.
+- (void)testApiKeySecretAccessorsAreAtomic {
+    [self assertPropertyIsAtomic:@"apiKey" onClass:[MPStateMachine_PRIVATE class]];
+    [self assertPropertyIsAtomic:@"secret" onClass:[MPStateMachine_PRIVATE class]];
+}
+
+- (void)assertPropertyIsAtomic:(NSString *)propertyName onClass:(Class)aClass {
+    objc_property_t property = class_getProperty(aClass, propertyName.UTF8String);
+    if (property == NULL) {
+        XCTFail(@"%@ declares no property named %@", NSStringFromClass(aClass), propertyName);
+        return;
+    }
+
+    NSString *attributes = @(property_getAttributes(property));
+    BOOL isNonatomic = [[attributes componentsSeparatedByString:@","] containsObject:@"N"];
+    XCTAssertFalse(isNonatomic,
+                   @"%@.%@ must stay atomic: a nonatomic strong getter returns the ivar unretained, "
+                   @"letting a concurrent setter free the value under a reader that is signing a "
+                   @"request. Attributes were \"%@\".",
+                   NSStringFromClass(aClass), propertyName, attributes);
+}
+
+/// Exercises the accessors under contention. The state machine is this test's own rather than
+/// `[MParticle sharedInstance].stateMachine`, so the readers are not competing with the SDK's own
+/// background work and a failure here cannot hand the next test a key it would sign a request with.
 - (void)testApiKeySecretThreadSafety {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
 
-    NSString *originalApiKey = stateMachine.apiKey;
-    NSString *originalSecret = stateMachine.secret;
-    [self addTeardownBlock:^{
-        stateMachine.apiKey = originalApiKey;
-        stateMachine.secret = originalSecret;
-    }];
+    NSString *apiKeyPrefix = @"api_key_value_for_thread_safety_test_iteration_";
+    NSString *secretPrefix = @"secret_value_for_thread_safety_test_iteration_";
 
-    stateMachine.apiKey = @"initial_api_key_value_that_is_long_enough_to_force_heap_allocation";
-    stateMachine.secret = @"initial_secret_value_that_is_long_enough_to_force_heap_allocation";
+    stateMachine.apiKey = [apiKeyPrefix stringByAppendingString:@"initial"];
+    stateMachine.secret = [secretPrefix stringByAppendingString:@"initial"];
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"Thread safety stress test"];
 
@@ -237,41 +267,79 @@
     dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.statemachine.concurrent", DISPATCH_QUEUE_CONCURRENT);
 
     NSInteger iterations = 10000;
-    __block BOOL encounteredError = NO;
+    NSMutableArray<NSString *> *unpublishedValues = [NSMutableArray array];
+    NSLock *unpublishedValuesLock = [[NSLock alloc] init];
+
+    void (^recordUnlessPublished)(NSString *, NSString *) = ^(NSString *value, NSString *expectedPrefix) {
+        if ([value hasPrefix:expectedPrefix]) {
+            return;
+        }
+        [unpublishedValuesLock lock];
+        if (unpublishedValues.count < 10) {
+            [unpublishedValues addObject:value ?: @"(nil)"];
+        }
+        [unpublishedValuesLock unlock];
+    };
 
     for (NSInteger i = 0; i < 4; i++) {
         dispatch_group_async(group, concurrentQueue, ^{
-            for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
-                @try {
-                    NSString *key = stateMachine.apiKey;
-                    NSString *sec = stateMachine.secret;
-                    (void)[key length];
-                    (void)[sec length];
-                } @catch (NSException *exception) {
-                    encounteredError = YES;
-                }
+            for (NSInteger j = 0; j < iterations; j++) {
+                recordUnlessPublished(stateMachine.apiKey, apiKeyPrefix);
+                recordUnlessPublished(stateMachine.secret, secretPrefix);
             }
         });
     }
 
     dispatch_group_async(group, concurrentQueue, ^{
-        for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
-            @try {
-                // Use long format strings to force heap-allocated NSString (not tagged pointers)
-                stateMachine.apiKey = [NSString stringWithFormat:@"api_key_value_for_thread_safety_test_iteration_%ld", (long)j];
-                stateMachine.secret = [NSString stringWithFormat:@"secret_value_for_thread_safety_test_iteration_%ld", (long)j];
-            } @catch (NSException *exception) {
-                encounteredError = YES;
+        for (NSInteger j = 0; j < iterations; j++) {
+            // Values long enough to be heap allocated rather than tagged pointers, drained every
+            // iteration so the string the setter replaces is really deallocated. Without the drain
+            // the writer's autorelease pool keeps every value alive to the end of the loop, and
+            // nothing is ever freed under a reader — the failure this looks for cannot happen.
+            @autoreleasepool {
+                stateMachine.apiKey = [apiKeyPrefix stringByAppendingFormat:@"%ld", (long)j];
+                stateMachine.secret = [secretPrefix stringByAppendingFormat:@"%ld", (long)j];
             }
         }
     });
 
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        XCTAssertFalse(encounteredError, @"Thread safety test should complete without errors");
         [expectation fulfill];
     });
 
-    [self waitForExpectationsWithTimeout:30 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+    XCTAssertEqualObjects(unpublishedValues, @[], @"Readers saw values the writer never published");
+}
+
+/// The singleton path on its own, without a stress loop: the SDK reads these through
+/// `[MParticle sharedInstance].stateMachine`, so a write on one queue has to be visible on another.
+/// The originals go back in the body as well as from a teardown block, so neither a failure nor a
+/// crash here leaves a test key behind for whatever runs next.
+- (void)testSingletonApiKeySecretVisibleAcrossQueues {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    NSString *originalApiKey = stateMachine.apiKey;
+    NSString *originalSecret = stateMachine.secret;
+    [self addTeardownBlock:^{
+        stateMachine.apiKey = originalApiKey;
+        stateMachine.secret = originalSecret;
+    }];
+
+    NSString *apiKey = @"api_key_value_long_enough_to_be_heap_allocated";
+    NSString *secret = @"secret_value_long_enough_to_be_heap_allocated";
+    stateMachine.apiKey = apiKey;
+    stateMachine.secret = secret;
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Read from a background queue"];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        MPStateMachine_PRIVATE *sharedStateMachine = [MParticle sharedInstance].stateMachine;
+        XCTAssertEqualObjects(sharedStateMachine.apiKey, apiKey);
+        XCTAssertEqualObjects(sharedStateMachine.secret, secret);
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+
+    stateMachine.apiKey = originalApiKey;
+    stateMachine.secret = originalSecret;
 }
 
 #pragma mark - Background UserDefaults Serialization Tests

@@ -14,6 +14,10 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 #### Fixed
 
+- Synchronize `MPKitRegister.wrapperInstance`. Reading the unsynchronized `nonatomic, strong` property handed callers a kit instance they did not own, so a concurrent configure or free could deallocate it mid-use and crash in `objc_retain`/`objc_release` — reproducible from `activeKitsRegistry` under Address Sanitizer.
+- Serialize all access to the process-wide kit registry behind a class-level lock. Registration, sideloaded-kit removal and workspace-switch pruning mutated the shared mutable set while other threads enumerated or copied it.
+- Deliver `start` to a kit on the same queue as `didFinishLaunchingWithConfiguration:`. The two callbacks were dispatched to different threads, so a kit could be started before, or concurrently with, its own configuration callback.
+- Guard the per-container bracket table with its own lock and replace stored brackets instead of mutating them in place, so `bracketForKit:` never returns a partially written bracket.
 - `MPRokt.selectPlacements` and `MPRokt.selectShoppableAds` now deliver a `RoktPlacementFailure` event to the caller's `onEvent` handler when the Rokt kit configuration is unavailable. Previously the call was dropped with only a log message, leaving callers waiting on a callback that never arrived. ([#814](https://github.com/mParticle/mparticle-apple-sdk/pull/814))
 
 ### Kits

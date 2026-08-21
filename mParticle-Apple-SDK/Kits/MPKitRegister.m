@@ -5,6 +5,8 @@
 
 @implementation MPKitRegister
 
+@synthesize wrapperInstance = _wrapperInstance;
+
 - (instancetype)init {
     self = [self initWithName:@"" className:@""];
     if (self) {
@@ -79,8 +81,22 @@
     }
 }
 
+// A register is shared process-wide and its instance is swapped in and out as kits are configured
+// and freed, from whichever thread drives that work. An unsynchronized strong property hands a
+// reader a pointer with no ownership, so a concurrent swap frees the instance out from under it.
+- (id<MPKitProtocol>)wrapperInstance {
+    id<MPKitProtocol> wrapperInstance;
+    @synchronized (self) {
+        wrapperInstance = _wrapperInstance;
+    }
+
+    return wrapperInstance;
+}
+
 - (void)setWrapperInstance:(id<MPKitProtocol>)wrapperInstance {
-    _wrapperInstance = wrapperInstance;
+    @synchronized (self) {
+        _wrapperInstance = wrapperInstance;
+    }
 }
 
 @end

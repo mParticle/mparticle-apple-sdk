@@ -7,7 +7,7 @@
 @end
 
 @interface MPKitTestClassNoStartImmediately()
-@property (nonatomic, readwrite) BOOL started;
+@property (atomic, readwrite) BOOL started;
 @end
 
 @implementation MPKitTestClassNoStartImmediately

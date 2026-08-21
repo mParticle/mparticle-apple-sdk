@@ -5,6 +5,6 @@
 @interface MPKitAppsFlyerTest : NSObject <MPKitProtocol>
 
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;
-@property (nonatomic, unsafe_unretained, readonly) BOOL started;
+@property (atomic, readonly) BOOL started;
 
 @end

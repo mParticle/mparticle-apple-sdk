@@ -14,6 +14,19 @@
 // Rokt kit identifier for testing
 static NSNumber * const kTestRoktKitId = @181;
 
+/// Ceiling for "this asynchronous call happened". No test here has a latency requirement, and
+/// both XCTestExpectation and OCMVerifyAllWithDelay return as soon as they are satisfied, so a
+/// generous value costs nothing on a fast machine and survives a starved CI runner.
+static const NSTimeInterval kMPRoktAsyncTimeout = 5.0;
+
+/// Window a negative assertion waits before concluding the call never arrived. Paid in full on
+/// every run, so it stays short.
+static const NSTimeInterval kMPRoktNegativeWindow = 0.2;
+
+// Identity value the identity-seeding tests persist, and the marker
+// -assertNoSeededUserIdentitiesRemain looks for when checking that they cleaned up.
+static NSString * const kMPRoktTestSeededIdentity = @"test@yahoo.com";
+
 // Test helper class that simulates a kit with getSessionId and handleURLCallback methods
 @interface MPRoktTestKitInstance : NSObject
 @property (nonatomic, copy) NSString *sessionIdToReturn;
@@ -80,12 +93,14 @@ static NSNumber * const kTestRoktKitId = @181;
 }
 
 - (void)tearDown {
-    self.rokt = nil;
+    // stopMocking first: it un-swizzles the target, so releasing the target before that leaves a
+    // window where the mock is the only thing keeping a swizzled object alive.
     [self.mockRokt stopMocking];
     [self.mockInstance stopMocking];
     [self.mockContainer stopMocking];
     [self.identityMock stopMocking];
     [self.mockApiResult stopMocking];
+    self.rokt = nil;
     self.mockRokt = nil;
     self.mockInstance = nil;
     self.mockContainer = nil;
@@ -112,6 +127,70 @@ static NSNumber * const kTestRoktKitId = @181;
     if (dispatch_semaphore_wait(drained, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC))) != 0) {
         XCTFail(@"mParticle message queue did not drain within 5s; a dispatched block may outlive its mocks");
     }
+}
+
+/// Routes MPRokt's kit forwards into a container this test owns.
+///
+/// The partial mock of the singleton is enough on its own: OCMPartialMock swizzles the real object,
+/// so the -kitContainer_PRIVATE stub already answers the [MParticle sharedInstance] lookups inside
+/// MPRokt. Stubbing +sharedInstance on top of it — as the rest of this file still does — replaces
+/// that accessor for the whole process and hands the mock proxy itself to every caller, including
+/// SDK background queues this test never started; whichever ones are still in flight when tearDown
+/// runs stopMocking then message a stopped proxy, which raises off the main thread and aborts the
+/// runner.
+- (id)stubKitContainerOnSharedInstance {
+    self.mockInstance = OCMPartialMock([MParticle sharedInstance]);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    return self.mockContainer;
+}
+
+/// Seeds the user identity array these tests read back through `MParticleUser.identities`.
+///
+/// `setMPObject:forKey:userId:` writes to the shared NSUserDefaults, which outlives both the test
+/// and the process: without a restore every later test in the run — and every later run on the same
+/// simulator — inherits these identities. The restore is registered before the write so it is
+/// queued even if the write or the rest of the test fails, and it captures the `MPUserDefaults`
+/// instance up front so teardown never has to reach back through a stopped mock.
+- (void)setPersistedUserIdentities:(NSArray *)identities forUser:(MParticleUser *)user {
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    NSNumber *userId = user.userId;
+    NSArray *previousIdentities = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:userId];
+    // A seeded value already in place came from an older build of these tests that did not clean up.
+    // Restoring it would keep that pollution alive on the simulator forever, so drop it instead.
+    NSArray *restoredIdentities = [self identitiesContainSeededValue:previousIdentities] ? nil : previousIdentities;
+
+    [self addTeardownBlock:^{
+        if (restoredIdentities) {
+            [userDefaults setMPObject:restoredIdentities forKey:kMPUserIdentityArrayKey userId:userId];
+        } else {
+            [userDefaults removeMPObjectForKey:kMPUserIdentityArrayKey userId:userId];
+        }
+    }];
+
+    [userDefaults setMPObject:identities forKey:kMPUserIdentityArrayKey userId:userId];
+}
+
+/// Fails if a preceding test left one of this class' seeded identities in shared user defaults.
+///
+/// Scoped to the seeded identity value rather than asserting the key is absent outright:
+/// MPBackendControllerTests, MPKitAPITests and MPUserIdentityChangeTests legitimately persist
+/// identity arrays for the same user, so an unconditional nil check would report their state as
+/// this class' leak.
+- (void)assertNoSeededUserIdentitiesRemain {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    NSArray *persistedIdentities = [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+
+    XCTAssertFalse([self identitiesContainSeededValue:persistedIdentities], @"An MPRoktTests case leaked its seeded user identity array into shared user defaults: %@", persistedIdentities);
+}
+
+- (BOOL)identitiesContainSeededValue:(NSArray *)identities {
+    for (NSDictionary *identity in identities) {
+        if ([identity[@"i"] isEqual:kMPRoktTestSeededIdentity]) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (void)testSelectPlacementsSimpleWithValidParameters {
@@ -170,7 +249,7 @@ static NSNumber * const kTestRoktKitId = @181;
                      attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -235,7 +314,7 @@ static NSNumber * const kTestRoktKitId = @181;
                         onEvent:exampleOnEvent];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -284,7 +363,7 @@ static NSNumber * const kTestRoktKitId = @181;
                         onEvent:nil];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -329,7 +408,7 @@ static NSNumber * const kTestRoktKitId = @181;
                      attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -381,7 +460,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:identifier attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -404,7 +483,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:@"checkout" attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -415,7 +494,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:@"checkout" attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -427,7 +506,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:@"checkout" attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -450,7 +529,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:@"checkout" attributes:@{@"f.name": @"Brandon"}];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -477,8 +556,8 @@ static NSNumber * const kTestRoktKitId = @181;
         [noFailure fulfill];
     }];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
-    OCMVerifyAll(self.mockContainer);
+    OCMVerifyAllWithDelay(self.mockContainer, kMPRoktAsyncTimeout);
+    [self waitForExpectationsWithTimeout:kMPRoktNegativeWindow handler:nil];
 }
 
 - (void)testSelectPlacementsWithNilMappingAndNilOnEventDoesNotCrash {
@@ -495,7 +574,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     XCTAssertNoThrow([self.rokt selectPlacements:identifier attributes:attributes]);
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -593,7 +672,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt selectPlacements:identifier attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -620,18 +699,14 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    OCMVerifyAllWithDelay(self.identityMock, kMPRoktAsyncTimeout);
 }
 
 - (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@yahoo.com"}];
-    
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityEmail)], @"test@yahoo.com");
+    [self setPersistedUserIdentities:@[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : kMPRoktTestSeededIdentity}] forUser:currentUser];
+    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityEmail)], kMPRoktTestSeededIdentity);
     
     //Mock Identity as needed
     MParticle *instance = [MParticle sharedInstance];
@@ -651,7 +726,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    OCMVerifyAllWithDelay(self.identityMock, kMPRoktAsyncTimeout);
 }
 
 - (void)testTriggeredIdentifyWithMismatchedOtherIdentity {
@@ -696,12 +771,8 @@ static NSNumber * const kTestRoktKitId = @181;
 - (void)hashedIdentityTest: (MPIdentity)mpIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:mpIdentity], @"i" : @"test@yahoo.com"}];
-    
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(mpIdentity)], @"test@yahoo.com");
+    [self setPersistedUserIdentities:@[@{@"n" : [NSNumber numberWithLong:mpIdentity], @"i" : kMPRoktTestSeededIdentity}] forUser:currentUser];
+    XCTAssertEqualObjects(currentUser.identities[@(mpIdentity)], kMPRoktTestSeededIdentity);
     
     //Mock Identity as needed
     [[[self.mockRokt stub] andReturn:@(mpIdentity)] getRoktHashedEmailUserIdentityType];
@@ -722,60 +793,60 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    OCMVerifyAllWithDelay(self.identityMock, kMPRoktAsyncTimeout);
 }
 
 - (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityType {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
-    
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
-    
+    [self setPersistedUserIdentities:@[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : kMPRoktTestSeededIdentity}] forUser:currentUser];
+    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], kMPRoktTestSeededIdentity);
+
     //Mock Identity as needed
     [[[self.mockRokt stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     [[[self.identityMock stub] andReturn:currentUser] currentUser];
-    
-    [[self.identityMock reject] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
-        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityOther)], @"test@yahoo.com");
-        return true;
-    }] completion:OCMOCK_ANY];
-    
+
+    // Counted rather than rejected, and unconstrained in its arguments: any identify: at all is a
+    // failure here, and a count read after the call is a fact rather than a deadline that expired.
+    __block NSUInteger identifyCallCount = 0;
+    [[[self.identityMock stub] andDo:^(NSInvocation *invocation) {
+        identifyCallCount++;
+    }] identify:OCMOCK_ANY completion:OCMOCK_ANY];
+
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"emailsha256": @"test@gmail.com", @"sandbox": @"false"};
-    
+
     [self.rokt selectPlacements:identifier attributes:attributes];
-    
-    [self.identityMock verifyWithDelay:0.2];
+
+    // -confirmUser:user:completion: decides on the calling thread, so identify: has either been sent
+    // by the time selectPlacements: returns or it never will be. Draining settles the kit forward
+    // that the no-identify path dispatches, so no block survives into teardown's stopped mocks.
+    [self drainMessageQueue];
+    XCTAssertEqual(identifyCallCount, (NSUInteger)0, @"selectPlacements: must not fire an IDSync when no Rokt hashed email identity type is configured");
+}
+
+- (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityTypeLeavesNoPersistedIdentities {
+    [self assertNoSeededUserIdentitiesRemain];
 }
 
 - (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityType {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
-    
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
-    
+    [self setPersistedUserIdentities:@[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : kMPRoktTestSeededIdentity}] forUser:currentUser];
+    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], kMPRoktTestSeededIdentity);
+
     //Mock Identity as needed
     [[[self.mockRokt stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
     OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     [[[self.identityMock stub] andReturn:currentUser] currentUser];
-    
+
     [[self.identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
         XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
         return true;
@@ -786,7 +857,11 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    OCMVerifyAllWithDelay(self.identityMock, kMPRoktAsyncTimeout);
+}
+
+- (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityTypeLeavesNoPersistedIdentities {
+    [self assertNoSeededUserIdentitiesRemain];
 }
 
 - (void)testPurchaseFinalized {
@@ -821,7 +896,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [[MParticle sharedInstance].rokt purchaseFinalized:identifier catalogItemId:catalogItemId success:success];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -863,7 +938,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt events:identifier onEvent:onEventCallback];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -898,7 +973,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt events:identifier onEvent:nil];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -945,7 +1020,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt events:identifier onEvent:onEventCallback];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify callback was invoked
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
@@ -986,7 +1061,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt globalEvents:onEventCallback];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -1031,7 +1106,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt globalEvents:onEventCallback];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     
     // Verify callback was invoked
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
@@ -1072,7 +1147,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt registerPaymentExtension:paymentExtension];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1118,7 +1193,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectShoppableAds:identifier attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1162,17 +1237,13 @@ static NSNumber * const kTestRoktKitId = @181;
                            config:roktConfig
                           onEvent:exampleOnEvent];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
 - (void)testSelectShoppableAdsWithNilMappingForwardsUnmappedAttributes {
     [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [self stubKitContainerOnSharedInstance];
 
     NSString *identifier = @"shoppableView";
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
@@ -1194,17 +1265,17 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectShoppableAds:identifier attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
+    // selectShoppableAds: forwards from a block on [MParticle messageQueue] and the expectation is
+    // fulfilled from inside that block, so a tail of it is still running when the wait returns.
+    // Draining keeps it inside the lifetime of the mocks it messages.
+    [self drainMessageQueue];
     OCMVerifyAll(self.mockContainer);
 }
 
 - (void)testSelectShoppableAdsWithNilMappingDoesNotInvokeOnEventWithPlacementFailure {
     [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [self stubKitContainerOnSharedInstance];
 
     NSString *identifier = @"shoppableView";
     XCTestExpectation *forwarded = [self expectationWithDescription:@"forwarded shoppable ads"];
@@ -1217,17 +1288,27 @@ static NSNumber * const kTestRoktKitId = @181;
         [forwarded fulfill];
     });
 
-    XCTestExpectation *noFailure = [self expectationWithDescription:@"onEvent must not fire from core"];
-    noFailure.inverted = YES;
-
+    __block BOOL onEventFired = NO;
     [self.rokt selectShoppableAds:identifier
                        attributes:@{@"f.name": @"Brandon"}
                            config:nil
                           onEvent:^(RoktEvent * _Nonnull event) {
-        [noFailure fulfill];
+        onEventFired = YES;
     }];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    // The regression this guards delivered RoktPlacementFailure by dispatching to the main queue
+    // from inside selectShoppableAds, and confirmUser resolves synchronously for attributes that
+    // carry no email — so this sentinel is enqueued behind it and the main queue is FIFO. An
+    // inverted expectation proves the same thing but has to wait out its whole window first, and
+    // that window is time spent with live mocks.
+    XCTestExpectation *mainQueueReachedSentinel = [self expectationWithDescription:@"main queue reached sentinel"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [mainQueueReachedSentinel fulfill];
+    });
+
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
+    [self drainMessageQueue];
+    XCTAssertFalse(onEventFired, @"core must not deliver an event itself when the attribute mapping is nil");
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1249,7 +1330,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectShoppableAds:identifier attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1294,7 +1375,7 @@ static NSNumber * const kTestRoktKitId = @181;
         [didNotComplete fulfill];
     }];
 
-    [self waitForExpectationsWithTimeout:0.3 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktNegativeWindow handler:nil];
     XCTAssertTrue(identifyCalled);
     XCTAssertTrue(identifyCompletionInvokedBySDK);
 }
@@ -1372,7 +1453,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt setSessionId:sessionId];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -1422,10 +1503,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt clearSession];
 
-    // Longer than the 0.2s used elsewhere in this file: those forwards are dispatched on the
-    // main queue, whereas clearSession goes through [MParticle messageQueue], which may already
-    // have work queued ahead of it. The wait returns as soon as the forward lands.
-    [self waitForExpectationsWithTimeout:2.0 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     OCMVerifyAll(self.mockContainer);
 }
@@ -1602,6 +1680,18 @@ static NSNumber * const kTestRoktKitId = @181;
     BOOL result = [self.rokt handleURLCallback:nil];
 #pragma clang diagnostic pop
     XCTAssertFalse(result, @"Should return NO when url is nil");
+}
+
+#pragma mark - Negative assertion guards
+
+/// Proves the `[[mock reject] ...]` assertions in this class still have teeth. OCMock raises at
+/// invocation time, on the thread that made the call, so a rejected call cannot be missed by a
+/// verify that runs too early or waits too little.
+- (void)testRejectedIdentifyRaisesWhenTheCallIsMade {
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    [[self.identityMock reject] identify:OCMOCK_ANY completion:OCMOCK_ANY];
+
+    XCTAssertThrows([self.identityMock identify:nil completion:nil]);
 }
 
 @end

@@ -2,13 +2,17 @@
 #import "MPKitExecStatus.h"
 #import "mParticle.h"
 
+@interface MPKitTestClass ()
+@property (atomic, readwrite) BOOL started;
+@end
+
 @implementation MPKitTestClass
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
     
     _configuration = configuration;
-    _started = YES;
+    self.started = YES;
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
@@ -28,7 +32,7 @@
 }
 
 - (void)start {
-    _started = YES;
+    self.started = YES;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
@@ -65,7 +69,7 @@
 }
 
 - (id)providerKitInstance {
-    return _started ? self : nil;
+    return self.started ? self : nil;
 }
 
 - (MPKitExecStatus *)setDebugMode:(BOOL)debugMode {
