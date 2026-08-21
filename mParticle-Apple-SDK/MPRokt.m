@@ -223,6 +223,29 @@ static const NSInteger kMPRoktKitId = 181;
     });
 }
 
+/// End the current Rokt session so the next selectPlacements call starts a new one.
+///
+/// Intended for self-service terminals where a queue of unrelated customers shares one
+/// device. Fire-and-forget, mirroring `close`: the kit performs the reset synchronously on
+/// its side, so there is nothing to return here.
+- (void)clearSession {
+    [self logRoktApiDiagnostic:@"ROKT_CLEAR_SESSION"];
+    MPILogDebug(@"MPRokt clearSession called");
+    // Dispatched on the message queue, not the main queue, so it stays ordered with
+    // selectPlacements. Both forwards ultimately hop to main inside the kit container, so
+    // dispatching from two different queues would leave the order down to which one drains
+    // first — and a partner calling clearSession then selectPlacements would sometimes send the
+    // departing customer's token.
+    dispatch_async([MParticle messageQueue], ^{
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(clearSession)
+                                                                  event:nil
+                                                             parameters:nil
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
 /// Get the session id to use within a non-native integration e.g. WebView.
 /// - Returns: The session id or nil if no session is present.
 - (NSString * _Nullable)getSessionId {
