@@ -121,6 +121,25 @@
 - (NSString * _Nullable)getSessionId __attribute__((deprecated("Use getSession to read session id and session token.")));
 
 /**
+ * End the current Rokt session so the next selectPlacements call starts a new one.
+ *
+ * Intended for self-service terminals — kiosks, counter tablets, shared point-of-sale
+ * hardware — where a queue of unrelated customers uses a single device. Without this the
+ * Rokt SDK reuses its stored session, so successive customers are recorded as one person
+ * and frequency capping, attribution and reporting all treat them as one.
+ *
+ * Call this at a transaction boundary, not between screens within one customer's journey:
+ * two placements shown to the same customer are meant to share a session.
+ *
+ * Buffered events are flushed before the session is dropped, so events belonging to the
+ * departing customer stay attributed to them. Calling this with no active session is a no-op.
+ *
+ * @note This also clears the id returned by getSessionId, so a WebView session hand-off must
+ * be re-established afterwards.
+ */
+- (void)clearSession;
+
+/**
  * Registers a payment extension for Shoppable Ads.
  * The payment extension handles payment processing (e.g., Apple Pay via Stripe).
  *

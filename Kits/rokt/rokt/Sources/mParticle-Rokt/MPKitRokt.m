@@ -618,6 +618,20 @@ static __weak MPKitRokt *roktKit = nil;
     return [Rokt getSessionId];
 }
 
+/// End the current Rokt session so the next selectPlacements call starts a new one.
+///
+/// Reached only from MPRokt.clearSession — the host names the transaction boundary itself. The
+/// kit deliberately does not infer boundaries from identity or session callbacks: those fire for
+/// every partner on this kit, and a login or logout is not reliably a change of person.
+///
+/// Fire-and-forget, mirroring close: the Rokt SDK performs the reset (flush buffered events,
+/// then drop the session) synchronously on its side, so there is nothing to return here.
+- (MPKitExecStatus *)clearSession {
+    [MPKitRokt MPLog:@"Rokt Kit clearing the Rokt session"];
+    [Rokt clearSession];
+    return [self execStatus:MPKitReturnCodeSuccess];
+}
+
 /// Forwards a bounded public-API-usage diagnostic code from mParticle core into the Rokt SDK.
 - (void)logMParticleApiDiagnostic:(NSString *)code {
     [Rokt logMParticleApiCall:code additionalInfo:@{}];
