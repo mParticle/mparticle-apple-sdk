@@ -87,6 +87,32 @@ MParticle.sharedInstance().rokt.selectShoppableAds("ShopView",
 
 For the full event type reference, see [MIGRATING.md](../../MIGRATING.md).
 
+## Session management
+
+Rokt sessions are managed automatically: placements shown to the same user share one session, and the session survives app restarts. No session code is needed for a normal single-user app.
+
+The kit does **not** end the Rokt session when the mParticle user changes. A login or logout is not a reliable signal that a different person is present — a single customer's MPID can move mid-journey, for example anonymous on the payment page and known on the confirmation page — and acting on it would split sessions for every partner on this kit rather than only shared-device ones.
+
+### Self-service terminals (kiosks, shared devices)
+
+Where a queue of unrelated customers uses one device, each transaction should be its own session. Call `clearSession` at the transaction boundary so the next customer starts fresh:
+
+```swift
+// The customer has finished at the terminal; the next person starts fresh.
+MParticle.sharedInstance().rokt.clearSession()
+```
+
+The kit forwards this straight to the Rokt SDK. Because there is no automatic reset, this call is what separates one customer from the next — logging the user out or identifying the next customer does not do it on its own.
+
+Notes:
+
+- **When to call it:** at the boundary between customers, not between screens within one customer's journey. Two placements shown to the same customer are meant to share a session.
+- **When the new session begins:** on the next `selectPlacements` call. `clearSession` only ends the current session.
+- **Buffered events are not lost:** queued analytics events are flushed before the session is dropped, so the departing customer's activity stays attributed to them.
+- **Calling it is always safe:** repeated calls are idempotent, and with no active session there is no session state to clear.
+- **Session hand-off:** this also clears the id returned by `getSessionId`, so a WebView hand-off must be re-established afterwards.
+- **Experience caching:** avoid enabling Rokt experience caching on shared terminals — a cached experience belongs to the customer it was fetched for.
+
 ## Platform Support
 
 | Platform | Minimum Version |
