@@ -272,6 +272,8 @@
 		7AF100042F50000400E74801 /* MPLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AF100022F50000200E74801 /* MPLocation.m */; };
 		7E0387812DB913D2003B7D5E /* MPRokt.h in Headers */ = {isa = PBXBuildFile; fileRef = 7E03877F2DB913D2003B7D5E /* MPRokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E0387802DB913D2003B7D5E /* MPRokt.m */; };
+		A1B2C3D62DB913D2003B7D5E /* MPRoktSession.h in Headers */ = {isa = PBXBuildFile; fileRef = A1B2C3D42DB913D2003B7D5E /* MPRoktSession.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A1B2C3D72DB913D2003B7D5E /* MPRoktSession.m in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D52DB913D2003B7D5E /* MPRoktSession.m */; };
 		7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		7E15B2072D94617900C1FF3F /* MPRoktEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2082D94617900C1FF3F /* MPRoktEventTests.m */; };
 		7E40BF652F7C22EA005264DD /* RoktContracts in Frameworks */ = {isa = PBXBuildFile; productRef = 7E40BF642F7C22EA005264DD /* RoktContracts */; };
@@ -605,6 +607,8 @@
 		7AF100022F50000200E74801 /* MPLocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLocation.m; sourceTree = "<group>"; };
 		7E03877F2DB913D2003B7D5E /* MPRokt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPRokt.h; sourceTree = "<group>"; };
 		7E0387802DB913D2003B7D5E /* MPRokt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRokt.m; sourceTree = "<group>"; };
+		A1B2C3D42DB913D2003B7D5E /* MPRoktSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPRoktSession.h; sourceTree = "<group>"; };
+		A1B2C3D52DB913D2003B7D5E /* MPRoktSession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktSession.m; sourceTree = "<group>"; };
 		7E15B2052D94617900C1FF3E /* MPRoktTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktTests.m; sourceTree = "<group>"; };
 		7E15B2082D94617900C1FF3F /* MPRoktEventTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRoktEventTests.m; sourceTree = "<group>"; };
 		7E573D292ECB65D90087185D /* MParticleSceneDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleSceneDelegateTests.swift; sourceTree = "<group>"; };
@@ -773,6 +777,7 @@
 				35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */,
 				35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */,
 				7E0387802DB913D2003B7D5E /* MPRokt.m */,
+				A1B2C3D52DB913D2003B7D5E /* MPRoktSession.m */,
 				53A79AF429CDFB1F00E7489F /* MPBackendController.m */,
 				53A79AD029CDFB1F00E7489F /* MPEnums.m */,
 				53A79ACF29CDFB1F00E7489F /* MPIConstants.h */,
@@ -1058,6 +1063,7 @@
 				53A79AA329CDFB1E00E7489F /* MPBackendController.h */,
 				53A79ABB29CDFB1E00E7489F /* MPPersistenceController.h */,
 				7E03877F2DB913D2003B7D5E /* MPRokt.h */,
+				A1B2C3D42DB913D2003B7D5E /* MPRoktSession.h */,
 				35C3DE6E2F2919B40077C0FD /* MPCCPAConsent.h */,
 				7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */,
 				D342860F2D419CA700FEC2C8 /* MPUploadSettings.h */,
@@ -1268,6 +1274,7 @@
 				359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */,
 				53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */,
 				7E0387812DB913D2003B7D5E /* MPRokt.h in Headers */,
+				A1B2C3D62DB913D2003B7D5E /* MPRoktSession.h in Headers */,
 				351308432E6B28F5002A3AD6 /* Executor.h in Headers */,
 				35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */,
 				35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */,
@@ -1676,6 +1683,7 @@
 				53A79DAA29CE23F700E7489F /* MPNotificationController.m in Sources */,
 				53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */,
 				7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */,
+				A1B2C3D72DB913D2003B7D5E /* MPRoktSession.m in Sources */,
 				35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */,
 				D34286132D419CB800FEC2C8 /* MPUploadSettings.m in Sources */,
 				53A79DAD29CE23F700E7489F /* MPAliasResponse.m in Sources */,
