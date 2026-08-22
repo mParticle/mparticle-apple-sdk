@@ -40,6 +40,7 @@
 
 NSString *const kitFileExtension = @"eks";
 static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
+static dispatch_semaphore_t kitsRegistrySemaphore;
 
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
@@ -70,6 +71,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 @interface MPKitContainer_PRIVATE () {
     dispatch_semaphore_t kitsSemaphore;
+    dispatch_semaphore_t bracketsSemaphore;
     NSMutableDictionary<NSNumber *, MPBracket *> *brackets;
     NSInteger sideloadedKitCodeNextValue;
 }
@@ -88,6 +90,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 + (void)initialize {
     if (self == [MPKitContainer_PRIVATE class]) {
+        kitsRegistrySemaphore = dispatch_semaphore_create(1);
         kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
     }
 }
@@ -100,6 +103,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSMutableDictionary *linkInfo = _attributionInfo;
         _initializedTime = [NSDate date];
         kitsSemaphore = dispatch_semaphore_create(1);
+        bracketsSemaphore = dispatch_semaphore_create(1);
         brackets = [[NSMutableDictionary alloc] init];
         sideloadedKitCodeNextValue = sideloadedKitCodeStartValue;
         MParticle* mparticle = MParticle.sharedInstance;
@@ -154,7 +158,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         SEL launchOptionsSelector = @selector(setLaunchOptions:);
         SEL startSelector = @selector(start);
         
-        for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
+        for (id<MPExtensionKitProtocol>kitRegister in [MPKitContainer_PRIVATE kitsRegistrySnapshot]) {
             id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
             
             if (kitInstance && ![kitInstance started]) {
@@ -208,15 +212,36 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     return kitsRegistry;
 }
 
+// kitsRegistry is shared by every container instance, so an instance's kitsSemaphore cannot protect
+// it. Readers work from a snapshot taken under this class-level lock; copying the live set without
+// it releases stale elements when another thread is registering or removing a kit.
++ (nonnull NSSet<id<MPExtensionKitProtocol>> *)kitsRegistrySnapshot {
+    dispatch_semaphore_wait(kitsRegistrySemaphore, DISPATCH_TIME_FOREVER);
+    NSSet<id<MPExtensionKitProtocol>> *snapshot = [kitsRegistry copy];
+    dispatch_semaphore_signal(kitsRegistrySemaphore);
+
+    return snapshot;
+}
+
++ (void)mutateKitsRegistry:(nonnull void (NS_NOESCAPE ^)(NSMutableSet<id<MPExtensionKitProtocol>> *registry))block {
+    dispatch_semaphore_wait(kitsRegistrySemaphore, DISPATCH_TIME_FOREVER);
+    block(kitsRegistry);
+    dispatch_semaphore_signal(kitsRegistrySemaphore);
+}
+
 - (MPBracket *)bracketForKit:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
-    
-    return brackets[integrationId];
+
+    dispatch_semaphore_wait(bracketsSemaphore, DISPATCH_TIME_FOREVER);
+    MPBracket *bracket = brackets[integrationId];
+    dispatch_semaphore_signal(bracketsSemaphore);
+
+    return bracket;
 }
 
 - (void)flushSerializedKits {
     dispatch_async(dispatch_get_main_queue(), ^{
-        for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
+        for (id<MPExtensionKitProtocol>kitRegister in [MPKitContainer_PRIVATE kitsRegistrySnapshot]) {
             [self freeKit:kitRegister.code];
         }
     });
@@ -226,15 +251,16 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
-    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer_PRIVATE kitsRegistrySnapshot] filteredSetUsingPredicate:predicate] anyObject];
     
-    if (kitRegister.wrapperInstance) {
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(stop)]) {
-            [kitRegister.wrapperInstance stop];
+    id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
+    if (kitInstance) {
+        if ([kitInstance respondsToSelector:@selector(stop)]) {
+            [kitInstance stop];
         }
-        
+
         kitRegister.wrapperInstance = nil;
-        
+
         NSFileManager *fileManager = [NSFileManager defaultManager];
         NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
         NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", integrationId, kitFileExtension]];
@@ -364,7 +390,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)integrationId {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
-    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer_PRIVATE kitsRegistrySnapshot] filteredSetUsingPredicate:predicate] anyObject];
     return kitRegister.name;
 }
 
@@ -506,7 +532,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
-    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer_PRIVATE kitsRegistrySnapshot] filteredSetUsingPredicate:predicate] anyObject];
     
     if (!kitRegister) {
         MPILogWarning(@"startKit - kit register not found for integrationId: %@", integrationId);
@@ -554,13 +580,40 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
             MPILogDebug(@"startKitRegister - launching kit %@ with configuration", kitRegister.code);
-            if ([NSThread isMainThread]) {
-                [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
-            } else {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
-                });
-            }
+            id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
+            [self performKitLifecycleBlock:^{
+                [kitInstance didFinishLaunchingWithConfiguration:configuration];
+            }];
+        }
+    }
+}
+
+// Kit lifecycle callbacks are delivered on the main queue: kits perform main-thread-only
+// initialization in -didFinishLaunchingWithConfiguration:. Every other callback for the same
+// instance has to be delivered from here too, otherwise the caller's thread races the launch.
+- (void)performKitLifecycleBlock:(nonnull dispatch_block_t)block {
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), block);
+    }
+}
+
+- (void)startKitInstance:(nonnull id<MPKitProtocol>)kitInstance launchOptions:(nullable NSDictionary *)launchOptions {
+    if ([kitInstance started]) {
+        return;
+    }
+
+    if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
+        [kitInstance performSelector:@selector(setLaunchOptions:) withObject:launchOptions];
+    }
+
+    if ([kitInstance respondsToSelector:@selector(start)]) {
+        @try {
+            [kitInstance start];
+        }
+        @catch (NSException *exception) {
+            MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
         }
     }
 }
@@ -639,34 +692,40 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
     if (!configuration) {
+        dispatch_semaphore_wait(bracketsSemaphore, DISPATCH_TIME_FOREVER);
         [brackets removeObjectForKey:integrationId];
+        dispatch_semaphore_signal(bracketsSemaphore);
         return;
     }
-    
+
     long mpId = [[MPPersistenceController_PRIVATE mpId] longValue];
     short low = (short)[configuration[@"lo"] integerValue];
     short high = (short)[configuration[@"hi"] integerValue];
-    
-    MPBracket *bracket = brackets[integrationId];
-    if (bracket) {
-        bracket.mpId = mpId;
-        bracket.low = low;
-        bracket.high = high;
-    } else {
-        brackets[integrationId] = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
-    }
+
+    // Replace rather than mutate: a bracket handed to -bracketForKit: must never change underneath
+    // its reader.
+    MPBracket *bracket = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
+
+    dispatch_semaphore_wait(bracketsSemaphore, DISPATCH_TIME_FOREVER);
+    brackets[integrationId] = bracket;
+    dispatch_semaphore_signal(bracketsSemaphore);
 }
 
 #pragma mark Public class methods
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister {
     NSAssert(kitRegister != nil, @"Required parameter. It cannot be nil.");
     
-    [kitsRegistry addObject:kitRegister];
+    [self mutateKitsRegistry:^(NSMutableSet<id<MPExtensionKitProtocol>> *registry) {
+        [registry addObject:kitRegister];
+    }];
+
     return YES;
 }
 
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits {
-    return kitsRegistry.count > 0 ? kitsRegistry : nil;
+    NSSet<id<MPExtensionKitProtocol>> *snapshot = [self kitsRegistrySnapshot];
+
+    return snapshot.count > 0 ? snapshot : nil;
 }
 
 #pragma mark Public accessors
@@ -1961,24 +2020,27 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 
 - (void)removeAllSideloadedKits {
     // Remove all sideloaded kits as new instances will be provided in the new MParticleOptions
-    NSSet *kits = [kitsRegistry copy];
-    for (id<MPExtensionKitProtocol>kitRegister in kits) {
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(sideloadedKitCode)]) {
-            [kitsRegistry removeObject:kitRegister];
+    [MPKitContainer_PRIVATE mutateKitsRegistry:^(NSMutableSet<id<MPExtensionKitProtocol>> *registry) {
+        for (id<MPExtensionKitProtocol>kitRegister in [registry copy]) {
+            if ([kitRegister.wrapperInstance respondsToSelector:@selector(sideloadedKitCode)]) {
+                [registry removeObject:kitRegister];
+            }
         }
-    }
+    }];
 }
 
 - (void)removeKitsFromRegistryInvalidForWorkspaceSwitch {
     // Remove kits from registry that can't be freed so they won't receive new events
     // Leave any kit that was never used yet (i.e. was not used in the previous workspace)
-    NSSet *kits = [kitsRegistry copy];
-    for (id<MPExtensionKitProtocol>kitRegister in kits) {
-        if (![kitRegister.wrapperInstance respondsToSelector:@selector(stop)] &&
-            [self.kitConfigurations.allKeys containsObject:[kitRegister.wrapperInstance.class kitCode]]) {
-            [kitsRegistry removeObject:kitRegister];
+    NSArray *configuredKitCodes = self.kitConfigurations.allKeys;
+    [MPKitContainer_PRIVATE mutateKitsRegistry:^(NSMutableSet<id<MPExtensionKitProtocol>> *registry) {
+        for (id<MPExtensionKitProtocol>kitRegister in [registry copy]) {
+            if (![kitRegister.wrapperInstance respondsToSelector:@selector(stop)] &&
+                [configuredKitCodes containsObject:[kitRegister.wrapperInstance.class kitCode]]) {
+                [registry removeObject:kitRegister];
+            }
         }
-    }
+    }];
 }
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry {
@@ -1989,14 +2051,14 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWhenLocked {
-    if (kitsRegistry.count == 0) {
+    NSSet<id<MPExtensionKitProtocol>> *kitsRegistrySnapshot = [MPKitContainer_PRIVATE kitsRegistrySnapshot];
+    if (kitsRegistrySnapshot.count == 0) {
         return nil;
     }
 
-    NSSet *kitsRegistryCopy = [kitsRegistry copy];
-    NSMutableArray<id<MPExtensionKitProtocol>> *activeKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistryCopy.count];
+    NSMutableArray<id<MPExtensionKitProtocol>> *activeKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistrySnapshot.count];
 
-    for (id<MPExtensionKitProtocol> kitRegister in kitsRegistryCopy) {
+    for (id<MPExtensionKitProtocol> kitRegister in kitsRegistrySnapshot) {
         if ([self isActiveAndNotDisabled:kitRegister]) {
             [activeKits addObject:kitRegister];
         }
@@ -2065,7 +2127,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         
         if (isKitSupported) {
             predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
-            kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+            kitRegister = [[[MPKitContainer_PRIVATE kitsRegistrySnapshot] filteredSetUsingPredicate:predicate] anyObject];
             kitInstance = kitRegister.wrapperInstance;
             kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             self.kitConfigurations[integrationId] = kitConfiguration;
@@ -2099,21 +2161,14 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             }
             
             if (kitInstance) {
-                if (![kitInstance started] && !disabled) {
-                    if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
-                        [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
-                    }
-                    
-                    if ([kitInstance respondsToSelector:@selector(start)]) {
-                        @try {
-                            [kitInstance start];
-                        }
-                        @catch (NSException *exception) {
-                            MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
-                        }
-                    }
+                if (!disabled) {
+                    id<MPKitProtocol> instanceToStart = kitInstance;
+                    NSDictionary *launchOptions = stateMachine.launchOptions;
+                    [self performKitLifecycleBlock:^{
+                        [self startKitInstance:instanceToStart launchOptions:launchOptions];
+                    }];
                 }
-                
+
                 NSArray *alreadySynchedUserAttributes = userDefaults[kMPSynchedUserAttributesKey];
                 if (userAttributes && ![alreadySynchedUserAttributes containsObject:integrationId]) {
                     NSMutableArray *synchedUserAttributes = [[NSMutableArray alloc] initWithCapacity:alreadySynchedUserAttributes.count + 1];
@@ -2174,7 +2229,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     if (deactivateKits.count != 0) {
         for (NSNumber *ek in deactivateKits) {
             predicate = [NSPredicate predicateWithFormat:@"code == %@", ek];
-            kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+            kitRegister = [[[MPKitContainer_PRIVATE kitsRegistrySnapshot] filteredSetUsingPredicate:predicate] anyObject];
             [self freeKit:kitRegister.code];
         }
     }
@@ -2186,12 +2241,13 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 
 - (nullable NSArray<NSNumber *> *)supportedKits {
-    if (kitsRegistry.count == 0) {
+    NSSet<id<MPExtensionKitProtocol>> *kitsRegistrySnapshot = [MPKitContainer_PRIVATE kitsRegistrySnapshot];
+    if (kitsRegistrySnapshot.count == 0) {
         return nil;
     }
     
-    NSMutableArray<NSNumber *> *supportedKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
-    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
+    NSMutableArray<NSNumber *> *supportedKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistrySnapshot.count];
+    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistrySnapshot) {
         [supportedKits addObject:kitRegister.code];
     }
     
@@ -2629,7 +2685,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 
 - (NSArray<NSDictionary<NSString *, id> *> *)userIdentitiesArrayForKit:(NSNumber *)integrationId {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
-    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer_PRIVATE kitsRegistrySnapshot] filteredSetUsingPredicate:predicate] anyObject];
     if (!kitRegister) {
         return nil;
     }

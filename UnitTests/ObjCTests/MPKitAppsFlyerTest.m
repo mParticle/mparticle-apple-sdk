@@ -4,6 +4,10 @@
 NSString *const afAppleAppId = @"appleAppId";
 NSString *const afDevKey = @"devKey";
 
+@interface MPKitAppsFlyerTest ()
+@property (atomic, readwrite) BOOL started;
+@end
+
 @implementation MPKitAppsFlyerTest
 
 + (NSNumber *)kitCode {
@@ -21,7 +25,7 @@ NSString *const afDevKey = @"devKey";
     }
     
     _configuration = configuration;
-    _started = YES;
+    self.started = YES;
     
     BOOL alreadyActive = [[UIApplication sharedApplication] applicationState] == UIApplicationStateActive;
     

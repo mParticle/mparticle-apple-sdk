@@ -30,6 +30,7 @@
 #import "MPApplication.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
+#import "MPBracket.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
@@ -71,7 +72,7 @@
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserIdentityKey:(NSString *)key identityType:(MPUserIdentity)identityType;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forCommerceEvent:(MPCommerceEvent *const)commerceEvent;
 - (void)attemptToLogEventToKit:(id<MPExtensionKitProtocol>)kitRegister kitFilter:(MPKitFilter *)kitFilter selector:(SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo;
-- (id)bracketForKit:(NSNumber *)integrationId;
+- (MPBracket *)bracketForKit:(NSNumber *)integrationId;
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId;
 
 
@@ -3405,14 +3406,19 @@
 
 #pragma mark - Thread Safety Tests
 
+// A data race in the stress tests below manifests as a torn read, a use-after-free or a
+// mutation-during-enumeration abort — none of which are NSExceptions. Thread Sanitizer is therefore
+// the authoritative detector and these tests are expected to be run under it. What they report on
+// their own is limited to the three outcomes that are observable in-process: a raised exception, an
+// observably corrupt result, and a stall. Failing loudly for those is the point of the plumbing
+// here; a green run without a sanitizer is not evidence that the SDK is race-free.
+static const NSInteger MPThreadSafetyStressReaders = 3;
+static const NSInteger MPThreadSafetyStressIterations = 250;
+static const NSTimeInterval MPThreadSafetyStressTimeout = 60.0;
+
 - (void)testActiveKitsRegistryThreadSafety {
-    // This stress test verifies that activeKitsRegistry doesn't crash when
-    // called concurrently with configureKits: modifications.
-    // Race conditions are non-deterministic, so this test increases the
-    // likelihood of catching issues but cannot guarantee detection.
-    
     MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    
+
     NSArray *configurations = @[
         @{
             @"id": @42,
@@ -3427,108 +3433,110 @@
             }
         }
     ];
-    
-    // Initial configuration
+
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
-    
+
     XCTestExpectation *expectation = [self expectationWithDescription:@"Thread safety stress test"];
-    
+
     dispatch_group_t group = dispatch_group_create();
     dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.concurrent", DISPATCH_QUEUE_CONCURRENT);
-    
-    NSInteger iterations = 100;
-    __block BOOL encounteredError = NO;
-    
-    // Multiple threads reading activeKitsRegistry
-    for (NSInteger i = 0; i < 3; i++) {
+
+    NSMutableArray<NSString *> *failures = [NSMutableArray array];
+    void (^recordFailure)(NSString *) = ^(NSString *message) {
+        @synchronized (failures) {
+            [failures addObject:message];
+        }
+    };
+
+    for (NSInteger i = 0; i < MPThreadSafetyStressReaders; i++) {
         dispatch_group_async(group, concurrentQueue, ^{
-            for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+            for (NSInteger j = 0; j < MPThreadSafetyStressIterations; j++) {
                 @try {
-                    NSArray *activeKits = [kitContainer activeKitsRegistry];
-                    // Access the returned array to ensure objects are valid
-                    for (id<MPExtensionKitProtocol> kit in activeKits) {
-                        (void)kit.code;
+                    for (id<MPExtensionKitProtocol> kit in [kitContainer activeKitsRegistry]) {
+                        if (kit.code == nil) {
+                            recordFailure([NSString stringWithFormat:@"activeKitsRegistry returned a kit with no code: %@", kit]);
+                        }
                     }
                 } @catch (NSException *exception) {
-                    encounteredError = YES;
-                    XCTFail(@"Exception in activeKitsRegistry: %@", exception);
+                    recordFailure([NSString stringWithFormat:@"activeKitsRegistry raised %@", exception]);
                 }
             }
         });
     }
-    
-    // Thread modifying kits configuration
+
     dispatch_group_async(group, concurrentQueue, ^{
-        for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+        for (NSInteger j = 0; j < MPThreadSafetyStressIterations; j++) {
             @try {
                 [kitContainer configureKits:nil];
                 [kitContainer configureKits:configurations];
             } @catch (NSException *exception) {
-                encounteredError = YES;
-                XCTFail(@"Exception in configureKits: %@", exception);
+                recordFailure([NSString stringWithFormat:@"configureKits: raised %@", exception]);
             }
         }
     });
-    
+
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        XCTAssertFalse(encounteredError, @"Thread safety test should complete without errors");
         [expectation fulfill];
     });
-    
-    [self waitForExpectationsWithTimeout:30 handler:nil];
+
+    [self waitForExpectationsWithTimeout:MPThreadSafetyStressTimeout handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"activeKitsRegistry stress loops did not finish within %.0fs, which means the container deadlocked or starved: %@", MPThreadSafetyStressTimeout, error);
+        }
+    }];
+
+    @synchronized (failures) {
+        XCTAssertEqualObjects(failures, @[], @"Concurrent activeKitsRegistry and configureKits: access reported failures");
+    }
 }
 
 - (void)testBracketForKitThreadSafety {
-    // This stress test verifies that bracketForKit: doesn't crash when
-    // called concurrently with updateBracketsWithConfiguration: modifications.
-    // Race conditions are non-deterministic, so this test increases the
-    // likelihood of catching issues but cannot guarantee detection.
-    
     MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    
+
     NSArray *integrationIds = @[@42, @314, @123, @456];
     NSDictionary *bracketConfig = @{
         @"lo": @0,
         @"hi": @100
     };
-    
-    // Initialize some brackets
+
     for (NSNumber *integrationId in integrationIds) {
         [kitContainer updateBracketsWithConfiguration:bracketConfig integrationId:integrationId];
     }
-    
+
     XCTestExpectation *expectation = [self expectationWithDescription:@"Bracket thread safety stress test"];
-    
+
     dispatch_group_t group = dispatch_group_create();
     dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.brackets", DISPATCH_QUEUE_CONCURRENT);
-    
-    NSInteger iterations = 100;
-    __block BOOL encounteredError = NO;
-    
-    // Multiple threads reading brackets
-    for (NSInteger i = 0; i < 3; i++) {
+
+    NSMutableArray<NSString *> *failures = [NSMutableArray array];
+    void (^recordFailure)(NSString *) = ^(NSString *message) {
+        @synchronized (failures) {
+            [failures addObject:message];
+        }
+    };
+
+    for (NSInteger i = 0; i < MPThreadSafetyStressReaders; i++) {
         dispatch_group_async(group, concurrentQueue, ^{
-            for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+            for (NSInteger j = 0; j < MPThreadSafetyStressIterations; j++) {
                 @try {
                     for (NSNumber *integrationId in integrationIds) {
-                        id bracket = [kitContainer bracketForKit:integrationId];
-                        (void)bracket; // Use the result to prevent optimization
+                        MPBracket *bracket = [kitContainer bracketForKit:integrationId];
+                        if (bracket != nil && bracket.high == 0) {
+                            recordFailure([NSString stringWithFormat:@"bracketForKit: returned a partially written bracket for %@: %@", integrationId, bracket]);
+                        }
                     }
                 } @catch (NSException *exception) {
-                    encounteredError = YES;
-                    XCTFail(@"Exception in bracketForKit: %@", exception);
+                    recordFailure([NSString stringWithFormat:@"bracketForKit: raised %@", exception]);
                 }
             }
         });
     }
-    
-    // Thread modifying brackets
+
     dispatch_group_async(group, concurrentQueue, ^{
-        for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+        for (NSInteger j = 0; j < MPThreadSafetyStressIterations; j++) {
             @try {
                 for (NSNumber *integrationId in integrationIds) {
-                    // Alternate between adding and removing brackets
                     if (j % 2 == 0) {
                         [kitContainer updateBracketsWithConfiguration:bracketConfig integrationId:integrationId];
                     } else {
@@ -3536,18 +3544,24 @@
                     }
                 }
             } @catch (NSException *exception) {
-                encounteredError = YES;
-                XCTFail(@"Exception in updateBracketsWithConfiguration: %@", exception);
+                recordFailure([NSString stringWithFormat:@"updateBracketsWithConfiguration: raised %@", exception]);
             }
         }
     });
-    
+
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        XCTAssertFalse(encounteredError, @"Thread safety test should complete without errors");
         [expectation fulfill];
     });
-    
-    [self waitForExpectationsWithTimeout:30 handler:nil];
+
+    [self waitForExpectationsWithTimeout:MPThreadSafetyStressTimeout handler:^(NSError *error) {
+        if (error) {
+            XCTFail(@"bracketForKit: stress loops did not finish within %.0fs, which means the container deadlocked or starved: %@", MPThreadSafetyStressTimeout, error);
+        }
+    }];
+
+    @synchronized (failures) {
+        XCTAssertEqualObjects(failures, @[], @"Concurrent bracketForKit: and updateBracketsWithConfiguration: access reported failures");
+    }
 }
 
 @end
