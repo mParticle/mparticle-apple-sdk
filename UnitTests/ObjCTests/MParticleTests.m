@@ -60,6 +60,15 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    // Reset the singleton so the next test does not inherit an SDK this one left running.
+    XCTestExpectation *didReset = [self expectationWithDescription:@"SDK reset"];
+    [[MParticle sharedInstance] reset:^{
+        [didReset fulfill];
+    }];
+    [self waitForExpectations:@[didReset] timeout:DEFAULT_TIMEOUT];
+
+    [MPKitContainer_PRIVATE.kitsRegistry removeAllObjects];
+
     [super tearDown];
     lastNotification = nil;
 }
@@ -173,7 +182,9 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
     options.shouldBeginSession = NO;
-    [instance startWithOptions:options];
+    [self waitForSDKInitializationDuring:^{
+        [instance startWithOptions:options];
+    }];
     [instance beginSession];
     dispatch_async([MParticle messageQueue], ^{
         MParticleSession *session = instance.currentSession;
@@ -189,7 +200,9 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
     options.shouldBeginSession = NO;
-    [instance startWithOptions:options];
+    [self waitForSDKInitializationDuring:^{
+        [instance startWithOptions:options];
+    }];
     [instance beginSession];
     XCTAssertNotNil(instance.currentSession, "No auto tracking called begin but nil current session");
     [instance endSession];
@@ -211,7 +224,9 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    [instance startWithOptions:options];
+    [self waitForSDKInitializationDuring:^{
+        [instance startWithOptions:options];
+    }];
     [instance endSession];
     
     [instance didReceiveRemoteNotification:@{@"aps":@{@"content-available":@1}, @"foo-notif-content": @"foo-notif-content-value"}];
@@ -228,7 +243,9 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    [instance startWithOptions:options];
+    [self waitForSDKInitializationDuring:^{
+        [instance startWithOptions:options];
+    }];
     [instance endSession];
     
     MPBaseEvent *sessionEvent = [[MPEvent alloc] initWithName:@"foo-event" type:MPEventTypeOther];
@@ -247,7 +264,9 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = YES;
-    [instance startWithOptions:options];
+    [self waitForSDKInitializationDuring:^{
+        [instance startWithOptions:options];
+    }];
     [instance endSession];
     
     MPBaseEvent *sessionEvent = [[MPEvent alloc] initWithName:@"foo-event" type:MPEventTypeOther];
@@ -267,7 +286,9 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
-    [instance startWithOptions:options];
+    [self waitForSDKInitializationDuring:^{
+        [instance startWithOptions:options];
+    }];
     [instance endSession];
     
     MPBaseEvent *sessionEvent = [[MPEvent alloc] initWithName:@"foo-event" type:MPEventTypeOther];
@@ -286,7 +307,9 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
-    [instance startWithOptions:options];
+    [self waitForSDKInitializationDuring:^{
+        [instance startWithOptions:options];
+    }];
     [instance endSession];
     
     MPBaseEvent *sessionEvent = [[MPEvent alloc] initWithName:@"foo-event" type:MPEventTypeOther];
@@ -1191,167 +1214,148 @@
 
 #pragma mark Workspace Switching Tests
 
+// Nothing below idles deliberately, so this is purely a ceiling on a switch that never completes.
+// It stays at 60s because the first SDK start in a fresh process blocks on the config request for
+// up to ~30s on a freshly erased simulator, which is what CI boots.
 #define WORKSPACE_SWITCHING_TIMEOUT 60
-#define WORKSPACE_SWITCHING_DELAY (int64_t)(10 * NSEC_PER_SEC)
+
+- (void)waitForSDKInitializationDuring:(NS_NOESCAPE dispatch_block_t)block {
+    XCTestExpectation *didFinishInitializing = [self expectationForNotification:mParticleDidFinishInitializing object:nil handler:nil];
+    block();
+    [self waitForExpectations:@[didFinishInitializing] timeout:WORKSPACE_SWITCHING_TIMEOUT];
+}
 
 - (void)testSwitchWorkspaceOptions {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-
     MParticle *instance = [MParticle sharedInstance];
     XCTAssertNotNil(instance);
     XCTAssertNil(instance.options);
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        MParticleOptions *options1 = [MParticleOptions optionsWithKey:@"unit-test-key1" secret:@"unit-test-secret1"];
+    MParticleOptions *options1 = [MParticleOptions optionsWithKey:@"unit-test-key1" secret:@"unit-test-secret1"];
+    [self waitForSDKInitializationDuring:^{
         [instance startWithOptions:options1];
-        XCTAssertNotNil(instance.options);
-        XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
-        XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
+    }];
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key2" secret:@"unit-test-secret2"];
-            [instance switchWorkspaceWithOptions:options2];
-            
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-                MParticle *instance3 = [MParticle sharedInstance];
-                MParticle *instance4 = [MParticle sharedInstance];
-                XCTAssertNotNil(instance.options);
-                XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
-                XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
-                
-                XCTAssertNotNil(instance3.options);
-                XCTAssertEqualObjects(instance3.options.apiKey, @"unit-test-key2");
-                XCTAssertEqualObjects(instance3.options.apiSecret, @"unit-test-secret2");
-                XCTAssertNotEqual(instance, instance3);
-                XCTAssertEqual(instance3, instance4);
-                
-                [expectation fulfill];
-            });
-        });
-    });
+    XCTAssertNotNil(instance.options);
+    XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
+    XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
 
-    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+    MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key2" secret:@"unit-test-secret2"];
+    [self waitForSDKInitializationDuring:^{
+        [instance switchWorkspaceWithOptions:options2];
+    }];
+
+    MParticle *instance3 = [MParticle sharedInstance];
+    MParticle *instance4 = [MParticle sharedInstance];
+    XCTAssertNotNil(instance.options);
+    XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
+    XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
+
+    XCTAssertNotNil(instance3.options);
+    XCTAssertEqualObjects(instance3.options.apiKey, @"unit-test-key2");
+    XCTAssertEqualObjects(instance3.options.apiSecret, @"unit-test-secret2");
+    XCTAssertNotEqual(instance, instance3);
+    XCTAssertEqual(instance3, instance4);
 }
 
 - (void)testSwitchWorkspaceSideloadedKits {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-     
     // Start with a sideloaded kit
     MParticleOptions *options1 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     MPKitTestClassSideloaded *kitTestSideloaded1 = [[MPKitTestClassSideloaded alloc] init];
     options1.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:kitTestSideloaded1]];
-    
-    [[MParticle sharedInstance] startWithOptions:options1];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-        XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
-       
-        // Switch workspace with a new sideloaded kit
-        MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-        MPKitTestClassSideloaded *kitTestSideloaded2 = [[MPKitTestClassSideloaded alloc] init];
-        options2.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:kitTestSideloaded2]];
-        
+
+    [self waitForSDKInitializationDuring:^{
+        [[MParticle sharedInstance] startWithOptions:options1];
+    }];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+    XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
+
+    // Switch workspace with a new sideloaded kit
+    MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    MPKitTestClassSideloaded *kitTestSideloaded2 = [[MPKitTestClassSideloaded alloc] init];
+    options2.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:kitTestSideloaded2]];
+
+    [self waitForSDKInitializationDuring:^{
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options2];
-        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-            XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
-            
-            // Switch workspace with no sideloaded kits
-            MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-            [[MParticle sharedInstance] switchWorkspaceWithOptions:options3];
-            
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-                XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
-                
-                [expectation fulfill];
-            });
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:(WORKSPACE_SWITCHING_TIMEOUT) handler:nil];
+    }];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+    XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
+
+    // Switch workspace with no sideloaded kits
+    MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    [self waitForSDKInitializationDuring:^{
+        [[MParticle sharedInstance] switchWorkspaceWithOptions:options3];
+    }];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
 }
 
 // Kits without configurations should NOT be removed from the registry even if they implement `stop` becuase it means they weren't used by the previous workspace
 - (void)testSwitchWorkspaceKitsNoConfigurations {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     [MParticle registerExtension:[[MPKitRegister alloc] initWithName:@"TestKitNoStop" className:@"MPKitTestClassNoStartImmediately"]];
     [MParticle registerExtension:[[MPKitRegister alloc] initWithName:@"TestKitWithStop" className:@"MPKitTestClassNoStartImmediatelyWithStop"]];
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
-    
+
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-    [[MParticle sharedInstance] startWithOptions:options];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
+    [self waitForSDKInitializationDuring:^{
+        [[MParticle sharedInstance] startWithOptions:options];
+    }];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
+
+    [self waitForSDKInitializationDuring:^{
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
-       
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
-            [expectation fulfill];
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+    }];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
 }
 
 // Kits with configurations that don't implement `stop` should be removed from the registry because they can't be cleanly restarted
 - (void)testSwitchWorkspaceKitsWithoutStop {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     MPKitRegister *registerNoStop = [[MPKitRegister alloc] initWithName:@"TestKitNoStop" className:@"MPKitTestClassNoStartImmediately"];
     [MParticle registerExtension:registerNoStop];
-    
+
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-    [[MParticle sharedInstance] startWithOptions:options];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
-        [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
-        
-        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-                
+    [self waitForSDKInitializationDuring:^{
+        [[MParticle sharedInstance] startWithOptions:options];
+    }];
+
+    registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+
+    [self waitForSDKInitializationDuring:^{
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
-       
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
-            [expectation fulfill];
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+    }];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
 }
 
 // Kits with configurations that implement `stop` shouldn't be removed from the registry because they can be cleanly restarted
 - (void)testSwitchWorkspaceKitsWithStop {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     MPKitRegister *registerWithStop = [[MPKitRegister alloc] initWithName:@"TestKitWithStop" className:@"MPKitTestClassNoStartImmediatelyWithStop"];
     [MParticle registerExtension:registerWithStop];
-    
+
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-    [[MParticle sharedInstance] startWithOptions:options];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
-        [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
-        
-        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-                
+    [self waitForSDKInitializationDuring:^{
+        [[MParticle sharedInstance] startWithOptions:options];
+    }];
+
+    registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+
+    [self waitForSDKInitializationDuring:^{
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
-       
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-            [expectation fulfill];
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+    }];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
 }
 
 - (void)testSetWrapperSdk {
