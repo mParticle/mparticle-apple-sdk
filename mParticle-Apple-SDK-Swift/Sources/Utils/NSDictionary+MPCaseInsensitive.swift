@@ -18,31 +18,18 @@ public extension NSDictionary {
 }
 
 @objc(MPAttributeValueTransformer) public final class AttributeValueTransformer: NSObject {
-    /// Mirrors the branch order of `transformedValue(for:)`. Kept separate because a
-    /// supported value can still convert to nil, and the caller has to tell the two apart.
+    /// The supported types here must stay in step with `transformedValue(for:)`. This is a
+    /// separate check because a supported value can still convert to nil, and the caller has
+    /// to tell that apart from an unsupported type.
     @objc(isSupportedAttributeValue:) public static func isSupportedValue(_ value: Any) -> Bool {
-        if value is String {
+        switch value {
+        case is String, is NSNumber, is Date, is NSDictionary, is NSArray, is NSNull:
             return true
-        }
-        if value is NSNumber {
-            return true
-        }
-        if value is Date {
-            return true
-        }
-        if let data = value as? Data {
+        case let data as Data:
             return !data.isEmpty
+        default:
+            return false
         }
-        if value is NSDictionary {
-            return true
-        }
-        if value is NSArray {
-            return true
-        }
-        if value is NSNull {
-            return true
-        }
-        return false
     }
 
     @objc(transformedValueForAttribute:) public static func transformedValue(for value: Any) -> Any? {
