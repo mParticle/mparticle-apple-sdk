@@ -22,7 +22,6 @@
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
 #import "MPForwardQueueParameters.h"
-#import "MPConsentKitFilter.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"
