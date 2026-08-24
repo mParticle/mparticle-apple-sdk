@@ -4,7 +4,7 @@
 #import "MPConsentState.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
-#import "MPConsentKitFilter.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPBaseTestCase.h"
 
 static NSTimeInterval epsilon = 0.05;

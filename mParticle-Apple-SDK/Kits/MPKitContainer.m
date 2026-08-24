@@ -25,7 +25,6 @@
 #import "MPForwardQueueParameters.h"
 #import "MPIntegrationAttributes.h"
 #import "mParticle.h"
-#import "MPConsentKitFilter.h"
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
 #import <objc/message.h>

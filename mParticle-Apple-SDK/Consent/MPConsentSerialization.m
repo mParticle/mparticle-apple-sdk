@@ -4,7 +4,7 @@
 #import "MPGDPRConsent.h"
 #import "MPILogger.h"
 #import "MPIConstants.h"
-#import "MPConsentKitFilter.h"
+@import mParticle_Apple_SDK_Swift;
 #import "mParticle.h"
 
 @implementation MPConsentSerialization
