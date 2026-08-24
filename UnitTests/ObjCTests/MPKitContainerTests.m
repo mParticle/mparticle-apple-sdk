@@ -21,7 +21,6 @@
 #import "MPTransactionAttributes.h"
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
-#import "MPForwardQueueParameters.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"

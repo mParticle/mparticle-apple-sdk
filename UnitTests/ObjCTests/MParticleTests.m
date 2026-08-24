@@ -14,7 +14,6 @@
 #import "MPKitConfiguration.h"
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
-#import "MPForwardQueueParameters.h"
 #import "MPCCPAConsent.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;

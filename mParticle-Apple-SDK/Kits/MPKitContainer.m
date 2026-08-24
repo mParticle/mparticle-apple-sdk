@@ -22,7 +22,6 @@
 #import "MPForwardQueueItem.h"
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
-#import "MPForwardQueueParameters.h"
 #import "MPIntegrationAttributes.h"
 #import "mParticle.h"
 #import "MPIConstants.h"
