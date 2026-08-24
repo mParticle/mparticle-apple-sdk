@@ -34,7 +34,6 @@
     [self enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         if (![MPAttributeValueTransformer isSupportedAttributeValue:obj]) {
             MPILogError(@"Data type is not supported as an attribute value: %@ - %@", obj, [[obj class] description]);
-            NSAssert([obj isKindOfClass:[NSString class]], @"Data type is not supported as an attribute value");
             return;
         }
 
