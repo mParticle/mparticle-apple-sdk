@@ -1,6 +1,6 @@
 import Foundation
 
-@objc public final class MPBracketLogicPRIVATE: NSObject {
+@objc public final class MPBracketPRIVATE: NSObject {
     @objc public static func shouldForward(mpId: Int64, low: Int16, high: Int16) -> Bool {
         guard mpId != 0, high != 0 else {
             return false

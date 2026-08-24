@@ -18,7 +18,7 @@
 }
 
 - (BOOL)shouldForward {
-    return [MPBracketLogicPRIVATE shouldForwardWithMpId:self.mpId low:self.low high:self.high];
+    return [MPBracketPRIVATE shouldForwardWithMpId:self.mpId low:self.low high:self.high];
 }
 
 - (BOOL)isEqualToBracket:(MPBracket *)bracket {
