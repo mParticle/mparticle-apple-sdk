@@ -1,23 +1,28 @@
 #import "SettingsProvider.h"
 #import "MPIConstants.h"
+@import mParticle_Apple_SDK_Swift;
 
-
+@interface SettingsProvider ()
+@property (nonatomic, strong) MPSettingsProviderPRIVATE *implementation;
+@end
 
 @implementation SettingsProvider
 
-@synthesize configSettings = _configSettings;
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _implementation = [[MPSettingsProviderPRIVATE alloc] init];
+    }
+    return self;
+}
 
 - (NSMutableDictionary *)configSettings {
-    if (_configSettings) {
-        return _configSettings;
-    }
-    
-    NSString *path = [[NSBundle mainBundle] pathForResource:kMPConfigPlist ofType:@"plist"];
-    if (path) {
-        _configSettings = [[NSMutableDictionary alloc] initWithContentsOfFile:path];
-    }
-    
-    return _configSettings;
+    return [self.implementation loadConfigSettingsFromBundle:NSBundle.mainBundle
+                                                resourceName:kMPConfigPlist];
+}
+
+- (void)setConfigSettings:(NSMutableDictionary *)configSettings {
+    self.implementation.configSettings = configSettings;
 }
 
 @end
