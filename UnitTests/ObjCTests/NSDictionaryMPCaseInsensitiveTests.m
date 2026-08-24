@@ -75,6 +75,16 @@
     XCTAssertEqualObjects(result[@"data"], @"payload");
 }
 
+// Non-empty data passes the length guard but still yields nil when it is not
+// valid UTF-8, which drops the key without reaching the unsupported branch.
+- (void)testTransformDropsDataThatIsNotValidUTF8 {
+    const unsigned char invalidBytes[] = {0xC3, 0x28};
+    NSData *invalid = [NSData dataWithBytes:invalidBytes length:sizeof(invalidBytes)];
+    NSDictionary *result = [@{@"invalid": invalid, @"keep": @"value"} transformValuesToString];
+    XCTAssertNil(result[@"invalid"]);
+    XCTAssertEqualObjects(result[@"keep"], @"value");
+}
+
 - (void)testTransformEncodesCollectionsWithDescription {
     NSDictionary *inner = @{@"a": @1};
     NSArray *array = @[@"x", @"y"];
