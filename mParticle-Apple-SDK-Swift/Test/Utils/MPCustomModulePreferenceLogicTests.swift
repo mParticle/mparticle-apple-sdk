@@ -80,6 +80,12 @@ class MPCustomModulePreferenceLogicTests: XCTestCase {
         XCTAssertNil(Logic.value(forDefaultValue: "anything", dataType: 0))
     }
 
+    func testValueIsNilWhenDefaultIsMissing() {
+        for dataType in [0, 1, 2, 3, 4, 5, 99] {
+            XCTAssertNil(Logic.value(forDefaultValue: nil, dataType: dataType), "\(dataType)")
+        }
+    }
+
     // MARK: - Macro expansion
 
     func testUndashedUUIDStripsAllDashes() {
@@ -107,6 +113,11 @@ class MPCustomModulePreferenceLogicTests: XCTestCase {
 
     func testUnknownMacroReturnsEmptyString() {
         let result = Logic.defaultValue(forMacroPlaceholder: "%nope%", uuid: { self.fixedUUID }, date: { Date() })
+        XCTAssertEqual(result, "")
+    }
+
+    func testNilMacroReturnsEmptyString() {
+        let result = Logic.defaultValue(forMacroPlaceholder: nil, uuid: { self.fixedUUID }, date: { Date() })
         XCTAssertEqual(result, "")
     }
 

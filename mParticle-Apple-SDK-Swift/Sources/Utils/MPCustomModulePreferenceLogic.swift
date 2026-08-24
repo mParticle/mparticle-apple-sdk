@@ -22,11 +22,13 @@ private enum CustomModuleDataType: Int {
         return macroPlaceholders.contains(candidate)
     }
 
-    @objc(defaultValueForMacroPlaceholder:) public static func defaultValue(forMacroPlaceholder placeholder: String) -> String {
+    /// Accepts nil so a caller that skips the isMacroPlaceholder check cannot trap on the
+    /// bridge. Anything unrecognised, nil included, yields the empty string.
+    @objc(defaultValueForMacroPlaceholder:) public static func defaultValue(forMacroPlaceholder placeholder: String?) -> String {
         return defaultValue(forMacroPlaceholder: placeholder, uuid: { UUID() }, date: { Date() })
     }
 
-    public static func defaultValue(forMacroPlaceholder placeholder: String,
+    public static func defaultValue(forMacroPlaceholder placeholder: String?,
                                     uuid: () -> UUID,
                                     date: () -> Date) -> String {
         switch placeholder {
@@ -35,7 +37,7 @@ private enum CustomModuleDataType: Int {
         case "%oaid%":
             return advertisingIdentifier(from: undashedUUID(uuid()))
         case "%dt%":
-            return macroDateFormatter.string(from: date())
+            return makeMacroDateFormatter().string(from: date())
         case "%glsb%":
             return leastSignificantBits(of: uuid())
         case "%g%":
@@ -63,8 +65,15 @@ private enum CustomModuleDataType: Int {
     /// Coerces an already-resolved default string into the typed value the preference vends.
     /// Uses NSString's parsing so that inputs the strict Swift initializers would reject,
     /// such as trailing characters, keep behaving as they do today.
-    @objc(valueForDefaultValue:dataType:) public static func value(forDefaultValue defaultValue: String,
+    @objc(valueForDefaultValue:dataType:) public static func value(forDefaultValue defaultValue: String?,
                                                                    dataType rawDataType: Int) -> Any? {
+        // An unrecognised data type leaves the default unset, so this has to accept nil and
+        // return nil rather than trapping on the bridge. That matches the original, which
+        // fell through its switch and left the value alone.
+        guard let defaultValue = defaultValue else {
+            return nil
+        }
+
         switch CustomModuleDataType(rawValue: rawDataType) {
         case .string:
             return defaultValue
@@ -82,13 +91,17 @@ private enum CustomModuleDataType: Int {
 
     // MARK: - Macro helpers
 
-    private static let macroDateFormatter: DateFormatter = {
+    /// Built per call rather than cached. DateFormatter mutates internal state while
+    /// formatting, which is why MPDateFormatter in this module serialises access to its
+    /// shared instances. Expansion runs once per preference during config parsing, so there
+    /// is nothing to gain from sharing one here, and the original allocated per call too.
+    private static func makeMacroDateFormatter() -> DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy'-'MM'-'dd' 'HH':'mm':'ss Z"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
-    }()
+    }
 
     public static func undashedUUID(_ uuid: UUID) -> String {
         return uuid.uuidString.replacingOccurrences(of: "-", with: "")
