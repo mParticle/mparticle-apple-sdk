@@ -1,4 +1,5 @@
 #import "MPBracket.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MPBracket
 
@@ -17,14 +18,7 @@
 }
 
 - (BOOL)shouldForward {
-    if (self.mpId == 0 || self.high == 0) {
-        return NO;
-    }
-
-    int64_t shiftedMpId = self.mpId >> 8;
-    int64_t absoluteValue = shiftedMpId < 0 ? -shiftedMpId : shiftedMpId;
-    int userBucket = (int)(absoluteValue % 100);
-    return userBucket >= self.low && userBucket < self.high;
+    return [MPBracketLogicPRIVATE shouldForwardWithMpId:self.mpId low:self.low high:self.high];
 }
 
 - (BOOL)isEqualToBracket:(MPBracket *)bracket {
