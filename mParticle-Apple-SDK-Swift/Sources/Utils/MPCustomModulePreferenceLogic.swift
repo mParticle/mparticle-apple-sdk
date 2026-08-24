@@ -98,23 +98,21 @@ private enum CustomModuleDataType: Int {
     /// splits the 32 characters into two 16 character halves. Note the comparison is on the
     /// ASCII value, so hex letters count as above the threshold and get replaced.
     public static func advertisingIdentifier(from undashed: String,
-                                             randomBelow: (UInt32) -> UInt32 = { arc4random_uniform($0) }) -> String {
-        var characters = Array(undashed.utf8)
+                                             randomBelow: (UInt32) -> UInt32 = { UInt32.random(in: 0..<$0) }) -> String {
+        var characters = Array(undashed)
         guard characters.count >= 32 else {
             return undashed
         }
 
         let zero = UInt8(ascii: "0")
-        if characters[0] >= UInt8(ascii: "8") {
-            characters[0] = zero + UInt8(randomBelow(8))
+        if let ascii = characters[0].asciiValue, ascii >= UInt8(ascii: "8") {
+            characters[0] = Character(UnicodeScalar(zero + UInt8(randomBelow(8))))
         }
-        if characters[16] >= UInt8(ascii: "4") {
-            characters[16] = zero + UInt8(randomBelow(4))
+        if let ascii = characters[16].asciiValue, ascii >= UInt8(ascii: "4") {
+            characters[16] = Character(UnicodeScalar(zero + UInt8(randomBelow(4))))
         }
 
-        let first = String(decoding: characters[0..<16], as: UTF8.self)
-        let second = String(decoding: characters[16..<32], as: UTF8.self)
-        return "\(first)-\(second)"
+        return "\(String(characters[0..<16]))-\(String(characters[16..<32]))"
     }
 
     /// Assembles bytes 8 through 15 of the UUID big-endian into a signed 64 bit value.
