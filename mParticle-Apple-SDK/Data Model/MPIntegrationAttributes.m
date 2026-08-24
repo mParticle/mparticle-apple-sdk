@@ -1,87 +1,60 @@
 #import "MPIntegrationAttributes.h"
-#import "MPILogger.h"
-#import "mParticle.h"
-#import "MPIConstants.h"
+@import mParticle_Apple_SDK_Swift;
+
+@interface MPIntegrationAttributes ()
+@property (nonatomic, strong) MPIntegrationAttributesPRIVATE *implementation;
+@end
 
 @implementation MPIntegrationAttributes
 
-- (nonnull instancetype)initWithIntegrationId:(nonnull NSNumber *)integrationId attributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes {
-    
-    if (![integrationId isKindOfClass:[NSNumber class]] || MPIsNull(attributes) || attributes.count == 0) {
+- (instancetype)initWithIntegrationId:(NSNumber *)integrationId attributes:(NSDictionary<NSString *, NSString *> *)attributes {
+    MPIntegrationAttributesPRIVATE *implementation = [[MPIntegrationAttributesPRIVATE alloc] initWithIntegrationId:integrationId attributes:attributes];
+    if (!implementation) {
         return nil;
     }
-    
-    __block BOOL validIntegrationAttributes = YES;
-    Class NSStringClass = [NSString class];
-    [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-        validIntegrationAttributes = [key isKindOfClass:NSStringClass] && [obj isKindOfClass:NSStringClass];
-        
-        if (!validIntegrationAttributes) {
-            MPILogError(@"Integration attributes must be a dictionary of string, string.");
-            *stop = YES;
-        }
-    }];
-    
-    if (!validIntegrationAttributes) {
-        return nil;
-    }
-    
+
     self = [super init];
     if (self) {
-        _integrationId = integrationId;
-        _attributes = [attributes copy];
+        _implementation = implementation;
     }
-
     return self;
 }
 
-- (nonnull instancetype)initWithIntegrationId:(nonnull NSNumber *)integrationId attributesData:(nonnull NSData *)attributesData {
-    NSError *error = nil;
-    NSDictionary *attributes = nil;
-    
-    if (MPIsNull(attributesData)) {
+- (instancetype)initWithIntegrationId:(NSNumber *)integrationId attributesData:(NSData *)attributesData {
+    MPIntegrationAttributesPRIVATE *implementation = [[MPIntegrationAttributesPRIVATE alloc] initWithIntegrationId:integrationId attributesData:attributesData];
+    if (!implementation) {
         return nil;
     }
-    
-    @try {
-        attributes = [NSJSONSerialization JSONObjectWithData:attributesData options:0 error:&error];
-    } @catch (NSException *exception) {
-        MPILogError(@"Exception thrown trying to deserialize integration attributes: %@", exception);
+
+    self = [super init];
+    if (self) {
+        _implementation = implementation;
     }
-    
-    if (!attributes && error != nil) {
-        return nil;
-    }
-    
-    // Ensure attributes is not nil before passing to init method
-    NSDictionary<NSString *, NSString *> *safeAttributes = attributes ?: @{};
-    self = [self initWithIntegrationId:integrationId attributes:safeAttributes];
     return self;
 }
 
-#pragma mark MPDataModelProtocol
+- (NSNumber *)integrationId {
+    return self.implementation.integrationId;
+}
+
+- (void)setIntegrationId:(NSNumber *)integrationId {
+    self.implementation.integrationId = integrationId;
+}
+
+- (NSDictionary<NSString *, NSString *> *)attributes {
+    return (NSDictionary<NSString *, NSString *> *)self.implementation.attributes;
+}
+
+- (void)setAttributes:(NSDictionary<NSString *, NSString *> *)attributes {
+    self.implementation.attributes = attributes;
+}
+
 - (NSDictionary *)dictionaryRepresentation {
-    NSDictionary<NSString *, NSDictionary<NSString *, NSString*> *> *dictionary = @{[_integrationId stringValue]:_attributes};
-    return dictionary;
+    return [self.implementation dictionaryRepresentation];
 }
 
 - (NSString *)serializedString {
-    NSDictionary *dictionaryRepresentation = [self dictionaryRepresentation];
-    NSError *error = nil;
-    NSData *dataRepresentation = nil;
-    
-    @try {
-        dataRepresentation = [NSJSONSerialization dataWithJSONObject:dictionaryRepresentation options:0 error:&error];
-    } @catch (NSException *exception) {
-        MPILogError(@"Exception thrown trying to serialize integration attributes: %@", exception);
-    }
-    
-    if (dataRepresentation.length == 0 && error != nil) {
-        return nil;
-    }
-    
-    NSString *stringRepresentation = [[NSString alloc] initWithData:dataRepresentation encoding:NSUTF8StringEncoding];
-    return stringRepresentation;
+    return [self.implementation serializedString];
 }
 
 @end

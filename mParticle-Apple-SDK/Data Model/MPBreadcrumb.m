@@ -1,67 +1,55 @@
 #import "MPBreadcrumb.h"
 #import "MPIConstants.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPBreadcrumb()
-@property (nonatomic, strong) NSString *content;
+@property (nonatomic, strong) MPBreadcrumbPRIVATE *implementation;
 @end
-
 
 @implementation MPBreadcrumb
 
 - (instancetype)initWithSessionUUID:(NSString *)sessionUUID breadcrumbId:(int64_t)breadcrumbId UUID:(NSString *)uuid breadcrumbData:(NSData *)breadcrumbData timestamp:(NSTimeInterval)timestamp {
     self = [super init];
     if (self) {
-        _sessionUUID = sessionUUID;
-        _breadcrumbId = breadcrumbId;
+        _implementation = [[MPBreadcrumbPRIVATE alloc] initWithSessionUUID:sessionUUID
+                                                              breadcrumbId:breadcrumbId
+                                                                      UUID:uuid
+                                                            breadcrumbData:breadcrumbData ?: [NSData data]
+                                                                 timestamp:timestamp];
         _uuid = uuid;
-        _timestamp = timestamp;
-        _breadcrumbData = breadcrumbData;
-        if (breadcrumbData) {
-            _content = [[NSString alloc] initWithData:breadcrumbData encoding:NSUTF8StringEncoding];
-        }
     }
-    
     return self;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Breadcrumb\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uuid, self.content, self.timestamp];
+    return [NSString stringWithFormat:@"Breadcrumb\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uuid, self.implementation.content, self.timestamp];
 }
 
 - (BOOL)isEqual:(MPBreadcrumb *)object {
     if (MPIsNull(object) || ![object isKindOfClass:[MPBreadcrumb class]]) {
         return NO;
     }
-    
-    BOOL isEqual = _breadcrumbId == object.breadcrumbId &&
-                   _timestamp == object.timestamp &&
-                   [_uuid isEqualToString:object.uuid] &&
-                   [_sessionUUID isEqualToString:object.sessionUUID] &&
-                   [_breadcrumbData isEqualToData:object.breadcrumbData];
-    return isEqual;
+    return [self.implementation isEqualToBreadcrumb:object.implementation];
 }
 
 - (NSUInteger)hash {
-    return (NSUInteger)self.breadcrumbId ^ (NSUInteger)self.timestamp ^ [self.uuid hash] ^ [self.sessionUUID hash] ^ [self.breadcrumbData hash];
+    return (NSUInteger)self.implementation.hash;
 }
 
-#pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
-    MPBreadcrumb *copyObject = [[MPBreadcrumb alloc] initWithSessionUUID:[_sessionUUID copy]
-                                                            breadcrumbId:_breadcrumbId
-                                                                    UUID:[_uuid copy]
-                                                          breadcrumbData:[_breadcrumbData copy]
-                                                               timestamp:_timestamp];
-    
-    return copyObject;
+    MPBreadcrumbPRIVATE *copyImpl = [self.implementation copyBreadcrumb];
+    return [[MPBreadcrumb alloc] initWithSessionUUID:copyImpl.sessionUUID
+                                        breadcrumbId:copyImpl.breadcrumbId
+                                                UUID:copyImpl.uuid
+                                      breadcrumbData:copyImpl.breadcrumbData
+                                           timestamp:copyImpl.timestamp];
 }
 
-#pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     [coder encodeObject:self.sessionUUID forKey:@"sessionUUID"];
     [coder encodeInt64:self.breadcrumbId forKey:@"breadcrumbId"];
     [coder encodeObject:self.uuid forKey:@"uuid"];
-    [coder encodeObject:self.content forKey:@"content"];
+    [coder encodeObject:self.implementation.content forKey:@"content"];
     [coder encodeObject:self.breadcrumbData forKey:@"breadcrumbData"];
     [coder encodeDouble:self.timestamp forKey:@"timestamp"];
 }
@@ -69,47 +57,34 @@
 - (id)initWithCoder:(NSCoder *)coder {
     NSString *content = [coder decodeObjectForKey:@"content"];
     NSData *breadcrumbData = [content dataUsingEncoding:NSUTF8StringEncoding];
-    
-    self = [self initWithSessionUUID:[coder decodeObjectOfClass:[NSString class] forKey:@"sessionUUID"]
+    return [self initWithSessionUUID:[coder decodeObjectOfClass:[NSString class] forKey:@"sessionUUID"]
                         breadcrumbId:[coder decodeInt64ForKey:@"breadcrumbId"]
                                 UUID:[coder decodeObjectOfClass:[NSString class] forKey:@"uuid"]
                       breadcrumbData:breadcrumbData
                            timestamp:[coder decodeDoubleForKey:@"timestamp"]];
-    
-    return self;
 }
 
 + (BOOL)supportsSecureCoding {
     return YES;
 }
 
-#pragma mark Public methods
+- (NSString *)sessionUUID { return self.implementation.sessionUUID; }
+- (void)setSessionUUID:(NSString *)sessionUUID { self.implementation.sessionUUID = sessionUUID; }
+- (int64_t)breadcrumbId { return self.implementation.breadcrumbId; }
+- (void)setBreadcrumbId:(int64_t)breadcrumbId { self.implementation.breadcrumbId = breadcrumbId; }
+- (NSString *)uuid { return self.implementation.uuid; }
+- (void)setUuid:(NSString *)uuid { self.implementation.uuid = uuid; _uuid = uuid; }
+- (NSData *)breadcrumbData { return self.implementation.breadcrumbData; }
+- (void)setBreadcrumbData:(NSData *)breadcrumbData { self.implementation.breadcrumbData = breadcrumbData; }
+- (NSTimeInterval)timestamp { return self.implementation.timestamp; }
+- (void)setTimestamp:(NSTimeInterval)timestamp { self.implementation.timestamp = timestamp; }
+
 - (NSDictionary *)dictionaryRepresentation {
-    NSDictionary *breadcrumbInfo = [NSJSONSerialization JSONObjectWithData:_breadcrumbData options:0 error:nil];
-    
-    NSMutableDictionary *breadcrumbDictionary = [@{kMPMessageTypeKey:kMPMessageTypeLeaveBreadcrumbs,
-                                                   kMPTimestampKey:breadcrumbInfo[kMPTimestampKey],
-                                                   kMPMessageIdKey:breadcrumbInfo[kMPMessageIdKey],
-                                                   kMPSessionIdKey:breadcrumbInfo[kMPSessionIdKey],
-                                                   kMPSessionStartTimestamp:breadcrumbInfo[kMPSessionStartTimestamp]
-                                                  }
-                                                 mutableCopy];
-
-    if (breadcrumbInfo[kMPLeaveBreadcrumbsKey]) {
-        breadcrumbDictionary[kMPLeaveBreadcrumbsKey] = breadcrumbInfo[kMPLeaveBreadcrumbsKey];
-    }
-    
-    if (breadcrumbInfo[kMPAttributesKey]) {
-        breadcrumbDictionary[kMPAttributesKey] = breadcrumbInfo[kMPAttributesKey];
-    }
-
-    return [breadcrumbDictionary copy];
+    return [self.implementation dictionaryRepresentation];
 }
 
 - (NSString *)serializedString {
-    NSString *serializedString = [[NSString alloc] initWithData:self.breadcrumbData encoding:NSUTF8StringEncoding];
-    
-    return serializedString;
+    return [self.implementation serializedString];
 }
 
 @end
