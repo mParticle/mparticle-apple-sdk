@@ -71,7 +71,7 @@ since the ObjC module already imports the Swift module. This means:
 
 - Keep the existing ObjC test in `UnitTests/ObjCTests/` as the behavior contract
   — it does not get deleted just because logic moved to Swift.
-- Add a mirroring Swift test in `UnitTests/SwiftTests/` for each extracted slice
+- Add a mirroring Swift test in `mParticle-Apple-SDK-Swift/Test/Utils/` for each extracted slice
   (round-trip JSON, consent blobs, identity DTO fields, etc.) that exercises the
   new Swift type directly.
 - Retire the ObjC duplicate only after sustained confidence in the Swift
