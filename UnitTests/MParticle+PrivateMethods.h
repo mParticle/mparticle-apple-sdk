@@ -1,8 +1,8 @@
 #import "SettingsProvider.h"
 #import "MPDataPlanFilter.h"
-#import "AppEnvironmentProvider.h"
 #import "MPAppNotificationHandler.h"
 #import "SceneDelegateHandler.h"
+@import mParticle_Apple_SDK_Swift;
 
 @protocol MPUserDefaultsProtocol;
 
