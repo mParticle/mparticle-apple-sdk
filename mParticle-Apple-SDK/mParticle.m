@@ -18,7 +18,6 @@
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"
 #import "Executor.h"
-#import "AppEnvironmentProvider.h"
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
 #import "SceneDelegateHandler.h"
