@@ -1,13 +1,16 @@
 #import "MPBracket.h"
+@import mParticle_Apple_SDK_Swift;
+
+@interface MPBracket ()
+@property (nonatomic, strong) MPBracketPRIVATE *implementation;
+@end
 
 @implementation MPBracket
 
 - (instancetype)initWithMpId:(int64_t)mpId low:(short)low high:(short)high {
     self = [super init];
     if (self) {
-        _mpId = mpId;
-        _low = low;
-        _high = high;
+        _implementation = [[MPBracketPRIVATE alloc] initWithMpId:mpId low:low high:high];
     }
     return self;
 }
@@ -16,32 +19,43 @@
     return [self initWithMpId:0 low:0 high:100];
 }
 
-- (BOOL)shouldForward {
-    if (self.mpId == 0 || self.high == 0) {
-        return NO;
-    }
+- (int64_t)mpId {
+    return self.implementation.mpId;
+}
 
-    int64_t shiftedMpId = self.mpId >> 8;
-    int64_t absoluteValue = shiftedMpId < 0 ? -shiftedMpId : shiftedMpId;
-    int userBucket = (int)(absoluteValue % 100);
-    return userBucket >= self.low && userBucket < self.high;
+- (void)setMpId:(int64_t)mpId {
+    self.implementation.mpId = mpId;
+}
+
+- (short)low {
+    return self.implementation.low;
+}
+
+- (void)setLow:(short)low {
+    self.implementation.low = low;
+}
+
+- (short)high {
+    return self.implementation.high;
+}
+
+- (void)setHigh:(short)high {
+    self.implementation.high = high;
+}
+
+- (BOOL)shouldForward {
+    return [self.implementation shouldForward];
 }
 
 - (BOOL)isEqualToBracket:(MPBracket *)bracket {
-    if (!bracket) {
-        return NO;
-    }
-
-    return self.mpId == bracket.mpId &&
-           self.low == bracket.low &&
-           self.high == bracket.high;
+    return [self.implementation isEqualToBracket:bracket.implementation];
 }
 
 - (BOOL)isEqual:(id)object {
     if (self == object) {
         return YES;
     }
-    
+
     if (![object isKindOfClass:[MPBracket class]]) {
         return NO;
     }
@@ -50,12 +64,11 @@
 }
 
 - (NSUInteger)hash {
-    return (NSUInteger)(self.mpId ^ self.low ^ self.high);
+    return self.implementation.hash;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<MPBracket: mpId=%lld, low=%d, high=%d>", 
-            self.mpId, self.low, self.high];
+    return self.implementation.description;
 }
 
 @end
