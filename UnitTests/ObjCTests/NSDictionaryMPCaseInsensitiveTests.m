@@ -147,28 +147,21 @@
 }
 
 // Zero-length NSData fails the `length > 0` guard and falls through to the
-// unsupported-type branch, so it is dropped in Release and trips NSAssert in
-// any build with assertions enabled.
+// unsupported-value branch, so the key is dropped.
 - (void)testTransformOfEmptyDataIsUnsupported {
     NSDictionary *original = @{@"empty": [NSData data], @"keep": @"value"};
-#ifdef NS_BLOCK_ASSERTIONS
-    NSDictionary *result = [original transformValuesToString];
+    NSDictionary *result = nil;
+    XCTAssertNoThrow(result = [original transformValuesToString]);
     XCTAssertNil(result[@"empty"]);
     XCTAssertEqualObjects(result[@"keep"], @"value");
-#else
-    XCTAssertThrows([original transformValuesToString]);
-#endif
 }
 
 - (void)testTransformOfUnsupportedValueType {
     NSDictionary *original = @{@"unsupported": [[NSObject alloc] init], @"keep": @"value"};
-#ifdef NS_BLOCK_ASSERTIONS
-    NSDictionary *result = [original transformValuesToString];
+    NSDictionary *result = nil;
+    XCTAssertNoThrow(result = [original transformValuesToString]);
     XCTAssertNil(result[@"unsupported"]);
     XCTAssertEqualObjects(result[@"keep"], @"value");
-#else
-    XCTAssertThrows([original transformValuesToString]);
-#endif
 }
 
 @end
