@@ -82,6 +82,7 @@
 		534CD29029CE2CE1008452B3 /* MPKitAppsFlyerTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C9C29CE019F00E7489F /* MPKitAppsFlyerTest.m */; };
 		534CD29129CE2CE1008452B3 /* MPEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7B29CE019E00E7489F /* MPEventTests.m */; };
 		534CD29229CE2CE1008452B3 /* MPMessageBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7629CE019E00E7489F /* MPMessageBuilderTests.m */; };
+		7B0C1A022F70000100000002 /* NSDictionaryMPCaseInsensitiveTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7B0C1A012F70000100000001 /* NSDictionaryMPCaseInsensitiveTests.m */; };
 		534CD29329CE2CE1008452B3 /* MPKitTestClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7529CE019E00E7489F /* MPKitTestClass.m */; };
 		534CD29429CE2CE1008452B3 /* MPKitContainerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8B29CE019F00E7489F /* MPKitContainerTests.m */; };
 		534CD29529CE2CE1008452B3 /* MPBase_Attribute_Event_ProjectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C6D29CE019E00E7489F /* MPBase_Attribute_Event_ProjectionTests.m */; };
@@ -519,6 +520,7 @@
 		53A79C7429CE019E00E7489F /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
 		53A79C7529CE019E00E7489F /* MPKitTestClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClass.m; sourceTree = "<group>"; };
 		53A79C7629CE019E00E7489F /* MPMessageBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMessageBuilderTests.m; sourceTree = "<group>"; };
+		7B0C1A012F70000100000001 /* NSDictionaryMPCaseInsensitiveTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDictionaryMPCaseInsensitiveTests.m; sourceTree = "<group>"; };
 		53A79C7729CE019E00E7489F /* MPKitSecondTestClassNoStartImmediately.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitSecondTestClassNoStartImmediately.m; sourceTree = "<group>"; };
 		53A79C7929CE019E00E7489F /* MPConsentStateTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsentStateTests.m; sourceTree = "<group>"; };
 		53A79C7B29CE019E00E7489F /* MPEventTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEventTests.m; sourceTree = "<group>"; };
@@ -1115,6 +1117,7 @@
 				53A79C7429CE019E00E7489F /* MPUserIdentityChangeTests.m */,
 				53A79C7529CE019E00E7489F /* MPKitTestClass.m */,
 				53A79C7629CE019E00E7489F /* MPMessageBuilderTests.m */,
+				7B0C1A012F70000100000001 /* NSDictionaryMPCaseInsensitiveTests.m */,
 				53A79C7729CE019E00E7489F /* MPKitSecondTestClassNoStartImmediately.m */,
 				53A79C7929CE019E00E7489F /* MPConsentStateTests.m */,
 				53A79C7B29CE019E00E7489F /* MPEventTests.m */,
@@ -1571,6 +1574,7 @@
 				7231B82A2EB95B04001565E5 /* MParticleRuntimeValuesTests.swift in Sources */,
 				534CD29129CE2CE1008452B3 /* MPEventTests.m in Sources */,
 				534CD29229CE2CE1008452B3 /* MPMessageBuilderTests.m in Sources */,
+				7B0C1A022F70000100000002 /* NSDictionaryMPCaseInsensitiveTests.m in Sources */,
 				7231B84D2EB963B3001565E5 /* MParticleKitBatchTests.swift in Sources */,
 				534CD29329CE2CE1008452B3 /* MPKitTestClass.m in Sources */,
 				534CD29429CE2CE1008452B3 /* MPKitContainerTests.m in Sources */,
