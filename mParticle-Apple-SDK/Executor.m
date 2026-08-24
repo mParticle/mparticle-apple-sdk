@@ -1,62 +1,42 @@
 #import "Executor.h"
+@import mParticle_Apple_SDK_Swift;
+
+@interface Executor ()
+@property (nonatomic, strong) MPExecutorPRIVATE *implementation;
+@end
 
 @implementation Executor
 
-static dispatch_queue_t messageQueue = nil;
-static void *messageQueueKey = "mparticle message queue key";
-static void *messageQueueToken = "mparticle message queue token";
-
 - (instancetype)init {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _implementation = [[MPExecutorPRIVATE alloc] init];
     }
-    messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
-    dispatch_queue_set_specific(messageQueue, messageQueueKey, messageQueueToken, nil);
-    
     return self;
 }
 
 - (dispatch_queue_t)messageQueue {
-    return messageQueue;
+    return self.implementation.messageQueue;
 }
 
 - (BOOL)isMessageQueue {
-    void *token = dispatch_get_specific(messageQueueKey);
-    BOOL isMessage = token == messageQueueToken;
-    return isMessage;
+    return self.implementation.isMessageQueue;
 }
 
-- (void)executeOnMessage:(void(^)(void))block {
-    if (self.isMessageQueue) {
-        block();
-    } else {
-        dispatch_async(self.messageQueue, block);
-    }
+- (void)executeOnMessage:(void (^)(void))block {
+    [self.implementation executeOnMessage:block];
 }
 
-- (void)executeOnMessageSync:(void(^)(void))block {
-    if (self.isMessageQueue) {
-        block();
-    } else {
-        dispatch_sync(self.messageQueue, block);
-    }
+- (void)executeOnMessageSync:(void (^)(void))block {
+    [self.implementation executeOnMessageSync:block];
 }
 
-- (void)executeOnMain:(void(^)(void))block {
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_async(dispatch_get_main_queue(), block);
-    }
+- (void)executeOnMain:(void (^)(void))block {
+    [self.implementation executeOnMain:block];
 }
 
-- (void)executeOnMainSync:(void(^)(void))block {
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
+- (void)executeOnMainSync:(void (^)(void))block {
+    [self.implementation executeOnMainSync:block];
 }
 
 @end
