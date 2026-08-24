@@ -3,7 +3,7 @@
 @import RoktContracts;
 
 // Kit version
-static NSString * const kMPRoktKitVersion = @"9.3.5";
+static NSString * const kMPRoktKitVersion = @"9.4.0";
 
 // Constants for kit configuration keys
 static NSString * const kMPKitConfigurationIdKey = @"id";
@@ -413,6 +413,10 @@ static __weak MPKitRokt *roktKit = nil;
     NSMutableDictionary<NSString *, NSString *> *identityAttributes = [[NSMutableDictionary alloc] init];
     for (NSNumber *identityNumberKey in filteredUser.userIdentities) {
         NSString *identityStringKey = [MPKitRokt stringForIdentityType:identityNumberKey.unsignedIntegerValue];
+        if (identityStringKey == nil) {
+            [MPKitRokt MPLog:[NSString stringWithFormat:@"Skipping user identity with no Rokt attribute mapping, type: %@", identityNumberKey]];
+            continue;
+        }
         [identityAttributes setObject:filteredUser.userIdentities[identityNumberKey] forKey:identityStringKey];
     }
     
@@ -443,7 +447,8 @@ static __weak MPKitRokt *roktKit = nil;
         return kMPRoktIdentityTypeEmailSha256;
     }
     
-    NSDictionary<NSNumber *, NSString *> *identityStrings = @{@(MPIdentityCustomerId): @"customerid",
+    NSDictionary<NSNumber *, NSString *> *identityStrings = @{@(MPIdentityAlias): @"alias",
+                                                             @(MPIdentityCustomerId): @"customerid",
                                                              @(MPIdentityEmail): @"email",
                                                              @(MPIdentityFacebook): @"facebook",
                                                              @(MPIdentityFacebookCustomAudienceId): @"facebookcustomaudienceid",
@@ -476,7 +481,8 @@ static __weak MPKitRokt *roktKit = nil;
     if (identityString == nil) {
         return nil;
     }
-    NSDictionary<NSString *, NSNumber *> *identityNumbers = @{@"customerid": @(MPIdentityCustomerId),
+    NSDictionary<NSString *, NSNumber *> *identityNumbers = @{@"alias": @(MPIdentityAlias),
+                                                             @"customerid": @(MPIdentityCustomerId),
                                                              @"email": @(MPIdentityEmail),
                                                              @"facebook": @(MPIdentityFacebook),
                                                              @"facebookcustomaudienceid": @(MPIdentityFacebookCustomAudienceId),
