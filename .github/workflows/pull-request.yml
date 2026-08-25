@@ -41,6 +41,10 @@ jobs:
     uses: ./.github/workflows/size-report.yml
     secrets: inherit
 
+  swift-migration-progress:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/swift-migration-progress.yml
+
   build-kits:
     uses: ./.github/workflows/build-kits.yml
     secrets: inherit
@@ -53,6 +57,7 @@ jobs:
       # - build-secondary-platforms  # TODO: Re-enable after 9.0 release
       - integration-tests
       - size-report
+      - swift-migration-progress
       - build-kits
     name: Notify GChat
     uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main
