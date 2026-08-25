@@ -5,7 +5,9 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+# Floor is set by react-native-mparticle 3.x (iOS 15.6), not by this SDK,
+# which still supports iOS 15.0. RN 0.76's own floor is 15.1.
+platform :ios, '15.6'
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -16,7 +18,7 @@ end
 
   # Local Pods for testing Core
   use_frameworks! :linkage => :static
-  pod 'mParticle-Apple-SDK', :path => '../..'
+  pod 'mParticle-Apple-SDK-ObjC', :path => '../..'
 
 target 'RNExample' do
   config = use_native_modules!
