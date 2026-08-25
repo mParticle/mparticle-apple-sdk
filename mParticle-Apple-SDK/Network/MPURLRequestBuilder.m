@@ -5,7 +5,6 @@
 #import "MPKitContainer.h"
 #import "MPExtensionProtocol.h"
 #import "MPILogger.h"
-#import "MPApplication.h"
 #import "MPURL.h"
 #import "mParticle.h"
 #import "MPUserDefaultsConnector.h"

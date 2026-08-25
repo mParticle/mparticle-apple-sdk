@@ -290,7 +290,7 @@
 
     for (NSInteger i = 0; i < iterations; i++) {
         dispatch_group_async(group, sdkMessageQueue, ^{
-            [MPApplication_PRIVATE updateLastUseDate:[NSDate date]];
+            [MPApplication_PRIVATE updateLastUseDate:[NSDate date] userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
         });
 
         dispatch_group_async(group, sdkMessageQueue, ^{
@@ -305,7 +305,7 @@
 
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
         MPUserDefaults *ud = MPUserDefaultsConnector.userDefaults;
-        NSNumber *lastUseDate = ud[kMPAppLastUseDateKey];
+        NSNumber *lastUseDate = ud[MPApplicationKeys.kMPAppLastUseDateKey];
         XCTAssertNotNil(lastUseDate, @"lastUseDate must be persisted after background transition");
         [expectation fulfill];
     });
@@ -358,11 +358,11 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wnonnull"
-    [MPApplication_PRIVATE updateLastUseDate:nil];
+    [MPApplication_PRIVATE updateLastUseDate:nil userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
 #pragma clang diagnostic pop
 
     MPUserDefaults *defaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *lastUseDate = defaults[kMPAppLastUseDateKey];
+    NSNumber *lastUseDate = defaults[MPApplicationKeys.kMPAppLastUseDateKey];
     XCTAssertNotNil(lastUseDate);
     XCTAssertEqualObjects(lastUseDate, @0);
 }

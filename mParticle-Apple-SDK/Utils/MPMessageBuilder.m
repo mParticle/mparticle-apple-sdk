@@ -9,7 +9,6 @@
 #import "MPILogger.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPPersistenceController.h"
-#import "MPApplication.h"
 #import "mParticle.h"
 
 @import mParticle_Apple_SDK_Swift;

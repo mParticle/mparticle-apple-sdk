@@ -1,6 +1,5 @@
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
-#import "MPApplication.h"
 #import "MPCustomModule.h"
 #import <sys/sysctl.h>
 #import "MPNotificationController.h"
@@ -119,8 +118,8 @@ static BOOL runningInBackground = NO;
                                        name:MParticleReachabilityChangedNotification
                                      object:nil];
             
-            [MPApplication_PRIVATE markInitialLaunchTime];
-            [MPApplication_PRIVATE updateLaunchCountsAndDates];
+            [MPApplication_PRIVATE markInitialLaunchTimeWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
+            [MPApplication_PRIVATE updateLaunchCountsAndDatesWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
         });
     }
     
@@ -243,7 +242,7 @@ static BOOL runningInBackground = NO;
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
     NSDate *launchDate = _launchDate;
     dispatch_async(messageQueue, ^{
-        [MPApplication_PRIVATE updateLastUseDate:launchDate];
+        [MPApplication_PRIVATE updateLastUseDate:launchDate userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
     });
     _backgrounded = YES;
     self.launchInfo = nil;
@@ -254,7 +253,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
-    [MPApplication_PRIVATE updateLastUseDate:_launchDate];
+    [MPApplication_PRIVATE updateLastUseDate:_launchDate userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
 }
 
 - (void)handleReachabilityChanged:(NSNotification *)notification {
@@ -384,7 +383,11 @@ static BOOL runningInBackground = NO;
     
     [self willChangeValueForKey:@"installationType"];
 
-    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)self
+                                                                               userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                                                environment:[MPStateMachine_PRIVATE environment]
+                                                                           deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                                   buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
     if (application.storedVersion || application.storedBuild) {
         if (![application.version isEqualToString:application.storedVersion] || ![application.build isEqualToString:application.storedBuild]) {
             _installationType = MPInstallationTypeKnownUpgrade;

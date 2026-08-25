@@ -1,5 +1,4 @@
 #import "MParticleUserNotification.h"
-#import "MPApplication.h"
 #import "mParticle.h"
 
 NSString *const kMPUserNotificationApsKey = @"aps";

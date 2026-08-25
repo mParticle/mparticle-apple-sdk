@@ -23,7 +23,6 @@
 #import "MPKitContainer.h"
 #import "MPSideloadedKit.h"
 #import "MPBackendController.h"
-#import "MPApplication.h"
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"

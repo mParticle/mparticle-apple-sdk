@@ -16,7 +16,6 @@
 #import "MPConsentSerialization.h"
 #import <sqlite3.h>
 #import "MPKitFilter.h"
-#import "MPApplication.h"
 #import "MParticleUserNotification.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -2010,7 +2009,7 @@ const int MaxBreadcrumbs = 50;
         sqlite3_bind_int64(preparedStatement, 1, sessionId.longLongValue);
         
         if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-            dict[kMPApplicationInformationKey] = dictionaryRepresentation(preparedStatement, 0);
+            dict[MPApplicationKeys.kMPApplicationInformationKey] = dictionaryRepresentation(preparedStatement, 0);
             dict[kMPDeviceInformationKey] = dictionaryRepresentation(preparedStatement, 1);
         }
         

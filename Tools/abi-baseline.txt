@@ -221,7 +221,6 @@ IFACE|@interface FilteredMPIdentityApiRequest : NSObject
 IFACE|@interface FilteredMParticleUser : NSObject
 IFACE|@interface MPAliasRequest : NSObject
 IFACE|@interface MPAliasResponse : NSObject
-IFACE|@interface MPApplication_PRIVATE : NSObject <NSCopying>
 IFACE|@interface MPAttributionResult : NSObject
 IFACE|@interface MPAudience : NSObject
 IFACE|@interface MPBackendController_PRIVATE : NSObject<MPBackendControllerProtocol>

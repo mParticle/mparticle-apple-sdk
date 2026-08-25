@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+@import mParticle_Apple_SDK_Swift;
 #import "MPPersistenceController.h"
 #import "MPSession.h"
 #import "MPMessage.h"
@@ -1786,7 +1787,7 @@
     NSDictionary *info = [persistence appAndDeviceInfoForSessionId:@(session.sessionId)];
     XCTAssertNotNil(info, @"Info dictionary should not be nil");
     
-    NSDictionary *appInfo = info[kMPApplicationInformationKey];
+    NSDictionary *appInfo = info[MPApplicationKeys.kMPApplicationInformationKey];
     NSDictionary *deviceInfo = info[kMPDeviceInformationKey];
     
     XCTAssertNotNil(appInfo, @"App info should not be nil");

@@ -4,7 +4,6 @@
 #import <UIKit/UIKit.h>
 #import "MPConnector.h"
 #import "MPUpload.h"
-#import "MPApplication.h"
 #import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPURLRequestBuilder.h"
@@ -154,7 +153,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     MParticle *mParticle = [MParticle sharedInstance];
     MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
-    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
+                                                                               userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                                                environment:[MPStateMachine_PRIVATE environment]
+                                                                           deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                                   buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
     MPNetworkOptions *networkOptions = mParticle.networkOptions;
     NSString *customHost = networkOptions.customBaseURL.host;
     if (customHost && networkOptions.configHost) {

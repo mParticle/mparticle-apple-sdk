@@ -3,7 +3,6 @@
 #import <Foundation/Foundation.h>
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
-#import "MPApplication.h"
 #import "MPUpload.h"
 #import "MPConnector.h"
 #import "MPBaseTestCase.h"
@@ -35,10 +34,6 @@
 - (void)endSafeBackgroundTask:(UIBackgroundTaskIdentifier)taskId;
 @property (nonatomic) BOOL identifying;
 
-@end
-
-@interface MPApplication_PRIVATE(Tests)
-+ (void)setMockApplication:(id)mockApplication;
 @end
 
 @interface MPNetworkCommunicationTests : MPBaseTestCase
