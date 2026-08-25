@@ -16,9 +16,12 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-  # Local Pods for testing Core
+  # Local Pods for testing Core. Both halves of the SDK must come from this
+  # checkout: the ObjC core references Swift symbols that only exist here until
+  # the next release, so letting the Swift pod resolve from trunk fails to build.
   use_frameworks! :linkage => :static
   pod 'mParticle-Apple-SDK-ObjC', :path => '../..'
+  pod 'mParticle-Apple-SDK-Swift', :path => '../..'
 
 target 'RNExample' do
   config = use_native_modules!
