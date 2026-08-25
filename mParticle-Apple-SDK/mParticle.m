@@ -2,7 +2,6 @@
 #import "MPILogger.h"
 #import "MPAppNotificationHandler.h"
 #import "MPConsumerInfo.h"
-#import "MPForwardQueueParameters.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
 #import "MPIntegrationAttributes.h"

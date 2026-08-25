@@ -6,7 +6,6 @@
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
-#import "MPForwardQueueParameters.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
