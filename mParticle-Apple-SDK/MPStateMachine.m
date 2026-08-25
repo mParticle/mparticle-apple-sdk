@@ -481,7 +481,10 @@
         return;
     }
 
-    MPUserDefaultsConnector *connector = [[MPUserDefaultsConnector alloc] init];
+    // MPUserDefaultsConnector declares its MPUserDefaultsConnectorProtocol conformance in a class
+    // extension inside its own .m, so it is not visible here. MPNetworkCommunication casts at the
+    // call site for the same reason.
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
     NSMutableArray<MPCustomModule *> *localCustomModules = [[NSMutableArray alloc] initWithCapacity:customModuleSettings.count];
     MPCustomModule *customModule;
     for (NSDictionary *customModuleDictionary in customModuleSettings) {

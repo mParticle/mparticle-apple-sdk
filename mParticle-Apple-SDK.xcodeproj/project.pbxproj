@@ -790,7 +790,6 @@
 				53A79B0329CDFB1F00E7489F /* MPStateMachine.m */,
 				53A79B3729CDFB1F00E7489F /* AppNotifications */,
 				53A79AF529CDFB1F00E7489F /* Consent */,
-				53A79B2E29CDFB1F00E7489F /* Custom Modules */,
 				53A79ABC29CDFB1E00E7489F /* Data Model */,
 				53A79B3E29CDFB1F00E7489F /* Ecommerce */,
 				53A79B4729CDFB1F00E7489F /* Event */,
@@ -930,13 +929,6 @@
 				53A79B2C29CDFB1F00E7489F /* MPBracket.h */,
 			);
 			path = Utils;
-			sourceTree = "<group>";
-		};
-		53A79B2E29CDFB1F00E7489F /* Custom Modules */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "Custom Modules";
 			sourceTree = "<group>";
 		};
 		53A79B3329CDFB1F00E7489F /* Notifications */ = {

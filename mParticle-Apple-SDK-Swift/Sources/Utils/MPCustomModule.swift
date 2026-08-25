@@ -68,7 +68,8 @@ import Foundation
     }
 
     public override var description: String {
-        return "MPCustomModule\n \(dictionaryRepresentation())"
+        // NSDictionary description, matching the %@ formatting the ObjC version produced.
+        return "MPCustomModule\n \(dictionaryRepresentation() as NSDictionary)"
     }
 
     public override func isEqual(_ object: Any?) -> Bool {
