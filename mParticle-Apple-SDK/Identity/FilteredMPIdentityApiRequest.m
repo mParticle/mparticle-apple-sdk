@@ -38,8 +38,13 @@
 }
 
 - (NSDictionary<NSNumber *,NSString *> *)userIdentities {
+    NSDictionary<NSNumber *, NSObject *> *identities = self.request.identities;
+    // Nothing to filter: return before reading kitConfiguration, which some kit callers pass as a raw NSDictionary.
+    if (identities.count == 0) {
+        return @{};
+    }
     MPDataPlanFilter *dataPlanFilter = MParticle.sharedInstance.dataPlanFilter;
-    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:self.request.identities
+    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:identities
                                                       userIdentityFilters:self.kitConfiguration.userIdentityFilters
                                                                 isBlocked:^BOOL(NSNumber * _Nonnull key) {
         return [dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.integerValue];

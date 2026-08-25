@@ -7,6 +7,7 @@
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
 #import "MPStateMachine.h"
+#import "FilteredMParticleUser.h"
 
 @interface MParticle ()
 
@@ -71,14 +72,28 @@
 
 - (void)testGetUserAudiencesWithCompletionHandlerDisabled {
     MParticleUser *user = [[MParticleUser alloc] init];
-    
+
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.enableAudienceAPI = NO;
-    
+
     [user getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> * _Nonnull currentAudiences, NSError *_Nullable error) {
         XCTAssert(error);
         XCTAssertTrue(error.code == 202);
     }];
+}
+
+// A kit may pass a raw NSDictionary as the configuration; with no user identities
+// the filtered accessors must return empty without dereferencing kit-configuration
+// properties. Regression for the eager kitConfiguration access that crashed the
+// Braze kit tests.
+- (void)testFilteredUserToleratesRawDictionaryConfigWhenNoIdentities {
+    MParticleUser *user = [[MParticleUser alloc] init];
+    NSDictionary *rawConfig = @{@"apiKey": @"testKey"};
+    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user
+                                                                             kitConfiguration:(id)rawConfig];
+    XCTAssertNoThrow(filteredUser.userIdentities);
+    XCTAssertEqual(filteredUser.userIdentities.count, 0);
+    XCTAssertNoThrow(filteredUser.userAttributes);
 }
 
 

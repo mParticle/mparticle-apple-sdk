@@ -71,6 +71,24 @@ final class MPIdentityFilteringTests: XCTestCase {
         XCTAssertTrue(result[num(1)] is NSNull)
     }
 
+    // Regression cover for PR #823 (dropped-alias symptom): alias (8) is below the
+    // device-identity threshold (22), so it must survive filtering and reach kits.
+    func testFilterKeepsAliasIdentity() {
+        let alias = num(MPIdentitySwift.alias.rawValue)
+        let identities: [NSNumber: Any] = [alias: "alias-value", num(22): "idfa"]
+        let result = filtering.filterUserIdentities(identities, userIdentityFilters: nil, isBlocked: { _ in false })
+        XCTAssertEqual(result[alias] as? String, "alias-value")
+        XCTAssertNil(result[num(22)], "device identity should still be dropped")
+    }
+
+    func testFilterDropsAliasWhenConfigBlocks() {
+        let alias = num(MPIdentitySwift.alias.rawValue)
+        let identities: [NSNumber: Any] = [alias: "alias-value"]
+        let filters: [AnyHashable: Any] = [alias.stringValue: num(0)]
+        let result = filtering.filterUserIdentities(identities, userIdentityFilters: filters, isBlocked: { _ in false })
+        XCTAssertNil(result[alias])
+    }
+
     // MARK: - filterUserAttributes
 
     func testFilterUserAttributesDropsConfigBlocked() {

@@ -54,8 +54,13 @@
 }
 
 -(NSDictionary<NSNumber *, NSString *> *) userIdentities {
+    NSDictionary<NSNumber *, NSString *> *identities = self.user.identities;
+    // Nothing to filter: return before reading kitConfiguration, which some kit callers pass as a raw NSDictionary.
+    if (identities.count == 0) {
+        return @{};
+    }
     id<MPDataPlanFilterProtocol> dataPlanFilter = MParticle.sharedInstance.dataPlanFilter;
-    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:self.user.identities
+    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:identities
                                                       userIdentityFilters:self.kitConfiguration.userIdentityFilters
                                                                 isBlocked:^BOOL(NSNumber * _Nonnull key) {
         return [dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.intValue];
@@ -63,13 +68,18 @@
 }
 
 -(NSDictionary<NSString *, id> *) userAttributes {
+    NSDictionary<NSString *, id> *attributes = self.user.userAttributes;
+    // Nothing to filter: return before reading kitConfiguration, which some kit callers pass as a raw NSDictionary.
+    if (attributes.count == 0) {
+        return @{};
+    }
     MParticle *mparticle = MParticle.sharedInstance;
     MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
     logger.customLogger = mparticle.customLogger;
     MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:logger];
     id<MPDataPlanFilterProtocol> dataPlanFilter = mparticle.dataPlanFilter;
 
-    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserAttributes:self.user.userAttributes
+    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserAttributes:attributes
                                                       userAttributeFilters:self.kitConfiguration.userAttributeFilters
                                                                     hasher:hasher
                                                                  isBlocked:^BOOL(NSString * _Nonnull key) {
