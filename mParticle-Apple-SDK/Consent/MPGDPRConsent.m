@@ -8,9 +8,13 @@
 @implementation MPGDPRConsent
 
 - (instancetype)init {
+    return [self initWithConsentRecord:[[MPConsentRecordPRIVATE alloc] init]];
+}
+
+- (instancetype)initWithConsentRecord:(MPConsentRecordPRIVATE *)record {
     self = [super init];
     if (self) {
-        _implementation = [[MPConsentRecordPRIVATE alloc] init];
+        _implementation = record ?: [[MPConsentRecordPRIVATE alloc] init];
     }
     return self;
 }
