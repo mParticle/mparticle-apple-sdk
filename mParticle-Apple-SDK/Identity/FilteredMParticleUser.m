@@ -54,59 +54,27 @@
 }
 
 -(NSDictionary<NSNumber *, NSString *> *) userIdentities {
-    NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.user.identities;
-    NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
-    
-    for (NSNumber* key in unfilteredUserIdentities) {
-        id value = [unfilteredUserIdentities objectForKey:key];
-        BOOL shouldFilter = NO;
-        
-        if (self.kitConfiguration) {
-            NSString *identityTypeString = [key stringValue];
-            shouldFilter = self.kitConfiguration.userIdentityFilters[identityTypeString] && [self.kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
-        }
-        
-        if (key.integerValue >= MPIdentityIOSAdvertiserId) {
-            shouldFilter = YES;
-        }
-        
-        if (!shouldFilter) {
-            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.intValue]) {
-                [userIdentities setObject:value forKey:key];
-            }
-        }
-    }
-    
-    return userIdentities;
+    id<MPDataPlanFilterProtocol> dataPlanFilter = MParticle.sharedInstance.dataPlanFilter;
+    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:self.user.identities
+                                                      userIdentityFilters:self.kitConfiguration.userIdentityFilters
+                                                                isBlocked:^BOOL(NSNumber * _Nonnull key) {
+        return [dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.intValue];
+    }];
 }
 
 -(NSDictionary<NSString *, id> *) userAttributes {
-    NSDictionary<NSString *, id> *unfilteredUserAttributes = self.user.userAttributes;
-    NSMutableDictionary *userAttributes = [NSMutableDictionary dictionary];
-    
-    MParticle* mparticle = MParticle.sharedInstance;
-    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    MParticle *mparticle = MParticle.sharedInstance;
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
     logger.customLogger = mparticle.customLogger;
-    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
-    
-    for (NSString* key in unfilteredUserAttributes) {
-        id value = [unfilteredUserAttributes objectForKey:key];
-        
-        NSString *hashKey = [hasher hashString:key];
-        BOOL shouldFilter = NO;
-        
-        if (self.kitConfiguration) {
-            shouldFilter = self.kitConfiguration.userAttributeFilters[hashKey] && [self.kitConfiguration.userAttributeFilters[hashKey] isEqualToNumber:@0];
-        }
-        
-        if (!shouldFilter) {
-            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
-                [userAttributes setObject:value forKey:key];
-            }
-        }
-    }
-    
-    return userAttributes;
+    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:logger];
+    id<MPDataPlanFilterProtocol> dataPlanFilter = mparticle.dataPlanFilter;
+
+    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserAttributes:self.user.userAttributes
+                                                      userAttributeFilters:self.kitConfiguration.userAttributeFilters
+                                                                    hasher:hasher
+                                                                 isBlocked:^BOOL(NSString * _Nonnull key) {
+        return [dataPlanFilter isBlockedUserAttributeKey:key];
+    }];
 }
 
 @end

@@ -66,14 +66,9 @@
 - (NSDictionary*)identities {
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
-    
-    NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
-    [userIdentityArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSString *identity = obj[@"i"];
-        NSNumber *type = obj[@"n"];
-        [userIdentities setObject:identity forKey:type];
-    }];
-    
+
+    NSMutableDictionary *userIdentities = [[[MPIdentityFilteringPRIVATE alloc] init] userIdentitiesFromStoredArray:userIdentityArray].mutableCopy;
+
     //Remove IDFA if ATT status demands
     NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
     if (userIdentities[@(MPIdentityIOSAdvertiserId)] && currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized) {
