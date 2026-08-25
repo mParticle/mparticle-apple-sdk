@@ -3,6 +3,8 @@
 #import "mParticle.h"
 #import "MPILogger.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 static NSString *const kApiKey = @"apiKey";
 static NSString *const kSecret = @"secret";
 static NSString *const kEventsHost = @"eventsHost";
@@ -108,11 +110,11 @@ static NSString *const kEventsOnly = @"eventsOnly";
     }
     return [self initWithApiKey:apiKey
                          secret:secret
-                    eventsHost:customHost ?: networkOptions.eventsHost
-             eventsTrackingHost:customHost ?: networkOptions.eventsTrackingHost
+                    eventsHost:[MPUploadSettingsPRIVATE resolvedHostWithCustomHost:customHost host:networkOptions.eventsHost]
+             eventsTrackingHost:[MPUploadSettingsPRIVATE resolvedHostWithCustomHost:customHost host:networkOptions.eventsTrackingHost]
   overridesEventsSubdirectory:networkOptions.overridesEventsSubdirectory
-                     aliasHost:customHost ?: networkOptions.aliasHost
-              aliasTrackingHost:customHost ?: networkOptions.aliasTrackingHost
+                     aliasHost:[MPUploadSettingsPRIVATE resolvedHostWithCustomHost:customHost host:networkOptions.aliasHost]
+              aliasTrackingHost:[MPUploadSettingsPRIVATE resolvedHostWithCustomHost:customHost host:networkOptions.aliasTrackingHost]
    overridesAliasSubdirectory:networkOptions.overridesAliasSubdirectory
                    eventsOnly:networkOptions.eventsOnly];
 }
