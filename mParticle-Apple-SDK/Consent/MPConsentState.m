@@ -4,74 +4,76 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "mParticle.h"
+@import mParticle_Apple_SDK_Swift;
 
-@interface MPConsentState () {
-    NSMutableDictionary<NSString *, MPGDPRConsent *> *_gdprConsentState;
-    MPCCPAConsent *_ccpaConsentState;
-}
+@interface MPGDPRConsent ()
+@property (nonatomic, strong) MPConsentRecordPRIVATE *implementation;
+- (instancetype)initWithConsentRecord:(MPConsentRecordPRIVATE *)record;
+@end
 
+@interface MPCCPAConsent ()
+@property (nonatomic, strong) MPConsentRecordPRIVATE *implementation;
+- (instancetype)initWithConsentRecord:(MPConsentRecordPRIVATE *)record;
+@end
+
+@interface MPConsentState ()
+@property (nonatomic, strong) MPConsentStatePRIVATE *implementation;
 @end
 
 @implementation MPConsentState
 
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     if (self) {
-        _gdprConsentState = [NSMutableDictionary dictionary];
-        _ccpaConsentState = nil;
+        _implementation = [[MPConsentStatePRIVATE alloc] init];
     }
     return self;
 }
 
 + (nullable NSString *)canonicalizeForDeduplication:(nullable NSString *)source {
-    if (MPIsNull(source) || source.length == 0) {
-        return nil;
-    }
-    
-    NSString *canonicalizedString = [[source lowercaseString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-    if (MPIsNull(canonicalizedString) || canonicalizedString.length == 0) {
-        return nil;
-    }
-    
-    return canonicalizedString;
+    return [MPConsentStatePRIVATE canonicalizeForDeduplication:source];
 }
 
 - (nullable NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsentState {
-    return [_gdprConsentState copy];
+    NSDictionary *records = [self.implementation gdprConsentRecords];
+    NSMutableDictionary<NSString *, MPGDPRConsent *> *state = [NSMutableDictionary dictionaryWithCapacity:records.count];
+    for (NSString *purpose in records) {
+        MPConsentRecordPRIVATE *record = records[purpose];
+        if (![record isKindOfClass:[MPConsentRecordPRIVATE class]]) {
+            continue;
+        }
+        state[purpose] = [[MPGDPRConsent alloc] initWithConsentRecord:record];
+    }
+    return [state copy];
 }
 
 - (void)addGDPRConsentState:(MPGDPRConsent *)consent purpose:(NSString *)purpose {
-    
-    NSString *normalizedPurpose = [MPConsentState canonicalizeForDeduplication:purpose];
-    
-    if (!normalizedPurpose) {
-        MPILogError(@"Cannot set GDPR Consent with nil, NSNull or empty purpose.")
-        return;
-    }
-    
+    MPConsentStateMutationResult result;
     if (MPIsNull(consent)) {
-        MPILogError("Cannot set GDPR Consent with nil or NSNull GDPRConsent object.");
-        return;
+        result = MPConsentStateMutationResultInvalidConsent;
+    } else {
+        result = [self.implementation addGDPRConsentRecord:consent.implementation purpose:purpose];
     }
-    
-    if (_gdprConsentState.count >= MAX_GDPR_CONSENT_PURPOSES) {
-        MPILogError("Cannot add more than %@ GDPR consent states.", @(MAX_GDPR_CONSENT_PURPOSES));
-        return;
+    switch (result) {
+        case MPConsentStateMutationResultInvalidPurpose:
+            MPILogError(@"Cannot set GDPR Consent with nil, NSNull or empty purpose.")
+            break;
+        case MPConsentStateMutationResultInvalidConsent:
+            MPILogError("Cannot set GDPR Consent with nil or NSNull GDPRConsent object.");
+            break;
+        case MPConsentStateMutationResultTooManyPurposes:
+            MPILogError("Cannot add more than %@ GDPR consent states.", @(MPConsentStatePRIVATE.maxGDPRConsentPurposes));
+            break;
+        case MPConsentStateMutationResultSuccess:
+            break;
     }
-    
-    _gdprConsentState[normalizedPurpose] = [consent copy];
 }
 
 - (void)removeGDPRConsentStateWithPurpose:(NSString *)purpose {
-    
-    NSString *normalizedPurpose = [MPConsentState canonicalizeForDeduplication:purpose];
-    if (!normalizedPurpose) {
+    MPConsentStateMutationResult result = [self.implementation removeGDPRConsentRecordWithPurpose:purpose];
+    if (result == MPConsentStateMutationResultInvalidPurpose) {
         MPILogError(@"Cannot remove GDPR Consent with nil, NSNull or empty purpose.")
-        return;
     }
-    
-    [_gdprConsentState removeObjectForKey:normalizedPurpose];
 }
 
 - (void)setGDPRConsentState:(nullable NSDictionary<NSString *, MPGDPRConsent *> *)consentState {
@@ -79,22 +81,25 @@
         MPILogError(@"Cannot set GDPR Consent with NSNull.")
         return;
     }
-    
-    [_gdprConsentState removeAllObjects];
-    
+
+    [self.implementation removeAllGDPRConsentRecords];
+
     if (!consentState || consentState.count == 0) {
         return;
     }
-    
+
     NSDictionary *consentStateCopy = [consentState copy];
     for (NSString *purpose in consentStateCopy) {
-        MPGDPRConsent *consent = consentStateCopy[purpose];
-        [self addGDPRConsentState:consent purpose:purpose];
+        [self addGDPRConsentState:consentStateCopy[purpose] purpose:purpose];
     }
 }
 
 - (nullable MPCCPAConsent *)ccpaConsentState {
-    return [_ccpaConsentState copy];
+    MPConsentRecordPRIVATE *record = [self.implementation ccpaConsentRecord];
+    if (!record) {
+        return nil;
+    }
+    return [[MPCCPAConsent alloc] initWithConsentRecord:record];
 }
 
 - (void)setCCPAConsentState:(MPCCPAConsent *)consent {
@@ -102,12 +107,12 @@
         MPILogError(@"Cannot set CCPA Consent with NSNull.")
         return;
     }
-    
-    _ccpaConsentState = [consent copy];
+
+    [self.implementation setCCPAConsentRecord:consent.implementation];
 }
 
 - (void)removeCCPAConsentState {
-    _ccpaConsentState = nil;
+    [self.implementation removeCCPAConsentRecord];
 }
 
 @end
