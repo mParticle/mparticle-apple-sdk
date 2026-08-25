@@ -28,10 +28,9 @@ jobs:
     uses: ./.github/workflows/native-tests.yml
     secrets: inherit
 
-  # TODO: Re-enable after 9.0 release
-  # build-secondary-platforms:
-  #   uses: ./.github/workflows/build-secondary-platforms.yml
-  #   secrets: inherit
+  build-secondary-platforms:
+    uses: ./.github/workflows/build-secondary-platforms.yml
+    secrets: inherit
 
   integration-tests:
     uses: ./.github/workflows/integration-tests.yml
@@ -54,7 +53,7 @@ jobs:
     needs:
       - build-and-lint
       - native-tests
-      # - build-secondary-platforms  # TODO: Re-enable after 9.0 release
+      - build-secondary-platforms
       - integration-tests
       - size-report
       - swift-migration-progress
