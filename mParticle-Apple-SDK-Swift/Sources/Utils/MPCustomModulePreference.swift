@@ -8,6 +8,10 @@ enum CustomModuleConfigKey {
     static let writeKey = "n"
     static let dataType = "t"
     static let defaultValue = "d"
+    static let moduleId = "id"
+    static let preferences = "pr"
+    static let location = "f"
+    static let preferenceSettings = "ps"
 }
 
 @objc(MPCustomModulePreference) public final class CustomModulePreference: NSObject, NSSecureCoding {

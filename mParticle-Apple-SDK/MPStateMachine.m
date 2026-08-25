@@ -1,7 +1,6 @@
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPApplication.h"
-#import "MPCustomModule.h"
 #import "MPNotificationController.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
@@ -482,10 +481,11 @@
         return;
     }
 
+    MPUserDefaultsConnector *connector = [[MPUserDefaultsConnector alloc] init];
     NSMutableArray<MPCustomModule *> *localCustomModules = [[NSMutableArray alloc] initWithCapacity:customModuleSettings.count];
     MPCustomModule *customModule;
     for (NSDictionary *customModuleDictionary in customModuleSettings) {
-        customModule = [[MPCustomModule alloc] initWithDictionary:customModuleDictionary];
+        customModule = [[MPCustomModule alloc] initWithDictionary:customModuleDictionary connector:connector];
         if (customModule) {
             [localCustomModules addObject:customModule];
         }

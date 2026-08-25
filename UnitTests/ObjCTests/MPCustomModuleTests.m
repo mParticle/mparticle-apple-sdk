@@ -1,8 +1,8 @@
 #import <XCTest/XCTest.h>
-#import "MPCustomModule.h"
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MPCustomModuleTests : MPBaseTestCase
@@ -13,6 +13,13 @@
 @end
 
 @implementation MPCustomModuleTests
+
+/// MPCustomModule takes its MPUserDefaults connector by injection now that it is a Swift type:
+/// the Swift module cannot reach the ObjC singleton, so the call site supplies it.
+- (MPCustomModule *)customModuleWithDictionary:(NSDictionary *)dictionary {
+    return [[MPCustomModule alloc] initWithDictionary:dictionary
+                                            connector:[[MPUserDefaultsConnector alloc] init]];
+}
 
 - (NSString *)customModulesString {
     if (_customModulesString) {
@@ -121,7 +128,7 @@
     [dateFormatter setDateFormat:@"yyyy'-'MM'-'dd' 'HH':'mm':'ss Z"];
     [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
     
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:self.customModuleConfiguration];
     XCTAssertNotNil(customModule.customModuleId, @"Custom module id is not being set.");
     XCTAssertGreaterThan(customModule.preferences.count, 0, @"Custom module preferences are not being created.");
     
@@ -158,33 +165,33 @@
                                                         @"pr":[NSNull null]
                                                         } mutableCopy];
     
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNil(customModule, @"Should have been nil.");
 
     customModuleConfiguration[@"id"] = @"Invalid. This is not a number.";
-    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNil(customModule, @"Should have been nil.");
 
     customModuleConfiguration[@"id"] = @11;
-    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNil(customModule, @"Should have been nil.");
 
     customModuleConfiguration[@"pr"] = @{@"Invalid":@"This is not an array."};
-    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNil(customModule, @"Should have been nil.");
     
     customModuleConfiguration[@"pr"] = @[[NSNull null]];
-    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNotNil(customModule, @"Should not have been nil.");
     XCTAssertNil(customModule.preferences, @"Should have been nil.");
     
     customModuleConfiguration[@"pr"] = @[@"This is not a dictionary."];
-    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNotNil(customModule, @"Should not have been nil.");
     XCTAssertNil(customModule.preferences, @"Should have been nil.");
     
     customModuleConfiguration[@"pr"] = @[];
-    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNotNil(customModule, @"Should not have been nil.");
     XCTAssertNil(customModule.preferences, @"Should have been nil.");
     
@@ -225,14 +232,14 @@
                                                    ]
                                            }
                                          ];
-    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNotNil(customModule, @"Should not have been nil.");
     XCTAssertEqual(customModule.preferences.count, 4, @"Should have been equal.");
 }
 
 
 - (void)testCustomModuleSerialization {
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:self.customModuleConfiguration];
     
     NSData *customModuleData = [NSKeyedArchiver archivedDataWithRootObject:customModule];
     XCTAssertNotNil(customModuleData, @"Should not have been nil.");
@@ -243,14 +250,14 @@
 }
 
 - (void)testEquality {
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:self.customModuleConfiguration];
     XCTAssertNotNil(customModule, @"Should not have been nil.");
     XCTAssertNotEqualObjects(customModule, nil, @"Should have been different.");
     XCTAssertNotEqualObjects(customModule, [NSNull null], @"Should have been different.");
 }
 
 - (void)testDictionaryRepresentation {
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:self.customModuleConfiguration];
     NSDictionary *customModuleDictionary = [customModule dictionaryRepresentation];
     XCTAssertNotNil(customModuleDictionary, @"Should not have been nil.");
     XCTAssertNotNil(customModuleDictionary[@"aid"], @"Should not have been nil.");
@@ -305,13 +312,13 @@
                                                         ]
                                                 };
 
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:customModuleConfiguration];
     removeKeysFromUserDefaults();
     for (MPCustomModulePreference *preference in customModule.preferences) {
         XCTAssertNotNil(preference.value, @"Should not have been nil.");
     }
         
-    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    customModule = [self customModuleWithDictionary:customModuleConfiguration];
     removeKeysFromUserDefaults();
     [userDefaults setObject:@"Value1" forKey:@"mParticle_UNIT_TEST_CustomModule_1"];
     [userDefaults setObject:@"Value2" forKey:@"mParticle_UNIT_TEST_CustomModule_2"];
@@ -350,7 +357,7 @@
                                                         ]
                                                 };
     
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:customModuleConfiguration];
     
     MPCustomModule *persistedCustomModule = [self attemptSecureEncodingwithClass:[MPCustomModule class] Object:customModule];
     XCTAssertEqualObjects(customModule, persistedCustomModule, @"Custom Module should have been a match.");
@@ -374,7 +381,7 @@
                                                         ]
                                                 };
 
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertNotNil(customModule, @"Should not have been nil.");
     XCTAssertEqual(customModule.preferences.count, 1, @"Should have been equal.");
 
@@ -405,7 +412,7 @@
         }]
     };
 
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    MPCustomModule *customModule = [self customModuleWithDictionary:customModuleConfiguration];
     XCTAssertEqual(customModule.preferences.count, 1, @"Should have been equal.");
 
     MPCustomModulePreference *preference = customModule.preferences.firstObject;
