@@ -147,6 +147,7 @@
     
     XCTAssertNil(email, @"Kit api is not filtering user identities");
     XCTAssertEqualObjects(customerId, @"12345", @"Kit api is filtering user identities when it shouldn't");
+    XCTAssertTrue([identities isKindOfClass:[NSMutableDictionary class]], @"Filtered user identities must remain mutable");
 }
 
 - (void)testUserAttributeFromCache {

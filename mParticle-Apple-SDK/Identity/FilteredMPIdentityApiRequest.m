@@ -41,14 +41,16 @@
     NSDictionary<NSNumber *, NSObject *> *identities = self.request.identities;
     // Nothing to filter: return before reading kitConfiguration, which some kit callers pass as a raw NSDictionary.
     if (identities.count == 0) {
-        return @{};
+        return [NSMutableDictionary dictionary];
     }
     MPDataPlanFilter *dataPlanFilter = MParticle.sharedInstance.dataPlanFilter;
-    return [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:identities
+    NSDictionary<NSNumber *, NSString *> *filtered = [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:identities
                                                       userIdentityFilters:self.kitConfiguration.userIdentityFilters
                                                                 isBlocked:^BOOL(NSNumber * _Nonnull key) {
         return [dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.integerValue];
     }];
+    // Preserve the pre-migration NSMutableDictionary return type.
+    return filtered.mutableCopy;
 }
 
 - (NSString *)email {

@@ -94,6 +94,9 @@
     XCTAssertNoThrow(filteredUser.userIdentities);
     XCTAssertEqual(filteredUser.userIdentities.count, 0);
     XCTAssertNoThrow(filteredUser.userAttributes);
+    // Return type must stay NSMutableDictionary (as before the Swift extraction).
+    XCTAssertTrue([filteredUser.userIdentities isKindOfClass:[NSMutableDictionary class]]);
+    XCTAssertTrue([filteredUser.userAttributes isKindOfClass:[NSMutableDictionary class]]);
 }
 
 
