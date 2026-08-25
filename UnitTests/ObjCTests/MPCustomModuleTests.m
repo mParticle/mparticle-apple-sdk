@@ -1,9 +1,9 @@
 #import <XCTest/XCTest.h>
 #import "MPCustomModule.h"
-#import "MPCustomModulePreference.h"
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPCustomModuleTests : MPBaseTestCase
 
@@ -385,6 +385,35 @@
     XCTAssertNoThrow(value = [preference value]);
     XCTAssertNil(value, @"Should have been nil.");
     XCTAssertNoThrow([customModule dictionaryRepresentation]);
+}
+
+/// The Swift preference mirrors the kMPRemoteConfigCustomModule* keys, which it cannot import.
+/// Building the config from the real constants means a change to either side fails here rather
+/// than silently parsing nothing.
+- (void)testSwiftPreferenceReadsEveryKeyFromMPIConstants {
+    NSDictionary *preferenceSetting = @{
+        kMPRemoteConfigCustomModuleReadKey: @"parity_read",
+        kMPRemoteConfigCustomModuleWriteKey: @"parity_write",
+        kMPRemoteConfigCustomModuleDataTypeKey: @(MPDataTypeInt),
+        kMPRemoteConfigCustomModuleDefaultKey: @"42"
+    };
+    NSDictionary *customModuleConfiguration = @{
+        kMPRemoteConfigCustomModuleIdKey: @28,
+        kMPRemoteConfigCustomModulePreferencesKey: @[@{
+            kMPRemoteConfigCustomModuleLocationKey: @"NSUserDefaults",
+            kMPRemoteConfigCustomModulePreferenceSettingsKey: @[preferenceSetting]
+        }]
+    };
+
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertEqual(customModule.preferences.count, 1, @"Should have been equal.");
+
+    MPCustomModulePreference *preference = customModule.preferences.firstObject;
+    XCTAssertEqualObjects(preference.readKey, @"parity_read");
+    XCTAssertEqualObjects(preference.writeKey, @"parity_write");
+    XCTAssertEqualObjects(preference.moduleId, @28);
+    XCTAssertEqual(preference.dataType, MPDataTypeInt);
+    XCTAssertEqualObjects(preference.defaultValue, @"42");
 }
 
 @end
