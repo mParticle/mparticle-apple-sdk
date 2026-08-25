@@ -62,6 +62,19 @@
     XCTAssertNotEqualObjects(sessionCopy, session, @"Should not have been equal.");
 }
 
+- (void)testSessionCounterIsThreadSafe {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]
+                                                     userId:[MPPersistenceController_PRIVATE mpId]];
+    const size_t iterationCount = 1000;
+
+    dispatch_apply(iterationCount, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t index) {
+        (void)index;
+        [session incrementCounter];
+    });
+
+    XCTAssertEqual(session.eventCounter, iterationCount);
+}
+
 - (void)testMessageInstance {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
     
