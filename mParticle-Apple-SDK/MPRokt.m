@@ -8,7 +8,7 @@
 #import "MPRokt.h"
 @import RoktContracts;
 #import "mParticle.h"
-#import "MPForwardQueueParameters.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPILogger.h"
 #import "MPIConstants.h"
 #import "MPIdentityDTO.h"

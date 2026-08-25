@@ -3,7 +3,7 @@
 #import "MPCommerceEvent.h"
 #import "MPKitFilter.h"
 #import "MPKitExecStatus.h"
-#import "MPForwardQueueParameters.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MPForwardQueueItem
 

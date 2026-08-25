@@ -6,7 +6,7 @@
 #import "MPKitExecStatus.h"
 #import "MPKitFilter.h"
 #import "MPEvent.h"
-#import "MPForwardQueueParameters.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPBaseTestCase.h"
 
 #pragma mark

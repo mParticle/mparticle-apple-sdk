@@ -5,7 +5,6 @@
 #import "MPKitContainer.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
-#import "MPForwardQueueParameters.h"
 #import "MPKitAPI.h"
 #import "MPApplication.h"
 #import "mParticle.h"

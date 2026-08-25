@@ -9,7 +9,6 @@
 #import "MPPersistenceController.h"
 #import "MPKitContainer.h"
 #import <UIKit/UIKit.h>
-#import "MPForwardQueueParameters.h"
 #import "MPDataPlanFilter.h"
 #import "MParticleReachability.h"
 #import "MPIConstants.h"
