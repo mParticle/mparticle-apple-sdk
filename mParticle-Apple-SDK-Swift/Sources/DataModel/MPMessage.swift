@@ -3,9 +3,9 @@ import Foundation
 @objc public final class MPMessagePRIVATE: NSObject {
     @objc public var sessionId: NSNumber?
     @objc public var messageId: Int64
-    @objc public var uuid: String
-    @objc public var messageType: String
-    @objc public var messageData: Data
+    @objc public var uuid: String?
+    @objc public var messageType: String?
+    @objc public var messageData: Data?
     @objc public var timestamp: TimeInterval
     @objc public var uploadStatus: Int
     @objc public var userId: NSNumber
@@ -17,9 +17,9 @@ import Foundation
     public init(
         sessionId: NSNumber?,
         messageId: Int64,
-        uuid: String,
-        messageType: String,
-        messageData: Data,
+        uuid: String?,
+        messageType: String?,
+        messageData: Data?,
         timestamp: TimeInterval,
         uploadStatus: Int,
         userId: NSNumber,
@@ -73,8 +73,8 @@ import Foundation
 
     @objc(truncateMessageDataProperty:toLength:)
     public func truncateMessageDataProperty(_ property: String?, toLength length: Int) {
-        guard let property, length >= 0 else { return }
-        guard let json = try? JSONSerialization.jsonObject(with: messageData, options: []),
+        guard let property, length >= 0, let payload = messageData else { return }
+        guard let json = try? JSONSerialization.jsonObject(with: payload, options: []),
               let messageDataDict = (json as? NSDictionary)?.mutableCopy() as? NSMutableDictionary
         else { return }
 
@@ -90,6 +90,7 @@ import Foundation
     }
 
     @objc public func dictionaryRepresentation() -> NSDictionary? {
+        guard let messageData else { return nil }
         do {
             let json = try JSONSerialization.jsonObject(with: messageData, options: [])
             if json is NSDictionary {
@@ -104,7 +105,8 @@ import Foundation
     }
 
     @objc public func serializedString() -> String? {
-        String(data: messageData, encoding: .utf8)
+        guard let messageData else { return nil }
+        return String(data: messageData, encoding: .utf8)
     }
 
     @objc public func copyMessage() -> MPMessagePRIVATE {
@@ -128,22 +130,23 @@ import Foundation
         sessionIdsEqual(other.sessionId)
             && messageId == other.messageId
             && timestamp == other.timestamp
-            && messageType == other.messageType
-            && messageData == other.messageData
+            && nsStringEqual(messageType, other.messageType)
+            && nsDataEqual(messageData, other.messageData)
             && shouldUploadEvent == other.shouldUploadEvent
             && optionalEqual(dataPlanId, other.dataPlanId)
             && optionalNumberEqual(dataPlanVersion, other.dataPlanVersion)
     }
 
     override public var hash: Int {
-        (sessionId?.hashValue ?? 0)
-            ^ (dataPlanId?.hashValue ?? 0)
-            ^ (dataPlanVersion?.hashValue ?? 0)
-            ^ Int(truncatingIfNeeded: messageId)
-            ^ Int(timestamp)
-            ^ messageType.hashValue
-            ^ messageData.hashValue
-            ^ (shouldUploadEvent ? 1 : 0)
+        var result = sessionId?.hashValue ?? 0
+        result ^= dataPlanId?.hashValue ?? 0
+        result ^= dataPlanVersion?.hashValue ?? 0
+        result ^= Int(truncatingIfNeeded: messageId)
+        result ^= Int(timestamp)
+        result ^= messageType?.hashValue ?? 0
+        result ^= messageData?.hashValue ?? 0
+        result ^= shouldUploadEvent ? 1 : 0
+        return result
     }
 
     private func sessionIdsEqual(_ other: NSNumber?) -> Bool {
@@ -152,6 +155,16 @@ import Foundation
 
     private func optionalEqual(_ lhs: String?, _ rhs: String?) -> Bool {
         (lhs == nil && rhs == nil) || lhs == rhs
+    }
+
+    private func nsStringEqual(_ lhs: String?, _ rhs: String?) -> Bool {
+        guard let lhs, let rhs else { return false }
+        return lhs == rhs
+    }
+
+    private func nsDataEqual(_ lhs: Data?, _ rhs: Data?) -> Bool {
+        guard let lhs, let rhs else { return false }
+        return lhs == rhs
     }
 
     private func optionalNumberEqual(_ lhs: NSNumber?, _ rhs: NSNumber?) -> Bool {

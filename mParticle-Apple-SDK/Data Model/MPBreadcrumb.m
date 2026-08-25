@@ -14,7 +14,7 @@
         _implementation = [[MPBreadcrumbPRIVATE alloc] initWithSessionUUID:sessionUUID
                                                               breadcrumbId:breadcrumbId
                                                                       UUID:uuid
-                                                            breadcrumbData:breadcrumbData ?: [NSData data]
+                                                            breadcrumbData:breadcrumbData
                                                                  timestamp:timestamp];
         _uuid = uuid;
     }

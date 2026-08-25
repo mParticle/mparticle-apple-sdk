@@ -107,23 +107,33 @@
 }
 
 - (NSMutableDictionary *)attributesDictionary {
-    return self.implementation.attributesDictionary;
+    @synchronized (self) {
+        return self.implementation.attributesDictionary;
+    }
 }
 
 - (void)setAttributesDictionary:(NSMutableDictionary *)attributesDictionary {
-    self.implementation.attributesDictionary = attributesDictionary ?: [NSMutableDictionary dictionary];
+    @synchronized (self) {
+        self.implementation.attributesDictionary = attributesDictionary ?: [NSMutableDictionary dictionary];
+    }
 }
 
 - (NSTimeInterval)backgroundTime {
-    return self.implementation.backgroundTime;
+    @synchronized (self) {
+        return self.implementation.backgroundTime;
+    }
 }
 
 - (void)setBackgroundTime:(NSTimeInterval)backgroundTime {
-    self.implementation.backgroundTime = backgroundTime;
+    @synchronized (self) {
+        self.implementation.backgroundTime = backgroundTime;
+    }
 }
 
 - (NSTimeInterval)foregroundTime {
-    return self.implementation.foregroundTime;
+    @synchronized (self) {
+        return self.implementation.foregroundTime;
+    }
 }
 
 - (NSTimeInterval)startTime {
@@ -159,15 +169,21 @@
 }
 
 - (NSTimeInterval)suspendTime {
-    return self.implementation.suspendTime;
+    @synchronized (self) {
+        return self.implementation.suspendTime;
+    }
 }
 
 - (uint)eventCounter {
-    return self.implementation.eventCounter;
+    @synchronized (self) {
+        return self.implementation.eventCounter;
+    }
 }
 
 - (uint)numberOfInterruptions {
-    return self.implementation.numberOfInterruptions;
+    @synchronized (self) {
+        return self.implementation.numberOfInterruptions;
+    }
 }
 
 - (int64_t)sessionId {
@@ -175,66 +191,94 @@
 }
 
 - (void)setSessionId:(int64_t)sessionId {
-    self.implementation.sessionId = sessionId;
+    @synchronized (self) {
+        self.implementation.sessionId = sessionId;
+    }
 }
 
 - (BOOL)persisted {
-    return self.implementation.persisted;
+    @synchronized (self) {
+        return self.implementation.persisted;
+    }
 }
 
 - (NSNumber *)userId {
-    return self.implementation.userId;
+    @synchronized (self) {
+        return self.implementation.userId;
+    }
 }
 
 - (void)setUserId:(NSNumber *)userId {
-    self.implementation.userId = userId;
+    @synchronized (self) {
+        self.implementation.userId = userId;
+    }
 }
 
 - (NSString *)sessionUserIds {
-    return self.implementation.sessionUserIds;
+    @synchronized (self) {
+        return self.implementation.sessionUserIds;
+    }
 }
 
 - (void)setSessionUserIds:(NSString *)sessionUserIds {
-    self.implementation.sessionUserIds = sessionUserIds;
+    @synchronized (self) {
+        self.implementation.sessionUserIds = sessionUserIds;
+    }
 }
 
 - (NSDictionary<NSString *, id> *)appInfo {
-    return self.implementation.applicationInfo;
+    @synchronized (self) {
+        return self.implementation.applicationInfo;
+    }
 }
 
 - (void)setAppInfo:(NSDictionary<NSString *, id> *)appInfo {
-    self.implementation.applicationInfo = appInfo;
+    @synchronized (self) {
+        self.implementation.applicationInfo = appInfo;
+    }
 }
 
 - (NSDictionary *)deviceInfo {
-    return self.implementation.deviceInfo;
+    @synchronized (self) {
+        return self.implementation.deviceInfo;
+    }
 }
 
 - (void)setDeviceInfo:(NSDictionary *)deviceInfo {
-    self.implementation.deviceInfo = deviceInfo;
+    @synchronized (self) {
+        self.implementation.deviceInfo = deviceInfo;
+    }
 }
 
 - (NSString *)uuid {
-    return self.implementation.uuid;
+    @synchronized (self) {
+        return self.implementation.uuid;
+    }
 }
 
 - (void)setUuid:(NSString *)uuid {
-    self.implementation.uuid = uuid;
-    _uuid = uuid;
+    @synchronized (self) {
+        self.implementation.uuid = uuid;
+        _uuid = uuid;
+    }
 }
 
 - (void)incrementCounter {
-    [self willChangeValueForKey:@"eventCounter"];
-    [self.implementation incrementCounter];
-    [self didChangeValueForKey:@"eventCounter"];
+    @synchronized (self) {
+        [self willChangeValueForKey:@"eventCounter"];
+        [self.implementation incrementCounter];
+        [self didChangeValueForKey:@"eventCounter"];
+    }
 }
 
 - (void)suspendSession {
-    [self willChangeValueForKey:@"numberOfInterruptions"];
-    [self willChangeValueForKey:@"suspendTime"];
-    [self.implementation suspendSession];
-    [self didChangeValueForKey:@"numberOfInterruptions"];
-    [self didChangeValueForKey:@"suspendTime"];
+    @synchronized (self) {
+        [self willChangeValueForKey:@"numberOfInterruptions"];
+        [self willChangeValueForKey:@"suspendTime"];
+        [self.implementation suspendSession];
+        [self didChangeValueForKey:@"numberOfInterruptions"];
+        [self didChangeValueForKey:@"suspendTime"];
+    }
 }
 
 @end

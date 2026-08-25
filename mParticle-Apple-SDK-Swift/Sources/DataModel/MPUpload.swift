@@ -3,7 +3,7 @@ import Foundation
 @objc public final class MPUploadPRIVATE: NSObject {
     @objc public var sessionId: NSNumber?
     @objc public var uploadId: Int64
-    @objc public var uuid: String
+    @objc public var uuid: String?
     @objc public var uploadData: Data
     @objc public var timestamp: TimeInterval
     @objc public var uploadType: UInt
@@ -15,7 +15,7 @@ import Foundation
     public init(
         sessionId: NSNumber?,
         uploadId: Int64,
-        uuid: String,
+        uuid: String?,
         uploadData: Data,
         timestamp: TimeInterval,
         uploadType: UInt,

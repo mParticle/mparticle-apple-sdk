@@ -1,26 +1,29 @@
 import Foundation
 
 @objc public final class MPBreadcrumbPRIVATE: NSObject {
-    @objc public var sessionUUID: String
+    @objc public var sessionUUID: String?
     @objc public var breadcrumbId: Int64
-    @objc public var uuid: String
-    @objc public var breadcrumbData: Data
+    @objc public var uuid: String?
+    @objc public var breadcrumbData: Data?
     @objc public var timestamp: TimeInterval
     @objc public var content: String?
 
     @objc(initWithSessionUUID:breadcrumbId:UUID:breadcrumbData:timestamp:)
-    public init(sessionUUID: String, breadcrumbId: Int64, uuid: String, breadcrumbData: Data, timestamp: TimeInterval) {
+    public init(sessionUUID: String?, breadcrumbId: Int64, uuid: String?, breadcrumbData: Data?, timestamp: TimeInterval) {
         self.sessionUUID = sessionUUID
         self.breadcrumbId = breadcrumbId
         self.uuid = uuid
         self.breadcrumbData = breadcrumbData
         self.timestamp = timestamp
-        content = String(data: breadcrumbData, encoding: .utf8)
+        if let breadcrumbData {
+            content = String(data: breadcrumbData, encoding: .utf8)
+        }
         super.init()
     }
 
     @objc public func dictionaryRepresentation() -> NSDictionary? {
-        guard let breadcrumbInfo = (try? JSONSerialization.jsonObject(with: breadcrumbData, options: [])) as? NSDictionary else {
+        guard let breadcrumbData,
+              let breadcrumbInfo = (try? JSONSerialization.jsonObject(with: breadcrumbData, options: [])) as? NSDictionary else {
             return nil
         }
 
@@ -41,7 +44,8 @@ import Foundation
     }
 
     @objc public func serializedString() -> String? {
-        String(data: breadcrumbData, encoding: .utf8)
+        guard let breadcrumbData else { return nil }
+        return String(data: breadcrumbData, encoding: .utf8)
     }
 
     @objc public func copyBreadcrumb() -> MPBreadcrumbPRIVATE {
@@ -57,16 +61,27 @@ import Foundation
     @objc public func isEqual(toBreadcrumb other: MPBreadcrumbPRIVATE) -> Bool {
         breadcrumbId == other.breadcrumbId
             && timestamp == other.timestamp
-            && uuid == other.uuid
-            && sessionUUID == other.sessionUUID
-            && breadcrumbData == other.breadcrumbData
+            && nsStringEqual(uuid, other.uuid)
+            && nsStringEqual(sessionUUID, other.sessionUUID)
+            && nsDataEqual(breadcrumbData, other.breadcrumbData)
     }
 
     override public var hash: Int {
-        Int(truncatingIfNeeded: breadcrumbId)
-            ^ Int(timestamp)
-            ^ uuid.hashValue
-            ^ sessionUUID.hashValue
-            ^ breadcrumbData.hashValue
+        var result = Int(truncatingIfNeeded: breadcrumbId)
+        result ^= Int(timestamp)
+        result ^= uuid?.hashValue ?? 0
+        result ^= sessionUUID?.hashValue ?? 0
+        result ^= breadcrumbData?.hashValue ?? 0
+        return result
+    }
+
+    private func nsStringEqual(_ lhs: String?, _ rhs: String?) -> Bool {
+        guard let lhs, let rhs else { return false }
+        return lhs == rhs
+    }
+
+    private func nsDataEqual(_ lhs: Data?, _ rhs: Data?) -> Bool {
+        guard let lhs, let rhs else { return false }
+        return lhs == rhs
     }
 }

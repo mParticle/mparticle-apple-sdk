@@ -18,7 +18,7 @@
                                                             messageId:messageId
                                                                  UUID:uuid
                                                           messageType:messageType
-                                                          messageData:messageData ?: [NSData data]
+                                                          messageData:messageData
                                                             timestamp:timestamp
                                                          uploadStatus:(NSInteger)uploadStatus
                                                                userId:userId
@@ -64,7 +64,7 @@
 - (void)setUuid:(NSString *)uuid { self.implementation.uuid = uuid; _uuid = uuid; }
 - (NSString *)messageType { return self.implementation.messageType; }
 - (NSData *)messageData { return self.implementation.messageData; }
-- (void)setMessageData:(NSData *)messageData { self.implementation.messageData = messageData ?: [NSData data]; }
+- (void)setMessageData:(NSData *)messageData { self.implementation.messageData = messageData; }
 - (NSTimeInterval)timestamp { return self.implementation.timestamp; }
 - (void)setTimestamp:(NSTimeInterval)timestamp { self.implementation.timestamp = timestamp; }
 - (MPUploadStatus)uploadStatus { return (MPUploadStatus)self.implementation.uploadStatus; }
