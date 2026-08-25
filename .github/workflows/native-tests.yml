@@ -9,7 +9,10 @@ env:
 
 jobs:
   native-unit-tests:
-    timeout-minutes: 15
+    # A healthy run is ~5 minutes. The headroom is for the intermittent hang between
+    # "test bundle built" and "Testing started", where xcodebuild sits silently waiting
+    # on the simulator and never begins the run.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       max-parallel: 4
