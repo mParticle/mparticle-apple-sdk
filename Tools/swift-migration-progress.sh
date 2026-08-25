@@ -303,7 +303,7 @@ measure_diff_movement() {
 	STANDALONE_SWIFT_ADDED=0
 	STANDALONE_OBJC_REMOVED=0
 
-	git -C "${repo}" diff --find-renames --numstat -z "${base}" "${head}" -- >"${diff_file}"
+	git -C "${repo}" diff --find-renames --numstat -z "${base}...${head}" -- >"${diff_file}"
 	while IFS=$'\t' read -r -d '' added deleted first_path; do
 		old_path=${first_path}
 		new_path=${first_path}
@@ -400,7 +400,7 @@ write_report() {
 		printf '%s\n\n' '<details>'
 		printf '%s\n\n' '<summary>How this is measured</summary>'
 		printf '%s\n' '- Current composition uses production source lines of code (SLOC) from `cloc`; comments and blank lines are excluded.'
-		printf '%s\n' '- Pull request movement uses physical additions/deletions from `git diff --numstat`; it is intentionally separate from SLOC totals.'
+		printf '%s\n' '- Pull request movement uses physical additions/deletions from `git diff base...head --numstat`; it is intentionally separate from SLOC totals.'
 		printf '%s\n' '- Core excludes SDK kit infrastructure and vendored libraries. Standalone kits include only files below `Kits/**/Sources`.'
 		printf '%s\n' '- Tests, examples, headers, build outputs, vendored libraries, and the `MParticle/Sources` Swift overlay are excluded.'
 		printf '%s\n\n' '- Objective-C++ (`.mm`) is included in Objective-C remaining and removed counts.'
@@ -499,9 +499,12 @@ run_selftest() {
 	local migration_sha
 	local flat_sha
 	local regression_sha
+	local advanced_base_sha
+	local pr_head_sha
 	local migration_report
 	local flat_report
 	local regression_report
+	local divergent_report
 	local flat_count
 
 	validate_cloc "${cloc_path}"
@@ -569,6 +572,25 @@ run_selftest() {
 	regression_report="${fixture}/regression-report.md"
 	generate_report "${fixture}" "${migration_sha}" "${regression_sha}" "${cloc_path}" "${regression_report}"
 	assert_contains "${regression_report}" '| 42.86% | 33.33% | 3 | 6 | ↩️ -9.53 pp |'
+
+	git -C "${fixture}" switch -q -c selftest-pr "${migration_sha}"
+	write_fixture_file "${fixture}" 'mParticle-Apple-SDK-Swift/Sources/PR Only.swift' $'let prOne = 1\nlet prTwo = 2\n'
+	rm "${fixture}/mParticle-Apple-SDK/Event/Core.mm"
+	git -C "${fixture}" add --all
+	git -C "${fixture}" commit -q -m 'pull request fixture'
+	pr_head_sha=$(git -C "${fixture}" rev-parse HEAD)
+
+	git -C "${fixture}" switch -q -c selftest-base "${migration_sha}"
+	write_fixture_file "${fixture}" 'Kits/vendor/vendor-1/Sources/Base Only.m' $'@implementation BaseOnly\n@end\n'
+	rm "${fixture}/Kits/vendor/vendor-1/Sources/Kit.swift"
+	git -C "${fixture}" add --all
+	git -C "${fixture}" commit -q -m 'advanced base fixture'
+	advanced_base_sha=$(git -C "${fixture}" rev-parse HEAD)
+
+	divergent_report="${fixture}/divergent-report.md"
+	generate_report "${fixture}" "${advanced_base_sha}" "${pr_head_sha}" "${cloc_path}" "${divergent_report}"
+	assert_contains "${divergent_report}" '| Core SDK | 2 | 2 |'
+	assert_contains "${divergent_report}" '| Standalone kits | 0 | 0 |'
 
 	[[ "$(percentage 0 0)" == '0.00' ]] || fail 'self-test expected a zero-denominator percentage of 0.00'
 	printf '%s\n' 'swift-migration-progress: SELFTEST PASS'

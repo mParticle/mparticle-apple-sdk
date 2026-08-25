@@ -73,7 +73,8 @@ Tools/swift-migration-progress.sh selftest --cloc /path/to/cloc-2.10.pl
 The self-test creates a temporary Git repository and verifies bucket
 isolation, exclusions, code/comment/blank handling, percentage rounding,
 zero-denominator handling, Objective-C++ counting, filenames with spaces,
-renames, physical diff movement, flat changes, and regressions.
+renames, physical diff movement across divergent histories, flat changes, and
+regressions.
 
 ### Metric definitions
 
@@ -95,8 +96,10 @@ excluded.
 
 The pull request movement table is a different metric: physical Swift lines
 added and Objective-C/Objective-C++ lines deleted according to
-`git diff --numstat -z`. Those figures can differ from the SLOC change because
-Git includes comments and blank lines.
+`git diff base...head --numstat -z`. The three-dot comparison measures changes
+from the merge base through the pull request head, so commits present only on
+an advanced base branch are not attributed to the pull request. These figures
+can differ from the SLOC change because Git includes comments and blank lines.
 
 ### Workflow behavior and removal
 
