@@ -42,7 +42,6 @@ import Foundation
     @objc public func dataRepresentation() -> Data? {
         guard let dataDictionary,
               !MPSwiftIsNull(dataDictionary),
-              dataDictionary is NSDictionary,
               JSONSerialization.isValidJSONObject(dataDictionary)
         else {
             NSLog("mParticle -> Invalid Data dictionary.")
