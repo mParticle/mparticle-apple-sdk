@@ -1,9 +1,11 @@
 #import "MPSession.h"
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
-#import "MPApplication.h"
+@import mParticle_Apple_SDK_Swift;
 
-NSString *const sessionUUIDKey = @"sessionId";
+@interface MPSession ()
+@property (nonatomic, strong) MPSessionPRIVATE *implementation;
+@end
 
 @implementation MPSession
 
@@ -26,14 +28,12 @@ NSString *const sessionUUIDKey = @"sessionId";
 }
 
 - (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId {
-    self = [self initWithStartTime:timestamp userId:userId uuid:nil];
-    
-    return self;
+    return [self initWithStartTime:timestamp userId:userId uuid:nil];
 }
 
 - (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId uuid:(NSString *)uuid {
     NSString *uuidString = uuid ?: [[NSUUID UUID] UUIDString];
-    self = [self initWithSessionId:0
+    return [self initWithSessionId:0
                               UUID:uuidString
                     backgroundTime:0.0
                          startTime:timestamp
@@ -46,8 +46,6 @@ NSString *const sessionUUIDKey = @"sessionId";
                     sessionUserIds:[userId stringValue]
                            appInfo:nil
                         deviceInfo:nil];
-    
-    return self;
 }
 
 - (instancetype)initWithSessionId:(int64_t)sessionId
@@ -68,25 +66,21 @@ NSString *const sessionUUIDKey = @"sessionId";
     if (!self) {
         return nil;
     }
-    
-    _sessionId = sessionId;
-    _uuid = uuid;
-    _backgroundTime = backgroundTime;
-    _startTime = startTime;
-    _endTime = endTime;
-    _length = _endTime - _startTime;
-    _eventCounter = eventCounter;
-    _persisted = sessionId != 0;
-    _numberOfInterruptions = numberOfInterruptions;
-    _suspendTime = suspendTime;
-    _sessionUserIds = sessionUserIds;
-    _appInfo = appInfo;
-    _deviceInfo = deviceInfo;
-    
-    _attributesDictionary = attributesDictionary != nil ? attributesDictionary : [[NSMutableDictionary alloc] init];
-    
-    _userId = userId;
 
+    _implementation = [[MPSessionPRIVATE alloc] initWithSessionId:sessionId
+                                                             uuid:uuid
+                                                   backgroundTime:backgroundTime
+                                                        startTime:startTime
+                                                          endTime:endTime
+                                                       attributes:attributesDictionary
+                                            numberOfInterruptions:numberOfInterruptions
+                                                     eventCounter:eventCounter
+                                                      suspendTime:suspendTime
+                                                           userId:userId
+                                                   sessionUserIds:sessionUserIds
+                                                  applicationInfo:appInfo
+                                                       deviceInfo:deviceInfo];
+    _uuid = _implementation.uuid;
     return self;
 }
 
@@ -98,86 +92,193 @@ NSString *const sessionUUIDKey = @"sessionId";
     if (MPIsNull(object) || ![object isKindOfClass:[MPSession class]]) {
         return NO;
     }
-    
-    BOOL isEqual = _sessionId == object.sessionId &&
-                   _eventCounter == object.eventCounter &&
-                   [_uuid isEqualToString:object.uuid];
-    
-    return isEqual;
+    return [self.implementation isEqualToSession:object.implementation];
 }
 
 - (NSUInteger)hash {
-    return self.sessionId ^ self.eventCounter ^ [self.uuid hash];
+    return (NSUInteger)self.implementation.hash;
 }
 
-#pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
-    MPSession *copyObject = [[MPSession alloc] initWithSessionId:_sessionId
-                                                            UUID:[_uuid copy]
-                                                  backgroundTime:_backgroundTime
-                                                       startTime:_startTime
-                                                         endTime:_endTime
-                                                      attributes:[_attributesDictionary mutableCopy]
-                                           numberOfInterruptions:_numberOfInterruptions
-                                                    eventCounter:_eventCounter
-                                                     suspendTime:_suspendTime
-                                                          userId:_userId
-                                                  sessionUserIds:_sessionUserIds
-                                                         appInfo:_appInfo
-                                                      deviceInfo:_deviceInfo];
-    
+    MPSession *copyObject = [[[self class] allocWithZone:zone] init];
+    copyObject.implementation = [self.implementation copySession];
+    copyObject.uuid = copyObject.implementation.uuid;
     return copyObject;
 }
 
-#pragma mark Public accessors
+- (NSMutableDictionary *)attributesDictionary {
+    @synchronized (self) {
+        return self.implementation.attributesDictionary;
+    }
+}
+
+- (void)setAttributesDictionary:(NSMutableDictionary *)attributesDictionary {
+    @synchronized (self) {
+        self.implementation.attributesDictionary = attributesDictionary ?: [NSMutableDictionary dictionary];
+    }
+}
+
+- (NSTimeInterval)backgroundTime {
+    @synchronized (self) {
+        return self.implementation.backgroundTime;
+    }
+}
+
+- (void)setBackgroundTime:(NSTimeInterval)backgroundTime {
+    @synchronized (self) {
+        self.implementation.backgroundTime = backgroundTime;
+    }
+}
+
 - (NSTimeInterval)foregroundTime {
-    NSTimeInterval foreground = _length - _backgroundTime;
-    // Don't allow negative foreground time
-    return foreground < 0.0 ? 0.0 : foreground;
+    @synchronized (self) {
+        return self.implementation.foregroundTime;
+    }
+}
+
+- (NSTimeInterval)startTime {
+    return self.implementation.startTime;
+}
+
+- (void)setStartTime:(NSTimeInterval)startTime {
+    self.implementation.startTime = startTime;
+}
+
+- (NSTimeInterval)endTime {
+    return self.implementation.endTime;
 }
 
 - (void)setEndTime:(NSTimeInterval)endTime {
-    if (endTime > _startTime) {
-        _endTime = endTime;
-        _length = _endTime - _startTime;
-    } else if (_length > 0) {
-        _endTime = _startTime + _length;
-    } else {
-        _endTime = _startTime;
+    [self.implementation applyEndTime:endTime];
+}
+
+- (NSTimeInterval)length {
+    BOOL needsKVO = self.implementation.length == 0 && self.implementation.endTime > self.implementation.startTime;
+    if (needsKVO) {
+        [self willChangeValueForKey:@"length"];
+    }
+    NSTimeInterval length = [self.implementation resolveLength];
+    if (needsKVO) {
+        [self didChangeValueForKey:@"length"];
+    }
+    return length;
+}
+
+- (void)setLength:(NSTimeInterval)length {
+    self.implementation.length = length;
+}
+
+- (NSTimeInterval)suspendTime {
+    @synchronized (self) {
+        return self.implementation.suspendTime;
     }
 }
 
-- (NSTimeInterval)length {//slx
-    if (_length == 0 && _endTime > _startTime) {
-        [self willChangeValueForKey:@"length"];
-        _length = _endTime - _startTime;
-        [self didChangeValueForKey:@"length"];
+- (uint)eventCounter {
+    @synchronized (self) {
+        return self.implementation.eventCounter;
     }
-    
-    return _length;
+}
+
+- (uint)numberOfInterruptions {
+    @synchronized (self) {
+        return self.implementation.numberOfInterruptions;
+    }
+}
+
+- (int64_t)sessionId {
+    return self.implementation.sessionId;
 }
 
 - (void)setSessionId:(int64_t)sessionId {
-    _sessionId = sessionId;
-    _persisted = sessionId != 0;
+    @synchronized (self) {
+        self.implementation.sessionId = sessionId;
+    }
 }
 
-#pragma mark Public methods
+- (BOOL)persisted {
+    @synchronized (self) {
+        return self.implementation.persisted;
+    }
+}
+
+- (NSNumber *)userId {
+    @synchronized (self) {
+        return self.implementation.userId;
+    }
+}
+
+- (void)setUserId:(NSNumber *)userId {
+    @synchronized (self) {
+        self.implementation.userId = userId;
+    }
+}
+
+- (NSString *)sessionUserIds {
+    @synchronized (self) {
+        return self.implementation.sessionUserIds;
+    }
+}
+
+- (void)setSessionUserIds:(NSString *)sessionUserIds {
+    @synchronized (self) {
+        self.implementation.sessionUserIds = sessionUserIds;
+    }
+}
+
+- (NSDictionary<NSString *, id> *)appInfo {
+    @synchronized (self) {
+        return self.implementation.applicationInfo;
+    }
+}
+
+- (void)setAppInfo:(NSDictionary<NSString *, id> *)appInfo {
+    @synchronized (self) {
+        self.implementation.applicationInfo = appInfo;
+    }
+}
+
+- (NSDictionary *)deviceInfo {
+    @synchronized (self) {
+        return self.implementation.deviceInfo;
+    }
+}
+
+- (void)setDeviceInfo:(NSDictionary *)deviceInfo {
+    @synchronized (self) {
+        self.implementation.deviceInfo = deviceInfo;
+    }
+}
+
+- (NSString *)uuid {
+    @synchronized (self) {
+        return self.implementation.uuid;
+    }
+}
+
+- (void)setUuid:(NSString *)uuid {
+    @synchronized (self) {
+        self.implementation.uuid = uuid;
+        _uuid = uuid;
+    }
+}
+
 - (void)incrementCounter {
-    [self willChangeValueForKey:@"eventCounter"];
-    ++_eventCounter;
-    [self didChangeValueForKey:@"eventCounter"];
+    @synchronized (self) {
+        [self willChangeValueForKey:@"eventCounter"];
+        [self.implementation incrementCounter];
+        [self didChangeValueForKey:@"eventCounter"];
+    }
 }
 
 - (void)suspendSession {
-    [self willChangeValueForKey:@"numberOfInterruptions"];
-    [self willChangeValueForKey:@"suspendTime"];
-
-    ++_numberOfInterruptions;
-    _suspendTime = [[NSDate date] timeIntervalSince1970];
-    
-    [self didChangeValueForKey:@"numberOfInterruptions"];
-    [self didChangeValueForKey:@"suspendTime"];
+    @synchronized (self) {
+        [self willChangeValueForKey:@"numberOfInterruptions"];
+        [self willChangeValueForKey:@"suspendTime"];
+        [self.implementation suspendSession];
+        [self didChangeValueForKey:@"numberOfInterruptions"];
+        [self didChangeValueForKey:@"suspendTime"];
+    }
 }
 
 @end

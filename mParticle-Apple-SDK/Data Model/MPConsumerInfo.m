@@ -18,24 +18,33 @@ NSString *const kMPCKExpiration = @"e";
 
 @end
 
+@interface MPCookie ()
+@property (nonatomic, strong) MPCookiePRIVATE *implementation;
+@end
+
 #pragma mark - MPCookie
 @implementation MPCookie
 
-- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration {
+- (instancetype)init {
     self = [super init];
-    BOOL validName = !MPIsNull(name) && [name isKindOfClass:[NSString class]];
-    BOOL validConfiguration = !MPIsNull(configuration) && [configuration isKindOfClass:[NSDictionary class]];
-    
-    if (!self || !validName || !validConfiguration) {
+    if (self) {
+        _implementation = [[MPCookiePRIVATE alloc] init];
+    }
+    return self;
+}
+
+- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration {
+    MPCookiePRIVATE *implementation = [[MPCookiePRIVATE alloc] initWithName:name configuration:configuration];
+    if (!implementation) {
         return nil;
     }
-    
-    _cookieId = 0;
-    self.content = !MPIsNull(configuration[kMPCKContent]) ? configuration[kMPCKContent] : nil;
-    self.domain = !MPIsNull(configuration[kMPCKDomain]) ? configuration[kMPCKDomain] : nil;
-    self.expiration = !MPIsNull(configuration[kMPCKExpiration]) ? configuration[kMPCKExpiration] : nil;
-    self.name = name;
-    
+
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+
+    _implementation = implementation;
     return self;
 }
 
@@ -43,29 +52,27 @@ NSString *const kMPCKExpiration = @"e";
     if (MPIsNull(object) || ![object isKindOfClass:[MPCookie class]]) {
         return NO;
     }
-    
-    BOOL isEqual = [_name isEqualToString:object.name];
-    return isEqual;
+    return [self.implementation isEqualToCookie:object.implementation];
 }
 
 - (NSUInteger)hash {
-    return [self.name hash];
+    return (NSUInteger)self.implementation.hash;
 }
 
 #pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
-    [coder encodeObject:_name forKey:@"name"];
+    [coder encodeObject:self.name forKey:@"name"];
 
-    if (_content) {
-        [coder encodeObject:_content forKey:@"content"];
+    if (self.content) {
+        [coder encodeObject:self.content forKey:@"content"];
     }
     
-    if (_domain) {
-        [coder encodeObject:_domain forKey:@"domain"];
+    if (self.domain) {
+        [coder encodeObject:self.domain forKey:@"domain"];
     }
     
-    if (_expiration) {
-        [coder encodeObject:_expiration forKey:@"expiration"];
+    if (self.expiration) {
+        [coder encodeObject:self.expiration forKey:@"expiration"];
     }
 }
 
@@ -98,71 +105,71 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 #pragma mark Public accessors
-- (BOOL)expired {
-    if (MPIsNull(_expiration)) {
-        return YES;
-    }
-    
-    NSDate *now = [NSDate date];
-    NSDate *cookieDate = [MPDateFormatter dateFromStringRFC3339:_expiration];
-    
-    BOOL expired = [cookieDate compare:now] == NSOrderedAscending;
-    return expired;
+- (int64_t)cookieId {
+    return self.implementation.cookieId;
+}
+
+- (void)setCookieId:(int64_t)cookieId {
+    self.implementation.cookieId = cookieId;
+}
+
+- (NSString *)content {
+    return self.implementation.content;
 }
 
 - (void)setContent:(NSString *)content {
-    _content = content ? [content percentEscape] : nil;
+    self.implementation.content = content;
+}
+
+- (NSString *)domain {
+    return self.implementation.domain;
 }
 
 - (void)setDomain:(NSString *)domain {
-    _domain = domain ? [domain percentEscape] : nil;
+    self.implementation.domain = domain;
+}
+
+- (NSString *)expiration {
+    return self.implementation.expiration;
 }
 
 - (void)setExpiration:(NSString *)expiration {
-    _expiration = expiration ? [expiration percentEscape] : nil;
+    self.implementation.expiration = expiration;
+}
+
+- (NSString *)name {
+    return self.implementation.name;
 }
 
 - (void)setName:(NSString *)name {
     NSAssert(name, @"Name cannot be nil");
-    
-    _name = [name percentEscape];
+    self.implementation.name = name ?: @"";
+}
+
+- (BOOL)expired {
+    return self.implementation.expired;
 }
 
 #pragma mark Public methods
 - (NSDictionary *)dictionaryRepresentation {
-    NSMutableDictionary *cookieDictionary = [[NSMutableDictionary alloc] initWithCapacity:2];
-    
-    if (_content) {
-        cookieDictionary[kMPCKContent] = _content;
-    }
-    
-    if (_domain) {
-        cookieDictionary[kMPCKDomain] = _domain;
-    }
-
-    if (_expiration) {
-        cookieDictionary[kMPCKExpiration] = _expiration;
-    }
-    
-    if (cookieDictionary.count == 0) {
-        return (NSDictionary *)nil;
-    }
-    
-    return (NSDictionary *)cookieDictionary;
+    return [self.implementation dictionaryRepresentation];
 }
 
+@end
+
+@interface MPConsumerInfo ()
+@property (nonatomic, strong) MPConsumerInfoPRIVATE *implementation;
 @end
 
 #pragma mark - MPConsumerInfo
 @implementation MPConsumerInfo
 
 @synthesize cookies = _cookies;
-@synthesize uniqueIdentifier = _uniqueIdentifier;
 
 - (id)init {
     self = [super init];
     if (self) {
-        _consumerInfoId = 0;
+        _implementation = [[MPConsumerInfoPRIVATE alloc] init];
     }
     
     return self;
@@ -174,18 +181,27 @@ NSString *const kMPCKExpiration = @"e";
         [coder encodeObject:_cookies forKey:@"cookies"];
     }
     if (self.uniqueIdentifier) {
-        [coder encodeObject:_uniqueIdentifier forKey:@"uniqueIdentifier"];
+        [coder encodeObject:self.uniqueIdentifier forKey:@"uniqueIdentifier"];
     }
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super init];
     if (self) {
+        _implementation = [[MPConsumerInfoPRIVATE alloc] init];
         _cookies = [coder decodeObjectOfClass:[NSArray<MPCookie *> class] forKey:@"cookies"];
-        _uniqueIdentifier = [coder decodeObjectOfClass:[NSString class] forKey:@"uniqueIdentifier"];
+        _implementation.uniqueIdentifier = [coder decodeObjectOfClass:[NSString class] forKey:@"uniqueIdentifier"];
     }
     
     return self;
+}
+
+- (int64_t)consumerInfoId {
+    return self.implementation.consumerInfoId;
+}
+
+- (void)setConsumerInfoId:(int64_t)consumerInfoId {
+    self.implementation.consumerInfoId = consumerInfoId;
 }
 
 + (BOOL)supportsSecureCoding {
@@ -262,29 +278,26 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (NSString *)uniqueIdentifier {
-    if (_uniqueIdentifier) {
-        return _uniqueIdentifier;
+    if (self.implementation.uniqueIdentifier) {
+        return self.implementation.uniqueIdentifier;
     }
     
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     if (userDefaults[kMPRemoteConfigUniqueIdentifierKey]) {
-        _uniqueIdentifier = userDefaults[kMPRemoteConfigUniqueIdentifierKey];
+        NSString *uniqueIdentifier = userDefaults[kMPRemoteConfigUniqueIdentifierKey];
         [userDefaults removeMPObjectForKey:kMPRemoteConfigUniqueIdentifierKey];
 
-        if (MPIsNull(_uniqueIdentifier)) {
-            _uniqueIdentifier = nil;
+        if (MPIsNull(uniqueIdentifier)) {
+            uniqueIdentifier = nil;
         }
+        self.implementation.uniqueIdentifier = uniqueIdentifier;
     }
     
-    return _uniqueIdentifier;
+    return self.implementation.uniqueIdentifier;
 }
 
 - (void)setUniqueIdentifier:(NSString *)uniqueIdentifier {
-    if (MPIsNull(uniqueIdentifier)) {
-        return;
-    }
-    
-    _uniqueIdentifier = [uniqueIdentifier percentEscape];
+    [self.implementation escapeAndSetUniqueIdentifier:uniqueIdentifier];
 }
 
 - (NSString *)deviceApplicationStamp {
