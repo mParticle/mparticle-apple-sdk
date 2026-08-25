@@ -22,7 +22,10 @@
             return nil;
         }
         
-        MPUserDefaultsConnector *connector = [[MPUserDefaultsConnector alloc] init];
+        // MPUserDefaultsConnector declares its MPUserDefaultsConnectorProtocol conformance in a
+        // class extension inside its own .m, so it is not visible here. MPNetworkCommunication
+        // casts at the call site for the same reason.
+        id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
         NSMutableArray<MPCustomModulePreference *> *localPreferences = [[NSMutableArray alloc] initWithCapacity:preferences.count];
         NSString *location;
         NSArray *preferenceSettings;
