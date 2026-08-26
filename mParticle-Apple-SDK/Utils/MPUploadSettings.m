@@ -3,15 +3,11 @@
 #import "mParticle.h"
 #import "MPILogger.h"
 
-static NSString *const kApiKey = @"apiKey";
-static NSString *const kSecret = @"secret";
-static NSString *const kEventsHost = @"eventsHost";
-static NSString *const kEventsTrackingHost = @"eventsTrackingHost";
-static NSString *const kOverridesEventsSubdirectory = @"overridesEventsSubdirectory";
-static NSString *const kAliasHost = @"aliasHost";
-static NSString *const kAliasTrackingHost = @"aliasTrackingHost";
-static NSString *const kOverridesAliasSubdirectory = @"overridesAliasSubdirectory";
-static NSString *const kEventsOnly = @"eventsOnly";
+@import mParticle_Apple_SDK_Swift;
+
+@interface MPUploadSettings ()
+@property (nonatomic, strong, nonnull) MPUploadSettingsPRIVATE *impl;
+@end
 
 @implementation MPUploadSettings
 
@@ -31,14 +27,29 @@ static NSString *const kEventsOnly = @"eventsOnly";
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _apiKey = @"";
-        _secret = @"";
-        _overridesEventsSubdirectory = NO;
-        _overridesAliasSubdirectory = NO;
-        _eventsOnly = NO;
+        _impl = [[MPUploadSettingsPRIVATE alloc] init];
     }
     return self;
 }
+
+- (NSString *)apiKey { return self.impl.apiKey; }
+- (void)setApiKey:(NSString *)apiKey { self.impl.apiKey = apiKey; }
+- (NSString *)secret { return self.impl.secret; }
+- (void)setSecret:(NSString *)secret { self.impl.secret = secret; }
+- (NSString *)eventsHost { return self.impl.eventsHost; }
+- (void)setEventsHost:(NSString *)eventsHost { self.impl.eventsHost = eventsHost; }
+- (NSString *)eventsTrackingHost { return self.impl.eventsTrackingHost; }
+- (void)setEventsTrackingHost:(NSString *)eventsTrackingHost { self.impl.eventsTrackingHost = eventsTrackingHost; }
+- (BOOL)overridesEventsSubdirectory { return self.impl.overridesEventsSubdirectory; }
+- (void)setOverridesEventsSubdirectory:(BOOL)overridesEventsSubdirectory { self.impl.overridesEventsSubdirectory = overridesEventsSubdirectory; }
+- (NSString *)aliasHost { return self.impl.aliasHost; }
+- (void)setAliasHost:(NSString *)aliasHost { self.impl.aliasHost = aliasHost; }
+- (NSString *)aliasTrackingHost { return self.impl.aliasTrackingHost; }
+- (void)setAliasTrackingHost:(NSString *)aliasTrackingHost { self.impl.aliasTrackingHost = aliasTrackingHost; }
+- (BOOL)overridesAliasSubdirectory { return self.impl.overridesAliasSubdirectory; }
+- (void)setOverridesAliasSubdirectory:(BOOL)overridesAliasSubdirectory { self.impl.overridesAliasSubdirectory = overridesAliasSubdirectory; }
+- (BOOL)eventsOnly { return self.impl.eventsOnly; }
+- (void)setEventsOnly:(BOOL)eventsOnly { self.impl.eventsOnly = eventsOnly; }
 
 - (id)copyWithZone:(NSZone *)zone {
     MPUploadSettings *copy = [[MPUploadSettings alloc] initWithApiKey:self.apiKey
@@ -54,29 +65,13 @@ static NSString *const kEventsOnly = @"eventsOnly";
 }
 
 - (void)encodeWithCoder:(NSCoder *)coder {
-    [coder encodeObject:self.apiKey forKey:kApiKey];
-    [coder encodeObject:self.secret forKey:kSecret];
-    [coder encodeObject:self.eventsHost forKey:kEventsHost];
-    [coder encodeObject:self.eventsTrackingHost forKey:kEventsTrackingHost];
-    [coder encodeBool:self.overridesEventsSubdirectory forKey:kOverridesEventsSubdirectory];
-    [coder encodeObject:self.aliasHost forKey:kAliasHost];
-    [coder encodeObject:self.aliasTrackingHost forKey:kAliasTrackingHost];
-    [coder encodeBool:self.overridesAliasSubdirectory forKey:kOverridesAliasSubdirectory];
-    [coder encodeBool:self.eventsOnly forKey:kEventsOnly];
+    [self.impl encodeToCoder:coder];
 }
 
 - (nullable instancetype)initWithCoder:(NSCoder *)coder {
     self = [super init];
     if (self) {
-        _apiKey = [coder decodeObjectOfClass:[NSString class] forKey:kApiKey] ?: @"";
-        _secret = [coder decodeObjectOfClass:[NSString class] forKey:kSecret] ?: @"";
-        _eventsHost = [coder decodeObjectOfClass:[NSString class] forKey:kEventsHost];
-        _eventsTrackingHost = [coder decodeObjectOfClass:[NSString class] forKey:kEventsTrackingHost];
-        _overridesEventsSubdirectory = [coder decodeBoolForKey:kOverridesEventsSubdirectory];
-        _aliasHost = [coder decodeObjectOfClass:[NSString class] forKey:kAliasHost];
-        _aliasTrackingHost = [coder decodeObjectOfClass:[NSString class] forKey:kAliasTrackingHost];
-        _overridesAliasSubdirectory = [coder decodeBoolForKey:kOverridesAliasSubdirectory];
-        _eventsOnly = [coder decodeBoolForKey:kEventsOnly];
+        _impl = [[MPUploadSettingsPRIVATE alloc] initFromCoder:coder];
     }
     return self;
 }
@@ -108,11 +103,11 @@ static NSString *const kEventsOnly = @"eventsOnly";
     }
     return [self initWithApiKey:apiKey
                          secret:secret
-                    eventsHost:customHost ?: networkOptions.eventsHost
-             eventsTrackingHost:customHost ?: networkOptions.eventsTrackingHost
+                    eventsHost:[MPUploadSettingsPRIVATE resolvedHostWithCustomHost:customHost host:networkOptions.eventsHost]
+             eventsTrackingHost:[MPUploadSettingsPRIVATE resolvedHostWithCustomHost:customHost host:networkOptions.eventsTrackingHost]
   overridesEventsSubdirectory:networkOptions.overridesEventsSubdirectory
-                     aliasHost:customHost ?: networkOptions.aliasHost
-              aliasTrackingHost:customHost ?: networkOptions.aliasTrackingHost
+                     aliasHost:[MPUploadSettingsPRIVATE resolvedHostWithCustomHost:customHost host:networkOptions.aliasHost]
+              aliasTrackingHost:[MPUploadSettingsPRIVATE resolvedHostWithCustomHost:customHost host:networkOptions.aliasTrackingHost]
    overridesAliasSubdirectory:networkOptions.overridesAliasSubdirectory
                    eventsOnly:networkOptions.eventsOnly];
 }
@@ -128,15 +123,15 @@ static NSString *const kEventsOnly = @"eventsOnly";
                            eventsOnly:(BOOL)eventsOnly {
     self = [super init];
     if (self) {
-        _apiKey = [apiKey copy];
-        _secret = [secret copy];
-        _eventsHost = [eventsHost copy];
-        _eventsTrackingHost = [eventsTrackingHost copy];
-        _overridesEventsSubdirectory = overridesEventsSubdirectory;
-        _aliasHost = [aliasHost copy];
-        _aliasTrackingHost = [aliasTrackingHost copy];
-        _overridesAliasSubdirectory = overridesAliasSubdirectory;
-        _eventsOnly = eventsOnly;
+        _impl = [[MPUploadSettingsPRIVATE alloc] initWithApiKey:apiKey
+                                                         secret:secret
+                                                     eventsHost:eventsHost
+                                             eventsTrackingHost:eventsTrackingHost
+                                    overridesEventsSubdirectory:overridesEventsSubdirectory
+                                                      aliasHost:aliasHost
+                                              aliasTrackingHost:aliasTrackingHost
+                                     overridesAliasSubdirectory:overridesAliasSubdirectory
+                                                     eventsOnly:eventsOnly];
     }
     return self;
 }
