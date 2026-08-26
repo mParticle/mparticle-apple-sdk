@@ -16,6 +16,7 @@ import UIKit
     @objc subscript(key: String) -> Any? { get set }
     func removeMPObject(forKey key: String)
     func sideloadedKitsCount() -> UInt
+    func synchronize()
 }
 
 /// Wire-format keys for the app-info payload. Canonical copies live here on the Swift side;
@@ -221,6 +222,7 @@ import UIKit
     @objc public static func markInitialLaunchTime(userDefaults: MPApplicationMPUserDefaultsProtocol) {
         if userDefaults[MPApplicationKeys.kMPAppInitialLaunchTimeKey] == nil {
             userDefaults[MPApplicationKeys.kMPAppInitialLaunchTimeKey] = currentEpochMilliseconds()
+            DispatchQueue.main.async { userDefaults.synchronize() }
         }
     }
 

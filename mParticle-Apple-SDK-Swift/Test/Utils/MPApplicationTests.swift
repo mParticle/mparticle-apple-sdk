@@ -12,6 +12,7 @@ private class MockAppUserDefaults: NSObject, MPApplicationMPUserDefaultsProtocol
 
     func removeMPObject(forKey key: String) { store.removeValue(forKey: key) }
     func sideloadedKitsCount() -> UInt { sideloadedCount }
+    func synchronize() {}
 }
 
 private class MockAppStateMachine: NSObject, MPApplicationStateMachineProtocol {
