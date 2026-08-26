@@ -1,7 +1,6 @@
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPCustomModule.h"
-#import <sys/sysctl.h>
 #import "MPNotificationController.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
@@ -10,21 +9,12 @@
 #import <UIKit/UIKit.h>
 #import "MPDataPlanFilter.h"
 #import "MParticleReachability.h"
-#import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 
 #if TARGET_OS_IOS == 1
 #import <AdServices/AAAttribution.h>
 #endif
 @import mParticle_Apple_SDK_Swift;
-
-static NSString *const kCookieDateKey = @"e";
-static NSString *const kMinUploadDateKey = @"MinUploadDate";
-static NSString *const kMinAliasDateKey = @"MinAliasDate";
-static NSString *const kMPStateKey = @"state";
-
-static MPEnvironment runningEnvironment = MPEnvironmentAutoDetect;
-static BOOL runningInBackground = NO;
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
@@ -33,96 +23,68 @@ static BOOL runningInBackground = NO;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) MPDataPlanFilter *dataPlanFilter;
-
 @end
 
 @interface MParticleUser ()
 - (void)setIdentity:(NSString *)identityString identityType:(MPIdentity)identityType;
-
 @end
 
-@interface MPStateMachine_PRIVATE()<MPStateMachineMPDeviceProtocol> {
-    BOOL optOutSet;
+@interface MPStateMachine_PRIVATE () <MPStateMachineMPDeviceProtocol> {
     dispatch_queue_t messageQueue;
 }
 
+@property (nonatomic, strong) MPStateMachinePRIVATE *implementation;
 @property (nonatomic) MParticleNetworkStatus networkStatus;
-@property (nonatomic, strong) NSString *storedSDKVersion;
 @property (nonatomic, strong) MParticleReachability *reachability;
 @property (nonatomic) MPUploadStatus uploadStatus;
 
 @end
 
-
 @implementation MPStateMachine_PRIVATE
 
 @synthesize consumerInfo = _consumerInfo;
-@synthesize deviceTokenType = _deviceTokenType;
-@synthesize firstSeenInstallation = _firstSeenInstallation;
-@synthesize installationType = _installationType;
-@synthesize logLevel = _logLevel;
-@synthesize optOut = _optOut;
-@synthesize attAuthorizationStatus = _attAuthorizationStatus;
-@synthesize attAuthorizationTimestamp = _attAuthorizationTimestamp;
-@synthesize pushNotificationMode = _pushNotificationMode;
-@synthesize storedSDKVersion = _storedSDKVersion;
-@synthesize triggerEventTypes = _triggerEventTypes;
-@synthesize triggerMessageTypes = _triggerMessageTypes;
-@synthesize automaticSessionTracking = _automaticSessionTracking;
-@synthesize allowASR = _allowASR;
 @synthesize networkStatus = _networkStatus;
 
 - (instancetype)init {
     self = [super init];
     if (self) {
         messageQueue = [MParticle messageQueue];
-        optOutSet = NO;
-        _exceptionHandlingMode = kMPRemoteConfigExceptionHandlingModeAppDefined;
-        _crashMaxPLReportLength = nil;
-        _networkPerformanceMeasuringMode = kMPRemoteConfigAppDefined;
+        _implementation = [[MPStateMachinePRIVATE alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults];
         _uploadStatus = MPUploadStatusBatch;
-        _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
-        _backgrounded = NO;
-        _dataRamped = NO;
-        _installationType = MPInstallationTypeAutodetect;
-        _launchDate = [NSDate date];
-        _launchOptions = nil;
-        _logLevel = MPILogLevelNone;
-        
+
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-        
+
         dispatch_async(dispatch_get_main_queue(), ^{
-            
-            self.storedSDKVersion = kMParticleSDKVersion;
-            
+            [self.implementation persistStoredSDKVersion:kMParticleSDKVersion];
+
             [self.reachability startNotifier];
             self.networkStatus = [self.reachability currentReachabilityStatus];
-            
+
             [notificationCenter addObserver:self
                                    selector:@selector(handleApplicationDidEnterBackground:)
                                        name:UIApplicationDidEnterBackgroundNotification
                                      object:nil];
-            
+
             [notificationCenter addObserver:self
                                    selector:@selector(handleApplicationWillEnterForeground:)
                                        name:UIApplicationWillEnterForegroundNotification
                                      object:nil];
-            
+
             [notificationCenter addObserver:self
                                    selector:@selector(handleApplicationWillTerminate:)
                                        name:UIApplicationWillTerminateNotification
                                      object:nil];
-            
+
             [notificationCenter addObserver:self
                                    selector:@selector(handleReachabilityChanged:)
                                        name:MParticleReachabilityChangedNotification
                                      object:nil];
-            
+
             [MPApplication_PRIVATE markInitialLaunchTimeWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
             [MPApplication_PRIVATE updateLaunchCountsAndDatesWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
         });
     }
-    
+
     return self;
 }
 
@@ -137,198 +99,128 @@ static BOOL runningInBackground = NO;
     if (_reachability) {
         return _reachability;
     }
-    
+
     [self willChangeValueForKey:@"reachability"];
     _reachability = [MParticleReachability reachabilityForInternetConnection];
     [self didChangeValueForKey:@"reachability"];
-    
+
     return _reachability;
 }
 
 - (MParticleNetworkStatus)networkStatus {
-    @synchronized(self) {
+    @synchronized (self) {
         return _networkStatus;
     }
 }
 
 - (void)setNetworkStatus:(MParticleNetworkStatus)networkStatus {
-    @synchronized(self) {
+    @synchronized (self) {
         _networkStatus = networkStatus;
-    }
-}
-
-- (NSString *)storedSDKVersion {
-    if (_storedSDKVersion) {
-        return _storedSDKVersion;
-    }
-    
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    _storedSDKVersion = userDefaults[@"storedSDKVersion"];
-    
-    return _storedSDKVersion;
-}
-
-- (void)setStoredSDKVersion:(NSString *)storedSDKVersion {
-    if (self.storedSDKVersion && storedSDKVersion && [_storedSDKVersion isEqualToString:storedSDKVersion]) {
-        return;
-    }
-
-    _storedSDKVersion = storedSDKVersion;
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-
-    if (MPIsNull(_storedSDKVersion)) {
-        [userDefaults removeMPObjectForKey:@"storedSDKVersion"];
-    } else {
-        userDefaults[@"storedSDKVersion"] = _storedSDKVersion;
-    }
-}
-
-#pragma mark Private methods
-+ (MPEnvironment)getEnvironment {
-    MPEnvironment environment;
-    
-#if TARGET_OS_SIMULATOR
-    environment = MPEnvironmentDevelopment;
-#else
-    int numberOfBytes = 4;
-    int name[numberOfBytes];
-    name[0] = CTL_KERN;
-    name[1] = KERN_PROC;
-    name[2] = KERN_PROC_PID;
-    name[3] = getpid();
-    
-    struct kinfo_proc info;
-    size_t infoSize = sizeof(info);
-    info.kp_proc.p_flag = 0;
-    
-    sysctl(name, numberOfBytes, &info, &infoSize, NULL, 0);
-    BOOL isDebuggerRunning = (info.kp_proc.p_flag & P_TRACED) != 0;
-    
-    if (isDebuggerRunning) {
-        environment = MPEnvironmentDevelopment;
-    } else {
-        NSString *provisioningProfileString = [MPStateMachine_PRIVATE provisioningProfileString];
-        environment = provisioningProfileString ? MPEnvironmentDevelopment : MPEnvironmentProduction;
-    }
-#endif
-    
-    return environment;
-}
-
-- (void)resetRampPercentage {
-    if (_dataRamped) {
-        [self willChangeValueForKey:@"dataRamped"];
-        _dataRamped = NO;
-        [self didChangeValueForKey:@"dataRamped"];
-    }
-}
-
-- (void)resetTriggers {
-    if (_triggerEventTypes) {
-        [self willChangeValueForKey:@"triggerEventTypes"];
-        _triggerEventTypes = nil;
-        [self didChangeValueForKey:@"triggerEventTypes"];
-    }
-    
-    if (_triggerMessageTypes) {
-        [self willChangeValueForKey:@"triggerMessageTypes"];
-        _triggerMessageTypes = nil;
-        [self didChangeValueForKey:@"triggerMessageTypes"];
     }
 }
 
 #pragma mark Notification handlers
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
-    NSDate *launchDate = _launchDate;
+    NSDate *launchDate = self.implementation.launchDate;
     dispatch_async(messageQueue, ^{
         [MPApplication_PRIVATE updateLastUseDate:launchDate userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
     });
-    _backgrounded = YES;
-    self.launchInfo = nil;
+    self.implementation.backgrounded = YES;
+    self.implementation.launchInfo = nil;
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
-    _backgrounded = NO;
+    self.implementation.backgrounded = NO;
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
-    [MPApplication_PRIVATE updateLastUseDate:_launchDate userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
+    [MPApplication_PRIVATE updateLastUseDate:self.implementation.launchDate userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
 }
 
 - (void)handleReachabilityChanged:(NSNotification *)notification {
     self.networkStatus = [self.reachability currentReachabilityStatus];
 }
 
+- (void)resetRampPercentage {
+    if (self.implementation.dataRamped) {
+        [self willChangeValueForKey:@"dataRamped"];
+        self.implementation.dataRamped = NO;
+        [self didChangeValueForKey:@"dataRamped"];
+    }
+}
+
+- (void)resetTriggers {
+    if (self.implementation.triggerEventTypes) {
+        [self willChangeValueForKey:@"triggerEventTypes"];
+        self.implementation.triggerEventTypes = nil;
+        [self didChangeValueForKey:@"triggerEventTypes"];
+    }
+
+    if (self.implementation.triggerMessageTypes) {
+        [self willChangeValueForKey:@"triggerMessageTypes"];
+        self.implementation.triggerMessageTypes = nil;
+        [self didChangeValueForKey:@"triggerMessageTypes"];
+    }
+}
+
 #pragma mark Class methods
 + (MPEnvironment)environment {
-    @synchronized(self) {
-        if (runningEnvironment != MPEnvironmentAutoDetect) {
-            return runningEnvironment;
-        }
-        
-        runningEnvironment = [MPStateMachine_PRIVATE getEnvironment];
-        
-        return runningEnvironment;
-    }
+    return (MPEnvironment)[MPStateMachinePRIVATE environment];
 }
 
 + (void)setEnvironment:(MPEnvironment)environment {
-    @synchronized(self) {
-        runningEnvironment = environment;
-    }
+    [MPStateMachinePRIVATE setEnvironment:(NSUInteger)environment];
 }
 
 + (NSString *)provisioningProfileString {
-    NSString *provisioningProfilePath = [[NSBundle mainBundle] pathForResource:@"embedded" ofType:@"mobileprovision"];
-    
-    if (!provisioningProfilePath) {
-        return nil;
-    }
-    
-    NSData *provisioningProfileData = [NSData dataWithContentsOfFile:provisioningProfilePath];
-    NSUInteger dataLength = provisioningProfileData.length;
-    const char *provisioningProfileBytes = (const char *)[provisioningProfileData bytes];
-    NSMutableString *provisioningProfileString = [[NSMutableString alloc] initWithCapacity:provisioningProfileData.length];
-    
-    for (NSUInteger i = 0; i < dataLength; ++i) {
-        [provisioningProfileString appendFormat:@"%c", provisioningProfileBytes[i]];
-    }
-    
-    NSString *singleLineProvisioningProfileString = [[provisioningProfileString componentsSeparatedByCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet] componentsJoinedByString:@""];
-    
-    return singleLineProvisioningProfileString;
+    return [MPStateMachinePRIVATE provisioningProfileString];
 }
 
 + (BOOL)runningInBackground {
-    @synchronized(self) {
-        return runningInBackground;
-    }
+    return [MPStateMachinePRIVATE runningInBackground];
 }
 
 + (void)setRunningInBackground:(BOOL)background {
-    @synchronized(self) {
-        runningInBackground = background;
-    }
+    [MPStateMachinePRIVATE setRunningInBackground:background];
 }
 
 + (BOOL)isAppExtension {
-#if TARGET_OS_IOS == 1
-    return [[NSBundle mainBundle].bundlePath hasSuffix:@".appex"];
-#else
-    return NO;
-#endif
+    return [MPStateMachinePRIVATE isAppExtension];
 }
 
 #pragma mark Public accessors
+- (NSString *)apiKey {
+    @synchronized (self) {
+        return self.implementation.apiKey;
+    }
+}
+
+- (void)setApiKey:(NSString *)apiKey {
+    @synchronized (self) {
+        self.implementation.apiKey = apiKey;
+    }
+}
+
+- (NSString *)secret {
+    @synchronized (self) {
+        return self.implementation.secret;
+    }
+}
+
+- (void)setSecret:(NSString *)secret {
+    @synchronized (self) {
+        self.implementation.secret = secret;
+    }
+}
+
 - (MPConsumerInfo *)consumerInfo {
     if (_consumerInfo) {
         return _consumerInfo;
     }
-    
+
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     _consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController_PRIVATE mpId]];
-    
+
     if (!_consumerInfo) {
         _consumerInfo = [[MPConsumerInfo alloc] init];
         [persistence saveConsumerInfo:_consumerInfo];
@@ -338,49 +230,139 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    @synchronized(self) {
-        _logLevel = logLevel;
+    @synchronized (self) {
+        self.implementation.logLevel = (NSUInteger)logLevel;
     }
-    
+}
+
+- (MPILogLevel)logLevel {
+    @synchronized (self) {
+        return (MPILogLevel)self.implementation.logLevel;
+    }
+}
+
+- (NSString *)exceptionHandlingMode {
+    return self.implementation.exceptionHandlingMode;
+}
+
+- (void)setExceptionHandlingMode:(NSString *)exceptionHandlingMode {
+    self.implementation.exceptionHandlingMode = exceptionHandlingMode;
+}
+
+- (NSNumber *)crashMaxPLReportLength {
+    return self.implementation.crashMaxPLReportLength;
+}
+
+- (void)setCrashMaxPLReportLength:(NSNumber *)crashMaxPLReportLength {
+    self.implementation.crashMaxPLReportLength = crashMaxPLReportLength;
+}
+
+- (NSDictionary *)launchOptions {
+    return self.implementation.launchOptions;
+}
+
+- (void)setLaunchOptions:(NSDictionary *)launchOptions {
+    self.implementation.launchOptions = launchOptions;
+}
+
+- (NSString *)networkPerformanceMeasuringMode {
+    return self.implementation.networkPerformanceMeasuringMode;
+}
+
+- (void)setNetworkPerformanceMeasuringMode:(NSString *)networkPerformanceMeasuringMode {
+    self.implementation.networkPerformanceMeasuringMode = networkPerformanceMeasuringMode;
+}
+
+- (MPLaunchInfo *)launchInfo {
+    return self.implementation.launchInfo;
+}
+
+- (void)setLaunchInfo:(MPLaunchInfo *)launchInfo {
+    self.implementation.launchInfo = launchInfo;
+}
+
+- (NSDate *)launchDate {
+    return self.implementation.launchDate;
+}
+
+- (BOOL)backgrounded {
+    return self.implementation.backgrounded;
+}
+
+- (BOOL)dataRamped {
+    return self.implementation.dataRamped;
+}
+
+- (BOOL)automaticSessionTracking {
+    return self.implementation.automaticSessionTracking;
+}
+
+- (void)setAutomaticSessionTracking:(BOOL)automaticSessionTracking {
+    self.implementation.automaticSessionTracking = automaticSessionTracking;
+}
+
+- (BOOL)allowASR {
+    return self.implementation.allowASR;
+}
+
+- (void)setAllowASR:(BOOL)allowASR {
+    self.implementation.allowASR = allowASR;
+}
+
+- (BOOL)enableAudienceAPI {
+    return self.implementation.enableAudienceAPI;
+}
+
+- (void)setEnableAudienceAPI:(BOOL)enableAudienceAPI {
+    self.implementation.enableAudienceAPI = enableAudienceAPI;
+}
+
+- (BOOL)enableIdentityCaching {
+    return self.implementation.enableIdentityCaching;
+}
+
+- (void)setEnableIdentityCaching:(BOOL)enableIdentityCaching {
+    self.implementation.enableIdentityCaching = enableIdentityCaching;
+}
+
+- (NSNumber *)aliasMaxWindow {
+    return self.implementation.aliasMaxWindow;
+}
+
+- (void)setAliasMaxWindow:(NSNumber *)aliasMaxWindow {
+    self.implementation.aliasMaxWindow = aliasMaxWindow;
+}
+
+- (NSDictionary *)searchAdsInfo {
+    return self.implementation.searchAdsInfo;
+}
+
+- (void)setSearchAdsInfo:(NSDictionary *)searchAdsInfo {
+    self.implementation.searchAdsInfo = searchAdsInfo;
 }
 
 - (NSString *)deviceTokenType {
-    if (_deviceTokenType) {
-        return _deviceTokenType;
+    if (self.implementation.deviceTokenType) {
+        return self.implementation.deviceTokenType;
     }
-    
+
     [self willChangeValueForKey:@"deviceTokenType"];
-
-    _deviceTokenType = @"";
-    NSString *provisioningProfileString = [MPStateMachine_PRIVATE provisioningProfileString];
-    
-    if (provisioningProfileString) {
-        NSRange range = [provisioningProfileString rangeOfString:@"<key>aps-environment</key><string>production</string>"];
-        if (range.location != NSNotFound) {
-            _deviceTokenType = kMPDeviceTokenTypeProduction;
-        } else {
-            range = [provisioningProfileString rangeOfString:@"<key>aps-environment</key><string>development</string>"];
-            
-            if (range.location != NSNotFound) {
-                _deviceTokenType = kMPDeviceTokenTypeDevelopment;
-            }
-        }
-    }
-
+    self.implementation.deviceTokenType = [MPStateMachinePRIVATE deviceTokenTypeFromProvisioningProfile:[MPStateMachinePRIVATE provisioningProfileString]];
     [self didChangeValueForKey:@"deviceTokenType"];
-    
-    return _deviceTokenType;
+
+    return self.implementation.deviceTokenType;
 }
 
 - (NSNumber *)firstSeenInstallation {
-    return (_firstSeenInstallation == nil) ? @NO : _firstSeenInstallation;
+    NSNumber *firstSeenInstallation = self.implementation.firstSeenInstallation;
+    return firstSeenInstallation == nil ? @NO : firstSeenInstallation;
 }
 
 - (MPInstallationType)installationType {
-    if (_installationType != MPInstallationTypeAutodetect) {
-        return _installationType;
+    if (self.implementation.installationType != MPInstallationTypeAutodetect) {
+        return (MPInstallationType)self.implementation.installationType;
     }
-    
+
     [self willChangeValueForKey:@"installationType"];
 
     MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)self
@@ -390,195 +372,111 @@ static BOOL runningInBackground = NO;
                                                                                    buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
     if (application.storedVersion || application.storedBuild) {
         if (![application.version isEqualToString:application.storedVersion] || ![application.build isEqualToString:application.storedBuild]) {
-            _installationType = MPInstallationTypeKnownUpgrade;
+            self.implementation.installationType = MPInstallationTypeKnownUpgrade;
         } else {
-            _installationType = MPInstallationTypeKnownSameVersion;
+            self.implementation.installationType = MPInstallationTypeKnownSameVersion;
         }
     } else {
-        _installationType = MPInstallationTypeKnownInstall;
-        _firstSeenInstallation = @YES;
+        self.implementation.installationType = MPInstallationTypeKnownInstall;
+        self.implementation.firstSeenInstallation = @YES;
     }
-    
+
     [self didChangeValueForKey:@"installationType"];
-    
-    return _installationType;
+
+    return (MPInstallationType)self.implementation.installationType;
 }
 
 - (void)setInstallationType:(MPInstallationType)installationType {
     [self willChangeValueForKey:@"installationType"];
-    _installationType = installationType;
+    self.implementation.installationType = installationType;
     [self didChangeValueForKey:@"installationType"];
-    
-    _firstSeenInstallation = @(installationType == MPInstallationTypeKnownInstall);
-}
 
-- (NSString *)minDefaultsKeyForUploadType:(MPUploadType)uploadType {
-    NSString *defaultsKey = nil;
-    if (uploadType == MPUploadTypeMessage) {
-        defaultsKey = kMinUploadDateKey;
-    } else if (uploadType == MPUploadTypeAlias) {
-        defaultsKey = kMinAliasDateKey;
-    }
-    return defaultsKey;
+    self.implementation.firstSeenInstallation = @(installationType == MPInstallationTypeKnownInstall);
 }
 
 - (NSDate *)minUploadDateForUploadType:(MPUploadType)uploadType {
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSString *defaultsKey = [self minDefaultsKeyForUploadType:uploadType];
-    NSDate *minUploadDate = userDefaults[defaultsKey];
-    if (minUploadDate) {
-        if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
-            return minUploadDate;
-        } else {
-            return [NSDate distantPast];
-        }
-    }
-    
-    return [NSDate distantPast];
+    return [self.implementation minUploadDateForUploadType:(NSUInteger)uploadType];
 }
 
 - (void)setMinUploadDate:(NSDate *)minUploadDate uploadType:(MPUploadType)uploadType {
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSString *defaultsKey = [self minDefaultsKeyForUploadType:uploadType];
-    if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
-        userDefaults[defaultsKey] = minUploadDate;
-    } else if (userDefaults[defaultsKey]) {
-        [userDefaults removeMPObjectForKey:defaultsKey];
-    }
+    [self.implementation setMinUploadDate:minUploadDate uploadType:(NSUInteger)uploadType];
 }
 
 - (BOOL)optOut {
-    if (optOutSet) {
-        return _optOut;
-    }
-    
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *optOutNumber = userDefaults[kMPOptOutStatus];
-    if (optOutNumber != nil) {
-        _optOut = [optOutNumber boolValue];
-    } else {
-        _optOut = NO;
-        userDefaults[kMPOptOutStatus] = @(_optOut);
-    }
-    optOutSet = YES;
-        
-    return _optOut;
+    return [self.implementation optOut];
 }
 
 - (void)setOptOut:(BOOL)optOut {
-    _optOut = optOut;
-    optOutSet = YES;
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    userDefaults[kMPOptOutStatus] = @(_optOut);
+    [self.implementation setOptOut:optOut];
 }
 
 - (NSNumber *)attAuthorizationStatus {
-    if (_attAuthorizationStatus  != nil) {
-        return _attAuthorizationStatus;
-    }
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *authorizationState = userDefaults[kMPATT];
-    
-    if (authorizationState.integerValue >= 0 && authorizationState.integerValue <= 3) {
-        _attAuthorizationStatus = authorizationState;
-    }
-        
-    return _attAuthorizationStatus;
+    return [self.implementation loadAttAuthorizationStatus];
 }
 
 - (NSNumber *)attAuthorizationTimestamp {
-    if (_attAuthorizationTimestamp != nil) {
-        return _attAuthorizationTimestamp;
-    }
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *authorizationStateTimestamp = userDefaults[kMPATTTimestamp];
-    
-    _attAuthorizationTimestamp = authorizationStateTimestamp;
-        
-    return _attAuthorizationTimestamp;
+    return [self.implementation loadAttAuthorizationTimestamp];
 }
 
 - (void)setAttAuthorizationStatus:(NSNumber *)authorizationState {
-    if (authorizationState.integerValue >= 0 && authorizationState.integerValue <= 3 && (_attAuthorizationStatus == nil || authorizationState.integerValue != _attAuthorizationStatus.integerValue)) {
-        _attAuthorizationStatus = authorizationState;
-        _attAuthorizationTimestamp = MPCurrentEpochInMilliseconds;
-        
-        MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-        userDefaults[kMPATT] = _attAuthorizationStatus;
-        userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
-        
-        if (authorizationState.integerValue != MPATTAuthorizationStatusAuthorized) {
-            NSArray<MParticleUser *> *users = [MParticle sharedInstance].identity.getAllUsers;
-            for (MParticleUser *user in users) {
-                [user setIdentity:nil identityType:MPIdentityIOSAdvertiserId];
-            }
+    BOOL shouldClearAdvertiserId = [self.implementation persistAttAuthorizationStatus:authorizationState];
+    if (shouldClearAdvertiserId) {
+        NSArray<MParticleUser *> *users = [MParticle sharedInstance].identity.getAllUsers;
+        for (MParticleUser *user in users) {
+            [user setIdentity:nil identityType:MPIdentityIOSAdvertiserId];
         }
     }
 }
 
 - (void)setAttAuthorizationTimestamp:(NSNumber *)timestamp {
-    if (timestamp.doubleValue != _attAuthorizationTimestamp.doubleValue) {
-        _attAuthorizationTimestamp = timestamp;
-        
-        MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-        userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
-    }
+    [self.implementation persistAttAuthorizationTimestamp:timestamp];
 }
 
 - (NSString *)pushNotificationMode {
-    if (_pushNotificationMode) {
-        return _pushNotificationMode;
+    NSString *current = self.implementation.pushNotificationModeValue;
+    if (current) {
+        return current;
     }
-    
+
     [self willChangeValueForKey:@"pushNotificationMode"];
-    
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSString *pushNotificationMode = userDefaults[kMPRemoteConfigPushNotificationModeKey];
-    if (pushNotificationMode) {
-        _pushNotificationMode = pushNotificationMode;
-    } else {
-        _pushNotificationMode = kMPRemoteConfigAppDefined;
-    }
-    
+    NSString *mode = [self.implementation pushNotificationMode];
     [self didChangeValueForKey:@"pushNotificationMode"];
-    
-    return _pushNotificationMode;
+    return mode;
 }
 
 - (void)setPushNotificationMode:(NSString *)pushNotificationMode {
-    if ([_pushNotificationMode isEqualToString:pushNotificationMode]) {
+    if ([self.implementation.pushNotificationModeValue isEqualToString:pushNotificationMode]) {
         return;
     }
-    
+
     [self willChangeValueForKey:@"pushNotificationMode"];
-    _pushNotificationMode = pushNotificationMode;
+    [self.implementation setPushNotificationMode:pushNotificationMode];
     [self didChangeValueForKey:@"pushNotificationMode"];
-    
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    userDefaults[kMPRemoteConfigPushNotificationModeKey] = _pushNotificationMode;
 }
 
 - (NSDate *)startTime {
-    if (_startTime) {
-        return _startTime;
+    NSDate *startTime = self.implementation.startTime;
+    if (startTime) {
+        return startTime;
     }
-    
+
     [self willChangeValueForKey:@"startTime"];
-    _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
+    self.implementation.startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
     [self didChangeValueForKey:@"startTime"];
-    
-    return _startTime;
+
+    return self.implementation.startTime;
+}
+
+- (void)setStartTime:(NSDate *)startTime {
+    self.implementation.startTime = startTime;
 }
 
 - (NSArray *)triggerEventTypes {
-    return _triggerEventTypes;
+    return self.implementation.triggerEventTypes;
 }
 
 - (NSArray *)triggerMessageTypes {
-    return _triggerMessageTypes;
+    return self.implementation.triggerMessageTypes;
 }
 
 #pragma mark Public methods
@@ -586,7 +484,7 @@ static BOOL runningInBackground = NO;
     if (MPIsNull(customModuleSettings)) {
         return;
     }
-    
+
     NSMutableArray<MPCustomModule *> *localCustomModules = [[NSMutableArray alloc] initWithCapacity:customModuleSettings.count];
     MPCustomModule *customModule;
     for (NSDictionary *customModuleDictionary in customModuleSettings) {
@@ -595,90 +493,50 @@ static BOOL runningInBackground = NO;
             [localCustomModules addObject:customModule];
         }
     }
-    
+
     if (localCustomModules.count == 0) {
         localCustomModules = nil;
     }
-    
+
     self.customModules = [localCustomModules copy];
 }
 
 - (void)configureRampPercentage:(NSNumber *)rampPercentage {
-    if (MPIsNull(rampPercentage)) {
-        [self resetRampPercentage];
-        
-        return;
-    }
-    
-    BOOL dataRamped = YES;
-    if (rampPercentage.integerValue != 0) {
-        MParticle* mparticle = MParticle.sharedInstance;
-        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    NSString *deviceIdentifier = nil;
+    if (!MPIsNull(rampPercentage) && rampPercentage.integerValue != 0) {
+        MParticle *mparticle = MParticle.sharedInstance;
+        MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
         logger.customLogger = mparticle.customLogger;
-        MPUserDefaults* userDefaults = MPUserDefaultsConnector.userDefaults;
+        MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
         MPDevice *device = [[MPDevice alloc] initWithStateMachine:mparticle.stateMachine
-                                                     userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                     userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
+                                                         identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
                                                            logger:logger];
-        NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
-        MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
-        uint64_t rampHash = [hasher hashFNV1a:rampData];
-        NSUInteger modRampHash = rampHash % 100;
-        
-        dataRamped = modRampHash > [rampPercentage integerValue];
+        deviceIdentifier = device.deviceIdentifier;
     }
-    
-    if (_dataRamped != dataRamped) {
+
+    BOOL dataRamped = [MPStateMachinePRIVATE dataRampedApplyingRampPercentage:rampPercentage deviceIdentifier:deviceIdentifier];
+    if (self.implementation.dataRamped != dataRamped) {
         [self willChangeValueForKey:@"dataRamped"];
-        _dataRamped = dataRamped;
+        self.implementation.dataRamped = dataRamped;
         [self didChangeValueForKey:@"dataRamped"];
     }
 }
 
 - (void)configureTriggers:(NSDictionary *)triggerDictionary {
-    // When configured, triggerMessageTypes will at least have one item: MPMessageTypeCommerceEvent,
-    // so if there the received configuration is nil and there are more than 1 trigger configured,
-    // then reset the configuration and let commerce event be configured as trigger. Otherwise returns
-    if (MPIsNull(triggerDictionary)) {
-        if (_triggerMessageTypes.count > 1) {
-            [self resetTriggers];
-        } else if (_triggerMessageTypes.count == 1) {
-            return;
-        }
-        
-        triggerDictionary = nil;
+    BOOL applied = [self.implementation applyTriggers:triggerDictionary];
+    if (!applied) {
+        return;
     }
-    
-    NSArray *eventTypes = triggerDictionary[kMPRemoteConfigTriggerEventsKey];
-    if (MPIsNull(eventTypes)) {
-        [self willChangeValueForKey:@"triggerEventTypes"];
-        _triggerEventTypes = nil;
-        [self didChangeValueForKey:@"triggerEventTypes"];
-    } else {
-        if (![_triggerEventTypes isEqualToArray:eventTypes]) {
-            [self willChangeValueForKey:@"triggerEventTypes"];
-            _triggerEventTypes = eventTypes;
-            [self didChangeValueForKey:@"triggerEventTypes"];
-        }
-    }
-    
-    NSString *messageTypeCommerceEventKey = kMPMessageTypeStringCommerceEvent;
-    NSMutableArray *messageTypes = [@[messageTypeCommerceEventKey] mutableCopy];
-    NSArray *configMessageTypes = triggerDictionary[kMPRemoteConfigTriggerMessageTypesKey];
-    
-    if (!MPIsNull(configMessageTypes)) {
-        [messageTypes addObjectsFromArray:configMessageTypes];
-    }
-    
+
+    [self willChangeValueForKey:@"triggerEventTypes"];
+    [self didChangeValueForKey:@"triggerEventTypes"];
     [self willChangeValueForKey:@"triggerMessageTypes"];
-    _triggerMessageTypes = (NSArray *)messageTypes;
     [self didChangeValueForKey:@"triggerMessageTypes"];
 }
 
 - (void)configureAliasMaxWindow:(NSNumber *)aliasMaxWindow {
-    if (MPIsNull(aliasMaxWindow)) {
-        aliasMaxWindow = @90;
-    }
-    self.aliasMaxWindow = aliasMaxWindow;
+    [self.implementation configureAliasMaxWindow:aliasMaxWindow];
 }
 
 - (void)configureDataBlocking:(nullable NSDictionary *)blockSettings {
@@ -688,7 +546,7 @@ static BOOL runningInBackground = NO;
     if (!MPIsNull(blockSettings[kMPRemoteConfigDataPlanning])) {
         NSDictionary *dataPlanSettings = blockSettings[kMPRemoteConfigDataPlanning];
         NSDictionary *dataBlockSettings = dataPlanSettings[kMPRemoteConfigDataPlanningBlock];
-        
+
         self.dataPlanOptions = [[MPDataPlanOptions alloc] init];
         self.dataPlanOptions.blockEvents = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEvents] boolValue];
         self.dataPlanOptions.blockEventAttributes = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEventAttributes] boolValue];
@@ -705,7 +563,7 @@ static BOOL runningInBackground = NO;
     }
 }
 
-- (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
+- (void)requestAttributionDetailsWithBlock:(void (^_Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
 #if TARGET_OS_IOS == 1
     NSError *error;
     NSString *attributionToken = [AAAttribution attributionTokenWithError:&error];
@@ -713,55 +571,38 @@ static BOOL runningInBackground = NO;
         completionHandler();
         return;
     }
-    
-    if (attributionToken) {
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]];
-        [request setHTTPMethod:@"POST"];
-        [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
-        [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
-        
-        NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-        sessionConfiguration.timeoutIntervalForRequest = 30;
-        sessionConfiguration.timeoutIntervalForResource = 30;
-        NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
-                                                                 delegate:nil
-                                                            delegateQueue:nil];
-        dispatch_async([MParticle messageQueue], ^{
-            [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
-                if (error) {
-                    MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
-                    if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
-                        completionHandler();
-                    } else if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
-                        completionHandler();
-                    } else {
-                        // Per Apple docs, "Handle any errors you receive and re-poll for data, if required"
-                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                            [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
-                        });
-                    }
-                } else {
-                    NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                    // Convert the dictionary to the prior format expected by our backend
-                    NSDictionary *finalAttributionDictionary = @{
-                        @"Version4.0": @{
-                            @"iad-attribution": adAttributionDictionary[@"attribution"],
-                            @"iad-org-id": [adAttributionDictionary[@"orgId"] stringValue],
-                            @"iad-campaign-id": [adAttributionDictionary[@"campaignId"] stringValue],
-                            @"iad-conversion-type": adAttributionDictionary[@"conversionType"],
-                            @"iad-click-date": adAttributionDictionary[@"clickDate"],
-                            @"iad-adgroup-id": [adAttributionDictionary[@"adGroupId"] stringValue],
-                            @"iad-country-or-region": adAttributionDictionary[@"countryOrRegion"],
-                            @"iad-keyword-id": [adAttributionDictionary[@"keywordId"] stringValue],
-                            @"iad-ad-id": [adAttributionDictionary[@"adId"] stringValue],
-                        }
-                    };
-                    self.searchAdsInfo = [[finalAttributionDictionary mutableCopy] copy];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]];
+    [request setHTTPMethod:@"POST"];
+    [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+    [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
+
+    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    sessionConfiguration.timeoutIntervalForRequest = 30;
+    sessionConfiguration.timeoutIntervalForResource = 30;
+    NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
+                                                             delegate:nil
+                                                        delegateQueue:nil];
+    dispatch_async([MParticle messageQueue], ^{
+        [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
+            if (error) {
+                MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
+                if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
                     completionHandler();
+                } else if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
+                    completionHandler();
+                } else {
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
+                    });
                 }
-            }];
-        });
-    }
+            } else {
+                NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                self.implementation.searchAdsInfo = [MPStateMachinePRIVATE searchAdsInfoFromAdAttribution:adAttributionDictionary];
+                completionHandler();
+            }
+        }];
+    });
 #endif
 }
 
