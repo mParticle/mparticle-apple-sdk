@@ -39,6 +39,14 @@ Record the evidence in any PR that removes an exported declaration. If the
 audit finds a supported external dependency, classify the declaration as a
 contract and keep its wrapper.
 
+Classifications 1, 3, and 4 keep an Objective-C implementation permanently, so
+they are also the migration's scope boundary. When a conversion settles one of
+those classifications, add the implementation path to
+`Tools/swift-migration-retained-objc.txt` with the audit evidence in the PR;
+that file is what makes the progress report's 100% reachable, and
+`PR-GATE.md`'s "What \"done\" means" section governs it. Classification 2 files
+stay out of the manifest — they are the work the percentage measures.
+
 ## Two-stage wrapper model
 
 1. **Move logic → Swift; keep the boundary that is still required.** Add a
@@ -88,6 +96,8 @@ because downstream code can change.
 
 Customer-facing event, identity, consent, commerce, location, options, and Rokt
 APIs remain supported contracts even when their implementations move to Swift.
+Their Objective-C declaration sites are enumerated in
+`Tools/swift-migration-retained-objc.txt`.
 
 ## Hard constraint: the Swift module cannot import ObjC
 

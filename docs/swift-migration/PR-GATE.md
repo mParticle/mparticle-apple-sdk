@@ -48,6 +48,34 @@ phase after it without exception.
    Swift must add a Swift mirror test for that extracted logic (see
    `CONVERSION-RECIPE.md`'s dual-test convention).
 
+## What "done" means
+
+The migration does not end at zero Objective-C. The public customer API, the
+kit and wrapper-SDK contract surface, runtime-identity-pinned classes, and the
+boundary glue in `CONVERSION-RECIPE.md`'s classifications 1, 3, and 4 stay
+Objective-C by design — that is the intended end state, not unfinished work.
+
+The migration is complete when every **in-scope** Objective-C implementation is
+gone: the classification 2 wrappers and the internal types behind them. The
+retained boundary is enumerated in `Tools/swift-migration-retained-objc.txt`,
+and the progress report on each PR excludes it from the percentage so 100%
+is reachable and means what it says.
+
+Two consequences for a conversion PR:
+
+- Classifying a declaration as a retained contract means adding its
+  implementation to the manifest, with the audit evidence
+  `CONVERSION-RECIPE.md` requires recorded in the PR. Item 1's baseline-update
+  policy governs the other direction: an accidental export that gets removed is
+  **not** retained.
+- Deleting or renaming a retained implementation means updating the manifest in
+  the same PR. The report fails on a stale entry.
+
+Retaining a wrapper does not freeze it. A contract wrapper keeps its
+`@interface`, class name, selectors, and nullability while its logic moves to
+Swift, so the report tracks its remaining Objective-C SLOC in a separate
+retained column rather than in the percentage.
+
 ## Scope note
 
 This gate applies to every migration PR and is not re-specified per phase.

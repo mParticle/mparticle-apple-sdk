@@ -6,6 +6,7 @@ set -euo pipefail
 
 readonly COMMENT_MARKER='<!-- swift-migration-progress -->'
 readonly BAR_WIDTH=10
+readonly RETAINED_MANIFEST='Tools/swift-migration-retained-objc.txt'
 
 CLEANUP_DIRS=()
 CREATED_TEMP_DIR=''
@@ -98,25 +99,85 @@ build_bucket_file_list() {
 	esac
 }
 
-COUNT_SWIFT=0
-COUNT_OBJC=0
-
-count_bucket() {
+# Reads the reviewed list of Objective-C implementations the migration will not
+# delete and writes the validated, repository-relative paths to a lookup file.
+# A stale, misplaced, or non-Objective-C entry is a hard failure so the manifest
+# cannot silently stop matching the tree it describes.
+load_retained_manifest() {
 	local revision_root=$1
-	local bucket=$2
-	local cloc_path=$3
-	local working_dir=$4
-	local file_list="${working_dir}/${bucket}-files.txt"
-	local json="${working_dir}/${bucket}-cloc.json"
+	local output=$2
+	local manifest="${revision_root}/${RETAINED_MANIFEST}"
+	local line
+	local path
+	local bucket
+
+	: >"${output}"
+	if [[ ! -f ${manifest} ]]; then
+		return 0
+	fi
+
+	while IFS= read -r line || [[ -n ${line} ]]; do
+		path=${line%$'\r'}
+		path=${path#"${path%%[![:space:]]*}"}
+		path=${path%"${path##*[![:space:]]}"}
+		if [[ -z ${path} || ${path} == '#'* ]]; then
+			continue
+		fi
+		if [[ ${path} != *.m && ${path} != *.mm ]]; then
+			fail "retained manifest entry is not an Objective-C implementation: ${path}"
+		fi
+		bucket=$(classify_path "${path}")
+		if [[ -z ${bucket} ]]; then
+			fail "retained manifest entry is outside every counted bucket: ${path}"
+		fi
+		if [[ ! -f "${revision_root}/${path}" ]]; then
+			fail "retained manifest entry does not exist: ${path}"
+		fi
+		printf '%s\n' "${path}" >>"${output}"
+	done <"${manifest}"
+}
+
+# Splits one bucket's absolute file list into the in-scope and retained lists
+# cloc is run against. Matching happens on repository-relative paths so the
+# manifest reads the same as the repository layout.
+partition_bucket_file_list() {
+	local revision_root=$1
+	local combined=$2
+	local retained_paths=$3
+	local inscope_output=$4
+	local retained_output=$5
+	local relative="${combined}.relative"
+
+	awk -v prefix="${revision_root}/" '
+		index($0, prefix) == 1 { print substr($0, length(prefix) + 1) }
+	' "${combined}" >"${relative}"
+
+	if [[ -s ${retained_paths} ]]; then
+		grep -Fxf "${retained_paths}" "${relative}" >"${relative}.retained" || true
+		grep -Fxvf "${retained_paths}" "${relative}" >"${relative}.inscope" || true
+	else
+		: >"${relative}.retained"
+		cp "${relative}" "${relative}.inscope"
+	fi
+
+	awk -v prefix="${revision_root}/" '{ print prefix $0 }' "${relative}.inscope" >"${inscope_output}"
+	awk -v prefix="${revision_root}/" '{ print prefix $0 }' "${relative}.retained" >"${retained_output}"
+}
+
+CLOC_SWIFT=0
+CLOC_OBJC=0
+
+count_file_list() {
+	local file_list=$1
+	local cloc_path=$2
+	local json=$3
 	local counts
 	local objc
 	local objcpp
 
-	mkdir -p "${working_dir}"
-	build_bucket_file_list "${revision_root}" "${bucket}" "${file_list}"
+	CLOC_SWIFT=0
+	CLOC_OBJC=0
 	if [[ ! -s ${file_list} ]]; then
-		COUNT_SWIFT=0
-		COUNT_OBJC=0
 		return
 	fi
 
@@ -128,8 +189,35 @@ count_bucket() {
 		--list-file="${file_list}" >"${json}"
 
 	counts=$(jq -r '[(.Swift.code // 0), (."Objective-C".code // 0), (."Objective-C++".code // 0)] | @tsv' "${json}")
-	IFS=$'\t' read -r COUNT_SWIFT objc objcpp <<<"${counts}"
-	COUNT_OBJC=$((objc + objcpp))
+	IFS=$'\t' read -r CLOC_SWIFT objc objcpp <<<"${counts}"
+	CLOC_OBJC=$((objc + objcpp))
+}
+
+COUNT_SWIFT=0
+COUNT_OBJC=0
+COUNT_OBJC_RETAINED=0
+
+count_bucket() {
+	local revision_root=$1
+	local bucket=$2
+	local cloc_path=$3
+	local working_dir=$4
+	local retained_paths=$5
+	local combined="${working_dir}/${bucket}-files.txt"
+	local inscope="${working_dir}/${bucket}-files-in-scope.txt"
+	local retained="${working_dir}/${bucket}-files-retained.txt"
+
+	mkdir -p "${working_dir}"
+	build_bucket_file_list "${revision_root}" "${bucket}" "${combined}"
+	partition_bucket_file_list \
+		"${revision_root}" "${combined}" "${retained_paths}" "${inscope}" "${retained}"
+
+	count_file_list "${inscope}" "${cloc_path}" "${working_dir}/${bucket}-cloc.json"
+	COUNT_SWIFT=${CLOC_SWIFT}
+	COUNT_OBJC=${CLOC_OBJC}
+
+	count_file_list "${retained}" "${cloc_path}" "${working_dir}/${bucket}-cloc-retained.json"
+	COUNT_OBJC_RETAINED=${CLOC_OBJC}
 }
 
 materialize_revision() {
@@ -157,6 +245,19 @@ percentage() {
 
 format_integer() {
 	perl -e '$number = shift; 1 while $number =~ s/^(-?\d+)(\d{3})/$1,$2/; print $number' "$1"
+}
+
+# Retained Objective-C is a floor, not a target, so it gets a plain SLOC figure
+# and a signed delta only when the boundary actually thinned or grew.
+format_retained() {
+	local base=$1
+	local head=$2
+
+	if ((head == base)); then
+		format_integer "${head}"
+		return
+	fi
+	printf '%s (%+d)' "$(format_integer "${head}")" "$((head - base))"
 }
 
 progress_bar() {
@@ -374,19 +475,22 @@ write_report() {
 		printf '%s\n' "${COMMENT_MARKER}"
 		printf '%s\n\n' '## 🐦 Swift Migration Progress'
 		printf 'Production implementation code at `%s` compared with `%s`.\n\n' "${short_head}" "${short_base}"
-		printf '%s\n' '| Area | Progress | Base | This PR | Swift SLOC | Objective-C remaining | Change |'
-		printf '%s\n' '|---|:---:|---:|---:|---:|---:|---:|'
-		printf '| Core SDK | `%s` | %s%% | %s%% | %s | %s | %s %s pp |\n' \
+		printf '%s\n' '| Area | Progress | Base | This PR | Swift SLOC | Objective-C in scope | Objective-C retained | Change |'
+		printf '%s\n' '|---|:---:|---:|---:|---:|---:|---:|---:|'
+		printf '| Core SDK | `%s` | %s%% | %s%% | %s | %s | %s | %s %s pp |\n' \
 			"${core_bar}" "${core_base_percent}" "${core_head_percent}" \
 			"$(format_integer "${HEAD_CORE_SWIFT}")" "$(format_integer "${HEAD_CORE_OBJC}")" \
+			"$(format_retained "${BASE_CORE_OBJC_RETAINED}" "${HEAD_CORE_OBJC_RETAINED}")" \
 			"${core_delta_icon}" "${core_delta_text}"
-		printf '| SDK kit infrastructure | `%s` | %s%% | %s%% | %s | %s | %s %s pp |\n' \
+		printf '| SDK kit infrastructure | `%s` | %s%% | %s%% | %s | %s | %s | %s %s pp |\n' \
 			"${kit_bar}" "${kit_base_percent}" "${kit_head_percent}" \
 			"$(format_integer "${HEAD_KIT_SWIFT}")" "$(format_integer "${HEAD_KIT_OBJC}")" \
+			"$(format_retained "${BASE_KIT_OBJC_RETAINED}" "${HEAD_KIT_OBJC_RETAINED}")" \
 			"${kit_delta_icon}" "${kit_delta_text}"
-		printf '| Standalone kits | `%s` | %s%% | %s%% | %s | %s | %s %s pp |\n\n' \
+		printf '| Standalone kits | `%s` | %s%% | %s%% | %s | %s | %s | %s %s pp |\n\n' \
 			"${standalone_bar}" "${standalone_base_percent}" "${standalone_head_percent}" \
 			"$(format_integer "${HEAD_STANDALONE_SWIFT}")" "$(format_integer "${HEAD_STANDALONE_OBJC}")" \
+			"$(format_retained "${BASE_STANDALONE_OBJC_RETAINED}" "${HEAD_STANDALONE_OBJC_RETAINED}")" \
 			"${standalone_delta_icon}" "${standalone_delta_text}"
 		printf '%s\n\n' "### This PR's code movement"
 		printf '%s\n' '| Area | Swift lines added | Objective-C lines removed |'
@@ -400,10 +504,14 @@ write_report() {
 		printf '%s\n\n' '<details>'
 		printf '%s\n\n' '<summary>How this is measured</summary>'
 		printf '%s\n' '- Current composition uses production source lines of code (SLOC) from `cloc`; comments and blank lines are excluded.'
-		printf '%s\n' '- Pull request movement uses physical additions/deletions from `git diff base...head --numstat`; it is intentionally separate from SLOC totals.'
+		printf '%s\n' '- Progress measures Swift against **in-scope** Objective-C only, so 100% means every Objective-C implementation the migration intends to delete is gone.'
+		printf '%s\n' '- Objective-C retained by design is excluded from the percentage and reported separately. It is the public/kit contract, runtime-identity, and boundary-glue surface listed in `Tools/swift-migration-retained-objc.txt`.'
+		printf '%s\n' '- Those retained wrappers keep their Objective-C interface but still shed logic to Swift; that shows as a falling retained figure, not as percentage movement.'
+		printf '%s\n' '- Both revisions are measured with the manifest from the head revision, so a manifest edit does not by itself move the reported change.'
+		printf '%s\n' '- Pull request movement uses physical additions/deletions from `git diff base...head --numstat`; it counts retained files too and is intentionally separate from SLOC totals.'
 		printf '%s\n' '- Core excludes SDK kit infrastructure and vendored libraries. Standalone kits include only files below `Kits/**/Sources`.'
 		printf '%s\n' '- Tests, examples, headers, build outputs, vendored libraries, and the `MParticle/Sources` Swift overlay are excluded.'
-		printf '%s\n\n' '- Objective-C++ (`.mm`) is included in Objective-C remaining and removed counts.'
+		printf '%s\n\n' '- Objective-C++ (`.mm`) is included in the Objective-C figures and removed counts.'
 		printf 'Generated with `cloc` %s. This report is informational and does not gate migration direction.\n\n' "${cloc_version}"
 		printf '%s\n' '</details>'
 	} >"${output}"
@@ -411,16 +519,22 @@ write_report() {
 
 BASE_CORE_SWIFT=0
 BASE_CORE_OBJC=0
+BASE_CORE_OBJC_RETAINED=0
 BASE_KIT_SWIFT=0
 BASE_KIT_OBJC=0
+BASE_KIT_OBJC_RETAINED=0
 BASE_STANDALONE_SWIFT=0
 BASE_STANDALONE_OBJC=0
+BASE_STANDALONE_OBJC_RETAINED=0
 HEAD_CORE_SWIFT=0
 HEAD_CORE_OBJC=0
+HEAD_CORE_OBJC_RETAINED=0
 HEAD_KIT_SWIFT=0
 HEAD_KIT_OBJC=0
+HEAD_KIT_OBJC_RETAINED=0
 HEAD_STANDALONE_SWIFT=0
 HEAD_STANDALONE_OBJC=0
+HEAD_STANDALONE_OBJC_RETAINED=0
 
 generate_report() {
 	local repo=$1
@@ -434,6 +548,7 @@ generate_report() {
 	local base_commit
 	local head_commit
 	local cloc_version
+	local retained_paths
 
 	[[ -d ${repo} ]] || fail "repository not found: ${repo}"
 	git -C "${repo}" rev-parse --git-dir >/dev/null 2>&1 || fail "not a Git repository: ${repo}"
@@ -450,25 +565,36 @@ generate_report() {
 	materialize_revision "${repo}" "${base_commit}" "${base_root}"
 	materialize_revision "${repo}" "${head_commit}" "${head_root}"
 
-	count_bucket "${base_root}" core "${cloc_path}" "${workspace}/base-core"
+	# The head revision owns the scope definition for both sides of the
+	# comparison, so editing the manifest cannot masquerade as code movement.
+	retained_paths="${workspace}/retained-paths.txt"
+	load_retained_manifest "${head_root}" "${retained_paths}"
+
+	count_bucket "${base_root}" core "${cloc_path}" "${workspace}/base-core" "${retained_paths}"
 	BASE_CORE_SWIFT=${COUNT_SWIFT}
 	BASE_CORE_OBJC=${COUNT_OBJC}
-	count_bucket "${base_root}" kit "${cloc_path}" "${workspace}/base-kit"
+	BASE_CORE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
+	count_bucket "${base_root}" kit "${cloc_path}" "${workspace}/base-kit" "${retained_paths}"
 	BASE_KIT_SWIFT=${COUNT_SWIFT}
 	BASE_KIT_OBJC=${COUNT_OBJC}
-	count_bucket "${base_root}" standalone "${cloc_path}" "${workspace}/base-standalone"
+	BASE_KIT_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
+	count_bucket "${base_root}" standalone "${cloc_path}" "${workspace}/base-standalone" "${retained_paths}"
 	BASE_STANDALONE_SWIFT=${COUNT_SWIFT}
 	BASE_STANDALONE_OBJC=${COUNT_OBJC}
+	BASE_STANDALONE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
 
-	count_bucket "${head_root}" core "${cloc_path}" "${workspace}/head-core"
+	count_bucket "${head_root}" core "${cloc_path}" "${workspace}/head-core" "${retained_paths}"
 	HEAD_CORE_SWIFT=${COUNT_SWIFT}
 	HEAD_CORE_OBJC=${COUNT_OBJC}
-	count_bucket "${head_root}" kit "${cloc_path}" "${workspace}/head-kit"
+	HEAD_CORE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
+	count_bucket "${head_root}" kit "${cloc_path}" "${workspace}/head-kit" "${retained_paths}"
 	HEAD_KIT_SWIFT=${COUNT_SWIFT}
 	HEAD_KIT_OBJC=${COUNT_OBJC}
-	count_bucket "${head_root}" standalone "${cloc_path}" "${workspace}/head-standalone"
+	HEAD_KIT_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
+	count_bucket "${head_root}" standalone "${cloc_path}" "${workspace}/head-standalone" "${retained_paths}"
 	HEAD_STANDALONE_SWIFT=${COUNT_SWIFT}
 	HEAD_STANDALONE_OBJC=${COUNT_OBJC}
+	HEAD_STANDALONE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
 
 	measure_diff_movement "${repo}" "${base_commit}" "${head_commit}" "${workspace}/movement-numstat"
 	cloc_version=$("${cloc_path}" --version | tr -d '\r\n')
@@ -492,6 +618,52 @@ assert_contains() {
 	grep -Fq "${expected}" "${file}" || fail "self-test expected to find: ${expected}"
 }
 
+assert_manifest_rejects() {
+	local root=$1
+	local expectation=$2
+	local log="${root}/rejection.log"
+
+	if (load_retained_manifest "${root}" "${root}/validated.txt") >"${log}" 2>&1; then
+		fail "self-test expected a rejected retained manifest: ${expectation}"
+	fi
+	assert_contains "${log}" "${expectation}"
+}
+
+# Exercises manifest parsing and validation against throwaway directory trees,
+# independent of the Git fixture.
+run_manifest_validation_selftest() {
+	local workspace=$1
+	local accepted="${workspace}/accepted"
+	local missing="${workspace}/missing"
+	local not_objc="${workspace}/not-objc"
+	local unbucketed="${workspace}/unbucketed"
+	local vendored="${workspace}/vendored"
+	local validated="${accepted}/validated.txt"
+
+	write_fixture_file "${accepted}" 'mParticle-Apple-SDK/Utils/Kept.m' $'@implementation Kept\n@end\n'
+	write_fixture_file "${accepted}" "${RETAINED_MANIFEST}" \
+		$'# leading comment\n\n   mParticle-Apple-SDK/Utils/Kept.m   \n\n# trailing comment\n'
+	load_retained_manifest "${accepted}" "${validated}"
+	[[ "$(wc -l <"${validated}" | tr -d ' ')" == '1' ]] ||
+		fail 'self-test expected exactly one accepted retained manifest entry'
+	assert_contains "${validated}" 'mParticle-Apple-SDK/Utils/Kept.m'
+
+	write_fixture_file "${missing}" "${RETAINED_MANIFEST}" $'mParticle-Apple-SDK/Utils/Gone.m\n'
+	assert_manifest_rejects "${missing}" 'retained manifest entry does not exist'
+
+	write_fixture_file "${not_objc}" 'mParticle-Apple-SDK-Swift/Sources/Kept.swift' $'let kept = 1\n'
+	write_fixture_file "${not_objc}" "${RETAINED_MANIFEST}" $'mParticle-Apple-SDK-Swift/Sources/Kept.swift\n'
+	assert_manifest_rejects "${not_objc}" 'not an Objective-C implementation'
+
+	write_fixture_file "${unbucketed}" 'UnitTests/ObjCTests/Kept.m' $'@implementation Kept\n@end\n'
+	write_fixture_file "${unbucketed}" "${RETAINED_MANIFEST}" $'UnitTests/ObjCTests/Kept.m\n'
+	assert_manifest_rejects "${unbucketed}" 'outside every counted bucket'
+
+	write_fixture_file "${vendored}" 'mParticle-Apple-SDK/Libraries/Vendor/Kept.m' $'@implementation Kept\n@end\n'
+	write_fixture_file "${vendored}" "${RETAINED_MANIFEST}" $'mParticle-Apple-SDK/Libraries/Vendor/Kept.m\n'
+	assert_manifest_rejects "${vendored}" 'outside every counted bucket'
+}
+
 run_selftest() {
 	local cloc_path=$1
 	local fixture
@@ -499,11 +671,13 @@ run_selftest() {
 	local migration_sha
 	local flat_sha
 	local regression_sha
+	local thin_sha
 	local advanced_base_sha
 	local pr_head_sha
 	local migration_report
 	local flat_report
 	local regression_report
+	local thin_report
 	local divergent_report
 	local flat_count
 
@@ -531,6 +705,10 @@ run_selftest() {
 	write_fixture_file "${fixture}" 'mParticle-Apple-SDK/Libraries/Vendor/Excluded.m' $'int excludedVendor(void) { return 1; }\n'
 	write_fixture_file "${fixture}" 'MParticle/Sources/Excluded.swift' $'let excludedOverlay = 1\n'
 	write_fixture_file "${fixture}" 'Kits/vendor/vendor-1/Tests/Excluded.m' $'int excludedKitTest(void) { return 1; }\n'
+	write_fixture_file "${fixture}" 'mParticle-Apple-SDK/Utils/Retained Contract.m' \
+		$'// contract wrapper\n\n@implementation RetainedContract\n- (int)value { return 1; }\n- (int)other { return 2; }\n@end\n'
+	write_fixture_file "${fixture}" "${RETAINED_MANIFEST}" \
+		$'# retained by design\n\nmParticle-Apple-SDK/Utils/Retained Contract.m\nKits/vendor/vendor-1/Sources/Kit.m\n'
 
 	git -C "${fixture}" add --all
 	git -C "${fixture}" commit -q -m 'base fixture'
@@ -549,9 +727,9 @@ run_selftest() {
 
 	migration_report="${fixture}/migration-report.md"
 	generate_report "${fixture}" "${base_sha}" "${migration_sha}" "${cloc_path}" "${migration_report}"
-	assert_contains "${migration_report}" '| 25.00% | 42.86% | 3 | 4 | 🚀 +17.86 pp |'
-	assert_contains "${migration_report}" '| 33.33% | 100.00% | 2 | 0 | 🚀 +66.67 pp |'
-	assert_contains "${migration_report}" '| 33.33% | 33.33% | 1 | 2 | ➖ 0.00 pp |'
+	assert_contains "${migration_report}" '| 25.00% | 42.86% | 3 | 4 | 4 | 🚀 +17.86 pp |'
+	assert_contains "${migration_report}" '| 33.33% | 100.00% | 2 | 0 | 0 | 🚀 +66.67 pp |'
+	assert_contains "${migration_report}" '| 100.00% | 100.00% | 1 | 0 | 2 | ➖ 0.00 pp |'
 	assert_contains "${migration_report}" '| Core SDK | 1 | 4 |'
 	assert_contains "${migration_report}" '| SDK kit infrastructure | 1 | 2 |'
 	assert_contains "${migration_report}" '| Standalone kits | 0 | 0 |'
@@ -571,7 +749,18 @@ run_selftest() {
 	regression_sha=$(git -C "${fixture}" rev-parse HEAD)
 	regression_report="${fixture}/regression-report.md"
 	generate_report "${fixture}" "${migration_sha}" "${regression_sha}" "${cloc_path}" "${regression_report}"
-	assert_contains "${regression_report}" '| 42.86% | 33.33% | 3 | 6 | ↩️ -9.53 pp |'
+	assert_contains "${regression_report}" '| 42.86% | 33.33% | 3 | 6 | 4 | ↩️ -9.53 pp |'
+
+	git -C "${fixture}" switch -q -c selftest-thin "${migration_sha}"
+	write_fixture_file "${fixture}" 'mParticle-Apple-SDK/Utils/Retained Contract.m' \
+		$'// contract wrapper\n\n@implementation RetainedContract\n@end\n'
+	git -C "${fixture}" add --all
+	git -C "${fixture}" commit -q -m 'retained thinning fixture'
+	thin_sha=$(git -C "${fixture}" rev-parse HEAD)
+	thin_report="${fixture}/thin-report.md"
+	generate_report "${fixture}" "${migration_sha}" "${thin_sha}" "${cloc_path}" "${thin_report}"
+	assert_contains "${thin_report}" '| 42.86% | 42.86% | 3 | 4 | 2 (-2) | ➖ 0.00 pp |'
+	assert_contains "${thin_report}" '| Core SDK | 0 | 2 |'
 
 	git -C "${fixture}" switch -q -c selftest-pr "${migration_sha}"
 	write_fixture_file "${fixture}" 'mParticle-Apple-SDK-Swift/Sources/PR Only.swift' $'let prOne = 1\nlet prTwo = 2\n'
@@ -593,6 +782,7 @@ run_selftest() {
 	assert_contains "${divergent_report}" '| Standalone kits | 0 | 0 |'
 
 	[[ "$(percentage 0 0)" == '0.00' ]] || fail 'self-test expected a zero-denominator percentage of 0.00'
+	run_manifest_validation_selftest "${fixture}/manifest-validation"
 	printf '%s\n' 'swift-migration-progress: SELFTEST PASS'
 }
 
