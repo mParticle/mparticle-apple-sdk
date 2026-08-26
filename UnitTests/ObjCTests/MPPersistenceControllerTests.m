@@ -1970,4 +1970,39 @@
     }
 }
 
+// Verifies the Swift-backed MPUploadSettings storage archives and unarchives
+// every field byte-compatibly through the unchanged ObjC NSSecureCoding surface.
+- (void)testUploadSettingsArchiveRoundTripPreservesAllFields {
+    MPUploadSettings *settings = [[MPUploadSettings alloc] initWithApiKey:@"key"
+                                                                  secret:@"sec"
+                                                              eventsHost:@"events.example.com"
+                                                       eventsTrackingHost:@"events-tracking.example.com"
+                                             overridesEventsSubdirectory:YES
+                                                               aliasHost:@"alias.example.com"
+                                                        aliasTrackingHost:@"alias-tracking.example.com"
+                                              overridesAliasSubdirectory:YES
+                                                              eventsOnly:YES];
+
+    NSError *error = nil;
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:settings
+                                        requiringSecureCoding:YES
+                                                        error:&error];
+    XCTAssertNil(error);
+    XCTAssertNotNil(data);
+
+    MPUploadSettings *decoded = [NSKeyedUnarchiver unarchivedObjectOfClass:[MPUploadSettings class]
+                                                                  fromData:data
+                                                                     error:&error];
+    XCTAssertNil(error);
+    XCTAssertEqualObjects(decoded.apiKey, @"key");
+    XCTAssertEqualObjects(decoded.secret, @"sec");
+    XCTAssertEqualObjects(decoded.eventsHost, @"events.example.com");
+    XCTAssertEqualObjects(decoded.eventsTrackingHost, @"events-tracking.example.com");
+    XCTAssertTrue(decoded.overridesEventsSubdirectory);
+    XCTAssertEqualObjects(decoded.aliasHost, @"alias.example.com");
+    XCTAssertEqualObjects(decoded.aliasTrackingHost, @"alias-tracking.example.com");
+    XCTAssertTrue(decoded.overridesAliasSubdirectory);
+    XCTAssertTrue(decoded.eventsOnly);
+}
+
 @end
