@@ -4,21 +4,50 @@ How to move one Objective-C type's implementation to Swift without breaking the
 public ObjC API or the kit integration contract. Follow this end-to-end for any
 type on the tracking sheet — no clarifying questions should be needed.
 
+## Classify the compatibility contract first
+
+A header under `mParticle-Apple-SDK/Include/` proves that a declaration is
+exported today; it does not by itself prove that the declaration is a supported
+customer or kit contract. Choose the conversion end state from the declaration's
+real compatibility obligations:
+
+1. **Supported customer, kit, or wrapper-SDK contract.** Keep the ObjC interface
+   and runtime identity. Move implementation to Swift behind a thin ObjC wrapper.
+2. **Internal with no runtime-identity obligation.** Move callers to the Swift
+   type and delete the ObjC wrapper. If the declaration was accidentally
+   exported, remove it from the umbrella/header surface and update the ABI
+   baseline through `PR-GATE.md`'s reviewed workflow.
+3. **Internal but runtime-identity pinned.** The header may be privatized, but
+   keep the ObjC class when archives, `NSClassFromString`, nib/storyboard lookup,
+   or another persisted/dynamic mechanism depends on its class identity.
+4. **Internal ObjC boundary glue.** The declaration may leave the public surface
+   even when a small ObjC implementation remains to bridge an unavoidable module
+   or framework boundary.
+
+Before classifying a declaration as internal, audit all of the following:
+
+- customer documentation, examples, and the public Swift overlay;
+- standalone kits and the kit protocols/types they implement;
+- wrapper-SDK integration points;
+- repository-wide ObjC and Swift callers, categories, KVC, and subclassing;
+- archived class names, secure-coding mappings, dynamic class lookup, and
+  nib/storyboard references; and
+- recent migration PRs and review decisions that established compatibility
+  requirements.
+
+Record the evidence in any PR that removes an exported declaration. If the
+audit finds a supported external dependency, classify the declaration as a
+contract and keep its wrapper.
+
 ## Two-stage wrapper model
 
-Every conversion is two stages, and which stage-2 you get depends on whether the
-type is public (see "Public vs internal" below):
-
-1. **Move logic → Swift, keep the ObjC wrapper.** Add a Foundation-only Swift type
-   in `mParticle-Apple-SDK-Swift/Sources/`. The ObjC class stays the type identity —
-   its `.m` constructs/holds the Swift object and marshals values across the
-   boundary. This pattern is already proven in-repo: 31 `.m` files `@import
-mParticle_Apple_SDK_Swift` today (e.g. `mParticle-Apple-SDK/Ecommerce/MPProduct.m`,
-   `mParticle-Apple-SDK/Identity/MParticleUser.m`).
-2. **Remove the wrapper — internal types only.** Once a type's logic is fully in
-   Swift and no ObjC caller needs the class, delete the internal `.h`/`.m` wrapper
-   and have callers use the Swift type directly. Public and kit types skip this
-   stage permanently.
+1. **Move logic → Swift; keep the boundary that is still required.** Add a
+   Foundation-only Swift type in `mParticle-Apple-SDK-Swift/Sources/`. When an
+   ObjC wrapper is required, its `.m` constructs/holds the Swift object and
+   marshals values across the boundary.
+2. **Apply the classified end state.** Keep contract or runtime-pinned wrappers;
+   privatize ObjC-only boundary glue; delete internal wrappers once all callers
+   can use the Swift type directly.
 
 ## Per-type recipe steps
 
@@ -26,34 +55,39 @@ mParticle_Apple_SDK_Swift` today (e.g. `mParticle-Apple-SDK/Ecommerce/MPProduct.
    the same behavior, operating on Foundation types (`[String: Any]`, `Data`,
    `Date`, `NSNumber`). Mirror existing keys exactly (e.g. `MessageKeys`) — do not
    rename or restructure them.
-2. Leave the ObjC `@interface`, class name, selectors, and nullability annotations
-   untouched. The public/kit surface does not move.
-3. Change the `.m` to own/forward to the Swift object. Marshal SDK types
-   (`MPEvent`, `MParticleUser`, kit types) to/from Foundation values at the
-   boundary — the Swift side never sees an SDK type directly. Properties stay on
-   the ObjC class so KVC, `NSCopying`, and kit code keep working unchanged.
+2. For a supported customer, kit, or wrapper-SDK contract, leave the ObjC
+   `@interface`, class name, selectors, and nullability annotations untouched.
+   For an audited accidental export, remove it only through the baseline-update
+   workflow in `PR-GATE.md`.
+3. When a wrapper remains, change the `.m` to own/forward to the Swift object.
+   Marshal SDK types (`MPEvent`, `MParticleUser`, kit types) to/from Foundation
+   values at the boundary — the Swift side never sees an SDK type directly.
+   Keep properties on the ObjC class when KVC, `NSCopying`, or external callers
+   require them.
 4. Keep `+Dictionary` categories and `MPDataModelProtocol` conformance on the ObjC
    type. Swift produces the dictionary; ObjC vends it.
 5. Preserve private class extensions (e.g. `@interface MParticle ()`) on the ObjC
    type — a Swift helper cannot legally extend an ObjC class. Pass any extra state
    the extension held as arguments into the Swift call instead.
 6. Add tests per the dual-test convention (below).
-7. **Internal type**: once fully Swift and all callers migrated, delete the
-   `.h`/`.m` wrapper. **Public or kit type**: the wrapper stays — see next section.
+7. Apply the classified end state: keep a contract/runtime wrapper, privatize
+   boundary glue, or delete the internal `.h`/`.m` wrapper after callers migrate.
 
-## Public vs internal
+## Compatibility inventory
 
-**Decision rule: a type is public iff it has a header in
-`mParticle-Apple-SDK/Include/`.**
+This inventory captures the current audit. Recheck usage in the conversion PR
+because downstream code can change.
 
-- **Internal** (no `Include/` header): once the logic is fully in Swift and no
-  caller needs the ObjC class anymore, delete the `.h`/`.m` wrapper. Callers move
-  to the Swift type directly.
-- **Public or kit-protocol type**: the thin ObjC wrapper stays **permanently**.
-  Deleting it turns the class into a Swift `@objc` class — an ABI/module-identity
-  change that can break partner kits and mixed-language apps even with an
-  identical class name. This is never done for a public or kit type in this
-  project.
+| Classification                       | Declarations                                                                                                                                                                                                                                                                                                     | Required end state                                                                                                             |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Internal, wrapper-removal candidates | `MPApplication_PRIVATE`; `MPBackendController_PRIVATE`, `MPKitContainer_PRIVATE`, `MPNetworkCommunication_PRIVATE`, `MPNotificationController_PRIVATE`, `MPPersistenceController_PRIVATE`, `MPStateMachine_PRIVATE`, and their internal protocols/delegates; `SceneDelegateHandler` and `OpenURLHandlerProtocol` | Remove exported headers/baseline entries with the conversion; delete wrappers after internal callers migrate.                  |
+| Internal ObjC boundary glue          | `MPUserDefaultsConnector`                                                                                                                                                                                                                                                                                        | Remove accidental public exposure when callers permit, but retain the ObjC bridge until its dependency boundary is redesigned. |
+| Internal, runtime-identity pinned    | `MPUploadSettings`                                                                                                                                                                                                                                                                                               | Its header may become internal, but retain the ObjC class, secure-coding conformance, and legacy archive class-name mappings.  |
+| Internal members on a supported type | `MParticle.kitContainer_PRIVATE`, `MParticle.deferredKitConfiguration_PRIVATE`, `+[MParticle isOlderThanConfigMaxAgeSeconds]`                                                                                                                                                                                    | Move into private declarations through separate reviewed migrations, then remove their baseline entries.                       |
+| Supported kit/wrapper contracts      | `MPKitProtocol`, `MPKitAPI`, `MPKitExecStatus`, filtered identity/user types, commerce dictionary helpers, `MPCommerceEventInstruction`, `MPForwardRecord`, `+[MParticle _setWrapperSdk_internal:version:]`                                                                                                      | Preserve the ObjC interface and runtime identity.                                                                              |
+
+Customer-facing event, identity, consent, commerce, location, options, and Rokt
+APIs remain supported contracts even when their implementations move to Swift.
 
 ## Hard constraint: the Swift module cannot import ObjC
 
@@ -76,17 +110,19 @@ since the ObjC module already imports the Swift module. This means:
   new Swift type directly.
 - Retire the ObjC duplicate only after sustained confidence in the Swift
   mirror — not automatically on merge.
-- **This convention has no pilot in Phase 1.** `MPBracket` is being converted in
-  parallel by a teammate and is out of scope here, so Foundation does not convert
-  any type behind a wrapper. The dual-test convention is first demonstrated on
-  **the first Phase 2 conversion**.
 
 ## Worked example
 
-Existing forward-to-Swift wrappers to read before your first conversion:
+Existing contract wrappers to read before a conversion:
 
 - `mParticle-Apple-SDK/Ecommerce/MPProduct.m` — `@import mParticle_Apple_SDK_Swift`
 - `mParticle-Apple-SDK/Identity/MParticleUser.m` — `@import mParticle_Apple_SDK_Swift`
+- `mParticle-Apple-SDK/Utils/MPUploadSettings.m` — internal but archive-identity pinned
+
+Existing direct/internal migrations to read before deleting a wrapper:
+
+- `mParticle-Apple-SDK-Swift/Sources/Utils/MPApplication.swift`
+- `mParticle-Apple-SDK-Swift/Sources/Utils/MPConsentKitFilter.swift`
 
 Existing Foundation-only Swift helper pattern to mirror:
 
