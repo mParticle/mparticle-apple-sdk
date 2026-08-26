@@ -600,6 +600,7 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Notifications/MPDeviceTokenStoreTests.swift,
 				Test/Utils/AppEnvironmentProviderTests.swift,
 				Test/Utils/HasherTests.m,
 				Test/Utils/MPApplicationInfoProviderTests.swift,
@@ -642,6 +643,7 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Notifications/MPDeviceTokenStoreTests.swift,
 				Test/Utils/AppEnvironmentProviderTests.swift,
 				Test/Utils/HasherTests.m,
 				Test/Utils/MPApplicationInfoProviderTests.swift,

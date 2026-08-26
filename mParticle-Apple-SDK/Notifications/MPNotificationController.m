@@ -14,10 +14,6 @@
 
 @end
 
-#if TARGET_OS_IOS == 1
-static NSData *deviceToken = nil;
-#endif
-
 @implementation MPNotificationController_PRIVATE
 
 #if TARGET_OS_IOS == 1
@@ -32,54 +28,40 @@ static NSData *deviceToken = nil;
 }
 
 #pragma mark Public static methods
+
+// Non-extractable: MPUserDefaults is reached through MPUserDefaultsConnector, an ObjC type
+// the Swift module cannot import, so persistence stays here. The store owns the token itself.
 - (NSData *)deviceToken {
 #ifndef MP_UNIT_TESTING
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    deviceToken = userDefaults[kMPDeviceTokenKey];
+    NSData *persistedToken = userDefaults[kMPDeviceTokenKey];
 #else
-    deviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *persistedToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
 #endif
-    
-    return deviceToken;
+
+    return [MPDeviceTokenStore.shared adoptPersistedToken:persistedToken];
 }
 
 - (void)setDeviceToken:(NSData *)devToken {
-    if ([deviceToken isEqualToData:devToken]) {
+    MPDeviceTokenChange *change = [MPDeviceTokenStore.shared changeToToken:devToken];
+    if (!change) {
         return;
     }
-    
-    NSData *newDeviceToken = [devToken copy];
-    NSData *oldDeviceToken = [deviceToken copy];
-    
-    deviceToken = devToken;
 
     dispatch_async([MParticle messageQueue], ^{
-        NSMutableDictionary *deviceTokenDictionary = [[NSMutableDictionary alloc] initWithCapacity:2];
-        NSString *newTokenString = nil;
-        NSString *oldTokenString = nil;
-        if (newDeviceToken) {
-            deviceTokenDictionary[kMPRemoteNotificationDeviceTokenKey] = newDeviceToken;
-            newTokenString = [MPUserDefaults stringFromDeviceToken:newDeviceToken];
-        }
-        
-        if (oldDeviceToken) {
-            deviceTokenDictionary[kMPRemoteNotificationOldDeviceTokenKey] = oldDeviceToken;
-            oldTokenString = [MPUserDefaults stringFromDeviceToken:oldDeviceToken];
+        [MPDeviceTokenStore.shared postChange:change];
+
+        // Non-extractable: MPNetworkCommunication is an ObjC type reached through MParticle's
+        // private backendController extension above.
+        if (change.shouldModifyDeviceID) {
+            [[MParticle sharedInstance].backendController.networkCommunication modifyDeviceID:@"push_token"
+                                                                                        value:change.newTokenString
+                                                                                     oldValue:change.oldTokenString];
         }
 
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationDeviceTokenNotification
-                                                            object:nil
-                                                          userInfo:deviceTokenDictionary];
-        
-        if (oldTokenString && newTokenString) {
-            [[MParticle sharedInstance].backendController.networkCommunication modifyDeviceID:@"push_token"
-                                                                                        value:newTokenString
-                                                                                     oldValue:oldTokenString];
-        }
-        
 #ifndef MP_UNIT_TESTING
         MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-        userDefaults[kMPDeviceTokenKey] = deviceToken;
+        userDefaults[kMPDeviceTokenKey] = MPDeviceTokenStore.shared.currentToken;
         [userDefaults synchronize];
 #endif
     });
