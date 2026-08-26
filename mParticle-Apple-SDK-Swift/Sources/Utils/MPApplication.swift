@@ -240,7 +240,7 @@ import UIKit
 
         let storedVersion = userDefaults[MPApplicationKeys.kMPAppStoredVersionKey] as? String
         let storedBuild = userDefaults[MPApplicationKeys.kMPAppStoredBuildKey] as? String
-        if provider.version != storedVersion || provider.build != storedBuild {
+        if !stringsEqual(provider.version, storedVersion) || !stringsEqual(provider.build, storedBuild) {
             userDefaults[MPApplicationKeys.kMPAppLaunchCountSinceUpgradeKey] = NSNumber(value: 1)
             userDefaults[MPApplicationKeys.kMPAppUpgradeDateKey] = currentEpochMilliseconds()
         } else {
@@ -353,6 +353,14 @@ import UIKit
 
     private static func currentEpochMilliseconds() -> NSNumber {
         NSNumber(value: MPMilliseconds(timestamp: Date().timeIntervalSince1970))
+    }
+
+    /// Mirrors ObjC `-isEqualToString:` nil semantics: nil on either side counts as not equal,
+    /// so an unversioned bundle takes the upgrade path exactly as the prior ObjC code did.
+    /// Internal (not private) so the nil-parity behavior can be unit-tested directly.
+    static func stringsEqual(_ a: String?, _ b: String?) -> Bool {
+        guard let a, let b else { return false }
+        return a == b
     }
 
     /// UUID of the main executable image (LC_UUID), matching the prior `MH_EXECUTE` search.

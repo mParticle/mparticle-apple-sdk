@@ -113,6 +113,16 @@ final class MPApplicationTests: XCTestCase {
         XCTAssertEqual(value.doubleValue, 1_000_000) // 1000s -> ms
     }
 
+    func testStringsEqualMatchesObjCIsEqualToStringNilSemantics() {
+        // ObjC -isEqualToString: is true only when both are non-nil and equal;
+        // nil on either side (including both nil) is not-equal -> upgrade path.
+        XCTAssertFalse(MPApplication_PRIVATE.stringsEqual(nil, nil))
+        XCTAssertFalse(MPApplication_PRIVATE.stringsEqual(nil, "x"))
+        XCTAssertFalse(MPApplication_PRIVATE.stringsEqual("x", nil))
+        XCTAssertFalse(MPApplication_PRIVATE.stringsEqual("x", "y"))
+        XCTAssertTrue(MPApplication_PRIVATE.stringsEqual("x", "x"))
+    }
+
     func testAppImageInfoHasBaseAndSize() {
         let dict = MPApplication_PRIVATE.appImageInfo()
         XCTAssertNotNil(dict[MPApplicationKeys.kMPAppImageBaseAddressKey])
