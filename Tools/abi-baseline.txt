@@ -221,7 +221,6 @@ IFACE|@interface FilteredMPIdentityApiRequest : NSObject
 IFACE|@interface FilteredMParticleUser : NSObject
 IFACE|@interface MPAliasRequest : NSObject
 IFACE|@interface MPAliasResponse : NSObject
-IFACE|@interface MPApplication_PRIVATE : NSObject <NSCopying>
 IFACE|@interface MPAttributionResult : NSObject
 IFACE|@interface MPAudience : NSObject
 IFACE|@interface MPBackendController_PRIVATE : NSObject<MPBackendControllerProtocol>
@@ -292,7 +291,6 @@ METHOD|+ (instancetype)optionsWithKey:(NSString *)apiKey secret:(NSString *)secr
 METHOD|+ (instancetype)requestWithEmptyUser;
 METHOD|+ (instancetype)requestWithUser:(MParticleUser *) user;
 METHOD|+ (instancetype)sharedInstance;
-METHOD|+ (nonnull NSDictionary *)appImageInfo;
 METHOD|+ (nonnull NSNumber *)kitCode;
 METHOD|+ (nonnull NSString *)databaseDirectoryPath;
 METHOD|+ (nonnull instancetype)currentUploadSettingsWithStateMachine:(nonnull id<MPStateMachineProtocol>)stateMachine networkOptions:(nonnull MPNetworkOptions *)networkOptions;
@@ -300,12 +298,9 @@ METHOD|+ (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid
 METHOD|+ (nullable MPConsentState *)deviceConsentState;
 METHOD|+ (nullable MPConsentState *)effectiveConsentStateForMpid:(nullable NSNumber *)mpid;
 METHOD|+ (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
-METHOD|+ (nullable NSString *)appStoreReceipt;
 METHOD|+ (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
 METHOD|+ (nullable NSString *)provisioningProfileString;
-METHOD|+ (nullable UIApplication *)sharedUIApplication;
 METHOD|+ (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
-METHOD|+ (void)markInitialLaunchTime;
 METHOD|+ (void)parseConfiguration:(nonnull NSDictionary *)configuration;
 METHOD|+ (void)setConnectorFactory:(NSObject<MPConnectorFactoryProtocol> *_Nullable)connectorFactory;
 METHOD|+ (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;
@@ -313,9 +308,6 @@ METHOD|+ (void)setDeviceConsentState:(nullable MPConsentState *)state;
 METHOD|+ (void)setEnvironment:(MPEnvironment)environment;
 METHOD|+ (void)setMpid:(nonnull NSNumber *)mpId;
 METHOD|+ (void)setRunningInBackground:(BOOL)background;
-METHOD|+ (void)updateLastUseDate:(nonnull NSDate *)date;
-METHOD|+ (void)updateLaunchCountsAndDates;
-METHOD|+ (void)updateStoredVersionAndBuildNumbers;
 METHOD|- (BOOL) shouldDelayMParticleUpload;
 METHOD|- (BOOL)aliasUsers:(MPAliasRequest *)aliasRequest;
 METHOD|- (BOOL)closeDatabase;
@@ -436,7 +428,6 @@ METHOD|- (nonnull NSArray<MPForwardRecord *> *)logBatch:(nonnull NSDictionary *)
 METHOD|- (nonnull NSArray<MParticleUser *> *)getAllUsers;
 METHOD|- (nonnull NSDate *)minUploadDateForUploadType:(MPUploadType)uploadType;
 METHOD|- (nonnull NSDictionary<NSString *, NSDictionary *> *)appAndDeviceInfoForSessionId:(nonnull NSNumber *)sessionId;
-METHOD|- (nonnull NSDictionary<NSString *, id> *)dictionaryRepresentation;
 METHOD|- (nonnull NSDictionary<NSString *, id> *)transformValuesToString;
 METHOD|- (nonnull NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(nonnull NSNumber *)userId;
 METHOD|- (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
@@ -828,7 +819,6 @@ PROP|@property (nonatomic, readonly) BOOL success;
 PROP|@property (nonatomic, readonly) BOOL usedFirstLastSeen;
 PROP|@property (nonatomic, readonly) MPCommerceInstruction instruction;
 PROP|@property (nonatomic, readonly) MPDataPlanOptions *dataPlanOptions;
-PROP|@property (nonatomic, readonly) MPEnvironment environment __attribute__((const));
 PROP|@property (nonatomic, readonly) MPEnvironment environment;
 PROP|@property (nonatomic, readonly) MPPromotionAction action;
 PROP|@property (nonatomic, readonly) NSDictionary<NSString *, id> *dictionaryRepresentation;
@@ -889,7 +879,6 @@ PROP|@property (nonatomic, strong, nonnull) NSMutableDictionary *dataDictionary;
 PROP|@property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPAttributionResult *> *attributionInfo;
 PROP|@property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPAttributionResult *> *attributionInfo;
 PROP|@property (nonatomic, strong, nonnull) NSNumber *aliasMaxWindow;
-PROP|@property (nonatomic, strong, nonnull) NSNumber *lastUseDate;
 PROP|@property (nonatomic, strong, nonnull) NSNumber *mpid;
 PROP|@property (nonatomic, strong, nonnull) NSNumber *quantity;
 PROP|@property (nonatomic, strong, nonnull) NSNumber *sideloadedKitCode;
@@ -923,14 +912,11 @@ PROP|@property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
 PROP|@property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
 PROP|@property (nonatomic, strong, nullable) NSNumber *crashMaxPLReportLength;
 PROP|@property (nonatomic, strong, nullable) NSNumber *duration;
-PROP|@property (nonatomic, strong, nullable) NSNumber *launchCount;
-PROP|@property (nonatomic, strong, nullable) NSNumber *launchCountSinceUpgrade;
 PROP|@property (nonatomic, strong, nullable) NSNumber *persistenceMaxAgeSeconds;
 PROP|@property (nonatomic, strong, nullable) NSNumber *price;
 PROP|@property (nonatomic, strong, nullable) NSNumber *revenue;
 PROP|@property (nonatomic, strong, nullable) NSNumber *shipping;
 PROP|@property (nonatomic, strong, nullable) NSNumber *tax;
-PROP|@property (nonatomic, strong, nullable) NSNumber *upgradeDate;
 PROP|@property (nonatomic, strong, nullable) NSString *affiliation;
 PROP|@property (nonatomic, strong, nullable) NSString *brand;
 PROP|@property (nonatomic, strong, nullable) NSString *category;
@@ -960,8 +946,6 @@ PROP|@property (nonatomic, strong, nullable) NSString *productListSource;
 PROP|@property (nonatomic, strong, nullable) NSString *promotionId;
 PROP|@property (nonatomic, strong, nullable) NSString *pushNotificationMode;
 PROP|@property (nonatomic, strong, nullable) NSString *screenName;
-PROP|@property (nonatomic, strong, nullable) NSString *storedBuild;
-PROP|@property (nonatomic, strong, nullable) NSString *storedVersion;
 PROP|@property (nonatomic, strong, nullable) NSString *transactionId;
 PROP|@property (nonatomic, strong, nullable) NSString *variant;
 PROP|@property (nonatomic, strong, nullable) id<MPKitProtocol> wrapperInstance;
@@ -983,12 +967,8 @@ PROP|@property (nonatomic, strong, readonly) NSNumber *destinationMPID;
 PROP|@property (nonatomic, strong, readonly) NSNumber *sourceMPID;
 PROP|@property (nonatomic, strong, readonly) NSString *dataPlanId;
 PROP|@property (nonatomic, strong, readonly) NSString *version;
-PROP|@property (nonatomic, strong, readonly, nonnull) NSNumber *firstSeenInstallation __attribute__((const));
 PROP|@property (nonatomic, strong, readonly, nonnull) NSNumber *firstSeenInstallation;
-PROP|@property (nonatomic, strong, readonly, nonnull) NSNumber *initialLaunchTime;
 PROP|@property (nonatomic, strong, readonly, nonnull) NSNumber *integrationId;
-PROP|@property (nonatomic, strong, readonly, nonnull) NSNumber *pirated;
-PROP|@property (nonatomic, strong, readonly, nonnull) NSString *architecture;
 PROP|@property (nonatomic, strong, readonly, nullable) MPURL *aliasURL;
 PROP|@property (nonatomic, strong, readonly, nullable) MPURL *audienceURL;
 PROP|@property (nonatomic, strong, readonly, nullable) MPURL *configURL;
@@ -1004,13 +984,8 @@ PROP|@property (nonatomic, strong, readonly, nullable) NSArray<MPPromotion *> *p
 PROP|@property (nonatomic, strong, readonly, nullable) NSDate *launchDate;
 PROP|@property (nonatomic, strong, readonly, nullable) NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *impressions;
 PROP|@property (nonatomic, strong, readonly, nullable) NSMutableDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlags;
-PROP|@property (nonatomic, strong, readonly, nullable) NSString *build __attribute__((const));
-PROP|@property (nonatomic, strong, readonly, nullable) NSString *buildUUID;
-PROP|@property (nonatomic, strong, readonly, nullable) NSString *bundleIdentifier __attribute__((const));
 PROP|@property (nonatomic, strong, readonly, nullable) NSString *deviceTokenType;
-PROP|@property (nonatomic, strong, readonly, nullable) NSString *name __attribute__((const));
 PROP|@property (nonatomic, strong, readonly, nullable) NSString *uniqueIdentifier;
-PROP|@property (nonatomic, strong, readonly, nullable) NSString *version __attribute__((const));
 PROP|@property (nonatomic, strong, readwrite) MPIdentityApiRequest *identifyRequest;
 PROP|@property (nonatomic, strong, readwrite) NSString *apiKey;
 PROP|@property (nonatomic, strong, readwrite) NSString *apiSecret;

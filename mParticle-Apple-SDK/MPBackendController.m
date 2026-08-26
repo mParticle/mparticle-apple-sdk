@@ -8,7 +8,6 @@
 #import "MPBreadcrumb.h"
 #import "MPUpload.h"
 #import "MPAudience.h"
-#import "MPApplication.h"
 #import "MPMessageBuilder.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
@@ -363,7 +362,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         [self saveMessage:message updateSession:YES];
     });
     
-    [MPApplication_PRIVATE updateStoredVersionAndBuildNumbers];
+    [MPApplication_PRIVATE updateStoredVersionAndBuildNumbersWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
 
     self.didFinishLaunchingNotification = nil;
     
@@ -797,7 +796,12 @@ static BOOL skipNextUpload = NO;
         
         // Set the app and device info dicts if they weren't already created
         if (!_session.appInfo) {
-            _session.appInfo = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
+            MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)MParticle.sharedInstance.stateMachine
+                                                                                       userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                                                        environment:[MPStateMachine_PRIVATE environment]
+                                                                                   deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                                           buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
+            _session.appInfo = [application dictionaryRepresentation];
         }
         if (!_session.deviceInfo) {
             MParticle* mparticle = MParticle.sharedInstance;

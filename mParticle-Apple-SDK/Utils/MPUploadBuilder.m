@@ -6,7 +6,6 @@
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
 #import "MPConsumerInfo.h"
-#import "MPApplication.h"
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"
 #import "MPConsentState.h"
@@ -143,14 +142,18 @@
     
     NSDictionary *appAndDeviceInfoDict = [[MParticle sharedInstance].persistenceController appAndDeviceInfoForSessionId:_sessionId];
     
-    NSDictionary *appInfoDict = appAndDeviceInfoDict[kMPApplicationInformationKey];
+    NSDictionary *appInfoDict = appAndDeviceInfoDict[MPApplicationKeys.kMPApplicationInformationKey];
     if (appInfoDict) {
-        _uploadDictionary[kMPApplicationInformationKey] = appInfoDict;
+        _uploadDictionary[MPApplicationKeys.kMPApplicationInformationKey] = appInfoDict;
     } else {
         // If the info wasn't saved in the session, use the old behavior and grab it now
         // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
-        MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
-        _uploadDictionary[kMPApplicationInformationKey] = [application dictionaryRepresentation];
+        MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
+                                                                                   userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                                                    environment:[MPStateMachine_PRIVATE environment]
+                                                                               deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                                       buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
+        _uploadDictionary[MPApplicationKeys.kMPApplicationInformationKey] = [application dictionaryRepresentation];
     }
     
     NSDictionary *deviceInfoDict = appAndDeviceInfoDict[kMPDeviceInformationKey];

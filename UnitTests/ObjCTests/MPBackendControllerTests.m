@@ -17,7 +17,6 @@
 #import "MPKitConfiguration.h"
 #import "MPBaseTestCase.h"
 #import "MPUserDefaultsConnector.h"
-#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -103,10 +102,6 @@
 @property NSTimeInterval timeOfLastEventInBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 
-@end
-
-@interface MPApplication_PRIVATE(Tests)
-+ (void)setMockApplication:(id)mockApplication;
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
@@ -660,9 +655,13 @@
 
 - (void)testLoggingCommerceEventToUpload {
     // Ensure upgrade date is set by simulating an app upgrade BEFORE session begins
-    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)MParticle.sharedInstance.stateMachine
+                                                                               userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                                                environment:[MPStateMachine_PRIVATE environment]
+                                                                           deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                                   buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
     application.storedVersion = @"1.0.0"; // Set a different version to trigger upgrade detection
-    [MPApplication_PRIVATE updateLaunchCountsAndDates]; // This will set the upgrade date
+    [MPApplication_PRIVATE updateLaunchCountsAndDatesWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults]; // This will set the upgrade date
     
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
@@ -724,7 +723,7 @@
                 XCTAssert([uploadJSON[kMPApplicationKey] isKindOfClass:[NSString class]], @"Application key should be a NSString.");
                 XCTAssertEqualObjects(uploadJSON[kMPApplicationKey], @"unit_test_app_key", @"Application key should match expected value.");
                 
-                XCTAssert([uploadJSON[kMPApplicationInformationKey] isKindOfClass:[NSDictionary class]], @"Application Information should be a NSDictionary.");
+                XCTAssert([uploadJSON[MPApplicationKeys.kMPApplicationInformationKey] isKindOfClass:[NSDictionary class]], @"Application Information should be a NSDictionary.");
                 XCTAssert([uploadJSON[kMPTimestampKey] isKindOfClass:[NSNumber class]], @"Creation timestamp should be a NSNumber.");
                 XCTAssert([uploadJSON[kMPContextKey] isKindOfClass:[NSDictionary class]], @"Context should be a NSDictionary.");
                 XCTAssert([uploadJSON[kMPDeviceApplicationStampKey] isKindOfClass:[NSString class]], @"Device application stamp should be a NSString.");
@@ -741,21 +740,21 @@
                 XCTAssert([uploadJSON[kMPUploadIntervalKey] isKindOfClass:[NSNumber class]], @"Upload interval should be a NSNumber.");
                 
                 // Verify application information structure
-                NSDictionary *applicationInfo = uploadJSON[kMPApplicationInformationKey];
-                XCTAssert([applicationInfo[kMPAppBuildNumberKey] integerValue] != 0, @"App build number should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppPackageNameKey] isKindOfClass:[NSString class]], @"App package name should be a NSString.");
-                XCTAssert([applicationInfo[kMPAppArchitectureKey] isKindOfClass:[NSString class]], @"Architecture should be a NSString.");
-                XCTAssert([applicationInfo[kMPApplicationVersionKey] isKindOfClass:[NSString class]], @"App version should be a NSString.");
-                XCTAssert([applicationInfo[kMPAppBuildUUIDKey] isKindOfClass:[NSString class]], @"Build UUID should be a NSString.");
-                XCTAssert([applicationInfo[kMPAppBuildSDKKey] integerValue] != 0, @"Build SDK should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppEnvironmentKey] isKindOfClass:[NSNumber class]], @"Environment should be a NSNumber.");
+                NSDictionary *applicationInfo = uploadJSON[MPApplicationKeys.kMPApplicationInformationKey];
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppBuildNumberKey] integerValue] != 0, @"App build number should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppPackageNameKey] isKindOfClass:[NSString class]], @"App package name should be a NSString.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppArchitectureKey] isKindOfClass:[NSString class]], @"Architecture should be a NSString.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPApplicationVersionKey] isKindOfClass:[NSString class]], @"App version should be a NSString.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppBuildUUIDKey] isKindOfClass:[NSString class]], @"Build UUID should be a NSString.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppBuildSDKKey] integerValue] != 0, @"Build SDK should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppEnvironmentKey] isKindOfClass:[NSNumber class]], @"Environment should be a NSNumber.");
                 XCTAssert([applicationInfo[kMPAppFirstSeenInstallationKey] isKindOfClass:[NSNumber class]], @"First install should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppInitialLaunchTimeKey] isKindOfClass:[NSNumber class]], @"Install creation timestamp should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppLastUseDateKey] isKindOfClass:[NSNumber class]], @"Last use date should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppPiratedKey] isKindOfClass:[NSNumber class]], @"Push integration result should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppSideloadKitsCountKey] isKindOfClass:[NSNumber class]], @"Sideloaded kits count should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppDeploymentTargetKey] integerValue] != 0, @"App DeploymentTarget should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppUpgradeDateKey] isKindOfClass:[NSNumber class]], @"Upgrade date should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppInitialLaunchTimeKey] isKindOfClass:[NSNumber class]], @"Install creation timestamp should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppLastUseDateKey] isKindOfClass:[NSNumber class]], @"Last use date should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppPiratedKey] isKindOfClass:[NSNumber class]], @"Push integration result should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppSideloadKitsCountKey] isKindOfClass:[NSNumber class]], @"Sideloaded kits count should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppDeploymentTargetKey] integerValue] != 0, @"App DeploymentTarget should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppUpgradeDateKey] isKindOfClass:[NSNumber class]], @"Upgrade date should be a NSNumber.");
                 
                 // Verify context structure
                 NSDictionary *context = uploadJSON[kMPContextKey];

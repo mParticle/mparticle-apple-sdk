@@ -4,10 +4,12 @@ Migration tooling for the Objective-C -> Swift conversion.
 
 ## abi-guard.sh
 
-Proves the public Objective-C ABI (class/protocol names, selectors, property
-nullability, enum members) derived from `mParticle-Apple-SDK/Include/*.h` has
-not changed. Parses header text only — never `eval`s or executes header
-contents.
+Snapshots the exported Objective-C header surface (class/protocol names,
+selectors, property nullability, enum members) derived from
+`mParticle-Apple-SDK/Include/*.h`. It is a focused migration guard, not a
+complete binary-ABI verifier and not a declaration that every header token is
+a supported customer or kit contract. It parses header text only — never
+`eval`s or executes header contents.
 
 ```bash
 Tools/abi-guard.sh snapshot [header-dir]  # print the current surface (default: Include/)
@@ -16,8 +18,8 @@ Tools/abi-guard.sh check [header-dir]     # diff header-dir's surface against th
 ```
 
 Run `Tools/abi-guard.sh check` on every conversion PR that touches
-`Include/*.h`. Exit 0 means the public surface is unchanged; a non-zero exit
-prints the diff.
+`Include/*.h`. Exit 0 means the exported snapshot matches the reviewed
+baseline; a non-zero exit prints the diff for classification and review.
 
 ### Self-test
 
@@ -35,10 +37,19 @@ mutated _copy_ of `Include/` (in a temp dir) fails `check`. Prints
 ### Baseline-update policy
 
 `Tools/abi-baseline.txt` is committed. Updating it (`Tools/abi-guard.sh
-update`) is only legitimate for an intentional, reviewed public-ABI change —
-per `.planning/PROJECT.md`, that means a major-version / partner-coordination
-event. An unexplained baseline diff in a PR is a **gate failure**, not
-something to fix by re-running `update`.
+update`) is legitimate only for one of these reviewed cases:
+
+- a supported API addition that has completed normal API review; or
+- removal of an accidentally exported internal declaration after auditing
+  customer, kit, wrapper-SDK, and persisted/runtime-identity usage.
+
+For an internal cleanup, the PR must show the pre-update diff, name the removed
+symbols, explain why they are not a supported contract, regenerate the
+baseline from the final tree, and finish with `abi-guard.sh check` passing.
+Removal of a supported customer, kit, wrapper-SDK, or persisted/runtime
+contract still requires explicit compatibility coordination. An unexplained
+baseline diff is a **gate failure**, not something to fix by blindly running
+`update`.
 
 ### CI wiring — deferred
 

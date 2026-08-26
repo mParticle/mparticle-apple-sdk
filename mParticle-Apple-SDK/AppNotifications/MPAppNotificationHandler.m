@@ -6,7 +6,6 @@
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
 #import "MPKitAPI.h"
-#import "MPApplication.h"
 #import "mParticle.h"
 
 #if TARGET_OS_IOS == 1

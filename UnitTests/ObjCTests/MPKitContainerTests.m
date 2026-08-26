@@ -25,7 +25,6 @@
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
-#import "MPApplication.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
 #import "MPUserDefaultsConnector.h"
@@ -2929,7 +2928,12 @@
 - (void)testAppInfoContainsSideloadKitsFlag {
     [MPUserDefaultsConnector.userDefaults setSideloadedKitsCount:3];
     
-    NSDictionary *dict = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)MParticle.sharedInstance.stateMachine
+                                                                               userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                                                environment:[MPStateMachine_PRIVATE environment]
+                                                                           deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                                   buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
+    NSDictionary *dict = [application dictionaryRepresentation];
     
     XCTAssertEqualObjects(dict[@"sideloaded_kits_count"], @3);
 }
