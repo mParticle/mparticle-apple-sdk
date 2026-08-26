@@ -123,23 +123,17 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         apiResult.user = self.currentUser;
         NSMutableArray<MPIdentityChange *> *changes = [[NSMutableArray alloc] init];
 
-        for (NSDictionary *userChange in httpResponse.changeResults) {
-            if (userChange[@"modified_mpid"] != nil && userChange[@"identity_type"] != nil) {
+        for (NSDictionary *userChange in [MPIdentityApiLogicPRIVATE parsedModifyChanges:httpResponse.changeResults]) {
+            NSNumber *identityNumber = userChange[@"identity_type_number"];
+            if (identityNumber != nil) {
                 MPIdentityChange *change = [[MPIdentityChange alloc] init];
-                
                 MParticleUser *changedUser = [[MParticleUser alloc] init];
                 changedUser.userId = userChange[@"modified_mpid"];
                 change.changedUser = changedUser;
-                
-                NSString *identityString = userChange[@"identity_type"];
-                NSNumber *identityNumber = [MPIdentityHTTPIdentities identityTypeForString:identityString];
-                if (identityNumber != nil) {
-                    change.changedIdentity = (MPIdentity)identityNumber.intValue;
-                    
-                    [changes addObject:change];
-                } else {
-                    MPILogError(@"Invalid identity type received: %@", identityString);
-                }
+                change.changedIdentity = (MPIdentity)identityNumber.intValue;
+                [changes addObject:change];
+            } else {
+                MPILogError(@"Invalid identity type received: %@", userChange[@"identity_type"]);
             }
         }
         apiResult.identityChanges = changes;
@@ -332,22 +326,15 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (NSArray<MParticleUser *> *)sortedUserArrayByLastSeen:(NSMutableArray<MParticleUser *> *)userArray {
-    NSMutableArray<MParticleUser *> *sortedUserArray = [NSMutableArray arrayWithCapacity:userArray.count];
-    while (userArray.count > 0) {
-        NSDate *latestSeen = [NSDate distantPast];
-        int latestIndex = 0;
-        for (int i=0; i<userArray.count; i++) {
-            MParticleUser *user = userArray[i];
-            if ([user.lastSeen compare:latestSeen] == NSOrderedDescending) {
-                latestSeen = user.lastSeen;
-                latestIndex = i;
-            }
-        }
-        MParticleUser *latestUser = userArray[latestIndex];
-        [sortedUserArray addObject:latestUser];
-        [userArray removeObjectAtIndex:latestIndex];
+    NSMutableArray<NSDate *> *dates = [NSMutableArray arrayWithCapacity:userArray.count];
+    for (MParticleUser *user in userArray) {
+        [dates addObject:user.lastSeen ?: [NSDate distantPast]];
     }
-    
+    NSArray<NSNumber *> *indexes = [MPIdentityApiLogicPRIVATE sortedIndexesByLastSeen:dates];
+    NSMutableArray<MParticleUser *> *sortedUserArray = [NSMutableArray arrayWithCapacity:userArray.count];
+    for (NSNumber *index in indexes) {
+        [sortedUserArray addObject:userArray[index.unsignedIntegerValue]];
+    }
     return sortedUserArray;
 }
 
@@ -456,27 +443,20 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 - (BOOL)aliasUsers:(MPAliasRequest *)aliasRequest {
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"ALIAS_USERS"];
-    if (aliasRequest.sourceMPID == nil || aliasRequest.destinationMPID == nil || aliasRequest.sourceMPID.longLongValue == 0 || aliasRequest.destinationMPID.longLongValue == 0 || [aliasRequest.sourceMPID isEqual:aliasRequest.destinationMPID]) {
+    MPIdentityAliasPlanPRIVATE *plan = [MPIdentityAliasPlanPRIVATE planWithSourceMPID:aliasRequest.sourceMPID
+                                                                      destinationMPID:aliasRequest.destinationMPID
+                                                                            startTime:aliasRequest.startTime
+                                                                              endTime:aliasRequest.endTime
+                                                                   usedFirstLastSeen:aliasRequest.usedFirstLastSeen
+                                                                       aliasMaxWindow:MParticle.sharedInstance.stateMachine.aliasMaxWindow];
+    if (!plan.isValid) {
         MPILogError(@"Invalid alias request - both users must exist and not be equal.");
         return NO;
     }
-    
-    double maxDaysAgo = MParticle.sharedInstance.stateMachine.aliasMaxWindow != nil ? MParticle.sharedInstance.stateMachine.aliasMaxWindow.doubleValue : 90;
-    double secondsPerDay = 60*60*24;
-    NSDate *oldestAllowableDate = [NSDate dateWithTimeIntervalSinceNow:-1*secondsPerDay*maxDaysAgo];
-    
-    if (aliasRequest.usedFirstLastSeen) {
-        if ([aliasRequest.startTime compare:oldestAllowableDate] == NSOrderedAscending) {
-            aliasRequest.startTime = oldestAllowableDate;
-        }
-    }
-    
-    if (aliasRequest.startTime == nil || aliasRequest.endTime == nil) {
-        aliasRequest.startTime = oldestAllowableDate;
-        aliasRequest.endTime = [NSDate dateWithTimeIntervalSinceNow:0];
-    }
-    
-    if ([aliasRequest.startTime compare:aliasRequest.endTime] != NSOrderedAscending) {
+
+    aliasRequest.startTime = plan.startTime;
+    aliasRequest.endTime = plan.endTime;
+    if (plan.shouldWarnDateOrder) {
         MPILogWarning(@"Invalid alias request - Start date must occur before end date. Alias Request will likely fail");
     }
     
@@ -536,13 +516,10 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 - (instancetype)initWithJsonObject:(NSDictionary *)dictionary httpCode:(NSInteger) httpCode {
     self = [super init];
     if (self) {
+        NSDictionary *fields = [MPIdentityApiLogicPRIVATE errorFieldsFrom:dictionary httpCode:httpCode];
         _httpCode = httpCode;
-        if (dictionary) {
-            _code = [dictionary[kMPIdentityRequestKeyCode] unsignedIntegerValue];
-            _message = dictionary[kMPIdentityRequestKeyMessage];
-        } else {
-            _code = httpCode;
-        }
+        _code = [fields[@"code"] unsignedIntegerValue];
+        _message = fields[@"message"];
     }
     return self;
 }
