@@ -5,7 +5,6 @@
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
-#import "MPCustomModule.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"

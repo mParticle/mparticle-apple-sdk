@@ -8,7 +8,6 @@
 #import "MPBreadcrumb.h"
 #import "MPUpload.h"
 #import "MPAudience.h"
-#import "MPCustomModule.h"
 #import "MPMessageBuilder.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"

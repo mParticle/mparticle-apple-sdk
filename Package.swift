@@ -48,7 +48,6 @@ let package = Package(
                 .headerSearchPath("Utils"),
                 .headerSearchPath("Persistence"),
                 .headerSearchPath("Consent"),
-                .headerSearchPath("Custom Modules"),
                 .headerSearchPath("AppNotifications"),
                 .headerSearchPath("Data Model"),
                 .headerSearchPath("Libraries/Reachability")
