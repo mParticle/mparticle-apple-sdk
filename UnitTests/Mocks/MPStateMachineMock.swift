@@ -1,5 +1,6 @@
 import XCTest
 import mParticle_Apple_SDK
+internal import mParticle_Apple_SDK_Swift
 
 class MPStateMachineMock: MPStateMachineProtocol {
     var optOut: Bool = false
@@ -10,7 +11,7 @@ class MPStateMachineMock: MPStateMachineProtocol {
 
     var automaticSessionTracking: Bool = false
 
-    var currentSession: MPSession? = nil
+    var currentSession: MPSessionPRIVATE? = nil
 
     var attAuthorizationStatus: NSNumber? = nil
 

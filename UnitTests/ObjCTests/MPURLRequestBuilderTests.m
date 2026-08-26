@@ -11,12 +11,10 @@
 #import "MPKitContainer.h"
 #import "MPKitTestClass.h"
 #import "MPPersistenceController.h"
-#import "MPMessage.h"
 #import "MPBaseTestCase.h"
 #import "MPKitConfiguration.h"
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
-#import "MPUpload.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 

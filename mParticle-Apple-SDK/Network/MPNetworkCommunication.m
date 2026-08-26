@@ -1,9 +1,6 @@
 #import "MPNetworkCommunication.h"
-#import "MPMessage.h"
-#import "MPSession.h"
 #import <UIKit/UIKit.h>
 #import "MPConnector.h"
-#import "MPUpload.h"
 #import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPURLRequestBuilder.h"
@@ -206,24 +203,25 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)eventURLForUpload:(MPUpload *)mpUpload {
+    MPUploadSettings *uploadSettings = (MPUploadSettings *)mpUpload.uploadSettings;
     NSString *eventHost;
-    if (mpUpload.uploadSettings.eventsTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        eventHost = mpUpload.uploadSettings.eventsTrackingHost;
+    if (uploadSettings.eventsTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        eventHost = uploadSettings.eventsTrackingHost;
     } else {
-        eventHost = mpUpload.uploadSettings.eventsHost ?: self.defaultEventHost;
+        eventHost = uploadSettings.eventsHost ?: self.defaultEventHost;
     }
-    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
+    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, uploadSettings.apiKey, kMPEventsURL];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
     BOOL usingCustomBaseURL = [MParticle sharedInstance].networkOptions.customBaseURL != nil;
-    if (usingCustomBaseURL && mpUpload.uploadSettings.overridesEventsSubdirectory) {
+    if (usingCustomBaseURL && uploadSettings.overridesEventsSubdirectory) {
         MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesEventsSubdirectory is unsupported for CDN routing; overridesEventsSubdirectory will be ignored.");
     }
     NSString *eventsVersion = usingCustomBaseURL ? @"nativeevents/v2" : kMPEventsVersion;
-    if (!usingCustomBaseURL && mpUpload.uploadSettings.overridesEventsSubdirectory) {
-        urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, kMPEventsURL];
+    if (!usingCustomBaseURL && uploadSettings.overridesEventsSubdirectory) {
+        urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, uploadSettings.apiKey, kMPEventsURL];
     } else {
-        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, eventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
+        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, eventsVersion, uploadSettings.apiKey, kMPEventsURL];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -385,22 +383,23 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)aliasURLForUpload:(MPUpload *)mpUpload {
+    MPUploadSettings *uploadSettings = (MPUploadSettings *)mpUpload.uploadSettings;
     NSString *pathComponent = @"alias";
 
     NSString *eventHost;
-    if (mpUpload.uploadSettings.aliasTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        eventHost = mpUpload.uploadSettings.aliasTrackingHost;
+    if (uploadSettings.aliasTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        eventHost = uploadSettings.aliasTrackingHost;
     } else {
-        eventHost = mpUpload.uploadSettings.aliasHost ?: self.defaultEventHost;
+        eventHost = uploadSettings.aliasHost ?: self.defaultEventHost;
     }
-    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
+    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, uploadSettings.apiKey, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
     BOOL usingCustomBaseURLAlias = [MParticle sharedInstance].networkOptions.customBaseURL != nil;
-    BOOL overrides = mpUpload.uploadSettings.overridesAliasSubdirectory;
-    if (!mpUpload.uploadSettings.eventsOnly && !mpUpload.uploadSettings.aliasHost) {
-        eventHost = mpUpload.uploadSettings.eventsHost ?: self.defaultEventHost;
-        overrides = mpUpload.uploadSettings.overridesEventsSubdirectory;
+    BOOL overrides = uploadSettings.overridesAliasSubdirectory;
+    if (!uploadSettings.eventsOnly && !uploadSettings.aliasHost) {
+        eventHost = uploadSettings.eventsHost ?: self.defaultEventHost;
+        overrides = uploadSettings.overridesEventsSubdirectory;
     }
 
     if (usingCustomBaseURLAlias && overrides) {
@@ -408,9 +407,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     NSString *aliasVersion = usingCustomBaseURLAlias ? @"nativeevents/v1" : kMPIdentityVersion;
     if (!usingCustomBaseURLAlias && overrides) {
-        urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, pathComponent];
+        urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, uploadSettings.apiKey, pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, aliasVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
+        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, aliasVersion, kMPIdentityKey, uploadSettings.apiKey, pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -736,7 +735,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:eventURL
                                                                                       message:uploadString
                                                                              serializedParams:zipUploadData
-                                                                                       secret:upload.uploadSettings.secret];
+                                                                                       secret:((MPUploadSettings *)upload.uploadSettings).secret];
     NSData *data = response.data;
     NSError *error = response.error;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
@@ -819,7 +818,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:aliasURL
                                                                                       message:uploadString
                                                                              serializedParams:upload.uploadData
-                                                                                       secret:upload.uploadSettings.secret];
+                                                                                       secret:((MPUploadSettings *)upload.uploadSettings).secret];
     NSData *data = response.data;
     NSError *error = response.error;
     NSHTTPURLResponse *httpResponse = response.httpResponse;

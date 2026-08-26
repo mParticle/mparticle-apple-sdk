@@ -1,11 +1,8 @@
 #import "MPPersistenceController.h"
-#import "MPMessage.h"
-#import "MPSession.h"
 #import <dispatch/dispatch.h>
 #import "MPDatabaseMigrationController.h"
 #import "MPBreadcrumb.h"
 #import "MPStateMachine.h"
-#import "MPUpload.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
@@ -38,15 +35,12 @@ typedef NS_ENUM(NSInteger, MPDatabaseState) {
     MPDatabaseStateOK
 };
 
-static const NSArray *databaseVersions;
-
-const int MaxBreadcrumbs = 50;
-
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+- (MPLog *)getLogger;
 
 @end
 
@@ -64,12 +58,11 @@ const int MaxBreadcrumbs = 50;
 }
 
 @property (nonatomic, strong) NSString *databasePath;
+@property (nonatomic, strong) MPPersistenceFileSystemPRIVATE *fileSystem;
 
 - (void)excludeDatabaseFromBackup;
 - (void)migrateDatabaseDirectoryIfNeeded;
 - (void)removeLegacySessionNumberFile;
-- (void)removeItemAtPathIfExists:(nonnull NSString *)path fileManager:(nonnull NSFileManager *)fileManager;
-- (BOOL)moveOrCopyItemAtPath:(nonnull NSString *)sourcePath toPath:(nonnull NSString *)destinationPath fileManager:(nonnull NSFileManager *)fileManager;
 - (BOOL)insertUpload:(nonnull MPUpload *)upload;
 - (BOOL)deleteMessagesReturningStatus:(nonnull NSArray<MPMessage *> *)messages;
 
@@ -79,16 +72,11 @@ const int MaxBreadcrumbs = 50;
 
 @synthesize databasePath = _databasePath;
 
-+ (void)initialize {
-    if (self == [MPPersistenceController_PRIVATE class]) {
-        databaseVersions = @[@30, @31];
-    }
-}
-
 - (instancetype)init {
     self = [super init];
     if (self) {
         databaseOpen = NO;
+        _fileSystem = [[MPPersistenceFileSystemPRIVATE alloc] initWithLogger:[MParticle sharedInstance].getLogger];
         
         [self migrateDatabaseDirectoryIfNeeded];
         [self removeLegacySessionNumberFile];
@@ -102,7 +90,7 @@ const int MaxBreadcrumbs = 50;
 
 #pragma mark Database version migration methods
 - (void)migrateDatabaseIfNeeded {
-    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:[databaseVersions copy]];
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:[MPPersistenceSchemaPRIVATE databaseVersions]];
     
     NSNumber *migrateVersion = [migrationController needsMigration];
     if (migrateVersion != nil) {
@@ -118,100 +106,11 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)migrateDatabaseDirectoryIfNeeded {
-#if TARGET_OS_IOS == 1
-    NSString *legacyDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSString *currentDirectory = [[self class] databaseDirectoryPath];
-    if (MPIsNull(legacyDirectory) || [legacyDirectory isEqualToString:currentDirectory]) {
-        return;
-    }
-
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSArray<NSString *> *sidecarSuffixes = @[@"-journal", @"-wal", @"-shm"];
-
-    for (NSNumber *version in databaseVersions) {
-        NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", version];
-        NSString *legacyDatabasePath = [legacyDirectory stringByAppendingPathComponent:databaseName];
-        NSString *currentDatabasePath = [currentDirectory stringByAppendingPathComponent:databaseName];
-        BOOL currentMainExists = [fileManager fileExistsAtPath:currentDatabasePath];
-        BOOL legacyMainExists = [fileManager fileExistsAtPath:legacyDatabasePath];
-
-        if (currentMainExists) {
-            // Prefer Application Support. Remove leftover Documents files and never
-            // attach orphan sidecars to an existing database.
-            [self removeItemAtPathIfExists:legacyDatabasePath fileManager:fileManager];
-            for (NSString *suffix in sidecarSuffixes) {
-                [self removeItemAtPathIfExists:[legacyDatabasePath stringByAppendingString:suffix] fileManager:fileManager];
-            }
-            continue;
-        }
-
-        if (!legacyMainExists) {
-            // No main DB to migrate — drop orphan Documents sidecars only.
-            for (NSString *suffix in sidecarSuffixes) {
-                [self removeItemAtPathIfExists:[legacyDatabasePath stringByAppendingString:suffix] fileManager:fileManager];
-            }
-            continue;
-        }
-
-        // Migrate the main DB first. If this fails, leave Documents untouched so we
-        // do not create an empty Application Support DB and later delete the real one.
-        if (![self moveOrCopyItemAtPath:legacyDatabasePath toPath:currentDatabasePath fileManager:fileManager]) {
-            MPILogError(@"Failed to migrate database from Documents to Application Support: %@", legacyDatabasePath);
-            continue;
-        }
-
-        for (NSString *suffix in sidecarSuffixes) {
-            NSString *legacySidecarPath = [legacyDatabasePath stringByAppendingString:suffix];
-            NSString *currentSidecarPath = [currentDatabasePath stringByAppendingString:suffix];
-            if (![fileManager fileExistsAtPath:legacySidecarPath]) {
-                continue;
-            }
-            if ([fileManager fileExistsAtPath:currentSidecarPath]) {
-                [self removeItemAtPathIfExists:legacySidecarPath fileManager:fileManager];
-                continue;
-            }
-            if (![self moveOrCopyItemAtPath:legacySidecarPath toPath:currentSidecarPath fileManager:fileManager]) {
-                [self removeItemAtPathIfExists:legacySidecarPath fileManager:fileManager];
-            }
-        }
-    }
-#endif
-}
-
-- (void)removeItemAtPathIfExists:(NSString *)path fileManager:(NSFileManager *)fileManager {
-    if ([fileManager fileExistsAtPath:path]) {
-        [fileManager removeItemAtPath:path error:nil];
-    }
-}
-
-- (BOOL)moveOrCopyItemAtPath:(NSString *)sourcePath toPath:(NSString *)destinationPath fileManager:(NSFileManager *)fileManager {
-    NSError *error = nil;
-    if ([fileManager moveItemAtPath:sourcePath toPath:destinationPath error:&error]) {
-        return YES;
-    }
-    if ([fileManager copyItemAtPath:sourcePath toPath:destinationPath error:&error]) {
-        [fileManager removeItemAtPath:sourcePath error:nil];
-        return YES;
-    }
-    return NO;
+    [self.fileSystem migrateLegacyDatabaseDirectoryIfNeeded];
 }
 
 - (void)removeLegacySessionNumberFile {
-#if TARGET_OS_IOS == 1
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    if (MPIsNull(documentsDirectory)) {
-        return;
-    }
-
-    NSString *sessionNumberPath = [documentsDirectory stringByAppendingPathComponent:@"SessionNumber"];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    if ([fileManager fileExistsAtPath:sessionNumberPath]) {
-        NSError *error = nil;
-        if (![fileManager removeItemAtPath:sessionNumberPath error:&error]) {
-            MPILogError(@"Failed to remove legacy SessionNumber file: %@", error);
-        }
-    }
-#endif
+    [self.fileSystem removeLegacySessionNumberFileIfNeeded];
 }
 
 + (NSNumber *)mpId {
@@ -299,41 +198,17 @@ const int MaxBreadcrumbs = 50;
 }
 
 + (NSInteger)maxBytesPerEvent:(NSString *)messageType {
-    return [messageType isEqualToString:kMPMessageTypeStringCrashReport] ? MAX_BYTES_PER_EVENT_CRASH : MAX_BYTES_PER_EVENT;
+    return [MPPersistenceSchemaPRIVATE maxBytesPerEventForMessageType:messageType];
 }
 
 + (NSInteger)maxBytesPerBatch:(NSString *)messageType {
-    return [messageType isEqualToString:kMPMessageTypeStringCrashReport] ? MAX_BYTES_PER_BATCH_CRASH : MAX_BYTES_PER_BATCH;
+    return [MPPersistenceSchemaPRIVATE maxBytesPerBatchForMessageType:messageType];
 }
 
 #pragma mark Accessors
 + (NSString *)databaseDirectoryPath {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *directory;
-    
-#if TARGET_OS_TV == 1
-    directory = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0];
-#else
-    NSString *applicationSupportDirectory = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES)[0];
-    directory = [applicationSupportDirectory stringByAppendingPathComponent:@"mParticle"];
-#endif
-    
-    if (![fileManager fileExistsAtPath:directory]) {
-        NSError *error = nil;
-        if (![fileManager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:nil error:&error]) {
-            MPILogError(@"Failed to create database directory: %@ - %@", directory, error);
-        }
-    }
-
-#if TARGET_OS_TV != 1
-    NSURL *directoryURL = [NSURL fileURLWithPath:directory isDirectory:YES];
-    NSError *exclusionError = nil;
-    if (![directoryURL setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:&exclusionError]) {
-        MPILogError(@"Failed to exclude database directory from backup: %@", exclusionError);
-    }
-#endif
-
-    return directory;
+    MPPersistenceFileSystemPRIVATE *fileSystem = [[MPPersistenceFileSystemPRIVATE alloc] initWithLogger:[MParticle sharedInstance].getLogger];
+    return [fileSystem databaseDirectoryPath];
 }
 
 - (NSString *)databasePath {
@@ -341,24 +216,9 @@ const int MaxBreadcrumbs = 50;
         return _databasePath;
     }
     
-    NSNumber *currentDatabaseVersion = [databaseVersions lastObject];
-    NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];
-    NSString *preferredPath = [[[self class] databaseDirectoryPath] stringByAppendingPathComponent:databaseName];
-
-#if TARGET_OS_IOS == 1
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    if (![fileManager fileExistsAtPath:preferredPath]) {
-        NSString *legacyDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-        NSString *legacyPath = [legacyDirectory stringByAppendingPathComponent:databaseName];
-        if ([fileManager fileExistsAtPath:legacyPath]) {
-            // Migration incomplete — keep using Documents until the move succeeds.
-            _databasePath = legacyPath;
-            return _databasePath;
-        }
-    }
-#endif
-
-    _databasePath = preferredPath;
+    NSNumber *currentDatabaseVersion = [MPPersistenceSchemaPRIVATE currentDatabaseVersion];
+    NSString *databaseName = [MPPersistenceSchemaPRIVATE databaseNameForVersion:currentDatabaseVersion];
+    _databasePath = [self.fileSystem resolvedDatabasePathWithDatabaseName:databaseName];
     return _databasePath;
 }
 
@@ -368,18 +228,7 @@ const int MaxBreadcrumbs = 50;
     if (MPIsNull(path) || path.length == 0) {
         return;
     }
-
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    if (![fileManager fileExistsAtPath:path]) {
-        return;
-    }
-
-    NSURL *databaseURL = [NSURL fileURLWithPath:path];
-    NSError *error = nil;
-    BOOL success = [databaseURL setResourceValue:@YES forKey:NSURLIsExcludedFromBackupKey error:&error];
-    if (!success) {
-        MPILogError(@"Failed to exclude mParticle database from backup: %@", error);
-    }
+    [self.fileSystem excludeDatabaseFromBackupAtPath:path];
 }
 
 - (void)deleteCookie:(MPCookie *)cookie {
@@ -417,9 +266,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)removeDatabase {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    if ([fileManager fileExistsAtPath:self.databasePath]) {
-        [fileManager removeItemAtPath:self.databasePath error:nil];
+    if ([self.fileSystem removeDatabaseFileIfExistsAtPath:self.databasePath]) {
         mParticleDB = NULL;
         _databasePath = nil;
         databaseOpen = NO;
@@ -434,18 +281,7 @@ const int MaxBreadcrumbs = 50;
 - (void)resetDatabaseForWorkspaceSwitching {
     [self openDatabase];
     
-    // Delete all records except uploads
-    NSArray *sqlStatements = @[
-        @"DELETE FROM sessions",
-        @"DELETE FROM previous_session",
-        @"DELETE FROM messages",
-        @"DELETE FROM breadcrumbs",
-        @"DELETE FROM consumer_info",
-        @"DELETE FROM cookies",
-        @"DELETE FROM product_bags",
-        @"DELETE FROM forwarding_records",
-        @"DELETE FROM integration_attributes"
-    ];
+    NSArray *sqlStatements = [MPPersistenceSchemaPRIVATE workspaceSwitchDeleteStatements];
     
     int status;
     char *errMsg;
@@ -462,44 +298,11 @@ const int MaxBreadcrumbs = 50;
 
 - (void)saveCookie:(MPCookie *)cookie forConsumerInfo:(MPConsumerInfo *)consumerInfo {
     sqlite3_stmt *preparedStatement;
-    
-    NSMutableArray *fields = [NSMutableArray array];
-    NSMutableArray *params = [NSMutableArray array];
-    
-    if (cookie.content) {
-        [fields addObject:@"content"];
-        [params addObject:[NSString stringWithFormat:@"'%@'", cookie.content]];
-    }
-    
-    if (cookie.domain) {
-        [fields addObject:@"domain"];
-        [params addObject:[NSString stringWithFormat:@"'%@'", cookie.domain]];
-    }
-    
-    if (cookie.expiration) {
-        [fields addObject:@"expiration"];
-        [params addObject:[NSString stringWithFormat:@"'%@'", cookie.expiration]];
-    }
-    
-    [fields addObject:@"name"];
-    [params addObject:[NSString stringWithFormat:@"'%@'", cookie.name]];
-    
-    [fields addObject:@"mpid"];
-    [params addObject:[NSString stringWithFormat:@"'%@'", [MPPersistenceController_PRIVATE mpId]]];
-    
-    NSMutableString *sqlStatement = [NSMutableString stringWithString:@"INSERT INTO cookies (consumer_info_id"];
-    for (NSString *field in fields) {
-        [sqlStatement appendFormat:@", %@", field];
-    }
-    
-    [sqlStatement appendString:@") VALUES (?"];
-    
-    for (NSString *param in params) {
-        [sqlStatement appendFormat:@", %@", param];
-    }
-    
-    [sqlStatement appendString:@")"];
-    
+    NSString *sqlStatement = [MPPersistenceSchemaPRIVATE insertCookieSQLWithContent:cookie.content
+                                                                             domain:cookie.domain
+                                                                         expiration:cookie.expiration
+                                                                               name:cookie.name
+                                                                               mpid:[MPPersistenceController_PRIVATE mpId]];
     if (sqlite3_prepare_v2(mParticleDB, [sqlStatement UTF8String], (int)[sqlStatement length], &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, consumerInfo.consumerInfoId);
         
@@ -542,7 +345,7 @@ const int MaxBreadcrumbs = 50;
     
     sqlite3_finalize(preparedStatement);
     
-    const int latestDatabaseVersion = [[databaseVersions lastObject] intValue];
+    const int latestDatabaseVersion = [[MPPersistenceSchemaPRIVATE currentDatabaseVersion] intValue];
     if (userDatabaseVersion == latestDatabaseVersion) {
         sqlite3_close(mParticleDB);
         mParticleDB = NULL;
@@ -550,102 +353,7 @@ const int MaxBreadcrumbs = 50;
         return;
     }
     
-    NSArray *sqlStatements = @[
-        @"CREATE TABLE IF NOT EXISTS sessions ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            uuid TEXT NOT NULL, \
-            start_time REAL, \
-            end_time REAL, \
-            background_time REAL, \
-            attributes_data BLOB NOT NULL, \
-            session_number INTEGER NOT NULL, \
-            number_interruptions INTEGER, \
-            event_count INTEGER, \
-            suspend_time REAL, \
-            length REAL, \
-            mpid INTEGER NOT NULL, \
-            session_user_ids TEXT NOT NULL, \
-            app_info BLOB, \
-            device_info BLOB \
-        )",
-        @"CREATE TABLE IF NOT EXISTS previous_session ( \
-            session_id INTEGER, \
-            uuid TEXT, \
-            start_time REAL, \
-            end_time REAL, \
-            background_time REAL, \
-            attributes_data BLOB, \
-            session_number INTEGER, \
-            number_interruptions INTEGER, \
-            event_count INTEGER, \
-            suspend_time REAL, \
-            length REAL, \
-            mpid INTEGER NOT NULL, \
-            session_user_ids TEXT NOT NULL \
-        )",
-        @"CREATE TABLE IF NOT EXISTS messages ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            session_id INTEGER, \
-            message_type TEXT NOT NULL, \
-            uuid TEXT NOT NULL, \
-            timestamp REAL NOT NULL, \
-            message_data BLOB NOT NULL, \
-            upload_status INTEGER, \
-            data_plan_id TEXT, \
-            data_plan_version INTEGER, \
-            mpid INTEGER NOT NULL \
-        )",
-        @"CREATE TABLE IF NOT EXISTS uploads ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            session_id INTEGER, \
-            uuid TEXT NOT NULL, \
-            message_data BLOB NOT NULL, \
-            timestamp REAL NOT NULL, \
-            upload_type INTEGER NOT NULL, \
-            data_plan_id TEXT, \
-            data_plan_version INTEGER, \
-            upload_settings BLOB NOT NULL \
-        )",
-        @"CREATE TABLE IF NOT EXISTS breadcrumbs ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            session_uuid TEXT NOT NULL, \
-            uuid TEXT NOT NULL, \
-            timestamp REAL NOT NULL, \
-            breadcrumb_data BLOB NOT NULL, \
-            session_number INTEGER NOT NULL, \
-            mpid INTEGER NOT NULL \
-        )",
-        @"CREATE TABLE IF NOT EXISTS consumer_info ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            mpid INTEGER, \
-            unique_identifier TEXT \
-        )",
-        @"CREATE TABLE IF NOT EXISTS cookies ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            consumer_info_id INTEGER NOT NULL, \
-            content TEXT, \
-            domain TEXT, \
-            expiration TEXT, \
-            name TEXT, \
-            mpid INTEGER NOT NULL \
-        )",
-        @"CREATE TABLE IF NOT EXISTS product_bags ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            name TEXT, \
-            timestamp REAL NOT NULL, \
-            product_data BLOB NOT NULL \
-        )",
-        @"CREATE TABLE IF NOT EXISTS forwarding_records ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            forwarding_data BLOB NOT NULL, \
-            mpid INTEGER NOT NULL \
-        )",
-        @"CREATE TABLE IF NOT EXISTS integration_attributes ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            kit_code INTEGER NOT NULL, \
-            attributes_data BLOB NOT NULL \
-        )"
-    ];
+    NSArray *sqlStatements = [MPPersistenceSchemaPRIVATE createTableStatements];
     
     int tableCreationStatus;
     char *errMsg;
@@ -657,34 +365,19 @@ const int MaxBreadcrumbs = 50;
         }
     }
     
-    NSString *pragmaStatement = [NSString stringWithFormat:@"PRAGMA user_version = %d", latestDatabaseVersion];
+    NSString *pragmaStatement = [MPPersistenceSchemaPRIVATE userVersionPragmaForVersion:[MPPersistenceSchemaPRIVATE currentDatabaseVersion]];
     sqlite3_exec(mParticleDB, [pragmaStatement UTF8String], NULL, NULL, NULL);
     sqlite3_close(mParticleDB);
     mParticleDB = NULL;
 }
 
 - (void)updateCookie:(MPCookie *)cookie {
-    if (!cookie.content && !cookie.domain && !cookie.expiration) {
+    NSString *sqlStatement = [MPPersistenceSchemaPRIVATE updateCookieSQLWithContent:cookie.content domain:cookie.domain expiration:cookie.expiration];
+    if (sqlStatement == nil) {
         return;
     }
     
     sqlite3_stmt *preparedStatement;
-    NSMutableString *sqlStatement = [NSMutableString stringWithString:@"UPDATE cookies SET "];
-    
-    if (cookie.content) {
-        [sqlStatement appendFormat:@"content = '%@'", cookie.content];
-    }
-    
-    if (cookie.domain) {
-        [sqlStatement appendFormat:@", domain = '%@'", cookie.domain];
-    }
-    
-    if (cookie.expiration) {
-        [sqlStatement appendFormat:@", expiration = '%@'", cookie.expiration];
-    }
-    
-    [sqlStatement appendString:@" WHERE _id = ?"];
-    
     if (sqlite3_prepare_v2(mParticleDB, [sqlStatement UTF8String], (int)[sqlStatement length], &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, cookie.cookieId);
         
@@ -816,8 +509,7 @@ const int MaxBreadcrumbs = 50;
         return;
     }
     sqlite3_stmt *preparedStatement;
-    NSString *idsString = [NSString stringWithFormat:@"%@", [forwardRecordsIds componentsJoinedByString:@","]];
-    NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM forwarding_records WHERE _id IN (%@)", idsString];
+    NSString *sqlString = [MPPersistenceSchemaPRIVATE deleteSQLForTable:@"forwarding_records" ids:forwardRecordsIds];
     
     if (sqlite3_prepare_v2(mParticleDB, [sqlString UTF8String], (int)[sqlString length], &preparedStatement, NULL) == SQLITE_OK) {
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -874,8 +566,7 @@ const int MaxBreadcrumbs = 50;
         [messageIds addObject:@(message.messageId)];
     }
 
-    NSString *idsString = [NSString stringWithFormat:@"%@", [messageIds componentsJoinedByString:@","]];
-    NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", idsString];
+    NSString *sqlString = [MPPersistenceSchemaPRIVATE deleteSQLForTable:@"messages" ids:messageIds];
     sqlite3_stmt *preparedStatement;
     BOOL success = NO;
 
@@ -1487,8 +1178,8 @@ const int MaxBreadcrumbs = 50;
     NSDictionary<NSString *, id> *dictionary = [userDefaults dictionaryRepresentation];
     [dictionary enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         if ([key rangeOfString:@"mParticle::0"].location == 0) {
-            NSString *newKey = [key stringByReplacingOccurrencesOfString:@"mParticle::0" withString:[NSString stringWithFormat:@"mParticle::%@", mpid]];
-            if (!dictionary[newKey]) {
+            NSString *newKey = [MPPersistenceSchemaPRIVATE remappedUserDefaultsKey:key mpid:mpid];
+            if (newKey && !dictionary[newKey]) {
                 [userDefaults setObject:obj forKey:newKey];
             }
             
@@ -1499,19 +1190,12 @@ const int MaxBreadcrumbs = 50;
 
 - (void)moveDatabasesFromMpidZeroToMpid:(NSNumber *)mpid {
     
-    NSArray *mpidKeyedTables = @[
-                                 @"sessions",
-                                 @"previous_session",
-                                 @"messages",
-                                 @"breadcrumbs",
-                                 @"cookies",
-                                 @"consumer_info"
-                                 ];
+    NSArray *mpidKeyedTables = [MPPersistenceSchemaPRIVATE mpidKeyedTableNames];
     
     [mpidKeyedTables enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
         sqlite3_stmt *preparedStatement;
-        NSString *sqlString = [NSString stringWithFormat:@"UPDATE %@ SET mpid = ? WHERE mpid = 0", obj];
+        NSString *sqlString = [MPPersistenceSchemaPRIVATE sqlUpdatingMpidForTable:obj];
         
         if (sqlite3_prepare_v2(self->mParticleDB, [sqlString UTF8String], (int)[sqlString length], &preparedStatement, NULL) == SQLITE_OK) {
             
@@ -1597,7 +1281,7 @@ const int MaxBreadcrumbs = 50;
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement, -1, &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
-        sqlite3_bind_int(preparedStatement, 3, MaxBreadcrumbs);
+        sqlite3_bind_int(preparedStatement, 3, (int)[MPPersistenceSchemaPRIVATE maxBreadcrumbs]);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while pruning breadcrumbs: %s", sqlite3_errmsg(mParticleDB));

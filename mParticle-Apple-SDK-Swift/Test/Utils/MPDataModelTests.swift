@@ -148,7 +148,8 @@ final class MPDataModelTests: XCTestCase {
             timestamp: 1,
             uploadType: 0,
             dataPlanId: nil,
-            dataPlanVersion: nil
+            dataPlanVersion: nil,
+            uploadSettings: NSObject()
         )
         XCTAssertNil(upload.uuid)
     }

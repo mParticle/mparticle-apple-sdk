@@ -1,8 +1,6 @@
 #import <XCTest/XCTest.h>
-#import "MPSession.h"
-#import "MPMessage.h"
 #import "MPMessageBuilder.h"
-#import "MPUpload.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPBreadcrumb.h"
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"

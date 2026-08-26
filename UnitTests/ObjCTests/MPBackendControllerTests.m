@@ -2,11 +2,8 @@
 #import <OCMock/OCMock.h>
 #import "MPBackendController.h"
 #import "MPIConstants.h"
-#import "MPSession.h"
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"
-#import "MPMessage.h"
-#import "MPUpload.h"
 #import "MPNotificationController.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
@@ -22,12 +19,6 @@
 #import <CoreLocation/CoreLocation.h>
 #endif
 @import mParticle_Apple_SDK_Swift;
-
-@interface MPMessage ()
-
-@property (nonatomic, strong, readwrite, nonnull) NSData *messageData;
-
-@end
 
 @interface MParticleUser ()
 

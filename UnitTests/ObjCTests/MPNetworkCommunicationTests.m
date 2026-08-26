@@ -3,7 +3,6 @@
 #import <Foundation/Foundation.h>
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
-#import "MPUpload.h"
 #import "MPConnector.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"

@@ -7,7 +7,8 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "MPMessage.h"
+#import "MPIConstants.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPMessageTests : XCTestCase
 
