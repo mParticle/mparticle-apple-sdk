@@ -75,6 +75,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @interface MPApplication_PRIVATE() {
     NSDictionary *appInfo;
     MPUserDefaults *userDefaults;
+    MPApplicationInfoProvider *infoProvider;
 }
 
 @end
@@ -86,7 +87,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @synthesize buildUUID = _buildUUID;
 @synthesize environment = _environment;
 @synthesize initialLaunchTime = _initialLaunchTime;
-@synthesize pirated = _pirated;
 
 + (void)initialize {
     if (self == [MPApplication_PRIVATE class]) {
@@ -101,8 +101,8 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     }
     
     userDefaults = MPUserDefaultsConnector.userDefaults;
+    infoProvider = [[MPApplicationInfoProvider alloc] init];
 
-    
     return self;
 }
 
@@ -125,8 +125,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSString *)build {
-    NSDictionary *bundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
-    return bundleInfoDictionary[@"CFBundleVersion"];
+    return infoProvider.build;
 }
 
 - (NSString *)buildUUID {
@@ -171,8 +170,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSString *)bundleIdentifier {
-    NSDictionary *bundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
-    return bundleInfoDictionary[@"CFBundleIdentifier"];
+    return infoProvider.bundleIdentifier;
 }
 
 - (MPEnvironment)environment {
@@ -199,8 +197,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSString *)name {
-    NSDictionary *bundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
-    return bundleInfoDictionary[@"CFBundleDisplayName"];
+    return infoProvider.name;
 }
 
 - (NSNumber *)lastUseDate {
@@ -235,8 +232,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSNumber *)pirated {
-    _pirated = @(NO);
-    return _pirated;
+    return @(infoProvider.pirated);
 }
 
 - (NSString *)storedBuild {
@@ -275,8 +271,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSString *)version {
-    NSDictionary *bundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
-    return bundleInfoDictionary[@"CFBundleShortVersionString"];
+    return infoProvider.version;
 }
 
 - (NSNumber *)sideloadedKitsCount {
@@ -308,7 +303,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         copyObject->_architecture = [_architecture copy];
         copyObject->_buildUUID = [_buildUUID copy];
         copyObject->_initialLaunchTime = [_initialLaunchTime copy];
-        copyObject->_pirated = [_pirated copy];
     }
     
     return copyObject;
@@ -317,14 +311,9 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 #pragma mark Class methods
 + (NSString *)appStoreReceipt {
     if (MPIsNull(kMPAppStoreReceiptString)) {
-        NSURL *url = [[NSBundle mainBundle] appStoreReceiptURL];
-        NSData *appStoreReceiptData = [NSData dataWithContentsOfURL:url];
-        
-        if (appStoreReceiptData) {
-            kMPAppStoreReceiptString = [appStoreReceiptData base64EncodedStringWithOptions:0];
-        }
+        kMPAppStoreReceiptString = [[[MPApplicationInfoProvider alloc] init] appStoreReceipt];
     }
-    
+
     return kMPAppStoreReceiptString;
 }
 
