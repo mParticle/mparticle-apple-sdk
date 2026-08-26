@@ -236,6 +236,14 @@ static NSString *MPIdentityEnvironmentString(void) {
 
 @implementation MPIdentityHTTPIdentityChange
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _implementation = [[MPIdentityHTTPIdentityChangePRIVATE alloc] initWithOldValue:nil value:nil identityType:nil];
+    }
+    return self;
+}
+
 - (instancetype)initWithOldValue:(NSString *)oldValue value:(NSString *)value identityType:(NSString *)identityType {
     self = [super init];
     if (self) {

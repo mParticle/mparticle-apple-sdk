@@ -33,7 +33,7 @@ enum IdentityHTTPKeys {
 }
 
 @objc public final class MPIdentityHTTPIdentitiesPRIVATE: NSObject {
-    private var nullIdentityKeys = Set<String>()
+    private let passthroughValues = NSMutableDictionary()
 
     @objc public var advertiserId: String?
     @objc public var vendorId: String?
@@ -152,20 +152,20 @@ enum IdentityHTTPKeys {
     }
 
     private func apply(_ value: Any, to property: inout String?, key: String) {
-        if value is NSNull {
-            nullIdentityKeys.insert(key)
-            property = nil
-        } else if let stringValue = value as? String {
-            nullIdentityKeys.remove(key)
+        if let stringValue = value as? String {
+            passthroughValues.removeObject(forKey: key)
             property = stringValue
+            return
         }
+        property = nil
+        passthroughValues[key] = value
     }
 
     private func assign(_ value: String?, to dictionary: NSMutableDictionary, key: String) {
         if let value {
             dictionary[key] = value
-        } else if nullIdentityKeys.contains(key) {
-            dictionary[key] = NSNull()
+        } else if let passthrough = passthroughValues[key] {
+            dictionary[key] = passthrough
         }
     }
 }
@@ -293,6 +293,10 @@ enum IdentityHTTPKeys {
     @objc public var oldValue: String?
     @objc public var value: String?
     @objc public var identityType: String?
+
+    override public init() {
+        super.init()
+    }
 
     @objc public init(oldValue: String?, value: String?, identityType: String?) {
         self.oldValue = oldValue

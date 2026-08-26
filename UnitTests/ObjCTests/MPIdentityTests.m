@@ -1107,4 +1107,22 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     XCTAssertEqualObjects([MParticle sharedInstance].identity.deviceApplicationStamp, expected);
 }
 
+- (void)testIdentityChangePlainInitProducesNullValues {
+    MPIdentityHTTPIdentityChange *change = [[MPIdentityHTTPIdentityChange alloc] init];
+    NSMutableDictionary *dictionary = [change dictionaryRepresentation];
+    XCTAssertEqualObjects(dictionary[@"old_value"], [NSNull null]);
+    XCTAssertEqualObjects(dictionary[@"new_value"], [NSNull null]);
+    XCTAssertNil(dictionary[@"identity_type"]);
+}
+
+- (void)testHTTPIdentitiesPreservesNonStringValues {
+    MPIdentityHTTPIdentities *identities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:@{
+        @(MPIdentityGoogle): @12345,
+        @(MPIdentityOther): [NSNull null]
+    }];
+    NSDictionary *dictionary = [identities dictionaryRepresentation];
+    XCTAssertEqualObjects(dictionary[@"google"], @12345);
+    XCTAssertEqualObjects(dictionary[@"other"], [NSNull null]);
+}
+
 @end

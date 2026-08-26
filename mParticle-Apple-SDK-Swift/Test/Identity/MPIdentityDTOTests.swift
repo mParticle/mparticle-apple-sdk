@@ -43,6 +43,23 @@ final class MPIdentityDTOTests: XCTestCase {
         XCTAssertEqual(identities.email, "a@b.com")
     }
 
+    func testIdentitiesPreservesNonStringValues() {
+        let identities = MPIdentityHTTPIdentitiesPRIVATE(identities: [
+            NSNumber(value: MPIdentitySwift.google.rawValue): NSNumber(value: 12_345),
+            NSNumber(value: MPIdentitySwift.other.rawValue): ["nested": "value"]
+        ], attAuthorizationStatus: nil)
+        let dictionary = identities.dictionaryRepresentation()
+        XCTAssertEqual(dictionary["google"] as? NSNumber, 12_345)
+        XCTAssertEqual((dictionary["other"] as? NSDictionary)?["nested"] as? String, "value")
+    }
+
+    func testIdentityChangeDefaultInitSerializesNSNullValues() {
+        let dictionary = MPIdentityHTTPIdentityChangePRIVATE().dictionaryRepresentation()
+        XCTAssertEqual(dictionary["old_value"] as? NSNull, NSNull())
+        XCTAssertEqual(dictionary["new_value"] as? NSNull, NSNull())
+        XCTAssertNil(dictionary["identity_type"])
+    }
+
     func testIdentityChangeUsesNSNullForMissingValues() {
         let change = MPIdentityHTTPIdentityChangePRIVATE(oldValue: nil, value: nil, identityType: "email")
         let dictionary = change.dictionaryRepresentation()
