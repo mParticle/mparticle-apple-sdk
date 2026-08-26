@@ -2,7 +2,8 @@ import Foundation
 
 /// Value derivation for custom module preferences. Mirrors MPDataType from MPIConstants.h,
 /// which cannot be imported here, so the boundary passes the raw integer.
-private enum CustomModuleDataType: Int {
+/// Internal rather than private so MPCustomModulePreference can share it.
+enum CustomModuleDataType: Int {
     case string = 1
     case int = 2
     case bool = 3

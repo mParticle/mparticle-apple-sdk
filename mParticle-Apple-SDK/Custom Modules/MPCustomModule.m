@@ -1,6 +1,7 @@
 #import "MPCustomModule.h"
 #import "MPIConstants.h"
-#import "MPCustomModulePreference.h"
+#import "MPUserDefaultsConnector.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPCustomModule()
 
@@ -21,6 +22,10 @@
             return nil;
         }
         
+        // MPUserDefaultsConnector declares its MPUserDefaultsConnectorProtocol conformance in a
+        // class extension inside its own .m, so it is not visible here. MPNetworkCommunication
+        // casts at the call site for the same reason.
+        id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
         NSMutableArray<MPCustomModulePreference *> *localPreferences = [[NSMutableArray alloc] initWithCapacity:preferences.count];
         NSString *location;
         NSArray *preferenceSettings;
@@ -37,7 +42,10 @@
             preferenceSettings = !MPIsNull(temp) && [temp isKindOfClass:arrayClass] ? (NSArray *)temp : nil;
             
             for (NSDictionary *preferenceSettingDictionary in preferenceSettings) {
-                preference = [[MPCustomModulePreference alloc] initWithDictionary:preferenceSettingDictionary location:location moduleId:_customModuleId];
+                preference = [[MPCustomModulePreference alloc] initWithDictionary:preferenceSettingDictionary
+                                                                       location:location
+                                                                       moduleId:_customModuleId
+                                                                      connector:connector];
                 
                 if (preference) {
                     [localPreferences addObject:preference];
