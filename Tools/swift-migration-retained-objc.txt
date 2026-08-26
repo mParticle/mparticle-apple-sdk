@@ -1,0 +1,78 @@
+# Objective-C retained by design — the migration's out-of-scope boundary.
+#
+# Every path below is an Objective-C implementation this phase of the migration
+# will NOT delete, because CONVERSION-RECIPE.md classifies its declaration as a
+# supported contract, a runtime-identity-pinned type, or unavoidable boundary
+# glue.
+#
+# Tools/swift-migration-progress.sh reports two goals per area. The short-term
+# goal excludes these files, so its 100% is the end of this project. The
+# long-term goal keeps the full denominator; its 100% means the public API
+# itself becomes Swift, which is a breaking change for a future major release.
+# This manifest is the gap between the two.
+#
+# Listing a file here does not freeze its contents. A contract wrapper keeps
+# its @interface, class name, selectors, and nullability, but its logic still
+# moves to Swift; the wrapper thins to marshaling. That thinning moves the
+# long-term goal and the retained SLOC figure, not the short-term goal.
+#
+# Format: one repository-relative path per line; `#` comments and blank lines
+# ignored. Only `.m`/`.mm` paths inside a counted bucket are accepted, and each
+# path must exist — the report fails on a stale or misplaced entry.
+#
+# Editing policy and the evidence an addition requires: Tools/README.md
+# ("Retained Objective-C manifest").
+
+# --- Supported customer contracts (CONVERSION-RECIPE.md classification 1) ---
+# Declarations reached through mParticle.h and its imports; each appears in
+# Tools/abi-baseline.txt.
+
+mParticle-Apple-SDK/mParticle.m
+mParticle-Apple-SDK/MParticleOptions+MParticlePrivate.m
+mParticle-Apple-SDK/MParticleSession+MParticlePrivate.m
+mParticle-Apple-SDK/MPAttributionResult+MParticlePrivate.m
+mParticle-Apple-SDK/MPNetworkOptions+MParticlePrivate.m
+mParticle-Apple-SDK/MPEnums.m
+mParticle-Apple-SDK/MPRokt.m
+mParticle-Apple-SDK/Event/MPBaseEvent.m
+mParticle-Apple-SDK/Event/MPEvent.m
+mParticle-Apple-SDK/Ecommerce/MPCommerceEvent.m
+mParticle-Apple-SDK/Ecommerce/MPProduct.m
+mParticle-Apple-SDK/Ecommerce/MPPromotion.m
+mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes.m
+mParticle-Apple-SDK/Consent/MPConsentState.m
+mParticle-Apple-SDK/Consent/MPGDPRConsent.m
+mParticle-Apple-SDK/Consent/MPCCPAConsent.m
+mParticle-Apple-SDK/Data Model/MPLocation.m
+mParticle-Apple-SDK/Identity/MPIdentityApi.m
+mParticle-Apple-SDK/Identity/MPIdentityApiRequest.m
+mParticle-Apple-SDK/Identity/MParticleUser.m
+mParticle-Apple-SDK/Identity/MPAliasRequest.m
+mParticle-Apple-SDK/Identity/MPAliasResponse.m
+mParticle-Apple-SDK/Identity/MPAudience.m
+mParticle-Apple-SDK/Utils/NSDictionary+MPCaseInsensitive.m
+
+# --- Supported kit and wrapper-SDK contracts (classification 1) ---
+# The kit integration surface. Standalone kits compile against these types and
+# wrapper SDKs forward through them, so their runtime identity is fixed.
+
+mParticle-Apple-SDK/Identity/FilteredMParticleUser.m
+mParticle-Apple-SDK/Identity/FilteredMPIdentityApiRequest.m
+mParticle-Apple-SDK/Data Model/MPForwardRecord.m
+mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.m
+mParticle-Apple-SDK/Kits/MPKitAPI.m
+mParticle-Apple-SDK/Kits/MPKitExecStatus.m
+mParticle-Apple-SDK/Kits/MPKitRegister.m
+mParticle-Apple-SDK/Kits/MPSideloadedKit.m
+
+# --- Runtime-identity pinned (classification 3) ---
+# Header may become internal, but the ObjC class, NSSecureCoding conformance,
+# and legacy archive class-name mappings stay.
+
+mParticle-Apple-SDK/Utils/MPUploadSettings.m
+
+# --- Internal ObjC boundary glue (classification 4) ---
+# Bridges a module boundary the Swift target cannot cross. Retained until that
+# dependency boundary is redesigned, at which point delete the entry with it.
+
+mParticle-Apple-SDK/Utils/MPUserDefaultsConnector.m

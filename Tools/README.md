@@ -85,9 +85,39 @@ The self-test creates a temporary Git repository and verifies bucket
 isolation, exclusions, code/comment/blank handling, percentage rounding,
 zero-denominator handling, Objective-C++ counting, filenames with spaces,
 renames, physical diff movement across divergent histories, flat changes, and
-regressions.
+regressions. It also covers the retained manifest: comment/blank/whitespace
+parsing, removal from the percentage denominator, retained thinning reported
+without percentage movement, and rejection of stale, non-Objective-C,
+out-of-bucket, and vendored entries.
 
 ### Metric definitions
+
+Every bucket reports two goal rows, because the migration has two horizons:
+
+- **Short term — in scope.** Swift SLOC / (Swift SLOC + in-scope Objective-C).
+  In-scope excludes the implementations listed in
+  `Tools/swift-migration-retained-objc.txt` — the public/kit contract,
+  runtime-identity, and boundary-glue files that stay Objective-C by design.
+  **100% here is the end of this project**: every Objective-C implementation the
+  migration intends to delete is gone.
+- **Long term — all Objective-C.** Swift SLOC / (Swift SLOC + all Objective-C),
+  the original full-denominator number. **100% here means the public API itself
+  becomes Swift**, which is a breaking change reserved for a future major
+  release. It is kept so that goal stays measurable rather than being redefined
+  away.
+
+The gap between the two rows is the retained surface. Its SLOC is also printed
+explicitly under the table, with a signed delta when it moved.
+
+Retained wrappers keep their `@interface`, class name, selectors, and
+nullability, but their logic still moves to Swift and the wrapper thins to
+marshaling. That thinning moves the long-term row and the retained figure while
+leaving the short-term row flat — the short-term goal tracks file removal, the
+long-term goal tracks every Objective-C line.
+
+Both revisions are counted using the **head** revision's manifest. A PR that
+edits the manifest therefore re-measures its own base under the new definition
+instead of booking the redefinition as progress.
 
 The three production-code buckets do not overlap:
 
@@ -105,12 +135,52 @@ Objective-C remaining. Tests, examples, headers, build outputs, vendored
 libraries, and the customer-facing `MParticle/Sources` Swift overlay are
 excluded.
 
-The pull request movement table is a different metric: physical Swift lines
+The pull request movement table is a different metric, and it is **not**
+filtered by the manifest — deleting lines from a retained wrapper is real work
+and is counted. It reports physical Swift lines
 added and Objective-C/Objective-C++ lines deleted according to
 `git diff base...head --numstat -z`. The three-dot comparison measures changes
 from the merge base through the pull request head, so commits present only on
 an advanced base branch are not attributed to the pull request. These figures
 can differ from the SLOC change because Git includes comments and blank lines.
+
+### Retained Objective-C manifest
+
+`Tools/swift-migration-retained-objc.txt` is the reviewed list of Objective-C
+implementations this phase of the migration will not delete. It is the boundary
+between the two goal rows, so it is committed and changed deliberately — never
+edited to make a number look better.
+
+```text
+# one repository-relative path per line; `#` comments and blanks ignored
+mParticle-Apple-SDK/Event/MPEvent.m
+```
+
+The report validates every entry and fails on any of these, rather than
+silently counting the file as in-scope:
+
+- a path that does not exist in the head revision (stale after a delete or
+  rename — fix the manifest in the same PR);
+- a path that is not a `.m`/`.mm` implementation; or
+- a path outside the three counted buckets, including
+  `mParticle-Apple-SDK/Libraries`.
+
+Adding an entry requires the same evidence
+`docs/swift-migration/CONVERSION-RECIPE.md` demands to classify a declaration
+as a supported contract, runtime-identity-pinned, or boundary glue: name the
+declaration, point at its `Tools/abi-baseline.txt` entry, and record the
+customer/kit/wrapper-SDK audit in the PR. A file whose declaration is an
+accidental export is **not** retained — it stays in scope and its wrapper gets
+deleted.
+
+Removing an entry is the normal end of classification 4: when a boundary is
+redesigned and the glue is deleted, delete its line with it. A future major
+release that takes the public API itself to Swift would empty the manifest,
+which is the point at which the two goal rows converge.
+
+Standalone kits have no entries yet. Their `MPKit*` classes are resolved by
+name at runtime, so any kit-side conversion has to establish that contract
+before its implementation is listed here.
 
 ### Workflow behavior and removal
 
@@ -127,7 +197,8 @@ When the migration is complete, remove:
 - `.github/workflows/swift-migration-progress.yml`;
 - the `swift-migration-progress` job and notification dependency in
   `.github/workflows/pull-request.yml`;
-- `Tools/swift-migration-progress.sh`; and
+- `Tools/swift-migration-progress.sh`;
+- `Tools/swift-migration-retained-objc.txt`; and
 - this README section.
 
 There is no stored baseline or external service to clean up.
