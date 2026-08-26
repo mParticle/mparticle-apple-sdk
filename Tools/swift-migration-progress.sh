@@ -99,6 +99,19 @@ build_bucket_file_list() {
 	esac
 }
 
+# Trims one manifest line and prints the path it holds, or nothing for a blank
+# line or a comment.
+clean_manifest_line() {
+	local path=${1%$'\r'}
+
+	path=${path#"${path%%[![:space:]]*}"}
+	path=${path%"${path##*[![:space:]]}"}
+	if [[ ${path} == '#'* ]]; then
+		return 0
+	fi
+	printf '%s' "${path}"
+}
+
 # Reads the reviewed list of Objective-C implementations the migration will not
 # delete and writes the validated, repository-relative paths to a lookup file.
 # A stale, misplaced, or non-Objective-C entry is a hard failure so the manifest
@@ -117,10 +130,8 @@ load_retained_manifest() {
 	fi
 
 	while IFS= read -r line || [[ -n ${line} ]]; do
-		path=${line%$'\r'}
-		path=${path#"${path%%[![:space:]]*}"}
-		path=${path%"${path##*[![:space:]]}"}
-		if [[ -z ${path} || ${path} == '#'* ]]; then
+		path=$(clean_manifest_line "${line}")
+		if [[ -z ${path} ]]; then
 			continue
 		fi
 		if [[ ${path} != *.m && ${path} != *.mm ]]; then
@@ -134,6 +145,43 @@ load_retained_manifest() {
 			fail "retained manifest entry does not exist: ${path}"
 		fi
 		printf '%s\n' "${path}" >>"${output}"
+	done <"${manifest}"
+}
+
+# The head revision owns the scope definition, but path matching alone would
+# misread a retained implementation this pull request renamed or deleted: its
+# base-side path is absent from the head manifest and would count as in-scope,
+# inflating short-term progress with work nobody did. Carry over the base
+# manifest entries whose file no longer exists at head, which covers both the
+# rename and the boundary-deletion case. Entries whose file survives at head
+# are left out on purpose — dropping one is a deliberate reclassification, and
+# the head definition should then apply to both revisions.
+#
+# The base manifest is read leniently. It may be missing entirely, or describe
+# paths that predate the current layout, and neither is this comparison's
+# problem to police.
+load_base_retained_paths() {
+	local base_root=$1
+	local head_root=$2
+	local head_paths=$3
+	local output=$4
+	local manifest="${base_root}/${RETAINED_MANIFEST}"
+	local line
+	local path
+
+	cp "${head_paths}" "${output}"
+	if [[ ! -f ${manifest} ]]; then
+		return 0
+	fi
+
+	while IFS= read -r line || [[ -n ${line} ]]; do
+		path=$(clean_manifest_line "${line}")
+		if [[ -z ${path} ]]; then
+			continue
+		fi
+		if [[ -f "${base_root}/${path}" && ! -f "${head_root}/${path}" ]]; then
+			printf '%s\n' "${path}" >>"${output}"
+		fi
 	done <"${manifest}"
 }
 
@@ -507,7 +555,7 @@ write_report() {
 		printf '%s\n' '- **Long term — all Objective-C** keeps the full denominator. Reaching 100% there means the public API itself becomes Swift, which is a breaking change reserved for a future major release.'
 		printf '%s\n' '- The gap between the two rows is the retained public/kit contract, runtime-identity, and boundary-glue surface listed in `Tools/swift-migration-retained-objc.txt`.'
 		printf '%s\n' '- Retained wrappers keep their Objective-C interface but still shed logic to Swift. That thinning moves the long-term row and the retained figure, not the short-term row.'
-		printf '%s\n' '- Both revisions are measured with the manifest from the head revision, so a manifest edit does not by itself move the reported change.'
+		printf '%s\n' '- Both revisions are measured with the manifest from the head revision, so a manifest edit does not by itself move the reported change. A retained file this pull request renamed or deleted still counts as retained at the base.'
 		printf '%s\n' '- Pull request movement uses physical additions/deletions from `git diff base...head --numstat`; it counts retained files too and is intentionally separate from SLOC totals.'
 		printf '%s\n' '- Core excludes SDK kit infrastructure and vendored libraries. Standalone kits include only files below `Kits/**/Sources`.'
 		printf '%s\n' '- Tests, examples, headers, build outputs, vendored libraries, and the `MParticle/Sources` Swift overlay are excluded.'
@@ -548,7 +596,8 @@ generate_report() {
 	local base_commit
 	local head_commit
 	local cloc_version
-	local retained_paths
+	local head_retained_paths
+	local base_retained_paths
 
 	[[ -d ${repo} ]] || fail "repository not found: ${repo}"
 	git -C "${repo}" rev-parse --git-dir >/dev/null 2>&1 || fail "not a Git repository: ${repo}"
@@ -567,31 +616,34 @@ generate_report() {
 
 	# The head revision owns the scope definition for both sides of the
 	# comparison, so editing the manifest cannot masquerade as code movement.
-	retained_paths="${workspace}/retained-paths.txt"
-	load_retained_manifest "${head_root}" "${retained_paths}"
+	head_retained_paths="${workspace}/retained-paths-head.txt"
+	base_retained_paths="${workspace}/retained-paths-base.txt"
+	load_retained_manifest "${head_root}" "${head_retained_paths}"
+	load_base_retained_paths \
+		"${base_root}" "${head_root}" "${head_retained_paths}" "${base_retained_paths}"
 
-	count_bucket "${base_root}" core "${cloc_path}" "${workspace}/base-core" "${retained_paths}"
+	count_bucket "${base_root}" core "${cloc_path}" "${workspace}/base-core" "${base_retained_paths}"
 	BASE_CORE_SWIFT=${COUNT_SWIFT}
 	BASE_CORE_OBJC=${COUNT_OBJC}
 	BASE_CORE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
-	count_bucket "${base_root}" kit "${cloc_path}" "${workspace}/base-kit" "${retained_paths}"
+	count_bucket "${base_root}" kit "${cloc_path}" "${workspace}/base-kit" "${base_retained_paths}"
 	BASE_KIT_SWIFT=${COUNT_SWIFT}
 	BASE_KIT_OBJC=${COUNT_OBJC}
 	BASE_KIT_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
-	count_bucket "${base_root}" standalone "${cloc_path}" "${workspace}/base-standalone" "${retained_paths}"
+	count_bucket "${base_root}" standalone "${cloc_path}" "${workspace}/base-standalone" "${base_retained_paths}"
 	BASE_STANDALONE_SWIFT=${COUNT_SWIFT}
 	BASE_STANDALONE_OBJC=${COUNT_OBJC}
 	BASE_STANDALONE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
 
-	count_bucket "${head_root}" core "${cloc_path}" "${workspace}/head-core" "${retained_paths}"
+	count_bucket "${head_root}" core "${cloc_path}" "${workspace}/head-core" "${head_retained_paths}"
 	HEAD_CORE_SWIFT=${COUNT_SWIFT}
 	HEAD_CORE_OBJC=${COUNT_OBJC}
 	HEAD_CORE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
-	count_bucket "${head_root}" kit "${cloc_path}" "${workspace}/head-kit" "${retained_paths}"
+	count_bucket "${head_root}" kit "${cloc_path}" "${workspace}/head-kit" "${head_retained_paths}"
 	HEAD_KIT_SWIFT=${COUNT_SWIFT}
 	HEAD_KIT_OBJC=${COUNT_OBJC}
 	HEAD_KIT_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
-	count_bucket "${head_root}" standalone "${cloc_path}" "${workspace}/head-standalone" "${retained_paths}"
+	count_bucket "${head_root}" standalone "${cloc_path}" "${workspace}/head-standalone" "${head_retained_paths}"
 	HEAD_STANDALONE_SWIFT=${COUNT_SWIFT}
 	HEAD_STANDALONE_OBJC=${COUNT_OBJC}
 	HEAD_STANDALONE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
@@ -672,12 +724,16 @@ run_selftest() {
 	local flat_sha
 	local regression_sha
 	local thin_sha
+	local renamed_sha
+	local retired_sha
 	local advanced_base_sha
 	local pr_head_sha
 	local migration_report
 	local flat_report
 	local regression_report
 	local thin_report
+	local renamed_report
+	local retired_report
 	local divergent_report
 	local flat_count
 
@@ -773,6 +829,40 @@ run_selftest() {
 	assert_contains "${thin_report}" \
 		'Objective-C retained by design: Core SDK 2 (-2) · SDK kit infrastructure 0 · Standalone kits 2.'
 	assert_contains "${thin_report}" '| Core SDK | 0 | 2 |'
+
+	# Renaming a retained implementation and updating the manifest moves no
+	# logic, so every goal row and the retained figure must stay flat.
+	git -C "${fixture}" switch -q -c selftest-rename "${migration_sha}"
+	git -C "${fixture}" mv \
+		'mParticle-Apple-SDK/Utils/Retained Contract.m' \
+		'mParticle-Apple-SDK/Utils/Renamed Contract.m'
+	write_fixture_file "${fixture}" "${RETAINED_MANIFEST}" \
+		$'# retained by design\n\nmParticle-Apple-SDK/Utils/Renamed Contract.m\nKits/vendor/vendor-1/Sources/Kit.m\n'
+	git -C "${fixture}" add --all
+	git -C "${fixture}" commit -q -m 'retained rename fixture'
+	renamed_sha=$(git -C "${fixture}" rev-parse HEAD)
+	renamed_report="${fixture}/renamed-report.md"
+	generate_report "${fixture}" "${migration_sha}" "${renamed_sha}" "${cloc_path}" "${renamed_report}"
+	assert_contains "${renamed_report}" '| 42.86% | 42.86% | 3 | 4 | ➖ 0.00 pp |'
+	assert_contains "${renamed_report}" '| 27.27% | 27.27% | 3 | 8 | ➖ 0.00 pp |'
+	assert_contains "${renamed_report}" \
+		'Objective-C retained by design: Core SDK 4 · SDK kit infrastructure 0 · Standalone kits 2.'
+
+	# Retiring a retained implementation is long-term progress only; the
+	# short-term goal never counted it.
+	git -C "${fixture}" switch -q -c selftest-retire "${migration_sha}"
+	rm "${fixture}/mParticle-Apple-SDK/Utils/Retained Contract.m"
+	write_fixture_file "${fixture}" "${RETAINED_MANIFEST}" \
+		$'# retained by design\n\nKits/vendor/vendor-1/Sources/Kit.m\n'
+	git -C "${fixture}" add --all
+	git -C "${fixture}" commit -q -m 'retained retirement fixture'
+	retired_sha=$(git -C "${fixture}" rev-parse HEAD)
+	retired_report="${fixture}/retired-report.md"
+	generate_report "${fixture}" "${migration_sha}" "${retired_sha}" "${cloc_path}" "${retired_report}"
+	assert_contains "${retired_report}" '| 42.86% | 42.86% | 3 | 4 | ➖ 0.00 pp |'
+	assert_contains "${retired_report}" '| 27.27% | 42.86% | 3 | 4 | 🚀 +15.59 pp |'
+	assert_contains "${retired_report}" \
+		'Objective-C retained by design: Core SDK 0 (-4) · SDK kit infrastructure 0 · Standalone kits 2.'
 
 	git -C "${fixture}" switch -q -c selftest-pr "${migration_sha}"
 	write_fixture_file "${fixture}" 'mParticle-Apple-SDK-Swift/Sources/PR Only.swift' $'let prOne = 1\nlet prTwo = 2\n'

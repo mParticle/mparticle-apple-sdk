@@ -119,6 +119,15 @@ Both revisions are counted using the **head** revision's manifest. A PR that
 edits the manifest therefore re-measures its own base under the new definition
 instead of booking the redefinition as progress.
 
+Path matching alone would misread a retained file that a PR **renames or
+deletes**: its base-side path is absent from the head manifest, so the base
+would count it as in-scope and the short-term row would rise on work nobody
+did. The base count therefore also treats as retained any base-manifest entry
+whose file no longer exists at head, which covers both cases. An entry dropped
+from the manifest while its file survives is left alone on purpose — that is a
+deliberate reclassification, and the head definition should apply to both
+revisions.
+
 The three production-code buckets do not overlap:
 
 - **Core SDK:** Swift in `mParticle-Apple-SDK-Swift/Sources`, and Objective-C
