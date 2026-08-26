@@ -40,37 +40,14 @@
     
     _moduleId = [moduleId copy];
 
-    NSArray *macroPlaceholders = @[@"%gn%", @"%oaid%", @"%dt%", @"%glsb%", @"%g%"];
     NSString *defaultValue = preferenceDictionary[kMPRemoteConfigCustomModuleDefaultKey];
     
-    if ([macroPlaceholders containsObject:defaultValue]) {
-        _defaultValue = [self defaultValueForMacroPlaceholder:defaultValue];
+    if ([MPCustomModulePreferenceLogic isMacroPlaceholder:defaultValue]) {
+        _defaultValue = [MPCustomModulePreferenceLogic defaultValueForMacroPlaceholder:defaultValue];
+    } else if (!MPIsNull(defaultValue) && [defaultValue isKindOfClass:[NSString class]]) {
+        _defaultValue = defaultValue;
     } else {
-        if (!MPIsNull(defaultValue) && [defaultValue isKindOfClass:[NSString class]]) {
-            _defaultValue = defaultValue;
-        } else {
-            switch (_dataType) {
-                case MPDataTypeString:
-                    _defaultValue = @"";
-                    break;
-                    
-                case MPDataTypeInt:
-                case MPDataTypeLong:
-                    _defaultValue = @"0";
-                    break;
-                    
-                case MPDataTypeBool:
-                    _defaultValue = @"false";
-                    break;
-                    
-                case MPDataTypeFloat:
-                    _defaultValue = @"0.0";
-                    break;
-                    
-                default:
-                    break;
-            }
-        }
+        _defaultValue = [MPCustomModulePreferenceLogic defaultValueForDataType:_dataType];
     }
     
     _location = location;
@@ -106,71 +83,6 @@
 
 + (BOOL)supportsSecureCoding {
     return YES;
-}
-
-#pragma mark Private methods
-- (NSString *)defaultValueForMacroPlaceholder:(NSString *)macroPlaceholder {
-    NSString *defaultValue = @"";
-    
-    if ([macroPlaceholder isEqualToString:@"%gn%"]) {
-        defaultValue = [self uuidWithNoDashes];
-    } else if ([macroPlaceholder isEqualToString:@"%oaid%"]) {
-        NSString *uuidString = [self uuidWithNoDashes];
-        
-        const char *c_uuidString = [uuidString cStringUsingEncoding:NSASCIIStringEncoding];
-        char pos0 = c_uuidString[0];
-        char pos16 = c_uuidString[16];
-        
-        if (pos0 >= '8') {
-            pos0 = (char)(arc4random_uniform(8) + '0');
-        }
-        
-        if (pos16 >= '4') {
-            pos16 = (char)(arc4random_uniform(4) + '0');
-        }
-        
-        defaultValue = [[NSString alloc] initWithFormat:@"%c%@-%c%@", pos0, [uuidString substringWithRange:NSMakeRange(1, 15)], pos16, [uuidString substringWithRange:NSMakeRange(17, 15)]];
-    } else if ([macroPlaceholder isEqualToString:@"%dt%"]) {
-        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        NSLocale *enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
-        [dateFormatter setLocale:enUSPOSIXLocale];
-        [dateFormatter setDateFormat:@"yyyy'-'MM'-'dd' 'HH':'mm':'ss Z"];
-        [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-
-        defaultValue = [dateFormatter stringFromDate:[NSDate date]];
-    } else if ([macroPlaceholder isEqualToString:@"%glsb%"]) {
-        CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
-        CFUUIDBytes uuidBytes = CFUUIDGetUUIDBytes(uuidRef);
-        
-        uint64_t lsbBytes[8] = {uuidBytes.byte8, uuidBytes.byte9, uuidBytes.byte10, uuidBytes.byte11,
-                              uuidBytes.byte12, uuidBytes.byte13, uuidBytes.byte14, uuidBytes.byte15};
-        
-        uint64_t value = 0;
-        int i = 8;
-        while (i--) {
-            value |= lsbBytes[i] << ((7 - i) * 8);
-        }
-
-        CFRelease(uuidRef);
-
-        defaultValue = [@((SInt64)value) stringValue];
-    } else if ([macroPlaceholder isEqualToString:@"%g%"]) {
-        defaultValue = [[NSUUID UUID] UUIDString];
-    }
-    
-    return defaultValue;
-}
-
-- (NSString *)uuidWithNoDashes {
-    NSMutableString *uuidString = [NSMutableString stringWithString:[[NSUUID UUID] UUIDString]];
-    NSRange dashRange = [uuidString rangeOfString:@"-"];
-    
-    while (dashRange.location != NSNotFound) {
-        [uuidString deleteCharactersInRange:dashRange];
-        dashRange = [uuidString rangeOfString:@"-"];
-    }
-    
-    return [uuidString copy];
 }
 
 #pragma mark Public methods
@@ -222,27 +134,7 @@
             }
         }
     } else {
-        switch (self.dataType) {
-            case MPDataTypeString:
-                _value = self.defaultValue;
-                break;
-                
-            case MPDataTypeInt:
-            case MPDataTypeLong:
-                _value = @([self.defaultValue integerValue]);
-                break;
-                
-            case MPDataTypeBool:
-                _value = [self.defaultValue isEqualToString:@"false"] || [self.defaultValue isEqualToString:@"NO"] || [self.defaultValue isEqualToString:@"0"] ? @NO : @YES;
-                break;
-                
-            case MPDataTypeFloat:
-                _value = @([self.defaultValue floatValue]);
-                break;
-                
-            default:
-                break;
-        }
+        _value = [MPCustomModulePreferenceLogic valueForDefaultValue:self.defaultValue dataType:self.dataType];
     }
     [userDefaults setMPObject:_value forKey:customModuleKey userId:mpId];
     

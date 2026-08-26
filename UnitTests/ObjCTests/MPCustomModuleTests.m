@@ -356,4 +356,35 @@
     XCTAssertEqualObjects(customModule, persistedCustomModule, @"Custom Module should have been a match.");
 }
 
+// The data type comes straight from config, so an out of range value leaves the preference
+// with no default. Resolving the value must leave it unset rather than raising.
+- (void)testUnrecognizedDataTypeLeavesValueUnset {
+    NSDictionary *customModuleConfiguration = @{
+                                                @"id":@11,
+                                                @"pr":@[
+                                                        @{@"f":@"NSUserDefaults",
+                                                          @"m":@0,
+                                                          @"ps":@[
+                                                                  @{@"k":@"mParticle_UNIT_TEST_CustomModule_Unrecognized",
+                                                                    @"t":@99,
+                                                                    @"n":@"unrecognized"
+                                                                    }
+                                                                  ]
+                                                          }
+                                                        ]
+                                                };
+
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNotNil(customModule, @"Should not have been nil.");
+    XCTAssertEqual(customModule.preferences.count, 1, @"Should have been equal.");
+
+    MPCustomModulePreference *preference = customModule.preferences.firstObject;
+    XCTAssertNil(preference.defaultValue, @"Should have been nil.");
+
+    id value = nil;
+    XCTAssertNoThrow(value = [preference value]);
+    XCTAssertNil(value, @"Should have been nil.");
+    XCTAssertNoThrow([customModule dictionaryRepresentation]);
+}
+
 @end
