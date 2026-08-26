@@ -50,8 +50,7 @@
 
 - (NSDate *)firstSeen {
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *firstSeenMs = [userDefaults mpObjectForKey:kMPFirstSeenUser userId:self.userId];
-    return [NSDate dateWithTimeIntervalSince1970:firstSeenMs.doubleValue/1000.0];
+    return [MPIdentityUserStoragePRIVATE dateFromMilliseconds:[userDefaults mpObjectForKey:kMPFirstSeenUser userId:self.userId]];
 }
 
 - (NSDate *)lastSeen {
@@ -59,8 +58,7 @@
         return [NSDate date];
     }
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *lastSeenMs = [userDefaults mpObjectForKey:kMPLastSeenUser userId:self.userId];
-    return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
+    return [MPIdentityUserStoragePRIVATE dateFromMilliseconds:[userDefaults mpObjectForKey:kMPLastSeenUser userId:self.userId]];
 }
 
 - (NSDictionary*)identities {
@@ -123,7 +121,7 @@
 }
 
 - (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType timestamp:(NSDate *)timestamp {
-    if ([MPEnum isUserIdentity:identityType]) {
+    if ([MPIdentityUserStoragePRIVATE isUserIdentity:(NSInteger)identityType]) {
         __weak MParticleUser *weakSelf = self;
         [self.backendController setUserIdentity:identityString
                                    identityType:(MPUserIdentity)identityType
@@ -142,51 +140,12 @@
                               }];
     }
     
-    NSNumber *identityTypeNumber = @(identityType);
-    BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
-        NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
-        BOOL foundMatch = [currentIdentityType isEqualToNumber:identityTypeNumber];
-        
-        if (foundMatch) {
-            *stop = YES;
-        }
-        
-        return foundMatch;
-    };
-    
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController_PRIVATE mpId]] mutableCopy];
-    if (!identities) {
-        identities = [[NSMutableArray alloc] init];
-    }
-    NSUInteger existingEntryIndex;
-    
-    if (identityString == nil || (NSNull *)identityString == [NSNull null] || [identityString isEqualToString:@""]) {
-        existingEntryIndex = [identities indexOfObjectPassingTest:objectTester];
-        
-        if (existingEntryIndex != NSNotFound) {
-            [identities removeObjectAtIndex:existingEntryIndex];
-        }
-    } else {
-        existingEntryIndex = [identities indexOfObjectPassingTest:objectTester];
-        
-        if (existingEntryIndex == NSNotFound) {
-            NSMutableDictionary *newIdentityDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
-            newIdentityDictionary[kMPUserIdentityTypeKey] = identityTypeNumber;
-            newIdentityDictionary[kMPUserIdentityIdKey] = identityString;
-                        
-            [identities addObject:newIdentityDictionary];
-        } else {
-            NSMutableDictionary *newIdentityDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
-            newIdentityDictionary[kMPUserIdentityTypeKey] = identityTypeNumber;
-            newIdentityDictionary[kMPUserIdentityIdKey] = identityString;
-            
-            [identities replaceObjectAtIndex:existingEntryIndex withObject:newIdentityDictionary];
-        }
-    }
-        
+    NSArray *storedIdentities = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController_PRIVATE mpId]];
+    NSArray *identities = [MPIdentityUserStoragePRIVATE applyingIdentity:identityString
+                                                                    type:(NSInteger)identityType
+                                                          toStoredArray:storedIdentities];
+
     [userDefaults setObject:identities forKeyedSubscript:kMPUserIdentityArrayKey];
     [userDefaults synchronize];
 }
@@ -263,7 +222,7 @@
 }
 
 - (void)setUserAttribute:(nonnull NSString *)key value:(nonnull id)value {
-    if ([value isKindOfClass:[NSString class]] && (((NSString *)value).length <= 0)) {
+    if ([MPIdentityUserStoragePRIVATE shouldSkipEmptyAttributeValue:value]) {
         MPILogDebug(@"User attribute not updated. Please use removeUserAttribute.");
         
         return;
@@ -442,9 +401,7 @@
             [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
         });
     } else {
-        NSError *audienceError = [NSError errorWithDomain:@"mParticle Audience"
-                                                     code:202
-                                                 userInfo:@{@"message":@"Your workspace is not enabled to retrieve user audiences."}];
+        NSError *audienceError = [MPIdentityUserStoragePRIVATE audienceDisabledError];
         completionHandler(nil, audienceError);
     }
 }
