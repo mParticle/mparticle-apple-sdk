@@ -25,6 +25,7 @@ jobs:
     name: Pod Lint ${{ matrix.kit.name }}
     needs: load-matrix
     runs-on: macos-15
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -54,6 +55,7 @@ jobs:
     name: Build ${{ matrix.kit.name }}
     needs: load-matrix
     runs-on: macOS-latest
+    timeout-minutes: 60
     env:
       XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
       USE_LOCAL_VERSION: "1"
@@ -74,17 +76,30 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Resolve SPM dependencies
+        timeout-minutes: 25
         run: |
-          SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
-          LOCAL_PATH="${{ matrix.kit.local_path }}"
-          if compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
-            PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
-            xcodebuild -resolvePackageDependencies -project "$PROJECT" \
-              -scheme "$SCHEME" -derivedDataPath DerivedData
-          else
-            # Swift package without .xcodeproj (see rokt-sdk-plus-ios).
-            (cd "$LOCAL_PATH" && xcodebuild -resolvePackageDependencies -scheme "$SCHEME" -derivedDataPath "$OLDPWD/DerivedData")
-          fi
+          # Abort a git transfer that stalls below 1 KB/s for 3 minutes rather than
+          # hanging until the job is cancelled. Resolution normally takes 2-5 minutes.
+          git config --global http.lowSpeedLimit 1000
+          git config --global http.lowSpeedTime 180
+
+          resolve_dependencies() {
+            SCHEME=$(echo '${{ toJson(matrix.kit.schemes) }}' | jq -r '.[0].scheme')
+            LOCAL_PATH="${{ matrix.kit.local_path }}"
+            if compgen -G "$LOCAL_PATH"/*.xcodeproj > /dev/null; then
+              PROJECT="$(ls -d "$LOCAL_PATH"/*.xcodeproj | head -1)"
+              xcodebuild -resolvePackageDependencies -project "$PROJECT" \
+                -scheme "$SCHEME" -derivedDataPath DerivedData
+            else
+              # Swift package without .xcodeproj (see rokt-sdk-plus-ios).
+              (cd "$LOCAL_PATH" && xcodebuild -resolvePackageDependencies -scheme "$SCHEME" -derivedDataPath "$OLDPWD/DerivedData")
+            fi
+          }
+
+          for attempt in 1 2 3; do
+            resolve_dependencies && break
+            [ $attempt -lt 3 ] && echo "Resolve attempt $attempt failed, retrying in 30s..." && sleep 30 || exit 1
+          done
 
       - name: Build kit schemes
         run: |
