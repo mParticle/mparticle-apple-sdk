@@ -76,10 +76,15 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Resolve SPM dependencies
-        timeout-minutes: 25
+        timeout-minutes: 20
+        env:
+          ATTEMPT_TIMEOUT_SECONDS: "480"
         run: |
-          # Abort a git transfer that stalls below 1 KB/s for 3 minutes rather than
-          # hanging until the job is cancelled. Resolution normally takes 2-5 minutes.
+          # Resolution pulls stripe-ios (~2.7 GB) transitively and normally takes
+          # 2-5 minutes, but the git fetch intermittently stalls indefinitely.
+          # git's own low-speed abort does not reliably fire on that stall (SwiftPM's
+          # fetch has been observed hung for 24+ minutes with this set), so each
+          # attempt is bounded by an explicit watchdog below instead.
           git config --global http.lowSpeedLimit 1000
           git config --global http.lowSpeedTime 180
 
@@ -96,10 +101,40 @@ jobs:
             fi
           }
 
-          for attempt in 1 2 3; do
-            resolve_dependencies && break
-            [ $attempt -lt 3 ] && echo "Resolve attempt $attempt failed, retrying in 30s..." && sleep 30 || exit 1
+          # Run one attempt under a watchdog that kills the whole fetch tree if it
+          # stalls, so a hung attempt is retried instead of consuming the step budget.
+          attempt_resolve() {
+            resolve_dependencies &
+            resolve_pid=$!
+
+            (
+              sleep "${ATTEMPT_TIMEOUT_SECONDS:-480}"
+              if kill -0 "$resolve_pid" 2>/dev/null; then
+                echo "::warning::Resolve stalled past ${ATTEMPT_TIMEOUT_SECONDS:-480}s; killing fetch and retrying"
+                kill -TERM "$resolve_pid" 2>/dev/null || true
+                sleep 5
+                kill -KILL "$resolve_pid" 2>/dev/null || true
+                # xcodebuild's git children outlive it; clear them so the retry starts clean.
+                pkill -KILL -f 'xcodebuild -resolvePackageDependencies' 2>/dev/null || true
+                pkill -KILL -f 'git-remote-http' 2>/dev/null || true
+              fi
+            ) &
+            watchdog_pid=$!
+
+            resolve_status=0
+            wait "$resolve_pid" 2>/dev/null || resolve_status=$?
+
+            kill "$watchdog_pid" 2>/dev/null || true
+            wait "$watchdog_pid" 2>/dev/null || true
+            return "$resolve_status"
+          }
+
+          for attempt in 1 2; do
+            attempt_resolve && exit 0
+            [ "$attempt" -lt 2 ] && echo "Resolve attempt $attempt failed, retrying in 30s..." && sleep 30
           done
+          echo "::error::SPM dependency resolution failed after 2 attempts"
+          exit 1
 
       - name: Build kit schemes
         run: |
