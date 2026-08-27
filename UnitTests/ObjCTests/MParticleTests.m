@@ -24,6 +24,7 @@
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MParticleOptions *options;
+@property (nonatomic) BOOL initialized;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
@@ -1194,6 +1195,20 @@
 #define WORKSPACE_SWITCHING_TIMEOUT 60
 #define WORKSPACE_SWITCHING_DELAY (int64_t)(10 * NSEC_PER_SEC)
 
+// Spins the main run loop until condition() is true, so main-queue work the SDK
+// schedules during start-up still runs. Returns NO if timeout elapses first.
+static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) {
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];
+    while (!condition()) {
+        if ([[NSDate date] compare:deadline] == NSOrderedDescending) {
+            return NO;
+        }
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+    return YES;
+}
+
 - (void)testSwitchWorkspaceOptions {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
 
@@ -1328,30 +1343,33 @@
 
 // Kits with configurations that implement `stop` shouldn't be removed from the registry because they can be cleanly restarted
 - (void)testSwitchWorkspaceKitsWithStop {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     MPKitRegister *registerWithStop = [[MPKitRegister alloc] initWithName:@"TestKitWithStop" className:@"MPKitTestClassNoStartImmediatelyWithStop"];
     [MParticle registerExtension:registerWithStop];
-    
+
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-    [[MParticle sharedInstance] startWithOptions:options];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
-        [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
-        
-        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-                
-        [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
-       
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-            [expectation fulfill];
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+    MParticle *instanceBeforeSwitch = [MParticle sharedInstance];
+    [instanceBeforeSwitch startWithOptions:options];
+
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance].initialized;
+    }), @"SDK did not finish initializing kits");
+
+    registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+
+    [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
+
+    // switchWorkspaceWithOptions: installs a replacement shared instance; once it
+    // has, the switch is far enough along to assert the registry survived it.
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance] != instanceBeforeSwitch
+            && [MParticle sharedInstance].initialized;
+    }), @"Workspace switch did not complete");
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
 }
 
 - (void)testSetWrapperSdk {
