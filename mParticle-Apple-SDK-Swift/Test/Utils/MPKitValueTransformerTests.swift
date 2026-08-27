@@ -69,4 +69,13 @@ final class MPKitValueTransformerTests: XCTestCase {
         // .string returns the object as-is
         XCTAssertEqual(transformer.transformValue(NSNumber(value: 42), dataType: .string) as? NSNumber, NSNumber(value: 42))
     }
+
+    // Explicit decision (the ObjC original would have raised unrecognized-selector here):
+    // an NSNumber bool attribute uses its boolValue; string parsing is unchanged.
+    func testBoolFromNumber() {
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: true), dataType: .bool) as? NSNumber, NSNumber(value: true))
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: false), dataType: .bool) as? NSNumber, NSNumber(value: false))
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 1), dataType: .bool) as? NSNumber, NSNumber(value: true))
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 0), dataType: .bool) as? NSNumber, NSNumber(value: false))
+    }
 }

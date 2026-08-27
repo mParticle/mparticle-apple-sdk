@@ -58,7 +58,10 @@ import Foundation
 
         case .bool:
             if isNull { return NSNumber(value: false) }
-            let string = Self.numericString(from: originalValue)
+            // An NSNumber attribute (e.g. @YES/@NO or 1/0) uses its boolValue; a String is true
+            // only when it reads "true" (case-insensitive), matching the ObjC original for strings.
+            if let number = originalValue as? NSNumber { return NSNumber(value: number.boolValue) }
+            let string = originalValue as? String ?? ""
             let isTrue = (string as NSString).caseInsensitiveCompare("true") == .orderedSame
             return NSNumber(value: isTrue)
         }
