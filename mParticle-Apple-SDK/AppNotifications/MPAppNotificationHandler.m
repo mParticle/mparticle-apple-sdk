@@ -73,13 +73,28 @@
 }
 
 - (BOOL)is9 {
-    return [[[UIDevice currentDevice] systemVersion] floatValue] < 10.0;
+    return [MPPushTrackingLogic isPreIOS10WithSystemVersion:[[UIDevice currentDevice] systemVersion]];
 }
 
 - (BOOL)hasContentAvail:(NSDictionary *)dict {
-    NSDictionary *aps = dict[@"aps"];
-    NSString *contentAvail = aps[@"content-available"];
-    return [contentAvail isEqual:@1];
+    return [MPPushTrackingLogic hasContentAvailable:dict];
+}
+
+// Non-extractable: logNotificationOpened/Received live on MParticle, an ObjC type the Swift
+// module cannot import, so the decision comes back as a value and is applied here.
+- (void)applyPushTrackingAction:(MPPushTrackingAction)action
+                       userInfo:(NSDictionary *)userInfo
+               actionIdentifier:(NSString *)actionIdentifier {
+    switch (action) {
+        case MPPushTrackingActionLogOpened:
+            [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:userInfo andActionIdentifier:actionIdentifier];
+            break;
+        case MPPushTrackingActionLogReceived:
+            [[MParticle sharedInstance] logNotificationReceivedWithUserInfo:userInfo];
+            break;
+        case MPPushTrackingActionNone:
+            break;
+    }
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
@@ -155,20 +170,17 @@
         return;
     }
     
-    if ([MParticle sharedInstance].trackNotifications) {
-        if ([self is9]) {
-            UIApplicationState state = [MPApplication_PRIVATE sharedUIApplication].applicationState;
-            if (state != UIApplicationStateActive || ![self hasContentAvail:userInfo]) {
-                [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:userInfo andActionIdentifier:nil];
-            }else {
-                [[MParticle sharedInstance] logNotificationReceivedWithUserInfo:userInfo];
-            }
-        } else {
-            if ([self hasContentAvail:userInfo]) {
-                [[MParticle sharedInstance] logNotificationReceivedWithUserInfo:userInfo];
-            }
-        }
-    }
+    // The && short-circuits preserve the original call ordering: neither is9 nor
+    // sharedUIApplication is reached while notification tracking is off.
+    BOOL trackNotifications = [MParticle sharedInstance].trackNotifications;
+    BOOL isPreIOS10 = trackNotifications && [self is9];
+    BOOL applicationIsActive = isPreIOS10 && [MPApplication_PRIVATE sharedUIApplication].applicationState == UIApplicationStateActive;
+
+    MPPushTrackingAction action = [MPPushTrackingLogic remoteNotificationActionWithTrackNotifications:trackNotifications
+                                                                                          isPreIOS10:isPreIOS10
+                                                                                 applicationIsActive:applicationIsActive
+                                                                                            userInfo:userInfo];
+    [self applyPushTrackingAction:action userInfo:userInfo actionIdentifier:nil];
 
     SEL receivedNotificationSelector = @selector(receivedUserNotification:);
     
@@ -213,9 +225,10 @@
         return;
     }
     
-    if ([MParticle sharedInstance].trackNotifications && ![self hasContentAvail:notification.request.content.userInfo]) {
-        [[MParticle sharedInstance] logNotificationReceivedWithUserInfo:notification.request.content.userInfo];
-    }
+    NSDictionary *willPresentUserInfo = notification.request.content.userInfo;
+    MPPushTrackingAction willPresentAction = [MPPushTrackingLogic willPresentActionWithTrackNotifications:[MParticle sharedInstance].trackNotifications
+                                                                                                userInfo:willPresentUserInfo];
+    [self applyPushTrackingAction:willPresentAction userInfo:willPresentUserInfo actionIdentifier:nil];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         SEL userNotificationCenterWillPresentNotification = @selector(userNotificationCenter:willPresentNotification:);
@@ -248,9 +261,11 @@
         return;
     }
     
-    if ([MParticle sharedInstance].trackNotifications && ![response.actionIdentifier isEqual:UNNotificationDismissActionIdentifier]) {
-        [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:response.notification.request.content.userInfo andActionIdentifier:response.actionIdentifier];
-    }
+    NSDictionary *responseUserInfo = response.notification.request.content.userInfo;
+    MPPushTrackingAction responseAction = [MPPushTrackingLogic notificationResponseActionWithTrackNotifications:[MParticle sharedInstance].trackNotifications
+                                                                                              actionIdentifier:response.actionIdentifier
+                                                                                       dismissActionIdentifier:UNNotificationDismissActionIdentifier];
+    [self applyPushTrackingAction:responseAction userInfo:responseUserInfo actionIdentifier:response.actionIdentifier];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         SEL userNotificationCenterDidReceiveNotificationResponse = @selector(userNotificationCenter:didReceiveNotificationResponse:);
