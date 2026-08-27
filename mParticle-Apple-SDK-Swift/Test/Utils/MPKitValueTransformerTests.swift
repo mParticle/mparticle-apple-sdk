@@ -50,4 +50,23 @@ final class MPKitValueTransformerTests: XCTestCase {
         XCTAssertEqual(transformer.transformValue(nil, dataType: .bool) as? NSNumber, NSNumber(value: false))
         XCTAssertEqual(transformer.transformValue(NSNull(), dataType: .bool) as? NSNumber, NSNumber(value: false))
     }
+
+    // customAttributes are `[String: id]` and reach the projection path un-stringified, so values
+    // can be NSNumber. The ObjC original coerced these via integerValue/floatValue; verify parity.
+    func testNumberInputs() {
+        XCTAssertEqual(
+            transformer.transformValue(NSNumber(value: 1618033), dataType: .int) as? NSNumber,
+            NSNumber(value: 1618033)
+        )
+        XCTAssertEqual(
+            transformer.transformValue(NSNumber(value: 161803398875), dataType: .long) as? NSNumber,
+            NSNumber(value: 161803398875)
+        )
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 1.5), dataType: .float) as? NSNumber, NSNumber(value: 1.5))
+        // Matches ObjC [@(1.5) integerValue] == 1
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 1.5), dataType: .int) as? NSNumber, NSNumber(value: 1))
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 0), dataType: .int) as? NSNumber, NSNumber(value: 0))
+        // .string returns the object as-is
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 42), dataType: .string) as? NSNumber, NSNumber(value: 42))
+    }
 }
