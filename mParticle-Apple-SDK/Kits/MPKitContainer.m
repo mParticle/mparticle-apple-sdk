@@ -215,19 +215,43 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (void)flushSerializedKits {
+    // kitsRegistry is guarded by kitsSemaphore everywhere else. This path is reached from
+    // the early return in configureKits: - before that lock is taken - so snapshot the set
+    // under the lock rather than enumerating the live one, which raced with the locked
+    // mutation in configureKits: and could crash mid-enumeration.
+    //
+    // The snapshot is taken here and iterated on the main queue without holding the lock:
+    // waiting on kitsSemaphore from the main queue would let a long background critical
+    // section stall the main thread. Iterating the snapshot lets this path call
+    // freeKitRegister: directly, so it never reads kitsRegistry unguarded - freeKit:
+    // itself has to stay lock-free because configureKits: calls it while holding the
+    // semaphore, and dispatch_semaphore is not recursive.
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    NSArray<id<MPExtensionKitProtocol>> *kitsSnapshot = [kitsRegistry allObjects];
+    dispatch_semaphore_signal(kitsSemaphore);
+
     dispatch_async(dispatch_get_main_queue(), ^{
-        for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
-            [self freeKit:kitRegister.code];
+        for (id<MPExtensionKitProtocol>kitRegister in kitsSnapshot) {
+            [self freeKitRegister:kitRegister integrationId:kitRegister.code];
         }
     });
 }
 
+// Resolves the register from kitsRegistry, so callers must already hold kitsSemaphore.
+// Callers that already have the register (see flushSerializedKits) should use
+// freeKitRegister:integrationId: instead of reading the set again.
 - (void)freeKit:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     
+    [self freeKitRegister:kitRegister integrationId:integrationId];
+}
+
+- (void)freeKitRegister:(id<MPExtensionKitProtocol>)kitRegister integrationId:(NSNumber *)integrationId {
+    NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
+
     if (kitRegister.wrapperInstance) {
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(stop)]) {
             [kitRegister.wrapperInstance stop];

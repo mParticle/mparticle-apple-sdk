@@ -62,6 +62,15 @@ static NSNumber * const kTestRoktKitId = @181;
 @property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @end
 
+// A shared CI runner can miss a sub-second budget for work that hops through
+// [MParticle messageQueue]. XCTest and OCMock both return as soon as the expectation
+// is satisfied, so a generous ceiling costs nothing when the machine is fast and stops
+// a slow moment from failing every async test in this class at once.
+static const NSTimeInterval kMPRoktAsyncTimeout = 5.0;
+// A rejection has to wait out its whole window to prove the call never came, so it
+// stays tighter - but still five times the old budget.
+static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
+
 @interface MPRoktTests : XCTestCase
 @property (nonatomic, strong) MPRokt *rokt;
 @property (nonatomic, strong) id mockRokt;
@@ -79,9 +88,39 @@ static NSNumber * const kTestRoktKitId = @181;
     self.mockRokt = OCMPartialMock(self.rokt);
 }
 
+// Waits for work already queued on the SDK's message queue to finish, spinning the main
+// run loop so blocks that queue back onto main can also complete. Bounded, so a wedged
+// queue slows teardown instead of hanging the suite.
+- (void)mp_drainSDKWork {
+    dispatch_queue_t messageQueue = [MParticle messageQueue];
+    if (messageQueue == nil) {
+        return;
+    }
+
+    dispatch_semaphore_t drained = dispatch_semaphore_create(0);
+    dispatch_async(messageQueue, ^{
+        dispatch_semaphore_signal(drained);
+    });
+
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:2.0];
+    while (dispatch_semaphore_wait(drained, DISPATCH_TIME_NOW) != 0 &&
+           [[NSDate date] compare:deadline] == NSOrderedAscending) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
+    }
+}
+
 - (void)tearDown {
-    self.rokt = nil;
+    // Drain queued SDK work before the mocks are disposed. A pending forward still holds
+    // references to these mocks, and OCMock's stopMocking destroys the dynamic class it
+    // installed - so tearing the mocks down first leaves those blocks pointing at a class
+    // the objc runtime no longer knows, and a later test aborts the whole runner with
+    // "Attempt to use unknown class".
+    [self mp_drainSDKWork];
+
+    // Stop the partial mock before releasing the object it wraps, not after.
     [self.mockRokt stopMocking];
+    self.rokt = nil;
     [self.mockInstance stopMocking];
     [self.mockContainer stopMocking];
     [self.identityMock stopMocking];
@@ -170,7 +209,7 @@ static NSNumber * const kTestRoktKitId = @181;
                      attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -235,7 +274,7 @@ static NSNumber * const kTestRoktKitId = @181;
                         onEvent:exampleOnEvent];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -284,7 +323,7 @@ static NSNumber * const kTestRoktKitId = @181;
                         onEvent:nil];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -329,7 +368,7 @@ static NSNumber * const kTestRoktKitId = @181;
                      attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -381,7 +420,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:identifier attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -404,7 +443,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:@"checkout" attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -415,7 +454,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:@"checkout" attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -427,7 +466,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:@"checkout" attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -450,7 +489,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectPlacements:@"checkout" attributes:@{@"f.name": @"Brandon"}];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -477,7 +516,7 @@ static NSNumber * const kTestRoktKitId = @181;
         [noFailure fulfill];
     }];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -495,7 +534,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     XCTAssertNoThrow([self.rokt selectPlacements:identifier attributes:attributes]);
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -593,7 +632,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt selectPlacements:identifier attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -620,7 +659,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    [self.identityMock verifyWithDelay:kMPRoktAsyncTimeout];
 }
 
 - (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
@@ -651,7 +690,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    [self.identityMock verifyWithDelay:kMPRoktAsyncTimeout];
 }
 
 - (void)testTriggeredIdentifyWithMismatchedOtherIdentity {
@@ -722,7 +761,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    [self.identityMock verifyWithDelay:kMPRoktAsyncTimeout];
 }
 
 - (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityType {
@@ -754,7 +793,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    [self.identityMock verifyWithDelay:kMPRoktRejectionWindow];
 }
 
 - (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityType {
@@ -786,7 +825,7 @@ static NSNumber * const kTestRoktKitId = @181;
     
     [self.rokt selectPlacements:identifier attributes:attributes];
     
-    [self.identityMock verifyWithDelay:0.2];
+    [self.identityMock verifyWithDelay:kMPRoktAsyncTimeout];
 }
 
 - (void)testPurchaseFinalized {
@@ -821,7 +860,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [[MParticle sharedInstance].rokt purchaseFinalized:identifier catalogItemId:catalogItemId success:success];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -863,7 +902,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt events:identifier onEvent:onEventCallback];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -898,7 +937,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt events:identifier onEvent:nil];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -945,7 +984,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt events:identifier onEvent:onEventCallback];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify callback was invoked
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
@@ -986,7 +1025,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt globalEvents:onEventCallback];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
@@ -1031,7 +1070,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt globalEvents:onEventCallback];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     
     // Verify callback was invoked
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
@@ -1072,7 +1111,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt registerPaymentExtension:paymentExtension];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1118,7 +1157,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectShoppableAds:identifier attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1162,7 +1201,7 @@ static NSNumber * const kTestRoktKitId = @181;
                            config:roktConfig
                           onEvent:exampleOnEvent];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1194,7 +1233,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectShoppableAds:identifier attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1227,7 +1266,7 @@ static NSNumber * const kTestRoktKitId = @181;
         [noFailure fulfill];
     }];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1249,7 +1288,7 @@ static NSNumber * const kTestRoktKitId = @181;
 
     [self.rokt selectShoppableAds:identifier attributes:attributes];
 
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
@@ -1372,7 +1411,7 @@ static NSNumber * const kTestRoktKitId = @181;
     [self.rokt setSessionId:sessionId];
 
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
 
     // Verify
     OCMVerifyAll(self.mockContainer);
