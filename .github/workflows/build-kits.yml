@@ -103,20 +103,21 @@ jobs:
 
           # Run one attempt under a watchdog that kills the whole fetch tree if it
           # stalls, so a hung attempt is retried instead of consuming the step budget.
+          # The watchdog only signals and TERMs; escalation and child cleanup happen
+          # in the parent after wait returns, because TERMing the resolve unblocks
+          # wait immediately and the parent then reaps the watchdog.
           attempt_resolve() {
+            timeout_marker="${RUNNER_TEMP:-/tmp}/spm-resolve-timed-out.$$"
+            rm -f "$timeout_marker"
+
             resolve_dependencies &
             resolve_pid=$!
 
             (
               sleep "${ATTEMPT_TIMEOUT_SECONDS:-480}"
               if kill -0 "$resolve_pid" 2>/dev/null; then
-                echo "::warning::Resolve stalled past ${ATTEMPT_TIMEOUT_SECONDS:-480}s; killing fetch and retrying"
+                : > "$timeout_marker"
                 kill -TERM "$resolve_pid" 2>/dev/null || true
-                sleep 5
-                kill -KILL "$resolve_pid" 2>/dev/null || true
-                # xcodebuild's git children outlive it; clear them so the retry starts clean.
-                pkill -KILL -f 'xcodebuild -resolvePackageDependencies' 2>/dev/null || true
-                pkill -KILL -f 'git-remote-http' 2>/dev/null || true
               fi
             ) &
             watchdog_pid=$!
@@ -126,6 +127,19 @@ jobs:
 
             kill "$watchdog_pid" 2>/dev/null || true
             wait "$watchdog_pid" 2>/dev/null || true
+
+            if [ -f "$timeout_marker" ]; then
+              rm -f "$timeout_marker"
+              echo "::warning::Resolve stalled past ${ATTEMPT_TIMEOUT_SECONDS:-480}s; killing fetch and retrying"
+              kill -KILL "$resolve_pid" 2>/dev/null || true
+              # xcodebuild's git children outlive it; clear them so the retry does not
+              # race the previous fetch over SwiftPM's cache locks.
+              pkill -KILL -f 'xcodebuild -resolvePackageDependencies' 2>/dev/null || true
+              pkill -KILL -f 'git-remote-http' 2>/dev/null || true
+              sleep 5
+              resolve_status=124
+            fi
+
             return "$resolve_status"
           }
 
