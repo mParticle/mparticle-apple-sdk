@@ -107,7 +107,7 @@ public final class MPSessionPRIVATE: NSObject, NSCopying {
 
     override public convenience init() {
         let now = Date().timeIntervalSince1970
-        self.init(startTime: now, userId: 0)
+        self.init(startTime: now, userId: MPUserDefaults.storedMpId())
     }
 
     @objc(initWithStartTime:userId:)

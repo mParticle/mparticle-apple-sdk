@@ -7,6 +7,10 @@
 #import "MPStateMachine.h"
 @import mParticle_Apple_SDK_Swift;
 
+static void MPPrepareStatement(sqlite3 *database, NSString *sql, sqlite3_stmt **statement) {
+    sqlite3_prepare_v2(database, sql.UTF8String, -1, statement, NULL);
+}
+
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
@@ -77,12 +81,9 @@
 - (void)migrateSessionsFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 schema: uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info
     // v31 schema: same as v30
-    const char *selectStatement = [[MPDatabaseMigrationLogicPRIVATE migrateSessionsSelectSQL] UTF8String];
-    const char *insertStatement = [[MPDatabaseMigrationLogicPRIVATE migrateSessionsInsertSQL] UTF8String];
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateSessionsSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateSessionsInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_text(insertStatementHandle, 1, (const char *)sqlite3_column_text(selectStatementHandle, 0), -1, SQLITE_TRANSIENT); // uuid
@@ -111,12 +112,9 @@
 - (void)migrateMessagesFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 schema: message_type, session_id, uuid, timestamp, message_data, upload_status, data_plan_id, data_plan_version, mpid
     // v31 schema: same as v30
-    const char *selectStatement = [[MPDatabaseMigrationLogicPRIVATE migrateMessagesSelectSQL] UTF8String];
-    const char *insertStatement = [[MPDatabaseMigrationLogicPRIVATE migrateMessagesInsertSQL] UTF8String];
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateMessagesSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateMessagesInsertSQL], &insertStatementHandle);
 
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_text(insertStatementHandle, 1, (const char *)sqlite3_column_text(selectStatementHandle, 0), -1, SQLITE_TRANSIENT); // message_type
@@ -164,12 +162,9 @@
 - (void)migrateUploadsFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 schema: uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version
     // v31 schema: adds upload_settings
-    const char *selectStatement = [[MPDatabaseMigrationLogicPRIVATE migrateUploadsSelectSQL] UTF8String];
-    const char *insertStatement = [[MPDatabaseMigrationLogicPRIVATE migrateUploadsInsertSQL] UTF8String];
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateUploadsSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateUploadsInsertSQL], &insertStatementHandle);
     
     // Create current upload settings to use for migrated uploads
     MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions];
@@ -226,12 +221,9 @@
 
 - (void)migrateForwardingRecordsFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 and v31 schema are identical
-    const char *selectStatement = [[MPDatabaseMigrationLogicPRIVATE migrateForwardingRecordsSelectSQL] UTF8String];
-    const char *insertStatement = [[MPDatabaseMigrationLogicPRIVATE migrateForwardingRecordsInsertSQL] UTF8String];
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateForwardingRecordsSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateForwardingRecordsInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0));
@@ -247,14 +239,10 @@
 
 - (void)migrateConsumerInfoFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // Consumer Info - v30 and v31 schema are identical
-    const char *selectStatement = [[MPDatabaseMigrationLogicPRIVATE migrateConsumerInfoSelectSQL] UTF8String];
-    const char *insertStatement = [[MPDatabaseMigrationLogicPRIVATE migrateConsumerInfoInsertSQL] UTF8String];
-    
     sqlite3_stmt *selectStatementHandle = NULL;
     sqlite3_stmt *insertStatementHandle = NULL;
-    
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateConsumerInfoSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateConsumerInfoInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0));
@@ -268,11 +256,8 @@
     sqlite3_finalize(insertStatementHandle);
     
     // Cookies - v30 and v31 schema are identical
-    selectStatement = [[MPDatabaseMigrationLogicPRIVATE migrateCookiesSelectSQL] UTF8String];
-    insertStatement = [[MPDatabaseMigrationLogicPRIVATE migrateCookiesInsertSQL] UTF8String];
-    
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateCookiesSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateCookiesInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0));
@@ -292,12 +277,9 @@
 
 - (void)migrateIntegrationAttributesFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 and v31 schema are identical
-    const char *selectStatement = [[MPDatabaseMigrationLogicPRIVATE migrateIntegrationAttributesSelectSQL] UTF8String];
-    const char *insertStatement = [[MPDatabaseMigrationLogicPRIVATE migrateIntegrationAttributesInsertSQL] UTF8String];
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateIntegrationAttributesSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateIntegrationAttributesInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0));

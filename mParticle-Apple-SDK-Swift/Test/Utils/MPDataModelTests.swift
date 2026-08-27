@@ -76,6 +76,23 @@ final class MPDataModelTests: XCTestCase {
         XCTAssertEqual((truncated["hardwareId"] as? String)?.count, 5)
     }
 
+    func testDefaultSessionInitUsesStoredMpId() {
+        let defaults = MPUserDefaults.standardUserDefaults(connector: MPUserDefaultsConnectorMock())
+        let previous = defaults["mpid"]
+        defaults["mpid"] = 99
+        defer {
+            if let previous {
+                defaults["mpid"] = previous
+            } else {
+                defaults.setMPObject(nil, forKey: "mpid", userId: 0)
+            }
+        }
+
+        let session = MPSessionPRIVATE()
+        XCTAssertEqual(session.userId, 99)
+        XCTAssertEqual(session.sessionUserIds, "99")
+    }
+
     func testSessionCounterAndSuspend() {
         let session = MPSessionPRIVATE(
             sessionId: 0,
