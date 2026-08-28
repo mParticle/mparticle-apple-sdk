@@ -2,6 +2,8 @@ const fs = require("node:fs");
 const {
   classifyFiles,
   evaluateWorkflows,
+  getOpenPullRequestNumber,
+  getPaginatedItems,
   getPullRequestNumber,
   hasFreshApproval,
   validatePolicy,
@@ -71,18 +73,14 @@ function createApi(apiUrl, token) {
     return { data, headers: response.headers, status: response.status };
   }
 
-  async function paginate(path) {
+  async function paginate(path, collectionKey) {
     const results = [];
     let next = path;
 
     while (next) {
       const response = await request(next);
 
-      if (!Array.isArray(response.data)) {
-        throw new Error("Expected a paginated GitHub API response.");
-      }
-
-      results.push(...response.data);
+      results.push(...getPaginatedItems(response.data, collectionKey));
       next = nextPage(response.headers.get("link"));
     }
 
@@ -97,7 +95,7 @@ async function getGateCheck(api, owner, repository, sha, gateAppId, checkName) {
     `/repos/${owner}/${repository}/commits/${sha}/check-runs`,
     { check_name: checkName, per_page: "100" },
   );
-  const checks = await api.paginate(path);
+  const checks = await api.paginate(path, "check_runs");
 
   return checks.find((check) => String(check.app?.id) === gateAppId) || null;
 }
@@ -172,12 +170,6 @@ async function main() {
   const event = JSON.parse(
     fs.readFileSync(requiredInput("event-path"), "utf8"),
   );
-  const prNumber = getPullRequestNumber(event);
-
-  if (!prNumber) {
-    console.log("No pull request is associated with this event.");
-    return;
-  }
 
   const owner = event.repository?.owner?.login;
   const repository = event.repository?.name;
@@ -188,6 +180,23 @@ async function main() {
 
   const mparticleApi = createApi(apiUrl, requiredInput("mparticle-token"));
   const roktApi = createApi(apiUrl, requiredInput("rokt-token"));
+  let prNumber = getPullRequestNumber(event);
+
+  if (!prNumber && event.workflow_run?.head_sha) {
+    const pullRequests = await mparticleApi.paginate(
+      toQueryPath(
+        `/repos/${owner}/${repository}/commits/${event.workflow_run.head_sha}/pulls`,
+        { per_page: "100" },
+      ),
+    );
+    prNumber = getOpenPullRequestNumber(pullRequests);
+  }
+
+  if (!prNumber) {
+    console.log("No open pull request is associated with this event.");
+    return;
+  }
+
   const pr = (
     await mparticleApi.request(
       `/repos/${owner}/${repository}/pulls/${prNumber}`,
@@ -240,6 +249,7 @@ async function main() {
         head_sha: pr.head.sha,
         per_page: "100",
       }),
+      "workflow_runs",
     ),
   ]);
 

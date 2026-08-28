@@ -130,6 +130,23 @@ function getPullRequestNumber(event) {
   return null;
 }
 
+function getPaginatedItems(data, collectionKey) {
+  const items = collectionKey ? data?.[collectionKey] : data;
+
+  if (!Array.isArray(items)) {
+    throw new Error("Expected a paginated GitHub API response.");
+  }
+
+  return items;
+}
+
+function getOpenPullRequestNumber(pullRequests) {
+  return (
+    pullRequests.find((pullRequest) => pullRequest.state === "open")?.number ||
+    null
+  );
+}
+
 function hasFreshApproval(reviews, reviewerLogin, headSha) {
   return reviews.some(
     (review) =>
@@ -142,6 +159,8 @@ function hasFreshApproval(reviews, reviewerLogin, headSha) {
 module.exports = {
   classifyFiles,
   evaluateWorkflows,
+  getOpenPullRequestNumber,
+  getPaginatedItems,
   getPullRequestNumber,
   hasFreshApproval,
   validatePolicy,
