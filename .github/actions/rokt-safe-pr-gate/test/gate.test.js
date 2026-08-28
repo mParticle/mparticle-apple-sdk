@@ -3,6 +3,8 @@ const assert = require("node:assert/strict");
 const {
   classifyFiles,
   evaluateWorkflows,
+  getOpenPullRequestNumber,
+  getPaginatedItems,
   getPullRequestNumber,
   hasFreshApproval,
   validatePolicy,
@@ -125,6 +127,33 @@ test("resolves pull request numbers from both supported events", () => {
     43,
   );
   assert.equal(getPullRequestNumber({}), null);
+});
+
+test("reads array and wrapped GitHub API pagination responses", () => {
+  assert.deepEqual(getPaginatedItems([{ id: 1 }]), [{ id: 1 }]);
+  assert.deepEqual(
+    getPaginatedItems({ check_runs: [{ id: 2 }] }, "check_runs"),
+    [{ id: 2 }],
+  );
+  assert.deepEqual(
+    getPaginatedItems({ workflow_runs: [{ id: 3 }] }, "workflow_runs"),
+    [{ id: 3 }],
+  );
+  assert.throws(() => getPaginatedItems({ check_runs: [] }), /paginated/);
+});
+
+test("selects the open pull request for a workflow run head SHA", () => {
+  assert.equal(
+    getOpenPullRequestNumber([
+      { number: 7, state: "closed" },
+      { number: 8, state: "open" },
+    ]),
+    8,
+  );
+  assert.equal(
+    getOpenPullRequestNumber([{ number: 9, state: "closed" }]),
+    null,
+  );
 });
 
 test("requires a gate approval on the current head SHA", () => {
