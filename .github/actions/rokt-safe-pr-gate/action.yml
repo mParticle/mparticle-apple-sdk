@@ -1,5 +1,5 @@
 name: Rokt Safe PR Gate
-description: Evaluates and approves eligible low-risk pull requests.
+description: Evaluates low-risk pull requests for the required Rokt Safe PR Gate check.
 inputs:
   api-url:
     required: true
@@ -11,13 +11,15 @@ inputs:
     required: true
   rokt-token:
     required: true
-  reviewer-token:
-    required: true
   gate-app-id:
     required: true
-  gate-reviewer-login:
-    required: true
   employee-team-slug:
+    required: true
+  manual-review-team-slug:
+    required: true
+  pr-number:
+    required: false
+  mode:
     required: true
 runs:
   using: node20

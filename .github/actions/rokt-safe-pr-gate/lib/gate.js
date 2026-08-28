@@ -10,6 +10,22 @@ function validatePolicy(policy) {
   }
 
   if (
+    typeof policy.gateCheckName !== "string" ||
+    policy.gateCheckName.trim().length === 0
+  ) {
+    throw new Error("Policy must define a gate check name.");
+  }
+
+  if (
+    !Number.isSafeInteger(policy.maxFiles) ||
+    policy.maxFiles < 1 ||
+    !Number.isSafeInteger(policy.maxChangedLines) ||
+    policy.maxChangedLines < 1
+  ) {
+    throw new Error("Policy file and line limits must be positive integers.");
+  }
+
+  if (
     !Array.isArray(policy.requiredWorkflows) ||
     policy.requiredWorkflows.length === 0
   ) {
@@ -21,10 +37,25 @@ function validatePolicy(policy) {
       typeof path !== "string" ||
       path.length === 0 ||
       path.includes("*") ||
-      path.startsWith(".github/")
+      path.startsWith(".github/") ||
+      !path.endsWith(".md")
     ) {
       throw new Error(
-        "Policy safe paths must be explicit, non-workflow paths.",
+        "Policy safe paths must be explicit Markdown, non-workflow paths.",
+      );
+    }
+  }
+
+  for (const workflow of policy.requiredWorkflows) {
+    if (
+      !workflow ||
+      workflow.event !== "pull_request" ||
+      typeof workflow.path !== "string" ||
+      !workflow.path.startsWith(".github/workflows/") ||
+      !workflow.path.endsWith(".yml")
+    ) {
+      throw new Error(
+        "Policy required workflows must identify a pull-request workflow path.",
       );
     }
   }
@@ -88,7 +119,7 @@ function evaluateWorkflows(runs, requirements) {
     const matchingRuns = runs
       .filter(
         (run) =>
-          run.name === requirement.name && run.event === requirement.event,
+          run.path === requirement.path && run.event === requirement.event,
       )
       .sort(
         (left, right) =>
@@ -105,6 +136,13 @@ function evaluateWorkflows(runs, requirements) {
       return { state: "pending", reason: "required workflow is still running" };
     }
 
+    if (["cancelled", "skipped", "stale"].includes(latestRun.conclusion)) {
+      return {
+        state: "pending",
+        reason: "required workflow must be re-run after cancellation",
+      };
+    }
+
     if (latestRun.conclusion !== "success") {
       return { state: "failed", reason: "required workflow did not succeed" };
     }
@@ -114,20 +152,36 @@ function evaluateWorkflows(runs, requirements) {
 }
 
 function getPullRequestNumber(event) {
+  return getPullRequestNumbers(event)[0] || null;
+}
+
+function getPullRequestNumbers(event) {
   if (Number.isInteger(event?.pull_request?.number)) {
-    return event.pull_request.number;
+    return [event.pull_request.number];
   }
 
   const pullRequests = event?.workflow_run?.pull_requests;
 
-  if (
-    Array.isArray(pullRequests) &&
-    Number.isInteger(pullRequests[0]?.number)
-  ) {
-    return pullRequests[0].number;
+  if (Array.isArray(pullRequests)) {
+    return [
+      ...new Set(
+        pullRequests
+          .map((pullRequest) => pullRequest.number)
+          .filter(Number.isInteger),
+      ),
+    ];
   }
 
-  return null;
+  return [];
+}
+
+function hasSharedOpenHead(pullRequests, pullRequestNumber) {
+  return pullRequests.some(
+    (pullRequest) =>
+      pullRequest.state === "open" &&
+      pullRequest.number !== pullRequestNumber &&
+      Number.isInteger(pullRequest.number),
+  );
 }
 
 function getPaginatedItems(data, collectionKey) {
@@ -140,28 +194,72 @@ function getPaginatedItems(data, collectionKey) {
   return items;
 }
 
-function getOpenPullRequestNumber(pullRequests) {
-  return (
-    pullRequests.find((pullRequest) => pullRequest.state === "open")?.number ||
-    null
-  );
+function getEffectiveReviews(reviews) {
+  const effectiveReviews = new Map();
+
+  for (const review of reviews) {
+    const login = review.user?.login?.toLowerCase();
+
+    if (
+      !login ||
+      !["APPROVED", "CHANGES_REQUESTED", "DISMISSED"].includes(review.state)
+    ) {
+      continue;
+    }
+
+    const currentReview = effectiveReviews.get(login);
+    const currentTime = currentReview
+      ? Date.parse(currentReview.submitted_at || 0) || 0
+      : Number.NEGATIVE_INFINITY;
+    const reviewTime = Date.parse(review.submitted_at || 0) || 0;
+    const currentId = Number(currentReview?.id) || 0;
+    const reviewId = Number(review.id) || 0;
+
+    if (
+      !currentReview ||
+      reviewTime > currentTime ||
+      (reviewTime === currentTime && reviewId > currentId)
+    ) {
+      effectiveReviews.set(login, review);
+    }
+  }
+
+  return [...effectiveReviews.values()];
 }
 
-function hasFreshApproval(reviews, reviewerLogin, headSha) {
-  return reviews.some(
-    (review) =>
-      review.state === "APPROVED" &&
-      review.commit_id === headSha &&
-      review.user?.login?.toLowerCase() === reviewerLogin.toLowerCase(),
+function evaluateTeamReviewState(reviews, teamLogins, authorLogin, headSha) {
+  const normalizedTeamLogins = new Set(
+    [...teamLogins].map((login) => login.toLowerCase()),
   );
+  const normalizedAuthorLogin = authorLogin.toLowerCase();
+  const teamReviews = getEffectiveReviews(reviews).filter((review) => {
+    const login = review.user?.login?.toLowerCase();
+
+    return (
+      login &&
+      login !== normalizedAuthorLogin &&
+      normalizedTeamLogins.has(login)
+    );
+  });
+
+  return {
+    hasBlockingChangeRequest: teamReviews.some(
+      (review) => review.state === "CHANGES_REQUESTED",
+    ),
+    hasFreshApproval: teamReviews.some(
+      (review) => review.state === "APPROVED" && review.commit_id === headSha,
+    ),
+  };
 }
 
 module.exports = {
   classifyFiles,
+  evaluateTeamReviewState,
   evaluateWorkflows,
-  getOpenPullRequestNumber,
+  getEffectiveReviews,
   getPaginatedItems,
   getPullRequestNumber,
-  hasFreshApproval,
+  getPullRequestNumbers,
+  hasSharedOpenHead,
   validatePolicy,
 };
