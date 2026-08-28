@@ -1,0 +1,19 @@
+{
+  "gateCheckName": "Rokt Safe PR Gate",
+  "maxChangedLines": 500,
+  "maxFiles": 10,
+  "requiredWorkflows": [
+    {
+      "event": "pull_request",
+      "name": "Pull request"
+    }
+  ],
+  "roktOrganization": "ROKT",
+  "safePaths": [
+    "README.md",
+    "ARCHITECTURE.md",
+    "CONTRIBUTING.md",
+    "Kits/README.md",
+    "IntegrationTests/README.md"
+  ]
+}

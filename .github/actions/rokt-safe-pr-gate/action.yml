@@ -1,0 +1,24 @@
+name: Rokt Safe PR Gate
+description: Evaluates and approves eligible low-risk pull requests.
+inputs:
+  api-url:
+    required: true
+  event-path:
+    required: true
+  policy-path:
+    required: true
+  mparticle-token:
+    required: true
+  rokt-token:
+    required: true
+  reviewer-token:
+    required: true
+  gate-app-id:
+    required: true
+  gate-reviewer-login:
+    required: true
+  employee-team-slug:
+    required: true
+runs:
+  using: node20
+  main: index.js
