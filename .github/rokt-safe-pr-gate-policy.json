@@ -5,7 +5,7 @@
   "requiredWorkflows": [
     {
       "event": "pull_request",
-      "name": "Pull request"
+      "path": ".github/workflows/pull-request.yml"
     }
   ],
   "roktOrganization": "ROKT",

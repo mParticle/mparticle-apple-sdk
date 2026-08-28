@@ -1,58 +1,111 @@
 # Rokt Safe PR Gate Setup
 
-The gate is inert until the administrator setup below is complete. Do not add its
-status check to the `main` ruleset until the proof of concept passes.
+The Gate is inert until the administrator setup below is complete. Complete the
+proof of concept before making the Gate a required status check on `main`.
 
-## 1. Create and install the App
+## 1. Create and install the Apps
 
-Create one GitHub App and install it in both organisations.
+Create two GitHub Apps. Keeping the Apps and private keys separate prevents an
+mParticle check-writing credential from also being able to read Rokt membership
+data.
 
-| Installation | Required permissions                                              |
-| ------------ | ----------------------------------------------------------------- |
-| `mParticle`  | Actions: read; Checks: write; Contents: read; Pull requests: read |
-| `ROKT`       | Members: read                                                     |
+| App                    | Installation                            | Required permissions                                                             |
+| ---------------------- | --------------------------------------- | -------------------------------------------------------------------------------- |
+| `Rokt Safe PR Gate`    | `mParticle`, only `mparticle-apple-sdk` | Actions: read; Checks: write; Contents: read; Members: read; Pull requests: read |
+| `Rokt Employee Lookup` | `ROKT`                                  | Members: read                                                                    |
 
-The App must not receive contents-write, administration, merge, push, or ruleset-bypass
-permissions.
+Neither App may receive contents-write, administration, merge, push, or
+ruleset-bypass permissions. Neither App submits a pull-request review.
 
-## 2. Create the code-owner reviewer
-
-Create a dedicated machine user and add it to the existing `@mParticle/sdk-team` team.
-This is necessary because the active `main` ruleset requires a Code Owner approval, and
-GitHub Apps cannot be listed as Code Owners. Limit its token to this repository and pull
-request review access.
-
-## 3. Configure repository settings
+## 2. Configure repository settings
 
 Add these repository variables:
 
-| Variable                               | Value                                    |
-| -------------------------------------- | ---------------------------------------- |
-| `ROKT_SAFE_PR_GATE_ENABLED`            | `true` after validation                  |
-| `ROKT_SAFE_PR_GATE_APP_ID`             | Numeric GitHub App ID                    |
-| `ROKT_SAFE_PR_GATE_EMPLOYEE_TEAM_SLUG` | IdP-synchronised Rokt employee team slug |
-| `ROKT_SAFE_PR_GATE_REVIEWER_LOGIN`     | Machine-user GitHub login                |
+| Variable                                    | Value                                     |
+| ------------------------------------------- | ----------------------------------------- |
+| `ROKT_SAFE_PR_GATE_ENABLED`                 | `true` only during validation/enforcement |
+| `ROKT_SAFE_PR_GATE_MODE`                    | `audit` initially, then `enforce`         |
+| `ROKT_SAFE_PR_GATE_MPARTICLE_APP_ID`        | `Rokt Safe PR Gate` App ID                |
+| `ROKT_SAFE_PR_GATE_ROKT_APP_ID`             | `Rokt Employee Lookup` App ID             |
+| `ROKT_SAFE_PR_GATE_EMPLOYEE_TEAM_SLUG`      | IdP-synchronised Rokt employee team slug  |
+| `ROKT_SAFE_PR_GATE_MANUAL_REVIEW_TEAM_SLUG` | `sdk-team`                                |
 
 Add these repository secrets:
 
-| Secret                              | Value                           |
-| ----------------------------------- | ------------------------------- |
-| `ROKT_SAFE_PR_GATE_APP_PRIVATE_KEY` | GitHub App private key          |
-| `ROKT_SAFE_PR_GATE_REVIEWER_TOKEN`  | Machine-user fine-grained token |
+| Secret                                        | Value                                  |
+| --------------------------------------------- | -------------------------------------- |
+| `ROKT_SAFE_PR_GATE_MPARTICLE_APP_PRIVATE_KEY` | `Rokt Safe PR Gate` App private key    |
+| `ROKT_SAFE_PR_GATE_ROKT_APP_PRIVATE_KEY`      | `Rokt Employee Lookup` App private key |
 
-## 4. Validate before enforcement
+There is no machine reviewer, reviewer token, or ruleset bypass actor in this
+design.
 
-Test an employee documentation-only PR, a non-employee documentation PR, a mixed
-documentation-and-source PR, and a workflow-file change. Confirm that each decision is
-made for the newest PR SHA and that a push dismisses the previous automated approval.
+## 3. Validate before enforcement
 
-## 5. Enable the ruleset check
+First set `ROKT_SAFE_PR_GATE_ENABLED` to `true` and
+`ROKT_SAFE_PR_GATE_MODE` to `audit`, without adding the Gate to the ruleset.
+Run this for one to two weeks and inspect the neutral check output. Only then
+set the mode to `enforce` and test these fixture pull requests:
 
-Edit the active `main` ruleset and add `Rokt Safe PR Gate` as a required, strict status
-check. Pin the expected source to the new GitHub App. Retain the existing Code Owner
-requirement, one required approval, stale-review dismissal, and resolved-thread rule.
+1. A verified Rokt employee changes one allowlisted Markdown file: CI and the
+   Gate should pass without a review.
+2. A non-employee changes that same file: CI should pass and the Gate should
+   report `action_required` until an SDK-team member approves the current SHA.
+3. A Rokt employee changes source code, or mixes source with an allowlisted
+   Markdown file: the Gate should pass immediately, but the ruleset must
+   require SDK-team approval. Source CI remains advisory, just as it is today.
+4. Any change under `.github/workflows`: the Gate must not classify it as safe.
+5. Push a new commit after every passing case: the new SHA must receive a new
+   Gate decision and cannot inherit a prior approval.
+6. Have an SDK-team reviewer request changes on a safe employee PR: the Gate
+   must report `action_required` until that reviewer approves or dismisses the
+   request.
+7. Repeat the first fixture from a fork: the size report must skip its PR
+   comment and the Gate must still react to a successful `Pull request` run.
+8. Retarget a previously safe pull request: the `edited` event must re-evaluate
+   the current base diff before the Gate reports success.
+
+For fork PRs, the Gate's trusted scheduled run re-evaluates manual approvals at
+most five minutes later. An SDK-team maintainer can instead use **Actions →
+Rokt Safe PR Gate → Run workflow** with the pull request number for an immediate
+re-evaluation. The workflow never runs a pull-request review event with secrets;
+it evaluates only code checked out from the default branch.
+
+## 4. Change the active `main` ruleset atomically
+
+Capture the current ruleset JSON first. In ruleset `6260587`:
+
+1. Retain pull requests, stale-review dismissal, resolved-thread enforcement,
+   unattributed-change handling, and allowed merge methods.
+2. Set **required approving review count** to `0` and turn off **require Code
+   Owner review**. `CODEOWNERS` remains unchanged and continues to request the
+   SDK team; it no longer enforces every path.
+3. Add a **required reviewer** entry for `@mParticle/sdk-team`, with one
+   approval and these ordered file patterns:
+
+   ```text
+   **
+   !README.md
+   !ARCHITECTURE.md
+   !CONTRIBUTING.md
+   !Kits/README.md
+   !IntegrationTests/README.md
+   ```
+
+4. Add `Rokt Safe PR Gate` as a required, strict status check and pin its
+   expected source to the `Rokt Safe PR Gate` App.
+
+The explicit paths above must exactly match
+`.github/rokt-safe-pr-gate-policy.json`. A mixed PR matches `**` through its
+non-safe file and therefore still needs an SDK-team approval.
+
+The existing unattributed-change rule remains in force. A successful Gate check
+can still require the extra approval that GitHub applies to an unattributed
+commit.
 
 ## Rollback
 
-Set `ROKT_SAFE_PR_GATE_ENABLED` to `false`, then remove the Gate status check from the
-ruleset. The repository returns to its existing manual Code Owner review behaviour.
+Remove `Rokt Safe PR Gate` from required status checks first, then restore the
+captured pull-request settings (`required_approving_review_count: 1` and
+`require_code_owner_review: true`). Finally set
+`ROKT_SAFE_PR_GATE_ENABLED` to `false`.

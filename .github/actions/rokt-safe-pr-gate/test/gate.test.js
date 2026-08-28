@@ -2,19 +2,24 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   classifyFiles,
+  evaluateTeamReviewState,
   evaluateWorkflows,
-  getOpenPullRequestNumber,
+  getEffectiveReviews,
   getPaginatedItems,
   getPullRequestNumber,
-  hasFreshApproval,
+  getPullRequestNumbers,
+  hasSharedOpenHead,
   validatePolicy,
 } = require("../lib/gate");
+const { resolvePullRequestNumbers } = require("../index");
 
 const policy = {
   gateCheckName: "Rokt Safe PR Gate",
   maxChangedLines: 500,
   maxFiles: 10,
-  requiredWorkflows: [{ event: "pull_request", name: "Pull request" }],
+  requiredWorkflows: [
+    { event: "pull_request", path: ".github/workflows/pull-request.yml" },
+  ],
   roktOrganization: "ROKT",
   safePaths: ["README.md"],
 };
@@ -76,7 +81,13 @@ test("rejects a renamed file, executable file, and unavailable diff", () => {
 
 test("waits for a required workflow and fails on its unsuccessful conclusion", () => {
   const pending = evaluateWorkflows(
-    [{ event: "pull_request", name: "Pull request", status: "in_progress" }],
+    [
+      {
+        event: "pull_request",
+        path: ".github/workflows/pull-request.yml",
+        status: "in_progress",
+      },
+    ],
     policy.requiredWorkflows,
   );
   const failed = evaluateWorkflows(
@@ -84,7 +95,7 @@ test("waits for a required workflow and fails on its unsuccessful conclusion", (
       {
         conclusion: "failure",
         event: "pull_request",
-        name: "Pull request",
+        path: ".github/workflows/pull-request.yml",
         status: "completed",
         updated_at: "2026-08-29T00:00:00Z",
       },
@@ -102,14 +113,14 @@ test("uses only the latest successful matching workflow run", () => {
       {
         conclusion: "failure",
         event: "pull_request",
-        name: "Pull request",
+        path: ".github/workflows/pull-request.yml",
         status: "completed",
         updated_at: "2026-08-29T00:00:00Z",
       },
       {
         conclusion: "success",
         event: "pull_request",
-        name: "Pull request",
+        path: ".github/workflows/pull-request.yml",
         status: "completed",
         updated_at: "2026-08-29T00:01:00Z",
       },
@@ -120,6 +131,27 @@ test("uses only the latest successful matching workflow run", () => {
   assert.deepEqual(result, { state: "success" });
 });
 
+test("waits for a cancelled workflow to be re-run", () => {
+  assert.deepEqual(
+    evaluateWorkflows(
+      [
+        {
+          conclusion: "cancelled",
+          event: "pull_request",
+          path: ".github/workflows/pull-request.yml",
+          status: "completed",
+          updated_at: "2026-08-29T00:01:00Z",
+        },
+      ],
+      policy.requiredWorkflows,
+    ),
+    {
+      state: "pending",
+      reason: "required workflow must be re-run after cancellation",
+    },
+  );
+});
+
 test("resolves pull request numbers from both supported events", () => {
   assert.equal(getPullRequestNumber({ pull_request: { number: 42 } }), 42);
   assert.equal(
@@ -127,6 +159,27 @@ test("resolves pull request numbers from both supported events", () => {
     43,
   );
   assert.equal(getPullRequestNumber({}), null);
+  assert.deepEqual(
+    getPullRequestNumbers({
+      workflow_run: { pull_requests: [{ number: 43 }, { number: 44 }] },
+    }),
+    [43, 44],
+  );
+});
+
+test("rejects a Gate decision shared by multiple open pull requests", () => {
+  assert.equal(
+    hasSharedOpenHead(
+      [
+        { number: 42, state: "open" },
+        { number: 43, state: "open" },
+        { number: 44, state: "closed" },
+      ],
+      42,
+    ),
+    true,
+  );
+  assert.equal(hasSharedOpenHead([{ number: 42, state: "open" }], 42), false);
 });
 
 test("reads array and wrapped GitHub API pagination responses", () => {
@@ -142,52 +195,128 @@ test("reads array and wrapped GitHub API pagination responses", () => {
   assert.throws(() => getPaginatedItems({ check_runs: [] }), /paginated/);
 });
 
-test("selects the open pull request for a workflow run head SHA", () => {
-  assert.equal(
-    getOpenPullRequestNumber([
-      { number: 7, state: "closed" },
-      { number: 8, state: "open" },
-    ]),
-    8,
+test("polls every open pull request for a scheduled recheck", async () => {
+  const calls = [];
+  const api = {
+    paginate: async (path) => {
+      calls.push(path);
+      return [{ number: 7 }, { number: 8, state: "open" }];
+    },
+  };
+
+  assert.deepEqual(
+    await resolvePullRequestNumbers(
+      { schedule: "*/5 * * * *" },
+      api,
+      "mParticle",
+      "mparticle-apple-sdk",
+      null,
+    ),
+    [7, 8],
   );
-  assert.equal(
-    getOpenPullRequestNumber([{ number: 9, state: "closed" }]),
-    null,
-  );
+  assert.match(calls[0], /state=open/);
 });
 
-test("requires a gate approval on the current head SHA", () => {
+test("requires a fresh non-author SDK-team approval on the current head SHA", () => {
   const reviews = [
     {
       commit_id: "old",
+      id: 1,
       state: "APPROVED",
       user: { login: "app/rokt-safe-pr-gate" },
+      submitted_at: "2026-08-29T00:00:00Z",
     },
     {
       commit_id: "current",
+      id: 2,
       state: "APPROVED",
-      user: { login: "APP/ROKT-SAFE-PR-GATE" },
+      user: { login: "sdk-reviewer" },
+      submitted_at: "2026-08-29T00:01:00Z",
     },
   ];
 
-  assert.equal(
-    hasFreshApproval(reviews, "app/rokt-safe-pr-gate", "current"),
-    true,
+  assert.deepEqual(
+    evaluateTeamReviewState(
+      reviews,
+      new Set(["SDK-REVIEWER"]),
+      "author",
+      "current",
+    ),
+    { hasBlockingChangeRequest: false, hasFreshApproval: true },
   );
-  assert.equal(
-    hasFreshApproval(reviews, "app/rokt-safe-pr-gate", "new"),
-    false,
+});
+
+test("uses each reviewer's latest substantive review state", () => {
+  const reviews = [
+    {
+      commit_id: "current",
+      id: 1,
+      state: "APPROVED",
+      submitted_at: "2026-08-29T00:00:00Z",
+      user: { login: "sdk-reviewer" },
+    },
+    {
+      commit_id: "current",
+      id: 2,
+      state: "COMMENTED",
+      submitted_at: "2026-08-29T00:01:00Z",
+      user: { login: "sdk-reviewer" },
+    },
+    {
+      commit_id: "current",
+      id: 3,
+      state: "CHANGES_REQUESTED",
+      submitted_at: "2026-08-29T00:02:00Z",
+      user: { login: "sdk-reviewer" },
+    },
+    {
+      commit_id: "current",
+      id: 4,
+      state: "APPROVED",
+      submitted_at: "2026-08-29T00:03:00Z",
+      user: { login: "author" },
+    },
+  ];
+
+  assert.deepEqual(
+    getEffectiveReviews(reviews).map((review) => review.id),
+    [3, 4],
+  );
+  assert.deepEqual(
+    evaluateTeamReviewState(
+      reviews,
+      new Set(["sdk-reviewer", "author"]),
+      "AUTHOR",
+      "current",
+    ),
+    { hasBlockingChangeRequest: true, hasFreshApproval: false },
   );
 });
 
 test("rejects an unsafe policy definition", () => {
   assert.throws(
-    () => validatePolicy({ safePaths: ["*.md"] }),
-    /required workflow/,
+    () => validatePolicy({ ...policy, safePaths: ["*.md"] }),
+    /explicit Markdown/,
   );
   assert.throws(
     () =>
       validatePolicy({ ...policy, safePaths: [".github/workflows/gate.yml"] }),
-    /non-workflow/,
+    /explicit Markdown/,
+  );
+  assert.throws(
+    () => validatePolicy({ ...policy, maxFiles: undefined }),
+    /positive integers/,
+  );
+  assert.throws(
+    () => validatePolicy({ ...policy, gateCheckName: "" }),
+    /gate check name/,
+  );
+  assert.throws(
+    () =>
+      validatePolicy({
+        ...policy,
+        requiredWorkflows: [{ event: "pull_request", name: "Pull request" }],
+      }),
+    /workflow path/,
   );
 });

@@ -1,15 +1,14 @@
 const fs = require("node:fs");
 const {
   classifyFiles,
+  evaluateTeamReviewState,
   evaluateWorkflows,
-  getOpenPullRequestNumber,
+  getEffectiveReviews,
   getPaginatedItems,
-  getPullRequestNumber,
-  hasFreshApproval,
+  getPullRequestNumbers,
+  hasSharedOpenHead,
   validatePolicy,
 } = require("./lib/gate");
-
-let activeGate = null;
 
 function getInput(name) {
   return (
@@ -25,6 +24,20 @@ function requiredInput(name) {
   }
 
   return value;
+}
+
+function optionalPullRequestNumber() {
+  const value = getInput("pr-number");
+
+  if (!value) {
+    return null;
+  }
+
+  if (!/^\d+$/.test(value) || Number(value) < 1) {
+    throw new Error("pr-number must be a positive integer.");
+  }
+
+  return Number(value);
 }
 
 function toQueryPath(path, query) {
@@ -53,7 +66,7 @@ function createApi(apiUrl, token) {
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${token}`,
-        "X-GitHub-Api-Version": "2026-03-10",
+        "X-GitHub-Api-Version": "2022-11-28",
         ...(options.body ? { "Content-Type": "application/json" } : {}),
       },
       body: options.body ? JSON.stringify(options.body) : undefined,
@@ -97,7 +110,11 @@ async function getGateCheck(api, owner, repository, sha, gateAppId, checkName) {
   );
   const checks = await api.paginate(path, "check_runs");
 
-  return checks.find((check) => String(check.app?.id) === gateAppId) || null;
+  return (
+    checks
+      .filter((check) => String(check.app?.id) === gateAppId)
+      .sort((left, right) => right.id - left.id)[0] || null
+  );
 }
 
 async function upsertGateCheck(api, details, state) {
@@ -124,6 +141,10 @@ async function upsertGateCheck(api, details, state) {
   }
 
   if (check) {
+    if (state.status === "in_progress" && check.status === "completed") {
+      return;
+    }
+
     await api.request(
       `/repos/${details.owner}/${details.repository}/check-runs/${check.id}`,
       {
@@ -155,11 +176,303 @@ async function completeGate(api, details, conclusion, summary) {
   });
 }
 
-async function isEmployee(roktApi, organization, teamSlug, login) {
+async function isActiveTeamMember(api, organization, teamSlug, login) {
   const path = `/orgs/${organization}/teams/${encodeURIComponent(teamSlug)}/memberships/${encodeURIComponent(login)}`;
-  const response = await roktApi.request(path, { allowStatuses: [404] });
+  const response = await api.request(path, { allowStatuses: [404] });
 
   return response.status === 200 && response.data?.state === "active";
+}
+
+async function getTeamReviewState(api, organization, teamSlug, reviews, pr) {
+  const reviewerLogins = [
+    ...new Set(
+      getEffectiveReviews(reviews)
+        .map((review) => review.user?.login)
+        .filter(
+          (login) =>
+            login && login.toLowerCase() !== pr.user.login.toLowerCase(),
+        ),
+    ),
+  ];
+  const memberships = await Promise.all(
+    reviewerLogins.map(async (login) => ({
+      login,
+      member: await isActiveTeamMember(api, organization, teamSlug, login),
+    })),
+  );
+  const teamLogins = new Set(
+    memberships.filter(({ member }) => member).map(({ login }) => login),
+  );
+
+  return evaluateTeamReviewState(
+    reviews,
+    teamLogins,
+    pr.user.login,
+    pr.head.sha,
+  );
+}
+
+async function resolvePullRequestNumbers(
+  event,
+  api,
+  owner,
+  repository,
+  requestedPullRequestNumber,
+) {
+  if (requestedPullRequestNumber) {
+    return [requestedPullRequestNumber];
+  }
+
+  const eventPullRequestNumbers = getPullRequestNumbers(event);
+
+  if (eventPullRequestNumbers.length > 0) {
+    return eventPullRequestNumbers;
+  }
+
+  if (event.workflow_run?.head_sha) {
+    const pullRequests = await api.paginate(
+      toQueryPath(
+        `/repos/${owner}/${repository}/commits/${event.workflow_run.head_sha}/pulls`,
+        { per_page: "100" },
+      ),
+    );
+    return [
+      ...new Set(
+        pullRequests
+          .filter((pullRequest) => pullRequest.state === "open")
+          .map((pullRequest) => pullRequest.number)
+          .filter(Number.isInteger),
+      ),
+    ];
+  }
+
+  if (event.schedule) {
+    const pullRequests = await api.paginate(
+      toQueryPath(`/repos/${owner}/${repository}/pulls`, {
+        per_page: "100",
+        state: "open",
+      }),
+    );
+
+    return pullRequests
+      .filter((pullRequest) => Number.isInteger(pullRequest.number))
+      .map((pullRequest) => pullRequest.number);
+  }
+
+  console.log("No open pull request is associated with this event.");
+  return [];
+}
+
+function requiredMode() {
+  const mode = requiredInput("mode");
+
+  if (!["audit", "enforce"].includes(mode)) {
+    throw new Error("mode must be either audit or enforce.");
+  }
+
+  return mode;
+}
+
+async function completeDecision(context, details, conclusion, summary) {
+  if (context.mode === "audit") {
+    return completeGate(
+      context.mparticleApi,
+      details,
+      "neutral",
+      `Audit only: would report ${conclusion}. ${summary}`,
+    );
+  }
+
+  return completeGate(context.mparticleApi, details, conclusion, summary);
+}
+
+async function evaluatePullRequest(context, prNumber) {
+  const { mparticleApi, owner, policy, repository, roktApi } = context;
+  const pr = (
+    await mparticleApi.request(
+      `/repos/${owner}/${repository}/pulls/${prNumber}`,
+    )
+  ).data;
+
+  if (pr.state !== "open") {
+    return true;
+  }
+
+  const details = {
+    checkName: policy.gateCheckName,
+    gateAppId: context.gateAppId,
+    owner,
+    prNumber,
+    repository,
+    sha: pr.head.sha,
+  };
+
+  try {
+    await upsertGateCheck(mparticleApi, details, {
+      status: "in_progress",
+      summary: "Evaluating the current pull request head SHA.",
+    });
+
+    const pullRequestsAtHead = await mparticleApi.paginate(
+      toQueryPath(
+        `/repos/${owner}/${repository}/commits/${pr.head.sha}/pulls`,
+        { per_page: "100" },
+      ),
+    );
+
+    if (hasSharedOpenHead(pullRequestsAtHead, prNumber)) {
+      await completeDecision(
+        context,
+        details,
+        "failure",
+        "The head commit is associated with multiple open pull requests, so it cannot receive a PR-specific Gate decision.",
+      );
+      return true;
+    }
+
+    if (pr.draft) {
+      await completeDecision(
+        context,
+        details,
+        "success",
+        "Draft pull request; evaluation will run when it is ready for review.",
+      );
+      return true;
+    }
+
+    const [files, tree] = await Promise.all([
+      mparticleApi.paginate(
+        toQueryPath(`/repos/${owner}/${repository}/pulls/${prNumber}/files`, {
+          per_page: "100",
+        }),
+      ),
+      mparticleApi.request(
+        `/repos/${owner}/${repository}/git/trees/${pr.head.sha}?recursive=1`,
+      ),
+    ]);
+
+    if (tree.data.truncated) {
+      await completeDecision(
+        context,
+        details,
+        "failure",
+        "Unable to safely inspect the full file tree.",
+      );
+      return true;
+    }
+
+    const fileState = classifyFiles(files, tree.data.tree, policy);
+
+    if (!fileState.eligible) {
+      await completeDecision(
+        context,
+        details,
+        "success",
+        "The ruleset requires SDK-team approval for this pull request.",
+      );
+      return true;
+    }
+
+    const workflowRuns = await mparticleApi.paginate(
+      toQueryPath(`/repos/${owner}/${repository}/actions/runs`, {
+        event: "pull_request",
+        head_sha: pr.head.sha,
+        per_page: "100",
+      }),
+      "workflow_runs",
+    );
+    const workflowState = evaluateWorkflows(
+      workflowRuns,
+      policy.requiredWorkflows,
+    );
+
+    if (workflowState.state === "pending") {
+      console.log(
+        `Waiting for required workflow completion on PR #${prNumber}.`,
+      );
+      return true;
+    }
+
+    if (workflowState.state === "failed") {
+      await completeDecision(
+        context,
+        details,
+        "failure",
+        "A required workflow did not succeed.",
+      );
+      return true;
+    }
+
+    const reviews = await mparticleApi.paginate(
+      toQueryPath(`/repos/${owner}/${repository}/pulls/${prNumber}/reviews`, {
+        per_page: "100",
+      }),
+    );
+    const teamReviewState = await getTeamReviewState(
+      mparticleApi,
+      owner,
+      context.manualReviewTeamSlug,
+      reviews,
+      pr,
+    );
+
+    if (teamReviewState.hasBlockingChangeRequest) {
+      await completeDecision(
+        context,
+        details,
+        "action_required",
+        "An SDK-team review requests changes on this pull request.",
+      );
+      return true;
+    }
+
+    const employee = await isActiveTeamMember(
+      roktApi,
+      policy.roktOrganization,
+      context.employeeTeamSlug,
+      pr.user.login,
+    );
+
+    if (employee) {
+      await completeDecision(
+        context,
+        details,
+        "success",
+        "Eligible Rokt employee pull request passed the Gate for the current head SHA.",
+      );
+      return true;
+    }
+
+    if (teamReviewState.hasFreshApproval) {
+      await completeDecision(
+        context,
+        details,
+        "success",
+        "A fresh SDK-team approval satisfied the Gate for the current head SHA.",
+      );
+      return true;
+    }
+
+    await completeDecision(
+      context,
+      details,
+      "action_required",
+      "Awaiting a fresh SDK-team approval for this safe-path pull request.",
+    );
+    return true;
+  } catch (error) {
+    try {
+      await completeGate(
+        mparticleApi,
+        details,
+        "failure",
+        "The Gate could not safely complete its evaluation.",
+      );
+    } catch {}
+
+    console.error(`Rokt Safe PR Gate failed for PR #${prNumber}.`, error);
+    return false;
+  }
 }
 
 async function main() {
@@ -170,7 +483,6 @@ async function main() {
   const event = JSON.parse(
     fs.readFileSync(requiredInput("event-path"), "utf8"),
   );
-
   const owner = event.repository?.owner?.login;
   const repository = event.repository?.name;
 
@@ -179,193 +491,40 @@ async function main() {
   }
 
   const mparticleApi = createApi(apiUrl, requiredInput("mparticle-token"));
-  const roktApi = createApi(apiUrl, requiredInput("rokt-token"));
-  let prNumber = getPullRequestNumber(event);
-
-  if (!prNumber && event.workflow_run?.head_sha) {
-    const pullRequests = await mparticleApi.paginate(
-      toQueryPath(
-        `/repos/${owner}/${repository}/commits/${event.workflow_run.head_sha}/pulls`,
-        { per_page: "100" },
-      ),
-    );
-    prNumber = getOpenPullRequestNumber(pullRequests);
-  }
-
-  if (!prNumber) {
-    console.log("No open pull request is associated with this event.");
-    return;
-  }
-
-  const pr = (
-    await mparticleApi.request(
-      `/repos/${owner}/${repository}/pulls/${prNumber}`,
-    )
-  ).data;
-
-  if (pr.state !== "open") {
-    console.log("Pull request is not open.");
-    return;
-  }
-
-  const details = {
-    checkName: policy.gateCheckName,
+  const context = {
+    employeeTeamSlug: requiredInput("employee-team-slug"),
     gateAppId: requiredInput("gate-app-id"),
-    owner,
-    prNumber,
-    repository,
-    sha: pr.head.sha,
-  };
-
-  activeGate = { api: mparticleApi, details };
-
-  await upsertGateCheck(mparticleApi, details, {
-    status: "in_progress",
-    summary: "Evaluating the current pull request head SHA.",
-  });
-
-  if (pr.draft) {
-    await completeGate(
-      mparticleApi,
-      details,
-      "success",
-      "Draft pull request; no automated approval was posted.",
-    );
-    return;
-  }
-
-  const [files, tree, workflowRuns] = await Promise.all([
-    mparticleApi.paginate(
-      toQueryPath(`/repos/${owner}/${repository}/pulls/${prNumber}/files`, {
-        per_page: "100",
-      }),
-    ),
-    mparticleApi.request(
-      `/repos/${owner}/${repository}/git/trees/${pr.head.sha}?recursive=1`,
-    ),
-    mparticleApi.paginate(
-      toQueryPath(`/repos/${owner}/${repository}/actions/runs`, {
-        event: "pull_request",
-        head_sha: pr.head.sha,
-        per_page: "100",
-      }),
-      "workflow_runs",
-    ),
-  ]);
-
-  if (tree.data.truncated) {
-    await completeGate(
-      mparticleApi,
-      details,
-      "failure",
-      "Unable to safely inspect the full file tree.",
-    );
-    return;
-  }
-
-  const workflowState = evaluateWorkflows(
-    workflowRuns,
-    policy.requiredWorkflows,
-  );
-
-  if (workflowState.state === "pending") {
-    console.log("Waiting for required workflow completion.");
-    return;
-  }
-
-  if (workflowState.state === "failed") {
-    await completeGate(
-      mparticleApi,
-      details,
-      "failure",
-      "A required workflow did not succeed.",
-    );
-    return;
-  }
-
-  const fileState = classifyFiles(files, tree.data.tree, policy);
-
-  if (!fileState.eligible) {
-    await completeGate(
-      mparticleApi,
-      details,
-      "success",
-      "Manual code owner approval is required for this pull request.",
-    );
-    return;
-  }
-
-  const reviewerLogin = requiredInput("gate-reviewer-login");
-
-  if (pr.user.login.toLowerCase() === reviewerLogin.toLowerCase()) {
-    await completeGate(
-      mparticleApi,
-      details,
-      "failure",
-      "The gate reviewer cannot approve its own pull request.",
-    );
-    return;
-  }
-
-  const employee = await isEmployee(
-    roktApi,
-    policy.roktOrganization,
-    requiredInput("employee-team-slug"),
-    pr.user.login,
-  );
-
-  if (!employee) {
-    await completeGate(
-      mparticleApi,
-      details,
-      "success",
-      "Manual code owner approval is required for this pull request.",
-    );
-    return;
-  }
-
-  const reviews = await mparticleApi.paginate(
-    toQueryPath(`/repos/${owner}/${repository}/pulls/${prNumber}/reviews`, {
-      per_page: "100",
-    }),
-  );
-
-  if (!hasFreshApproval(reviews, reviewerLogin, pr.head.sha)) {
-    const reviewerApi = createApi(apiUrl, requiredInput("reviewer-token"));
-
-    await reviewerApi.request(
-      `/repos/${owner}/${repository}/pulls/${prNumber}/reviews`,
-      {
-        method: "POST",
-        body: {
-          body: "Approved by the Rokt Safe PR Gate after the configured identity, diff, and CI checks passed.",
-          commit_id: pr.head.sha,
-          event: "APPROVE",
-        },
-      },
-    );
-  }
-
-  await completeGate(
+    manualReviewTeamSlug: requiredInput("manual-review-team-slug"),
     mparticleApi,
-    details,
-    "success",
-    "Eligible Rokt employee pull request approved for the current head SHA.",
+    mode: requiredMode(),
+    owner,
+    policy,
+    repository,
+    roktApi: createApi(apiUrl, requiredInput("rokt-token")),
+  };
+  const prNumbers = await resolvePullRequestNumbers(
+    event,
+    mparticleApi,
+    owner,
+    repository,
+    optionalPullRequestNumber(),
   );
+  let succeeded = true;
+
+  for (const prNumber of prNumbers) {
+    succeeded = (await evaluatePullRequest(context, prNumber)) && succeeded;
+  }
+
+  if (!succeeded) {
+    process.exitCode = 1;
+  }
 }
 
-main().catch(async () => {
-  if (activeGate) {
-    try {
-      await completeGate(
-        activeGate.api,
-        activeGate.details,
-        "failure",
-        "The Gate could not safely complete its evaluation.",
-      );
-    } catch {}
-  }
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("Rokt Safe PR Gate failed.", error);
+    process.exitCode = 1;
+  });
+}
 
-  console.error("Rokt Safe PR Gate failed.");
-  process.exitCode = 1;
-});
+module.exports = { resolvePullRequestNumbers };
