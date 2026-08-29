@@ -63,9 +63,10 @@ mistake to make.
    workflow invokes it. It prints per-file coverage and nothing more. It also only works with
    `Scripts/` as the working directory, since both the project path and the Python call inside it
    are relative.
-5. **Xcode is pinned to two different versions.** `build-and-lint`, `native-tests` and
-   `size-report` use 16.4; `integration-tests`, `build-kits` and `verify-kit-xcframework-import`
-   use 26.2. Matching only the first still fails the kit and integration jobs.
+5. **Xcode is pinned to two different versions, so "the CI Xcode" is ambiguous.** `build-and-lint`,
+   `native-tests` and `size-report` pin one; `integration-tests`, `build-kits` and
+   `verify-kit-xcframework-import` pin a newer one. Read `XCODE_VERSION` (or `xcode-version`) in the
+   workflow you care about rather than assuming a single toolchain covers the repo.
 6. **`CONTRIBUTING.md`'s test command does not work.** It names an `.xcworkspace` and an
    `mParticle-Apple-SDK-iOS` scheme, neither of which exists. Use the commands above.
 
