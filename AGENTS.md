@@ -110,10 +110,9 @@ nothing else discovers it.
   for commits not attributed to a GitHub account, so commit with an email tied to your account. Any
   push dismisses existing approvals, and only squash and merge commits are allowed, never rebase.
 - **A fork PR cannot go green, whatever it changes.** `size-report` finishes by writing a PR
-  comment, which needs the `pull-requests: write` a fork's token is not given, and
-  `cross-platform-tests` checks the head ref out of the base repository, where a fork's branch does
-  not exist. Judge a fork PR on the jobs that _can_ run, and on the merge state rather than the
-  check list.
+  comment, and a `pull_request` event from a fork gets a read-only token whatever the workflow's
+  `permissions:` block asks for. Judge a fork PR on the jobs that _can_ run, and on the merge state
+  rather than the check list.
 
 ## Gotchas
 
@@ -132,6 +131,9 @@ nothing else discovers it.
    break survives every other check.
 5. Integration tests fail on an unmatched request but only _warn_ on a recorded WireMock mapping
    the app never calls (`IntegrationTests/run_integration_tests_ci.sh`).
-6. `RNExample` is not built on PRs - `build-secondary-platforms` is commented out of
-   `.github/workflows/pull-request.yml`.
+6. **Some workflow files never run, and the tree does not show it.** `cross-platform-tests.yml` and
+   `release-ecosystem-from-main.yml` are disabled in repository settings; `RNExample` is not built on
+   PRs because `build-secondary-platforms` is commented out of
+   `.github/workflows/pull-request.yml`. Check `gh workflow list --all` before assuming a workflow
+   file is a live gate.
 7. `ARCHITECTURE.md` is two diagram images and no prose. There is no written architecture document.
