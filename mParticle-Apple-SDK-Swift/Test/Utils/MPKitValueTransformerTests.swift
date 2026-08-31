@@ -70,6 +70,22 @@ final class MPKitValueTransformerTests: XCTestCase {
         XCTAssertEqual(transformer.transformValue(NSNumber(value: 42), dataType: .string) as? NSNumber, NSNumber(value: 42))
     }
 
+    // A fractional NSNumber in (-1, 1) truncates to 0 for int/long (ObjC [@(0.5) integerValue] == 0)
+    // rather than dropping to nil, which the earlier stringify-then-parse path did.
+    func testFractionalNumberInputs() {
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 0.5), dataType: .int) as? NSNumber, NSNumber(value: 0))
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: -0.5), dataType: .int) as? NSNumber, NSNumber(value: 0))
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 0.9), dataType: .long) as? NSNumber, NSNumber(value: 0))
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 1.9), dataType: .int) as? NSNumber, NSNumber(value: 1))
+        // Full 64-bit range survives (int64Value, not int32)
+        XCTAssertEqual(
+            transformer.transformValue(NSNumber(value: 9_000_000_000), dataType: .long) as? NSNumber,
+            NSNumber(value: 9_000_000_000)
+        )
+        // Float keeps the fractional value
+        XCTAssertEqual(transformer.transformValue(NSNumber(value: 0.5), dataType: .float) as? NSNumber, NSNumber(value: 0.5))
+    }
+
     // Explicit decision (the ObjC original would have raised unrecognized-selector here):
     // an NSNumber bool attribute uses its boolValue; string parsing is unchanged.
     func testBoolFromNumber() {
