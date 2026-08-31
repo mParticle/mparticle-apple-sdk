@@ -1,6 +1,7 @@
 #import "SceneDelegateHandler.h"
 #import "MPILogger.h"
 #import "mParticle.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface SceneDelegateHandler ()
 @property (nonatomic, strong) id<OpenURLHandlerProtocol> appNotificationHandler;
@@ -16,37 +17,42 @@
     return self;
 }
 
+// Non-extractable: MPILogDebug is an ObjC macro that captures the call site and reads
+// MParticle's log level, so Swift composes the messages and this emits them unchanged.
+- (void)logLines:(NSArray<NSString *> *)lines {
+    for (NSString *line in lines) {
+        MPILogDebug(@"%@", line);
+    }
+}
+
 #if TARGET_OS_IOS
 - (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0)) {
-    
-    MPILogDebug(@"Opening URLContext URL: %@", urlContext.URL);
-    MPILogDebug(@"Source: %@", urlContext.options.sourceApplication ?: @"unknown");
-    MPILogDebug(@"Annotation: %@", urlContext.options.annotation);
-
+    NSString *eventAttribution = nil;
     if (@available(iOS 14.5, *)) {
-        MPILogDebug(@"Event Attribution: %@", urlContext.options.eventAttribution);
+        eventAttribution = [NSString stringWithFormat:@"%@", urlContext.options.eventAttribution];
     }
 
-    MPILogDebug(@"Open in place: %@", urlContext.options.openInPlace ? @"True" : @"False");
-    
-    NSMutableDictionary *options = [NSMutableDictionary dictionary];
-    if (urlContext.options.sourceApplication) {
-        options[@"UIApplicationOpenURLOptionsSourceApplicationKey"] = urlContext.options.sourceApplication;
-    }
+    [self logLines:[MPSceneDelegateLogic urlContextLogLinesWithURL:[NSString stringWithFormat:@"%@", urlContext.URL]
+                                                 sourceApplication:urlContext.options.sourceApplication
+                                                        annotation:[NSString stringWithFormat:@"%@", urlContext.options.annotation]
+                                                  eventAttribution:eventAttribution
+                                                       openInPlace:urlContext.options.openInPlace]];
+
+    NSDictionary<NSString *, id> *options = [MPSceneDelegateLogic openURLOptionsWithSourceApplication:urlContext.options.sourceApplication];
 
     [self.appNotificationHandler openURL:urlContext.URL options:options];
 }
 #endif
 
 - (void)handleUserActivity:(NSUserActivity *)userActivity {
-    MPILogDebug(@"User Activity Received");
-    MPILogDebug(@"User Activity Type: %@", userActivity.activityType);
-    MPILogDebug(@"User Activity Title: %@", userActivity.title ?: @"");
-    MPILogDebug(@"User Activity User Info: %@", userActivity.userInfo ?: @{});
+    NSString *userInfoDescription = userActivity.userInfo
+        ? [NSString stringWithFormat:@"%@", userActivity.userInfo]
+        : [NSString stringWithFormat:@"%@", @{}];
 
-    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
-        MPILogDebug(@"Opening UserActivity URL: %@", userActivity.webpageURL.absoluteString ?: @"");
-    }
+    [self logLines:[MPSceneDelegateLogic userActivityLogLinesWithActivityType:userActivity.activityType
+                                                                        title:userActivity.title
+                                                          userInfoDescription:userInfoDescription
+                                                                   webpageURL:userActivity.webpageURL.absoluteString]];
 
     (void)[self.appNotificationHandler continueUserActivity:userActivity
                                         restorationHandler:^(__unused NSArray<id<UIUserActivityRestoring>> * _Nullable restorableObjects) {
