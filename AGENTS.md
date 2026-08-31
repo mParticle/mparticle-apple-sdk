@@ -132,9 +132,10 @@ nothing else discovers it.
    break survives every other check.
 5. Integration tests fail on an unmatched request but only _warn_ on a recorded WireMock mapping
    the app never calls (`IntegrationTests/run_integration_tests_ci.sh`).
-6. **Some workflow files never run, and the tree does not show it.** `cross-platform-tests.yml` and
-   `release-ecosystem-from-main.yml` are disabled in repository settings; `RNExample` is not built on
-   PRs because `build-secondary-platforms` is commented out of
-   `.github/workflows/pull-request.yml`. Check `gh workflow list --all` before assuming a workflow
-   file is a live gate.
+6. **The workflow list and the tree disagree, in both directions.** `cross-platform-tests.yml` is in
+   the tree but `disabled_manually` in repository settings, so it never runs; and
+   `gh workflow list --all` reports a `release-ecosystem-from-main.yml` whose file is not on `main`
+   at all, only on unmerged branches. Separately, `RNExample` is not built on PRs because
+   `build-secondary-platforms` is commented out of `.github/workflows/pull-request.yml`. Neither the
+   tree nor the workflow list is sufficient alone; check the caller too.
 7. `ARCHITECTURE.md` is two diagram images and no prose. There is no written architecture document.
