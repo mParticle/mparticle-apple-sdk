@@ -114,6 +114,14 @@ function classifyFiles(files, treeEntries, policy) {
   };
 }
 
+function getIneligibleFileConclusion(files, policy) {
+  const safePaths = new Set(policy.safePaths);
+
+  return files.every((file) => safePaths.has(file.filename))
+    ? "action_required"
+    : "success";
+}
+
 function evaluateWorkflows(runs, requirements) {
   for (const requirement of requirements) {
     const matchingRuns = runs
@@ -175,12 +183,13 @@ function getPullRequestNumbers(event) {
   return [];
 }
 
-function hasSharedOpenHead(pullRequests, pullRequestNumber) {
+function hasSharedOpenHead(pullRequests, pullRequestNumber, headSha) {
   return pullRequests.some(
     (pullRequest) =>
       pullRequest.state === "open" &&
       pullRequest.number !== pullRequestNumber &&
-      Number.isInteger(pullRequest.number),
+      Number.isInteger(pullRequest.number) &&
+      pullRequest.head?.sha === headSha,
   );
 }
 
@@ -257,6 +266,7 @@ module.exports = {
   evaluateTeamReviewState,
   evaluateWorkflows,
   getEffectiveReviews,
+  getIneligibleFileConclusion,
   getPaginatedItems,
   getPullRequestNumber,
   getPullRequestNumbers,

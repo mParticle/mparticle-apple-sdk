@@ -4,6 +4,7 @@ const {
   evaluateTeamReviewState,
   evaluateWorkflows,
   getEffectiveReviews,
+  getIneligibleFileConclusion,
   getPaginatedItems,
   getPullRequestNumbers,
   hasSharedOpenHead,
@@ -11,8 +12,11 @@ const {
 } = require("./lib/gate");
 
 function getInput(name) {
+  const normalizedName = name.toUpperCase();
   return (
-    process.env[`INPUT_${name.replace(/-/g, "_").toUpperCase()}`]?.trim() || ""
+    process.env[`INPUT_${normalizedName}`]?.trim() ||
+    process.env[`INPUT_${normalizedName.replace(/-/g, "_")}`]?.trim() ||
+    ""
   );
 }
 
@@ -176,6 +180,46 @@ async function completeGate(api, details, conclusion, summary) {
   });
 }
 
+async function ensureGatePending(api, details, summary) {
+  const check = await getGateCheck(
+    api,
+    details.owner,
+    details.repository,
+    details.sha,
+    details.gateAppId,
+    details.checkName,
+  );
+
+  if (check && check.status !== "completed") {
+    await api.request(
+      `/repos/${details.owner}/${details.repository}/check-runs/${check.id}`,
+      {
+        method: "PATCH",
+        body: {
+          name: details.checkName,
+          output: { title: "Rokt Safe PR Gate", summary },
+          status: "in_progress",
+        },
+      },
+    );
+    return;
+  }
+
+  await api.request(
+    `/repos/${details.owner}/${details.repository}/check-runs`,
+    {
+      method: "POST",
+      body: {
+        external_id: `rokt-safe-pr-gate:${details.prNumber}:${details.sha}`,
+        head_sha: details.sha,
+        name: details.checkName,
+        output: { title: "Rokt Safe PR Gate", summary },
+        status: "in_progress",
+      },
+    },
+  );
+}
+
 async function isActiveTeamMember(api, organization, teamSlug, login) {
   const path = `/orgs/${organization}/teams/${encodeURIComponent(teamSlug)}/memberships/${encodeURIComponent(login)}`;
   const response = await api.request(path, { allowStatuses: [404] });
@@ -320,7 +364,7 @@ async function evaluatePullRequest(context, prNumber) {
       ),
     );
 
-    if (hasSharedOpenHead(pullRequestsAtHead, prNumber)) {
+    if (hasSharedOpenHead(pullRequestsAtHead, prNumber, pr.head.sha)) {
       await completeDecision(
         context,
         details,
@@ -334,8 +378,8 @@ async function evaluatePullRequest(context, prNumber) {
       await completeDecision(
         context,
         details,
-        "success",
-        "Draft pull request; evaluation will run when it is ready for review.",
+        "action_required",
+        "Draft pull request; it cannot receive a passing Gate decision until it is ready for review.",
       );
       return true;
     }
@@ -364,11 +408,14 @@ async function evaluatePullRequest(context, prNumber) {
     const fileState = classifyFiles(files, tree.data.tree, policy);
 
     if (!fileState.eligible) {
+      const conclusion = getIneligibleFileConclusion(files, policy);
       await completeDecision(
         context,
         details,
-        "success",
-        "The ruleset requires SDK-team approval for this pull request.",
+        conclusion,
+        conclusion === "action_required"
+          ? "This safe-path-only pull request does not meet the Gate's safety requirements."
+          : "The ruleset requires SDK-team approval for this pull request.",
       );
       return true;
     }
@@ -387,6 +434,11 @@ async function evaluatePullRequest(context, prNumber) {
     );
 
     if (workflowState.state === "pending") {
+      await ensureGatePending(
+        mparticleApi,
+        details,
+        `Waiting for required workflow completion: ${workflowState.reason}.`,
+      );
       console.log(
         `Waiting for required workflow completion on PR #${prNumber}.`,
       );
@@ -527,4 +579,9 @@ if (require.main === module) {
   });
 }
 
-module.exports = { resolvePullRequestNumbers };
+module.exports = {
+  ensureGatePending,
+  evaluatePullRequest,
+  getInput,
+  resolvePullRequestNumbers,
+};
