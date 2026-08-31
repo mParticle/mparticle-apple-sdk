@@ -1,19 +1,22 @@
 #import "MPDatabaseMigrationController.h"
 #import <sqlite3.h>
-#import "MPSession.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPPersistenceController.h"
-#import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPStateMachine.h"
-#import "MPUpload.h"
+@import mParticle_Apple_SDK_Swift;
+
+static void MPPrepareStatement(sqlite3 *database, NSString *sql, sqlite3_stmt **statement) {
+    sqlite3_prepare_v2(database, sql.UTF8String, -1, statement, NULL);
+}
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+- (MPLog *)getLogger;
 
 @end
 
@@ -22,6 +25,7 @@
 }
 
 @property (nonatomic, strong) NSArray<NSNumber *> *databaseVersions;
+@property (nonatomic, strong) MPPersistenceFileSystemPRIVATE *fileSystem;
 
 @end
 
@@ -31,6 +35,7 @@
     self = [super init];
     if (self) {
         self.databaseVersions = [databaseVersions copy];
+        self.fileSystem = [[MPPersistenceFileSystemPRIVATE alloc] initWithLogger:[MParticle sharedInstance].getLogger];
     }
     
     return self;
@@ -39,23 +44,7 @@
 #pragma mark Private methods
 
 - (nullable NSString *)existingPathForDatabaseName:(NSString *)databaseName {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *preferredPath = [[MPPersistenceController_PRIVATE databaseDirectoryPath] stringByAppendingPathComponent:databaseName];
-    if ([fileManager fileExistsAtPath:preferredPath]) {
-        return preferredPath;
-    }
-
-#if TARGET_OS_IOS == 1
-    // Directory migration may have left an older-version DB in Documents (e.g. move failed).
-    // Schema migration must still find it so queued events are not abandoned.
-    NSString *legacyDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSString *legacyPath = [legacyDirectory stringByAppendingPathComponent:databaseName];
-    if ([fileManager fileExistsAtPath:legacyPath]) {
-        return legacyPath;
-    }
-#endif
-
-    return nil;
+    return [self.fileSystem existingPathForDatabaseName:databaseName];
 }
 
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp fromDatabase:(sqlite3 *)mParticleDB {
@@ -66,11 +55,7 @@
         MPILogError("Problem Beginning SQL Transaction: %@\n", sqlStatement);
     }
     
-    NSArray *statements = @[
-                           @"DELETE FROM messages WHERE timestamp < ?",
-                           @"DELETE FROM uploads WHERE timestamp < ?",
-                           @"DELETE FROM sessions WHERE end_time < ?"
-                           ];
+    NSArray *statements = [MPDatabaseMigrationLogicPRIVATE deleteRecordsOlderThanStatements];
     
     sqlite3_stmt *preparedStatement;
     for (NSString *sqlStatement in statements) {
@@ -96,12 +81,9 @@
 - (void)migrateSessionsFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 schema: uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info
     // v31 schema: same as v30
-    const char *selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info FROM sessions ORDER BY _id";
-    const char *insertStatement = "INSERT INTO sessions (uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateSessionsSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateSessionsInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_text(insertStatementHandle, 1, (const char *)sqlite3_column_text(selectStatementHandle, 0), -1, SQLITE_TRANSIENT); // uuid
@@ -130,12 +112,9 @@
 - (void)migrateMessagesFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 schema: message_type, session_id, uuid, timestamp, message_data, upload_status, data_plan_id, data_plan_version, mpid
     // v31 schema: same as v30
-    const char *selectStatement = "SELECT message_type, session_id, uuid, timestamp, message_data, upload_status, data_plan_id, data_plan_version, mpid FROM messages ORDER BY _id";
-    const char *insertStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, data_plan_id, data_plan_version, mpid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateMessagesSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateMessagesInsertSQL], &insertStatementHandle);
 
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_text(insertStatementHandle, 1, (const char *)sqlite3_column_text(selectStatementHandle, 0), -1, SQLITE_TRANSIENT); // message_type
@@ -183,12 +162,9 @@
 - (void)migrateUploadsFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 schema: uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version
     // v31 schema: adds upload_settings
-    const char *selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version FROM uploads ORDER BY _id";
-    const char *insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateUploadsSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateUploadsInsertSQL], &insertStatementHandle);
     
     // Create current upload settings to use for migrated uploads
     MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions];
@@ -245,12 +221,9 @@
 
 - (void)migrateForwardingRecordsFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 and v31 schema are identical
-    const char *selectStatement = "SELECT _id, forwarding_data, mpid FROM forwarding_records";
-    const char *insertStatement = "INSERT INTO forwarding_records (_id, forwarding_data, mpid) VALUES (?, ?, ?)";
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateForwardingRecordsSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateForwardingRecordsInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0));
@@ -266,14 +239,10 @@
 
 - (void)migrateConsumerInfoFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // Consumer Info - v30 and v31 schema are identical
-    const char *selectStatement = "SELECT _id, mpid, unique_identifier FROM consumer_info";
-    const char *insertStatement = "INSERT INTO consumer_info (_id, mpid, unique_identifier) VALUES (?, ?, ?)";
-    
     sqlite3_stmt *selectStatementHandle = NULL;
     sqlite3_stmt *insertStatementHandle = NULL;
-    
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateConsumerInfoSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateConsumerInfoInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0));
@@ -287,11 +256,8 @@
     sqlite3_finalize(insertStatementHandle);
     
     // Cookies - v30 and v31 schema are identical
-    selectStatement = "SELECT _id, consumer_info_id, content, domain, expiration, name, mpid FROM cookies";
-    insertStatement = "INSERT INTO cookies (_id, consumer_info_id, content, domain, expiration, name, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateCookiesSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateCookiesInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0));
@@ -311,12 +277,9 @@
 
 - (void)migrateIntegrationAttributesFromDatabase:(sqlite3 *)oldDatabase toDatabase:(sqlite3 *)newDatabase {
     // v30 and v31 schema are identical
-    const char *selectStatement = "SELECT _id, kit_code, attributes_data FROM integration_attributes";
-    const char *insertStatement = "INSERT INTO integration_attributes (_id, kit_code, attributes_data) VALUES (?, ?, ?)";
-    
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    MPPrepareStatement(oldDatabase, [MPDatabaseMigrationLogicPRIVATE migrateIntegrationAttributesSelectSQL], &selectStatementHandle);
+    MPPrepareStatement(newDatabase, [MPDatabaseMigrationLogicPRIVATE migrateIntegrationAttributesInsertSQL], &insertStatementHandle);
     
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0));
@@ -337,11 +300,10 @@
 }
 
 - (void)migrateDatabaseFromVersion:(NSNumber *)oldVersion deleteDbFile:(BOOL)deleteDbFile {
-    NSString *databaseDirectory = [MPPersistenceController_PRIVATE databaseDirectoryPath];
+    NSString *databaseDirectory = [self.fileSystem databaseDirectoryPath];
     NSNumber *currentDatabaseVersion = [self.databaseVersions lastObject];
-    NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];
+    NSString *databaseName = [MPPersistenceSchemaPRIVATE databaseNameForVersion:currentDatabaseVersion];
     NSString *databasePath = [databaseDirectory stringByAppendingPathComponent:databaseName];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
     sqlite3 *oldmParticleDB;
     sqlite3 *mParticleDB;
     
@@ -349,7 +311,7 @@
         return;
     }
     
-    databaseName = [NSString stringWithFormat:@"mParticle%@.db", oldVersion];
+    databaseName = [MPPersistenceSchemaPRIVATE databaseNameForVersion:oldVersion];
     NSString *dbPath = [self existingPathForDatabaseName:databaseName];
     
     if (dbPath == nil || (sqlite3_open_v2([dbPath UTF8String], &oldmParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK)) {
@@ -358,7 +320,7 @@
     }
     
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    [self deleteRecordsOlderThan:(currentTime - SEVEN_DAYS) fromDatabase:oldmParticleDB];
+    [self deleteRecordsOlderThan:(currentTime - [MPPersistenceSchemaPRIVATE sevenDays]) fromDatabase:oldmParticleDB];
     [self migrateConsumerInfoFromDatabase:oldmParticleDB toDatabase:mParticleDB];
     [self migrateSessionsFromDatabase:oldmParticleDB toDatabase:mParticleDB];
     [self migrateMessagesFromDatabase:oldmParticleDB toDatabase:mParticleDB];
@@ -368,27 +330,13 @@
 
     sqlite3_close(oldmParticleDB);
     if (deleteDbFile) {
-        [fileManager removeItemAtPath:dbPath error:nil];
+        [self.fileSystem removeDatabaseFileIfExistsAtPath:dbPath];
     }
     sqlite3_close(mParticleDB);
 }
 
 - (NSNumber *)needsMigration {
-    NSMutableArray *oldDatabaseVersions = [self.databaseVersions mutableCopy];
-    [oldDatabaseVersions removeLastObject];
-    
-    if (oldDatabaseVersions.count == 0) {
-        return nil;
-    }
-    
-    // Only check for v30 database (the only version we migrate from)
-    NSNumber *databaseVersion = oldDatabaseVersions[0];
-    NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", databaseVersion];
-    if ([self existingPathForDatabaseName:databaseName] != nil) {
-        return databaseVersion;
-    }
-    
-    return nil;
+    return [self.fileSystem versionNeedingMigrationFrom:self.databaseVersions];
 }
 
 @end

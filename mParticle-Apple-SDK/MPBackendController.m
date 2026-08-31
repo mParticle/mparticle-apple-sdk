@@ -1,12 +1,9 @@
 #import "MPBackendController.h"
 #import "MPPersistenceController.h"
-#import "MPMessage.h"
-#import "MPSession.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPNetworkPerformance.h"
 #import "MPBreadcrumb.h"
-#import "MPUpload.h"
 #import "MPAudience.h"
 #import "MPMessageBuilder.h"
 #import "MPEvent.h"
@@ -743,7 +740,8 @@ static BOOL skipNextUpload = NO;
 - (void)createTempSession {
     tempSession = [[MParticleSession alloc] initWithUUID:[NSUUID UUID].UUIDString];
     
-    MPSession *mpSession = [[MPSession alloc] init];
+    MPSession *mpSession = [[MPSession alloc] initWithStartTime:[NSDate date].timeIntervalSince1970
+                                                        userId:[MPPersistenceController_PRIVATE mpId]];
     mpSession.uuid = tempSession.UUID;
     
     tempSession.startTime = MPMilliseconds(mpSession.startTime);

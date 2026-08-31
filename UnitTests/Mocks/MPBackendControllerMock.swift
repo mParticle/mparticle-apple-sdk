@@ -1,11 +1,12 @@
 import XCTest
 import mParticle_Apple_SDK
+internal import mParticle_Apple_SDK_Swift
 
 class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var sessionTimeout: TimeInterval = 0.0
     var uploadInterval: TimeInterval = 0.0
     var eventSet: NSMutableSet? = NSMutableSet()
-    var session: MPSession?
+    var session: MPSessionPRIVATE?
 
     // MARK: - Opt-out
 
@@ -243,7 +244,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var setSessionAttributeValueParam: Any?
     var setSessionAttributeReturnValue = MPExecStatus.success
 
-    func setSessionAttribute(_: MPSession, key: String, value: Any) -> MPExecStatus {
+    func setSessionAttribute(_: MPSessionPRIVATE, key: String, value: Any) -> MPExecStatus {
         setSessionAttributeCalled = true
         setSessionAttributeKeyParam = key
         setSessionAttributeValueParam = value
@@ -256,7 +257,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
     var incrementSessionAttributeByValueParam: NSNumber?
     var incrementSessionAttributeReturnValue: NSNumber?
 
-    func incrementSessionAttribute(_: MPSession, key: String, byValue value: NSNumber) -> NSNumber? {
+    func incrementSessionAttribute(_: MPSessionPRIVATE, key: String, byValue value: NSNumber) -> NSNumber? {
         incrementSessionAttributeCalled = true
         incrementSessionAttributeKeyParam = key
         incrementSessionAttributeByValueParam = value

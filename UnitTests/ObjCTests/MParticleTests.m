@@ -3,7 +3,6 @@
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
-#import "MPSession.h"
 #import "MPBackendController.h"
 #import "MPURLRequestBuilder.h"
 #import "MPPersistenceController.h"

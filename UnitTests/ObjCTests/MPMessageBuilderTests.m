@@ -3,8 +3,6 @@
 #import "MPMessageBuilder.h"
 #import "mParticle.h"
 #import "MPIConstants.h"
-#import "MPSession.h"
-#import "MPMessage.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "MPPromotion.h"

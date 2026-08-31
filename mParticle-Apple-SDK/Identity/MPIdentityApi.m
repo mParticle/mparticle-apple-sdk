@@ -7,13 +7,11 @@
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPConsumerInfo.h"
-#import "MPSession.h"
 #import "MPPersistenceController.h"
 #import "MPIdentityDTO.h"
 #import "MPEnums.h"
 #import "MPILogger.h"
 #import "MPKitContainer.h"
-#import "MPUpload.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
