@@ -67,6 +67,8 @@ set the mode to `enforce` and test these fixture pull requests:
 9. Make a safe-path-only pull request exceed a Gate limit, rename a file, or
    mark it as a draft: the Gate must report `action_required`. The author must
    correct it before it can merge without SDK-team review.
+   A fresh SDK-team approval on the current SHA is the only manual exception;
+   the Gate never automatically approves this category.
 
 For fork PRs, the Gate's trusted scheduled run re-evaluates manual approvals at
 most five minutes later. An SDK-team maintainer can instead use **Actions →

@@ -10,7 +10,15 @@ on:
         required: false
         type: string
   pull_request_target:
-    types: [opened, reopened, ready_for_review, synchronize, edited]
+    types:
+      [
+        opened,
+        reopened,
+        ready_for_review,
+        converted_to_draft,
+        synchronize,
+        edited,
+      ]
   workflow_run:
     workflows: [Pull request]
     types: [completed]

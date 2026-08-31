@@ -256,6 +256,23 @@ async function getTeamReviewState(api, organization, teamSlug, reviews, pr) {
   );
 }
 
+async function getCurrentTeamReviewState(context, prNumber, pr) {
+  const reviews = await context.mparticleApi.paginate(
+    toQueryPath(
+      `/repos/${context.owner}/${context.repository}/pulls/${prNumber}/reviews`,
+      { per_page: "100" },
+    ),
+  );
+
+  return getTeamReviewState(
+    context.mparticleApi,
+    context.owner,
+    context.manualReviewTeamSlug,
+    reviews,
+    pr,
+  );
+}
+
 async function resolvePullRequestNumbers(
   event,
   api,
@@ -409,13 +426,48 @@ async function evaluatePullRequest(context, prNumber) {
 
     if (!fileState.eligible) {
       const conclusion = getIneligibleFileConclusion(files, policy);
+
+      if (conclusion === "success") {
+        await completeDecision(
+          context,
+          details,
+          conclusion,
+          "The ruleset requires SDK-team approval for this pull request.",
+        );
+        return true;
+      }
+
+      const teamReviewState = await getCurrentTeamReviewState(
+        context,
+        prNumber,
+        pr,
+      );
+
+      if (teamReviewState.hasBlockingChangeRequest) {
+        await completeDecision(
+          context,
+          details,
+          "action_required",
+          "An SDK-team review requests changes on this pull request.",
+        );
+        return true;
+      }
+
+      if (teamReviewState.hasFreshApproval) {
+        await completeDecision(
+          context,
+          details,
+          "success",
+          "A fresh SDK-team approval approved this safe-path exception for the current head SHA.",
+        );
+        return true;
+      }
+
       await completeDecision(
         context,
         details,
-        conclusion,
-        conclusion === "action_required"
-          ? "This safe-path-only pull request does not meet the Gate's safety requirements."
-          : "The ruleset requires SDK-team approval for this pull request.",
+        "action_required",
+        "This safe-path-only pull request does not meet the Gate's safety requirements and requires a fresh SDK-team approval.",
       );
       return true;
     }
@@ -455,16 +507,9 @@ async function evaluatePullRequest(context, prNumber) {
       return true;
     }
 
-    const reviews = await mparticleApi.paginate(
-      toQueryPath(`/repos/${owner}/${repository}/pulls/${prNumber}/reviews`, {
-        per_page: "100",
-      }),
-    );
-    const teamReviewState = await getTeamReviewState(
-      mparticleApi,
-      owner,
-      context.manualReviewTeamSlug,
-      reviews,
+    const teamReviewState = await getCurrentTeamReviewState(
+      context,
+      prNumber,
       pr,
     );
 
