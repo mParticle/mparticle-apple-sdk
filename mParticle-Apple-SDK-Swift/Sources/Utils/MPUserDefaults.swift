@@ -43,6 +43,18 @@ public protocol MPUserDefaultsProtocol {
         }
     }
 
+    @objc public class func storedMpId() -> NSNumber {
+        userDefaultsQueue.sync {
+            if let mpId = userDefaults?["mpid"] as? NSNumber {
+                return mpId
+            }
+            if let mpId = UserDefaults.standard.object(forKey: globalKeyForKey("mpid")) as? NSNumber {
+                return mpId
+            }
+            return 0
+        }
+    }
+
     @objc public func mpObject(forKey key: String, userId: NSNumber) -> Any? {
         let prefixedKey = MPUserDefaults.prefixedKey(key, userId: userId)
 

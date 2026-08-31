@@ -3,7 +3,7 @@
 #import "MPEvent.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
-#import "MPSession.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPProduct.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"

@@ -1,6 +1,7 @@
 import Foundation
 
-@objc public final class MPMessagePRIVATE: NSObject {
+@objc(MPMessage)
+public final class MPMessagePRIVATE: NSObject, NSCopying, NSSecureCoding {
     @objc public var sessionId: NSNumber?
     @objc public var messageId: Int64
     @objc public var uuid: String?
@@ -12,6 +13,8 @@ import Foundation
     @objc public var dataPlanId: String?
     @objc public var dataPlanVersion: NSNumber?
     @objc public var shouldUploadEvent = true
+
+    @objc public static var supportsSecureCoding: Bool { true }
 
     @objc(initWithSessionId:messageId:UUID:messageType:messageData:timestamp:uploadStatus:userId:dataPlanId:dataPlanVersion:)
     public init(
@@ -39,6 +42,64 @@ import Foundation
         super.init()
     }
 
+    @objc(initWithSession:messageType:messageInfo:uploadStatus:UUID:timestamp:userId:dataPlanId:dataPlanVersion:)
+    public convenience init(
+        session: MPSessionPRIVATE?,
+        messageType: String,
+        messageInfo: NSDictionary,
+        uploadStatus: Int,
+        uuid: String,
+        timestamp: TimeInterval,
+        userId: NSNumber,
+        dataPlanId: String?,
+        dataPlanVersion: NSNumber?
+    ) {
+        self.init(
+            sessionId: session.map { NSNumber(value: $0.sessionId) },
+            messageId: 0,
+            uuid: uuid,
+            messageType: messageType,
+            messageData: Self.sanitizedJSONData(from: messageInfo),
+            timestamp: timestamp,
+            uploadStatus: uploadStatus,
+            userId: userId,
+            dataPlanId: dataPlanId,
+            dataPlanVersion: dataPlanVersion
+        )
+    }
+
+    public required convenience init?(coder: NSCoder) {
+        self.init(
+            sessionId: coder.decodeObject(of: NSNumber.self, forKey: "sessionId"),
+            messageId: coder.decodeInt64(forKey: "messageId"),
+            uuid: coder.decodeObject(of: NSString.self, forKey: "uuid") as String?,
+            messageType: coder.decodeObject(of: NSString.self, forKey: "messageType") as String?,
+            messageData: coder.decodeObject(of: NSData.self, forKey: "messageData") as Data?,
+            timestamp: coder.decodeDouble(forKey: "timestamp"),
+            uploadStatus: coder.decodeInteger(forKey: "uploadStatus"),
+            userId: NSNumber(value: coder.decodeInt64(forKey: "mpid")),
+            dataPlanId: coder.decodeObject(of: NSString.self, forKey: "dataPlanId") as String?,
+            dataPlanVersion: coder.decodeObject(of: NSNumber.self, forKey: "dataPlanVersion")
+        )
+        if coder.containsValue(forKey: "shouldUploadEvent") {
+            shouldUploadEvent = coder.decodeBool(forKey: "shouldUploadEvent")
+        }
+    }
+
+    @objc public func encode(with coder: NSCoder) {
+        coder.encode(sessionId, forKey: "sessionId")
+        coder.encode(messageId, forKey: "messageId")
+        coder.encode(uuid, forKey: "uuid")
+        coder.encode(messageType, forKey: "messageType")
+        coder.encode(messageData, forKey: "messageData")
+        coder.encode(timestamp, forKey: "timestamp")
+        coder.encode(uploadStatus, forKey: "uploadStatus")
+        coder.encode(userId.int64Value, forKey: "mpid")
+        coder.encode(dataPlanId, forKey: "dataPlanId")
+        coder.encode(dataPlanVersion, forKey: "dataPlanVersion")
+        coder.encode(shouldUploadEvent, forKey: "shouldUploadEvent")
+    }
+
     @objc(sanitizedJSONDataFromMessageInfo:)
     public static func sanitizedJSONData(from messageInfo: NSDictionary) -> Data? {
         let dictionary = NSMutableDictionary(dictionary: messageInfo)
@@ -54,15 +115,15 @@ import Foundation
             guard let key = key as? String else { continue }
             if let nested = messageInfo[key] as? NSDictionary {
                 if !JSONSerialization.isValidJSONObject(nested) {
-                    let temp = (messageDictionary[key] as? NSDictionary)?.mutableCopy() as? NSMutableDictionary
-                    if let temp {
-                        fixInvalidKeys(temp, messageInfo: nested)
+                    let mutableNested = (messageDictionary[key] as? NSDictionary)?.mutableCopy() as? NSMutableDictionary
+                    if let mutableNested {
+                        fixInvalidKeys(mutableNested, messageInfo: nested)
                     }
-                    messageDictionary[key] = temp
+                    messageDictionary[key] = mutableNested
                 }
             } else if let value = messageInfo[key] as? NSNumber {
                 let doubleValue = value.doubleValue
-                if doubleValue == Double.infinity || doubleValue == -Double.infinity || doubleValue.isNaN {
+                if doubleValue.isInfinite || doubleValue.isNaN {
                     NSLog("mParticle -> Invalid Message Data for key: %@", key)
                     NSLog("mParticle -> Value should not be infinite. Removing value from message data")
                     messageDictionary[key] = nil
@@ -75,33 +136,24 @@ import Foundation
     public func truncateMessageDataProperty(_ property: String?, toLength length: Int) {
         guard let property, length >= 0, let payload = messageData else { return }
         guard let json = try? JSONSerialization.jsonObject(with: payload, options: []),
-              let messageDataDict = (json as? NSDictionary)?.mutableCopy() as? NSMutableDictionary
-        else { return }
-
-        guard let propertyValue = messageDataDict[property] as? String else { return }
-
-        let propertyValueData = Data(propertyValue.utf8)
-        let truncatedCount = min(propertyValueData.count, length)
-        let truncatedData = propertyValueData.prefix(truncatedCount)
-        messageDataDict[property] = String(data: Data(truncatedData), encoding: .utf8)
-        if let updated = try? JSONSerialization.data(withJSONObject: messageDataDict, options: []) {
-            messageData = updated
+              let dictionary = (json as? NSDictionary)?.mutableCopy() as? NSMutableDictionary,
+              let value = dictionary[property] as? String
+        else {
+            return
         }
+
+        let bytes = Data(value.utf8)
+        dictionary[property] = String(data: Data(bytes.prefix(min(bytes.count, length))), encoding: .utf8)
+        messageData = try? JSONSerialization.data(withJSONObject: dictionary, options: [])
     }
 
     @objc public func dictionaryRepresentation() -> NSDictionary? {
         guard let messageData else { return nil }
-        do {
-            let json = try JSONSerialization.jsonObject(with: messageData, options: [])
-            if json is NSDictionary {
-                return json as? NSDictionary
-            }
-            NSLog("mParticle -> Error serializing message.")
-            return nil
-        } catch {
+        guard let dictionary = try? JSONSerialization.jsonObject(with: messageData, options: []) as? NSDictionary else {
             NSLog("mParticle -> Error serializing message.")
             return nil
         }
+        return dictionary
     }
 
     @objc public func serializedString() -> String? {
@@ -109,7 +161,7 @@ import Foundation
         return String(data: messageData, encoding: .utf8)
     }
 
-    @objc public func copyMessage() -> MPMessagePRIVATE {
+    @objc public func copy(with _: NSZone? = nil) -> Any {
         let copy = MPMessagePRIVATE(
             sessionId: sessionId,
             messageId: messageId,
@@ -126,15 +178,21 @@ import Foundation
         return copy
     }
 
-    @objc public func isEqual(toMessage other: MPMessagePRIVATE) -> Bool {
-        sessionIdsEqual(other.sessionId)
+    override public func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? MPMessagePRIVATE else { return false }
+        return isEqual(toMessage: other)
+    }
+
+    @objc(isEqualToMessage:)
+    public func isEqual(toMessage other: MPMessagePRIVATE) -> Bool {
+        sessionId == other.sessionId
             && messageId == other.messageId
             && timestamp == other.timestamp
-            && nsStringEqual(messageType, other.messageType)
-            && nsDataEqual(messageData, other.messageData)
+            && stringsEqual(messageType, other.messageType)
+            && dataEqual(messageData, other.messageData)
             && shouldUploadEvent == other.shouldUploadEvent
-            && optionalEqual(dataPlanId, other.dataPlanId)
-            && optionalNumberEqual(dataPlanVersion, other.dataPlanVersion)
+            && dataPlanId == other.dataPlanId
+            && dataPlanVersion == other.dataPlanVersion
     }
 
     override public var hash: Int {
@@ -149,25 +207,20 @@ import Foundation
         return result
     }
 
-    private func sessionIdsEqual(_ other: NSNumber?) -> Bool {
-        (sessionId == nil && other == nil) || sessionId == other
+    override public var description: String {
+        "Message\n Id: \(messageId)\n UUID: \(uuid ?? "(null)")\n Session: \(sessionId?.description ?? "(null)")"
+            + "\n Type: \(messageType ?? "(null)")\n timestamp: \(String(format: "%.0f", timestamp))"
+            + "\n Data Plan: \(dataPlanId ?? "(null)") \(dataPlanVersion?.description ?? "(null)")"
+            + "\n Content: \(serializedString() ?? "(null)")\n"
     }
 
-    private func optionalEqual(_ lhs: String?, _ rhs: String?) -> Bool {
-        (lhs == nil && rhs == nil) || lhs == rhs
-    }
-
-    private func nsStringEqual(_ lhs: String?, _ rhs: String?) -> Bool {
+    private func stringsEqual(_ lhs: String?, _ rhs: String?) -> Bool {
         guard let lhs, let rhs else { return false }
         return lhs == rhs
     }
 
-    private func nsDataEqual(_ lhs: Data?, _ rhs: Data?) -> Bool {
+    private func dataEqual(_ lhs: Data?, _ rhs: Data?) -> Bool {
         guard let lhs, let rhs else { return false }
         return lhs == rhs
-    }
-
-    private func optionalNumberEqual(_ lhs: NSNumber?, _ rhs: NSNumber?) -> Bool {
-        (lhs == nil && rhs == nil) || lhs == rhs
     }
 }

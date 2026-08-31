@@ -1,9 +1,6 @@
 #import <XCTest/XCTest.h>
 @import mParticle_Apple_SDK_Swift;
 #import "MPPersistenceController.h"
-#import "MPSession.h"
-#import "MPMessage.h"
-#import "MPUpload.h"
 #import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPMessageBuilder.h"
@@ -1937,7 +1934,7 @@
 
     NSArray<MPUpload *> *fetched = [persistence fetchUploads];
     XCTAssertEqual(fetched.count, 1, @"Upload with legacy class name should be decoded and returned by fetchUploads");
-    XCTAssertEqualObjects(fetched.firstObject.uploadSettings.apiKey, settings.apiKey,
+    XCTAssertEqualObjects(((MPUploadSettings *)fetched.firstObject.uploadSettings).apiKey, settings.apiKey,
                           @"Decoded upload settings apiKey should match original");
 }
 

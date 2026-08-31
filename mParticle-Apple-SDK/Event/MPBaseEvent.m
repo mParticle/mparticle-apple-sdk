@@ -1,8 +1,8 @@
 #import "MPBaseEvent.h"
 #import "MPIConstants.h"
-#import "MPSession.h"
 #import "mParticle.h"
 #import "MPILogger.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 

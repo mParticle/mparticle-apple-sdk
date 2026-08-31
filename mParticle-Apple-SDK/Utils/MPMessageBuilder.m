@@ -1,6 +1,4 @@
 #import "MPMessageBuilder.h"
-#import "MPSession.h"
-#import "MPMessage.h"
 #import "MPStateMachine.h"
 #import <UIKit/UIKit.h>
 #import "MPEnums.h"
