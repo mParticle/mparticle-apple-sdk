@@ -21,7 +21,10 @@ let package = Package(
         // Swift-only components
         .target(
             name: "mParticle_Apple_SDK_Swift",
-            path: "mParticle-Apple-SDK-Swift/Sources"
+            path: "mParticle-Apple-SDK-Swift/Sources",
+            linkerSettings: [
+                .linkedFramework("SystemConfiguration")
+            ]
         ),
         // Objective-C SDK - source-based distribution (internal module: mParticle_Apple_SDK_ObjC)
         .target(
@@ -49,8 +52,7 @@ let package = Package(
                 .headerSearchPath("Persistence"),
                 .headerSearchPath("Consent"),
                 .headerSearchPath("AppNotifications"),
-                .headerSearchPath("Data Model"),
-                .headerSearchPath("Libraries/Reachability")
+                .headerSearchPath("Data Model")
             ],
             linkerSettings: [
                 .linkedFramework("Foundation"),
