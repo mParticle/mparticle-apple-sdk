@@ -64,6 +64,9 @@ set the mode to `enforce` and test these fixture pull requests:
    comment and the Gate must still react to a successful `Pull request` run.
 8. Retarget a previously safe pull request: the `edited` event must re-evaluate
    the current base diff before the Gate reports success.
+9. Make a safe-path-only pull request exceed a Gate limit, rename a file, or
+   mark it as a draft: the Gate must report `action_required`. The author must
+   correct it before it can merge without SDK-team review.
 
 For fork PRs, the Gate's trusted scheduled run re-evaluates manual approvals at
 most five minutes later. An SDK-team maintainer can instead use **Actions →

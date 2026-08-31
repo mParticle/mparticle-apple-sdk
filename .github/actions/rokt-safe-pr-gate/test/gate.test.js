@@ -5,13 +5,19 @@ const {
   evaluateTeamReviewState,
   evaluateWorkflows,
   getEffectiveReviews,
+  getIneligibleFileConclusion,
   getPaginatedItems,
   getPullRequestNumber,
   getPullRequestNumbers,
   hasSharedOpenHead,
   validatePolicy,
 } = require("../lib/gate");
-const { resolvePullRequestNumbers } = require("../index");
+const {
+  ensureGatePending,
+  evaluatePullRequest,
+  getInput,
+  resolvePullRequestNumbers,
+} = require("../index");
 
 const policy = {
   gateCheckName: "Rokt Safe PR Gate",
@@ -55,6 +61,14 @@ test("rejects a mixed documentation and source change", () => {
   assert.equal(
     classifyFiles([safeFile, sourceFile], tree, policy).eligible,
     false,
+  );
+  assert.equal(
+    getIneligibleFileConclusion([safeFile, sourceFile], policy),
+    "success",
+  );
+  assert.equal(
+    getIneligibleFileConclusion([safeFile], policy),
+    "action_required",
   );
 });
 
@@ -168,18 +182,30 @@ test("resolves pull request numbers from both supported events", () => {
 });
 
 test("rejects a Gate decision shared by multiple open pull requests", () => {
+  const headSha = "shared-head";
   assert.equal(
     hasSharedOpenHead(
       [
-        { number: 42, state: "open" },
-        { number: 43, state: "open" },
-        { number: 44, state: "closed" },
+        { head: { sha: headSha }, number: 42, state: "open" },
+        { head: { sha: headSha }, number: 43, state: "open" },
+        { head: { sha: headSha }, number: 44, state: "closed" },
       ],
       42,
+      headSha,
     ),
     true,
   );
-  assert.equal(hasSharedOpenHead([{ number: 42, state: "open" }], 42), false);
+  assert.equal(
+    hasSharedOpenHead(
+      [
+        { head: { sha: headSha }, number: 42, state: "open" },
+        { head: { sha: "nested-head" }, number: 43, state: "open" },
+      ],
+      42,
+      headSha,
+    ),
+    false,
+  );
 });
 
 test("reads array and wrapped GitHub API pagination responses", () => {
@@ -319,4 +345,126 @@ test("rejects an unsafe policy definition", () => {
       }),
     /workflow path/,
   );
+});
+
+test("reads hyphenated composite-action input names", () => {
+  const inputName = "INPUT_EVENT-PATH";
+  const previousValue = process.env[inputName];
+  process.env[inputName] = "/tmp/event.json";
+  assert.equal(getInput("event-path"), "/tmp/event.json");
+  if (previousValue === undefined) delete process.env[inputName];
+  else process.env[inputName] = previousValue;
+});
+
+test("replaces a completed Gate check while required CI is pending", async () => {
+  const requests = [];
+  const api = {
+    paginate: async () => [
+      {
+        app: { id: 99 },
+        id: 42,
+        name: "Rokt Safe PR Gate",
+        status: "completed",
+      },
+    ],
+    request: async (path, options) => requests.push({ options, path }),
+  };
+  await ensureGatePending(
+    api,
+    {
+      checkName: "Rokt Safe PR Gate",
+      gateAppId: "99",
+      owner: "mParticle",
+      prNumber: 7,
+      repository: "mparticle-apple-sdk",
+      sha: "b".repeat(40),
+    },
+    "Waiting for CI.",
+  );
+
+  assert.equal(requests.length, 1);
+  assert.match(requests[0].path, /\/check-runs$/);
+  assert.equal(requests[0].options.method, "POST");
+  assert.equal(requests[0].options.body.status, "in_progress");
+});
+
+function gateContext(mparticleApi) {
+  return {
+    employeeTeamSlug: "employees",
+    gateAppId: "99",
+    manualReviewTeamSlug: "sdk-team",
+    mode: "enforce",
+    mparticleApi,
+    owner: "mParticle",
+    policy,
+    repository: "mparticle-apple-sdk",
+    roktApi: {},
+  };
+}
+
+test("blocks a draft pull request instead of recording a passing Gate", async () => {
+  const requests = [];
+  const sha = "c".repeat(40);
+  const api = {
+    paginate: async () => [],
+    request: async (path, options = {}) => {
+      requests.push({ options, path });
+      if (path.endsWith("/pulls/9")) {
+        return {
+          data: {
+            draft: true,
+            head: { sha },
+            state: "open",
+            user: { login: "author" },
+          },
+        };
+      }
+      return { data: {} };
+    },
+  };
+
+  assert.equal(await evaluatePullRequest(gateContext(api), 9), true);
+  const completedCheck = requests.find(
+    ({ options }) => options.body?.conclusion === "action_required",
+  );
+  assert.ok(completedCheck);
+});
+
+test("blocks an oversized safe-path-only pull request", async () => {
+  const requests = [];
+  const sha = "d".repeat(40);
+  const api = {
+    paginate: async (path) => {
+      if (path.includes("check-runs")) return [];
+      if (path.includes(`/commits/${sha}/pulls`)) {
+        return [{ head: { sha }, number: 10, state: "open" }];
+      }
+      if (path.includes("/pulls/10/files")) {
+        return [{ ...safeFile, changes: policy.maxChangedLines + 1 }];
+      }
+      throw new Error(`Unexpected paginated path: ${path}`);
+    },
+    request: async (path, options = {}) => {
+      requests.push({ options, path });
+      if (path.endsWith("/pulls/10")) {
+        return {
+          data: {
+            draft: false,
+            head: { sha },
+            state: "open",
+            user: { login: "author" },
+          },
+        };
+      }
+      if (path.includes(`/git/trees/${sha}`))
+        return { data: { tree: safeTree } };
+      return { data: {} };
+    },
+  };
+
+  assert.equal(await evaluatePullRequest(gateContext(api), 10), true);
+  const completedCheck = requests.find(
+    ({ options }) => options.body?.conclusion === "action_required",
+  );
+  assert.ok(completedCheck);
 });
