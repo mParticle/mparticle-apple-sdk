@@ -1,17 +1,9 @@
 import Foundation
 
-/// Mirrors the internal Objective-C `MPDataType` (MPIConstants.h). Duplicated here because the
-/// Foundation-only Swift module cannot import the ObjC module; callers cast `(MPDataTypeSwift)`.
-@objc public enum MPDataTypeSwift: Int {
-    case string = 1
-    case int = 2
-    case bool = 3
-    case float = 4
-    case long = 5
-}
-
 /// Coerces a projection's string value to the typed value a kit expects.
-/// Behavior-preserving port of `-[MPKitContainer transformValue:dataType:]`.
+/// Behavior-preserving port of `-[MPKitContainer transformValue:dataType:]`. Reuses
+/// `CustomModuleDataType`; the ObjC boundary passes the raw `MPDataType` integer, and an
+/// unrecognised value yields nil.
 @objc public final class MPKitValueTransformer: NSObject {
     private let logger: MPLog
 
@@ -19,10 +11,10 @@ import Foundation
         self.logger = logger
     }
 
-    @objc public func transformValue(_ originalValue: Any?, dataType: MPDataTypeSwift) -> Any? {
+    @objc public func transformValue(_ originalValue: Any?, dataType rawDataType: Int) -> Any? {
         let isNull = originalValue == nil || originalValue is NSNull
 
-        switch dataType {
+        switch CustomModuleDataType(rawValue: rawDataType) {
         case .string:
             return isNull ? nil : originalValue
 
@@ -59,6 +51,9 @@ import Foundation
             let string = originalValue as? String ?? ""
             let isTrue = (string as NSString).caseInsensitiveCompare("true") == .orderedSame
             return NSNumber(value: isTrue)
+
+        case .none:
+            return nil
         }
     }
 }

@@ -551,7 +551,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType {
-    return [self.valueTransformer transformValue:originalValue dataType:(MPDataTypeSwift)dataType];
+    return [self.valueTransformer transformValue:originalValue dataType:dataType];
 }
 
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
