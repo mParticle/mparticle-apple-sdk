@@ -114,6 +114,11 @@ nothing else discovers it.
   comment, and a `pull_request` event from a fork gets a read-only token whatever the workflow's
   `permissions:` block asks for. Judge a fork PR on the jobs that _can_ run, and on the merge state
   rather than the check list.
+- **Place a red or `cancelled` check before debugging it.** `build-kits / Pod Lint <kit>` resolves
+  third-party pods through the CocoaPods CDN, so those jobs fail as a batch, retries exhausted, when
+  that CDN errors. A `cancelled` job is normally a `timeout-minutes` expiry in `native-tests` or a
+  superseded push, since `pull-request.yml` sets `concurrency: cancel-in-progress` keyed on the PR -
+  neither is a test result. Compare the same job on `main` before reading a red one as yours.
 
 ## Gotchas
 
