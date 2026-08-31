@@ -442,6 +442,7 @@ test("blocks an oversized safe-path-only pull request", async () => {
       if (path.includes("/pulls/10/files")) {
         return [{ ...safeFile, changes: policy.maxChangedLines + 1 }];
       }
+      if (path.includes("/pulls/10/reviews")) return [];
       throw new Error(`Unexpected paginated path: ${path}`);
     },
     request: async (path, options = {}) => {
@@ -467,4 +468,63 @@ test("blocks an oversized safe-path-only pull request", async () => {
     ({ options }) => options.body?.conclusion === "action_required",
   );
   assert.ok(completedCheck);
+});
+
+test("allows an SDK-team approval to override a safe-path-only exception", async () => {
+  const requests = [];
+  const sha = "e".repeat(40);
+  const api = {
+    paginate: async (path) => {
+      if (path.includes("check-runs")) return [];
+      if (path.includes(`/commits/${sha}/pulls`)) {
+        return [{ head: { sha }, number: 11, state: "open" }];
+      }
+      if (path.includes("/pulls/11/files")) {
+        return [{ ...safeFile, changes: policy.maxChangedLines + 1 }];
+      }
+      if (path.includes("/pulls/11/reviews")) {
+        return [
+          {
+            commit_id: sha,
+            id: 1,
+            state: "APPROVED",
+            submitted_at: "2026-09-01T00:00:00Z",
+            user: { login: "sdk-reviewer" },
+          },
+        ];
+      }
+      throw new Error(`Unexpected paginated path: ${path}`);
+    },
+    request: async (path, options = {}) => {
+      requests.push({ options, path });
+      if (path.endsWith("/pulls/11")) {
+        return {
+          data: {
+            draft: false,
+            head: { sha },
+            number: 11,
+            state: "open",
+            user: { login: "author" },
+          },
+        };
+      }
+      if (path.includes(`/git/trees/${sha}`)) {
+        return { data: { tree: safeTree } };
+      }
+      if (path.includes("/teams/sdk-team/memberships/sdk-reviewer")) {
+        return { data: { state: "active" }, status: 200 };
+      }
+      return { data: {} };
+    },
+  };
+
+  assert.equal(await evaluatePullRequest(gateContext(api), 11), true);
+  const completedCheck = requests.find(
+    ({ options }) => options.body?.conclusion === "success",
+  );
+  assert.ok(completedCheck);
+  assert.match(
+    completedCheck.options.body.output.summary,
+    /safe-path exception/,
+  );
 });
