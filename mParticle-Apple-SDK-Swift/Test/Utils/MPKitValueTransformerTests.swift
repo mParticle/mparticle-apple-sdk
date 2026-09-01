@@ -39,6 +39,28 @@ final class MPKitValueTransformerTests: XCTestCase {
         XCTAssertTrue(transform("A Float string", .float) is NSNull)
     }
 
+    func testFailedNumericCoercionsLogFormatSpecifiersLiterally() {
+        let logger = MPLog(logLevel: .error)
+        var messages: [String] = []
+        logger.customLogger = { messages.append($0) }
+        let transformer = MPKitValueTransformer(logger: logger)
+        let value = "%s %@ %d 100%"
+
+        XCTAssertNil(transformer.transformValue(value, dataType: CustomModuleDataType.int.rawValue))
+        XCTAssertNil(transformer.transformValue(value, dataType: CustomModuleDataType.long.rawValue))
+        XCTAssertTrue(
+            transformer.transformValue(value, dataType: CustomModuleDataType.float.rawValue) is NSNull
+        )
+        XCTAssertEqual(
+            messages,
+            [
+                "mParticle -> Value '%s %@ %d 100%' was expected to be a number string.",
+                "mParticle -> Value '%s %@ %d 100%' was expected to be a number string.",
+                "mParticle -> Attribute '%s %@ %d 100%' was expected to be a number string."
+            ]
+        )
+    }
+
     func testNullAndNil() {
         XCTAssertNil(transform(nil, .string))
         XCTAssertNil(transform(NSNull(), .string))
