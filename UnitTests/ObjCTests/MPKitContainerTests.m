@@ -1,5 +1,6 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
+#import <objc/runtime.h>
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPIConstants.h"
@@ -29,6 +30,25 @@
 #import "MPGDPRConsent.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
+
+static NSString *MPNormalizedMethodTypes(const char *types) {
+    NSString *methodTypes = [NSString stringWithUTF8String:types ?: ""];
+    return [[methodTypes componentsSeparatedByCharactersInSet:NSCharacterSet.decimalDigitCharacterSet]
+            componentsJoinedByString:@""];
+}
+
+static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *protocol) {
+    unsigned int count = 0;
+    struct objc_method_description *methods = protocol_copyMethodDescriptionList(protocol, NO, YES, &count);
+    NSMutableDictionary<NSString *, NSString *> *methodTypes = [NSMutableDictionary dictionaryWithCapacity:count];
+
+    for (unsigned int index = 0; index < count; index++) {
+        methodTypes[NSStringFromSelector(methods[index].name)] = MPNormalizedMethodTypes(methods[index].types);
+    }
+
+    free(methods);
+    return methodTypes;
+}
 
 @interface MParticle ()
 
@@ -2810,21 +2830,71 @@
     MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-    NSURL *url = [NSURL URLWithString:@"mparticle://baseurl?query"];
-    [queueParameters addParameter:url];
-    NSDictionary *options = @{@"key":@"val"};
-    [queueParameters addParameter:options];
+    NSDictionary *userAttributes = @{@"membership":@"gold"};
+    [queueParameters addParameter:userAttributes];
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
     id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
     id kitRegisterMock = OCMPartialMock(kitRegister);
     OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
     
-    [(id <MPKitProtocol>)[kitWrapperMock expect] surveyURLWithUserAttributes:OCMOCK_ANY];
+    [(id <MPKitProtocol>)[kitWrapperMock expect] surveyURLWithUserAttributes:userAttributes];
     
     [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:nil selector:@selector(surveyURLWithUserAttributes:) parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:[[NSDictionary alloc] init]];
     
     [kitWrapperMock verifyWithDelay:5.0];
+}
+
+- (void)testKitDispatchTargetMatchesSupportedSelectorsAndTypeEncodings {
+    NSArray<NSString *> *expectedSelectors = @[
+        @"beginSession",
+        @"beginTimedEvent:",
+        @"clearSession",
+        @"close",
+        @"continueUserActivity:restorationHandler:",
+        @"didUpdateUserActivity:",
+        @"endSession",
+        @"endTimedEvent:",
+        @"events:onEvent:",
+        @"failedToRegisterForUserNotifications:",
+        @"globalEvents:",
+        @"handleActionWithIdentifier:forRemoteNotification:",
+        @"handleActionWithIdentifier:forRemoteNotification:withResponseInfo:",
+        @"leaveBreadcrumb:",
+        @"logBaseEvent:",
+        @"logCommerceEvent:",
+        @"logError:eventInfo:",
+        @"logEvent:",
+        @"logException:",
+        @"logLTVIncrease:event:",
+        @"logScreen:",
+        @"openURL:options:",
+        @"openURL:sourceApplication:annotation:",
+        @"purchaseFinalized:catalogItemId:success:",
+        @"receivedUserNotification:",
+        @"registerPaymentExtension:",
+        @"selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:",
+        @"selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:",
+        @"setATTStatus:withATTStatusTimestampMillis:",
+        @"setDeviceToken:",
+        @"setOptOut:",
+        @"setSessionId:",
+        @"setWrapperSdk:version:",
+        @"shouldDelayMParticleUpload",
+        @"surveyURLWithUserAttributes:"
+    ];
+    NSDictionary<NSString *, NSString *> *dispatchMethods = MPOptionalMethodTypes(@protocol(MPKitDispatchTarget));
+    NSDictionary<NSString *, NSString *> *kitMethods = MPOptionalMethodTypes(@protocol(MPKitProtocol));
+    NSSet<NSString *> *expectedSelectorSet = [NSSet setWithArray:expectedSelectors];
+    NSSet<NSString *> *dispatchSelectorSet = [NSSet setWithArray:dispatchMethods.allKeys];
+
+    XCTAssertEqualObjects(dispatchSelectorSet, expectedSelectorSet);
+
+    for (NSString *selectorName in expectedSelectors) {
+        XCTAssertNotNil(kitMethods[selectorName], @"%@ is missing from MPKitProtocol", selectorName);
+        XCTAssertEqualObjects(dispatchMethods[selectorName], kitMethods[selectorName],
+                              @"%@ has mismatched type encodings", selectorName);
+    }
 }
 
 - (void)testAttemptToShouldDelayEventToKit {

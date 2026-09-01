@@ -82,6 +82,19 @@
 - (nonnull MPKitExecStatus *)beginSession;
 - (nonnull MPKitExecStatus *)endSession;
 
+/** Closes any active experience presented by the kit. */
+- (nonnull MPKitExecStatus *)close;
+
+/**
+ Sets the session identifier used by the kit.
+
+ @param sessionId A non-empty session identifier.
+ */
+- (nonnull MPKitExecStatus *)setSessionId:(nonnull NSString *)sessionId;
+
+/** Clears the current kit session. */
+- (nonnull MPKitExecStatus *)clearSession;
+
 #pragma mark User attributes and identities
 - (nonnull MPKitExecStatus *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (nonnull MPKitExecStatus *)removeUserAttribute:(nonnull NSString *)key;

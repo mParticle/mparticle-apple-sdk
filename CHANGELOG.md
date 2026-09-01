@@ -12,6 +12,10 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ### Core
 
+#### Added
+
+- Declare Rokt session lifecycle callbacks in the supported kit protocol.
+
 #### Fixed
 
 - `MPRokt.selectPlacements` and `MPRokt.selectShoppableAds` now deliver a `RoktPlacementFailure` event to the caller's `onEvent` handler when the Rokt kit configuration is unavailable. Previously the call was dropped with only a log message, leaving callers waiting on a callback that never arrived. ([#814](https://github.com/mParticle/mparticle-apple-sdk/pull/814))
