@@ -10,6 +10,10 @@
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
+@interface MPKitContainer_PRIVATE (MParticlePrivateTests)
+- (nullable NSDictionary *)launchConfigurationForKitCode:(nonnull NSNumber *)kitCode;
+@end
+
 // Rokt kit identifier for testing
 static NSNumber * const kTestRoktKitId = @181;
 
@@ -357,7 +361,14 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
+    NSDictionary *roktConfiguration = nil;
+    for (NSDictionary *configuration in kitConfig) {
+        if ([configuration[@"id"] isEqualToNumber:kTestRoktKitId]) {
+            roktConfiguration = configuration;
+            break;
+        }
+    }
+    [[[self.mockContainer stub] andReturn:roktConfiguration] launchConfigurationForKitCode:kTestRoktKitId];
     [[[self.mockContainer stub] andReturnValue:OCMOCK_VALUE(kitsInitialized)] kitsInitialized];
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
@@ -539,7 +550,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
             }
         }
     }];
-    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
+    [[[self.mockContainer stub] andReturn:kitConfig.firstObject] launchConfigurationForKitCode:kTestRoktKitId];
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     
@@ -562,7 +573,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
             @"sandboxMode": @"True"
         }
     }];
-    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
+    [[[self.mockContainer stub] andReturn:kitConfig.firstObject] launchConfigurationForKitCode:kTestRoktKitId];
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     
@@ -583,7 +594,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
             @"sandboxMode": @"True"
         }
     }];
-    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
+    [[[self.mockContainer stub] andReturn:kitConfig.firstObject] launchConfigurationForKitCode:kTestRoktKitId];
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     

@@ -1,6 +1,7 @@
 #import "MPKitAPI.h"
 #import "MPForwardRecord.h"
 #import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
 #import "MPKitConfiguration.h"
@@ -77,6 +78,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 @property (nonatomic, strong) MPIHasher *hasher;
 @property (nonatomic, strong) MPKitValueTransformer *valueTransformer;
 @property (nonatomic, strong) MPKitFilterEngine *filterEngine;
+@property (nonatomic, strong) MPKitProjectionEngine *projectionEngine;
 @property (nonatomic, strong) MPKitSelectorInvoker *selectorInvoker;
 @end
 
@@ -107,6 +109,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         _hasher = [[MPIHasher alloc] initWithLogger:logger];
         _valueTransformer = [[MPKitValueTransformer alloc] initWithLogger:logger];
         _filterEngine = [[MPKitFilterEngine alloc] initWithHasher:_hasher];
+        _projectionEngine = [[MPKitProjectionEngine alloc] initWithHasher:_hasher valueTransformer:_valueTransformer];
         _selectorInvoker = [[MPKitSelectorInvoker alloc] initWithLogger:logger];
         _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
             if (attributionResult && attributionResult.kitCode) {
@@ -205,6 +208,31 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 #pragma mark Private methods
+
+- (NSDictionary *)launchConfigurationForKitCode:(NSNumber *)kitCode {
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    NSArray<NSDictionary *> *kitConfigurations = [self.originalConfig copy];
+    dispatch_semaphore_signal(kitsSemaphore);
+
+    for (NSDictionary *kitConfiguration in kitConfigurations) {
+        if ([kitConfiguration[@"id"] integerValue] == kitCode.integerValue) {
+            return [kitConfiguration copy];
+        }
+    }
+    return nil;
+}
+
+- (void)reconfigureKits {
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    NSArray<NSDictionary *> *kitConfigurations = [self.originalConfig copy];
+    dispatch_semaphore_signal(kitsSemaphore);
+
+    if (kitConfigurations) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self configureKits:kitConfigurations];
+        });
+    }
+}
 
 + (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry {
     return kitsRegistry;
@@ -513,10 +541,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             }
         }
     }
-}
-
-- (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType {
-    return [self.valueTransformer transformValue:originalValue dataType:dataType];
 }
 
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
@@ -834,6 +858,111 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 #pragma mark Projection methods
+
+- (MPKitAttributeProjectionSnapshot *)projectionSnapshotForAttributeProjection:(MPAttributeProjection *)projection {
+    return [[MPKitAttributeProjectionSnapshot alloc] initWithName:projection.name
+                                                    projectedName:projection.projectedName
+                                                        matchType:projection.matchType
+                                                     propertyKind:projection.propertyKind
+                                                         dataType:projection.dataType
+                                                         required:projection.required];
+}
+
+- (MPKitProjectionSnapshot *)projectionSnapshotForProjection:(MPEventProjection *)projection {
+    NSMutableArray<MPKitProjectionMatchSnapshot *> *matches = nil;
+    if (projection.projectionMatches) {
+        matches = [NSMutableArray arrayWithCapacity:projection.projectionMatches.count];
+        for (MPProjectionMatch *match in projection.projectionMatches) {
+            [matches addObject:[[MPKitProjectionMatchSnapshot alloc] initWithAttributeKey:match.attributeKey
+                                                                          attributeValues:match.attributeValues]];
+        }
+    }
+
+    NSMutableArray<MPKitAttributeProjectionSnapshot *> *attributeProjections =
+        [NSMutableArray arrayWithCapacity:projection.attributeProjections.count];
+    for (MPAttributeProjection *attributeProjection in projection.attributeProjections) {
+        [attributeProjections addObject:[self projectionSnapshotForAttributeProjection:attributeProjection]];
+    }
+
+    return [[MPKitProjectionSnapshot alloc] initWithProjectionId:projection.projectionId
+                                                            name:projection.name
+                                                   projectedName:projection.projectedName
+                                                       matchType:projection.matchType
+                                                  projectionType:projection.projectionType
+                                                    propertyKind:projection.propertyKind
+                                               projectionMatches:matches
+                                            attributeProjections:attributeProjections
+                                                behaviorSelector:projection.behaviorSelector
+                                                       eventType:projection.eventType
+                                                     messageType:projection.messageType
+                                             outboundMessageType:projection.outboundMessageType
+                                             maxCustomParameters:projection.maxCustomParameters
+                                                      appendAsIs:projection.appendAsIs];
+}
+
+- (NSArray<MPKitProjectionSnapshot *> *)projectionSnapshotsForProjections:(NSArray<MPEventProjection *> *)projections {
+    NSMutableArray<MPKitProjectionSnapshot *> *snapshots = [NSMutableArray arrayWithCapacity:projections.count];
+    for (MPEventProjection *projection in projections) {
+        [snapshots addObject:[self projectionSnapshotForProjection:projection]];
+    }
+    return snapshots;
+}
+
+- (MPKitCommerceEntityProjectionSource *)projectionSourceForProduct:(MPProduct *)product {
+    return [[MPKitCommerceEntityProjectionSource alloc]
+        initWithFields:[[product beautifiedAttributes] transformValuesToString]
+            attributes:[[product userDefinedAttributes] transformValuesToString]];
+}
+
+- (MPKitCommerceEntityProjectionSource *)projectionSourceForPromotion:(MPPromotion *)promotion {
+    return [[MPKitCommerceEntityProjectionSource alloc]
+        initWithFields:[[promotion beautifiedAttributes] transformValuesToString]
+            attributes:nil];
+}
+
+- (MPKitCommerceProjectionSource *)projectionSourceForCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    NSMutableArray<MPKitCommerceEntityProjectionSource *> *products = [NSMutableArray array];
+    for (MPProduct *product in commerceEvent.products) {
+        [products addObject:[self projectionSourceForProduct:product]];
+    }
+
+    NSMutableArray<MPKitCommerceEntityProjectionSource *> *impressions = [NSMutableArray array];
+    [commerceEvent.impressions enumerateKeysAndObjectsUsingBlock:^(NSString *listName, NSSet<MPProduct *> *productImpressions, BOOL *stop) {
+        for (MPProduct *product in productImpressions) {
+            [impressions addObject:[self projectionSourceForProduct:product]];
+        }
+    }];
+
+    NSMutableArray<MPKitCommerceEntityProjectionSource *> *promotions = [NSMutableArray array];
+    for (MPPromotion *promotion in commerceEvent.promotionContainer.promotions) {
+        [promotions addObject:[self projectionSourceForPromotion:promotion]];
+    }
+
+    return [[MPKitCommerceProjectionSource alloc]
+        initWithType:commerceEvent.type
+                kind:commerceEvent.kind
+         eventFields:[[commerceEvent beautifiedAttributes] transformValuesToString]
+     eventAttributes:[[commerceEvent customAttributes] transformValuesToString]
+originalCustomAttributes:commerceEvent.customAttributes
+            products:products
+         impressions:impressions
+          promotions:promotions];
+}
+
+- (NSDictionary<NSNumber *, MPEventProjection *> *)projectionsByIdForConfiguration:(MPKitConfiguration *)configuration {
+    NSMutableDictionary<NSNumber *, MPEventProjection *> *projectionsById = [NSMutableDictionary dictionary];
+    for (MPEventProjection *projection in configuration.projections) {
+        projectionsById[@(projection.projectionId)] = projection;
+    }
+    for (id projection in configuration.defaultProjections) {
+        if (!MPIsNull(projection)) {
+            MPEventProjection *eventProjection = projection;
+            projectionsById[@(eventProjection.projectionId)] = eventProjection;
+        }
+    }
+    return projectionsById;
+}
+
 - (void)project:(id<MPExtensionKitProtocol>)kitRegister
       commerceEvent:(MPCommerceEvent *const)commerceEvent
   completionHandler:(void (^)(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
@@ -855,489 +984,52 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         
         return;
     }
-    
-    __weak MPKitContainer_PRIVATE *weakSelf = self;
-    
-    __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
-    if (strongSelf) {
-        dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
-    }
-    
-    // Filter projections only to those of 'messageType'
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageType == %ld", (long)MPMessageTypeCommerceEvent];
-    NSArray *projections = [kitConfiguration.projections filteredArrayUsingPredicate:predicate];
-    
-    // Priming projections
+
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    NSArray<MPKitProjectionOutput *> *outputs = [self.projectionEngine
+        projectCommerceEvent:[self projectionSourceForCommerceEvent:commerceEvent]
+        projections:[self projectionSnapshotsForProjections:kitConfiguration.projections]];
+    NSDictionary<NSNumber *, MPEventProjection *> *projectionsById =
+        [self projectionsByIdForConfiguration:kitConfiguration];
     NSMutableArray<MPCommerceEvent *> *projectedCommerceEvents = [NSMutableArray array];
     NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
     NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
-    NSMutableArray<MPEventProjection *> *applicableEventProjections = [NSMutableArray array];
-    MPEventType typeOfCommerceEvent = [commerceEvent type];
-    MPCommerceEventKind kindOfCommerceEvent = [commerceEvent kind];
-    
-    NSArray<MPProduct *> *products = (commerceEvent.kind == MPCommerceEventKindProduct) ? commerceEvent.products : nil;
-    NSArray<MPPromotion *> *promotions = (commerceEvent.kind == MPCommerceEventKindPromotion) ? commerceEvent.promotionContainer.promotions : nil;
-    
-    BOOL (^isApplicableEventProjection)(MPEventProjection *, NSDictionary *) = ^ BOOL (MPEventProjection *eventProjection, NSDictionary *sourceDictionary) {
-        
-        __block BOOL foundNonMatch = NO;
-        [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-            __block BOOL isApplicable = NO;
-            [sourceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-                NSString *keyHash = [self.hasher hashCommerceEventAttribute:(MPEventTypeSwift)commerceEvent.type key:key];
-                
-                isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues caseInsensitiveContainsObject:value];
-                *stop = isApplicable;
-            }];
-            foundNonMatch = !isApplicable;
-            *stop = foundNonMatch;
-        }];
-        
-        return !foundNonMatch;
-    };
-    
-    if (projections.count > 0) {
-        // Identifying which projections are applicable
-        for (MPEventProjection *eventProjection in projections) {
-            if (eventProjection.eventType == typeOfCommerceEvent) {
-                if (!MPIsNull(eventProjection.projectionMatches)) {
-                    switch (eventProjection.propertyKind) {
-                        case MPProjectionPropertyKindEventField:
-                            if (isApplicableEventProjection(eventProjection, [[commerceEvent beautifiedAttributes] transformValuesToString])) {
-                                [applicableEventProjections addObject:eventProjection];
-                            }
-                            break;
-                            
-                        case MPProjectionPropertyKindEventAttribute:
-                            if (isApplicableEventProjection(eventProjection, [[commerceEvent customAttributes] transformValuesToString])) {
-                                [applicableEventProjections addObject:eventProjection];
-                            }
-                            break;
-                            
-                        case MPProjectionPropertyKindProductField:
-                            if (kindOfCommerceEvent == MPCommerceEventKindProduct) {
-                                [products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
-                                    *stop = isApplicableEventProjection(eventProjection, [[product beautifiedAttributes] transformValuesToString]);
-                                    if (*stop) {
-                                        [applicableEventProjections addObject:eventProjection];
-                                    }
-                                }];
-                            } else if (kindOfCommerceEvent == MPCommerceEventKindImpression) {
-                                NSDictionary *impressions = commerceEvent.impressions;
-                                __block BOOL stopIteration = NO;
-                                
-                                [impressions enumerateKeysAndObjectsUsingBlock:^(NSString *listName, NSSet *productImpressions, BOOL *stop) {
-                                    [productImpressions enumerateObjectsUsingBlock:^(MPProduct *productImpression, BOOL *stop) {
-                                        stopIteration = isApplicableEventProjection(eventProjection, [[productImpression beautifiedAttributes] transformValuesToString]);
-                                        if (stopIteration) {
-                                            [applicableEventProjections addObject:eventProjection];
-                                            *stop = YES;
-                                        }
-                                    }];
-                                    
-                                    if (stopIteration) {
-                                        *stop = YES;
-                                    }
-                                }];
-                            }
-                            break;
-                            
-                        case MPProjectionPropertyKindProductAttribute:
-                            if (kindOfCommerceEvent == MPCommerceEventKindProduct) {
-                                [products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
-                                    *stop = isApplicableEventProjection(eventProjection, [[product userDefinedAttributes] transformValuesToString]);
-                                    if (*stop) {
-                                        [applicableEventProjections addObject:eventProjection];
-                                    }
-                                }];
-                            } else if (kindOfCommerceEvent == MPCommerceEventKindImpression) {
-                                NSDictionary *impressions = commerceEvent.impressions;
-                                __block BOOL stopIteration = NO;
-                                
-                                [impressions enumerateKeysAndObjectsUsingBlock:^(NSString *listName, NSSet *productImpressions, BOOL *stop) {
-                                    [productImpressions enumerateObjectsUsingBlock:^(MPProduct *productImpression, BOOL *stop) {
-                                        stopIteration = isApplicableEventProjection(eventProjection, [[productImpression userDefinedAttributes] transformValuesToString]);
-                                        if (stopIteration) {
-                                            [applicableEventProjections addObject:eventProjection];
-                                            *stop = YES;
-                                        }
-                                    }];
-                                    
-                                    if (stopIteration) {
-                                        *stop = YES;
-                                    }
-                                }];
-                            }
-                            break;
-                            
-                        case MPProjectionPropertyKindPromotionField: {
-                            if (kindOfCommerceEvent == MPCommerceEventKindPromotion) {
-                                [promotions enumerateObjectsUsingBlock:^(MPPromotion *promotion, NSUInteger idx, BOOL *stop) {
-                                    *stop = isApplicableEventProjection(eventProjection, [[promotion beautifiedAttributes] transformValuesToString]);
-                                    if (*stop) {
-                                        [applicableEventProjections addObject:eventProjection];
-                                    }
-                                }];
-                            }
-                        }
-                            break;
-                            
-                        case MPProjectionPropertyKindPromotionAttribute:
-                            break;
-                    }
-                } else {
-                    [applicableEventProjections addObject:eventProjection];
-                }
-            }
-        } // for
-    } // If (projection.count)
-    
-    // Block to project a dictionary according to an attribute projection
-    NSDictionary * (^projectDictionaryWithAttributeProjection)(NSDictionary *, MPAttributeProjection *) = ^(NSDictionary *sourceDictionary, MPAttributeProjection *attributeProjection) {
-        NSMutableDictionary *projectedDictionary = [[NSMutableDictionary alloc] init];
-        id value;
-        
-        switch (attributeProjection.matchType) {
-            case MPProjectionMatchTypeHash: {
-                NSMutableDictionary<NSNumber *, NSString *> *hashKeyMap = [NSMutableDictionary dictionary];
-                NSString *key;
-                NSEnumerator *keyEnumerator = [sourceDictionary keyEnumerator];
-                while ((key = [keyEnumerator nextObject])) {
-                    NSNumber *hashNumber = @([[self.hasher hashCommerceEventAttribute:(MPEventTypeSwift)commerceEvent.type key:key] intValue]);
-                    hashKeyMap[hashNumber] = key;
-                }
-                
-                key = hashKeyMap[@([attributeProjection.name intValue])];
-                
-                if (!MPIsNull(key)) {
-                    value = [strongSelf transformValue:sourceDictionary[key] dataType:attributeProjection.dataType];
-                    
-                    if (value) {
-                        projectedDictionary[attributeProjection.projectedName] = value;
-                    }
-                } else if (attributeProjection.required) {
-                    return (NSDictionary *)[NSNull null];
-                }
-            }
-                break;
-                
-            case MPProjectionMatchTypeField:
-            case MPProjectionMatchTypeString:
-                if ([sourceDictionary valueForCaseInsensitiveKey:attributeProjection.name]) {
-                    value = [strongSelf transformValue:[sourceDictionary valueForCaseInsensitiveKey:attributeProjection.name] dataType:attributeProjection.dataType];
-                    
-                    if (value) {
-                        projectedDictionary[attributeProjection.projectedName] = value;
-                    }
-                } else if (attributeProjection.required) {
-                    return (NSDictionary *)[NSNull null];
-                }
-                break;
-                
-            case MPProjectionMatchTypeStatic:
-                value = [strongSelf transformValue:attributeProjection.name dataType:attributeProjection.dataType];
-                
-                if (value) {
-                    projectedDictionary[attributeProjection.projectedName] = value;
-                }
-                break;
-                
-            case MPProjectionMatchTypeNotSpecified:
-                break;
-        }
-        
-        if (projectedDictionary.count == 0) {
-            projectedDictionary = nil;
-        }
-        
-        return (NSDictionary *)projectedDictionary;
-    };
-    
-    // Block to project a commerce event according to attribute projections
-    NSDictionary * (^projectCommerceEventWithAttributes)(MPCommerceEvent *, NSArray *) = ^(MPCommerceEvent *commerceEvent, NSArray<MPAttributeProjection *> *attributeProjections) {
-        NSMutableDictionary *projectedCommerceEventDictionary = [[NSMutableDictionary alloc] init];
-        NSDictionary *sourceDictionary;
-        NSDictionary *projectedDictionary;
-        NSPredicate *predicate;
-        NSArray<MPAttributeProjection *> *filteredAttributeProjections;
-        
-        NSArray *propertyKinds = @[@(MPProjectionPropertyKindEventField), @(MPProjectionPropertyKindEventAttribute)];
-        
-        for (NSNumber *n in propertyKinds) {
-            MPProjectionPropertyKind propertyKind = n.intValue;
-            predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)propertyKind];
-            filteredAttributeProjections = [attributeProjections filteredArrayUsingPredicate:predicate];
-            
-            if (filteredAttributeProjections.count > 0) {
-                if (propertyKind == MPProjectionPropertyKindEventField) {
-                    sourceDictionary = [[commerceEvent beautifiedAttributes] transformValuesToString];
-                } else if (propertyKind == MPProjectionPropertyKindEventAttribute) {
-                    sourceDictionary = [[commerceEvent customAttributes] transformValuesToString];
-                } else {
-                    continue;
-                }
-            }
-            
-            for (MPAttributeProjection *attributeProjection in attributeProjections) {
-                projectedDictionary = projectDictionaryWithAttributeProjection(sourceDictionary, attributeProjection);
-                
-                if (projectedDictionary) {
-                    if ((NSNull *)projectedDictionary != [NSNull null]) {
-                        [projectedCommerceEventDictionary addEntriesFromDictionary:projectedDictionary];
-                    } else {
-                        return (NSDictionary *)[NSNull null];
-                    }
-                }
-            }
-        }
-        
-        if (projectedCommerceEventDictionary.count == 0) {
-            projectedCommerceEventDictionary = nil;
-        }
-        
-        return (NSDictionary *)projectedCommerceEventDictionary;
-    };
-    
-    // Block to project a product according to attribute projections
-    NSDictionary * (^projectProductWithAttributes)(MPProduct *, NSArray *, NSDictionary *) = ^(MPProduct *product, NSArray<MPAttributeProjection *> *attributeProjections, NSDictionary *projectedDictionary) {
-        NSMutableDictionary *projectedProductDictionary = [[NSMutableDictionary alloc] init];
-        NSDictionary *sourceDictionary;
-        NSPredicate *predicate;
-        NSArray<MPAttributeProjection *> *filteredAttributeProjections;
-        
-        NSArray *propertyKinds = @[@(MPProjectionPropertyKindProductField), @(MPProjectionPropertyKindProductAttribute)];
-        
-        for (NSNumber *n in propertyKinds) {
-            MPProjectionPropertyKind propertyKind = n.intValue;
-            predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)propertyKind];
-            filteredAttributeProjections = [attributeProjections filteredArrayUsingPredicate:predicate];
-            
-            if (filteredAttributeProjections.count > 0) {
-                if (propertyKind == MPProjectionPropertyKindProductField) {
-                    sourceDictionary = [[product beautifiedAttributes] transformValuesToString];
-                } else if (propertyKind == MPProjectionPropertyKindProductAttribute) {
-                    sourceDictionary = [[product userDefinedAttributes] transformValuesToString];
-                } else {
-                    continue;
-                }
-                
-                for (MPAttributeProjection *attributeProjection in filteredAttributeProjections) {
-                    projectedDictionary = projectDictionaryWithAttributeProjection(sourceDictionary, attributeProjection);
-                    
-                    if (projectedDictionary) {
-                        if ((NSNull *)projectedDictionary != [NSNull null]) {
-                            [projectedProductDictionary addEntriesFromDictionary:projectedDictionary];
-                        } else {
-                            return (NSDictionary *)[NSNull null];
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (projectedProductDictionary.count == 0) {
-            return projectedDictionary;
-        }
-        
-        return (NSDictionary *)projectedProductDictionary;
-    };
-    
-    // Block to apply maximum custom attributes to the projected dictionary
-    void (^applyMaxCustomAttributes)(MPCommerceEvent *, MPEventProjection *, NSMutableDictionary *) = ^(MPCommerceEvent *commerceEvent, MPEventProjection *eventProjection, NSMutableDictionary *projectedDictionary) {
-        NSUInteger maxCustomParams = eventProjection.maxCustomParameters;
-        NSDictionary *userDictionary = [[commerceEvent customAttributes] transformValuesToString];
-        
-        if (eventProjection.appendAsIs && maxCustomParams > 0) {
-            if (userDictionary.count > maxCustomParams) {
-                NSMutableArray *keys = [[userDictionary allKeys] mutableCopy];
-                
-                [keys sortUsingComparator:^NSComparisonResult(NSString *key1, NSString *key2) {
-                    return [key1 compare:key2];
-                }];
-                
-                if (keys.count > maxCustomParams) {
-                    NSRange deletionRange = NSMakeRange(maxCustomParams, keys.count - maxCustomParams);
-                    [keys removeObjectsInRange:deletionRange];
-                }
-                
-                for (NSString *key in keys) {
-                    projectedDictionary[key] = userDictionary[key];
-                }
-            } else {
-                [projectedDictionary addEntriesFromDictionary:userDictionary];
-            }
-        }
-    };
-    
-    // Applying projections
-    if (applicableEventProjections.count != 0) {
-        for (MPEventProjection *eventProjection in applicableEventProjections) {
-            NSMutableDictionary *projectedCommerceEventDictionary = [[NSMutableDictionary alloc] init];
-            NSDictionary *projectedDictionary;
-            NSMutableArray<NSMutableDictionary *> *projectedDictionaries = [NSMutableArray array];
-            BOOL requirementsMet = YES;
-            
-            // Projecting commerce event fields and attributes
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d || propertyKind == %d", (int)MPProjectionPropertyKindEventField, (int)MPProjectionPropertyKindEventAttribute];
-            NSArray<MPAttributeProjection *> *attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
-            
-            if (attributeProjections.count > 0) {
-                projectedDictionary = projectCommerceEventWithAttributes(commerceEvent, attributeProjections);
-                
-                if (projectedDictionary) {
-                    if ((NSNull *)projectedDictionary != [NSNull null]) {
-                        [projectedCommerceEventDictionary addEntriesFromDictionary:projectedDictionary];
-                    } else {
-                        requirementsMet = NO;
-                    }
-                }
-            }
-            
-            // Projecting products/promotions attributes
-            switch (kindOfCommerceEvent) {
-                case MPCommerceEventKindProduct: {
-                    NSMutableArray<NSNumber *> *productIndexes = [NSMutableArray array];
-                    NSUInteger numberOfProducts = products.count;
-                    
-                    if (numberOfProducts > 0) {
-                        if (eventProjection.behaviorSelector == MPProjectionBehaviorSelectorForEach) {
-                            productIndexes = [NSMutableArray arrayWithCapacity:numberOfProducts];
-                            
-                            for (NSUInteger idx = 0; idx < numberOfProducts; ++idx) {
-                                [productIndexes addObject:@(idx)];
-                            }
-                        } else {
-                            [productIndexes addObject:@(numberOfProducts - 1)];
-                        }
-                        
-                        predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d || propertyKind == %d", (int)MPProjectionPropertyKindProductField, (int)MPProjectionPropertyKindProductAttribute];
-                        attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
-                        
-                        for (NSNumber *idxNum in productIndexes) {
-                            NSUInteger idx = idxNum.unsignedIntegerValue;
-                            MPProduct *product = products[idx];
-                            projectedDictionary = projectProductWithAttributes(product, attributeProjections, projectedDictionary);
-                            
-                            if (projectedDictionary) {
-                                if ((NSNull *)projectedDictionary != [NSNull null]) {
-                                    NSMutableDictionary *projectedProductDictionary = [[NSMutableDictionary alloc] initWithDictionary:projectedDictionary];
-                                    
-                                    if (projectedCommerceEventDictionary.count > 0) {
-                                        [projectedProductDictionary addEntriesFromDictionary:projectedCommerceEventDictionary];
-                                    }
-                                    
-                                    applyMaxCustomAttributes(commerceEvent, eventProjection, projectedProductDictionary);
-                                    
-                                    [projectedDictionaries addObject:projectedProductDictionary];
-                                } else {
-                                    requirementsMet = NO;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                    break;
-                    
-                case MPCommerceEventKindPromotion: {
-                    NSMutableArray<NSNumber *> *promotionIndexes = [NSMutableArray array];
-                    NSUInteger numberOfPromotions = promotions.count;
-                    
-                    if (numberOfPromotions > 0) {
-                        if (eventProjection.behaviorSelector == MPProjectionBehaviorSelectorForEach) {
-                            promotionIndexes = [NSMutableArray arrayWithCapacity:numberOfPromotions];
-                            
-                            for (NSUInteger index = 0; index < numberOfPromotions; ++index) {
-                                [promotionIndexes addObject:@(index)];
-                            }
-                        } else {
-                            [promotionIndexes addObject:@(numberOfPromotions - 1)];
-                        }
-                        
-                        predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)MPProjectionPropertyKindPromotionField];
-                        attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
-                        
-                        for (NSNumber *idxNum in promotionIndexes) {
-                            NSUInteger idx = idxNum.unsignedIntegerValue;
-                            MPPromotion *promotion = promotions[idx];
-                            NSDictionary *sourceDictionary = [[promotion beautifiedAttributes] transformValuesToString];
-                            
-                            for (MPAttributeProjection *attributeProjection in attributeProjections) {
-                                NSDictionary *projectedDictionary = projectDictionaryWithAttributeProjection(sourceDictionary, attributeProjection);
-                                
-                                if (projectedDictionary) {
-                                    if ((NSNull *)projectedDictionary != [NSNull null]) {
-                                        NSMutableDictionary *projectedPromotionDictionary = [[NSMutableDictionary alloc] initWithDictionary:projectedDictionary];
-                                        
-                                        if (projectedCommerceEventDictionary.count > 0) {
-                                            [projectedPromotionDictionary addEntriesFromDictionary:projectedCommerceEventDictionary];
-                                        }
-                                        
-                                        applyMaxCustomAttributes(commerceEvent, eventProjection, projectedPromotionDictionary);
-                                        
-                                        [projectedDictionaries addObject:projectedPromotionDictionary];
-                                    } else {
-                                        requirementsMet = NO;
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            if (!requirementsMet) {
-                                break;
-                            }
-                        }
-                    }
-                }
-                    break;
-                    
-                default:
-                    break;
-            }
-            
-            // The collection of projected dictionaries become events or commerce events
-            if (requirementsMet) {
-                if (projectedDictionaries.count != 0) {
-                    for (NSMutableDictionary *projectedDictionary in projectedDictionaries) {
-                        if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
-                            MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
-                            [projectedCommerceEvent setCustomAttributes:projectedDictionary];
-                            [projectedCommerceEvents addObject:projectedCommerceEvent];
-                        } else {
-                            MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
-                            projectedEvent.customAttributes = projectedDictionary;
-                            [projectedEvents addObject:projectedEvent];
-                        }
-                        
-                        [appliedProjections addObject:eventProjection];
-                    }
-                } else {
-                    if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
-                        MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
-                        [projectedCommerceEvents addObject:projectedCommerceEvent];
-                    } else {
-                        MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
-                        projectedEvent.customAttributes = commerceEvent.customAttributes;
-                        [projectedEvents addObject:projectedEvent];
-                    }
-                    
-                    [appliedProjections addObject:eventProjection];
-                }
-            } else {
+
+    for (MPKitProjectionOutput *output in outputs) {
+        switch (output.kind) {
+            case MPKitProjectionOutputKindOriginalCommerceEvent:
                 [projectedCommerceEvents addObject:commerceEvent];
+                break;
+
+            case MPKitProjectionOutputKindProjectedCommerceEvent: {
+                MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
+                if (output.attributes) {
+                    projectedCommerceEvent.customAttributes = output.attributes;
+                }
+                [projectedCommerceEvents addObject:projectedCommerceEvent];
             }
-        } // for (event projection)
-    } // If (applying projections)
-    
-    // If no projection was applied, uses the original commerce event.
-    if (projectedCommerceEvents.count == 0 && projectedEvents.count == 0) {
-        [projectedCommerceEvents addObject:commerceEvent];
+                break;
+
+            case MPKitProjectionOutputKindProjectedEvent: {
+                MPEvent *projectedEvent = [[MPEvent alloc] initWithName:output.projectedName type:MPEventTypeTransaction];
+                projectedEvent.customAttributes = output.attributes;
+                [projectedEvents addObject:projectedEvent];
+            }
+                break;
+
+            case MPKitProjectionOutputKindOriginalEvent:
+                break;
+        }
+
+        if (output.projectionId != nil) {
+            MPEventProjection *appliedProjection = projectionsById[output.projectionId];
+            if (appliedProjection) {
+                [appliedProjections addObject:appliedProjection];
+            }
+        }
     }
-    
-    if (strongSelf) {
-        dispatch_semaphore_signal(strongSelf->kitsSemaphore);
-    }
-    
+
+    dispatch_semaphore_signal(kitsSemaphore);
     completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
 }
 
@@ -1362,297 +1054,46 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         
         return;
     }
-    
-    __weak MPKitContainer_PRIVATE *weakSelf = self;
-    
-    __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
-    if (strongSelf) {
-        dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
-    }
-    
-    // Attribute projection lambda function
-    NSDictionary * (^projectAttributes)(MPEvent *const, MPEventProjection *const) = ^(MPEvent *const event, MPEventProjection *const eventProjection) {
-        NSDictionary *eventInfo = event.customAttributes;
-        if (!eventInfo) {
-            return (NSDictionary *)nil;
-        }
-        
-        NSMutableArray<MPAttributeProjection *> *attributeProjections = [[NSMutableArray alloc] initWithArray:eventProjection.attributeProjections];
-        NSUInteger maxCustomParams = eventProjection.maxCustomParameters;
-        NSMutableArray *projectedKeys = [[NSMutableArray alloc] init];
-        NSMutableArray *nonProjectedKeys = [[NSMutableArray alloc] init];
-        __block NSMutableDictionary *projectedAttributes = [[NSMutableDictionary alloc] init];
-        
-        if (eventInfo.count > 0) {
-            [nonProjectedKeys addObjectsFromArray:[eventInfo allKeys]];
-            [projectedAttributes addEntriesFromDictionary:[eventInfo copy]];
-        }
-        
-        __block BOOL doesNotContainRequiredAttribute = NO;
-        __block NSMutableArray<MPAttributeProjection *> *removeAttributeProjections = [[NSMutableArray alloc] init];
-        
-        // Building a map between keys and their respective hashes
-        __block NSMutableDictionary<NSString *, NSNumber *> *keyHashMap = [NSMutableDictionary dictionary];
-        __block NSMutableDictionary<NSNumber *, NSString *> *hashKeyMap = [NSMutableDictionary dictionary];
-        NSString *key;
-        NSEnumerator *keyEnumerator = [eventInfo keyEnumerator];
-        while ((key = [keyEnumerator nextObject])) {
-            NSNumber *hashNumber = @([[self.hasher hashEventAttributeKey:(MPEventTypeSwift)event.type eventName:event.name customAttributeName:key isLogScreen:(messageType == MPMessageTypeScreenView)] intValue]);
-            keyHashMap[key] = hashNumber;
-            hashKeyMap[hashNumber] = key;
-        }
-        
-        [eventInfo enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-            [removeAttributeProjections removeAllObjects];
-            NSString *projectedAttributeKey;
-            id projectedAttributeValue;
-            
-            for (MPAttributeProjection *attributeProjection in attributeProjections) {
-                BOOL stopInnerLoop = NO;
-                
-                switch (attributeProjection.matchType) {
-                    case MPProjectionMatchTypeString: {
-                        if ([key caseInsensitiveCompare:attributeProjection.name] == NSOrderedSame) {
-                            projectedAttributeValue = [strongSelf transformValue:obj dataType:attributeProjection.dataType];
-                            
-                            if (projectedAttributeValue) {
-                                projectedAttributeKey = attributeProjection.projectedName ? : key;
-                                [projectedAttributes removeObjectForKey:key];
-                                projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
-                                [projectedKeys addObject:projectedAttributeValue];
-                                [removeAttributeProjections addObject:attributeProjection];
-                            } else if (attributeProjection.required) {
-                                doesNotContainRequiredAttribute = YES;
-                                *stop = YES;
-                                stopInnerLoop = YES;
-                            }
-                        } else if (attributeProjection.required && MPIsNull(eventInfo[attributeProjection.name])) {
-                            doesNotContainRequiredAttribute = YES;
-                            *stop = YES;
-                            stopInnerLoop = YES;
-                        }
-                    }
-                        break;
-                        
-                    case MPProjectionMatchTypeHash: {
-                        NSNumber *hashValue = keyHashMap[key];
-                        
-                        if (hashValue.integerValue == attributeProjection.name.integerValue) {
-                            projectedAttributeValue = [strongSelf transformValue:obj dataType:attributeProjection.dataType];
-                            
-                            if (projectedAttributeValue) {
-                                projectedAttributeKey = attributeProjection.projectedName ? : key;
-                                [projectedAttributes removeObjectForKey:key];
-                                projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
-                                [projectedKeys addObject:projectedAttributeValue];
-                                [removeAttributeProjections addObject:attributeProjection];
-                            } else if (attributeProjection.required) {
-                                doesNotContainRequiredAttribute = YES;
-                                *stop = YES;
-                                stopInnerLoop = YES;
-                            }
-                        } else if (attributeProjection.required) {
-                            NSNumber *lookupKey = @([attributeProjection.name intValue]);
-                            
-                            if (hashKeyMap[lookupKey] == nil) {
-                                doesNotContainRequiredAttribute = YES;
-                                *stop = YES;
-                                stopInnerLoop = YES;
-                            }
-                        }
-                    }
-                        break;
-                        
-                    case MPProjectionMatchTypeField:
-                        projectedAttributeKey = attributeProjection.projectedName ? : key;
-                        projectedAttributes[projectedAttributeKey] = event.name;
-                        [projectedKeys addObject:projectedAttributeKey];
-                        [removeAttributeProjections addObject:attributeProjection];
-                        break;
-                        
-                    case MPProjectionMatchTypeStatic:
-                        projectedAttributeKey = attributeProjection.projectedName ? : key;
-                        projectedAttributeValue = [strongSelf transformValue:attributeProjection.name dataType:attributeProjection.dataType];
-                        
-                        if (projectedAttributeValue) {
-                            projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
-                            [projectedKeys addObject:projectedAttributeKey];
-                        }
-                        [removeAttributeProjections addObject:attributeProjection];
-                        break;
-                        
-                    case MPProjectionMatchTypeNotSpecified:
-                        break;
-                }
-                
-                if (stopInnerLoop) {
-                    break;
-                }
-            }
-            
-            if (removeAttributeProjections.count > 0) {
-                [attributeProjections removeObjectsInArray:removeAttributeProjections];
-            }
-        }];
-        
-        if (doesNotContainRequiredAttribute) {
-            return (NSDictionary *)[NSNull null];
-        }
-        
-        // If the number of attributes is greater than the max number allowed, sort the keys and remove the excess from the bottom of the list
-        [nonProjectedKeys removeObjectsInArray:projectedKeys];
-        
-        if (eventProjection.appendAsIs && maxCustomParams > 0) {
-            if (nonProjectedKeys.count > maxCustomParams) {
-                NSInteger numberOfRemainingSlots = maxCustomParams - projectedKeys.count;
-                
-                if (numberOfRemainingSlots > 0) {
-                    [nonProjectedKeys sortUsingComparator:^NSComparisonResult(NSString *obj1, NSString *obj2) {
-                        return [obj1 compare:obj2];
-                    }];
-                    
-                    [nonProjectedKeys removeObjectsInRange:NSMakeRange(0, numberOfRemainingSlots)];
-                    [projectedAttributes removeObjectsForKeys:nonProjectedKeys];
-                }
-            }
-        } else {
-            [projectedAttributes removeObjectsForKeys:nonProjectedKeys];
-        }
-        
-        if (projectedAttributes.count == 0) {
-            projectedAttributes = nil;
-        }
-        
-        return (NSDictionary *)projectedAttributes;
-    }; // End of attribute projection lambda function
-    
-    // Filter projections only to those of 'messageType'
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageType == %ld", (long)messageType];
-    NSArray *projections = [kitConfiguration.projections filteredArrayUsingPredicate:predicate];
-    
-    // Apply projections
-    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
-    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
-    MPEvent *projectedEvent;
-    MPEventProjection *defaultProjection = nil;
-    NSDictionary *projectedAttributes;
-    NSDictionary<NSString *, NSString *> *eventInfo = [event.customAttributes transformValuesToString];
-    
-    if (projections.count > 0) {
-        int eventNameHash = 0;
-        
-        for (MPEventProjection *eventProjection in projections) {
-            BOOL shouldProjectEvent = NO;
-            
-            switch (eventProjection.matchType) {
-                case MPProjectionMatchTypeString:
-                    if ([event.name caseInsensitiveCompare:eventProjection.name] == NSOrderedSame) {
-                        if (eventProjection.projectionMatches) {
-                            __block BOOL foundNonMatch = NO;
-                            [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
-                                    foundNonMatch = YES;
-                                    *stop = YES;
-                                }
-                            }];
-                            shouldProjectEvent = !foundNonMatch;
-                        } else {
-                            shouldProjectEvent = YES;
-                        }
-                    }
-                    break;
-                    
-                case MPProjectionMatchTypeHash: {
-                    if (eventNameHash == 0) {
-                        eventNameHash = [[self.hasher hashEventType:(MPEventTypeSwift)event.type eventName:event.name isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
-                    }
-                    
-                    if (eventNameHash == [eventProjection.name integerValue]) {
-                        if (eventProjection.projectionMatches) {
-                            __block BOOL foundNonMatch = NO;
-                            [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
-                                    foundNonMatch = YES;
-                                    *stop = YES;
-                                }
-                            }];
-                            shouldProjectEvent = !foundNonMatch;
-                        } else {
-                            shouldProjectEvent = YES;
-                        }
-                    }
-                }
-                    break;
-                    
-                case MPProjectionMatchTypeNotSpecified:
-                    shouldProjectEvent = YES;
-                    break;
-                    
-                default: // Filter and Static... only applicable to attributes
-                    break;
-            }
-            
-            if (shouldProjectEvent) {
-                projectedEvent = [event copy];
-                projectedAttributes = projectAttributes(projectedEvent, eventProjection);
-                
-                if ((NSNull *)projectedAttributes != [NSNull null]) {
-                    projectedEvent.customAttributes = projectedAttributes;
-                    
-                    if (eventProjection.projectedName) {
-                        if (eventProjection.projectionMatches) {
-                            __block BOOL foundNonMatch = NO;
-                            [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
-                                    foundNonMatch = YES;
-                                    *stop = YES;
-                                }
-                            }];
-                            if (!foundNonMatch) {
-                                projectedEvent.name = eventProjection.projectedName;
-                            }
-                            
-                        } else {
-                            projectedEvent.name = eventProjection.projectedName;
-                        }
-                    }
-                    
-                    [projectedEvents addObject:projectedEvent];
-                    [appliedProjections addObject:eventProjection];
-                }
-            }
-        }
-    }
-    
-    // Default projection, applied only if no other projection was applicable
-    if (projectedEvents.count == 0) {
-        defaultProjection = kitConfiguration.defaultProjections[messageType];
-        
-        if (!MPIsNull(defaultProjection)) {
-            projectedEvent = [event copy];
-            projectedAttributes = projectAttributes(projectedEvent, defaultProjection);
-            
-            if ((NSNull *)projectedAttributes != [NSNull null]) {
-                projectedEvent.customAttributes = projectedAttributes;
-                
-                if (defaultProjection.projectedName && defaultProjection.projectionType == MPProjectionTypeEvent) {
-                    projectedEvent.name = defaultProjection.projectedName;
-                }
-                
-                [projectedEvents addObject:projectedEvent];
-                [appliedProjections addObject:defaultProjection];
-            }
-        }
-        
-        if (projectedEvents.count == 0 && event) {
+
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    MPKitEventProjectionSource *source = [[MPKitEventProjectionSource alloc]
+        initWithType:event.type
+                name:event.name
+          attributes:event.customAttributes
+       attributeKeys:event.customAttributes.allKeys ?: @[]
+  matchingAttributes:[event.customAttributes transformValuesToString]
+         messageType:messageType];
+    id defaultProjection = kitConfiguration.defaultProjections[messageType];
+    MPKitProjectionSnapshot *defaultSnapshot = MPIsNull(defaultProjection)
+        ? nil
+        : [self projectionSnapshotForProjection:defaultProjection];
+    NSArray<MPKitProjectionOutput *> *outputs = [self.projectionEngine
+        projectEvent:source
+        projections:[self projectionSnapshotsForProjections:kitConfiguration.projections]
+        defaultProjection:defaultSnapshot];
+    NSDictionary<NSNumber *, MPEventProjection *> *projectionsById =
+        [self projectionsByIdForConfiguration:kitConfiguration];
+    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray arrayWithCapacity:outputs.count];
+    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray arrayWithCapacity:outputs.count];
+
+    for (MPKitProjectionOutput *output in outputs) {
+        if (output.kind == MPKitProjectionOutputKindOriginalEvent) {
             [projectedEvents addObject:event];
+            continue;
+        }
+
+        MPEvent *projectedEvent = [event copy];
+        projectedEvent.name = output.projectedName;
+        projectedEvent.customAttributes = output.attributes;
+        [projectedEvents addObject:projectedEvent];
+
+        MPEventProjection *appliedProjection = projectionsById[output.projectionId];
+        if (appliedProjection) {
+            [appliedProjections addObject:appliedProjection];
         }
     }
-    
-    if (strongSelf) {
-        dispatch_semaphore_signal(strongSelf->kitsSemaphore);
-    }
-    
+
+    dispatch_semaphore_signal(kitsSemaphore);
     completionHandler(projectedEvents, appliedProjections);
 }
 
