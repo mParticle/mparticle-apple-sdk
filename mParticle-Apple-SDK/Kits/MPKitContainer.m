@@ -40,6 +40,10 @@
 
 NSString *const kitFileExtension = @"eks";
 static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
+// kitsRegistry is class-level state, so its lock has to be class-level too. This was a
+// per-instance ivar, which meant two containers could mutate the same set while each held
+// its own semaphore - the lock could not do the job it was there for.
+static dispatch_semaphore_t kitsSemaphore;
 // Tracks kit teardown work deferred to the main queue by flushSerializedKits and
 // freeKitRegister:integrationId: (stop(), disk cleanup, notification). Workspace-switch
 // callers enter this group before dispatching that work and leave it after, so
@@ -79,12 +83,12 @@ static dispatch_group_t kitTeardownGroup;
 static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 @interface MPKitContainer_PRIVATE () {
-    dispatch_semaphore_t kitsSemaphore;
-    // brackets is per-instance state (unlike kitsRegistry, which is static/shared), so its
-    // lock is scoped to the instance too. It is a separate semaphore from kitsSemaphore,
-    // not reused, because updateBracketsWithConfiguration:integrationId: is called from
-    // inside configureKits:'s kitsSemaphore-locked region - dispatch_semaphore is not
-    // reentrant, so guarding brackets with kitsSemaphore itself would deadlock there.
+    // brackets is per-instance state (unlike kitsRegistry/kitsSemaphore, which are
+    // static/shared - see +initialize), so its lock is scoped to the instance too. It is a
+    // separate semaphore from kitsSemaphore, not reused, because
+    // updateBracketsWithConfiguration:integrationId: is called from inside configureKits:'s
+    // kitsSemaphore-locked region - dispatch_semaphore is not reentrant, so guarding
+    // brackets with kitsSemaphore itself would deadlock there.
     dispatch_semaphore_t bracketsSemaphore;
     NSMutableDictionary<NSNumber *, MPBracket *> *brackets;
     NSInteger sideloadedKitCodeNextValue;
@@ -105,6 +109,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 + (void)initialize {
     if (self == [MPKitContainer_PRIVATE class]) {
         kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
+        kitsSemaphore = dispatch_semaphore_create(1);
         kitTeardownGroup = dispatch_group_create();
     }
 }
@@ -124,7 +129,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         _attributionInfo = [NSMutableDictionary dictionary];
         NSMutableDictionary *linkInfo = _attributionInfo;
         _initializedTime = [NSDate date];
-        kitsSemaphore = dispatch_semaphore_create(1);
         bracketsSemaphore = dispatch_semaphore_create(1);
         brackets = [[NSMutableDictionary alloc] init];
         sideloadedKitCodeNextValue = sideloadedKitCodeStartValue;
@@ -1243,7 +1247,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     
     __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
     if (strongSelf) {
-        dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
+        dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     }
     
     // Filter projections only to those of 'messageType'
@@ -1718,7 +1722,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
     
     if (strongSelf) {
-        dispatch_semaphore_signal(strongSelf->kitsSemaphore);
+        dispatch_semaphore_signal(kitsSemaphore);
     }
     
     completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
@@ -1750,7 +1754,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     
     __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
     if (strongSelf) {
-        dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
+        dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     }
     
     // Attribute projection lambda function
@@ -2033,7 +2037,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     }
     
     if (strongSelf) {
-        dispatch_semaphore_signal(strongSelf->kitsSemaphore);
+        dispatch_semaphore_signal(kitsSemaphore);
     }
     
     completionHandler(projectedEvents, appliedProjections);
@@ -2058,17 +2062,21 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 
 - (void)removeAllSideloadedKits {
     // Remove all sideloaded kits as new instances will be provided in the new MParticleOptions
+    // The copy protects the enumeration but not the removal, so both run under the lock.
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     NSSet *kits = [kitsRegistry copy];
     for (id<MPExtensionKitProtocol>kitRegister in kits) {
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(sideloadedKitCode)]) {
             [kitsRegistry removeObject:kitRegister];
         }
     }
+    dispatch_semaphore_signal(kitsSemaphore);
 }
 
 - (void)removeKitsFromRegistryInvalidForWorkspaceSwitch {
     // Remove kits from registry that can't be freed so they won't receive new events
     // Leave any kit that was never used yet (i.e. was not used in the previous workspace)
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     NSSet *kits = [kitsRegistry copy];
     for (id<MPExtensionKitProtocol>kitRegister in kits) {
         if (![kitRegister.wrapperInstance respondsToSelector:@selector(stop)] &&
@@ -2076,6 +2084,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             [kitsRegistry removeObject:kitRegister];
         }
     }
+    dispatch_semaphore_signal(kitsSemaphore);
 }
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry {
