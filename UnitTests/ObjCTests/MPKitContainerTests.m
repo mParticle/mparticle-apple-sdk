@@ -1411,6 +1411,35 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
     XCTAssertNil(kitFilter, @"Filter should have been nil.");
 }
 
+- (void)testMissingKitConfigurationStillForwardsEvent {
+    [kitContainer.kitConfigurations removeAllObjects];
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Missing configuration" type:MPEventTypeOther];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    [(id<MPKitProtocol>)[kitWrapperMock expect] logBaseEvent:OCMOCK_ANY];
+
+    [kitContainer filter:kitRegisterMock forEvent:event selector:@selector(logEvent:)];
+
+    [kitWrapperMock verifyWithDelay:5.0];
+}
+
+- (void)testMissingKitConfigurationStillForwardsCommerceEvent {
+    [kitContainer.kitConfigurations removeAllObjects];
+    MPProduct *product = [[MPProduct alloc] initWithName:@"Product" sku:@"sku" quantity:@1 price:@1];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    [(id<MPKitProtocol>)[kitWrapperMock expect] logBaseEvent:OCMOCK_ANY];
+
+    [kitContainer filter:kitRegisterMock forCommerceEvent:event];
+
+    [kitWrapperMock verifyWithDelay:5.0];
+}
+
 - (void)testFilterCommerceEvent_EventType {
     NSArray *configurations = @[
                                 @{

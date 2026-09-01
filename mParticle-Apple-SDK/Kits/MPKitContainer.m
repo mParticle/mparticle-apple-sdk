@@ -387,10 +387,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (MPKitFilterConfigurationSnapshot *)filterSnapshotForConfiguration:(MPKitConfiguration *)configuration {
-    if (!configuration) {
-        return nil;
-    }
-
     return [[MPKitFilterConfigurationSnapshot alloc]
         initWithFilters:configuration.filters
         attributeValueFilteringIsActive:configuration.attributeValueFilteringIsActive
