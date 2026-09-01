@@ -311,6 +311,7 @@ METHOD|- (BOOL)closeDatabase;
 METHOD|- (BOOL)continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^_Nonnull)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler;
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url NS_SWIFT_NAME(handleURLCallback(with:));
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
+METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
 METHOD|- (BOOL)isKitActive:(NSNumber *)integrationId;
 METHOD|- (BOOL)openDatabase;
 METHOD|- (BOOL)saveUploads:(nonnull NSArray<MPUpload *> *)uploads deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
@@ -346,6 +347,7 @@ METHOD|- (NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)copyI
 METHOD|- (NSMutableDictionary<NSString *, id> *)beautifiedAttributes;
 METHOD|- (NSMutableDictionary<NSString *, id> *)userDefinedAttributes;
 METHOD|- (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector;
+METHOD|- (NSString * _Nullable)getSessionId;
 METHOD|- (NSString * _Nullable)getSessionId;
 METHOD|- (NSString *) print;
 METHOD|- (NSString *)actionNameForAction:(MPCommerceEventAction)action;
@@ -590,6 +592,7 @@ METHOD|- (void)logException:(NSException *)exception topmostContext:(nullable id
 METHOD|- (void)logException:(NSException *)exception;
 METHOD|- (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 METHOD|- (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName;
+METHOD|- (void)logMParticleApiDiagnostic:(NSString * _Nonnull)code;
 METHOD|- (void)logMParticleApiDiagnostic:(NSString * _Nonnull)code;
 METHOD|- (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived;
 METHOD|- (void)logNetworkPerformanceMeasurement:(nonnull MPNetworkPerformance *)networkPerformance completionHandler:(void (^ _Nullable)(MPNetworkPerformance * _Nonnull networkPerformance, MPExecStatus execStatus))completionHandler;
@@ -1001,6 +1004,7 @@ PROTO|@protocol MPKitProtocol <NSObject>
 PROTO|@protocol MPKitProtocol;
 PROTO|@protocol MPNotificationControllerProtocol
 PROTO|@protocol MPPersistenceControllerProtocol
+PROTO|@protocol MPRoktKitDispatchTarget <NSObject>
 PROTO|@protocol MPStateMachineProtocol
 PROTO|@protocol MPStateMachineProtocol;
 PROTO|@protocol OpenURLHandlerProtocol <NSObject>

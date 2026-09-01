@@ -7,7 +7,7 @@
 #import <mParticle_Apple_SDK/mParticle.h>
 #endif
 
-@interface MPKitRokt : NSObject <MPKitProtocol>
+@interface MPKitRokt : NSObject <MPKitProtocol, MPRoktKitDispatchTarget>
 
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
