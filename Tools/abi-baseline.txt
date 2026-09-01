@@ -369,6 +369,8 @@ METHOD|- (instancetype)initWithKitInstance:(id<MPKitProtocol>)kitInstance;
 METHOD|- (nonnull MPKitExecStatus *)beginLocationTracking:(MPLocationAccuracy)accuracy minDistance:(MPLocationDistance)distanceFilter;
 METHOD|- (nonnull MPKitExecStatus *)beginSession;
 METHOD|- (nonnull MPKitExecStatus *)beginTimedEvent:(nonnull MPEvent *)event;
+METHOD|- (nonnull MPKitExecStatus *)clearSession;
+METHOD|- (nonnull MPKitExecStatus *)close;
 METHOD|- (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
 METHOD|- (nonnull MPKitExecStatus *)didBecomeActive;
 METHOD|- (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration;
@@ -415,6 +417,7 @@ METHOD|- (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken
 METHOD|- (nonnull MPKitExecStatus *)setKitAttribute:(nonnull NSString *)key value:(nullable id)value;
 METHOD|- (nonnull MPKitExecStatus *)setLocation:(nonnull MPLocation *)location;
 METHOD|- (nonnull MPKitExecStatus *)setOptOut:(BOOL)optOut;
+METHOD|- (nonnull MPKitExecStatus *)setSessionId:(nonnull NSString *)sessionId;
 METHOD|- (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key value:(nonnull id)value;
 METHOD|- (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key values:(nonnull NSArray *)values;
 METHOD|- (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;

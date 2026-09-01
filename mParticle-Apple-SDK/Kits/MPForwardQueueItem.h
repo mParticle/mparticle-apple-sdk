@@ -1,5 +1,5 @@
-// Intentionally kept in Objective-C: stores SDK event types (MPBaseEvent/MPCommerceEvent)
-// and a SEL, which the Foundation-only Swift migration module cannot import.
+// Intentionally kept in Objective-C because it stores SDK event types
+// (MPBaseEvent/MPCommerceEvent) and MPMessageType, which the Foundation-only Swift module cannot import.
 #import <Foundation/Foundation.h>
 #import "MPEnums.h"
 #import "MPKitProtocol.h"

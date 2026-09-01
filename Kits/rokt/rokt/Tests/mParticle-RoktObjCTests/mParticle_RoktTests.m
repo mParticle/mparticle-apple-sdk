@@ -7,6 +7,11 @@
 static NSInteger const kMPRoktKitCode = 181;
 static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
 
+@protocol MPRoktSDKClassMethods
++ (void)close;
++ (void)clearSession;
+@end
+
 @interface MPKitRokt ()
 
 - (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
@@ -116,7 +121,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 - (void)testStopResetsKitState {
     id mockRoktSDK = OCMClassMock([Rokt class]);
-    OCMExpect([mockRoktSDK close]);
+    OCMExpect([(Class<MPRoktSDKClassMethods>)mockRoktSDK close]);
 
     [self.kitInstance didFinishLaunchingWithConfiguration:self.configuration];
     [self.kitInstance start];
@@ -144,7 +149,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 - (void)testStartCanBeCalledAgainAfterStop {
     id mockRoktSDK = OCMClassMock([Rokt class]);
-    OCMStub([mockRoktSDK close]);
+    OCMStub([(Class<MPRoktSDKClassMethods>)mockRoktSDK close]);
 
     [self.kitInstance didFinishLaunchingWithConfiguration:self.configuration];
     [self.kitInstance start];
@@ -947,7 +952,7 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 
 - (void)testStopAndRelaunchReplaceHashedEmailUserIdentityType {
     id mockRoktSDK = OCMClassMock([Rokt class]);
-    OCMStub([mockRoktSDK close]);
+    OCMStub([(Class<MPRoktSDKClassMethods>)mockRoktSDK close]);
 
     NSDictionary *launchConfiguration = @{
         @"accountId": @"test_account_id",
@@ -1059,14 +1064,9 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
 - (void)testClearSessionForwardsToRoktSDK {
     id mockRoktSDK = OCMClassMock([Rokt class]);
 
-    OCMExpect([mockRoktSDK clearSession]);
+    OCMExpect([(Class<MPRoktSDKClassMethods>)mockRoktSDK clearSession]);
 
-    // Invoked dynamically on purpose. Declaring -clearSession on MPKitRokt here would put a
-    // second `clearSession` with a different return type in this translation unit, alongside
-    // Rokt's +clearSession, and sending it to OCMock's id receiver above then fails to compile
-    // with "multiple methods named 'clearSession' ... mismatched result". A selector carries no
-    // return type, so this stays unambiguous.
-    MPKitExecStatus *status = [self.kitInstance performSelector:@selector(clearSession)];
+    MPKitExecStatus *status = [(id<MPKitProtocol>)self.kitInstance clearSession];
 
     XCTAssertNotNil(status);
     XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
