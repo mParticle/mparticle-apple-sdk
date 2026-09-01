@@ -27,7 +27,6 @@
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
 #import <objc/message.h>
-#import "MPBracket.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
 #import "MPUserDefaultsConnector.h"
@@ -77,6 +76,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 @property (nonatomic, strong) NSDate *initializedTime;
 @property (nonatomic, strong) MPIHasher *hasher;
+@property (nonatomic, strong) MPKitValueTransformer *valueTransformer;
+@property (nonatomic, strong) MPAttributeValueFilter *attributeValueFilter;
 @end
 
 
@@ -104,6 +105,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
         logger.customLogger = mparticle.customLogger;
         _hasher = [[MPIHasher alloc] initWithLogger:logger];
+        _valueTransformer = [[MPKitValueTransformer alloc] initWithLogger:logger];
+        _attributeValueFilter = [[MPAttributeValueFilter alloc] initWithHasher:_hasher];
         _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
             if (attributionResult && attributionResult.kitCode) {
                 linkInfo[attributionResult.kitCode] = attributionResult;
@@ -403,27 +406,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
-    if (!configuration.attributeValueFilteringIsActive) {
-        return YES;
-    }
-    
-    __block BOOL isMatch = NO;
-    [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        NSString *hashedAttribute = [_hasher hashUserAttributeKey:key];
-        if ([hashedAttribute isEqualToString:configuration.attributeValueFilteringHashedAttribute]) {
-            *stop = YES;
-            if ([obj isKindOfClass:[NSString class]]) {
-                NSString *value = (NSString *)obj;
-                NSString *hashedValue = [_hasher hashUserAttributeValue:value];
-                if ([hashedValue isEqualToString:configuration.attributeValueFilteringHashedValue]) {
-                    isMatch = YES;
-                }
-            }
-        }
-    }];
-    
-    BOOL shouldInclude = configuration.attributeValueFilteringShouldIncludeMatches ? isMatch : !isMatch;
-    return shouldInclude;
+    return [self.attributeValueFilter shouldIncludeEventWithAttributes:attributes
+                                                      filteringActive:configuration.attributeValueFilteringIsActive
+                                                      hashedAttribute:configuration.attributeValueFilteringHashedAttribute
+                                                          hashedValue:configuration.attributeValueFilteringHashedValue
+                                                 shouldIncludeMatches:configuration.attributeValueFilteringShouldIncludeMatches];
 }
 
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
@@ -564,73 +551,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType {
-    id value = nil;
-    
-    switch (dataType) {
-        case MPDataTypeString:
-            if (MPIsNull(originalValue)) {
-                return nil;
-            }
-            
-            value = originalValue;
-            break;
-            
-        case MPDataTypeInt:
-        case MPDataTypeLong: {
-            if (MPIsNull(originalValue)) {
-                return @0;
-            }
-            
-            NSInteger integerValue = [originalValue integerValue];
-            
-            if (integerValue != 0) {
-                value = @(integerValue);
-            } else {
-                if ([originalValue isEqualToString:@"0"]) {
-                    value = @(integerValue);
-                } else {
-                    value = nil;
-                    MPILogError(@"Value '%@' was expected to be a number string.", originalValue);
-                }
-            }
-        }
-            break;
-            
-        case MPDataTypeFloat: {
-            if (MPIsNull(originalValue)) {
-                return @0.0;
-            }
-            
-            float floatValue = [originalValue floatValue];
-            
-            if (floatValue != HUGE_VAL && floatValue != -HUGE_VAL && floatValue != 0.0) {
-                value = @(floatValue);
-            } else {
-                if ([originalValue isEqualToString:@"0"] || [originalValue isEqualToString:@"0.0"] || [originalValue isEqualToString:@".0"]) {
-                    value = @(floatValue);
-                } else {
-                    value = [NSNull null];
-                    MPILogError(@"Attribute '%@' was expected to be a number string.", originalValue);
-                }
-            }
-        }
-            break;
-            
-        case MPDataTypeBool: {
-            if (MPIsNull(originalValue)) {
-                return @NO;
-            }
-            
-            if ([originalValue caseInsensitiveCompare:@"true"] == NSOrderedSame) {
-                value = @YES;
-            } else {
-                value = @NO;
-            }
-        }
-            break;
-    }
-    
-    return value;
+    return [self.valueTransformer transformValue:originalValue dataType:dataType];
 }
 
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
