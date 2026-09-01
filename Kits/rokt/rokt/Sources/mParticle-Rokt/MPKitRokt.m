@@ -568,9 +568,47 @@ static __weak MPKitRokt *roktKit = nil;
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
+/// Set the session to use for the next execute call.
+/// Matches Web launcher options: id + token → `+[Rokt setSession:]`; id only → `setSessionId`.
+/// Token without a non-empty id is ignored.
+/// Requires Rokt iOS SDK 5.4.0+ (`+[Rokt setSession:]`).
+///
+/// @param session The mParticle session handoff value (id + optional JWT + optional expiry).
+- (MPKitExecStatus *)setSession:(MPRoktSession *)session {
+    NSString *sessionId = [session.sessionId stringByTrimmingCharactersInSet:
+                           [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (sessionId.length == 0) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    }
+
+    NSString *sessionToken = [session.sessionToken stringByTrimmingCharactersInSet:
+                              [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (sessionToken.length > 0) {
+        RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:sessionId
+                                                             sessionToken:sessionToken
+                                                                expiresAt:session.expiresAt];
+        [Rokt setSession:roktSession];
+    } else {
+        [Rokt setSessionIdWithSessionId:sessionId];
+    }
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+
+/// Get the current session (id + token) for WebView / non-native handoff.
+- (MPRoktSession *)getSession {
+    RoktSession *session = [Rokt getSession];
+    if (!session) {
+        return nil;
+    }
+    return [[MPRoktSession alloc] initWithSessionId:session.sessionId
+                                       sessionToken:session.sessionToken
+                                          expiresAt:session.expiresAt];
+}
+
 /// Set the session id to use for the next execute call.
 /// This is useful for cases where you have a session id from a non-native integration,
 /// e.g. WebView, and you want the session to be consistent across integrations.
+/// Prefer `-setSession:` so the session token is also applied for offers and events.
 ///
 /// @param sessionId The session id to be set. Must be a non-empty string.
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId {
@@ -579,6 +617,7 @@ static __weak MPKitRokt *roktKit = nil;
 }
 
 /// Get the session id to use within a non-native integration e.g. WebView.
+/// Prefer `-getSession` to also read the session token.
 ///
 /// @return The session id or nil if no session is present.
 - (NSString *)getSessionId {

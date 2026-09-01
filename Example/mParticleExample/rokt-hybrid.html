@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rokt WebView Handoff</title>
+    <style>
+      body {
+        font-family: -apple-system, sans-serif;
+        margin: 16px;
+        color: #111;
+      }
+      h1 {
+        font-size: 20px;
+      }
+      pre,
+      .panel {
+        background: #f4f4f5;
+        padding: 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+      }
+      button {
+        font-size: 16px;
+        padding: 10px 14px;
+        margin-top: 12px;
+      }
+      .muted {
+        color: #555;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>mParticle Web + Rokt</h1>
+    <p class="muted">
+      Web SDK v2.79.0. Native session is injected as
+      <code>window.__ROKT_HANDOFF</code> and copied into
+      <code>launcherOptions</code> before init.
+    </p>
+    <div class="panel">
+      <strong>Injected session</strong>
+      <pre id="debug">Waiting for handoff…</pre>
+    </div>
+    <div id="rokt-placeholder"></div>
+    <button type="button" id="send-native">Send session to native</button>
+    <p class="muted" id="status"></p>
+
+    <script>
+      // Replace with a web API key from a workspace that has the Rokt kit enabled.
+      var WEB_API_KEY = "REPLACE_WITH_WEB_API_KEY";
+
+      function truncateToken(token) {
+        if (!token) {
+          return "(none)";
+        }
+        if (token.length <= 16) {
+          return token + " (len " + token.length + ")";
+        }
+        return token.substring(0, 12) + "…" + " (len " + token.length + ")";
+      }
+
+      var handoff = window.__ROKT_HANDOFF || {};
+      document.getElementById("debug").textContent =
+        "sessionId: " +
+        (handoff.sessionId || "(none)") +
+        "\n" +
+        "sessionToken: " +
+        truncateToken(handoff.sessionToken) +
+        "\n" +
+        "expiresAt: " +
+        (handoff.expiresAt != null ? String(handoff.expiresAt) : "(none)");
+
+      var launcherOptions = {};
+      if (handoff.sessionId) {
+        launcherOptions.sessionId = handoff.sessionId;
+      }
+      if (handoff.sessionId && handoff.sessionToken) {
+        launcherOptions.sessionToken = handoff.sessionToken;
+      }
+
+      window.mParticle = {
+        config: {
+          isDevelopmentMode: true,
+          launcherOptions: launcherOptions,
+          identifyRequest: {
+            userIdentities: {
+              email: "foo@example.com",
+              customerid: "123456",
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@mparticle/web-sdk@2.79.0/dist/mparticle.js"></script>
+    <script>
+      function setStatus(text) {
+        document.getElementById("status").textContent = text;
+      }
+
+      if (!WEB_API_KEY || WEB_API_KEY.indexOf("REPLACE_") === 0) {
+        setStatus("Set WEB_API_KEY in rokt-hybrid.html, then reload.");
+      } else if (
+        typeof mParticle === "undefined" ||
+        typeof mParticle.init !== "function"
+      ) {
+        setStatus("Failed to load mParticle Web SDK 2.79.0.");
+      } else {
+        mParticle.init(WEB_API_KEY, window.mParticle.config);
+        mParticle.ready(function () {
+          setStatus(
+            "Web SDK ready. Selecting Rokt placements with native launcherOptions.",
+          );
+          if (
+            mParticle.Rokt &&
+            typeof mParticle.Rokt.selectPlacements === "function"
+          ) {
+            mParticle.Rokt.selectPlacements({
+              identifier: "RoktLayout",
+              attributes: {
+                email: "j.smit@example.com",
+                firstname: "Jenny",
+                lastname: "Smith",
+                sandbox: "true",
+                mobile: "(555)867-5309",
+              },
+            });
+          } else {
+            setStatus(
+              "mParticle.Rokt.selectPlacements is unavailable. Enable the Rokt kit on this web workspace.",
+            );
+          }
+        });
+      }
+
+      document
+        .getElementById("send-native")
+        .addEventListener("click", function () {
+          var payload = window.__ROKT_HANDOFF || {};
+          if (
+            window.webkit &&
+            window.webkit.messageHandlers &&
+            window.webkit.messageHandlers.roktSession
+          ) {
+            window.webkit.messageHandlers.roktSession.postMessage({
+              sessionId: payload.sessionId,
+              sessionToken: payload.sessionToken,
+              expiresAt: payload.expiresAt,
+            });
+            setStatus(
+              "Posted session to native setSession, then native selectPlacements.",
+            );
+          } else {
+            setStatus("webkit.messageHandlers.roktSession is missing.");
+          }
+        });
+    </script>
+  </body>
+</html>

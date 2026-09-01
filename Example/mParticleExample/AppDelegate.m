@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-#import <mParticle_Apple_SDK/mParticle.h>
+#import <mParticle_Apple_SDK_ObjC/mParticle.h>
 #import <AdSupport/AdSupport.h>
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "PLCrashReportTextFormatter+StackTrace.h"
