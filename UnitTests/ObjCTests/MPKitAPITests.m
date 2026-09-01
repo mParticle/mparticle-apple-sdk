@@ -37,7 +37,8 @@
 @interface MPKitAPI ()
 
 - (id)initWithKitCode:(NSNumber *)integrationId;
-    
+- (NSString *)kitName;
+
 @end
 
 #pragma mark - MPKitAPITests unit test class
@@ -244,6 +245,124 @@
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+#pragma mark - Kit name
+
+- (void)testKitNameResolvesARegisteredCode {
+    XCTAssertEqualObjects([_kitApi kitName], @"KitTest");
+}
+
+- (void)testKitNameIsNilForAnUnregisteredCode {
+    MPKitAPI *unregistered = [[MPKitAPI alloc] initWithKitCode:@999];
+
+    XCTAssertNil([unregistered kitName]);
+}
+
+#pragma mark - Attribution
+
+// The Swift helper mirrors these three constants because it cannot import the
+// ObjC module. This test is what fails if either side drifts.
+- (void)testAttributionErrorCarriesTheObjCConstants {
+    __block NSError *reportedError = nil;
+    __block MPAttributionResult *reportedResult = nil;
+    _kitContainer.attributionCompletionHandler = ^(MPAttributionResult *result, NSError *error) {
+        reportedResult = result;
+        reportedError = error;
+    };
+
+    NSError *underlying = [NSError errorWithDomain:@"test" code:7 userInfo:nil];
+    [_kitApi onAttributionCompleteWithResult:nil error:underlying];
+
+    XCTAssertNil(reportedResult);
+    XCTAssertEqualObjects(reportedError.domain, MPKitAPIErrorDomain);
+    XCTAssertEqual(reportedError.code, 0);
+    XCTAssertEqualObjects(reportedError.userInfo[mParticleKitInstanceKey], @42);
+    XCTAssertEqualObjects(reportedError.userInfo[NSUnderlyingErrorKey], underlying);
+    XCTAssertEqualObjects(reportedError.userInfo[MPKitAPIErrorKey],
+                          @"mParticle Kit Attribution handler was called with nil info and no error");
+}
+
+- (void)testAttributionErrorOmitsTheInstanceKeyWithoutAKitCode {
+    __block NSError *reportedError = nil;
+    _kitContainer.attributionCompletionHandler = ^(MPAttributionResult *result, NSError *error) {
+        reportedError = error;
+    };
+
+    [[[MPKitAPI alloc] initWithKitCode:nil] onAttributionCompleteWithResult:nil error:nil];
+
+    XCTAssertNil(reportedError.userInfo[mParticleKitInstanceKey]);
+    XCTAssertNil(reportedError.userInfo[NSUnderlyingErrorKey]);
+    XCTAssertEqualObjects(reportedError.userInfo[MPKitAPIErrorKey],
+                          @"mParticle Kit Attribution handler was called with nil info and no error");
+}
+
+- (void)testAttributionSuccessStampsTheKitCodeAndName {
+    __block MPAttributionResult *reportedResult = nil;
+    __block NSError *reportedError = nil;
+    _kitContainer.attributionCompletionHandler = ^(MPAttributionResult *result, NSError *error) {
+        reportedResult = result;
+        reportedError = error;
+    };
+
+    MPAttributionResult *result = [[MPAttributionResult alloc] init];
+    result.linkInfo = @{@"key":@"value"};
+    [_kitApi onAttributionCompleteWithResult:result error:nil];
+
+    XCTAssertNil(reportedError);
+    XCTAssertEqualObjects(reportedResult.kitCode, @42);
+    XCTAssertEqualObjects(reportedResult.kitName, @"KitTest");
+    XCTAssertEqualObjects(reportedResult.linkInfo, @{@"key":@"value"});
+}
+
+#pragma mark - Logging
+
+// The only coverage of the va_list path itself.
+- (void)testCustomLoggerReceivesTheKitPrefixedMessage {
+    MPILogLevel originalLevel = [MParticle sharedInstance].logLevel;
+    void (^originalLogger)(NSString *) = [MParticle sharedInstance].customLogger;
+
+    __block NSMutableArray<NSString *> *messages = [NSMutableArray array];
+    [MParticle sharedInstance].logLevel = MPILogLevelVerbose;
+    [MParticle sharedInstance].customLogger = ^(NSString *message) {
+        [messages addObject:message];
+    };
+
+    [_kitApi logDebug:@"count %d", 3];
+
+    [MParticle sharedInstance].logLevel = originalLevel;
+    [MParticle sharedInstance].customLogger = originalLogger;
+
+    XCTAssertEqualObjects(messages, (@[@"mParticle -> KitTest Kit: count 3"]));
+}
+
+- (void)testLoggingIsSuppressedAtLevelNone {
+    MPILogLevel originalLevel = [MParticle sharedInstance].logLevel;
+    void (^originalLogger)(NSString *) = [MParticle sharedInstance].customLogger;
+
+    __block NSMutableArray<NSString *> *messages = [NSMutableArray array];
+    [MParticle sharedInstance].logLevel = MPILogLevelNone;
+    [MParticle sharedInstance].customLogger = ^(NSString *message) {
+        [messages addObject:message];
+    };
+
+    [_kitApi logError:@"boom"];
+    [_kitApi logWarning:@"boom"];
+    [_kitApi logDebug:@"boom"];
+    [_kitApi logVerbose:@"boom"];
+
+    [MParticle sharedInstance].logLevel = originalLevel;
+    [MParticle sharedInstance].customLogger = originalLogger;
+
+    XCTAssertEqual(messages.count, 0);
+}
+
+- (void)testSwiftLogLevelRawValuesMatchObjC {
+    XCTAssertEqual((NSUInteger)MPILogLevelSwiftNone, (NSUInteger)MPILogLevelNone);
+    XCTAssertEqual((NSUInteger)MPILogLevelSwiftError, (NSUInteger)MPILogLevelError);
+    XCTAssertEqual((NSUInteger)MPILogLevelSwiftWarning, (NSUInteger)MPILogLevelWarning);
+    XCTAssertEqual((NSUInteger)MPILogLevelSwiftDebug, (NSUInteger)MPILogLevelDebug);
+    XCTAssertEqual((NSUInteger)MPILogLevelSwiftVerbose, (NSUInteger)MPILogLevelVerbose);
 }
 
 @synthesize started;

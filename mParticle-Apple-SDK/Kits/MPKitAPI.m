@@ -1,8 +1,6 @@
 #import "MPKitAPI.h"
-#import "MPPersistenceController.h"
-#import "MPIntegrationAttributes.h"
+#import "MPAttributionResult+MParticlePrivate.h"
 #import "MPKitContainer+MParticlePrivate.h"
-#import "MPILogger.h"
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
 
@@ -10,15 +8,7 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-
-@end
-
-@interface MPAttributionResult ()
-
-@property (nonatomic, readwrite) NSNumber *kitCode;
-@property (nonatomic, readwrite) NSString *kitName;
 
 @end
 
@@ -42,52 +32,53 @@
     NSNumber *kitCode = _kitCode;
     
     if (kits && kitCode) {
-        [kits enumerateObjectsUsingBlock:^(id<MPExtensionKitProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
-            if (obj.code.intValue == self->_kitCode.intValue) {
+        // No *stop = YES: on duplicate codes the last match wins, as it always has.
+        [kits enumerateObjectsUsingBlock:^(id<MPExtensionKitProtocol> _Nonnull obj, __unused BOOL * _Nonnull stop) {
+            if (obj.code.intValue == kitCode.intValue) {
                 component = obj.name;
             }
         }];
     }
-    
+
     return component;
 }
 
-- (NSString *)logMessageWithFormat:(NSString *)format withParameters:(va_list)valist {
-    NSString *formattedOriginalMessage = [[NSString alloc] initWithFormat:format arguments:valist];
-    NSString *kitName = [self kitName];
-    NSString *prefixedMessage = [NSString stringWithFormat:@"%@ Kit: %@", kitName, formattedOriginalMessage];
-    return prefixedMessage;
+- (void)emitLogWithMessageLevel:(MPILogLevelSwift)messageLevel format:(NSString *)format parameters:(va_list)valist {
+    MParticle *mparticle = MParticle.sharedInstance;
+    NSString *message = [[NSString alloc] initWithFormat:format arguments:valist];
+
+    [MPKitAPIHelper emitKitLogWithKitName:[self kitName]
+                                 message:message
+                            messageLevel:messageLevel
+                         currentLogLevel:mparticle.logLevel
+                            customLogger:mparticle.customLogger];
 }
 
 - (void)logError:(NSString *)format, ... {
     va_list args;
     va_start(args, format);
-    NSString* formattedMessage = [self logMessageWithFormat:format withParameters:args];
-    MPILogError(@"%@", formattedMessage);
+    [self emitLogWithMessageLevel:MPILogLevelSwiftError format:format parameters:args];
     va_end(args);
 }
 
 - (void)logWarning:(NSString *)format, ... {
     va_list args;
     va_start(args, format);
-    NSString* formattedMessage = [self logMessageWithFormat:format withParameters:args];
-    MPILogWarning(@"%@", formattedMessage);
+    [self emitLogWithMessageLevel:MPILogLevelSwiftWarning format:format parameters:args];
     va_end(args);
 }
 
 - (void)logDebug:(NSString *)format, ... {
     va_list args;
     va_start(args, format);
-    NSString* formattedMessage = [self logMessageWithFormat:format withParameters:args];
-    MPILogDebug(@"%@", formattedMessage);
+    [self emitLogWithMessageLevel:MPILogLevelSwiftDebug format:format parameters:args];
     va_end(args);
 }
 
 - (void)logVerbose:(NSString *)format, ... {
     va_list args;
     va_start(args, format);
-    NSString* formattedMessage = [self logMessageWithFormat:format withParameters:args];
-    MPILogVerbose(@"%@", formattedMessage);
+    [self emitLogWithMessageLevel:MPILogLevelSwiftVerbose format:format parameters:args];
     va_end(args);
 }
 
@@ -105,33 +96,17 @@
 }
 
 - (void)onAttributionCompleteWithResult:(MPAttributionResult *)result error:(NSError *)error {
-    if (error || !result) {
-        
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-        if (_kitCode != nil) {
-            userInfo[mParticleKitInstanceKey] = _kitCode;
-        }
-        
-        NSString *errorMessage = nil;
-        
-        if (error) {
-            errorMessage = @"mParticle Kit Attribution Error";
-            userInfo[NSUnderlyingErrorKey] = error;
-        }
-        
-        if (!result) {
-            errorMessage = @"mParticle Kit Attribution handler was called with nil info and no error";
-        }
-        
-        userInfo[MPKitAPIErrorKey] = errorMessage;
-        NSError *attributionError = [NSError errorWithDomain:MPKitAPIErrorDomain code:0 userInfo:userInfo];
+    NSError *attributionError = [MPKitAPIHelper attributionErrorForError:error
+                                                              hasResult:result != nil
+                                                                kitCode:_kitCode];
+    if (attributionError) {
         [MParticle sharedInstance].kitContainer_PRIVATE.attributionCompletionHandler(nil, attributionError);
         return;
     }
-    
+
     result.kitCode = _kitCode;
     result.kitName = [self kitName];
-    
+
     [MParticle sharedInstance].kitContainer_PRIVATE.attributionCompletionHandler(result, nil);
 }
 
@@ -183,11 +158,8 @@
 }
 
 + (NSString *_Nullable)hashString:(NSString * _Nonnull)string {
-    MParticle* mparticle = MParticle.sharedInstance;
-    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-    logger.customLogger = mparticle.customLogger;
-    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
-    return [hasher hashString:string];
+    MParticle *mparticle = MParticle.sharedInstance;
+    return [MPKitAPIHelper hashString:string logLevel:mparticle.logLevel customLogger:mparticle.customLogger];
 }
 
 @end
