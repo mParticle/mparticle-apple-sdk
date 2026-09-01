@@ -10,20 +10,7 @@
 #import "mParticle.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPILogger.h"
-#import "MPIConstants.h"
-#import "MPIdentityDTO.h"
 #import "MPExtensionProtocol.h"
-
-// Constants for kit configuration keys
-static NSString * const kMPKitConfigurationIdKey = @"id";
-static NSString * const kMPAttributeMappingSourceKey = @"map";
-static NSString * const kMPAttributeMappingDestinationKey = @"value";
-
-// Rokt attribute keys
-static NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
-
-// Rokt kit identifier
-static const NSInteger kMPRoktKitId = 181;
 
 @interface MParticle ()
 
@@ -261,10 +248,10 @@ static const NSInteger kMPRoktKitId = 181;
     }
     
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
-        if ([kitRegister.code integerValue] == kMPRoktKitId) {
+        if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
             id kitInstance = kitRegister.wrapperInstance;
             if (kitInstance && [kitInstance respondsToSelector:@selector(getSessionId)]) {
-                result = [kitInstance performSelector:@selector(getSessionId)];
+                result = [MPRoktLogicPRIVATE sessionIdFromKit:kitInstance];
                 MPILogDebug(@"MPRokt getSessionId returning: %@", result ? @"session present" : @"nil");
                 break;
             } else {
@@ -286,11 +273,8 @@ static const NSInteger kMPRoktKitId = 181;
     }
     NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
-        if ([kitRegister.code integerValue] == kMPRoktKitId) {
-            id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
-            if (kitInstance && [kitInstance respondsToSelector:@selector(logMParticleApiDiagnostic:)]) {
-                [kitInstance logMParticleApiDiagnostic:code];
-            }
+        if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
+            [MPRoktLogicPRIVATE performLogMParticleApiDiagnosticOnKit:kitRegister.wrapperInstance code:code];
             break;
         }
     }
@@ -416,18 +400,11 @@ static const NSInteger kMPRoktKitId = 181;
     }
 
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
-        if ([kitRegister.code integerValue] == kMPRoktKitId) {
+        if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
             id kitInstance = kitRegister.wrapperInstance;
             SEL sel = @selector(handleURLCallback:);
             if (kitInstance && [kitInstance respondsToSelector:sel]) {
-                NSMethodSignature *signature = [kitInstance methodSignatureForSelector:sel];
-                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-                [invocation setSelector:sel];
-                [invocation setTarget:kitInstance];
-                [invocation setArgument:&url atIndex:2];
-                [invocation invoke];
-                BOOL handled = NO;
-                [invocation getReturnValue:&handled];
+                BOOL handled = [MPRoktLogicPRIVATE invokeHandleURLCallbackOnKit:kitInstance url:url];
                 MPILogDebug(@"MPRokt handleURLCallback returning: %@", handled ? @"YES" : @"NO");
                 return handled;
             }
@@ -447,22 +424,12 @@ static const NSInteger kMPRoktKitId = 181;
 - (NSMutableDictionary<NSString *, NSString *> *)mapPlacementAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
                                                            attributeMap:(NSArray<NSDictionary<NSString *, NSString *> *> *)attributeMap
                                                                 forUser:(MParticleUser * _Nullable)user {
-    NSMutableDictionary<NSString *, NSString *> *mappedAttributes = [attributes mutableCopy];
-    if (!mappedAttributes) {
-        mappedAttributes = [[NSMutableDictionary alloc] init];
-    }
-    for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
-        NSString *mapFrom = map[kMPAttributeMappingSourceKey];
-        NSString *mapTo = map[kMPAttributeMappingDestinationKey];
-        if (mappedAttributes[mapFrom]) {
-            NSString *value = mappedAttributes[mapFrom];
-            [mappedAttributes removeObjectForKey:mapFrom];
-            mappedAttributes[mapTo] = value;
-        }
-    }
+    NSMutableDictionary<NSString *, NSString *> *mappedAttributes = [MPRoktLogicPRIVATE mappedPlacementAttributes:attributes
+                                                                                                    attributeMap:attributeMap];
     if (user) {
+        NSString *sandboxKey = [MPRoktLogicPRIVATE sandboxAttributeKey];
         for (NSString *key in mappedAttributes) {
-            if (![key isEqual:kMPRoktAttributeKeySandbox]) {
+            if (![key isEqual:sandboxKey]) {
                 [user setUserAttribute:key value:mappedAttributes[key]];
             }
         }
@@ -475,17 +442,12 @@ static const NSInteger kMPRoktKitId = 181;
 - (NSDictionary * _Nullable)getRoktKitConfiguration {
     NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
     MPILogDebug(@"MPRokt getRoktKitConfiguration - examining %lu kit config(s)", (unsigned long)kitConfigs.count);
-    for (NSDictionary *kitConfig in kitConfigs) {
-        if ([kitConfig[kMPKitConfigurationIdKey] integerValue] == kMPRoktKitId) {
-            return kitConfig;
-        }
-    }
-    NSMutableArray *kitIds = [NSMutableArray array];
-    for (NSDictionary *kitConfig in kitConfigs) {
-        [kitIds addObject:kitConfig[kMPKitConfigurationIdKey] ?: @"nil"];
+    NSDictionary *roktKitConfig = [MPRoktLogicPRIVATE kitConfigurationFromOriginalConfig:kitConfigs];
+    if (roktKitConfig) {
+        return roktKitConfig;
     }
     MPILogWarning(@"MPRokt kit (ID %ld) not found in configurations. Available kit IDs: %@",
-                  (long)kMPRoktKitId, kitIds);
+                  (long)[MPRoktLogicPRIVATE kitId], [MPRoktLogicPRIVATE kitIdsFromOriginalConfig:kitConfigs]);
     return nil;
 }
 
@@ -493,45 +455,18 @@ static const NSInteger kMPRoktKitId = 181;
 /// The mapping defines how attribute keys should be renamed before being sent to Rokt (e.g., "userEmail" → "email").
 /// @return An array of mapping dictionaries with "map" (source key) and "value" (destination key), or nil if Rokt Kit is not configured.
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
-    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
-    
-    // Get the kit configuration
     NSDictionary *roktKitConfig = [self getRoktKitConfiguration];
-    
-    // Return nil if no Rokt Kit configuration found
     if (!roktKitConfig) {
         MPILogWarning(@"MPRokt kit configuration not found");
         return nil;
     }
     
-    // Get the placement attributes map
-    NSString *strAttributeMap;
-    NSData *dataAttributeMap;
-    // Rokt Kit is available though there may not be an attribute map
-    attributeMap = @[];
-    id configJSONString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPPlacementAttributesMapping];
-    if (configJSONString != nil && configJSONString != [NSNull null]) {
-        strAttributeMap = [configJSONString stringByRemovingPercentEncoding];
-        dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
+    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [MPRoktLogicPRIVATE placementAttributesMappingFromKitConfig:roktKitConfig];
+    if (attributeMap) {
+        MPILogDebug(@"MPRokt successfully parsed placement attribute map with %lu entries", (unsigned long)attributeMap.count);
+    } else {
+        MPILogError(@"MPRokt failed to parse placement attribute map");
     }
-    
-    if (dataAttributeMap != nil) {
-        // Convert it to an array of dictionaries
-        NSError *error = nil;
-        
-        @try {
-            attributeMap = [NSJSONSerialization JSONObjectWithData:dataAttributeMap options:kNilOptions error:&error];
-        } @catch (NSException *exception) {
-            MPILogError(@"MPRokt exception parsing placement attribute map: %@", exception);
-        }
-        
-        if (attributeMap && !error) {
-            MPILogDebug(@"MPRokt successfully parsed placement attribute map with %lu entries", (unsigned long)attributeMap.count);
-        } else {
-            MPILogError(@"MPRokt failed to parse placement attribute map: %@", error);
-        }
-    }
-    
     return attributeMap;
 }
 
@@ -539,16 +474,10 @@ static const NSInteger kMPRoktKitId = 181;
 /// The hashed email identity type is determined by dashboard settings and may vary (e.g., CustomerId, Other, etc.).
 /// @return The NSNumber representing the MPIdentity type for hashed email, or nil if not configured.
 - (NSNumber *)getRoktHashedEmailUserIdentityType {
-    // Get the kit configuration
     NSDictionary *roktKitConfig = [self getRoktKitConfiguration];
-    
-    // Get the string representing which identity to use and convert it to the key (NSNumber)
-    NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPHashedEmailUserIdentityType];
-    NSNumber *hashedIdentityTypeNumber = [MPIdentityHTTPIdentities identityTypeForString:hashedIdentityTypeString.lowercaseString];
-    
-    MPILogDebug(@"MPRokt getRoktHashedEmailUserIdentityType - typeString: %@, typeNumber: %@",
-                hashedIdentityTypeString ?: @"nil", hashedIdentityTypeNumber ?: @"nil");
-    
+    NSNumber *hashedIdentityTypeNumber = [MPRoktLogicPRIVATE hashedEmailIdentityTypeFromKitConfig:roktKitConfig];
+    MPILogDebug(@"MPRokt getRoktHashedEmailUserIdentityType - typeNumber: %@",
+                hashedIdentityTypeNumber ?: @"nil");
     return hashedIdentityTypeNumber;
 }
 
@@ -558,23 +487,11 @@ static const NSInteger kMPRoktKitId = 181;
 /// - Parameter attributes: The input attributes dictionary to validate
 /// @return A dictionary with the sandbox attribute guaranteed to be present
 - (NSDictionary<NSString *, NSString *> *)confirmSandboxAttribute:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    NSMutableDictionary<NSString *, NSString *> *finalAttributes = attributes.mutableCopy;
-    
-    // Determine the value of the sandbox attribute based off the current environment
     MPEnvironment currentEnvironment = [[MParticle sharedInstance] environment];
-    NSString *sandboxValue = (currentEnvironment == MPEnvironmentDevelopment) ? @"true" : @"false";
-    MPILogDebug(@"MPRokt confirmSandboxAttribute - environment: %ld, sandbox: %@", (long)currentEnvironment, sandboxValue);
-    
-    if (finalAttributes != nil) {
-        // Only set sandbox if it`s not set by the client
-        if (![finalAttributes.allKeys containsObject:kMPRoktAttributeKeySandbox]) {
-            finalAttributes[kMPRoktAttributeKeySandbox] = sandboxValue;
-        }
-    } else {
-        finalAttributes = [[NSMutableDictionary alloc] initWithDictionary:@{kMPRoktAttributeKeySandbox: sandboxValue}];
-    }
-    
-    return finalAttributes;
+    BOOL isDevelopment = (currentEnvironment == MPEnvironmentDevelopment);
+    MPILogDebug(@"MPRokt confirmSandboxAttribute - environment: %ld, sandbox: %@",
+                (long)currentEnvironment, isDevelopment ? @"true" : @"false");
+    return [MPRoktLogicPRIVATE attributesByConfirmingSandbox:attributes isDevelopment:isDevelopment];
 }
 
 /// Synchronizes user identity with mParticle if email or hashed email is provided in attributes.
@@ -590,18 +507,21 @@ static const NSInteger kMPRoktKitId = 181;
                 attributes[@"email"] ? @"present" : @"nil",
                 attributes[@"emailsha256"] ? @"present" : @"nil");
     
-    NSString *email = attributes[@"email"];
-    NSString *hashedEmail = attributes[@"emailsha256"];
+    NSString *email = attributes[[MPRoktLogicPRIVATE emailAttributeKey]];
+    NSString *hashedEmail = attributes[[MPRoktLogicPRIVATE hashedEmailAttributeKey]];
     NSNumber *hashedEmailIdentity = [self getRoktHashedEmailUserIdentityType];
-    
-    BOOL shouldIdentifyFromEmail = (email && ![email isEqual:user.identities[@(MPIdentityEmail)]]);
-    BOOL shouldIdentifyFromHash = (hashedEmail && hashedEmailIdentity && ![hashedEmail isEqual:user.identities[hashedEmailIdentity]]);
+    MPRoktConfirmUserDecisionPRIVATE *decision = [MPRoktLogicPRIVATE confirmUserDecisionWithEmail:email
+                                                                                      hashedEmail:hashedEmail
+                                                                              hashedEmailIdentity:hashedEmailIdentity
+                                                                                       identities:user.identities];
+    BOOL shouldIdentifyFromEmail = decision.shouldIdentifyFromEmail;
+    BOOL shouldIdentifyFromHash = decision.shouldIdentifyFromHash;
 
     MPILogDebug(@"MPRokt confirmUser decision - shouldIdentifyFromEmail: %@, shouldIdentifyFromHash: %@",
                 shouldIdentifyFromEmail ? @"YES" : @"NO",
                 shouldIdentifyFromHash ? @"YES" : @"NO");
 
-    if (shouldIdentifyFromEmail || shouldIdentifyFromHash) {
+    if (decision.shouldIdentify) {
         // Identify the user with the new identity information
         MPIdentityApiRequest *identityRequest = user ? [MPIdentityApiRequest requestWithUser:user] : [MPIdentityApiRequest requestWithEmptyUser];
         [identityRequest setIdentity:email identityType:MPIdentityEmail];
