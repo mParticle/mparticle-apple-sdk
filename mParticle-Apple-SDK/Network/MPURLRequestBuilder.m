@@ -136,142 +136,71 @@
     NSString *secret = _secret ?: [MParticle sharedInstance].stateMachine.secret;
     NSString *apiKey = [MParticle sharedInstance].stateMachine.apiKey;
 
+    NSTimeZone *timeZone = [NSTimeZone defaultTimeZone];
+    MPLocaleHeaders *localeHeaders =
+        [[MPLocaleHeaders alloc] initWithDeviceLocale:[[NSLocale autoupdatingCurrentLocale] localeIdentifier]
+                                        timeZoneName:[timeZone name]
+                                      secondsFromGMT:[timeZone secondsFromGMT]];
+    MPURLRequestPlan *plan = nil;
+
     if (isAudienceRequest) {
-        NSString *audienceRelativePath = [urlRequest.URL relativePath];
-        if (!audienceRelativePath) {
-            MPILogError(@"Cannot build URL request — audience relative path is nil");
-            return nil;
+        MPRequestSigningTarget *target =
+            [[MPRequestSigningTarget alloc] initWithHTTPMethod:_httpMethod
+                                                          date:date
+                                                  relativePath:[urlRequest.URL relativePath]];
+        plan = [MPURLRequestPlan audiencePlanWithTarget:target
+                                                 query:[urlRequest.URL query]
+                                                apiKey:apiKey
+                                             userAgent:[self userAgent]];
+        if (plan.failureReason == nil) {
+            MPILogVerbose(@"Audience Signature:\n%@", plan.signatureMessage);
         }
-        NSString *audienceQuery = [urlRequest.URL query];
-        if ([MPRequestSigner exceedsMaxQueryLength:audienceQuery]) {
-            MPILogError(@"Cannot build URL request — audience query exceeds max supported length");
-            return nil;
-        }
-        NSString *audienceSignature = [MPRequestSigner
-            signatureMessageWithHTTPMethod:_httpMethod ?: @""
-                                      date:date ?: @""
-                              relativePath:audienceRelativePath
-                                     query:audienceQuery];
-        MPILogVerbose(@"Audience Signature:\n%@", audienceSignature);
-        NSString *hmacSha256Encode = [self hmacSha256Encode:audienceSignature key:secret];
-        if (hmacSha256Encode) {
-            [urlRequest setValue:hmacSha256Encode forHTTPHeaderField:@"x-mp-signature"];
-        }
-        [urlRequest setValue:date forHTTPHeaderField:@"Date"];
-        [urlRequest setValue:apiKey forHTTPHeaderField:@"x-mp-key"];
-        NSString *userAgent = [self userAgent];
-        if (userAgent) {
-            [urlRequest setValue:userAgent forHTTPHeaderField:@"User-Agent"];
-        }
-    } else if (_SDKURLRequest || isIdentityRequest) {
-        NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
-        MPKitContainer_PRIVATE *kitContainer = !isIdentityRequest ? [MParticle sharedInstance].kitContainer_PRIVATE : nil;
-        NSArray<NSNumber *> *supportedKits = [kitContainer supportedKits];
-        NSString *contentType = nil;
-        NSString *kits = nil;
-        NSString *relativePath = [_url.defaultURL relativePath];
-        if (!relativePath) {
-            MPILogError(@"Cannot build URL request — relative path is nil");
-            return nil;
-        }
-        NSString *signatureMessage;
-        NSTimeZone *timeZone = [NSTimeZone defaultTimeZone];
-        NSString *secondsFromGMT = [NSString stringWithFormat:@"%ld", (long)[timeZone secondsFromGMT]];
-        NSRange range;
-        BOOL containsMessage = _message != nil;
-                
+    } else if (isIdentityRequest || _SDKURLRequest) {
+        MPRequestSigningTarget *target =
+            [[MPRequestSigningTarget alloc] initWithHTTPMethod:_httpMethod
+                                                          date:date
+                                                  relativePath:[_url.defaultURL relativePath]];
         if (isIdentityRequest) { // /identify, /login, /logout, /<mpid>/modify
-            contentType = @"application/json";
-            [urlRequest setValue:apiKey forHTTPHeaderField:@"x-mp-key"];
-            if (!_postData) {
-                MPILogError(@"Cannot build URL request — post data is nil for identity request");
-                return nil;
-            }
-            NSString *postDataString = [[NSString alloc] initWithData:_postData encoding:NSUTF8StringEncoding];
-            if (!postDataString) {
-                MPILogError(@"Cannot build URL request — failed to encode post data as UTF-8");
-                return nil;
-            }
-            signatureMessage = [MPRequestSigner
-                signatureMessageWithHTTPMethod:_httpMethod
-                                          date:date
-                                  relativePath:relativePath
-                                          body:postDataString];
-        } else if (containsMessage) { // /events
-            contentType = @"application/json";
-            
-            if (supportedKits) {
-                kits = [supportedKits componentsJoinedByString:@","];
-                [urlRequest setValue:kits forHTTPHeaderField:@"x-mp-bundled-kits"];
-                kits = nil;
-            }
-            
-            kits = [MParticle.sharedInstance.kitContainer_PRIVATE.configuredKitsRegistry componentsJoinedByString:@","];
-            
-            range = [_message rangeOfString:kMPMessageTypeNetworkPerformance];
-            if (range.location != NSNotFound) {
-                [urlRequest setValue:kMPMessageTypeNetworkPerformance forHTTPHeaderField:kMPMessageTypeNetworkPerformance];
-            }
-            
-            signatureMessage = [MPRequestSigner
-                signatureMessageWithHTTPMethod:_httpMethod
-                                          date:date
-                                  relativePath:relativePath
-                                          body:_message];
+            plan = [MPURLRequestPlan identityPlanWithTarget:target
+                                                  postData:_postData
+                                                    apiKey:apiKey
+                                             localeHeaders:localeHeaders];
+        } else if (_message != nil) { // /events
+            MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
+            plan = [MPURLRequestPlan eventPlanWithTarget:target
+                                                message:_message
+                                          supportedKits:[kitContainer supportedKits]
+                                         configuredKits:kitContainer.configuredKitsRegistry
+                                              userAgent:[self userAgent]
+                                          localeHeaders:localeHeaders
+                          networkPerformanceMessageType:kMPMessageTypeNetworkPerformance];
         } else { // /config
-            contentType = @"application/x-www-form-urlencoded";
-            
-            if (supportedKits) {
-                kits = [supportedKits componentsJoinedByString:@","];
-            }
-            
-            NSString *environment = [NSString stringWithFormat:@"%d", (int)[MPStateMachine_PRIVATE environment]];
-            [urlRequest setValue:environment forHTTPHeaderField:@"x-mp-env"];
-            
             MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
             NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
-            NSDictionary *config = [userDefaults getConfiguration];
-            if (eTag && config) {
-                [urlRequest setValue:eTag forHTTPHeaderField:@"If-None-Match"];
-            }
-            
-            NSString *query = [_url.defaultURL query];
-            if ([MPRequestSigner exceedsMaxQueryLength:query]) {
-                MPILogError(@"Cannot build URL request — config query exceeds max supported length");
-                return nil;
-            }
-            signatureMessage = [MPRequestSigner
-                signatureMessageWithHTTPMethod:_httpMethod ?: @""
-                                          date:date ?: @""
-                                  relativePath:relativePath
-                                         query:query];
+            BOOL hasStoredConfiguration = [userDefaults getConfiguration] != nil;
+            plan = [MPURLRequestPlan configPlanWithTarget:target
+                                                   query:[_url.defaultURL query]
+                                           supportedKits:[[MParticle sharedInstance].kitContainer_PRIVATE supportedKits]
+                                                    eTag:eTag
+                                  hasStoredConfiguration:hasStoredConfiguration
+                                               userAgent:[self userAgent]
+                                           localeHeaders:localeHeaders
+                                             environment:[MPStateMachine_PRIVATE environment]];
         }
-        
-        NSString *hmacSha256Encode = [self hmacSha256Encode:signatureMessage key:secret];
+    }
+
+    if (plan) {
+        if (plan.failureReason) {
+            MPILogError(@"Cannot build URL request — %@", plan.failureReason);
+            return nil;
+        }
+        [plan.headers enumerateKeysAndObjectsUsingBlock:^(NSString *field, NSString *value, __unused BOOL *stop) {
+            [urlRequest setValue:value forHTTPHeaderField:field];
+        }];
+        NSString *hmacSha256Encode = [self hmacSha256Encode:plan.signatureMessage key:secret];
         if (hmacSha256Encode) {
             [urlRequest setValue:hmacSha256Encode forHTTPHeaderField:@"x-mp-signature"];
         }
-        
-        if (kits) {
-            [urlRequest setValue:kits forHTTPHeaderField:@"x-mp-kits"];
-        }
-
-        if (!isIdentityRequest) {
-            NSString *userAgent = [self userAgent];
-            if (userAgent) {
-                [urlRequest setValue:userAgent forHTTPHeaderField:@"User-Agent"];
-            }
-        }
-        
-        [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
-        if (!isIdentityRequest) {
-            [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
-        }
-        [urlRequest setValue:deviceLocale forHTTPHeaderField:@"locale"];
-        [urlRequest setValue:contentType forHTTPHeaderField:@"Content-Type"];
-        [urlRequest setValue:[timeZone name] forHTTPHeaderField:@"timezone"];
-        [urlRequest setValue:secondsFromGMT forHTTPHeaderField:@"secondsFromGMT"];
-        [urlRequest setValue:date forHTTPHeaderField:@"Date"];
     } else if (_headerData) {
         NSDictionary *headerDictionary = [NSJSONSerialization JSONObjectWithData:_headerData options:0 error:nil];
         
