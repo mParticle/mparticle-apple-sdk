@@ -130,33 +130,6 @@ import Foundation
         return decision
     }
 
-    // MARK: - Kit dispatch
-
-    @objc(sessionIdFromKit:)
-    public static func sessionId(from kitInstance: Any?) -> String? {
-        guard let dispatchTarget = kitInstance as? MPRoktKitDispatchTarget else {
-            return nil
-        }
-        return dispatchTarget.getSessionId?()
-    }
-
-    @objc(invokeHandleURLCallbackOnKit:url:)
-    public static func invokeHandleURLCallback(on kitInstance: Any?, url: URL?) -> Bool {
-        guard let dispatchTarget = kitInstance as? MPRoktKitDispatchTarget,
-              let url else {
-            return false
-        }
-        return dispatchTarget.handleURLCallback?(url) ?? false
-    }
-
-    @objc(performLogMParticleApiDiagnosticOnKit:code:)
-    public static func performLogMParticleApiDiagnostic(on kitInstance: Any?, code: String) {
-        guard let dispatchTarget = kitInstance as? MPRoktKitDispatchTarget else {
-            return
-        }
-        dispatchTarget.logMParticleApiDiagnostic?(code)
-    }
-
     private static func integerValue(_ value: Any?) -> Int {
         switch value {
         case let number as NSNumber:

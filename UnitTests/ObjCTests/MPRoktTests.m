@@ -8,7 +8,6 @@
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
-@import mParticle_Apple_SDK_Swift;
 
 @interface MPKitContainer_PRIVATE (MParticlePrivateTests)
 - (nullable NSDictionary *)launchConfigurationForKitCode:(nonnull NSNumber *)kitCode;
@@ -43,6 +42,27 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 - (BOOL)handleURLCallback:(NSURL *)url {
     self.lastHandleURLCallbackURL = url;
+    return self.handleURLCallbackReturn;
+}
+@end
+
+@interface MPRoktNonconformingKitInstance : NSObject
+@property (nonatomic, copy) NSString *sessionIdToReturn;
+@property (nonatomic, copy) NSString *lastDiagnosticCode;
+@property (nonatomic, assign) BOOL handleURLCallbackReturn;
+- (NSString *)getSessionId;
+- (void)logMParticleApiDiagnostic:(NSString *)code;
+- (BOOL)handleURLCallback:(NSURL *)url;
+@end
+
+@implementation MPRoktNonconformingKitInstance
+- (NSString *)getSessionId {
+    return self.sessionIdToReturn;
+}
+- (void)logMParticleApiDiagnostic:(NSString *)code {
+    self.lastDiagnosticCode = code;
+}
+- (BOOL)handleURLCallback:(NSURL *)url {
     return self.handleURLCallbackReturn;
 }
 @end
@@ -1622,6 +1642,29 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
     BOOL result = [self.rokt handleURLCallback:nil];
 #pragma clang diagnostic pop
     XCTAssertFalse(result, @"Should return NO when url is nil");
+}
+
+- (void)testDispatchIgnoresSelectorImplementationsWithoutProtocolConformance {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+
+    MPRoktNonconformingKitInstance *kitInstance = [[MPRoktNonconformingKitInstance alloc] init];
+    kitInstance.sessionIdToReturn = @"should-not-be-used";
+    kitInstance.handleURLCallbackReturn = YES;
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    XCTAssertNil([self.rokt getSessionId]);
+    XCTAssertFalse([self.rokt handleURLCallback:[NSURL URLWithString:@"myapp://afterpay-redirect"]]);
+
+    [self.rokt logRoktApiDiagnostic:@"SELECT_PLACEMENTS"];
+    XCTAssertNil(kitInstance.lastDiagnosticCode);
 }
 
 @end

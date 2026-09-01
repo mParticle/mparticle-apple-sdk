@@ -1,7 +1,6 @@
 #import "MPKitRokt.h"
 @import Rokt_Widget;
 @import RoktContracts;
-@import mParticle_Apple_SDK_Swift;
 
 // Kit version
 static NSString * const kMPRoktKitVersion = @"9.4.1";
@@ -30,7 +29,7 @@ static NSInteger const kMPRoktKitCode = 181;
 
 static __weak MPKitRokt *roktKit = nil;
 
-@interface MPKitRokt () <MPKitProtocol, MPRoktKitDispatchTarget>
+@interface MPKitRokt ()
 
 @property (nonatomic, unsafe_unretained) BOOL started;
 

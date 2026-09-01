@@ -1,32 +1,6 @@
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
-private final class RoktKitDispatchTargetStub: NSObject, MPRoktKitDispatchTarget {
-    var sessionId: String?
-    var lastURL: URL?
-    var handleURLResult = false
-    var lastDiagnosticCode: String?
-
-    func getSessionId() -> String? {
-        sessionId
-    }
-
-    func handleURLCallback(_ url: URL) -> Bool {
-        lastURL = url
-        return handleURLResult
-    }
-
-    func logMParticleApiDiagnostic(_ code: String) {
-        lastDiagnosticCode = code
-    }
-}
-
-private final class NonconformingRoktKitStub: NSObject {
-    @objc func handleURLCallback(_: URL) -> Bool {
-        true
-    }
-}
-
 final class MPRoktLogicTests: XCTestCase {
     func testKitIdMatchesLegacyConstant() {
         XCTAssertEqual(MPRoktLogicPRIVATE.kitId, 181)
@@ -163,30 +137,5 @@ final class MPRoktLogicTests: XCTestCase {
         )
         XCTAssertTrue(nilUser.shouldIdentifyFromEmail)
         XCTAssertFalse(nilUser.shouldIdentifyFromHash)
-    }
-
-    func testKitDispatchUsesProtocolConformance() {
-        let target = RoktKitDispatchTargetStub()
-        target.sessionId = "session-1"
-        target.handleURLResult = true
-        let url = URL(string: "myapp://afterpay-redirect")!
-
-        XCTAssertEqual(MPRoktLogicPRIVATE.sessionId(from: target), "session-1")
-        XCTAssertTrue(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: target, url: url))
-        XCTAssertEqual(target.lastURL, url)
-
-        MPRoktLogicPRIVATE.performLogMParticleApiDiagnostic(on: target, code: "SELECT_PLACEMENTS")
-        XCTAssertEqual(target.lastDiagnosticCode, "SELECT_PLACEMENTS")
-    }
-
-    func testKitDispatchSafelyRejectsNonconformingTargets() {
-        let target = NonconformingRoktKitStub()
-        let url = URL(string: "myapp://afterpay-redirect")!
-
-        XCTAssertNil(MPRoktLogicPRIVATE.sessionId(from: target))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: target, url: url))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: nil, url: url))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: target, url: nil))
-        MPRoktLogicPRIVATE.performLogMParticleApiDiagnostic(on: target, code: "SELECT_PLACEMENTS")
     }
 }

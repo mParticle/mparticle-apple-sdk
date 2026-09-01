@@ -20,6 +20,13 @@
 
 @end
 
+static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
+    if (![kitInstance conformsToProtocol:@protocol(MPRoktKitDispatchTarget)]) {
+        return nil;
+    }
+    return kitInstance;
+}
+
 @implementation MPRokt
 
 /// Displays a Rokt ad placement with the specified identifier and user attributes.
@@ -251,13 +258,13 @@
     
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
         if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
-            id kitInstance = kitRegister.wrapperInstance;
-            if (kitInstance && [kitInstance respondsToSelector:@selector(getSessionId)]) {
-                result = [MPRoktLogicPRIVATE sessionIdFromKit:kitInstance];
+            id<MPRoktKitDispatchTarget> target = MPRoktKitAsDispatchTarget(kitRegister.wrapperInstance);
+            if (target && [target respondsToSelector:@selector(getSessionId)]) {
+                result = [target getSessionId];
                 MPILogDebug(@"MPRokt getSessionId returning: %@", result ? @"session present" : @"nil");
                 break;
             } else {
-                MPILogDebug(@"MPRokt getSessionId - kit found but doesn't respond to getSessionId");
+                MPILogDebug(@"MPRokt getSessionId - kit found but doesn't adopt MPRoktKitDispatchTarget or getSessionId");
             }
         }
     }
@@ -276,7 +283,10 @@
     NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
         if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
-            [MPRoktLogicPRIVATE performLogMParticleApiDiagnosticOnKit:kitRegister.wrapperInstance code:code];
+            id<MPRoktKitDispatchTarget> target = MPRoktKitAsDispatchTarget(kitRegister.wrapperInstance);
+            if ([target respondsToSelector:@selector(logMParticleApiDiagnostic:)]) {
+                [target logMParticleApiDiagnostic:code];
+            }
             break;
         }
     }
@@ -403,13 +413,13 @@
 
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
         if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
-            id kitInstance = kitRegister.wrapperInstance;
-            if (kitInstance && [kitInstance respondsToSelector:@selector(handleURLCallback:)]) {
-                BOOL handled = [MPRoktLogicPRIVATE invokeHandleURLCallbackOnKit:kitInstance url:url];
+            id<MPRoktKitDispatchTarget> target = MPRoktKitAsDispatchTarget(kitRegister.wrapperInstance);
+            if (target && [target respondsToSelector:@selector(handleURLCallback:)]) {
+                BOOL handled = [target handleURLCallback:url];
                 MPILogDebug(@"MPRokt handleURLCallback returning: %@", handled ? @"YES" : @"NO");
                 return handled;
             }
-            MPILogDebug(@"MPRokt handleURLCallback - kit found but doesn't respond to handleURLCallback:");
+            MPILogDebug(@"MPRokt handleURLCallback - kit found but doesn't adopt MPRoktKitDispatchTarget or handleURLCallback:");
             return NO;
         }
     }
