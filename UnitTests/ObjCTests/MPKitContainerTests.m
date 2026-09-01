@@ -75,7 +75,6 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration;
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter;
 - (void)replayQueuedItems;
-- (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)integrationId;
@@ -90,6 +89,17 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
 - (void)attemptToLogEventToKit:(id<MPExtensionKitProtocol>)kitRegister kitFilter:(MPKitFilter *)kitFilter selector:(SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo;
 - (id)bracketForKit:(NSNumber *)integrationId;
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId;
+- (nullable NSDictionary *)launchConfigurationForKitCode:(nonnull NSNumber *)kitCode;
+- (void)project:(id<MPExtensionKitProtocol>)kitRegister
+          event:(MPEvent *const)event
+    messageType:(MPMessageType)messageType
+completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
+                            NSArray<MPEventProjection *> *appliedProjections))completionHandler;
+- (void)project:(id<MPExtensionKitProtocol>)kitRegister
+      commerceEvent:(MPCommerceEvent *const)commerceEvent
+  completionHandler:(void (^)(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
+                              NSArray<MPEvent *> *projectedEvents,
+                              NSArray<MPEventProjection *> *appliedProjections))completionHandler;
 
 
 @end
@@ -351,99 +361,6 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
     
     bracketConfig = @{@"hi":@(100),@"lo":@(0)};
     XCTAssertFalse([kitContainer isDisabledByBracketConfiguration:bracketConfig]);    
-}
-
-- (void)testValueTransformation {
-    id transformedValue;
-    
-    // String
-    transformedValue = [kitContainer transformValue:@"The quick brown fox jumps over the lazy dog" dataType:MPDataTypeString];
-    XCTAssertEqual(transformedValue, @"The quick brown fox jumps over the lazy dog", @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSString class]], @"Should have been true.");
-    
-    // Boolean
-    transformedValue = [kitContainer transformValue:@"TRue" dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @YES, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"FaLSe" dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @NO, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"Just a String" dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @NO, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    // Integer
-    transformedValue = [kitContainer transformValue:@"1618033" dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @1618033, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"1.618033" dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @1, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"An Int string" dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-    
-    // Long
-    transformedValue = [kitContainer transformValue:@"161803398875" dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, @161803398875, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"1.618033" dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @1, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"A Long string" dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-    
-    // Float
-    transformedValue = [kitContainer transformValue:@"1.5" dataType:MPDataTypeFloat];
-    XCTAssertEqualObjects(transformedValue, @1.5, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"A Float string" dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-    
-    // Invalid values
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeString];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeString];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @NO, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @NO, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeFloat];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeFloat];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
 }
 
 - (void)testForwardQueueEcommerce {
@@ -2083,6 +2000,80 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
     XCTAssertEqualObjects(eventCopy.name, @"SUBSCRIPTION_END");
 }
 
+- (void)testEventProjectionAcceptsNilCustomAttributesAtSwiftBoundary {
+    NSDictionary *projection = @{
+        @"id": @700,
+        @"behavior": @{@"append_unmapped_as_is": @YES},
+        @"action": @{
+            @"projected_event_name": @"Projected Event",
+            @"attribute_maps": @[],
+            @"outbound_message_type": @(MPMessageTypeEvent)
+        },
+        @"matches": @[@{
+            @"message_type": @(MPMessageTypeEvent),
+            @"event_match_type": @"String",
+            @"event": @"Original Event"
+        }]
+    };
+    MPKitConfiguration *configuration = [[MPKitConfiguration alloc] initWithDictionary:@{
+        @"id": @92,
+        @"as": @{},
+        @"hs": @{},
+        @"pr": @[projection]
+    }];
+    kitContainer.kitConfigurations[@92] = configuration;
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Original Event" type:MPEventTypeOther];
+
+    [kitContainer project:kitRegister
+                    event:event
+              messageType:MPMessageTypeEvent
+        completionHandler:^(NSArray<MPEvent *> *projectedEvents, NSArray<MPEventProjection *> *appliedProjections) {
+            XCTAssertEqual(projectedEvents.count, 1);
+            XCTAssertEqualObjects(projectedEvents.firstObject.name, @"Projected Event");
+            XCTAssertNil(projectedEvents.firstObject.customAttributes);
+            XCTAssertEqual(appliedProjections.count, 1);
+        }];
+}
+
+- (void)testNonMatchingCommerceProjectionReturnsOriginalEventWithoutAppliedProjection {
+    NSDictionary *projection = @{
+        @"id": @701,
+        @"behavior": @{@"append_unmapped_as_is": @YES},
+        @"action": @{
+            @"projected_event_name": @"Projected Commerce Event",
+            @"attribute_maps": @[],
+            @"outbound_message_type": @(MPMessageTypeEvent)
+        },
+        @"matches": @[@{
+            @"message_type": @(MPMessageTypeCommerceEvent),
+            @"event_match_type": @"Hash",
+            @"event": @"1572"
+        }]
+    };
+    MPKitConfiguration *configuration = [[MPKitConfiguration alloc] initWithDictionary:@{
+        @"id": @92,
+        @"as": @{},
+        @"hs": @{},
+        @"pr": @[projection]
+    }];
+    kitContainer.kitConfigurations[@92] = configuration;
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPProduct *product = [[MPProduct alloc] initWithName:@"Product" sku:@"sku" quantity:@1 price:@1];
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
+
+    [kitContainer project:kitRegister
+             commerceEvent:commerceEvent
+         completionHandler:^(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
+                             NSArray<MPEvent *> *projectedEvents,
+                             NSArray<MPEventProjection *> *appliedProjections) {
+             XCTAssertEqual(projectedCommerceEvents.count, 1);
+             XCTAssertEqual(projectedCommerceEvents.firstObject, commerceEvent);
+             XCTAssertEqual(projectedEvents.count, 0);
+             XCTAssertEqual(appliedProjections.count, 0);
+         }];
+}
+
 - (void)testScreenViewProjectionToBaseEvent {
     [self setUserAttributesAndIdentities];
 
@@ -2434,6 +2425,15 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
 - (void)testAllocation {    
     MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     XCTAssertNotNil(localKitContainer);
+}
+
+- (void)testLaunchConfigurationLookupReturnsOnlyRequestedKit {
+    NSDictionary *firstConfiguration = @{@"id": @42, @"as": @{}};
+    NSDictionary *secondConfiguration = @{@"id": @92, @"as": @{}};
+    [kitContainer configureKits:@[firstConfiguration, secondConfiguration]];
+
+    XCTAssertEqualObjects([kitContainer launchConfigurationForKitCode:@92], secondConfiguration);
+    XCTAssertNil([kitContainer launchConfigurationForKitCode:@181]);
 }
 
 - (void)testExpandedCommerceEventProjection {

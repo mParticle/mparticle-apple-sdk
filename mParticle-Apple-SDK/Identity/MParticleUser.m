@@ -10,6 +10,7 @@
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
 #import "MPKitContainer.h"
+#import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
@@ -413,12 +414,7 @@
 
     [MPPersistenceController_PRIVATE setConsentState:state forMpid:self.userId];
     
-    NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer_PRIVATE.originalConfig copy];
-    if (kitConfig) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfig];
-        });
-    }
+    [[MParticle sharedInstance].kitContainer_PRIVATE reconfigureKits];
     
     // Device-level consent supersedes user-level, so forward the effective consent to kits.
     MPConsentState *effectiveConsentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:self.userId];

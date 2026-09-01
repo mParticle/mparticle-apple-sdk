@@ -11,6 +11,7 @@
 #import "MPIdentityApi.h"
 #import "MPDataPlanFilter.h"
 #import "MPKitContainer.h"
+#import "Kits/MPKitContainer+MParticlePrivate.h"
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"
@@ -305,12 +306,7 @@ MPLog* logger;
     [self.rokt logRoktApiDiagnostic:@"SET_DEVICE_CONSENT_STATE"];
     [MPPersistenceController_PRIVATE setDeviceConsentState:deviceConsentState];
 
-    NSArray<NSDictionary *> *kitConfig = [self.kitContainer_PRIVATE.originalConfig copy];
-    if (kitConfig) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.kitContainer_PRIVATE configureKits:kitConfig];
-        });
-    }
+    [self.kitContainer_PRIVATE reconfigureKits];
 
     MPConsentState *effectiveConsentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:self.identity.currentUser.userId];
     dispatch_async(dispatch_get_main_queue(), ^{
