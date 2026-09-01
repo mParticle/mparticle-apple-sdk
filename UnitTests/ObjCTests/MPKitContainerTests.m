@@ -2752,6 +2752,59 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
     [kitWrapperMock verifyWithDelay:5.0];
 }
 
+- (void)testAttemptToSetWrapperSdkPreservesScalarValue {
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"Rokt" className:@"MPKitRokt"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forEvent:nil selector:@selector(setWrapperSdk:version:)];
+    NSString *version = @"2.4.1";
+    __block MPWrapperSdk receivedWrapperSdk = MPWrapperSdkNone;
+
+    id wrapperRecorder = [[kitWrapperMock expect] ignoringNonObjectArgs];
+    id<MPKitProtocol> wrapperExpectation = [wrapperRecorder andDo:^(NSInvocation *invocation) {
+        [invocation getArgument:&receivedWrapperSdk atIndex:2];
+    }];
+    [wrapperExpectation setWrapperSdk:MPWrapperSdkNone version:version];
+
+    MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc]
+        initWithParameters:@[@(MPWrapperSdkXamarin), version]];
+    [localKitContainer attemptToLogEventToKit:kitRegisterMock
+                                    kitFilter:kitFilter
+                                     selector:@selector(setWrapperSdk:version:)
+                                   parameters:parameters
+                                  messageType:MPMessageTypeUnknown
+                                     userInfo:nil];
+
+    [kitWrapperMock verifyWithDelay:5.0];
+    XCTAssertEqual(receivedWrapperSdk, MPWrapperSdkXamarin);
+}
+
+- (void)testAttemptToLogEventContainsKitExceptions {
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"Throwing Kit" className:@"ThrowingKit"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    XCTestExpectation *invoked = [self expectationWithDescription:@"Kit method invoked"];
+
+    id<MPKitProtocol> exceptionStub = [[kitWrapperMock stub] andDo:^(NSInvocation *invocation) {
+        [invoked fulfill];
+        @throw [NSException exceptionWithName:@"KitException" reason:@"Test exception" userInfo:nil];
+    }];
+    [exceptionStub beginSession];
+
+    [localKitContainer attemptToLogEventToKit:kitRegisterMock
+                                    kitFilter:nil
+                                     selector:@selector(beginSession)
+                                   parameters:nil
+                                  messageType:MPMessageTypeUnknown
+                                     userInfo:nil];
+
+    [self waitForExpectations:@[invoked] timeout:5.0];
+}
+
 - (void)testAttemptToLegacyOpenURLToKit {
     MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     SEL selector = @selector(openURL:sourceApplication:annotation:);
