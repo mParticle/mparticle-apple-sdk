@@ -16,6 +16,7 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 

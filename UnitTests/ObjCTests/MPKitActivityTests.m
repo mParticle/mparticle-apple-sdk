@@ -2,7 +2,7 @@
 #import "MPExtensionProtocol.h"
 #import "MPKitActivity.h"
 #import "MPKitConfiguration.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitRegister.h"
 #import "MPKitTestClassNoStartImmediately.h"
 #import "MPStateMachine.h"

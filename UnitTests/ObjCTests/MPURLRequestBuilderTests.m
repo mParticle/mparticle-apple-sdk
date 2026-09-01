@@ -8,7 +8,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
 #import "MPKitRegister.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitTestClass.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"

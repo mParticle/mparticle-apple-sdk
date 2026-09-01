@@ -14,7 +14,7 @@
 #import "MPConsumerInfo.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPKitContainer.h"
+#import "Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPURLRequestBuilder.h"
 #import "MPIdentityCaching.h"
 #import "mParticle.h"

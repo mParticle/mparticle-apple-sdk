@@ -5,7 +5,7 @@
 #import "MParticleUser.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -64,6 +64,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 + (dispatch_queue_t)messageQueue;
 @end
 

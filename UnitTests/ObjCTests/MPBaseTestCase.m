@@ -4,7 +4,7 @@
 #import "mParticle.h"
 #import "MPPersistenceController.h"
 #import "MPStateMachine.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPAppNotificationHandler.h"
 #import "MPConnector.h"
 #import "MPNetworkCommunication.h"

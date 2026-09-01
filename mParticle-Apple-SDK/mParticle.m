@@ -10,7 +10,6 @@
 #import "MPNetworkPerformance.h"
 #import "MPIdentityApi.h"
 #import "MPDataPlanFilter.h"
-#import "MPKitContainer.h"
 #import "Kits/MPKitContainer+MParticlePrivate.h"
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
@@ -56,7 +55,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
+@property (nonatomic, strong) id kitContainer;
 @property (nonatomic, strong) id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol> appNotificationHandler;
 @property (nonatomic, strong) SceneDelegateHandler *sceneDelegateHandler;
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
@@ -910,7 +909,7 @@ MPLog* logger;
             }
         };
         
-        BOOL kitsInitialized = self.kitContainer.kitsInitialized;
+        BOOL kitsInitialized = [(MPKitContainer_PRIVATE *)self.kitContainer kitsInitialized];
         if (kitsInitialized) {
             block();
         } else {
@@ -1016,7 +1015,7 @@ MPLog* logger;
 #pragma mark Attribution
 - (nullable NSDictionary<NSNumber *, MPAttributionResult *> *)attributionInfo {
     [self.rokt logRoktApiDiagnostic:@"GET_ATTRIBUTION_INFO"];
-    return [self.kitContainer.attributionInfo copy];
+    return [[(MPKitContainer_PRIVATE *)self.kitContainer attributionInfo] copy];
 }
 
 #pragma mark Error, Exception, and Crash Handling
@@ -1308,7 +1307,7 @@ MPLog* logger;
 
 - (void)onKitsInitialized:(void(^)(void))block {
     [self.rokt logRoktApiDiagnostic:@"ON_KITS_INITIALIZED"];
-    BOOL kitsInitialized = self.kitContainer.kitsInitialized;
+    BOOL kitsInitialized = [(MPKitContainer_PRIVATE *)self.kitContainer kitsInitialized];
     if (kitsInitialized) {
         block();
     } else {

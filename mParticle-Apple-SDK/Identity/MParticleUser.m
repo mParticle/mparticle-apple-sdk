@@ -9,7 +9,6 @@
 #import "MPPersistenceController.h"
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
-#import "MPKitContainer.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
@@ -28,6 +27,7 @@
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 

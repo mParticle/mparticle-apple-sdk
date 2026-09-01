@@ -5,7 +5,6 @@
 #import "MPStateMachine.h"
 #import "MPEvent.h"
 #import "MPKitExecStatus.h"
-#import "MPKitContainer.h"
 #import "MPKitFilter.h"
 #import "MPProduct.h"
 #import "MPCommerceEvent.h"

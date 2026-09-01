@@ -2,9 +2,8 @@
 #import <OCMock/OCMock.h>
 #import <objc/runtime.h>
 #import "mParticle.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPIConstants.h"
-#import "MPForwardQueueItem.h"
 #import "MPBaseEvent.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
@@ -2656,26 +2655,26 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 
 - (void)testInitializeKitsWhenNilSupportedKits {
     MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    MPKitContainer_PRIVATE *mockKitContainer = OCMPartialMock(kitContainer);
-    [[[(id)mockKitContainer stub] andReturn:nil] supportedKits];
-    [mockKitContainer initializeKits];
-    XCTAssertTrue(mockKitContainer.kitsInitialized);
+    id mockAdapter = OCMPartialMock(kitContainer.executionAdapter);
+    [[[mockAdapter stub] andReturn:nil] supportedKits];
+    [kitContainer initializeKits];
+    XCTAssertTrue(kitContainer.kitsInitialized);
 }
 
 - (void)testInitializeKitsWhenEmptySupportedKits {
     MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    MPKitContainer_PRIVATE *mockKitContainer = OCMPartialMock(kitContainer);
-    [[[(id)mockKitContainer stub] andReturn: @[] ] supportedKits];
-    [mockKitContainer initializeKits];
-    XCTAssertTrue(mockKitContainer.kitsInitialized);
+    id mockAdapter = OCMPartialMock(kitContainer.executionAdapter);
+    [[[mockAdapter stub] andReturn:@[]] supportedKits];
+    [kitContainer initializeKits];
+    XCTAssertTrue(kitContainer.kitsInitialized);
 }
 
 - (void)testInitializeKitsWhenNonemptySupportedKits {
     MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    MPKitContainer_PRIVATE *mockKitContainer = OCMPartialMock(kitContainer);
-    [[[(id)mockKitContainer stub] andReturn: @[@123] ] supportedKits];
-    [mockKitContainer initializeKits];
-    XCTAssertFalse(mockKitContainer.kitsInitialized);
+    id mockAdapter = OCMPartialMock(kitContainer.executionAdapter);
+    [[[mockAdapter stub] andReturn:@[@123]] supportedKits];
+    [kitContainer initializeKits];
+    XCTAssertFalse(kitContainer.kitsInitialized);
 }
 
 #if TARGET_OS_IOS == 1
