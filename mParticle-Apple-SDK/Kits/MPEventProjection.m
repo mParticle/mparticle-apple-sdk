@@ -103,66 +103,43 @@
     
     NSArray *matches = !MPIsNull(configuration[@"matches"]) ? configuration[@"matches"] : nil;
     NSDictionary *matchDictionary = !MPIsNull(matches) && matches.count > 0 ? matches[0] : nil;
-    __block NSString *auxString;
-    
-    auxString = matchDictionary[@"event"];
+
+    NSString *eventName = matchDictionary[@"event"];
     MParticle* mparticle = MParticle.sharedInstance;
     MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
     logger.customLogger = mparticle.customLogger;
     MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
-    
-    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? (MPEventType)[hasher eventTypeForHash:auxString] : MPEventTypeOther;
-    
-    _messageType = !MPIsNull(matchDictionary[@"message_type"]) ? (MPMessageType)[matchDictionary[@"message_type"] integerValue] : MPMessageTypeEvent;
-    
-    NSMutableArray<MPProjectionMatch *> *projectionMatches = !MPIsNull(matches) && matches.count > 0 ? [NSMutableArray array] : nil;
-    
-    [matches enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull matchDictionary, NSUInteger idx, BOOL * _Nonnull stop) {
-        MPProjectionMatch *projectionMatch = [[MPProjectionMatch alloc] init];
-        if (self->_messageType == MPMessageTypeCommerceEvent) {
-            auxString = matchDictionary[@"property_name"];
-            projectionMatch.attributeKey = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-            
-            NSArray<NSString *> *propertyValues = matchDictionary[@"property_value"];
-            projectionMatch.attributeValues = !MPIsNull(propertyValues) && propertyValues.count > 0 ? propertyValues : nil;
-        } else {
-            auxString = matchDictionary[@"attribute_key"];
-            projectionMatch.attributeKey = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-            
-            NSArray<NSString *> *attributeValues = matchDictionary[@"attribute_values"];
-            projectionMatch.attributeValues = !MPIsNull(attributeValues) && attributeValues.count > 0 ? attributeValues : nil;
-        }
-        if (projectionMatch.attributeKey && projectionMatch.attributeValues) {
+
+    _eventType = !MPIsNull(eventName) && eventName.length > 0 ? (MPEventType)[hasher eventTypeForHash:eventName] : MPEventTypeOther;
+
+    _messageType = (MPMessageType)[MPEventProjectionParser messageTypeFromMatchesInConfiguration:configuration
+                                                                                    defaultValue:MPMessageTypeEvent];
+
+    NSArray<MPProjectionMatchFields *> *matchFields =
+        [MPEventProjectionParser matchesFromConfiguration:configuration
+                                          isCommerceEvent:_messageType == MPMessageTypeCommerceEvent];
+    if (matchFields) {
+        NSMutableArray<MPProjectionMatch *> *projectionMatches = [NSMutableArray arrayWithCapacity:matchFields.count];
+        for (MPProjectionMatchFields *fields in matchFields) {
+            MPProjectionMatch *projectionMatch = [[MPProjectionMatch alloc] init];
+            projectionMatch.attributeKey = fields.attributeKey;
+            projectionMatch.attributeValues = fields.attributeValues;
             [projectionMatches addObject:projectionMatch];
         }
-    }];
-    if (!MPIsNull(projectionMatches) && projectionMatches.count > 0) {
         _projectionMatches = projectionMatches;
     }
-    
-    NSDictionary *behaviorDictionary = !MPIsNull(configuration[@"behavior"]) ? configuration[@"behavior"] : nil;
-    if (behaviorDictionary) {
-        _appendAsIs = !MPIsNull(behaviorDictionary[@"append_unmapped_as_is"]) ? [behaviorDictionary[@"append_unmapped_as_is"] boolValue] : YES;
-        _isDefault = !MPIsNull(behaviorDictionary[@"is_default"]) ? [behaviorDictionary[@"is_default"] boolValue] : NO;
-        _maxCustomParameters = !MPIsNull(behaviorDictionary[@"max_custom_params"]) ? [behaviorDictionary[@"max_custom_params"] integerValue] : INT_MAX;
-        
-        auxString = behaviorDictionary[@"selector"];
-        if (!MPIsNull(auxString)) {
-            _behaviorSelector = [auxString isEqualToString:@"last"] ? MPProjectionBehaviorSelectorLast : MPProjectionBehaviorSelectorForEach;
-        } else {
-            _behaviorSelector = MPProjectionBehaviorSelectorForEach;
-        }
-    } else {
-        _appendAsIs = YES;
-        _isDefault = NO;
-        _maxCustomParameters = INT_MAX;
-        _behaviorSelector = MPProjectionBehaviorSelectorForEach;
-    }
+
+    MPEventProjectionBehavior *behavior = [MPEventProjectionParser behaviorFromConfiguration:configuration];
+    _appendAsIs = behavior.appendAsIs;
+    _isDefault = behavior.isDefault;
+    _maxCustomParameters = behavior.maxCustomParameters;
+    _behaviorSelector = behavior.selectsLast ? MPProjectionBehaviorSelectorLast : MPProjectionBehaviorSelectorForEach;
 
     NSDictionary *actionDictionary = configuration[@"action"];
-    
-    _outboundMessageType = !MPIsNull(actionDictionary[@"outbound_message_type"]) ? (MPMessageType)[actionDictionary[@"outbound_message_type"] integerValue] : MPMessageTypeEvent;
-    
+
+    _outboundMessageType = (MPMessageType)[MPEventProjectionParser outboundMessageTypeFromAction:actionDictionary
+                                                                                   defaultValue:MPMessageTypeEvent];
+
     NSArray *attributeMaps = !MPIsNull(actionDictionary[@"attribute_maps"]) ? actionDictionary[@"attribute_maps"] : nil;
     _attributeProjections = [self buildAttributeProjectionsFromMaps:attributeMaps configuration:configuration];
 
