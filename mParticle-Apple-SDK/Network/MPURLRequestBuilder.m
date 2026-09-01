@@ -1,5 +1,4 @@
 #import "MPURLRequestBuilder.h"
-#import <CommonCrypto/CommonHMAC.h>
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
 #import "MPKitContainer.h"
@@ -28,9 +27,6 @@
 
 @end
 
-static const NSUInteger kMPURLRequestBuilderMaxQueryLength = 8192;
-
-
 @implementation MPURLRequestBuilder
 
 - (instancetype)initWithURL:(MPURL *)url {
@@ -50,23 +46,7 @@ static const NSUInteger kMPURLRequestBuilderMaxQueryLength = 8192;
 
 #pragma mark Private methods
 - (NSString *)hmacSha256Encode:(NSString *const)message key:(NSString *const)key {
-    if (!message || !key) {
-        return nil;
-    }
-    
-    const char *cKey = [key cStringUsingEncoding:NSUTF8StringEncoding];
-    const char *cMessage = [message cStringUsingEncoding:NSUTF8StringEncoding];
-    unsigned char cHMAC[CC_SHA256_DIGEST_LENGTH];
-    
-    CCHmac(kCCHmacAlgSHA256, cKey, strlen(cKey), cMessage, strlen(cMessage), cHMAC);
-    
-    NSMutableString *encodedMessage = [NSMutableString stringWithCapacity:(CC_SHA256_DIGEST_LENGTH << 1)];
-    
-    for (int i = 0; i < CC_SHA256_DIGEST_LENGTH; ++i) {
-        [encodedMessage appendFormat:@"%02x", cHMAC[i]];
-    }
-    
-    return (NSString *)encodedMessage;
+    return [MPRequestSigner hmacSHA256HexForMessage:message key:key];
 }
 
 - (NSString *)userAgent {
@@ -163,30 +143,15 @@ static const NSUInteger kMPURLRequestBuilderMaxQueryLength = 8192;
             return nil;
         }
         NSString *audienceQuery = [urlRequest.URL query];
-        if (audienceQuery.length > kMPURLRequestBuilderMaxQueryLength) {
+        if ([MPRequestSigner exceedsMaxQueryLength:audienceQuery]) {
             MPILogError(@"Cannot build URL request — audience query exceeds max supported length");
             return nil;
         }
-        NSString *audienceSignature;
-        if (audienceQuery) {
-            NSMutableString *signatureBuilder = [NSMutableString stringWithCapacity:_httpMethod.length + date.length + audienceRelativePath.length + audienceQuery.length + 4];
-            [signatureBuilder appendString:_httpMethod ?: @""];
-            [signatureBuilder appendString:@"\n"];
-            [signatureBuilder appendString:date ?: @""];
-            [signatureBuilder appendString:@"\n"];
-            [signatureBuilder appendString:audienceRelativePath];
-            [signatureBuilder appendString:@"?"];
-            [signatureBuilder appendString:audienceQuery];
-            audienceSignature = [signatureBuilder copy];
-        } else {
-            NSMutableString *signatureBuilder = [NSMutableString stringWithCapacity:_httpMethod.length + date.length + audienceRelativePath.length + 3];
-            [signatureBuilder appendString:_httpMethod ?: @""];
-            [signatureBuilder appendString:@"\n"];
-            [signatureBuilder appendString:date ?: @""];
-            [signatureBuilder appendString:@"\n"];
-            [signatureBuilder appendString:audienceRelativePath];
-            audienceSignature = [signatureBuilder copy];
-        }
+        NSString *audienceSignature = [MPRequestSigner
+            signatureMessageWithHTTPMethod:_httpMethod ?: @""
+                                      date:date ?: @""
+                              relativePath:audienceRelativePath
+                                     query:audienceQuery];
         MPILogVerbose(@"Audience Signature:\n%@", audienceSignature);
         NSString *hmacSha256Encode = [self hmacSha256Encode:audienceSignature key:secret];
         if (hmacSha256Encode) {
@@ -227,7 +192,11 @@ static const NSUInteger kMPURLRequestBuilderMaxQueryLength = 8192;
                 MPILogError(@"Cannot build URL request — failed to encode post data as UTF-8");
                 return nil;
             }
-            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, postDataString];
+            signatureMessage = [MPRequestSigner
+                signatureMessageWithHTTPMethod:_httpMethod
+                                          date:date
+                                  relativePath:relativePath
+                                          body:postDataString];
         } else if (containsMessage) { // /events
             contentType = @"application/json";
             
@@ -244,7 +213,11 @@ static const NSUInteger kMPURLRequestBuilderMaxQueryLength = 8192;
                 [urlRequest setValue:kMPMessageTypeNetworkPerformance forHTTPHeaderField:kMPMessageTypeNetworkPerformance];
             }
             
-            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, _message];
+            signatureMessage = [MPRequestSigner
+                signatureMessageWithHTTPMethod:_httpMethod
+                                          date:date
+                                  relativePath:relativePath
+                                          body:_message];
         } else { // /config
             contentType = @"application/x-www-form-urlencoded";
             
@@ -263,29 +236,15 @@ static const NSUInteger kMPURLRequestBuilderMaxQueryLength = 8192;
             }
             
             NSString *query = [_url.defaultURL query];
-            if (query.length > kMPURLRequestBuilderMaxQueryLength) {
+            if ([MPRequestSigner exceedsMaxQueryLength:query]) {
                 MPILogError(@"Cannot build URL request — config query exceeds max supported length");
                 return nil;
             }
-            if (query) {
-                NSMutableString *signatureBuilder = [NSMutableString stringWithCapacity:_httpMethod.length + date.length + relativePath.length + query.length + 4];
-                [signatureBuilder appendString:_httpMethod ?: @""];
-                [signatureBuilder appendString:@"\n"];
-                [signatureBuilder appendString:date ?: @""];
-                [signatureBuilder appendString:@"\n"];
-                [signatureBuilder appendString:relativePath];
-                [signatureBuilder appendString:@"?"];
-                [signatureBuilder appendString:query];
-                signatureMessage = [signatureBuilder copy];
-            } else {
-                NSMutableString *signatureBuilder = [NSMutableString stringWithCapacity:_httpMethod.length + date.length + relativePath.length + 3];
-                [signatureBuilder appendString:_httpMethod ?: @""];
-                [signatureBuilder appendString:@"\n"];
-                [signatureBuilder appendString:date ?: @""];
-                [signatureBuilder appendString:@"\n"];
-                [signatureBuilder appendString:relativePath];
-                signatureMessage = [signatureBuilder copy];
-            }
+            signatureMessage = [MPRequestSigner
+                signatureMessageWithHTTPMethod:_httpMethod ?: @""
+                                          date:date ?: @""
+                                  relativePath:relativePath
+                                         query:query];
         }
         
         NSString *hmacSha256Encode = [self hmacSha256Encode:signatureMessage key:secret];

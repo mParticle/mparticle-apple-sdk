@@ -584,6 +584,7 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Network/MPRequestSignerTests.swift,
 				Test/Notifications/MPDeviceTokenStoreTests.swift,
 				Test/Notifications/MPPushTrackingLogicTests.swift,
 				Test/Persistence/MPPersistenceSchemaTests.swift,
@@ -632,6 +633,7 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Network/MPRequestSignerTests.swift,
 				Test/Notifications/MPDeviceTokenStoreTests.swift,
 				Test/Notifications/MPPushTrackingLogicTests.swift,
 				Test/Persistence/MPPersistenceSchemaTests.swift,
