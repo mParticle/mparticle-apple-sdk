@@ -1,5 +1,6 @@
 #import "MPUserDefaultsConnector.h"
 #import "mParticle.h"
+#import "../Kits/MPKitContainer+MParticlePrivate.h"
 
 @import mParticle_Apple_SDK_Swift;
 

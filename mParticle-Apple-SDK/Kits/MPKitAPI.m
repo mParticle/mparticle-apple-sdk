@@ -1,7 +1,7 @@
 #import "MPKitAPI.h"
 #import "MPPersistenceController.h"
 #import "MPIntegrationAttributes.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPILogger.h"
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
@@ -11,6 +11,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 

@@ -4,7 +4,7 @@
 #import <OCMock/OCMock.h>
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 
 #pragma mark - MPStateMachine category

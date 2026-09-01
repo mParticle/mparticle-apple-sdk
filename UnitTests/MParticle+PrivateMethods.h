@@ -42,7 +42,7 @@
 - (void)sessionDidEnd:(nonnull MPSession *)session;
 - (void)setExecutor: (id<ExecutorProtocol>)newExecutor;
 - (void)setBackendController: (id<MPBackendControllerProtocol>)backendController;
-- (void)setKitContainer:(id<MPKitContainerProtocol>) kitContainer;
+- (void)setKitContainer:(id)kitContainer;
 - (void)forwardLogInstall;
 - (void)forwardLogUpdate;
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval;

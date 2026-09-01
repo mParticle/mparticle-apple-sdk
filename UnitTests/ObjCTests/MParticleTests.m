@@ -7,7 +7,7 @@
 #import "MPURLRequestBuilder.h"
 #import "MPPersistenceController.h"
 #import "MPURL.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitTestClassSideloaded.h"
 #import "MPKitTestClassNoStartImmediately.h"
 #import "MPKitConfiguration.h"
@@ -22,6 +22,7 @@
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MParticleOptions *options;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
@@ -35,7 +36,6 @@
 
 @interface MPKitContainer_PRIVATE ()
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
-+ (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry;
 @end
 
 @interface MParticleTests : MPBaseTestCase {
@@ -53,7 +53,7 @@
     lastNotification = nil;
     
     // Ensure registeredKits is empty
-    [MPKitContainer_PRIVATE.kitsRegistry removeAllObjects];
+    [MPKitContainer_PRIVATE resetRegistry];
 }
 
 - (void)tearDown {
@@ -1243,7 +1243,7 @@
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-        XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
+        XCTAssertEqualObjects(((id<MPExtensionKitProtocol>)MPKitContainer_PRIVATE.registeredKits.anyObject).wrapperInstance, kitTestSideloaded1);
        
         // Switch workspace with a new sideloaded kit
         MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
@@ -1254,7 +1254,7 @@
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
             XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-            XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
+            XCTAssertEqualObjects(((id<MPExtensionKitProtocol>)MPKitContainer_PRIVATE.registeredKits.anyObject).wrapperInstance, kitTestSideloaded2);
             
             // Switch workspace with no sideloaded kits
             MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];

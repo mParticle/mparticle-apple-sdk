@@ -11,7 +11,6 @@
 #import "MPIdentityDTO.h"
 #import "MPEnums.h"
 #import "MPILogger.h"
-#import "MPKitContainer.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
@@ -28,6 +27,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 

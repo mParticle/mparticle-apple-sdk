@@ -2,7 +2,7 @@
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
 #import "MPILogger.h"
-#import "MPKitContainer.h"
+#import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
 #import "MPKitAPI.h"
@@ -22,6 +22,7 @@
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 + (dispatch_queue_t)messageQueue;
 
 @end

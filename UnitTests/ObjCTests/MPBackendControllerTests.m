@@ -10,7 +10,7 @@
 #import "MPUploadBuilder.h"
 #import "MPMessageBuilder.h"
 #import "mParticle.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitConfiguration.h"
 #import "MPBaseTestCase.h"
 #import "MPUserDefaultsConnector.h"
