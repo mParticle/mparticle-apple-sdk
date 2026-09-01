@@ -70,6 +70,256 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     return @{@"CFBundleShortVersionString":@"1.2.3.4.5678 (bd12345ff)"};
 }
 
+#pragma mark Endpoint URL characterization
+
+// The exact URL strings every MPNetworkOptions combination produces today.
+// The other URL tests in this file assert substrings, which let several
+// malformed URLs through; these assert the whole string so a conversion cannot
+// change one silently.
+
+- (MPNetworkCommunication_PRIVATE *)characterizeWithOptions:(MPNetworkOptions *)options
+                                              attAuthorized:(BOOL)attAuthorized {
+    [MParticle sharedInstance].networkOptions = options;
+    [MParticle sharedInstance].stateMachine.attAuthorizationStatus =
+        attAuthorized ? @(MPATTAuthorizationStatusAuthorized) : nil;
+    return [[MPNetworkCommunication_PRIVATE alloc] init];
+}
+
+- (MPUpload *)characterizationUploadWithOptions:(MPNetworkOptions *)options {
+    MPUploadSettings *uploadSettings =
+        [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                 networkOptions:options];
+    return [[MPUpload alloc] initWithSessionId:nil
+                              uploadDictionary:@{}
+                                    dataPlanId:nil
+                               dataPlanVersion:nil
+                                uploadSettings:uploadSettings];
+}
+
+- (void)assertURL:(MPURL *)url requested:(NSString *)requested canonical:(NSString *)canonical {
+    XCTAssertNotNil(url);
+    XCTAssertEqualObjects(url.url.absoluteString, requested);
+    XCTAssertEqualObjects(url.defaultURL.absoluteString, canonical);
+}
+
+- (NSString *)characterizationConfigQuery {
+    return [NSString stringWithFormat:@"?av=1.2.3.4.5678%%20(bd12345ff)&sv=%@", kMParticleSDKVersion];
+}
+
+- (MPNetworkOptions *)characterizationOptionsWithHosts:(BOOL)hosts
+                                         trackingHosts:(BOOL)trackingHosts
+                                            overrides:(BOOL)overrides
+                                        customBaseURL:(BOOL)customBaseURL {
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    if (hosts) {
+        options.configHost = @"cfg.example.com";
+        options.eventsHost = @"ev.example.com";
+        options.identityHost = @"id.example.com";
+        options.aliasHost = @"al.example.com";
+    }
+    if (trackingHosts) {
+        options.eventsTrackingHost = @"tev.example.com";
+        options.identityTrackingHost = @"tid.example.com";
+        options.aliasTrackingHost = @"tal.example.com";
+    }
+    if (overrides) {
+        options.overridesConfigSubdirectory = YES;
+        options.overridesEventsSubdirectory = YES;
+        options.overridesIdentitySubdirectory = YES;
+        options.overridesAliasSubdirectory = YES;
+    }
+    if (customBaseURL) {
+        options.customBaseURL = [NSURL URLWithString:@"https://cdn.example.com"];
+    }
+    return options;
+}
+
+- (void)tearDownCharacterization {
+    [MParticle sharedInstance].stateMachine.attAuthorizationStatus = nil;
+    [MParticle sharedInstance].networkOptions = nil;
+    [self deswizzle];
+}
+
+- (void)testEndpointURLsWithNoNetworkOptions {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [self characterizationOptionsWithHosts:NO trackingHosts:NO overrides:NO customBaseURL:NO];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self characterizeWithOptions:options attAuthorized:NO];
+    MPUpload *upload = [self characterizationUploadWithOptions:options];
+    NSString *query = [self characterizationConfigQuery];
+
+    [self assertURL:[networkCommunication configURL]
+          requested:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]
+          canonical:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]];
+    [self assertURL:[networkCommunication identifyURL]
+          requested:@"https://identity.us1.mparticle.com/v1/identify"
+          canonical:@"https://identity.us1.mparticle.com/v1/identify"];
+    [self assertURL:[networkCommunication modifyURL]
+          requested:@"https://identity.us1.mparticle.com/v1/0/modify"
+          canonical:@"https://identity.us1.mparticle.com/v1/0/modify"];
+    [self assertURL:[networkCommunication audienceURL]
+          requested:@"https://nativesdks.us1.mparticle.com/v1/unit_test_app_key/audience?mpid=0"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/unit_test_app_key?mpid=/audience"];
+    [self assertURL:[networkCommunication eventURLForUpload:upload]
+          requested:@"https://nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"
+          canonical:@"https://nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"];
+    [self assertURL:[networkCommunication aliasURLForUpload:upload]
+          requested:@"https://nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
+
+    [self tearDownCharacterization];
+}
+
+- (void)testEndpointURLsWithHostOverrides {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [self characterizationOptionsWithHosts:YES trackingHosts:NO overrides:NO customBaseURL:NO];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self characterizeWithOptions:options attAuthorized:NO];
+    MPUpload *upload = [self characterizationUploadWithOptions:options];
+    NSString *query = [self characterizationConfigQuery];
+
+    [self assertURL:[networkCommunication configURL]
+          requested:[@"https://cfg.example.com/v4/unit_test_app_key/config" stringByAppendingString:query]
+          canonical:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]];
+    [self assertURL:[networkCommunication identifyURL]
+          requested:@"https://id.example.com/v1/identify"
+          canonical:@"https://identity.us1.mparticle.com/v1/identify"];
+    [self assertURL:[networkCommunication modifyURL]
+          requested:@"https://id.example.com/v1/0/modify"
+          canonical:@"https://identity.us1.mparticle.com/v1/0/modify"];
+    [self assertURL:[networkCommunication audienceURL]
+          requested:@"https://ev.example.com/v1/unit_test_app_key/audience?mpid=0"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/unit_test_app_key?mpid=/audience"];
+    [self assertURL:[networkCommunication eventURLForUpload:upload]
+          requested:@"https://ev.example.com/v2/unit_test_app_key/events"
+          canonical:@"https://nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"];
+    [self assertURL:[networkCommunication aliasURLForUpload:upload]
+          requested:@"https://al.example.com/v1/identity/unit_test_app_key/alias"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
+
+    [self tearDownCharacterization];
+}
+
+- (void)testEndpointURLsWithHostAndSubdirectoryOverrides {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [self characterizationOptionsWithHosts:YES trackingHosts:NO overrides:YES customBaseURL:NO];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self characterizeWithOptions:options attAuthorized:NO];
+    MPUpload *upload = [self characterizationUploadWithOptions:options];
+    NSString *query = [self characterizationConfigQuery];
+
+    [self assertURL:[networkCommunication configURL]
+          requested:[@"https://cfg.example.com/unit_test_app_key/config" stringByAppendingString:query]
+          canonical:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]];
+    [self assertURL:[networkCommunication identifyURL]
+          requested:@"https://id.example.com/identify"
+          canonical:@"https://identity.us1.mparticle.com/v1/identify"];
+    [self assertURL:[networkCommunication modifyURL]
+          requested:@"https://id.example.com/0/modify"
+          canonical:@"https://identity.us1.mparticle.com/v1/0/modify"];
+    // Malformed: the version is jammed against the API key, /audience lands in
+    // the mpid slot and the real mpid is dropped. Reproduced, not fixed.
+    [self assertURL:[networkCommunication audienceURL]
+          requested:@"https://ev.example.com/v1unit_test_app_key?mpid=/audience"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/unit_test_app_key?mpid=/audience"];
+    [self assertURL:[networkCommunication eventURLForUpload:upload]
+          requested:@"https://ev.example.com/unit_test_app_key/events"
+          canonical:@"https://nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"];
+    [self assertURL:[networkCommunication aliasURLForUpload:upload]
+          requested:@"https://al.example.com/unit_test_app_key/alias"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
+
+    [self tearDownCharacterization];
+}
+
+- (void)testEndpointURLsWithCustomBaseURL {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [self characterizationOptionsWithHosts:NO trackingHosts:NO overrides:NO customBaseURL:YES];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self characterizeWithOptions:options attAuthorized:NO];
+    MPUpload *upload = [self characterizationUploadWithOptions:options];
+    NSString *query = [self characterizationConfigQuery];
+
+    [self assertURL:[networkCommunication configURL]
+          requested:[@"https://cdn.example.com/config/v4/unit_test_app_key/config" stringByAppendingString:query]
+          canonical:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]];
+    [self assertURL:[networkCommunication identifyURL]
+          requested:@"https://cdn.example.com/identity/v1/identify"
+          canonical:@"https://identity.us1.mparticle.com/v1/identify"];
+    [self assertURL:[networkCommunication modifyURL]
+          requested:@"https://cdn.example.com/identity/v1/0/modify"
+          canonical:@"https://identity.us1.mparticle.com/v1/0/modify"];
+    [self assertURL:[networkCommunication audienceURL]
+          requested:@"https://cdn.example.com/nativeevents/v1/unit_test_app_key/audience?mpid=0"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/unit_test_app_key?mpid=/audience"];
+    [self assertURL:[networkCommunication eventURLForUpload:upload]
+          requested:@"https://cdn.example.com/nativeevents/v2/unit_test_app_key/events"
+          canonical:@"https://nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"];
+    [self assertURL:[networkCommunication aliasURLForUpload:upload]
+          requested:@"https://cdn.example.com/nativeevents/v1/identity/unit_test_app_key/alias"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
+
+    [self tearDownCharacterization];
+}
+
+- (void)testEndpointURLsWithTrackingHostsAndATTAuthorized {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [self characterizationOptionsWithHosts:NO trackingHosts:YES overrides:NO customBaseURL:NO];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self characterizeWithOptions:options attAuthorized:YES];
+    MPUpload *upload = [self characterizationUploadWithOptions:options];
+    NSString *query = [self characterizationConfigQuery];
+
+    [self assertURL:[networkCommunication configURL]
+          requested:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]
+          canonical:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]];
+    [self assertURL:[networkCommunication identifyURL]
+          requested:@"https://tid.example.com/v1/identify"
+          canonical:@"https://tracking-identity.us1.mparticle.com/v1/identify"];
+    [self assertURL:[networkCommunication modifyURL]
+          requested:@"https://tid.example.com/v1/0/modify"
+          canonical:@"https://tracking-identity.us1.mparticle.com/v1/0/modify"];
+    // Audience ignores eventsTrackingHost entirely; it only picks up the
+    // tracking subdomain through defaultEventHost.
+    [self assertURL:[networkCommunication audienceURL]
+          requested:@"https://tracking-nativesdks.us1.mparticle.com/v1/unit_test_app_key/audience?mpid=0"
+          canonical:@"https://tracking-nativesdks.us1.mparticle.com/v1/unit_test_app_key?mpid=/audience"];
+    [self assertURL:[networkCommunication eventURLForUpload:upload]
+          requested:@"https://tev.example.com/v2/unit_test_app_key/events"
+          canonical:@"https://tracking-nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"];
+    // aliasTrackingHost is clobbered: with no aliasHost and eventsOnly off, the
+    // alias endpoint re-resolves through eventsHost, which is also unset here.
+    [self assertURL:[networkCommunication aliasURLForUpload:upload]
+          requested:@"https://tracking-nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"
+          canonical:@"https://tracking-nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
+
+    [self tearDownCharacterization];
+}
+
+- (void)testEndpointURLsWithTrackingHostsAndSubdirectoryOverrides {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [self characterizationOptionsWithHosts:NO trackingHosts:YES overrides:YES customBaseURL:NO];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self characterizeWithOptions:options attAuthorized:YES];
+    MPUpload *upload = [self characterizationUploadWithOptions:options];
+    NSString *query = [self characterizationConfigQuery];
+
+    [self assertURL:[networkCommunication configURL]
+          requested:[@"https://config2.mparticle.com/unit_test_app_key/config" stringByAppendingString:query]
+          canonical:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]];
+    [self assertURL:[networkCommunication identifyURL]
+          requested:@"https://tid.example.com/identify"
+          canonical:@"https://tracking-identity.us1.mparticle.com/v1/identify"];
+    [self assertURL:[networkCommunication modifyURL]
+          requested:@"https://tid.example.com/0/modify"
+          canonical:@"https://tracking-identity.us1.mparticle.com/v1/0/modify"];
+    [self assertURL:[networkCommunication audienceURL]
+          requested:@"https://tracking-nativesdks.us1.mparticle.com/v1unit_test_app_key?mpid=/audience"
+          canonical:@"https://tracking-nativesdks.us1.mparticle.com/v1/unit_test_app_key?mpid=/audience"];
+    [self assertURL:[networkCommunication eventURLForUpload:upload]
+          requested:@"https://tev.example.com/unit_test_app_key/events"
+          canonical:@"https://tracking-nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"];
+    [self assertURL:[networkCommunication aliasURLForUpload:upload]
+          requested:@"https://tracking-nativesdks.us1.mparticle.com/unit_test_app_key/alias"
+          canonical:@"https://tracking-nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
+
+    [self tearDownCharacterization];
+}
+
 - (void)testAudienceURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
 
