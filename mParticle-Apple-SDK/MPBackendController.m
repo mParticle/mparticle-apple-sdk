@@ -983,20 +983,7 @@ static BOOL skipNextUpload = NO;
 }
 
 + (NSString *)execStatusDescription:(MPExecStatus)execStatus {
-    static NSArray *execStatusDescriptions;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        execStatusDescriptions = @[@"Success", @"Fail", @"Missing Parameter", @"Feature Disabled Remotely", @"Feature Enabled Remotely",
-                                   @"User Opted Out of Tracking", @"Data Already Being Fetched", @"Invalid Data Type", @"Data is Being Uploaded",
-                                   @"Server is Busy", @"Item Not Found", @"Feature is Disabled in Settings", @"There is no network connectivity"];
-    });
-    
-    if (execStatus >= execStatusDescriptions.count) {
-        return nil;
-    }
-    
-    NSString *description = execStatusDescriptions[execStatus];
-    return description;
+    return [MPExecStatusFormatter descriptionForExecStatus:execStatus];
 }
 
 - (NSNumber *)incrementSessionAttribute:(MPSession *)session key:(NSString *)key byValue:(NSNumber *)value {
