@@ -92,22 +92,27 @@ out-of-bucket, and vendored entries.
 
 ### Metric definitions
 
-Every bucket reports two goal rows, because the migration has two horizons:
+The report is one simple progress bar per horizon:
 
-- **Short term — in scope.** Swift SLOC / (Swift SLOC + in-scope Objective-C).
-  In-scope excludes the implementations listed in
+- **Short term.** Everything except kits and the public API: Swift SLOC /
+  (Swift SLOC + in-scope Objective-C), counted in Core SDK only. In-scope
+  excludes the implementations listed in
   `Tools/swift-migration-retained-objc.txt` — the public/kit contract,
   runtime-identity, and boundary-glue files that stay Objective-C by design.
-  **100% here is the end of this project**: every Objective-C implementation the
-  migration intends to delete is gone.
-- **Long term — all Objective-C.** Swift SLOC / (Swift SLOC + all Objective-C),
-  the original full-denominator number. **100% here means the public API itself
-  becomes Swift**, which is a breaking change reserved for a future major
-  release. It is kept so that goal stays measurable rather than being redefined
-  away.
+  **100% here is the end of this project**: every Core SDK Objective-C
+  implementation the migration intends to delete is gone. Kits — both SDK kit
+  infrastructure and every standalone kit package — have no short-term goal and
+  are not counted in this row at all.
+- **Long term.** Everything, including all kits and the public API: Swift SLOC
+  / (Swift SLOC + all Objective-C) across Core SDK and every kit. **100% here
+  means the public API itself becomes Swift and every kit converts**, which is
+  a breaking change reserved for a future major release. It is kept so the goal
+  stays measurable rather than being redefined away.
 
-The gap between the two rows is the retained surface. Its SLOC is also printed
-explicitly under the table, with a signed delta when it moved.
+The gap between the two rows is Core SDK's retained surface plus the whole of
+the kits bucket. The retained SLOC is printed explicitly under the table, with
+a signed delta when it moved; kits have no separate retained figure because
+they have no short-term goal for a retained file to create a gap against.
 
 Retained wrappers keep their `@interface`, class name, selectors, and
 nullability, but their logic still moves to Swift and the wrapper thins to
@@ -128,15 +133,23 @@ from the manifest while its file survives is left alone on purpose — that is a
 deliberate reclassification, and the head definition should apply to both
 revisions.
 
-The three production-code buckets do not overlap:
+The two production-code buckets do not overlap:
 
 - **Core SDK:** Swift in `mParticle-Apple-SDK-Swift/Sources`, and Objective-C
   or Objective-C++ in `mParticle-Apple-SDK`, excluding each tree's kit
   infrastructure and excluding `mParticle-Apple-SDK/Libraries`.
-- **SDK kit infrastructure:** sources in `mParticle-Apple-SDK/Kits` and the
-  future `mParticle-Apple-SDK-Swift/Sources/Kits` subtree.
-- **Standalone kits:** Swift, Objective-C, and Objective-C++ only below
-  `Kits/**/Sources`.
+- **Kits:** SDK kit infrastructure (`mParticle-Apple-SDK/Kits` and the future
+  `mParticle-Apple-SDK-Swift/Sources/Kits` subtree) plus every standalone kit
+  package below `Kits/**/Sources`, Rokt included. No kit has a short-term goal;
+  the long-term row is where kit conversion shows up.
+
+Earlier versions of this report split kits into several rows — SDK kit
+infrastructure, Rokt, and the other standalone kits — and folded them all into
+the short-term headline. That understated real progress: 22 standalone kits
+totalling roughly 14,000 Objective-C SLOC that this phase has no plan to
+convert were dragging the number down by close to 17 percentage points. The
+two-row model fixes that at the definition level — kits simply are not part of
+the short-term ratio — rather than by carving out exceptions per kit.
 
 Current language composition is production SLOC reported by `cloc`, so blank
 and comment lines do not count. Objective-C++ (`.mm`) is grouped with
@@ -148,10 +161,11 @@ The pull request movement table is a different metric, and it is **not**
 filtered by the manifest — deleting lines from a retained wrapper is real work
 and is counted. It reports physical Swift lines
 added and Objective-C/Objective-C++ lines deleted according to
-`git diff base...head --numstat -z`. The three-dot comparison measures changes
-from the merge base through the pull request head, so commits present only on
-an advanced base branch are not attributed to the pull request. These figures
-can differ from the SLOC change because Git includes comments and blank lines.
+`git diff base...head --numstat -z`, one row for Core SDK and one for the
+combined Kits bucket. The three-dot comparison measures changes from the merge
+base through the pull request head, so commits present only on an advanced
+base branch are not attributed to the pull request. These figures can differ
+from the SLOC change because Git includes comments and blank lines.
 
 ### Retained Objective-C manifest
 
@@ -171,7 +185,7 @@ silently counting the file as in-scope:
 - a path that does not exist in the head revision (stale after a delete or
   rename — fix the manifest in the same PR);
 - a path that is not a `.m`/`.mm` implementation; or
-- a path outside the three counted buckets, including
+- a path outside the two counted buckets, including
   `mParticle-Apple-SDK/Libraries`.
 
 Adding an entry requires the same evidence
@@ -187,9 +201,11 @@ redesigned and the glue is deleted, delete its line with it. A future major
 release that takes the public API itself to Swift would empty the manifest,
 which is the point at which the two goal rows converge.
 
-Standalone kits have no entries yet. Their `MPKit*` classes are resolved by
-name at runtime, so any kit-side conversion has to establish that contract
-before its implementation is listed here.
+Kits have no entries yet — neither SDK kit infrastructure nor any standalone
+kit, Rokt included. Their `MPKit*` classes are resolved by name at runtime, so
+any kit-side conversion has to establish that contract before its
+implementation is listed here. Kits have no short-term goal regardless, so an
+entry here would only ever move the long-term figure.
 
 ### Workflow behavior and removal
 

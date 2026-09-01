@@ -82,11 +82,12 @@ build_bucket_file_list() {
 				-type f -name '*.swift' -print >>"${output}"
 		fi
 		;;
-	kit)
+	kits)
+		# SDK kit infrastructure (mParticle-Apple-SDK/Kits and its Swift Sources
+		# counterpart) plus every standalone kit package below Kits/**/Sources.
+		# The short-term goal has no target here; only the long-term one does.
 		append_matching_files "${objc_root}/Kits" "${output}"
 		append_matching_files "${swift_root}/Kits" "${output}"
-		;;
-	standalone)
 		if [[ -d "${revision_root}/Kits" ]]; then
 			find "${revision_root}/Kits" -type f \
 				\( -name '*.swift' -o -name '*.m' -o -name '*.mm' \) \
@@ -385,11 +386,10 @@ classify_path() {
 	local path=$1
 
 	case "${path}" in
-	Kits/*/Sources/*)
-		printf 'standalone'
-		;;
-	mParticle-Apple-SDK-Swift/Sources/Kits/* | mParticle-Apple-SDK/Kits/*)
-		printf 'kit'
+	Kits/*/Sources/* | mParticle-Apple-SDK-Swift/Sources/Kits/* | mParticle-Apple-SDK/Kits/*)
+		# SDK kit infrastructure and every standalone kit package. The
+		# short-term goal excludes all of it; the long-term one counts it.
+		printf 'kits'
 		;;
 	mParticle-Apple-SDK-Swift/Sources/*)
 		printf 'core'
@@ -404,10 +404,8 @@ classify_path() {
 
 CORE_SWIFT_ADDED=0
 CORE_OBJC_REMOVED=0
-KIT_SWIFT_ADDED=0
-KIT_OBJC_REMOVED=0
-STANDALONE_SWIFT_ADDED=0
-STANDALONE_OBJC_REMOVED=0
+KITS_SWIFT_ADDED=0
+KITS_OBJC_REMOVED=0
 
 add_swift_movement() {
 	local bucket=$1
@@ -415,8 +413,7 @@ add_swift_movement() {
 
 	case "${bucket}" in
 	core) CORE_SWIFT_ADDED=$((CORE_SWIFT_ADDED + lines)) ;;
-	kit) KIT_SWIFT_ADDED=$((KIT_SWIFT_ADDED + lines)) ;;
-	standalone) STANDALONE_SWIFT_ADDED=$((STANDALONE_SWIFT_ADDED + lines)) ;;
+	kits) KITS_SWIFT_ADDED=$((KITS_SWIFT_ADDED + lines)) ;;
 	*) ;;
 	esac
 }
@@ -427,8 +424,7 @@ add_objc_movement() {
 
 	case "${bucket}" in
 	core) CORE_OBJC_REMOVED=$((CORE_OBJC_REMOVED + lines)) ;;
-	kit) KIT_OBJC_REMOVED=$((KIT_OBJC_REMOVED + lines)) ;;
-	standalone) STANDALONE_OBJC_REMOVED=$((STANDALONE_OBJC_REMOVED + lines)) ;;
+	kits) KITS_OBJC_REMOVED=$((KITS_OBJC_REMOVED + lines)) ;;
 	*) ;;
 	esac
 }
@@ -447,10 +443,8 @@ measure_diff_movement() {
 
 	CORE_SWIFT_ADDED=0
 	CORE_OBJC_REMOVED=0
-	KIT_SWIFT_ADDED=0
-	KIT_OBJC_REMOVED=0
-	STANDALONE_SWIFT_ADDED=0
-	STANDALONE_OBJC_REMOVED=0
+	KITS_SWIFT_ADDED=0
+	KITS_OBJC_REMOVED=0
 
 	git -C "${repo}" diff --find-renames --numstat -z "${base}...${head}" -- >"${diff_file}"
 	while IFS=$'\t' read -r -d '' added deleted first_path; do
@@ -474,39 +468,27 @@ measure_diff_movement() {
 	done <"${diff_file}"
 }
 
-# Emits both goal rows for one area: the short-term target (in-scope
-# Objective-C only) and the long-term target (all Objective-C, which the
-# retained public API surface can only satisfy in a future major release).
-write_area_rows() {
-	local label=$1
+# Emits one goal row: the given Swift total against the given Objective-C
+# total for that goal. The two goals differ in which buckets count at all
+# (short term excludes kits entirely; long term includes everything), not
+# just in whether a retained surface is added on top of the same buckets.
+write_progress_row() {
+	local goal=$1
 	local base_swift=$2
-	local base_inscope=$3
-	local base_retained=$4
-	local head_swift=$5
-	local head_inscope=$6
-	local head_retained=$7
-	local base_total=$((base_inscope + base_retained))
-	local head_total=$((head_inscope + head_retained))
+	local base_objc=$3
+	local head_swift=$4
+	local head_objc=$5
 	local base_percent
 	local head_percent
 	local bar
 
-	base_percent=$(percentage "${base_swift}" "${base_inscope}")
-	head_percent=$(percentage "${head_swift}" "${head_inscope}")
+	base_percent=$(percentage "${base_swift}" "${base_objc}")
+	head_percent=$(percentage "${head_swift}" "${head_objc}")
 	bar=$(progress_bar "${head_percent}")
 	calculate_delta "${base_percent}" "${head_percent}"
-	printf '| %s | Short term — in scope | `%s` | %s%% | %s%% | %s | %s | %s %s pp |\n' \
-		"${label}" "${bar}" "${base_percent}" "${head_percent}" \
-		"$(format_integer "${head_swift}")" "$(format_integer "${head_inscope}")" \
-		"${DELTA_ICON}" "${DELTA_TEXT}"
-
-	base_percent=$(percentage "${base_swift}" "${base_total}")
-	head_percent=$(percentage "${head_swift}" "${head_total}")
-	bar=$(progress_bar "${head_percent}")
-	calculate_delta "${base_percent}" "${head_percent}"
-	printf '| %s | Long term — all Objective-C | `%s` | %s%% | %s%% | %s | %s | %s %s pp |\n' \
-		"${label}" "${bar}" "${base_percent}" "${head_percent}" \
-		"$(format_integer "${head_swift}")" "$(format_integer "${head_total}")" \
+	printf '| %s | `%s` | %s%% | %s%% | %s | %s | %s %s pp |\n' \
+		"${goal}" "${bar}" "${base_percent}" "${head_percent}" \
+		"$(format_integer "${head_swift}")" "$(format_integer "${head_objc}")" \
 		"${DELTA_ICON}" "${DELTA_TEXT}"
 }
 
@@ -517,47 +499,43 @@ write_report() {
 	local cloc_version=$4
 	local short_base=${base:0:12}
 	local short_head=${head:0:12}
+	local base_long_swift=$((BASE_CORE_SWIFT + BASE_KITS_SWIFT))
+	local base_long_objc=$((BASE_CORE_OBJC + BASE_CORE_OBJC_RETAINED + BASE_KITS_OBJC + BASE_KITS_OBJC_RETAINED))
+	local head_long_swift=$((HEAD_CORE_SWIFT + HEAD_KITS_SWIFT))
+	local head_long_objc=$((HEAD_CORE_OBJC + HEAD_CORE_OBJC_RETAINED + HEAD_KITS_OBJC + HEAD_KITS_OBJC_RETAINED))
 
 	mkdir -p "$(dirname "${output}")"
 	{
 		printf '%s\n' "${COMMENT_MARKER}"
 		printf '%s\n\n' '## 🐦 Swift Migration Progress'
 		printf 'Production implementation code at `%s` compared with `%s`.\n\n' "${short_head}" "${short_base}"
-		printf '%s\n' '| Area | Goal | Progress | Base | This PR | Swift SLOC | Objective-C remaining | Change |'
-		printf '%s\n' '|---|---|:---:|---:|---:|---:|---:|---:|'
-		write_area_rows 'Core SDK' \
-			"${BASE_CORE_SWIFT}" "${BASE_CORE_OBJC}" "${BASE_CORE_OBJC_RETAINED}" \
-			"${HEAD_CORE_SWIFT}" "${HEAD_CORE_OBJC}" "${HEAD_CORE_OBJC_RETAINED}"
-		write_area_rows 'SDK kit infrastructure' \
-			"${BASE_KIT_SWIFT}" "${BASE_KIT_OBJC}" "${BASE_KIT_OBJC_RETAINED}" \
-			"${HEAD_KIT_SWIFT}" "${HEAD_KIT_OBJC}" "${HEAD_KIT_OBJC_RETAINED}"
-		write_area_rows 'Standalone kits' \
-			"${BASE_STANDALONE_SWIFT}" "${BASE_STANDALONE_OBJC}" "${BASE_STANDALONE_OBJC_RETAINED}" \
-			"${HEAD_STANDALONE_SWIFT}" "${HEAD_STANDALONE_OBJC}" "${HEAD_STANDALONE_OBJC_RETAINED}"
+		printf '%s\n' '| Goal | Progress | Base | This PR | Swift SLOC | Objective-C remaining | Change |'
+		printf '%s\n' '|---|:---:|---:|---:|---:|---:|---:|'
+		write_progress_row 'Short term — everything except kits and the public API' \
+			"${BASE_CORE_SWIFT}" "${BASE_CORE_OBJC}" \
+			"${HEAD_CORE_SWIFT}" "${HEAD_CORE_OBJC}"
+		write_progress_row 'Long term — everything, including all kits and the public API' \
+			"${base_long_swift}" "${base_long_objc}" \
+			"${head_long_swift}" "${head_long_objc}"
 		printf '\n'
-		printf 'Objective-C retained by design: Core SDK %s · SDK kit infrastructure %s · Standalone kits %s.\n\n' \
-			"$(format_retained "${BASE_CORE_OBJC_RETAINED}" "${HEAD_CORE_OBJC_RETAINED}")" \
-			"$(format_retained "${BASE_KIT_OBJC_RETAINED}" "${HEAD_KIT_OBJC_RETAINED}")" \
-			"$(format_retained "${BASE_STANDALONE_OBJC_RETAINED}" "${HEAD_STANDALONE_OBJC_RETAINED}")"
+		printf 'Objective-C retained by design in Core SDK (the permanent public API surface): %s.\n\n' \
+			"$(format_retained "${BASE_CORE_OBJC_RETAINED}" "${HEAD_CORE_OBJC_RETAINED}")"
 		printf '%s\n\n' "### This PR's code movement"
 		printf '%s\n' '| Area | Swift lines added | Objective-C lines removed |'
 		printf '%s\n' '|---|---:|---:|'
 		printf '| Core SDK | %s | %s |\n' \
 			"$(format_integer "${CORE_SWIFT_ADDED}")" "$(format_integer "${CORE_OBJC_REMOVED}")"
-		printf '| SDK kit infrastructure | %s | %s |\n' \
-			"$(format_integer "${KIT_SWIFT_ADDED}")" "$(format_integer "${KIT_OBJC_REMOVED}")"
-		printf '| Standalone kits | %s | %s |\n\n' \
-			"$(format_integer "${STANDALONE_SWIFT_ADDED}")" "$(format_integer "${STANDALONE_OBJC_REMOVED}")"
+		printf '| Kits (infrastructure + standalone) | %s | %s |\n\n' \
+			"$(format_integer "${KITS_SWIFT_ADDED}")" "$(format_integer "${KITS_OBJC_REMOVED}")"
 		printf '%s\n\n' '<details>'
 		printf '%s\n\n' '<summary>How this is measured</summary>'
 		printf '%s\n' '- Current composition uses production source lines of code (SLOC) from `cloc`; comments and blank lines are excluded.'
-		printf '%s\n' '- **Short term — in scope** excludes the Objective-C the migration will not delete, so 100% is the end of this project: every in-scope implementation gone.'
-		printf '%s\n' '- **Long term — all Objective-C** keeps the full denominator. Reaching 100% there means the public API itself becomes Swift, which is a breaking change reserved for a future major release.'
-		printf '%s\n' '- The gap between the two rows is the retained public/kit contract, runtime-identity, and boundary-glue surface listed in `Tools/swift-migration-retained-objc.txt`.'
-		printf '%s\n' '- Retained wrappers keep their Objective-C interface but still shed logic to Swift. That thinning moves the long-term row and the retained figure, not the short-term row.'
+		printf '%s\n' '- **Short term** is Core SDK only, excluding the Objective-C the migration will not delete (the retained public API surface). 100% here is the end of this project.'
+		printf '%s\n' '- **Long term** is everything: Core SDK, SDK kit infrastructure, every standalone kit, and the retained public API surface. 100% here means the public API itself becomes Swift and every kit converts, which is a breaking change reserved for a future major release.'
+		printf '%s\n' '- The retained public API surface (`Tools/swift-migration-retained-objc.txt`) is the entire gap between the two goals within Core SDK. Thinning a retained wrapper moves the long-term goal and the retained figure, not the short-term one.'
 		printf '%s\n' '- Both revisions are measured with the manifest from the head revision, so a manifest edit does not by itself move the reported change. A retained file this pull request renamed or deleted still counts as retained at the base.'
 		printf '%s\n' '- Pull request movement uses physical additions/deletions from `git diff base...head --numstat`; it counts retained files too and is intentionally separate from SLOC totals.'
-		printf '%s\n' '- Core excludes SDK kit infrastructure and vendored libraries. Standalone kits include only files below `Kits/**/Sources`.'
+		printf '%s\n' '- Core SDK excludes SDK kit infrastructure and vendored libraries. Kits covers SDK kit infrastructure (`mParticle-Apple-SDK/Kits`) and every standalone kit below `Kits/**/Sources` — no kit has a short-term goal.'
 		printf '%s\n' '- Tests, examples, headers, build outputs, vendored libraries, and the `MParticle/Sources` Swift overlay are excluded.'
 		printf '%s\n\n' '- Objective-C++ (`.mm`) is included in the Objective-C figures and removed counts.'
 		printf 'Generated with `cloc` %s. This report is informational and does not gate migration direction.\n\n' "${cloc_version}"
@@ -568,21 +546,15 @@ write_report() {
 BASE_CORE_SWIFT=0
 BASE_CORE_OBJC=0
 BASE_CORE_OBJC_RETAINED=0
-BASE_KIT_SWIFT=0
-BASE_KIT_OBJC=0
-BASE_KIT_OBJC_RETAINED=0
-BASE_STANDALONE_SWIFT=0
-BASE_STANDALONE_OBJC=0
-BASE_STANDALONE_OBJC_RETAINED=0
+BASE_KITS_SWIFT=0
+BASE_KITS_OBJC=0
+BASE_KITS_OBJC_RETAINED=0
 HEAD_CORE_SWIFT=0
 HEAD_CORE_OBJC=0
 HEAD_CORE_OBJC_RETAINED=0
-HEAD_KIT_SWIFT=0
-HEAD_KIT_OBJC=0
-HEAD_KIT_OBJC_RETAINED=0
-HEAD_STANDALONE_SWIFT=0
-HEAD_STANDALONE_OBJC=0
-HEAD_STANDALONE_OBJC_RETAINED=0
+HEAD_KITS_SWIFT=0
+HEAD_KITS_OBJC=0
+HEAD_KITS_OBJC_RETAINED=0
 
 generate_report() {
 	local repo=$1
@@ -626,27 +598,19 @@ generate_report() {
 	BASE_CORE_SWIFT=${COUNT_SWIFT}
 	BASE_CORE_OBJC=${COUNT_OBJC}
 	BASE_CORE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
-	count_bucket "${base_root}" kit "${cloc_path}" "${workspace}/base-kit" "${base_retained_paths}"
-	BASE_KIT_SWIFT=${COUNT_SWIFT}
-	BASE_KIT_OBJC=${COUNT_OBJC}
-	BASE_KIT_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
-	count_bucket "${base_root}" standalone "${cloc_path}" "${workspace}/base-standalone" "${base_retained_paths}"
-	BASE_STANDALONE_SWIFT=${COUNT_SWIFT}
-	BASE_STANDALONE_OBJC=${COUNT_OBJC}
-	BASE_STANDALONE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
+	count_bucket "${base_root}" kits "${cloc_path}" "${workspace}/base-kits" "${base_retained_paths}"
+	BASE_KITS_SWIFT=${COUNT_SWIFT}
+	BASE_KITS_OBJC=${COUNT_OBJC}
+	BASE_KITS_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
 
 	count_bucket "${head_root}" core "${cloc_path}" "${workspace}/head-core" "${head_retained_paths}"
 	HEAD_CORE_SWIFT=${COUNT_SWIFT}
 	HEAD_CORE_OBJC=${COUNT_OBJC}
 	HEAD_CORE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
-	count_bucket "${head_root}" kit "${cloc_path}" "${workspace}/head-kit" "${head_retained_paths}"
-	HEAD_KIT_SWIFT=${COUNT_SWIFT}
-	HEAD_KIT_OBJC=${COUNT_OBJC}
-	HEAD_KIT_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
-	count_bucket "${head_root}" standalone "${cloc_path}" "${workspace}/head-standalone" "${head_retained_paths}"
-	HEAD_STANDALONE_SWIFT=${COUNT_SWIFT}
-	HEAD_STANDALONE_OBJC=${COUNT_OBJC}
-	HEAD_STANDALONE_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
+	count_bucket "${head_root}" kits "${cloc_path}" "${workspace}/head-kits" "${head_retained_paths}"
+	HEAD_KITS_SWIFT=${COUNT_SWIFT}
+	HEAD_KITS_OBJC=${COUNT_OBJC}
+	HEAD_KITS_OBJC_RETAINED=${COUNT_OBJC_RETAINED}
 
 	measure_diff_movement "${repo}" "${base_commit}" "${head_commit}" "${workspace}/movement-numstat"
 	cloc_version=$("${cloc_path}" --version | tr -d '\r\n')
@@ -754,6 +718,8 @@ run_selftest() {
 	write_fixture_file "${fixture}" 'mParticle-Apple-SDK-Swift/Sources/Kits/Kit.swift' $'let kit = 1\n'
 	write_fixture_file "${fixture}" 'Kits/vendor/vendor-1/Sources/Kit.m' $'@implementation Standalone\n@end\n'
 	write_fixture_file "${fixture}" 'Kits/vendor/vendor-1/Sources/Kit.swift' $'let standalone = 1\n'
+	write_fixture_file "${fixture}" 'Kits/rokt/rokt/Sources/Kit.m' $'@implementation Rokt\n@end\n'
+	write_fixture_file "${fixture}" 'Kits/rokt-sdk-plus/plus/Sources/Kit.swift' $'let roktPlus = 1\n'
 	write_fixture_file "${fixture}" 'UnitTests/SwiftTests/Excluded.swift' $'let excludedTest = 1\nlet excludedTestTwo = 2\n'
 	write_fixture_file "${fixture}" 'Example/Excluded.m' $'int excludedExample(void) { return 1; }\n'
 	write_fixture_file "${fixture}" 'build/Generated/Excluded.swift' $'let excludedBuildOutput = 1\n'
@@ -783,18 +749,16 @@ run_selftest() {
 
 	migration_report="${fixture}/migration-report.md"
 	generate_report "${fixture}" "${base_sha}" "${migration_sha}" "${cloc_path}" "${migration_report}"
-	assert_contains "${migration_report}" '| Core SDK | Short term — in scope |'
-	assert_contains "${migration_report}" '| Core SDK | Long term — all Objective-C |'
-	assert_contains "${migration_report}" '| 25.00% | 42.86% | 3 | 4 | 🚀 +17.86 pp |'
-	assert_contains "${migration_report}" '| 16.67% | 27.27% | 3 | 8 | 🚀 +10.60 pp |'
-	assert_contains "${migration_report}" '| 33.33% | 100.00% | 2 | 0 | 🚀 +66.67 pp |'
-	assert_contains "${migration_report}" '| 100.00% | 100.00% | 1 | 0 | ➖ 0.00 pp |'
-	assert_contains "${migration_report}" '| 33.33% | 33.33% | 1 | 2 | ➖ 0.00 pp |'
 	assert_contains "${migration_report}" \
-		'Objective-C retained by design: Core SDK 4 · SDK kit infrastructure 0 · Standalone kits 2.'
+		'| Short term — everything except kits and the public API |'
+	assert_contains "${migration_report}" \
+		'| Long term — everything, including all kits and the public API |'
+	assert_contains "${migration_report}" '| 25.00% | 42.86% | 3 | 4 | 🚀 +17.86 pp |'
+	assert_contains "${migration_report}" '| 23.81% | 36.84% | 7 | 12 | 🚀 +13.03 pp |'
+	assert_contains "${migration_report}" \
+		'Objective-C retained by design in Core SDK (the permanent public API surface): 4.'
 	assert_contains "${migration_report}" '| Core SDK | 1 | 4 |'
-	assert_contains "${migration_report}" '| SDK kit infrastructure | 1 | 2 |'
-	assert_contains "${migration_report}" '| Standalone kits | 0 | 0 |'
+	assert_contains "${migration_report}" '| Kits (infrastructure + standalone) | 1 | 2 |'
 
 	write_fixture_file "${fixture}" 'README.md' $'No production source changes.\n'
 	git -C "${fixture}" add README.md
@@ -803,7 +767,7 @@ run_selftest() {
 	flat_report="${fixture}/flat-report.md"
 	generate_report "${fixture}" "${migration_sha}" "${flat_sha}" "${cloc_path}" "${flat_report}"
 	flat_count=$(grep -Fc '➖ 0.00 pp' "${flat_report}")
-	[[ ${flat_count} -eq 6 ]] || fail 'self-test expected six flat migration goal rows'
+	[[ ${flat_count} -eq 2 ]] || fail 'self-test expected two flat migration goal rows'
 
 	write_fixture_file "${fixture}" 'mParticle-Apple-SDK/Event/Regression.m' $'@implementation Regression\n@end\n'
 	git -C "${fixture}" add 'mParticle-Apple-SDK/Event/Regression.m'
@@ -812,7 +776,7 @@ run_selftest() {
 	regression_report="${fixture}/regression-report.md"
 	generate_report "${fixture}" "${migration_sha}" "${regression_sha}" "${cloc_path}" "${regression_report}"
 	assert_contains "${regression_report}" '| 42.86% | 33.33% | 3 | 6 | ↩️ -9.53 pp |'
-	assert_contains "${regression_report}" '| 27.27% | 23.08% | 3 | 10 | ↩️ -4.19 pp |'
+	assert_contains "${regression_report}" '| 36.84% | 33.33% | 7 | 14 | ↩️ -3.51 pp |'
 
 	git -C "${fixture}" switch -q -c selftest-thin "${migration_sha}"
 	write_fixture_file "${fixture}" 'mParticle-Apple-SDK/Utils/Retained Contract.m' \
@@ -825,9 +789,9 @@ run_selftest() {
 	# Thinning a retained wrapper is invisible to the short-term goal and real
 	# progress toward the long-term one.
 	assert_contains "${thin_report}" '| 42.86% | 42.86% | 3 | 4 | ➖ 0.00 pp |'
-	assert_contains "${thin_report}" '| 27.27% | 33.33% | 3 | 6 | 🚀 +6.06 pp |'
+	assert_contains "${thin_report}" '| 36.84% | 41.18% | 7 | 10 | 🚀 +4.34 pp |'
 	assert_contains "${thin_report}" \
-		'Objective-C retained by design: Core SDK 2 (-2) · SDK kit infrastructure 0 · Standalone kits 2.'
+		'Objective-C retained by design in Core SDK (the permanent public API surface): 2 (-2).'
 	assert_contains "${thin_report}" '| Core SDK | 0 | 2 |'
 
 	# Renaming a retained implementation and updating the manifest moves no
@@ -844,9 +808,9 @@ run_selftest() {
 	renamed_report="${fixture}/renamed-report.md"
 	generate_report "${fixture}" "${migration_sha}" "${renamed_sha}" "${cloc_path}" "${renamed_report}"
 	assert_contains "${renamed_report}" '| 42.86% | 42.86% | 3 | 4 | ➖ 0.00 pp |'
-	assert_contains "${renamed_report}" '| 27.27% | 27.27% | 3 | 8 | ➖ 0.00 pp |'
+	assert_contains "${renamed_report}" '| 36.84% | 36.84% | 7 | 12 | ➖ 0.00 pp |'
 	assert_contains "${renamed_report}" \
-		'Objective-C retained by design: Core SDK 4 · SDK kit infrastructure 0 · Standalone kits 2.'
+		'Objective-C retained by design in Core SDK (the permanent public API surface): 4.'
 
 	# Retiring a retained implementation is long-term progress only; the
 	# short-term goal never counted it.
@@ -860,9 +824,9 @@ run_selftest() {
 	retired_report="${fixture}/retired-report.md"
 	generate_report "${fixture}" "${migration_sha}" "${retired_sha}" "${cloc_path}" "${retired_report}"
 	assert_contains "${retired_report}" '| 42.86% | 42.86% | 3 | 4 | ➖ 0.00 pp |'
-	assert_contains "${retired_report}" '| 27.27% | 42.86% | 3 | 4 | 🚀 +15.59 pp |'
+	assert_contains "${retired_report}" '| 36.84% | 46.67% | 7 | 8 | 🚀 +9.83 pp |'
 	assert_contains "${retired_report}" \
-		'Objective-C retained by design: Core SDK 0 (-4) · SDK kit infrastructure 0 · Standalone kits 2.'
+		'Objective-C retained by design in Core SDK (the permanent public API surface): 0 (-4).'
 
 	git -C "${fixture}" switch -q -c selftest-pr "${migration_sha}"
 	write_fixture_file "${fixture}" 'mParticle-Apple-SDK-Swift/Sources/PR Only.swift' $'let prOne = 1\nlet prTwo = 2\n'
@@ -881,7 +845,7 @@ run_selftest() {
 	divergent_report="${fixture}/divergent-report.md"
 	generate_report "${fixture}" "${advanced_base_sha}" "${pr_head_sha}" "${cloc_path}" "${divergent_report}"
 	assert_contains "${divergent_report}" '| Core SDK | 2 | 2 |'
-	assert_contains "${divergent_report}" '| Standalone kits | 0 | 0 |'
+	assert_contains "${divergent_report}" '| Kits (infrastructure + standalone) | 0 | 0 |'
 
 	[[ "$(percentage 0 0)" == '0.00' ]] || fail 'self-test expected a zero-denominator percentage of 0.00'
 	run_manifest_validation_selftest "${fixture}/manifest-validation"
