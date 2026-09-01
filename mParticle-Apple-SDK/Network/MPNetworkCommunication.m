@@ -116,30 +116,22 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 #pragma mark Private accessors
 
 - (NSString *)defaultHostWithSubdomain:(NSString *)subdomain apiKey:(NSString *)apiKey {
-    NSArray *splitKey = [apiKey componentsSeparatedByString:@"-"];
-    if (splitKey.count <= 1) {
-        // Handle case with no prefix, default to US1 (old keys)
-        return [NSString stringWithFormat:@"%@.us1.mparticle.com", subdomain];
-    }
-    return [NSString stringWithFormat:@"%@.%@.mparticle.com", subdomain, splitKey[0]];
+    return [MPEndpointHostResolver defaultHostWithSubdomain:subdomain apiKey:apiKey];
+}
+
+- (BOOL)attAuthorized {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    return stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized;
 }
 
 - (NSString *)defaultEventHost {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    if (stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        return [self defaultHostWithSubdomain:kMPURLHostEventTrackingSubdomain apiKey:stateMachine.apiKey];
-    } else {
-        return [self defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:stateMachine.apiKey];
-    }
+    NSString *subdomain = [self attAuthorized] ? kMPURLHostEventTrackingSubdomain : kMPURLHostEventSubdomain;
+    return [self defaultHostWithSubdomain:subdomain apiKey:[MParticle sharedInstance].stateMachine.apiKey];
 }
 
 - (NSString *)defaultIdentityHost {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    if (stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        return [self defaultHostWithSubdomain:kMPURLHostIdentityTrackingSubdomain apiKey:stateMachine.apiKey];
-    } else {
-        return [self defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:stateMachine.apiKey];
-    }
+    NSString *subdomain = [self attAuthorized] ? kMPURLHostIdentityTrackingSubdomain : kMPURLHostIdentitySubdomain;
+    return [self defaultHostWithSubdomain:subdomain apiKey:[MParticle sharedInstance].stateMachine.apiKey];
 }
 
 - (MPURL *)configURL {
@@ -159,7 +151,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (customHost && networkOptions.configHost) {
         MPILogWarning(@"MPNetworkOptions: customBaseURL is set; configHost is ignored.");
     }
-    NSString *configHost = customHost ?: (networkOptions.configHost ?: kMPURLHostConfig);
+    NSString *configHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:customHost
+                                                                       trackingHost:nil
+                                                                               host:networkOptions.configHost
+                                                                        defaultHost:kMPURLHostConfig
+                                                                      attAuthorized:NO];
 
     NSString *dataPlanConfigString;
     NSString *dataPlanId = MParticle.sharedInstance.dataPlanId;
@@ -203,12 +199,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (MPURL *)eventURLForUpload:(MPUpload *)mpUpload {
     MPUploadSettings *uploadSettings = (MPUploadSettings *)mpUpload.uploadSettings;
-    NSString *eventHost;
-    if (uploadSettings.eventsTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        eventHost = uploadSettings.eventsTrackingHost;
-    } else {
-        eventHost = uploadSettings.eventsHost ?: self.defaultEventHost;
-    }
+    NSString *eventHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:nil
+                                                                      trackingHost:uploadSettings.eventsTrackingHost
+                                                                              host:uploadSettings.eventsHost
+                                                                       defaultHost:self.defaultEventHost
+                                                                     attAuthorized:[self attAuthorized]];
     NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, uploadSettings.apiKey, kMPEventsURL];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
@@ -239,7 +234,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (customHost && networkOptions.eventsHost) {
         MPILogWarning(@"MPNetworkOptions: customBaseURL is set; eventsHost is ignored.");
     }
-    NSString *eventHost = customHost ?: (networkOptions.eventsHost ?: self.defaultEventHost);
+    NSString *eventHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:customHost
+                                                                      trackingHost:nil
+                                                                              host:networkOptions.eventsHost
+                                                                       defaultHost:self.defaultEventHost
+                                                                     attAuthorized:NO];
     NSString *audienceURLFormat = [audienceFormat stringByAppendingString:@"?mpid=%@"];
     NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
@@ -299,21 +298,16 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)identityURL:(NSString *)pathComponent {
-    MParticle *mParticle = [MParticle sharedInstance];
-    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
-    MPNetworkOptions *identityNetworkOptions = mParticle.networkOptions;
+    MPNetworkOptions *identityNetworkOptions = [MParticle sharedInstance].networkOptions;
     NSString *identityCustomHost = identityNetworkOptions.customBaseURL.host;
-    NSString *identityHost;
-    if (identityCustomHost) {
-        if (identityNetworkOptions.identityHost || identityNetworkOptions.identityTrackingHost) {
-            MPILogWarning(@"MPNetworkOptions: customBaseURL is set; identityHost/identityTrackingHost are ignored.");
-        }
-        identityHost = identityCustomHost;
-    } else if (identityNetworkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        identityHost = identityNetworkOptions.identityTrackingHost;
-    } else {
-        identityHost = identityNetworkOptions.identityHost ?: self.defaultIdentityHost;
+    if (identityCustomHost && (identityNetworkOptions.identityHost || identityNetworkOptions.identityTrackingHost)) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; identityHost/identityTrackingHost are ignored.");
     }
+    NSString *identityHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:identityCustomHost
+                                                                         trackingHost:identityNetworkOptions.identityTrackingHost
+                                                                                 host:identityNetworkOptions.identityHost
+                                                                          defaultHost:self.defaultIdentityHost
+                                                                        attAuthorized:[self attAuthorized]];
     NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
@@ -341,21 +335,16 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (MPURL *)modifyURL {
     NSString *pathComponent = @"modify";
-    MParticle *mParticle = [MParticle sharedInstance];
-    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
-    MPNetworkOptions *modifyNetworkOptions = mParticle.networkOptions;
+    MPNetworkOptions *modifyNetworkOptions = [MParticle sharedInstance].networkOptions;
     NSString *modifyCustomHost = modifyNetworkOptions.customBaseURL.host;
-    NSString *identityHost;
-    if (modifyCustomHost) {
-        if (modifyNetworkOptions.identityHost || modifyNetworkOptions.identityTrackingHost) {
-            MPILogWarning(@"MPNetworkOptions: customBaseURL is set; identityHost/identityTrackingHost are ignored.");
-        }
-        identityHost = modifyCustomHost;
-    } else if (modifyNetworkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        identityHost = modifyNetworkOptions.identityTrackingHost;
-    } else {
-        identityHost = modifyNetworkOptions.identityHost ?: self.defaultIdentityHost;
+    if (modifyCustomHost && (modifyNetworkOptions.identityHost || modifyNetworkOptions.identityTrackingHost)) {
+        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; identityHost/identityTrackingHost are ignored.");
     }
+    NSString *identityHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:modifyCustomHost
+                                                                         trackingHost:modifyNetworkOptions.identityTrackingHost
+                                                                                 host:modifyNetworkOptions.identityHost
+                                                                          defaultHost:self.defaultIdentityHost
+                                                                        attAuthorized:[self attAuthorized]];
     NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId],  pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
@@ -385,12 +374,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPUploadSettings *uploadSettings = (MPUploadSettings *)mpUpload.uploadSettings;
     NSString *pathComponent = @"alias";
 
-    NSString *eventHost;
-    if (uploadSettings.aliasTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        eventHost = uploadSettings.aliasTrackingHost;
-    } else {
-        eventHost = uploadSettings.aliasHost ?: self.defaultEventHost;
-    }
+    NSString *eventHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:nil
+                                                                      trackingHost:uploadSettings.aliasTrackingHost
+                                                                              host:uploadSettings.aliasHost
+                                                                       defaultHost:self.defaultEventHost
+                                                                     attAuthorized:[self attAuthorized]];
     NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, uploadSettings.apiKey, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
