@@ -388,7 +388,8 @@ public final class MPKitProjectionEngine: NSObject {
 
         var remainingProjections = projection.attributeProjections
         var projectedAttributes = attributes
-        var projectedKeyMarkers: [String] = []
+        var projectedSourceKeys = Set<String>()
+        var projectedOutputKeys = Set<String>()
         var nonProjectedKeys = source.attributeKeys
         let eventType = MPEventTypeSwift(rawValue: source.type) ?? .other
         var keyHashes: [String: Int] = [:]
@@ -421,9 +422,8 @@ public final class MPKitProjectionEngine: NSObject {
                         ) {
                             projectedAttributes.removeValue(forKey: key)
                             projectedAttributes[projectedKey] = projectedValue
-                            if let marker = projectedValue as? String {
-                                projectedKeyMarkers.append(marker)
-                            }
+                            projectedSourceKeys.insert(key)
+                            projectedOutputKeys.insert(projectedKey)
                             projectionsToRemove.append(ObjectIdentifier(attributeProjection))
                         } else if attributeProjection.required {
                             return .missingRequired
@@ -441,9 +441,8 @@ public final class MPKitProjectionEngine: NSObject {
                         ) {
                             projectedAttributes.removeValue(forKey: key)
                             projectedAttributes[projectedKey] = projectedValue
-                            if let marker = projectedValue as? String {
-                                projectedKeyMarkers.append(marker)
-                            }
+                            projectedSourceKeys.insert(key)
+                            projectedOutputKeys.insert(projectedKey)
                             projectionsToRemove.append(ObjectIdentifier(attributeProjection))
                         } else if attributeProjection.required {
                             return .missingRequired
@@ -455,7 +454,7 @@ public final class MPKitProjectionEngine: NSObject {
 
                 case MatchType.field:
                     projectedAttributes[projectedKey] = source.name
-                    projectedKeyMarkers.append(projectedKey)
+                    projectedOutputKeys.insert(projectedKey)
                     projectionsToRemove.append(ObjectIdentifier(attributeProjection))
 
                 case MatchType.static:
@@ -464,7 +463,7 @@ public final class MPKitProjectionEngine: NSObject {
                         dataType: attributeProjection.dataType
                     ) {
                         projectedAttributes[projectedKey] = projectedValue
-                        projectedKeyMarkers.append(projectedKey)
+                        projectedOutputKeys.insert(projectedKey)
                     }
                     projectionsToRemove.append(ObjectIdentifier(attributeProjection))
 
@@ -478,15 +477,18 @@ public final class MPKitProjectionEngine: NSObject {
             }
         }
 
-        nonProjectedKeys.removeAll { projectedKeyMarkers.contains($0) }
+        nonProjectedKeys.removeAll {
+            projectedSourceKeys.contains($0) || projectedOutputKeys.contains($0)
+        }
         if projection.appendAsIs, projection.maxCustomParameters > 0 {
-            if nonProjectedKeys.count > projection.maxCustomParameters {
-                let remainingSlots = Int(projection.maxCustomParameters) - projectedKeyMarkers.count
-                if remainingSlots > 0 {
-                    nonProjectedKeys.sort()
-                    nonProjectedKeys.removeFirst(min(remainingSlots, nonProjectedKeys.count))
-                    projectedAttributes.removeValues(forKeys: nonProjectedKeys)
-                }
+            let remainingSlots = max(
+                0,
+                Int(clamping: projection.maxCustomParameters) - projectedOutputKeys.count
+            )
+            if nonProjectedKeys.count > remainingSlots {
+                nonProjectedKeys.sort()
+                nonProjectedKeys.removeFirst(remainingSlots)
+                projectedAttributes.removeValues(forKeys: nonProjectedKeys)
             }
         } else {
             projectedAttributes.removeValues(forKeys: nonProjectedKeys)
@@ -523,8 +525,8 @@ public final class MPKitProjectionEngine: NSObject {
             dictionaries = []
         }
 
-        return matches.allSatisfy { match in
-            dictionaries.contains { dictionary in
+        return dictionaries.contains { dictionary in
+            matches.allSatisfy { match in
                 dictionary.contains { key, value in
                     guard let attributeKey = match.attributeKey,
                           attributeKey == hasher.hashCommerceEventAttribute(

@@ -85,6 +85,29 @@ final class MPKitProjectionEngineTests: XCTestCase {
         XCTAssertNil(outputs[0].attributes?["z"])
     }
 
+    func testTypedProjectionCountsTowardCustomAttributeLimit() {
+        let projection = eventProjection(
+            id: 13,
+            name: "event",
+            attributes: [attribute(name: "z_typed", projectedName: "typed", matchType: 0, dataType: 3)],
+            maxCustomParameters: 1
+        )
+        let source = MPKitEventProjectionSource(
+            type: 8,
+            name: "event",
+            attributes: ["a_unmapped": "keep", "z_typed": "true"],
+            attributeKeys: ["a_unmapped", "z_typed"],
+            matchingAttributes: ["a_unmapped": "keep", "z_typed": "true"],
+            messageType: 4
+        )
+
+        let outputs = engine.projectEvent(source, projections: [projection], defaultProjection: nil)
+
+        XCTAssertEqual(outputs[0].attributes?["typed"] as? NSNumber, true)
+        XCTAssertNil(outputs[0].attributes?["a_unmapped"])
+        XCTAssertEqual(outputs[0].attributes?.count, 1)
+    }
+
     func testCommerceProjectionExpandsEveryProductAndAppendsLimitedCustomAttributes() {
         let productKeyHash = hasher.hashCommerceEventAttribute(.viewDetail, key: "sku")
         let projection = eventProjection(
@@ -177,6 +200,37 @@ final class MPKitProjectionEngineTests: XCTestCase {
         XCTAssertNil(outputs[0].projectionId)
     }
 
+    func testCommerceProjectionRequiresMatchesFromOneEntity() {
+        let colorHash = hasher.hashCommerceEventAttribute(.purchase, key: "color")
+        let sizeHash = hasher.hashCommerceEventAttribute(.purchase, key: "size")
+        let projection = eventProjection(
+            id: 23,
+            name: nil,
+            projectedName: "purchase",
+            matchType: 1,
+            matches: [
+                MPKitProjectionMatchSnapshot(attributeKey: colorHash, attributeValues: ["red"]),
+                MPKitProjectionMatchSnapshot(attributeKey: sizeHash, attributeValues: ["large"])
+            ],
+            propertyKind: 3,
+            messageType: 16,
+            eventType: MPEventTypeSwift.purchase.rawValue
+        )
+        let source = commerceSource(
+            type: .purchase,
+            products: [
+                MPKitCommerceEntityProjectionSource(fields: nil, attributes: ["color": "red", "size": "small"]),
+                MPKitCommerceEntityProjectionSource(fields: nil, attributes: ["color": "blue", "size": "large"])
+            ]
+        )
+
+        let outputs = engine.projectCommerceEvent(source, projections: [projection])
+
+        XCTAssertEqual(outputs.count, 1)
+        XCTAssertEqual(outputs[0].kind, .originalCommerceEvent)
+        XCTAssertNil(outputs[0].projectionId)
+    }
+
     private func eventProjection(
         id: UInt,
         name: String?,
@@ -185,6 +239,7 @@ final class MPKitProjectionEngineTests: XCTestCase {
         matches: [MPKitProjectionMatchSnapshot]? = nil,
         attributes: [MPKitAttributeProjectionSnapshot] = [],
         behaviorSelector: UInt = 0,
+        propertyKind: UInt = 0,
         messageType: UInt = 4,
         eventType: UInt = 8,
         maxCustomParameters: UInt = .max,
@@ -196,7 +251,7 @@ final class MPKitProjectionEngineTests: XCTestCase {
             projectedName: projectedName,
             matchType: matchType,
             projectionType: 1,
-            propertyKind: 0,
+            propertyKind: propertyKind,
             projectionMatches: matches,
             attributeProjections: attributes,
             behaviorSelector: behaviorSelector,

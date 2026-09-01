@@ -1021,7 +1021,7 @@ originalCustomAttributes:commerceEvent.customAttributes
                 break;
         }
 
-        if (output.projectionId) {
+        if (output.projectionId != nil) {
             MPEventProjection *appliedProjection = projectionsById[output.projectionId];
             if (appliedProjection) {
                 [appliedProjections addObject:appliedProjection];
