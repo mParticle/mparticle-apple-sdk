@@ -111,8 +111,9 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
 - (void)tearDown {
     [self drainPendingAsyncWork];
-    self.rokt = nil;
+    // Stop the partial mock before releasing the object it wraps, not after.
     [self.mockRokt stopMocking];
+    self.rokt = nil;
     [self.mockInstance stopMocking];
     [self.mockContainer stopMocking];
     [self.identityMock stopMocking];
