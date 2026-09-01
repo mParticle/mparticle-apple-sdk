@@ -4,6 +4,7 @@
 #import "MPCommerceEvent.h"
 #import "MPIConstants.h"
 #import "MPCommerceEvent+Dictionary.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPDataPlanFilter ()
 @property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSArray<NSString *> *> *pointInfo;
@@ -68,32 +69,15 @@
 }
 
 - (BOOL)isBlockedUserAttributeKey:(NSString *)userAttributeKey {
-    if (!_blockUserAttributes) {
-        return NO;
-    }
-    
-    NSArray *info = self.pointInfo[@"user_attributes"];
-    if (info == nil) {
-        return NO;
-    }
-    if ([info containsObject:userAttributeKey]) {
-        return NO;
-    }
-    return YES;
+    return [MPDataPlanFilterPolicy isBlockedUserAttributeKey:userAttributeKey
+                                           plannedAttributes:self.pointInfo[@"user_attributes"]
+                                         blockUserAttributes:_blockUserAttributes];
 }
 
 - (BOOL)isBlockedUserIdentityType:(MPIdentity)userIdentityType {
-    if (!_blockUserIdentities) {
-        return NO;
-    }
-    NSArray *info = self.pointInfo[@"user_identities"];
-    if (info == nil) {
-        return NO;
-    }
-    if ([info containsObject:@(userIdentityType)]) {
-        return NO;
-    }
-    return YES;
+    return [MPDataPlanFilterPolicy isBlockedUserIdentityType:userIdentityType
+                                           plannedIdentities:self.pointInfo[@"user_identities"]
+                                         blockUserIdentities:_blockUserIdentities];
 }
 
 - (NSDictionary<NSString *, NSArray<NSString *> *> *)getPointInfo {
@@ -199,52 +183,19 @@
 }
 
 - (NSString *)matchKeyForScreenName:(NSString *)screenName {
-    return [self matchKeyForMatchType:@"screen_view" key:screenName];
+    return [MPDataPlanFilterPolicy matchKeyForScreenName:screenName];
 }
 
 - (NSString *)matchKeyForEventType:(NSString *)eventType eventName:(NSString *)eventName {
-    NSString *mutatedType = [[eventType stringByReplacingOccurrencesOfString:@"_" withString:@""] lowercaseString];
-    return [self matchKeyForMatchType:@"custom_event" type:mutatedType name:eventName];
-}
-
-- (NSString *)matchKeyForMatchType:(NSString *)matchType type:(NSString *)type name:(NSString *)name {
-    return [NSString stringWithFormat:@"%@.%@.%@", matchType, name, type];
+    return [MPDataPlanFilterPolicy matchKeyForEventType:eventType eventName:eventName];
 }
 
 - (NSString *)matchKeyForMatchType:(NSString *)matchType key:(NSString *)key {
-    NSString *mutatedKey = [key stringByReplacingOccurrencesOfString:@"_" withString:@""];
-    return [NSString stringWithFormat:@"%@.%@", matchType, mutatedKey];
+    return [MPDataPlanFilterPolicy matchKeyForMatchType:matchType key:key];
 }
 
 - (NSString *)keyForMatch:(NSDictionary *)match {
-    NSDictionary *criteria = match[@"criteria"];
-    NSString *matchType = match[@"type"];
-    if ([matchType isEqual:@"custom_event"]) {
-        NSString *eventName = criteria[@"event_name"];
-        NSString *eventType = criteria[@"custom_event_type"];
-        
-        NSString *key = nil;
-        if (eventName != nil && eventType != nil) {
-            key = [self matchKeyForEventType:eventType eventName:eventName];
-        }
-        return key;
-    } else if ([matchType isEqual:@"screen_view"]) {
-        NSString *screenName = criteria[@"screen_name"];
-        return [self matchKeyForScreenName:screenName];
-    } else if ([matchType isEqual:@"product_action"]) {
-        NSString *action = criteria[@"action"];
-        return [self matchKeyForMatchType:matchType key:action];
-    } else if ([matchType isEqual:@"promotion_action"]) {//
-        NSString *action = criteria[@"action"];
-        return [self matchKeyForMatchType:matchType key:action];
-    } else if ([matchType isEqual:@"product_impression"]) {//
-        return matchType;
-    } else if ([matchType isEqual:@"user_attributes"]) {
-        return matchType;
-    } else if ([matchType isEqual:@"user_identities"]) {
-        return matchType;
-    }
-    return nil;
+    return [MPDataPlanFilterPolicy keyForMatch:match];
 }
 
 - (NSString *)matchKeyFromBaseEvent:(MPBaseEvent *)event isScreenEvent:(BOOL)isScreenEvent {
