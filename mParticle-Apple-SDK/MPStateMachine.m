@@ -7,7 +7,6 @@
 #import "MPKitContainer.h"
 #import <UIKit/UIKit.h>
 #import "MPDataPlanFilter.h"
-#import "MParticleReachability.h"
 #import "MPUserDefaultsConnector.h"
 
 #if TARGET_OS_IOS == 1
@@ -56,7 +55,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.implementation persistStoredSDKVersion:kMParticleSDKVersion];
 
-            [self.reachability startNotifier];
+            (void)[self.reachability startNotifier];
             self.networkStatus = [self.reachability currentReachabilityStatus];
 
             [notificationCenter addObserver:self
@@ -76,7 +75,7 @@
 
             [notificationCenter addObserver:self
                                    selector:@selector(handleReachabilityChanged:)
-                                       name:MParticleReachabilityChangedNotification
+                                       name:MParticleReachability.reachabilityChangedNotification
                                      object:nil];
 
             [MPApplication_PRIVATE markInitialLaunchTimeWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
