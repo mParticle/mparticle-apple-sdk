@@ -55,17 +55,22 @@ kit and wrapper-SDK contract surface, runtime-identity-pinned classes, and the
 boundary glue in `CONVERSION-RECIPE.md`'s classifications 1, 3, and 4 stay
 Objective-C by design — that is the intended end state, not unfinished work.
 
-This project is complete when every **in-scope** Objective-C implementation is
-gone: the classification 2 wrappers and the internal types behind them. The
-retained boundary is enumerated in `Tools/swift-migration-retained-objc.txt`.
+This phase's scope is Core SDK (including its SDK kit infrastructure) and the
+Rokt kit. It is complete when every **in-scope** Objective-C implementation
+within that scope is gone: the classification 2 wrappers and the internal
+types behind them. The retained boundary is enumerated in
+`Tools/swift-migration-retained-objc.txt`. Every other standalone kit is
+outside this phase entirely — not retained, just not yet started.
 
-The progress report on each PR therefore carries two goal rows per area:
+The progress report on each PR therefore carries two goal rows:
 
-- **Short term — in scope** excludes the retained boundary, so 100% is
-  reachable and marks the end of this project.
-- **Long term — all Objective-C** keeps the full denominator. 100% there
-  requires taking the public API itself to Swift — a breaking change reserved
-  for a future major release, tracked rather than redefined away.
+- **Short term — Core SDK and the Rokt kit, excluding the public API**
+  excludes the retained boundary, so 100% is reachable and marks the end of
+  this phase.
+- **Long term — everything, including all kits and the public API** keeps
+  the full denominator across every kit too. 100% there requires taking the
+  public API itself to Swift and converting every kit — a breaking change
+  reserved for a future major release, tracked rather than redefined away.
 
 Two consequences for a conversion PR:
 

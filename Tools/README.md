@@ -92,28 +92,37 @@ out-of-bucket, and vendored entries.
 
 ### Metric definitions
 
-Every bucket reports two goal rows, because the migration has two horizons:
+The report has exactly two rows, because the migration has two horizons and
+each horizon covers a different scope:
 
-- **Short term — in scope.** Swift SLOC / (Swift SLOC + in-scope Objective-C).
-  In-scope excludes the implementations listed in
-  `Tools/swift-migration-retained-objc.txt` — the public/kit contract,
-  runtime-identity, and boundary-glue files that stay Objective-C by design.
-  **100% here is the end of this project**: every Objective-C implementation the
-  migration intends to delete is gone.
-- **Long term — all Objective-C.** Swift SLOC / (Swift SLOC + all Objective-C),
-  the original full-denominator number. **100% here means the public API itself
-  becomes Swift**, which is a breaking change reserved for a future major
-  release. It is kept so that goal stays measurable rather than being redefined
-  away.
+- **Short term — Core SDK and the Rokt kit, excluding the public API.**
+  Swift SLOC / (Swift SLOC + in-scope Objective-C), counted only across Core
+  SDK (including its kit infrastructure) and the Rokt kit. In-scope excludes
+  the implementations listed in `Tools/swift-migration-retained-objc.txt` —
+  the public/kit contract, runtime-identity, and boundary-glue files that stay
+  Objective-C by design. **100% here is the end of this project for that
+  scope**: every Objective-C implementation the migration intends to delete
+  is gone. Every kit other than Rokt never counts here, no matter what the
+  manifest says.
+- **Long term — everything, including all kits and the public API.** Swift
+  SLOC / (Swift SLOC + all Objective-C), summed across Core SDK, the Rokt
+  kit, and every other standalone kit, with no manifest exclusion. **100%
+  here means the public API itself becomes Swift and every kit converts**,
+  which is a breaking change reserved for a future major release. It is kept
+  so the goal stays measurable rather than being redefined away.
 
-The gap between the two rows is the retained surface. Its SLOC is also printed
-explicitly under the table, with a signed delta when it moved.
+The retained public API surface is printed explicitly under the table (SLOC,
+with a signed delta when it moved), but it is only part of the gap between
+the two rows: it is the boundary within Core SDK and the Rokt kit. The rest
+of the gap is every kit other than Rokt, which the short-term goal excludes
+outright.
 
 Retained wrappers keep their `@interface`, class name, selectors, and
 nullability, but their logic still moves to Swift and the wrapper thins to
-marshaling. That thinning moves the long-term row and the retained figure while
-leaving the short-term row flat — the short-term goal tracks file removal, the
-long-term goal tracks every Objective-C line.
+marshaling. That thinning moves the long-term row and the retained figure
+while leaving the short-term row flat — the short-term goal tracks file
+removal within its scope, the long-term goal tracks every Objective-C line
+everywhere.
 
 Both revisions are counted using the **head** revision's manifest. A PR that
 edits the manifest therefore re-measures its own base under the new definition
@@ -131,12 +140,15 @@ revisions.
 The three production-code buckets do not overlap:
 
 - **Core SDK:** Swift in `mParticle-Apple-SDK-Swift/Sources`, and Objective-C
-  or Objective-C++ in `mParticle-Apple-SDK`, excluding each tree's kit
-  infrastructure and excluding `mParticle-Apple-SDK/Libraries`.
-- **SDK kit infrastructure:** sources in `mParticle-Apple-SDK/Kits` and the
-  future `mParticle-Apple-SDK-Swift/Sources/Kits` subtree.
-- **Standalone kits:** Swift, Objective-C, and Objective-C++ only below
-  `Kits/**/Sources`.
+  or Objective-C++ in `mParticle-Apple-SDK` (including each tree's SDK kit
+  infrastructure — `mParticle-Apple-SDK/Kits` and the future
+  `mParticle-Apple-SDK-Swift/Sources/Kits` subtree), excluding
+  `mParticle-Apple-SDK/Libraries`. Shares the short-term goal.
+- **Rokt kit:** Swift, Objective-C, and Objective-C++ only below
+  `Kits/rokt/rokt/**/Sources`. Also shares the short-term goal.
+- **Other kits:** every other standalone kit's Swift, Objective-C, and
+  Objective-C++ below `Kits/**/Sources` (including `Kits/rokt-sdk-plus`).
+  Counted only toward the long-term goal.
 
 Current language composition is production SLOC reported by `cloc`, so blank
 and comment lines do not count. Objective-C++ (`.mm`) is grouped with
@@ -185,11 +197,16 @@ deleted.
 Removing an entry is the normal end of classification 4: when a boundary is
 redesigned and the glue is deleted, delete its line with it. A future major
 release that takes the public API itself to Swift would empty the manifest,
-which is the point at which the two goal rows converge.
+which converges the short-term goal to 100% for its own scope — Core SDK and
+the Rokt kit. The two rows themselves converge only once every other kit is
+also fully Swift, since the long-term row keeps summing those in regardless of
+the manifest.
 
-Standalone kits have no entries yet. Their `MPKit*` classes are resolved by
-name at runtime, so any kit-side conversion has to establish that contract
-before its implementation is listed here.
+The Rokt kit and every other standalone kit have no entries yet. Their
+`MPKit*` classes are resolved by name at runtime, so any kit-side conversion
+has to establish that contract before its implementation is listed here. An
+entry for a kit other than Rokt would only ever move the long-term figure,
+since the short-term goal never counts that kit regardless of the manifest.
 
 ### Workflow behavior and removal
 

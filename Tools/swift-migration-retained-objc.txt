@@ -5,11 +5,13 @@
 # supported contract, a runtime-identity-pinned type, or unavoidable boundary
 # glue.
 #
-# Tools/swift-migration-progress.sh reports two goals per area. The short-term
-# goal excludes these files, so its 100% is the end of this project. The
-# long-term goal keeps the full denominator; its 100% means the public API
-# itself becomes Swift, which is a breaking change for a future major release.
-# This manifest is the gap between the two.
+# Tools/swift-migration-progress.sh reports a short-term and a long-term goal.
+# The short-term goal (Core SDK and the Rokt kit) excludes these files, so its
+# 100% is the end of this project for that scope. The long-term goal keeps the
+# full denominator across every kit too; its 100% means the public API itself
+# becomes Swift, which is a breaking change for a future major release. This
+# manifest is the boundary between the two goals within Core SDK and the Rokt
+# kit.
 #
 # Listing a file here does not freeze its contents. A contract wrapper keeps
 # its @interface, class name, selectors, and nullability, but its logic still
