@@ -20,7 +20,7 @@ static const NSTimeInterval kMPRoktNegativeTimeout = 0.3;
 static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
 // Test helper class that simulates a kit with getSessionId and handleURLCallback methods
-@interface MPRoktTestKitInstance : NSObject
+@interface MPRoktTestKitInstance : NSObject <MPRoktKitDispatchTarget>
 @property (nonatomic, copy) NSString *sessionIdToReturn;
 @property (nonatomic, copy) NSString *lastDiagnosticCode;
 @property (nonatomic, assign) BOOL handleURLCallbackReturn;

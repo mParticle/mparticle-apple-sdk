@@ -1,29 +1,29 @@
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
-private final class HandleURLCallbackStub: NSObject {
-    var lastURL: URL?
-    var result = false
-
-    @objc func handleURLCallback(_ url: URL) -> Bool {
-        lastURL = url
-        return result
-    }
-}
-
-private final class SessionIdStub: NSObject {
+private final class RoktKitDispatchTargetStub: NSObject, MPRoktKitDispatchTarget {
     var sessionId: String?
+    var lastURL: URL?
+    var handleURLResult = false
+    var lastDiagnosticCode: String?
 
-    @objc func getSessionId() -> String? {
+    func getSessionId() -> String? {
         sessionId
     }
+
+    func handleURLCallback(_ url: URL) -> Bool {
+        lastURL = url
+        return handleURLResult
+    }
+
+    func logMParticleApiDiagnostic(_ code: String) {
+        lastDiagnosticCode = code
+    }
 }
 
-private final class DiagnosticStub: NSObject {
-    var lastCode: String?
-
-    @objc func logMParticleApiDiagnostic(_ code: String) {
-        lastCode = code
+private final class NonconformingRoktKitStub: NSObject {
+    @objc func handleURLCallback(_: URL) -> Bool {
+        true
     }
 }
 
@@ -165,28 +165,28 @@ final class MPRoktLogicTests: XCTestCase {
         XCTAssertFalse(nilUser.shouldIdentifyFromHash)
     }
 
-    func testInvokeHandleURLCallbackReadsBOOLReturn() {
-        let stub = HandleURLCallbackStub()
-        stub.result = true
-        let url = URL(string: "myapp://afterpay-redirect?token=abc")!
-        XCTAssertTrue(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: stub, url: url))
-        XCTAssertEqual(stub.lastURL, url)
+    func testKitDispatchUsesProtocolConformance() {
+        let target = RoktKitDispatchTargetStub()
+        target.sessionId = "session-1"
+        target.handleURLResult = true
+        let url = URL(string: "myapp://afterpay-redirect")!
 
-        stub.result = false
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: stub, url: URL(string: "myapp://unrelated")!))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: stub, url: nil))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: NSObject(), url: url))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: nil, url: url))
+        XCTAssertEqual(MPRoktLogicPRIVATE.sessionId(from: target), "session-1")
+        XCTAssertTrue(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: target, url: url))
+        XCTAssertEqual(target.lastURL, url)
+
+        MPRoktLogicPRIVATE.performLogMParticleApiDiagnostic(on: target, code: "SELECT_PLACEMENTS")
+        XCTAssertEqual(target.lastDiagnosticCode, "SELECT_PLACEMENTS")
     }
 
-    func testSessionIdAndDiagnosticSelectors() {
-        let session = SessionIdStub()
-        session.sessionId = "session-1"
-        XCTAssertEqual(MPRoktLogicPRIVATE.sessionId(from: session), "session-1")
-        XCTAssertNil(MPRoktLogicPRIVATE.sessionId(from: NSObject()))
+    func testKitDispatchSafelyRejectsNonconformingTargets() {
+        let target = NonconformingRoktKitStub()
+        let url = URL(string: "myapp://afterpay-redirect")!
 
-        let diagnostic = DiagnosticStub()
-        MPRoktLogicPRIVATE.performLogMParticleApiDiagnostic(on: diagnostic, code: "SELECT_PLACEMENTS")
-        XCTAssertEqual(diagnostic.lastCode, "SELECT_PLACEMENTS")
+        XCTAssertNil(MPRoktLogicPRIVATE.sessionId(from: target))
+        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: target, url: url))
+        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: nil, url: url))
+        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: target, url: nil))
+        MPRoktLogicPRIVATE.performLogMParticleApiDiagnostic(on: target, code: "SELECT_PLACEMENTS")
     }
 }

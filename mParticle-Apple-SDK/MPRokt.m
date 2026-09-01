@@ -402,8 +402,7 @@
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
         if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
             id kitInstance = kitRegister.wrapperInstance;
-            SEL sel = @selector(handleURLCallback:);
-            if (kitInstance && [kitInstance respondsToSelector:sel]) {
+            if (kitInstance && [kitInstance respondsToSelector:@selector(handleURLCallback:)]) {
                 BOOL handled = [MPRoktLogicPRIVATE invokeHandleURLCallbackOnKit:kitInstance url:url];
                 MPILogDebug(@"MPRokt handleURLCallback returning: %@", handled ? @"YES" : @"NO");
                 return handled;

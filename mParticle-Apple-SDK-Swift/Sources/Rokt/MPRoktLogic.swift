@@ -1,9 +1,8 @@
 import Foundation
-import ObjectiveC
 
 /// Foundation-only helpers behind `MPRokt`. The ObjC wrapper owns SDK types, kit
 /// forwarding, identity calls, and logging; this type remaps attributes, reads kit
-/// config, and invokes kit selectors that need a real `BOOL` return.
+/// config, and determines whether an identity update is needed.
 @objc(MPRoktLogicPRIVATE) public final class MPRoktLogicPRIVATE: NSObject {
     @objc public static let kitId: Int = 181
     @objc public static let kitConfigurationIdKey = "id"
@@ -131,38 +130,31 @@ import ObjectiveC
         return decision
     }
 
-    // MARK: - Kit invocation
-
-    /// `performSelector:` cannot reliably return `BOOL`, and `NSInvocation` is
-    /// unavailable in Swift. Kits implement `handleURLCallback:` without a
-    /// Swift-importable protocol, so this calls the IMP directly and reads `ObjCBool`.
-    @objc(invokeHandleURLCallbackOnKit:url:)
-    public static func invokeHandleURLCallback(on kitInstance: Any?, url: URL?) -> Bool {
-        guard let url, let object = kitInstance as? NSObject else { return false }
-        let selector = NSSelectorFromString("handleURLCallback:")
-        guard object.responds(to: selector),
-              let method = class_getInstanceMethod(type(of: object), selector) else {
-            return false
-        }
-        typealias HandleURLIMP = @convention(c) (AnyObject, Selector, NSURL) -> ObjCBool
-        let handleURL = unsafeBitCast(method_getImplementation(method), to: HandleURLIMP.self)
-        return handleURL(object, selector, url as NSURL).boolValue
-    }
+    // MARK: - Kit dispatch
 
     @objc(sessionIdFromKit:)
     public static func sessionId(from kitInstance: Any?) -> String? {
-        guard let object = kitInstance as? NSObject else { return nil }
-        let selector = NSSelectorFromString("getSessionId")
-        guard object.responds(to: selector) else { return nil }
-        return object.perform(selector)?.takeUnretainedValue() as? String
+        guard let dispatchTarget = kitInstance as? MPRoktKitDispatchTarget else {
+            return nil
+        }
+        return dispatchTarget.getSessionId?()
+    }
+
+    @objc(invokeHandleURLCallbackOnKit:url:)
+    public static func invokeHandleURLCallback(on kitInstance: Any?, url: URL?) -> Bool {
+        guard let dispatchTarget = kitInstance as? MPRoktKitDispatchTarget,
+              let url else {
+            return false
+        }
+        return dispatchTarget.handleURLCallback?(url) ?? false
     }
 
     @objc(performLogMParticleApiDiagnosticOnKit:code:)
     public static func performLogMParticleApiDiagnostic(on kitInstance: Any?, code: String) {
-        guard let object = kitInstance as? NSObject else { return }
-        let selector = NSSelectorFromString("logMParticleApiDiagnostic:")
-        guard object.responds(to: selector) else { return }
-        _ = object.perform(selector, with: code)
+        guard let dispatchTarget = kitInstance as? MPRoktKitDispatchTarget else {
+            return
+        }
+        dispatchTarget.logMParticleApiDiagnostic?(code)
     }
 
     private static func integerValue(_ value: Any?) -> Int {
