@@ -3,7 +3,7 @@ import XCTest
 
 final class MPBracketTests: XCTestCase {
     func testDefaultInitializer() {
-        let bracket = MPBracketPRIVATE()
+        let bracket = MPBracket()
         XCTAssertEqual(bracket.mpId, 0)
         XCTAssertEqual(bracket.low, 0)
         XCTAssertEqual(bracket.high, 100)
@@ -11,7 +11,7 @@ final class MPBracketTests: XCTestCase {
     }
 
     func testShouldForwardForMatchingBucket() {
-        let bracket = MPBracketPRIVATE(mpId: Int64.max - 3_141_592, low: 95, high: 97)
+        let bracket = MPBracket(mpId: Int64.max - 3_141_592, low: 95, high: 97)
         XCTAssertTrue(bracket.shouldForward())
 
         bracket.high = 96
@@ -19,7 +19,7 @@ final class MPBracketTests: XCTestCase {
     }
 
     func testShouldForwardNegativeIdentifier() {
-        let bracket = MPBracketPRIVATE(mpId: -(Int64.max - 271_828_182), low: 40, high: 41)
+        let bracket = MPBracket(mpId: -(Int64.max - 271_828_182), low: 40, high: 41)
         XCTAssertTrue(bracket.shouldForward())
 
         bracket.low = 41
@@ -27,7 +27,7 @@ final class MPBracketTests: XCTestCase {
     }
 
     func testShouldNotForwardInvalidBracket() {
-        let bracket = MPBracketPRIVATE(mpId: 0, low: 0, high: 0)
+        let bracket = MPBracket(mpId: 0, low: 0, high: 0)
         XCTAssertFalse(bracket.shouldForward())
 
         bracket.mpId = Int64.max - 3_141_592
@@ -35,8 +35,8 @@ final class MPBracketTests: XCTestCase {
     }
 
     func testEquality() {
-        let bracket = MPBracketPRIVATE(mpId: Int64.max - 3_141_592, low: 95, high: 97)
-        let other = MPBracketPRIVATE(mpId: -(Int64.max - 271_828_182), low: 40, high: 41)
+        let bracket = MPBracket(mpId: Int64.max - 3_141_592, low: 95, high: 97)
+        let other = MPBracket(mpId: -(Int64.max - 271_828_182), low: 40, high: 41)
         XCTAssertFalse(bracket.isEqual(to: other))
         XCTAssertFalse(bracket.isEqual(to: nil))
 
@@ -49,7 +49,7 @@ final class MPBracketTests: XCTestCase {
     }
 
     func testDescription() {
-        let bracket = MPBracketPRIVATE(mpId: 1, low: 2, high: 3)
+        let bracket = MPBracket(mpId: 1, low: 2, high: 3)
         XCTAssertEqual(bracket.description, "<MPBracket: mpId=1, low=2, high=3>")
     }
 }

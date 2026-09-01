@@ -241,7 +241,6 @@ IFACE|@interface MPIdentityApiResult : NSObject
 IFACE|@interface MPIdentityChange : NSObject
 IFACE|@interface MPIdentityHTTPErrorResponse : NSObject
 IFACE|@interface MPKitAPI : NSObject
-IFACE|@interface MPKitContainer_PRIVATE : NSObject<MPKitContainerProtocol>
 IFACE|@interface MPKitExecStatus : NSObject
 IFACE|@interface MPKitRegister : NSObject <MPExtensionKitProtocol>
 IFACE|@interface MPLocation : NSObject
@@ -272,7 +271,6 @@ METHOD|+ (BOOL)isAppExtension;
 METHOD|+ (BOOL)isOlderThanConfigMaxAgeSeconds;
 METHOD|+ (BOOL)isUserIdentity:(MPIdentity)identity;
 METHOD|+ (BOOL)registerExtension:(id<MPExtensionProtocol>)extension;
-METHOD|+ (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 METHOD|+ (BOOL)runningInBackground;
 METHOD|+ (MPAliasRequest *)requestWithSourceMPID:(NSNumber *)sourceMPID destinationMPID:(NSNumber *)destinationMPID startTime:(NSDate *)startTime endTime:(NSDate *)endTime;
 METHOD|+ (MPAliasRequest *)requestWithSourceUser:(MParticleUser *)sourceUser destinationUser:(MParticleUser *)destinationUser;
@@ -297,7 +295,6 @@ METHOD|+ (nonnull instancetype)currentUploadSettingsWithStateMachine:(nonnull id
 METHOD|+ (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
 METHOD|+ (nullable MPConsentState *)deviceConsentState;
 METHOD|+ (nullable MPConsentState *)effectiveConsentStateForMpid:(nullable NSNumber *)mpid;
-METHOD|+ (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
 METHOD|+ (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
 METHOD|+ (nullable NSString *)provisioningProfileString;
 METHOD|+ (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
@@ -314,12 +311,9 @@ METHOD|- (BOOL)closeDatabase;
 METHOD|- (BOOL)continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^_Nonnull)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler;
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url NS_SWIFT_NAME(handleURLCallback(with:));
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
-METHOD|- (BOOL)hasKitBatchingKits;
-METHOD|- (BOOL)hasKitBatchingKits;
 METHOD|- (BOOL)isKitActive:(NSNumber *)integrationId;
 METHOD|- (BOOL)openDatabase;
 METHOD|- (BOOL)saveUploads:(nonnull NSArray<MPUpload *> *)uploads deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
-METHOD|- (BOOL)shouldDelayUpload: (NSTimeInterval) maxWaitTime;
 METHOD|- (FilteredMParticleUser *_Nonnull)getCurrentUserWithKit:(id<MPKitProtocol> _Nonnull)kit;
 METHOD|- (MPBackendController_PRIVATE*)backendController;
 METHOD|- (MPCommerceEventAction)actionWithName:(NSString *)actionName;
@@ -369,6 +363,8 @@ METHOD|- (instancetype)initWithKitInstance:(id<MPKitProtocol>)kitInstance;
 METHOD|- (nonnull MPKitExecStatus *)beginLocationTracking:(MPLocationAccuracy)accuracy minDistance:(MPLocationDistance)distanceFilter;
 METHOD|- (nonnull MPKitExecStatus *)beginSession;
 METHOD|- (nonnull MPKitExecStatus *)beginTimedEvent:(nonnull MPEvent *)event;
+METHOD|- (nonnull MPKitExecStatus *)clearSession;
+METHOD|- (nonnull MPKitExecStatus *)close;
 METHOD|- (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
 METHOD|- (nonnull MPKitExecStatus *)didBecomeActive;
 METHOD|- (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration;
@@ -415,6 +411,7 @@ METHOD|- (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken
 METHOD|- (nonnull MPKitExecStatus *)setKitAttribute:(nonnull NSString *)key value:(nullable id)value;
 METHOD|- (nonnull MPKitExecStatus *)setLocation:(nonnull MPLocation *)location;
 METHOD|- (nonnull MPKitExecStatus *)setOptOut:(BOOL)optOut;
+METHOD|- (nonnull MPKitExecStatus *)setSessionId:(nonnull NSString *)sessionId;
 METHOD|- (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key value:(nonnull id)value;
 METHOD|- (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key values:(nonnull NSArray *)values;
 METHOD|- (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
@@ -463,9 +460,6 @@ METHOD|- (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttribut
 METHOD|- (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSession:(nonnull MPSession *)session;
 METHOD|- (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 METHOD|- (nullable NSArray<MPUpload *> *)fetchUploads;
-METHOD|- (nullable NSArray<NSNumber *> *)configuredKitsRegistry;
-METHOD|- (nullable NSArray<NSNumber *> *)supportedKits;
-METHOD|- (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry;
 METHOD|- (nullable NSData *)deviceToken;
 METHOD|- (nullable NSData *)deviceToken;
 METHOD|- (nullable NSDictionary *)breadcrumbDictionaryRepresentation;
@@ -475,7 +469,6 @@ METHOD|- (nullable NSDictionary*)fetchIntegrationAttributesForId:(NSNumber * _No
 METHOD|- (nullable NSDictionary*)fetchIntegrationAttributesForId:(NSNumber *_Nonnull)integrationId;
 METHOD|- (nullable NSDictionary<NSNumber *, MPAttributionResult *> *)attributionInfo;
 METHOD|- (nullable NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsentState;
-METHOD|- (nullable NSDictionary<NSString *, NSString *> *)integrationAttributesForKit:(nonnull NSNumber *)integrationId;
 METHOD|- (nullable NSMutableArray<MPSession *> *)fetchSessions;
 METHOD|- (nullable NSMutableDictionary *)fetchMessagesForUploading;
 METHOD|- (nullable NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value;
@@ -526,8 +519,6 @@ METHOD|- (void)close;
 METHOD|- (void)configureAliasMaxWindow:(nullable NSNumber *)aliasMaxWindow;
 METHOD|- (void)configureCustomModules:(nullable NSArray<NSDictionary *> *)customModuleSettings;
 METHOD|- (void)configureDataBlocking:(nullable NSDictionary *)blockSettings;
-METHOD|- (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
-METHOD|- (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
 METHOD|- (void)configureRampPercentage:(nullable NSNumber *)rampPercentage;
 METHOD|- (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;
 METHOD|- (void)createTempSession;
@@ -557,22 +548,8 @@ METHOD|- (void)endSessionWithIsManual:(BOOL)isManual;
 METHOD|- (void)endTimedEvent:(MPEvent *)event;
 METHOD|- (void)endTiming;
 METHOD|- (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent;
-METHOD|- (void)flushSerializedKits;
-METHOD|- (void)flushSerializedKits;
-METHOD|- (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent;
-METHOD|- (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent;
-METHOD|- (void)forwardIdentitySDKCall:(nonnull SEL)selector kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
 METHOD|- (void)forwardLogInstall;
 METHOD|- (void)forwardLogUpdate;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector batch:(nonnull NSDictionary *)batch kitHandler:(void (^_Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nonnull batch, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector batch:(nonnull NSDictionary *)batch kitHandler:(void (^_Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nonnull batch, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector consentState:(nullable MPConsentState *)state kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPBaseEvent *)event parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPBaseEvent *)event parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector userAttributeKey:(nonnull NSString *)key value:(nullable id)value kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector userAttributes:(nonnull NSDictionary *)userAttributes kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nullable forwardAttributes, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector userAttributes:(nonnull NSDictionary *)userAttributes kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nullable forwardAttributes, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
-METHOD|- (void)forwardSDKCall:(nonnull SEL)selector userIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
 METHOD|- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSError * _Nullable error))completionHandler;
 METHOD|- (void)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent;
 METHOD|- (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo;
@@ -586,7 +563,6 @@ METHOD|- (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(null
 METHOD|- (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 METHOD|- (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion;
 METHOD|- (void)incrementForwardCount;
-METHOD|- (void)initializeKits;
 METHOD|- (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName;
 METHOD|- (void)initializeWKWebView:(WKWebView *)webView;
 METHOD|- (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;
@@ -646,12 +622,8 @@ METHOD|- (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSetting
 METHOD|- (void)purchaseFinalized:(NSString *_Nonnull)identifier catalogItemId:(NSString *_Nonnull)catalogItemId success:(BOOL)success;
 METHOD|- (void)purgeMemory;
 METHOD|- (void)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension;
-METHOD|- (void)removeAllSideloadedKits;
-METHOD|- (void)removeAllSideloadedKits;
 METHOD|- (void)removeCCPAConsentState;
 METHOD|- (void)removeGDPRConsentStateWithPurpose:(NSString *)purpose;
-METHOD|- (void)removeKitsFromRegistryInvalidForWorkspaceSwitch;
-METHOD|- (void)removeKitsFromRegistryInvalidForWorkspaceSwitch;
 METHOD|- (void)removeProduct:(nonnull MPProduct *)product;
 METHOD|- (void)removeProducts:(NSArray<MPProduct *> *)products;
 METHOD|- (void)removeUserAttribute:(NSString *)key;
@@ -744,8 +716,6 @@ PROP|@property (nonatomic) BOOL enableIdentityCaching;
 PROP|@property (nonatomic) BOOL eventsOnly;
 PROP|@property (nonatomic) BOOL eventsOnly;
 PROP|@property (nonatomic) BOOL isSuccessful;
-PROP|@property (nonatomic) BOOL kitsInitialized;
-PROP|@property (nonatomic) BOOL kitsInitialized;
 PROP|@property (nonatomic) BOOL nonInteractive;
 PROP|@property (nonatomic) BOOL optOut;
 PROP|@property (nonatomic) BOOL optOut;
@@ -786,7 +756,6 @@ PROP|@property (nonatomic, assign) BOOL consented;
 PROP|@property (nonatomic, assign) BOOL consented;
 PROP|@property (nonatomic, copy) NSDictionary *_Nullable (^onCreateBatch)(NSDictionary * batch);
 PROP|@property (nonatomic, copy) NSString *errorResponse;
-PROP|@property (nonatomic, copy) void (^ _Nonnull attributionCompletionHandler)(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error);
 PROP|@property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 PROP|@property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 PROP|@property (nonatomic, copy, nonnull) NSString *apiKey;
@@ -870,14 +839,10 @@ PROP|@property (nonatomic, strong) NSString *requestID;
 PROP|@property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 PROP|@property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 PROP|@property (nonatomic, strong, nonnull) MPNotificationController_PRIVATE *notificationController;
-PROP|@property (nonatomic, strong, nonnull) NSArray<MPSideloadedKit*> *sideloadedKits;
-PROP|@property (nonatomic, strong, nonnull) NSArray<NSDictionary *> *originalConfig;
 PROP|@property (nonatomic, strong, nonnull) NSDate *startTime;
 PROP|@property (nonatomic, strong, nonnull) NSDictionary *configuration;
 PROP|@property (nonatomic, strong, nonnull) NSDictionary *searchAdsInfo;
 PROP|@property (nonatomic, strong, nonnull) NSMutableDictionary *dataDictionary;
-PROP|@property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPAttributionResult *> *attributionInfo;
-PROP|@property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPAttributionResult *> *attributionInfo;
 PROP|@property (nonatomic, strong, nonnull) NSNumber *aliasMaxWindow;
 PROP|@property (nonatomic, strong, nonnull) NSNumber *mpid;
 PROP|@property (nonatomic, strong, nonnull) NSNumber *quantity;
@@ -957,7 +922,6 @@ PROP|@property (nonatomic, strong, nullable, readonly) NSString *email;
 PROP|@property (nonatomic, strong, nullable, readonly) id providerKitInstance;
 PROP|@property (nonatomic, strong, readonly) MPEvent *event;
 PROP|@property (nonatomic, strong, readonly) MPIdentityApi * identity;
-PROP|@property (nonatomic, strong, readonly) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 PROP|@property (nonatomic, strong, readonly) MPProduct *product;
 PROP|@property (nonatomic, strong, readonly) MPRokt * rokt;
 PROP|@property (nonatomic, strong, readonly) NSDate *endTime;
@@ -994,7 +958,6 @@ PROP|@property (nonatomic, strong, readwrite) id<MPKitProtocol> kitInstance;
 PROP|@property (nonatomic, strong, readwrite, nullable) MPDataPlanOptions *dataPlanOptions;
 PROP|@property (nonatomic, strong, readwrite, nullable) MPNetworkOptions *networkOptions;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSArray<MPSideloadedKit*> *sideloadedKits;
-PROP|@property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber *> *disabledKits;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber *> *disabledKits;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSDictionary *dataPlan;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSNumber *attStatus;
@@ -1034,7 +997,6 @@ PROTO|@protocol MPConnectorFactoryProtocol;
 PROTO|@protocol MPConnectorProtocol;
 PROTO|@protocol MPExtensionKitProtocol <MPExtensionProtocol>
 PROTO|@protocol MPExtensionProtocol <NSObject>
-PROTO|@protocol MPKitContainerProtocol
 PROTO|@protocol MPKitProtocol <NSObject>
 PROTO|@protocol MPKitProtocol;
 PROTO|@protocol MPNotificationControllerProtocol

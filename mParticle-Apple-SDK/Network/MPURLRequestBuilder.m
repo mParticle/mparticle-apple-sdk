@@ -1,7 +1,7 @@
 #import "MPURLRequestBuilder.h"
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
-#import "MPKitContainer.h"
+#import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPExtensionProtocol.h"
 #import "MPILogger.h"
 #import "MPURL.h"
@@ -14,6 +14,7 @@
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MParticleWebViewPRIVATE *webView;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
     

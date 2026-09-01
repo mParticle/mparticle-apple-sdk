@@ -1,6 +1,6 @@
 import Foundation
 
-@objc public final class MPBracketPRIVATE: NSObject {
+@objc public final class MPBracket: NSObject {
     @objc public var mpId: Int64
     @objc public var low: Int16
     @objc public var high: Int16
@@ -31,7 +31,7 @@ import Foundation
     }
 
     @objc(isEqualToBracket:)
-    public func isEqual(to bracket: MPBracketPRIVATE?) -> Bool {
+    public func isEqual(to bracket: MPBracket?) -> Bool {
         guard let bracket else {
             return false
         }
@@ -42,7 +42,7 @@ import Foundation
     }
 
     override public func isEqual(_ object: Any?) -> Bool {
-        guard let bracket = object as? MPBracketPRIVATE else {
+        guard let bracket = object as? MPBracket else {
             return false
         }
 

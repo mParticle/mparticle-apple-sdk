@@ -28,30 +28,30 @@ public class MPLog: NSObject {
         return MPILogLevelSwift(rawValue: rawValue) ?? .none
     }
 
-    private func log(loggerLevel: MPILogLevelSwift, format: String, arguments: any CVarArg...) {
+    private func log(loggerLevel: MPILogLevelSwift, message: String) {
         if logLevel.rawValue >= loggerLevel.rawValue && loggerLevel != .none {
-            let msg = String.localizedStringWithFormat("mParticle -> \(format)", arguments)
+            let msg = "mParticle -> \(message)"
             if let customLogger = customLogger {
                 customLogger(msg)
             } else {
-                NSLog(msg)
+                NSLog("%@", msg)
             }
         }
     }
 
     public func error(_ message: String) {
-        log(loggerLevel: .error, format: message)
+        log(loggerLevel: .error, message: message)
     }
 
     public func warning(_ message: String) {
-        log(loggerLevel: .warning, format: message)
+        log(loggerLevel: .warning, message: message)
     }
 
     public func debug(_ message: String) {
-        log(loggerLevel: .debug, format: message)
+        log(loggerLevel: .debug, message: message)
     }
 
     public func verbose(_ message: String) {
-        log(loggerLevel: .verbose, format: message)
+        log(loggerLevel: .verbose, message: message)
     }
 }

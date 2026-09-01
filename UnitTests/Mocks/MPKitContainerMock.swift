@@ -2,7 +2,8 @@ import XCTest
 import mParticle_Apple_SDK
 internal import mParticle_Apple_SDK_Swift
 
-class MPKitContainerMock: MPKitContainerProtocol {
+@objcMembers
+class MPKitContainerMock: NSObject {
     var attributionInfo: NSMutableDictionary = .init()
 
     var kitsInitialized: Bool = false

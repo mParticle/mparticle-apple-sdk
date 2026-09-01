@@ -6,9 +6,6 @@
 // Kit version
 static NSString * const kMPRoktKitVersion = @"9.4.1";
 
-// Constants for kit configuration keys
-static NSString * const kMPKitConfigurationIdKey = @"id";
-static NSString * const kMPRemoteConfigKitConfigurationKey = @"as";
 static NSString * const kMPAttributeMappingSourceKey = @"map";
 static NSString * const kMPAttributeMappingDestinationKey = @"value";
 
@@ -344,11 +341,10 @@ static __weak MPKitRokt *roktKit = nil;
 + (NSDictionary<NSString *, NSString *> *)mapAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     
-    // Get the kit configuration
-    NSDictionary *roktKitConfig = [MPKitRokt getKitConfig];
+    NSDictionary *configuration = roktKit.configuration;
     
     // Return original attributes if no Rokt Kit configuration found
-    if (!roktKitConfig) {
+    if (!configuration) {
         return attributes;
     }
     
@@ -357,7 +353,7 @@ static __weak MPKitRokt *roktKit = nil;
     NSData *dataAttributeMap;
     // Rokt Kit is available though there may not be an attribute map
     attributeMap = @[];
-    id configJSONString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPPlacementAttributesMapping];
+    id configJSONString = configuration[kMPPlacementAttributesMapping];
     if (configJSONString != nil && configJSONString != [NSNull null]) {
         strAttributeMap = [configJSONString stringByRemovingPercentEncoding];
         dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
@@ -514,27 +510,12 @@ static __weak MPKitRokt *roktKit = nil;
 
 #pragma mark - Private Helper Methods
 
-/// Retrieves the Rokt Kit configuration from the kit container.
-/// @return The Rokt Kit configuration dictionary, or nil if Rokt Kit is not configured.
-+ (NSDictionary * _Nullable)getKitConfig {
-    NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
-    for (NSDictionary *kitConfig in kitConfigs) {
-        if ([kitConfig[kMPKitConfigurationIdKey] integerValue] == kMPRoktKitCode) {
-            return kitConfig;
-        }
-    }
-   [MPKitRokt MPLog:@"Rokt Kit is not configured in kit container"];
-    return nil;
-}
-
 /// Retrieves the configured identity type to use for hashed email from the Rokt Kit configuration.
 /// The hashed email identity type is determined by dashboard settings and may vary (e.g., CustomerId, Other, etc.).
 /// @return The NSNumber representing the MPIdentity type for hashed email, or nil if not configured.
 + (NSNumber * _Nullable)getRoktHashedEmailUserIdentityType {
-    NSDictionary *roktKitConfig = [MPKitRokt getKitConfig];
-    
     // Get the string representing which identity to use and convert it to the key (NSNumber)
-    NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPHashedEmailUserIdentityType];
+    NSString *hashedIdentityTypeString = roktKit.configuration[kMPHashedEmailUserIdentityType];
     NSNumber *hashedIdentityTypeNumber = [MPKitRokt identityTypeForString:hashedIdentityTypeString.lowercaseString];
     
     return hashedIdentityTypeNumber;

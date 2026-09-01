@@ -11,7 +11,7 @@
 #import "MPIdentityDTO.h"
 #import "MPEnums.h"
 #import "MPILogger.h"
-#import "MPKitContainer.h"
+#import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
@@ -27,6 +27,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 
@@ -237,12 +238,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         });
     }
     
-    NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer_PRIVATE.originalConfig copy];
-    if (kitConfig) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfig];
-        });
-    }
+    [[MParticle sharedInstance].kitContainer_PRIVATE reconfigureKits];
 }
 
 - (void)forwardCallToKits:(MPIdentityApiRequest *)request identityRequestType:(MPIdentityRequestType)identityRequestType user:(MParticleUser *)user{

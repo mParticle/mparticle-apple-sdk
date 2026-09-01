@@ -4,7 +4,7 @@
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
 #import "MPPersistenceController.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"

@@ -11,10 +11,12 @@
 @import mParticle_Apple_SDK_Swift;
 #import "MPILogger.h"
 #import "MPExtensionProtocol.h"
+#import "Kits/MPKitContainer+MParticlePrivate.h"
 
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 
@@ -439,15 +441,13 @@
 /// Retrieves the Rokt Kit configuration from the kit container.
 /// @return The Rokt Kit configuration dictionary, or nil if Rokt Kit is not configured.
 - (NSDictionary * _Nullable)getRoktKitConfiguration {
-    NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
-    MPILogDebug(@"MPRokt getRoktKitConfiguration - examining %lu kit config(s)", (unsigned long)kitConfigs.count);
-    NSDictionary *roktKitConfig = [MPRoktLogicPRIVATE kitConfigurationFromOriginalConfig:kitConfigs];
-    if (roktKitConfig) {
-        return roktKitConfig;
+    NSInteger roktKitId = [MPRoktLogicPRIVATE kitId];
+    NSDictionary *kitConfiguration = [[MParticle sharedInstance].kitContainer_PRIVATE
+        launchConfigurationForKitCode:@(roktKitId)];
+    if (!kitConfiguration) {
+        MPILogWarning(@"MPRokt kit (ID %ld) not found in configurations", (long)roktKitId);
     }
-    MPILogWarning(@"MPRokt kit (ID %ld) not found in configurations. Available kit IDs: %@",
-                  (long)[MPRoktLogicPRIVATE kitId], [MPRoktLogicPRIVATE kitIdsFromOriginalConfig:kitConfigs]);
-    return nil;
+    return kitConfiguration;
 }
 
 /// Retrieves the attribute mapping configuration for the Rokt Kit from the mParticle dashboard settings.

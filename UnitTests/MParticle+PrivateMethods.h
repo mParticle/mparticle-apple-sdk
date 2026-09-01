@@ -28,7 +28,7 @@
 - (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message;
 - (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus;
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent;
-- (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
+- (void)logLTVIncreaseCallback:(MPEvent *)event increaseAmount:(double)increaseAmount execStatus:(MPExecStatus)execStatus;
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus;
 + (void)setSharedInstance:(MParticle *)instance;
 - (void)executeKitsInitializedBlocks;
@@ -42,7 +42,7 @@
 - (void)sessionDidEnd:(nonnull MPSession *)session;
 - (void)setExecutor: (id<ExecutorProtocol>)newExecutor;
 - (void)setBackendController: (id<MPBackendControllerProtocol>)backendController;
-- (void)setKitContainer:(id<MPKitContainerProtocol>) kitContainer;
+- (void)setKitContainer:(id)kitContainer;
 - (void)forwardLogInstall;
 - (void)forwardLogUpdate;
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval;

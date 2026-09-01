@@ -1,5 +1,4 @@
 #import <XCTest/XCTest.h>
-#import "MPForwardQueueItem.h"
 #import "MPCommerceEvent.h"
 #import "MPProduct.h"
 #import "MPKitProtocol.h"

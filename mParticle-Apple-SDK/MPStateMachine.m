@@ -4,7 +4,7 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
-#import "MPKitContainer.h"
+#import "Kits/MPKitContainer+MParticlePrivate.h"
 #import <UIKit/UIKit.h>
 #import "MPDataPlanFilter.h"
 #import "MPUserDefaultsConnector.h"
