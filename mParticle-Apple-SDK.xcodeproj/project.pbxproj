@@ -580,6 +580,7 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Kits/MPKitFilterEngineTests.swift,
 				Test/Kits/MPKitSelectorInvokerTests.swift,
 				Test/Network/MPDataPlanQueryTests.swift,
 				Test/Network/MPEndpointHostResolverTests.swift,
@@ -637,6 +638,7 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Kits/MPKitFilterEngineTests.swift,
 				Test/Kits/MPKitSelectorInvokerTests.swift,
 				Test/Network/MPDataPlanQueryTests.swift,
 				Test/Network/MPEndpointHostResolverTests.swift,

@@ -76,7 +76,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 @property (nonatomic, strong) NSDate *initializedTime;
 @property (nonatomic, strong) MPIHasher *hasher;
 @property (nonatomic, strong) MPKitValueTransformer *valueTransformer;
-@property (nonatomic, strong) MPAttributeValueFilter *attributeValueFilter;
+@property (nonatomic, strong) MPKitFilterEngine *filterEngine;
 @property (nonatomic, strong) MPKitSelectorInvoker *selectorInvoker;
 @end
 
@@ -106,7 +106,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         logger.customLogger = mparticle.customLogger;
         _hasher = [[MPIHasher alloc] initWithLogger:logger];
         _valueTransformer = [[MPKitValueTransformer alloc] initWithLogger:logger];
-        _attributeValueFilter = [[MPAttributeValueFilter alloc] initWithHasher:_hasher];
+        _filterEngine = [[MPKitFilterEngine alloc] initWithHasher:_hasher];
         _selectorInvoker = [[MPKitSelectorInvoker alloc] initWithLogger:logger];
         _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
             if (attributionResult && attributionResult.kitCode) {
@@ -308,7 +308,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-        BOOL shouldStartKit = !(_disabledKits != nil && [_disabledKits containsObject:kitConfiguration.integrationId]);
+        BOOL shouldStartKit = ![self.filterEngine isKitDisabledWithIsDisabledKit:[_disabledKits containsObject:kitConfiguration.integrationId]
+                                                                consentFilter:nil
+                                                                      consent:nil];
         if (shouldStartKit) {
             self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
             [self startKit:kitConfiguration.integrationId configuration:kitConfiguration];
@@ -340,28 +342,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             MPILogVerbose(@"%@", listOfKits);
         }
     }
-}
-
-- (NSDictionary *)methodMessageTypeMapping {
-    NSString *messageTypeEvent = kMPMessageTypeStringEvent;
-    
-    NSDictionary *methodMessageTypeDictionary = @{@"logBaseEvent:":messageTypeEvent,
-                                                  @"logEvent:":messageTypeEvent,
-                                                  @"logScreen:":kMPMessageTypeStringScreenView,
-                                                  @"logScreenEvent:":kMPMessageTypeStringScreenView,
-                                                  @"beginSession":kMPMessageTypeStringSessionStart,
-                                                  @"endSession":kMPMessageTypeStringSessionEnd,
-                                                  @"logTransaction:":messageTypeEvent,
-                                                  @"logLTVIncrease:eventName:eventInfo:":messageTypeEvent,
-                                                  @"leaveBreadcrumb:":kMPMessageTypeStringBreadcrumb,
-                                                  @"logError:exception:topmostContext:eventInfo:":kMPMessageTypeStringCrashReport,
-                                                  @"logNetworkPerformanceMeasurement:":kMPMessageTypeStringNetworkPerformance,
-                                                  @"profileChange:":kMPMessageTypeStringProfile,
-                                                  @"setOptOut:":kMPMessageTypeStringOptOut,
-                                                  @"logCommerceEvent:":kMPMessageTypeStringCommerceEvent
-                                                  };
-    
-    return methodMessageTypeDictionary;
 }
 
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)integrationId {
@@ -406,88 +386,76 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
 }
 
-- (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
-    return [self.attributeValueFilter shouldIncludeEventWithAttributes:attributes
-                                                      filteringActive:configuration.attributeValueFilteringIsActive
-                                                      hashedAttribute:configuration.attributeValueFilteringHashedAttribute
-                                                          hashedValue:configuration.attributeValueFilteringHashedValue
-                                                 shouldIncludeMatches:configuration.attributeValueFilteringShouldIncludeMatches];
+- (MPKitFilterConfigurationSnapshot *)filterSnapshotForConfiguration:(MPKitConfiguration *)configuration {
+    if (!configuration) {
+        return nil;
+    }
+
+    return [[MPKitFilterConfigurationSnapshot alloc]
+        initWithFilters:configuration.filters
+        attributeValueFilteringIsActive:configuration.attributeValueFilteringIsActive
+        attributeValueFilteringHashedAttribute:configuration.attributeValueFilteringHashedAttribute
+        attributeValueFilteringHashedValue:configuration.attributeValueFilteringHashedValue
+        attributeValueFilteringShouldIncludeMatches:configuration.attributeValueFilteringShouldIncludeMatches];
+}
+
+- (MPKitConsentSnapshot *)consentSnapshotForState:(MPConsentState *)state {
+    if (!state) {
+        return nil;
+    }
+
+    NSMutableDictionary<NSString *, NSNumber *> *gdprConsents;
+    if (state.gdprConsentState) {
+        gdprConsents = [[NSMutableDictionary alloc] initWithCapacity:state.gdprConsentState.count];
+        [state.gdprConsentState enumerateKeysAndObjectsUsingBlock:^(NSString *purpose, MPGDPRConsent *consent, BOOL *stop) {
+            gdprConsents[purpose] = @(consent.consented);
+        }];
+    }
+
+    NSNumber *ccpaConsent = state.ccpaConsentState ? @(state.ccpaConsentState.consented) : nil;
+    return [[MPKitConsentSnapshot alloc] initWithGdprConsents:gdprConsents ccpaConsent:ccpaConsent];
+}
+
+- (MPKitConsentFilterSnapshot *)consentFilterSnapshotForFilter:(MPConsentKitFilter *)filter {
+    if (!filter) {
+        return nil;
+    }
+
+    NSMutableArray<NSNumber *> *hashes = [[NSMutableArray alloc] initWithCapacity:filter.filterItems.count];
+    NSMutableArray<NSNumber *> *consentedValues = [[NSMutableArray alloc] initWithCapacity:filter.filterItems.count];
+    for (MPConsentKitFilterItem *item in filter.filterItems) {
+        [hashes addObject:@(item.javascriptHash)];
+        [consentedValues addObject:@(item.consented)];
+    }
+
+    return [[MPKitConsentFilterSnapshot alloc] initWithJavascriptHashes:hashes
+                                                       consentedValues:consentedValues
+                                                  shouldIncludeOnMatch:filter.shouldIncludeOnMatch];
 }
 
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
-    if (!bracketConfiguration) {
-        return NO;
-    }
-    NSString *const MPKitBracketLowKey = @"lo";
-    NSString *const MPKitBracketHighKey = @"hi";
-    
-    long mpId = [[MPPersistenceController_PRIVATE mpId] longValue];
-    short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
-    short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
-    MPBracket *localBracket = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
-    return ![localBracket shouldForward];
+    int64_t mpId = [[MPPersistenceController_PRIVATE mpId] longLongValue];
+    int16_t low = (int16_t)[bracketConfiguration[@"lo"] integerValue];
+    int16_t high = (int16_t)[bracketConfiguration[@"hi"] integerValue];
+    return [self.filterEngine isDisabledByBracketWithMpId:mpId
+                                                      low:low
+                                                     high:high
+                                               hasBracket:bracketConfiguration != nil];
 }
 
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter {
-    BOOL isMatch = NO;
-
-    if (kitFilter) {
-        NSArray<MPConsentKitFilterItem *> *itemsArray = kitFilter.filterItems;
-        for (MPConsentKitFilterItem *item in itemsArray) {
-            int hash = item.javascriptHash;
-            
-            NSString *hashString = @(hash).stringValue;
-            BOOL consented = item.consented;
-            
-            MPConsentState *state = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:[MParticle sharedInstance].identity.currentUser.userId];
-            
-            if (state != nil) {
-                NSDictionary<NSString *, MPGDPRConsent *> *gdprConsentState = [state.gdprConsentState copy];
-                for (NSString *purpose in gdprConsentState) {
-                    
-                    MPGDPRConsent *gdprConsent = gdprConsentState[purpose];
-                    BOOL userConsented = gdprConsent.consented;
-                    
-                    NSString *purposeHash = [_hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
-                    
-                    if (consented == userConsented && [purposeHash isEqual:hashString]) {
-                        isMatch = YES;
-                        break;
-                    }
-                }
-                
-                MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
-                
-                if (ccpaConsentState != nil) {
-                    NSString *purposeHash = [_hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
-                    
-                    if (consented == ccpaConsentState.consented && [purposeHash isEqual:hashString]) {
-                        isMatch = YES;
-                        break;
-                    }
-                }
-            }
-            
-            
-        }
-    }
-    
-    BOOL shouldInclude;
-    if (kitFilter.shouldIncludeOnMatch) {
-        shouldInclude = isMatch;
-    } else {
-        shouldInclude = !isMatch;
-    }
-    
-    BOOL shouldDisable = !shouldInclude;
-    return shouldDisable;
+    MPConsentState *state = [MPPersistenceController_PRIVATE
+        effectiveConsentStateForMpid:[MParticle sharedInstance].identity.currentUser.userId];
+    return [self.filterEngine isDisabledByConsentFilter:[self consentFilterSnapshotForFilter:kitFilter]
+                                                consent:[self consentSnapshotForState:state]];
 }
 
 - (BOOL)isKitDisabled:(NSNumber *)kitCode {
-    BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitCode].consentKitFilter];
-    BOOL disabledKit = [_disabledKits containsObject:kitCode];
-
-    return disabledByConsent || disabledKit;
+    MPConsentState *state = [MPPersistenceController_PRIVATE
+        effectiveConsentStateForMpid:[MParticle sharedInstance].identity.currentUser.userId];
+    return [self.filterEngine isKitDisabledWithIsDisabledKit:[_disabledKits containsObject:kitCode]
+                                               consentFilter:[self consentFilterSnapshotForFilter:self.kitConfigurations[kitCode].consentKitFilter]
+                                                     consent:[self consentSnapshotForState:state]];
 }
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration {
@@ -603,174 +571,121 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 #pragma mark Filtering methods
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forCommerceEvent:(MPCommerceEvent *const)commerceEvent {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    NSNumber *zero = @0;
     __block MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:NO];
-    
-    // Attribute value filtering
-    if (![self shouldIncludeEventWithAttributes:commerceEvent.customAttributes afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
-        kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:YES];
+    MPKitFilterConfigurationSnapshot *configurationSnapshot = [self filterSnapshotForConfiguration:kitConfiguration];
+    if (!configurationSnapshot) {
         return kitFilter;
     }
-    
-    // Event type filter
-    __block NSString *hashValue = [_hasher hashEventType:(MPEventTypeSwift)[commerceEvent type]];
-    
-    __block BOOL shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
-    if (shouldFilter) {
-        kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:shouldFilter];
-        return kitFilter;
-    }
-    
-    __block MPCommerceEvent *forwardCommerceEvent = [commerceEvent copy];
-    
-    // Entity type filter
-    MPCommerceEventKind commerceEventKind = [commerceEvent kind];
-    NSString *commerceEventKindValue = [@(commerceEventKind) stringValue];
-    shouldFilter = [kitConfiguration.commerceEventEntityTypeFilters[commerceEventKindValue] isEqualToNumber:zero];
-    if (shouldFilter) {
-        switch (commerceEventKind) {
-            case MPCommerceEventKindProduct:
-            case MPCommerceEventKindImpression:
-                [forwardCommerceEvent setProducts:nil];
-                [forwardCommerceEvent setImpressions:nil];
-                break;
-                
-            case MPCommerceEventKindPromotion:
-                [forwardCommerceEvent.promotionContainer setPromotions:nil];
-                break;
-                
-            default:
-                forwardCommerceEvent = nil;
-                break;
-        }
-        
-        if (forwardCommerceEvent) {
-            kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:forwardCommerceEvent shouldFilter:NO];
-        } else {
-            kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:NO];
-        }
-        
-        return kitFilter;
-    } else { // App family attribute and Commerce event attribute filters
-        // App family attribute filter
-        NSDictionary *appFamilyFilter = kitConfiguration.commerceEventAppFamilyAttributeFilters[commerceEventKindValue];
-        
-        if (appFamilyFilter.count > 0) {
-            switch (commerceEventKind) {
-                case MPCommerceEventKindProduct: {
-                    __block NSMutableArray *products = [[NSMutableArray alloc] init];
-                    
-                    [commerceEvent.products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
-                        MPProduct *filteredProduct = [product copyMatchingHashedProperties:appFamilyFilter];
-                        
-                        if (filteredProduct) {
-                            [products addObject:filteredProduct];
-                        }
-                    }];
-                    
-                    if (products.count > 0) {
-                        [forwardCommerceEvent setProducts:products];
-                    }
-                }
-                    break;
-                    
-                case MPCommerceEventKindImpression:
-                    forwardCommerceEvent.impressions = [commerceEvent copyImpressionsMatchingHashedProperties:appFamilyFilter];
-                    break;
-                    
-                case MPCommerceEventKindPromotion:
-                    forwardCommerceEvent.promotionContainer = [commerceEvent.promotionContainer copyMatchingHashedProperties:appFamilyFilter];
-                    break;
-                    
-                default:
-                    break;
-            }
-        }
-        
-        NSDictionary *commerceEventAttributeFilters = kitConfiguration.commerceEventAttributeFilters;
-        if (commerceEventAttributeFilters) {
-            // Commerce event attribute filter (expanded attributes)
-            __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] init];
-            [[forwardCommerceEvent beautifiedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                hashValue = [_hasher hashCommerceEventAttribute:(MPEventTypeSwift)[commerceEvent type] key:key];
-                
-                id filterValue = commerceEventAttributeFilters[hashValue];
-                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
-                
-                if (!filterValue || (filterValue && !filterValueIsFalse)) {
-                    filteredAttributes[key] = obj;
-                }
-            }];
-            
-            [forwardCommerceEvent setBeautifiedAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
-            
-            // Commerce event attribute filter (user defined attributes)
-            filteredAttributes = [[NSMutableDictionary alloc] init];
-            
-            [[forwardCommerceEvent customAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                hashValue = [_hasher hashCommerceEventAttribute:(MPEventTypeSwift)[commerceEvent type] key:key];
 
-                id filterValue = commerceEventAttributeFilters[hashValue];
-                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
-                
-                if (!filterValue || (filterValue && !filterValueIsFalse)) {
-                    filteredAttributes[key] = obj;
-                }
-            }];
-            
-            [forwardCommerceEvent setCustomAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
-            
-            // Transaction attributes
-            __block MPTransactionAttributes *filteredTransactionAttributes = [[MPTransactionAttributes alloc] init];
-            
-            [[forwardCommerceEvent.transactionAttributes beautifiedDictionaryRepresentation] enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-                hashValue = [_hasher hashCommerceEventAttribute:(MPEventTypeSwift)[commerceEvent type] key:key];
-                
-                id filterValue = commerceEventAttributeFilters[hashValue];
-                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
-                
-                if (!filterValue || (filterValue && !filterValueIsFalse)) {
-                    if ([key isEqualToString:kMPExpTAAffiliation]) {
-                        filteredTransactionAttributes.affiliation = forwardCommerceEvent.transactionAttributes.affiliation;
-                    } else if ([key isEqualToString:kMPExpTAShipping]) {
-                        filteredTransactionAttributes.shipping = forwardCommerceEvent.transactionAttributes.shipping;
-                    } else if ([key isEqualToString:kMPExpTATax]) {
-                        filteredTransactionAttributes.tax = forwardCommerceEvent.transactionAttributes.tax;
-                    } else if ([key isEqualToString:kMPExpTARevenue]) {
-                        filteredTransactionAttributes.revenue = forwardCommerceEvent.transactionAttributes.revenue;
-                    } else if ([key isEqualToString:kMPExpTATransactionId]) {
-                        filteredTransactionAttributes.transactionId = forwardCommerceEvent.transactionAttributes.transactionId;
-                    } else if ([key isEqualToString:kMPExpTACouponCode]) {
-                        filteredTransactionAttributes.couponCode = forwardCommerceEvent.transactionAttributes.couponCode;
+    MPCommerceEventKind commerceEventKind = [commerceEvent kind];
+    MPKitCommerceFilterDecision *decision = [self.filterEngine
+        filterCommerceEventWithType:(NSUInteger)commerceEvent.type
+        kind:(NSInteger)commerceEventKind
+        customAttributes:commerceEvent.customAttributes
+        beautifiedAttributes:commerceEvent.beautifiedAttributes
+        transactionAttributes:commerceEvent.transactionAttributes.beautifiedDictionaryRepresentation
+        configuration:configurationSnapshot];
+    if (decision.shouldFilter) {
+        return [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:YES];
+    }
+
+    __block MPCommerceEvent *forwardCommerceEvent = [commerceEvent copy];
+    switch (decision.entityAction) {
+        case MPKitCommerceEntityActionRemoveProductsAndImpressions:
+            [forwardCommerceEvent setProducts:nil];
+            [forwardCommerceEvent setImpressions:nil];
+            return [[MPKitFilter alloc] initWithCommerceEvent:forwardCommerceEvent shouldFilter:NO];
+
+        case MPKitCommerceEntityActionRemovePromotions:
+            [forwardCommerceEvent.promotionContainer setPromotions:nil];
+            return [[MPKitFilter alloc] initWithCommerceEvent:forwardCommerceEvent shouldFilter:NO];
+
+        case MPKitCommerceEntityActionReturnOriginalEvent:
+            return [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:NO];
+
+        case MPKitCommerceEntityActionContinueFiltering:
+            break;
+    }
+
+    NSDictionary *appFamilyFilter = decision.appFamilyFilter;
+    if (appFamilyFilter.count > 0) {
+        switch (commerceEventKind) {
+            case MPCommerceEventKindProduct: {
+                NSMutableArray *products = [[NSMutableArray alloc] init];
+                [commerceEvent.products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
+                    MPProduct *filteredProduct = [product copyMatchingHashedProperties:appFamilyFilter];
+                    if (filteredProduct) {
+                        [products addObject:filteredProduct];
                     }
+                }];
+                if (products.count > 0) {
+                    [forwardCommerceEvent setProducts:products];
                 }
-            }];
-            
-            forwardCommerceEvent.transactionAttributes = filteredTransactionAttributes;
+                break;
+            }
+
+            case MPCommerceEventKindImpression:
+                forwardCommerceEvent.impressions = [commerceEvent copyImpressionsMatchingHashedProperties:appFamilyFilter];
+                break;
+
+            case MPCommerceEventKindPromotion:
+                forwardCommerceEvent.promotionContainer = [commerceEvent.promotionContainer copyMatchingHashedProperties:appFamilyFilter];
+                break;
+
+            default:
+                break;
         }
     }
-    
+
+    if (decision.hasAttributeFilters) {
+        [forwardCommerceEvent setBeautifiedAttributes:[decision.filteredBeautifiedAttributes mutableCopy]];
+        [forwardCommerceEvent setCustomAttributes:decision.filteredCustomAttributes];
+
+        MPTransactionAttributes *source = forwardCommerceEvent.transactionAttributes;
+        MPTransactionAttributes *filtered = [[MPTransactionAttributes alloc] init];
+        NSSet<NSString *> *allowedKeys = decision.allowedTransactionAttributeKeys;
+        if ([allowedKeys containsObject:kMPExpTAAffiliation]) {
+            filtered.affiliation = source.affiliation;
+        }
+        if ([allowedKeys containsObject:kMPExpTAShipping]) {
+            filtered.shipping = source.shipping;
+        }
+        if ([allowedKeys containsObject:kMPExpTATax]) {
+            filtered.tax = source.tax;
+        }
+        if ([allowedKeys containsObject:kMPExpTARevenue]) {
+            filtered.revenue = source.revenue;
+        }
+        if ([allowedKeys containsObject:kMPExpTATransactionId]) {
+            filtered.transactionId = source.transactionId;
+        }
+        if ([allowedKeys containsObject:kMPExpTACouponCode]) {
+            filtered.couponCode = source.couponCode;
+        }
+        forwardCommerceEvent.transactionAttributes = filtered;
+    }
+
     [self project:kitRegister commerceEvent:forwardCommerceEvent completionHandler:^(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
                                                                                      NSArray<MPEvent *> *projectedEvents,
                                                                                      NSArray<MPEventProjection *> *appliedProjections) {
         NSArray<MPEventProjection *> *appliedProjectionsArray = appliedProjections.count ? appliedProjections : nil;
-        
+
         if (projectedEvents.count != 0) {
             for (MPEvent *projectedEvent in projectedEvents) {
                 kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:appliedProjectionsArray eventCopy:nil commerceEventCopy:commerceEvent];
                 [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
             }
         }
-        
+
         if (projectedCommerceEvents.count != 0) {
             for (MPCommerceEvent *projectedCommerceEvent in projectedCommerceEvents) {
                 kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:projectedCommerceEvent shouldFilter:NO appliedProjections:appliedProjectionsArray];
                 [self attemptToLogCommerceEventToKit:kitRegister kitFilter:kitFilter];
             }
         }
-        
+
     }];
-    
+
     return kitFilter;
 }
 
@@ -783,92 +698,36 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 selector:(SEL)selector
               parameters:(MPForwardQueueParameters *)parameters {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    NSNumber *zero = @0;
     __block MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
-    __block NSString *hashValue = nil;
-    __block BOOL shouldFilter = NO;
-    
-    // Attribute value filtering
-    shouldFilter = ![self shouldIncludeEventWithAttributes:event.customAttributes afterAttributeValueFilteringWithConfiguration:kitConfiguration];
-    if (shouldFilter) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
+    NSString *selectorString = NSStringFromSelector(selector);
+    MPKitFilterConfigurationSnapshot *configurationSnapshot = [self filterSnapshotForConfiguration:kitConfiguration];
+    if (!configurationSnapshot) {
         return kitFilter;
     }
-    
-    // Event type filter
-    if (selector != @selector(logScreen:)) {
-        hashValue = [_hasher hashEventType:(MPEventTypeSwift)event.type];
-        
-        shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
-        if (shouldFilter) {
-            kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
-            return kitFilter;
-        }
-        
-    }
-    
-    // Message type filter
-    NSString *selectorString = NSStringFromSelector(selector);
-    NSString *messageType = [self methodMessageTypeMapping][selectorString];
-    if (messageType) {
-        shouldFilter = kitConfiguration.messageTypeFilters[messageType] && [kitConfiguration.messageTypeFilters[messageType] isEqualToNumber:zero];
-        
-        if (shouldFilter) {
-            kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
-            return kitFilter;
-        }
-    }
-    
-    NSDictionary *attributeFilters;
-    NSDictionary *nameFilters;
-    
-    if ([selectorString isEqualToString:@"logScreen:"]) { // Screen name and screen attribute filters
-        nameFilters = kitConfiguration.screenNameFilters;
-        attributeFilters = kitConfiguration.screenAttributeFilters;
-    } else { // Event name and event attribute filters
-        nameFilters = kitConfiguration.eventNameFilters;
-        attributeFilters = kitConfiguration.eventAttributeFilters;
-    }
-    
-    MPEvent *forwardEvent = [event copy];
-    // Attributes
-    MPMessageType messageTypeCode = [MPEnum messageTypeFromNSString:messageType];
-    if (messageTypeCode != MPMessageTypeEvent && messageTypeCode != MPMessageTypeScreenView && messageTypeCode != MPMessageTypeMedia) {
-        messageTypeCode = MPMessageTypeUnknown;
+
+    MPKitEventSnapshot *eventSnapshot = [[MPKitEventSnapshot alloc]
+        initWithType:(NSUInteger)event.type
+        name:event.name
+        attributes:event.customAttributes
+        selectorName:selectorString];
+    MPKitEventFilterDecision *decision = [self.filterEngine filterEvent:eventSnapshot
+                                                          configuration:configurationSnapshot];
+    if (decision.shouldFilter) {
+        return [[MPKitFilter alloc] initWithFilter:YES];
     }
 
-    if ([event isKindOfClass:[MPEvent class]]) {
-        hashValue = [_hasher hashEventType:(MPEventTypeSwift)event.type eventName:event.name isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
-        
-        shouldFilter = nameFilters[hashValue] && [nameFilters[hashValue] isEqualToNumber:zero];
-        if (shouldFilter) {
-            kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
-            return kitFilter;
-        }
-        
-        if (event.customAttributes) {
-            __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.customAttributes.count];
-            
-            [forwardEvent.customAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                hashValue = [_hasher hashEventAttributeKey:(MPEventTypeSwift)event.type eventName:event.name customAttributeName:key isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
-                
-                id attributeFilterValue = attributeFilters[hashValue];
-                BOOL attributeFilterIsFalse = [attributeFilterValue isEqualToNumber:zero];
-                
-                if (!attributeFilterValue || (attributeFilterValue && !attributeFilterIsFalse)) {
-                    filteredAttributes[key] = obj;
-                }
-            }];
-            
-            forwardEvent.customAttributes = filteredAttributes.count > 0 ? filteredAttributes : nil;
-        }
+    MPEvent *forwardEvent = [event copy];
+    forwardEvent.customAttributes = decision.filteredAttributes;
+    MPMessageType messageTypeCode = [MPEnum messageTypeFromNSString:decision.messageType];
+    if (messageTypeCode != MPMessageTypeEvent && messageTypeCode != MPMessageTypeScreenView && messageTypeCode != MPMessageTypeMedia) {
+        messageTypeCode = MPMessageTypeUnknown;
     }
     
     [self project:kitRegister event:forwardEvent messageType:messageTypeCode completionHandler:^(NSArray<MPEvent *> *projectedEvents, NSArray<MPEventProjection *> *appliedProjections) {
         NSArray<MPEventProjection *> *appliedProjectionsArray = appliedProjections.count > 0 ? appliedProjections : nil;
         
         for (MPEvent *projectedEvent in projectedEvents) {
-            kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:shouldFilter appliedProjections:appliedProjectionsArray eventCopy:event commerceEventCopy:nil];
+            kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:appliedProjectionsArray eventCopy:event commerceEventCopy:nil];
             SEL mutableSelector = selector;
             if (selector == @selector(logScreen:)) {
                 for (NSUInteger i = 0; i < appliedProjectionsArray.count; i++) {
@@ -894,17 +753,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         kitFilter = [[MPKitFilter alloc] initWithFilter:NO];
     }
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    if (kitConfiguration) {
-        NSString *selectorString = NSStringFromSelector(selector);
-        NSString *messageType = [self methodMessageTypeMapping][selectorString];
-        
-        if (messageType) {
-            BOOL shouldFilter = kitConfiguration.messageTypeFilters[messageType] && [kitConfiguration.messageTypeFilters[messageType] isEqualToNumber:@0];
-            if (shouldFilter) {
-                return [[MPKitFilter alloc] initWithFilter:shouldFilter];
-            }
-        }
+    MPKitFilterConfigurationSnapshot *configurationSnapshot = [self filterSnapshotForConfiguration:kitConfiguration];
+    if (configurationSnapshot &&
+        [self.filterEngine shouldFilterBaseEventWithSelectorName:NSStringFromSelector(selector)
+                                                  configuration:configurationSnapshot]) {
+        return [[MPKitFilter alloc] initWithFilter:YES];
     }
     
     return kitFilter;
@@ -915,26 +768,19 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return nil;
     }
     
-    MPKitFilter *kitFilter = nil;
-    __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:userAttributes.count];
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    if (kitConfiguration) {
-        [userAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-            NSString *hashValue = [_hasher hashUserAttributeKey:key];
-            
-            BOOL shouldFilter = kitConfiguration.userAttributeFilters[hashValue] && [kitConfiguration.userAttributeFilters[hashValue] isEqualToNumber:@0];
-            if (!shouldFilter) {
-                filteredAttributes[key] = [value copy];
-            }
-        }];
+    NSDictionary *decisionAttributes = [self.filterEngine
+        filterUserAttributes:userAttributes
+        configuration:[self filterSnapshotForConfiguration:kitConfiguration]];
+    if (decisionAttributes.count == 0) {
+        return nil;
     }
-    
-    if (filteredAttributes.count > 0) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:YES filteredAttributes:filteredAttributes];
-    }
-    
-    return kitFilter;
+
+    NSMutableDictionary *forwardAttributes = [[NSMutableDictionary alloc] initWithCapacity:decisionAttributes.count];
+    [decisionAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+        forwardAttributes[key] = [value copy];
+    }];
+    return [[MPKitFilter alloc] initWithFilter:YES filteredAttributes:forwardAttributes];
 }
 
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributeKey:(NSString *)key value:(id)value {
@@ -942,36 +788,19 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return nil;
     }
     
-    NSString *hashValue = [_hasher hashUserAttributeKey:key];
-    
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    MPKitFilter *kitFilter = nil;
-    BOOL shouldFilter = NO;
-    
-    if (kitConfiguration) {
-        shouldFilter = kitConfiguration.userAttributeFilters[hashValue] && [kitConfiguration.userAttributeFilters[hashValue] isEqualToNumber:@0];
-        
-        kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
-    }
-    
-    return kitFilter;
+    BOOL shouldFilter = [self.filterEngine
+        shouldFilterUserAttributeWithKey:key
+        configuration:[self filterSnapshotForConfiguration:kitConfiguration]];
+    return shouldFilter ? [[MPKitFilter alloc] initWithFilter:YES] : nil;
 }
 
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserIdentityKey:(NSString *)key identityType:(MPUserIdentity)identityType {
-    NSString *identityTypeString = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)identityType];
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    MPKitFilter *kitFilter = nil;
-    BOOL shouldFilter = NO;
-    
-    if (kitConfiguration) {
-        shouldFilter = kitConfiguration.userIdentityFilters[identityTypeString] && [kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
-        
-        kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
-    }
-    
-    return kitFilter;
+    BOOL shouldFilter = [self.filterEngine
+        shouldFilterUserIdentityWithType:(NSUInteger)identityType
+        configuration:[self filterSnapshotForConfiguration:kitConfiguration]];
+    return shouldFilter ? [[MPKitFilter alloc] initWithFilter:YES] : nil;
 }
 
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentState *)state {
@@ -979,71 +808,33 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return nil;
     }
     
-    MPKitFilter *kitFilter = nil;
-    
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    if (kitConfiguration) {
-        
-        MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
+    MPKitConsentDecision *decision = [self.filterEngine
+        filterConsent:[self consentSnapshotForState:state]
+        configuration:[self filterSnapshotForConfiguration:kitConfiguration]];
+    switch (decision.action) {
+        case MPKitConsentActionFilterAll:
+            return [[MPKitFilter alloc] initWithFilter:YES];
 
-        NSDictionary<NSString *, MPGDPRConsent *> *gdprState = state.gdprConsentState;
-                
-        if (ccpaConsentState != nil) {
-            NSString *regulationHash = [_hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
-            
-            if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
-                kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
-                return kitFilter;
-            } else {
-                MPConsentState *filteredState = [[MPConsentState alloc] init];
-                [filteredState setCCPAConsentState:ccpaConsentState];
-                
-                kitFilter = [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
-                return kitFilter;
-            }
+        case MPKitConsentActionForwardCCPA: {
+            MPConsentState *filteredState = [[MPConsentState alloc] init];
+            [filteredState setCCPAConsentState:state.ccpaConsentState];
+            return [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
         }
 
-        if (gdprState) {
-            NSString *regulationHash = [_hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
-            
-            if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
-                kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
-                return kitFilter;
+        case MPKitConsentActionForwardGDPR: {
+            NSMutableDictionary<NSString *, MPGDPRConsent *> *filteredGDPRState = [NSMutableDictionary dictionary];
+            for (NSString *purpose in decision.allowedGDPRPurposes) {
+                filteredGDPRState[purpose] = state.gdprConsentState[purpose];
             }
+            MPConsentState *filteredState = [[MPConsentState alloc] init];
+            [filteredState setGDPRConsentState:filteredGDPRState];
+            return [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
         }
-        
-        if (gdprState && gdprState.count > 0) {
-            
-            if (kitConfiguration.consentPurposeFilters) {
-                
-                NSMutableDictionary<NSString *, MPGDPRConsent *> *filteredGDPRState = [NSMutableDictionary dictionary];
-                
-                for (NSString *purpose in gdprState) {
-                    NSString *purposeHash = [_hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
-                    
-                    BOOL shouldFilterPurpose = kitConfiguration.consentPurposeFilters[purposeHash] && [kitConfiguration.consentPurposeFilters[purposeHash] isEqual:@0];
-                    
-                    if (!shouldFilterPurpose) {
-                        MPGDPRConsent *consent = gdprState[purpose];
-                        [filteredGDPRState setObject:consent forKey:purpose];
-                    }
-                }
-                
-                if (filteredGDPRState.count > 0) {
-                    MPConsentState *filteredState = [[MPConsentState alloc] init];
-                    [filteredState setGDPRConsentState:filteredGDPRState];
-                    
-                    kitFilter = [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
-                }
-                
-            }
-            
-        }
-        
+
+        case MPKitConsentActionNoFilter:
+            return nil;
     }
-    
-    return kitFilter;
 }
 
 #pragma mark Projection methods
@@ -1936,14 +1727,19 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
     MPBracket *bracket = [self bracketForKit:kitRegister.code];
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    MPKitConfiguration *configuration = self.kitConfigurations[kitRegister.code];
+    MPConsentState *state = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:currentUser.userId];
 
-    BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitRegister.code].consentKitFilter];
-    BOOL disabledByExcludingAnonymousUsers =  (self.kitConfigurations[kitRegister.code].excludeAnonymousUsers && !currentUser.isLoggedIn);
-    // May be able to remove this entirely and not require CPP
-    BOOL disabledByRamping =  !(bracket == nil || (bracket != nil && [bracket shouldForward]));
-    BOOL disabledKit = [_disabledKits containsObject:kitRegister.code];
-
-    return (active && !disabledByRamping && !disabledByConsent && !disabledByExcludingAnonymousUsers && !disabledKit);
+    return [self.filterEngine isKitActiveWithActive:active
+                                              mpId:bracket.mpId
+                                         bracketLow:bracket.low
+                                        bracketHigh:bracket.high
+                                         hasBracket:bracket != nil
+                                       consentFilter:[self consentFilterSnapshotForFilter:configuration.consentKitFilter]
+                                             consent:[self consentSnapshotForState:state]
+                              excludesAnonymousUsers:configuration.excludeAnonymousUsers
+                                         isLoggedIn:currentUser.isLoggedIn
+                                      isDisabledKit:[_disabledKits containsObject:kitRegister.code]];
 }
 
 - (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
