@@ -26,7 +26,6 @@
 #import "mParticle.h"
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
-#import <objc/message.h>
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
 #import "MPUserDefaultsConnector.h"
@@ -78,6 +77,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 @property (nonatomic, strong) MPIHasher *hasher;
 @property (nonatomic, strong) MPKitValueTransformer *valueTransformer;
 @property (nonatomic, strong) MPAttributeValueFilter *attributeValueFilter;
+@property (nonatomic, strong) MPKitSelectorInvoker *selectorInvoker;
 @end
 
 
@@ -107,6 +107,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         _hasher = [[MPIHasher alloc] initWithLogger:logger];
         _valueTransformer = [[MPKitValueTransformer alloc] initWithLogger:logger];
         _attributeValueFilter = [[MPAttributeValueFilter alloc] initWithHasher:_hasher];
+        _selectorInvoker = [[MPKitSelectorInvoker alloc] initWithLogger:logger];
         _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
             if (attributionResult && attributionResult.kitCode) {
                 linkInfo[attributionResult.kitCode] = attributionResult;
@@ -774,6 +775,13 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector {
+    return [self filter:kitRegister forEvent:event selector:selector parameters:nil];
+}
+
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister
+                forEvent:(MPEvent *const)event
+                selector:(SEL)selector
+              parameters:(MPForwardQueueParameters *)parameters {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     NSNumber *zero = @0;
     __block MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
@@ -871,7 +879,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     }
                 }
             }
-            [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:mutableSelector parameters:nil messageType:messageTypeCode userInfo:[[NSDictionary alloc] init]];
+            [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:mutableSelector parameters:parameters messageType:messageTypeCode userInfo:[[NSDictionary alloc] init]];
         }
     }];
     
@@ -2020,7 +2028,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             if (kitInstance) {
                 if (![kitInstance started] && !disabled) {
                     if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
-                        [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
+                        [kitInstance setLaunchOptions:stateMachine.launchOptions];
                     }
                     
                     if ([kitInstance respondsToSelector:@selector(start)]) {
@@ -2230,7 +2238,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if (event && [event isMemberOfClass:[MPEvent class]]) {
-            [self filter:kitRegister forEvent:(MPEvent *)event selector:selector];
+            [self filter:kitRegister forEvent:(MPEvent *)event selector:selector parameters:parameters];
         } else {
             MPKitFilter *kitFilter = [self filter:kitRegister forBaseEvent:event forSelector:selector];
             [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:selector parameters:parameters messageType:messageType userInfo:userInfo];
@@ -2253,93 +2261,77 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
         }
         
-        MPKitExecStatus *execStatus;
+        MPKitExecStatus *execStatus = nil;
         
         @try {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            if ([kitRegister.wrapperInstance respondsToSelector:@selector(logBaseEvent:)] && ((selector == @selector(logEvent:)) || (selector == @selector(logBaseEvent:)))) {
-                if (!kitFilter.forwardEvent) {
-                    return;
-                }
-                execStatus = [kitRegister.wrapperInstance logBaseEvent:kitFilter.forwardEvent];
-            } else if (selector == @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:)) {
-                if (kitFilter.shouldFilter) {
-                    MPILogDebug(@"selectPlacementsWithIdentifier filtered out for kit: %@ - shouldFilter: YES", kitRegister.name);
-                    return;
-                }
-                MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-                MPILogVerbose(@"selectPlacementsWithIdentifier - kit: %@, currentUser: %@", kitRegister.name, currentUser ? currentUser.userId : @"nil");
-                FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser kitConfiguration:self.kitConfigurations[kitRegister.code]];
+            id<MPKitProtocol> kit = kitRegister.wrapperInstance;
+            SEL effectiveSelector = selector;
 
-                if ([kitRegister.wrapperInstance respondsToSelector:@selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:)]) {
-                    execStatus = [kitRegister.wrapperInstance selectPlacementsWithIdentifier:parameters[0]
-                                                                         attributes:parameters[1]
-                                                                      embeddedViews:parameters[2]
-                                                                             config:parameters[3]
-                                                                            onEvent:parameters[4]
-                                                                       filteredUser:filteredUser
-                                                                            options:parameters[5]];
-                }
-            } else if (selector == @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:)) {
+            if ([kit respondsToSelector:@selector(logBaseEvent:)] &&
+                (selector == @selector(logEvent:) || selector == @selector(logBaseEvent:))) {
+                effectiveSelector = @selector(logBaseEvent:);
+            }
+
+            id filteredUser = nil;
+            if (effectiveSelector == @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:) ||
+                effectiveSelector == @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:)) {
                 if (kitFilter.shouldFilter) {
-                    MPILogDebug(@"selectShoppableAdsWithIdentifier filtered out for kit: %@ - shouldFilter: YES", kitRegister.name);
+                    MPILogDebug(@"%@ filtered out for kit: %@ - shouldFilter: YES",
+                                NSStringFromSelector(effectiveSelector), kitRegister.name);
                     return;
                 }
-                MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-                MPILogVerbose(@"selectShoppableAdsWithIdentifier - kit: %@, currentUser: %@", kitRegister.name, currentUser ? currentUser.userId : @"nil");
-                FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser kitConfiguration:self.kitConfigurations[kitRegister.code]];
 
-                if ([kitRegister.wrapperInstance respondsToSelector:@selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:)]) {
-                    execStatus = [kitRegister.wrapperInstance selectShoppableAdsWithIdentifier:parameters[0]
-                                                                         attributes:parameters[1]
-                                                                             config:parameters[2]
-                                                                            onEvent:parameters[3]
-                                                                       filteredUser:filteredUser];
-                }
-            } else if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
-                if (selector == @selector(logEvent:)) {
-                    if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
-                        return;
+                MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+                MPILogVerbose(@"%@ - kit: %@, currentUser: %@", NSStringFromSelector(effectiveSelector),
+                              kitRegister.name, currentUser ? currentUser.userId : @"nil");
+                filteredUser = [[FilteredMParticleUser alloc]
+                    initWithMParticleUser:currentUser
+                         kitConfiguration:self.kitConfigurations[kitRegister.code]];
+            }
+
+            if ((effectiveSelector == @selector(logEvent:) || effectiveSelector == @selector(logScreen:)) &&
+                ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
+                return;
+            }
+            if (effectiveSelector == @selector(logBaseEvent:) && !kitFilter.forwardEvent) {
+                return;
+            }
+
+            MPKitInvocationResult *result = [self.selectorInvoker invoke:(id<MPKitDispatchTarget>)kit
+                                                           selectorName:NSStringFromSelector(effectiveSelector)
+                                                                  event:kitFilter.forwardEvent
+                                                           filteredUser:filteredUser
+                                                             parameters:parameters];
+
+            switch (result.outcome) {
+                case MPKitInvocationOutcomeReturnedStatus:
+                    if ([result.returnedObject isKindOfClass:[MPKitExecStatus class]]) {
+                        execStatus = (MPKitExecStatus *)result.returnedObject;
+                    } else {
+                        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code
+                                                                  returnCode:MPKitReturnCodeFail];
                     }
-                    execStatus = [kitRegister.wrapperInstance logEvent:((MPEvent *)kitFilter.forwardEvent)];
-                } else if (selector == @selector(logScreen:)) {
-                    if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
-                        return;
-                    }
-                    execStatus = [kitRegister.wrapperInstance logScreen:((MPEvent *)kitFilter.forwardEvent)];
-                } else if (selector == @selector(surveyURLWithUserAttributes:)) {
-                    [kitRegister.wrapperInstance surveyURLWithUserAttributes:parameters[0]];
-                    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code returnCode:MPKitReturnCodeSuccess];
-                } else if (selector == @selector(shouldDelayMParticleUpload)) {
-                    [kitRegister.wrapperInstance shouldDelayMParticleUpload];
-                    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code returnCode:MPKitReturnCodeSuccess];
-                } else if (selector == @selector(setATTStatus:withATTStatusTimestampMillis:)) {
-                    MPATTAuthorizationStatus status = (MPATTAuthorizationStatus)[parameters[0] unsignedIntValue];
-                    NSNumber *timestamp = [parameters[1] isKindOfClass:[NSNumber class]] ? (NSNumber*)parameters[1] : nil;
-                    execStatus = [kitRegister.wrapperInstance setATTStatus:status withATTStatusTimestampMillis:timestamp];
-                } else if (selector == @selector(setOptOut:)) {
-                    BOOL isOptOut = (parameters.count >= 1 && [parameters[0] boolValue]);
-                    execStatus = [kitRegister.wrapperInstance setOptOut:isOptOut];
-                } else if (parameters.count == 3) {
-                    typedef MPKitExecStatus *(*send_type)(id, SEL, id, id, id);
-                    send_type func = (send_type)objc_msgSend;
-                    execStatus = func(kitRegister.wrapperInstance, selector, parameters[0], parameters[1], parameters[2]);
-                } else if (parameters.count == 2) {
-                    execStatus = [kitRegister.wrapperInstance performSelector:selector withObject:parameters[0] withObject:parameters[1]];
-                } else if (parameters.count == 1) {
-                    execStatus = [kitRegister.wrapperInstance performSelector:selector withObject:parameters[0]];
-                } else if (parameters.count == 0) {
-                    execStatus = [kitRegister.wrapperInstance performSelector:selector];
-#pragma clang diagnostic pop
-                } else {
-                    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code returnCode:MPKitReturnCodeFail];
-                    MPILogError(@"Forwarded selector: %@ has illegal number of parameters: %@",  NSStringFromSelector(selector), [NSNumber numberWithUnsignedInteger:parameters.count]);
-                }
-            } else {
-                execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code returnCode:MPKitReturnCodeFail];
-                MPILogError(@"Forwarded selector: %@ is not supported by this kit",  NSStringFromSelector(selector));
+                    break;
+                case MPKitInvocationOutcomeCompletedWithoutStatus:
+                    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code
+                                                              returnCode:MPKitReturnCodeSuccess];
+                    break;
+                case MPKitInvocationOutcomeNotImplemented:
+                    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code
+                                                              returnCode:MPKitReturnCodeFail];
+                    MPILogError(@"Forwarded selector: %@ is not supported by this kit",
+                                NSStringFromSelector(effectiveSelector));
+                    break;
+                case MPKitInvocationOutcomeMissingArguments:
+                    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code
+                                                              returnCode:MPKitReturnCodeFail];
+                    MPILogError(@"Forwarded selector: %@ is missing required arguments",
+                                NSStringFromSelector(effectiveSelector));
+                    break;
+                case MPKitInvocationOutcomeUnknownSelector:
+                    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code
+                                                              returnCode:MPKitReturnCodeFail];
+                    break;
             }
             
             if (execStatus.success) {
@@ -2348,6 +2340,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                 MPILogError(@"Failed to forward SDK call to kit: %@ (code: %@)", kitRegister.name, kitRegister.code);
             }
         } @catch (NSException *e) {
+            execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code returnCode:MPKitReturnCodeFail];
             MPILogError(@"Kit handler threw an exception: %@", e);
         }
         

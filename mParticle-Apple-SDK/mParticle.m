@@ -1222,15 +1222,17 @@ MPLog* logger;
     [self logLTVIncrease:increaseAmount eventName:eventName eventInfo:nil];
 }
 
-- (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
+- (void)logLTVIncreaseCallback:(MPEvent *)event increaseAmount:(double)increaseAmount execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
         if (kitEvent) {
             [executor executeOnMain: ^{
                 // Forwarding calls to kits
+                MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
+                [parameters addParameter:@(increaseAmount)];
                 [self.kitContainer forwardSDKCall:@selector(logLTVIncrease:event:)
-                                                                     event:nil
-                                                                parameters:nil
+                                                                     event:kitEvent
+                                                                parameters:parameters
                                                                messageType:MPMessageTypeUnknown
                                                                   userInfo:nil
                 ];
@@ -1257,7 +1259,7 @@ MPLog* logger;
     
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-        [self logLTVIncreaseCallback:event execStatus:execStatus];
+        [self logLTVIncreaseCallback:event increaseAmount:increaseAmount execStatus:execStatus];
     }];
 }
 
