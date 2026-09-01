@@ -29,7 +29,7 @@ static NSInteger const kMPRoktKitCode = 181;
 
 static __weak MPKitRokt *roktKit = nil;
 
-@interface MPKitRokt () <MPKitProtocol>
+@interface MPKitRokt ()
 
 @property (nonatomic, unsafe_unretained) BOOL started;
 

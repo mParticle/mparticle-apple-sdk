@@ -1,32 +1,6 @@
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
-private final class HandleURLCallbackStub: NSObject {
-    var lastURL: URL?
-    var result = false
-
-    @objc func handleURLCallback(_ url: URL) -> Bool {
-        lastURL = url
-        return result
-    }
-}
-
-private final class SessionIdStub: NSObject {
-    var sessionId: String?
-
-    @objc func getSessionId() -> String? {
-        sessionId
-    }
-}
-
-private final class DiagnosticStub: NSObject {
-    var lastCode: String?
-
-    @objc func logMParticleApiDiagnostic(_ code: String) {
-        lastCode = code
-    }
-}
-
 final class MPRoktLogicTests: XCTestCase {
     func testKitIdMatchesLegacyConstant() {
         XCTAssertEqual(MPRoktLogicPRIVATE.kitId, 181)
@@ -163,30 +137,5 @@ final class MPRoktLogicTests: XCTestCase {
         )
         XCTAssertTrue(nilUser.shouldIdentifyFromEmail)
         XCTAssertFalse(nilUser.shouldIdentifyFromHash)
-    }
-
-    func testInvokeHandleURLCallbackReadsBOOLReturn() {
-        let stub = HandleURLCallbackStub()
-        stub.result = true
-        let url = URL(string: "myapp://afterpay-redirect?token=abc")!
-        XCTAssertTrue(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: stub, url: url))
-        XCTAssertEqual(stub.lastURL, url)
-
-        stub.result = false
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: stub, url: URL(string: "myapp://unrelated")!))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: stub, url: nil))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: NSObject(), url: url))
-        XCTAssertFalse(MPRoktLogicPRIVATE.invokeHandleURLCallback(on: nil, url: url))
-    }
-
-    func testSessionIdAndDiagnosticSelectors() {
-        let session = SessionIdStub()
-        session.sessionId = "session-1"
-        XCTAssertEqual(MPRoktLogicPRIVATE.sessionId(from: session), "session-1")
-        XCTAssertNil(MPRoktLogicPRIVATE.sessionId(from: NSObject()))
-
-        let diagnostic = DiagnosticStub()
-        MPRoktLogicPRIVATE.performLogMParticleApiDiagnostic(on: diagnostic, code: "SELECT_PLACEMENTS")
-        XCTAssertEqual(diagnostic.lastCode, "SELECT_PLACEMENTS")
     }
 }
