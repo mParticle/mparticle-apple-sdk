@@ -33,16 +33,21 @@ import Foundation
         return registry.copy() as? NSSet
     }
 
-    /// Mutable access retained for internal test reset compatibility.
-    @objc public static var kitsRegistry: NSMutableSet { registry }
+    @objc public static func resetRegistry() {
+        registryLock.lock()
+        defer { registryLock.unlock() }
+        registry.removeAllObjects()
+    }
 
     @objc public let executionAdapter: NSObject
 
     @objc override public init() {
-        guard let adapterType = NSClassFromString("MPKitContainerExecutionAdapter") as? NSObject.Type else {
-            preconditionFailure("MPKitContainerExecutionAdapter is unavailable")
+        if let adapterType = NSClassFromString("MPKitContainerExecutionAdapter") as? NSObject.Type {
+            executionAdapter = adapterType.init()
+        } else {
+            NSLog("mParticle -> MPKitContainerExecutionAdapter is unavailable; kit forwarding is disabled.")
+            executionAdapter = NSObject()
         }
-        executionAdapter = adapterType.init()
         super.init()
     }
 

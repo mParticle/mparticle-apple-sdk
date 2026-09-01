@@ -21,7 +21,7 @@
 @interface MPKitContainer_PRIVATE(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
-+ (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry;
++ (void)resetRegistry;
 
 @end
 
@@ -57,7 +57,7 @@
     _kitActivity = nil;
     
     // Ensure registeredKits is empty
-    [MPKitContainer_PRIVATE.kitsRegistry removeAllObjects];
+    [MPKitContainer_PRIVATE resetRegistry];
     
     [super tearDown];
 }

@@ -53,7 +53,7 @@
     lastNotification = nil;
     
     // Ensure registeredKits is empty
-    [MPKitContainer_PRIVATE.kitsRegistry removeAllObjects];
+    [MPKitContainer_PRIVATE resetRegistry];
 }
 
 - (void)tearDown {

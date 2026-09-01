@@ -278,6 +278,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 @implementation MPKitContainerExecutionAdapter
 
++ (void)load {
+    // Keep the adapter reachable when the SDK is linked statically and discovers it by name.
+}
+
 @synthesize kitsInitialized = _kitsInitialized;
 
 - (instancetype)init {
