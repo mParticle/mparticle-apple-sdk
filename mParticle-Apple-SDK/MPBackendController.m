@@ -183,24 +183,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         [userIdentities addObjectsFromArray:userIdentityArray];
     }
     
-    BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
-        NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
-        BOOL foundMatch = [currentIdentityType isEqualToNumber:@(MPIdentityIOSAdvertiserId)];
-        
-        if (foundMatch) {
-            *stop = YES;
-        }
-        
-        return foundMatch;
-    };
-    
-    NSUInteger existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
     NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
-    if (existingEntryIndex != NSNotFound && currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized) {
-        [userIdentities removeObjectAtIndex:existingEntryIndex];
-    }
-
-    return userIdentities;
+    BOOL notAuthorized = currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized;
+    return [[MPUserIdentityLogic identities:userIdentities removingType:MPIdentityIOSAdvertiserId when:notAuthorized typeKey:kMPUserIdentityTypeKey] mutableCopy];
 }
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
@@ -213,15 +198,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     }
 
     // Remove invalid identities
-    NSMutableArray *userIdentities = [identities mutableCopy];
-    [identities enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        id currentIdentityType = [identities objectAtIndex:idx][kMPUserIdentityTypeKey];
-        // Should be a number and should be one of the valid identity types
-        if (![currentIdentityType isKindOfClass:[NSNumber class]] || [(NSNumber *)currentIdentityType intValue] >= MPIdentityIOSAdvertiserId) {
-            [userIdentities removeObjectAtIndex:idx];
-        }
-    }];
-    return userIdentities;
+    return [[MPUserIdentityLogic validIdentities:identities typeKey:kMPUserIdentityTypeKey maxValidTypeExclusive:MPIdentityIOSAdvertiserId] mutableCopy];
 }
 
 #pragma mark Private methods
@@ -1647,7 +1624,7 @@ static BOOL skipNextUpload = NO;
             userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:currentIdentities];
             
             NSNumber *timeIntervalMilliseconds = currentIdentities[kMPDateUserIdentityWasFirstSet];
-            userIdentityChange.newUserIdentity.dateFirstSet = timeIntervalMilliseconds != nil ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
+            userIdentityChange.newUserIdentity.dateFirstSet = [MPUserIdentityLogic dateFirstSetFromMilliseconds:timeIntervalMilliseconds];
             userIdentityChange.newUserIdentity.isFirstTimeSet = NO;
             
             identityDictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
