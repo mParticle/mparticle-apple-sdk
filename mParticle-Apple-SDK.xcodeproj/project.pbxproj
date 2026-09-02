@@ -578,6 +578,7 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Kits/MPEventProjectionParserTests.swift,
 				Test/Kits/MPKitFilterEngineTests.swift,
 				Test/Kits/MPProjectionFieldParserTests.swift,
 				Test/Kits/MPKitProjectionEngineTests.swift,
@@ -639,6 +640,7 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
+				Test/Kits/MPEventProjectionParserTests.swift,
 				Test/Kits/MPKitFilterEngineTests.swift,
 				Test/Kits/MPProjectionFieldParserTests.swift,
 				Test/Kits/MPKitProjectionEngineTests.swift,
