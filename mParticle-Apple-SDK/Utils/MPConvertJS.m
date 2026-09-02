@@ -63,7 +63,7 @@
     }
 
     // checkoutStep is a scalar, so it is only written when the payload had one.
-    if (fields.checkoutStep) { commerceEvent.checkoutStep = fields.checkoutStep.intValue; }
+    if (fields.checkoutStep != nil) { commerceEvent.checkoutStep = fields.checkoutStep.intValue; }
 
     for (MPCommerceFlagJS *flag in fields.customFlags) {
         [commerceEvent addCustomFlags:flag.values withKey:flag.key];
