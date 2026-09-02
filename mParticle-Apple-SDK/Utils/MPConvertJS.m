@@ -17,136 +17,71 @@
 }
 
 + (MPCommerceEvent *)commerceEvent:(NSDictionary *)json {
-    if (json[@"ProductAction"] != nil && ![json[@"ProductAction"] isKindOfClass:[NSDictionary class]]) {
-        MPILogError(@"Unexpected commerce event data received from webview");
-        return nil;
-    }
-    
-    NSDictionary *productAction = json[@"ProductAction"];
-    BOOL isProductAction = productAction[@"ProductActionType"] != nil;
-    BOOL isPromotion = json[@"PromotionAction"] != nil;
-    BOOL isImpression = json[@"ProductImpressions"] != nil;
-    BOOL isValid = isProductAction || isPromotion || isImpression;
+    MPCommerceEventFieldsJS *fields = [MPConvertJSFields commerceEventFieldsFromJSON:json];
 
-    if (!isValid) {
-        MPILogError(@"Invalid commerce event dictionary received from webview: %@", json);
-        return nil;
+    switch (fields.outcome) {
+        case MPCommerceEventOutcomeJSMalformedProductAction:
+            MPILogError(@"Unexpected commerce event data received from webview");
+            return nil;
+        case MPCommerceEventOutcomeJSInvalidPayload:
+            MPILogError(@"Invalid commerce event dictionary received from webview: %@", json);
+            return nil;
+        case MPCommerceEventOutcomeJSMalformedProductActionType:
+            MPILogError(@"Unexpected product action type received from webview");
+            return nil;
+        case MPCommerceEventOutcomeJSOk:
+            break;
     }
 
     MPCommerceEvent *commerceEvent = nil;
-    if (isProductAction) {
-        id productActionType = productAction[@"ProductActionType"];
-        if (!productActionType || ![productActionType isKindOfClass:[NSNumber class]]) {
-            MPILogError(@"Unexpected product action type received from webview");
-            return nil;
+    switch (fields.kind) {
+        case MPCommerceEventKindJSProductAction: {
+            MPCommerceEventAction action = [MPConvertJS_PRIVATE commerceEventAction:fields.productActionType];
+            commerceEvent = [[MPCommerceEvent alloc] initWithAction:action];
+            break;
         }
-        MPCommerceEventAction action = [MPConvertJS_PRIVATE commerceEventAction:productActionType];
-        commerceEvent = [[MPCommerceEvent alloc] initWithAction:action];
-    }
-    else if (isPromotion) {
-        MPPromotionContainer *promotionContainer = [MPConvertJS_PRIVATE promotionContainer:json];
-        commerceEvent = [[MPCommerceEvent alloc] initWithPromotionContainer:promotionContainer];
-    }
-    else {
-        commerceEvent = [[MPCommerceEvent alloc] initWithImpressionName:nil product:nil];
-    }
-    
-    id eventAttributes = json[@"EventAttributes"];
-    if ([eventAttributes isKindOfClass:[NSDictionary class]]) {
-        commerceEvent.customAttributes = (NSDictionary *)eventAttributes;
-    }
-    
-    id checkoutOptionsObj = json[@"CheckoutOptions"];
-    if ([checkoutOptionsObj isKindOfClass:[NSString class]]) {
-        commerceEvent.checkoutOptions = (NSString *)checkoutOptionsObj;
-    }
-
-    id productActionListNameObj = json[@"productActionListName"];
-    if ([productActionListNameObj isKindOfClass:[NSString class]]) {
-        commerceEvent.productListName = (NSString *)productActionListNameObj;
-    }
-
-    id productActionListSourceObj = json[@"productActionListSource"];
-    if ([productActionListSourceObj isKindOfClass:[NSString class]]) {
-        commerceEvent.productListSource = (NSString *)productActionListSourceObj;
-    }
-
-    id currencyCodeObj = json[@"CurrencyCode"];
-    if ([currencyCodeObj isKindOfClass:[NSString class]]) {
-        commerceEvent.currency = (NSString *)currencyCodeObj;
-    }
-    
-    if (productAction != nil) {
-        commerceEvent.transactionAttributes = [self transactionAttributes:productAction];
-    }
-    
-    id checkoutStepObj = json[@"CheckoutStep"];
-    if ([checkoutStepObj isKindOfClass:[NSNumber class]]) {
-        commerceEvent.checkoutStep = [(NSNumber *)checkoutStepObj intValue];
-    }
-    
-    id customFlagsObj = json[@"CustomFlags"];
-    if ([customFlagsObj isKindOfClass:[NSDictionary class]]) {
-        NSDictionary *customFlags = (NSDictionary *)customFlagsObj;
-
-        for (id key in customFlags) {
-            id value = customFlags[key];
-
-            if ([value isKindOfClass:[NSArray class]]) {
-                BOOL allStrings = YES;
-                for (id item in (NSArray *)value) {
-                    if (![item isKindOfClass:[NSString class]]) { allStrings = NO; break; }
-                }
-                if (allStrings && [key isKindOfClass:[NSString class]]) {
-                    [commerceEvent addCustomFlags:(NSArray<NSString *> *)value withKey:(NSString *)key];
-                }
-
-            } else if ([value isKindOfClass:[NSString class]]) {
-                if ([key isKindOfClass:[NSString class]]) {
-                    [commerceEvent addCustomFlag:(NSString *)value withKey:(NSString *)key];
-                }
-            }
+        case MPCommerceEventKindJSPromotion: {
+            MPPromotionContainer *promotionContainer = [MPConvertJS_PRIVATE promotionContainer:json];
+            commerceEvent = [[MPCommerceEvent alloc] initWithPromotionContainer:promotionContainer];
+            break;
         }
+        case MPCommerceEventKindJSImpression:
+        case MPCommerceEventKindJSNone:
+            commerceEvent = [[MPCommerceEvent alloc] initWithImpressionName:nil product:nil];
+            break;
     }
 
-    id productListObj = productAction[@"ProductList"];
-    if ([productListObj isKindOfClass:[NSArray class]]) {
-        NSArray *jsonProducts = (NSArray *)productListObj;
+    if (fields.customAttributes) { commerceEvent.customAttributes = fields.customAttributes; }
+    if (fields.checkoutOptions) { commerceEvent.checkoutOptions = fields.checkoutOptions; }
+    if (fields.productListName) { commerceEvent.productListName = fields.productListName; }
+    if (fields.productListSource) { commerceEvent.productListSource = fields.productListSource; }
+    if (fields.currency) { commerceEvent.currency = fields.currency; }
 
-        NSMutableArray<MPProduct *> *products = [NSMutableArray arrayWithCapacity:jsonProducts.count];
-        for (id item in jsonProducts) {
-            if (![item isKindOfClass:[NSDictionary class]]) { continue; }
+    // Gated on ProductAction being a dictionary, as it was.
+    if (fields.productAction != nil) {
+        commerceEvent.transactionAttributes = [self transactionAttributes:fields.productAction];
+    }
 
-            MPProduct *p = [self product:(NSDictionary *)item];
-            if (p) { [products addObject:p]; }
+    // checkoutStep is a scalar, so it is only written when the payload had one.
+    if (fields.checkoutStep) { commerceEvent.checkoutStep = fields.checkoutStep.intValue; }
+
+    for (MPCommerceFlagJS *flag in fields.customFlags) {
+        [commerceEvent addCustomFlags:flag.values withKey:flag.key];
+    }
+
+    if (fields.products.count > 0) {
+        NSMutableArray<MPProduct *> *products = [NSMutableArray arrayWithCapacity:fields.products.count];
+        for (NSDictionary *productJson in fields.products) {
+            MPProduct *product = [self product:productJson];
+            if (product) { [products addObject:product]; }
         }
         [commerceEvent addProducts:products];
     }
 
-    id impressionsObj = json[@"ProductImpressions"];
-    if ([impressionsObj isKindOfClass:[NSArray class]]) {
-        NSArray *jsonImpressions = (NSArray *)impressionsObj;
-
-        for (id impressionItem in jsonImpressions) {
-            if (![impressionItem isKindOfClass:[NSDictionary class]]) { continue; }
-
-            NSDictionary *jsonImpression = (NSDictionary *)impressionItem;
-            id listNameObj = jsonImpression[@"ProductImpressionList"];
-            id impressionProductsObj = jsonImpression[@"ProductList"];
-
-            if ([listNameObj isKindOfClass:[NSString class]] &&
-                [impressionProductsObj isKindOfClass:[NSArray class]]) {
-
-                NSString *listName = (NSString *)listNameObj;
-                NSArray *impressionProducts = (NSArray *)impressionProductsObj;
-
-                for (id prodItem in impressionProducts) {
-                    if (![prodItem isKindOfClass:[NSDictionary class]]) { continue; }
-
-                    MPProduct *product = [MPConvertJS_PRIVATE product:(NSDictionary *)prodItem];
-                    [commerceEvent addImpression:product listName:listName];
-                }
-            }
+    for (MPCommerceImpressionJS *impression in fields.impressions) {
+        for (NSDictionary *productJson in impression.products) {
+            MPProduct *product = [MPConvertJS_PRIVATE product:productJson];
+            [commerceEvent addImpression:product listName:impression.listName];
         }
     }
 
@@ -154,32 +89,29 @@
 }
 
 + (MPPromotionContainer *)promotionContainer:(NSDictionary *)json {
-    NSDictionary *promotionActionDictionary = json[@"PromotionAction"];
-    if (!promotionActionDictionary || ![promotionActionDictionary isKindOfClass:[NSDictionary class]]) {
-        MPILogError(@"Unexpected promotion container action data received from webview");
-        return nil;
+    MPPromotionContainerFieldsJS *fields = [MPConvertJSFields promotionContainerFieldsFromJSON:json];
+
+    switch (fields.outcome) {
+        case MPPromotionContainerOutcomeJSMissingAction:
+            MPILogError(@"Unexpected promotion container action data received from webview");
+            return nil;
+        case MPPromotionContainerOutcomeJSMissingActionType:
+            MPILogError(@"Unexpected promotion container action type data received from webview");
+            return nil;
+        case MPPromotionContainerOutcomeJSMissingList:
+            MPILogError(@"Unexpected promotion container list data received from webview");
+            return nil;
+        case MPPromotionContainerOutcomeJSOk:
+            break;
     }
-    
-    NSNumber *promotionActionTypeNumber = promotionActionDictionary[@"PromotionActionType"];
-    if (promotionActionTypeNumber == nil || ![promotionActionTypeNumber isKindOfClass:[NSNumber class]]) {
-        MPILogError(@"Unexpected promotion container action type data received from webview");
-        return nil;
+
+    MPPromotionAction promotionAction = fields.isViewAction ? MPPromotionActionView : MPPromotionActionClick;
+    MPPromotionContainer *promotionContainer = [[MPPromotionContainer alloc] initWithAction:promotionAction
+                                                                                  promotion:nil];
+
+    for (NSDictionary *promotionJson in fields.promotions) {
+        [promotionContainer addPromotion:[MPConvertJS_PRIVATE promotion:promotionJson]];
     }
-    
-    int promotionActionInt = [promotionActionTypeNumber intValue];
-    MPPromotionAction promotionAction = promotionActionInt == 1 ? MPPromotionActionView : MPPromotionActionClick;
-    MPPromotionContainer *promotionContainer = [[MPPromotionContainer alloc] initWithAction:promotionAction promotion:nil];
-    
-    NSArray *jsonPromotions = promotionActionDictionary[@"PromotionList"];
-    if (!jsonPromotions || ![jsonPromotions isKindOfClass:[NSArray class]]) {
-        MPILogError(@"Unexpected promotion container list data received from webview");
-        return nil;
-    }
-    
-    [jsonPromotions enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        MPPromotion *promotion = [MPConvertJS_PRIVATE promotion:obj];
-        [promotionContainer addPromotion:promotion];
-    }];
 
     return promotionContainer;
 }
