@@ -76,3 +76,12 @@ mParticle-Apple-SDK/Utils/MPUploadSettings.m
 # dependency boundary is redesigned, at which point delete the entry with it.
 
 mParticle-Apple-SDK/Utils/MPUserDefaultsConnector.m
+
+# The ObjC<->Swift kit execution bridge. It has no ObjC callers and no public
+# header; the Swift MPKitContainer_PRIVATE reaches it only by
+# NSClassFromString("MPKitContainerExecutionAdapter"). It owns the Swift kit
+# engines and performs all SDK-object marshalling, NSClassFromString kit
+# creation, persistence access, and @try/@catch containment around third-party
+# kit code — the marshalling the Swift module cannot do because it cannot import
+# the ObjC module. It stays ObjC by design.
+mParticle-Apple-SDK/Kits/MPKitContainerExecutionAdapter.m
