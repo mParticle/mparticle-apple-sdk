@@ -6,9 +6,7 @@
 #import "MPStateMachine.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPAppNotificationHandler.h"
-#import "MPConnector.h"
 #import "MPNetworkCommunication.h"
-#import "MPConnectorProtocol.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;

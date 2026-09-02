@@ -4,7 +4,8 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPBackendController.h"
-#import "MPConnector.h"
+#import "MPNetworkCommunication.h"
+#import "MPNetworkCommunication+Tests.h"
 #import "MPPersistenceController.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitTestClassSideloaded.h"
@@ -36,16 +37,6 @@
 
 @interface MPKitContainer_PRIVATE ()
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
-@end
-
-@interface MPConnector (MParticleTests)
-
-- (nullable NSMutableURLRequest *)urlRequestForURL:(nonnull MPURL *)url
-                                           message:(nullable NSString *)message
-                                        httpMethod:(nullable NSString *)httpMethod
-                                          postData:(nullable NSData *)postData
-                                            secret:(nullable NSString *)secret;
-
 @end
 
 @interface MParticleTests : MPBaseTestCase {
@@ -1096,11 +1087,13 @@
     NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com/events"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
     NSData *body = [@"{}" dataUsingEncoding:NSUTF8StringEncoding];
-    NSMutableURLRequest *urlRequest = [[[MPConnector alloc] init] urlRequestForURL:mpURL
-                                                                           message:@"{}"
-                                                                        httpMethod:kMPHTTPMethodPost
-                                                                          postData:body
-                                                                            secret:nil];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPConnector *connector = [[MPConnector alloc] initWithConfiguration:networkCommunication.connectorConfiguration];
+    NSMutableURLRequest *urlRequest = [connector urlRequestForURL:mpURL
+                                                          message:@"{}"
+                                                       httpMethod:kMPHTTPMethodPost
+                                                         postData:body
+                                                           secret:nil];
     NSDictionary *fields = urlRequest.allHTTPHeaderFields;
     NSString *actualAgent = fields[@"User-Agent"];
     NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
@@ -1121,11 +1114,13 @@
     NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com/events"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
     NSData *body = [@"{}" dataUsingEncoding:NSUTF8StringEncoding];
-    NSMutableURLRequest *urlRequest = [[[MPConnector alloc] init] urlRequestForURL:mpURL
-                                                                           message:@"{}"
-                                                                        httpMethod:kMPHTTPMethodPost
-                                                                          postData:body
-                                                                            secret:nil];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPConnector *connector = [[MPConnector alloc] initWithConfiguration:networkCommunication.connectorConfiguration];
+    NSMutableURLRequest *urlRequest = [connector urlRequestForURL:mpURL
+                                                          message:@"{}"
+                                                       httpMethod:kMPHTTPMethodPost
+                                                         postData:body
+                                                           secret:nil];
     NSDictionary *fields = urlRequest.allHTTPHeaderFields;
     NSString *actualAgent = fields[@"User-Agent"];
     XCTAssertEqualObjects(actualAgent, customAgent);

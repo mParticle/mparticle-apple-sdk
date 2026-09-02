@@ -1,6 +1,7 @@
 #import "MPNetworkCommunication.h"
 
 @class MPURL;
+@class MPConnectorConfiguration;
 
 extern NSString * _Nonnull const kMPURLHostEventSubdomain;
 extern NSString * _Nonnull const kMPURLHostIdentitySubdomain;
@@ -16,5 +17,6 @@ extern NSString * _Nonnull const kMPURLHostIdentitySubdomain;
 - (nonnull MPURL *)aliasURL;
 - (nonnull MPURL *)modifyURL;
 - (nonnull MPURL *)identifyURL;
+- (nonnull MPConnectorConfiguration *)connectorConfiguration;
 
 @end

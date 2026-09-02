@@ -1,6 +1,5 @@
 #import "MPNetworkCommunication.h"
 #import <UIKit/UIKit.h>
-#import "MPConnector.h"
 #import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
@@ -15,6 +14,7 @@
 #import "MPConnectorFactoryProtocol.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
+#import "../Kits/MPKitContainer+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
@@ -58,6 +58,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
+@property (nonatomic, strong, readonly) MParticleWebViewPRIVATE *webView;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 - (MPLog *)getLogger;
 - (void)logKitBatch:(NSString *)batch;
@@ -469,12 +471,109 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     return maxAge;
 }
 
+- (MPURLRequestContext *)requestContextForKind:(MPURLRequestKind)requestKind {
+    MParticle *mParticle = MParticle.sharedInstance;
+
+    NSString *apiKey = nil;
+    NSString *fallbackSecret = nil;
+    NSString *userAgent = nil;
+    NSArray<NSNumber *> *supportedKits = nil;
+    NSArray<NSNumber *> *configuredKits = nil;
+    NSString *eTag = nil;
+    BOOL hasStoredConfiguration = NO;
+    NSInteger environment = 0;
+
+    if (requestKind != MPURLRequestKindCustom) {
+        fallbackSecret = mParticle.stateMachine.secret;
+    }
+
+    switch (requestKind) {
+        case MPURLRequestKindAudience:
+            apiKey = mParticle.stateMachine.apiKey;
+            userAgent = mParticle.webView.userAgent;
+            break;
+        case MPURLRequestKindIdentity:
+            apiKey = mParticle.stateMachine.apiKey;
+            break;
+        case MPURLRequestKindEvent:
+            supportedKits = mParticle.kitContainer_PRIVATE.supportedKits;
+            configuredKits = mParticle.kitContainer_PRIVATE.configuredKitsRegistry;
+            userAgent = mParticle.webView.userAgent;
+            break;
+        case MPURLRequestKindConfig: {
+            MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+            eTag = userDefaults[kMPHTTPETagHeaderKey];
+            hasStoredConfiguration = [userDefaults getConfiguration] != nil;
+            supportedKits = mParticle.kitContainer_PRIVATE.supportedKits;
+            userAgent = mParticle.webView.originalDefaultUserAgent;
+            environment = (NSInteger)[MPStateMachine_PRIVATE environment];
+            break;
+        }
+        case MPURLRequestKindCustom:
+            break;
+    }
+
+    MPLog *logger = mParticle.getLogger;
+    if (!logger) {
+        logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:(NSUInteger)mParticle.logLevel]];
+    }
+
+    return [[MPURLRequestContext alloc] initWithAPIKey:apiKey
+                                        fallbackSecret:fallbackSecret
+                                             userAgent:userAgent
+                                         supportedKits:supportedKits
+                                        configuredKits:configuredKits
+                                                  eTag:eTag
+                                hasStoredConfiguration:hasStoredConfiguration
+                                           environment:environment
+                                        requestTimeout:NETWORK_REQUEST_MAX_WAIT_SECONDS
+                         networkPerformanceMessageType:kMPMessageTypeNetworkPerformance
+                                                logger:logger];
+}
+
+- (MPConnectorConfiguration *)connectorConfiguration {
+    MParticle *mParticle = MParticle.sharedInstance;
+    MPNetworkOptions *networkOptions = mParticle.networkOptions;
+    NSMutableArray<NSString *> *pinnedHosts = [[NSMutableArray alloc] init];
+    NSArray<NSString *> *candidateHosts = @[
+        networkOptions.customBaseURL.host ?: @"",
+        networkOptions.configHost.pathComponents.firstObject ?: @"",
+        networkOptions.identityHost.pathComponents.firstObject ?: @"",
+        networkOptions.eventsHost.pathComponents.firstObject ?: @"",
+        networkOptions.aliasHost.pathComponents.firstObject ?: @""
+    ];
+    for (NSString *host in candidateHosts) {
+        if (host.length > 0 && ![pinnedHosts containsObject:host]) {
+            [pinnedHosts addObject:host];
+        }
+    }
+
+    MPLog *logger = mParticle.getLogger;
+    if (!logger) {
+        logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:(NSUInteger)mParticle.logLevel]];
+    }
+
+    return [[MPConnectorConfiguration alloc]
+        initWithPinnedHosts:pinnedHosts
+        customCertificates:networkOptions.certificates ?: @[]
+        pinningDisabledInDevelopment:networkOptions.pinningDisabledInDevelopment
+        pinningDisabled:networkOptions.pinningDisabled
+        isDevelopmentEnvironment:mParticle.environment == MPEnvironmentDevelopment
+        secureScheme:kMPURLScheme
+        requestTimeout:NETWORK_REQUEST_MAX_WAIT_SECONDS
+        logger:logger
+        requestContextProvider:^MPURLRequestContext * _Nonnull(MPURLRequestKind requestKind) {
+            return [self requestContextForKind:requestKind];
+        }];
+}
+
 #pragma mark Public methods
 - (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector {
     if (MPNetworkCommunication_PRIVATE.connectorFactory) {
         return [MPNetworkCommunication_PRIVATE.connectorFactory createConnector];
     }
-    return [[MPConnector alloc] init];
+
+    return [[MPConnector alloc] initWithConfiguration:self.connectorConfiguration];
 }
 
 - (UIBackgroundTaskIdentifier)beginSafeBackgroundTaskWithExpirationHandler:(void(^_Nullable)(void))handler {

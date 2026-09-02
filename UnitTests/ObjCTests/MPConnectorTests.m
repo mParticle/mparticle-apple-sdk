@@ -1,32 +1,28 @@
 #import <XCTest/XCTest.h>
 #import <CommonCrypto/CommonDigest.h>
-#import "MPConnector.h"
 #import "MPBaseTestCase.h"
 @import mParticle_Apple_SDK_Swift;
 #if TARGET_OS_IOS == 1
 #import <OCMock/OCMock.h>
 #import "MPIConstants.h"
 
-@interface MPConnector ()
-
-@property (nonatomic) NSURLSession *urlSession;
-
-+ (NSArray<NSString *> *)defaultPinnedCertificates;
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error;
-- (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error;
-- (nullable NSMutableURLRequest *)urlRequestForURL:(nonnull MPURL *)url
-                                           message:(nullable NSString *)message
-                                        httpMethod:(nullable NSString *)httpMethod
-                                          postData:(nullable NSData *)postData
-                                            secret:(nullable NSString *)secret;
-
-@end
-
 @interface MPConnectorTests  : MPBaseTestCase
 
 @end
 
 @implementation MPConnectorTests
+
+- (void)testGeneratedSwiftInterfacePreservesRuntimeContracts {
+    MPConnector *connector = [[MPConnector alloc] init];
+    MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+
+    XCTAssertEqualObjects(NSStringFromClass([MPConnector class]), @"MPConnector");
+    XCTAssertEqualObjects(NSStringFromClass([MPConnectorResponse class]), @"MPConnectorResponse");
+    XCTAssertTrue([connector conformsToProtocol:@protocol(MPConnectorProtocol)]);
+    XCTAssertTrue([response conformsToProtocol:@protocol(MPConnectorResponseProtocol)]);
+    XCTAssertEqual(HTTPStatusCodeSuccess, 200);
+    XCTAssertEqual(HTTPStatusCodeNetworkAuthenticationRequired, 511);
+}
 
 - (NSString *)sha256FingerprintForData:(NSData *)data {
     unsigned char digest[CC_SHA256_DIGEST_LENGTH];
@@ -59,7 +55,7 @@
     NSURLSession *mockSession = OCMClassMock([NSURLSession class]);
     connector.urlSession = mockSession;
     NSURLSessionTask *mockTask = OCMClassMock([NSURLSessionTask class]);
-    NSError *error = [NSError new];
+    NSError *error = [NSError errorWithDomain:@"MPConnectorTests" code:1 userInfo:nil];
     
     [connector URLSession:mockSession task:mockTask didCompleteWithError:error];
     OCMVerify([mockSession finishTasksAndInvalidate]);
@@ -81,7 +77,7 @@
     OCMReject([mockSession finishTasksAndInvalidate]);
     
     connector.urlSession = mockSession;
-    NSError *error = [NSError new];
+    NSError *error = [NSError errorWithDomain:@"MPConnectorTests" code:1 userInfo:nil];
     
     [connector URLSession:mockSession didBecomeInvalidWithError:error];
     
