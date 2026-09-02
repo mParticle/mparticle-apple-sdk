@@ -425,13 +425,51 @@
 
 - (void)testCheckAttributeArrayValueInvalidLongAttribute {
     NSError *error = nil;
-    id mockValue = [OCMockObject mockForClass:[NSString class]];
-    OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH);
     NSArray *arrayValue = @[@"foo", @10.0];
+
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPILogLevel previousLogLevel = mParticle.logLevel;
+    void (^previousCustomLogger)(NSString *) = [mParticle.customLogger copy];
+    __block NSString *logMessage = nil;
+    mParticle.logLevel = MPILogLevelError;
+    mParticle.customLogger = ^(NSString *message) {
+        logMessage = message;
+    };
+
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+
+    mParticle.customLogger = previousCustomLogger;
+    mParticle.logLevel = previousLogLevel;
+
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kInvalidDataType, error.code);
+    XCTAssertEqualObjects(logMessage, @"mParticle -> Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: 10");
+}
+
+- (void)testCheckAttributeArrayValuesTooLongLog {
+    NSError *error = nil;
+    NSString *longValue = [@"a" stringByPaddingToLength:LIMIT_ATTR_VALUE_LENGTH withString:@"a" startingAtIndex:0];
+    NSArray *arrayValue = @[@"foo", longValue];
+
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPILogLevel previousLogLevel = mParticle.logLevel;
+    void (^previousCustomLogger)(NSString *) = [mParticle.customLogger copy];
+    __block NSString *logMessage = nil;
+    mParticle.logLevel = MPILogLevelError;
+    mParticle.customLogger = ^(NSString *message) {
+        logMessage = message;
+    };
+
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+
+    mParticle.customLogger = previousCustomLogger;
+    mParticle.logLevel = previousLogLevel;
+
+    XCTAssertFalse(success);
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+    XCTAssertEqualObjects(logMessage, @"mParticle -> Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
 }
 
 

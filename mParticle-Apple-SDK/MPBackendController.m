@@ -866,10 +866,12 @@ static BOOL skipNextUpload = NO;
 
 + (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
+    id invalidArrayEntry = nil;
     MPAttributeValidationResult result = [MPAttributeValidator validateKey:key
                                                                      value:value
                                                             keyLengthLimit:LIMIT_ATTR_KEY_LENGTH
-                                                          valueLengthLimit:LIMIT_ATTR_VALUE_LENGTH];
+                                                          valueLengthLimit:LIMIT_ATTR_VALUE_LENGTH
+                                                         invalidArrayEntry:&invalidArrayEntry];
 
     if (result == MPAttributeValidationResultValid) {
         return YES;
@@ -896,6 +898,14 @@ static BOOL skipNextUpload = NO;
         case MPAttributeValidationResultValueTooLong:
             code = kExceededAttributeValueMaximumLength;
             MPILogError(@"Error while setting attribute value: value is longer than the maximum allowed %@", value);
+            break;
+        case MPAttributeValidationResultInvalidArrayEntry:
+            code = kInvalidDataType;
+            MPILogError(@"Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: %@", invalidArrayEntry);
+            break;
+        case MPAttributeValidationResultArrayValueTooLong:
+            code = kExceededAttributeValueMaximumLength;
+            MPILogError(@"Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
             break;
         case MPAttributeValidationResultValid:
             break;
