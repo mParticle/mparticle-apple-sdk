@@ -60,13 +60,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @interface MPBackendController_PRIVATE() {
     NSTimeInterval nextCleanUpTime;
-    dispatch_semaphore_t backendSemaphore;
     MParticleSession *tempSession;
 }
 @property NSTimeInterval timeAppWentToBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 @property NSTimeInterval timeOfLastEventInBackground;
-@property dispatch_source_t backgroundSource;
 @property dispatch_source_t uploadSource;
 @property NSMutableSet<NSString *> *deletedUserAttributes;
 @property NSNotification *didFinishLaunchingNotification;
@@ -96,7 +94,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
         _backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
         _delegate = delegate;
-        backendSemaphore = dispatch_semaphore_create(1);
         _backgroundCheckQueue = [[NSOperationQueue alloc] init];
         _backgroundCheckQueue.maxConcurrentOperationCount = 1;
         
@@ -183,24 +180,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         [userIdentities addObjectsFromArray:userIdentityArray];
     }
     
-    BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
-        NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
-        BOOL foundMatch = [currentIdentityType isEqualToNumber:@(MPIdentityIOSAdvertiserId)];
-        
-        if (foundMatch) {
-            *stop = YES;
-        }
-        
-        return foundMatch;
-    };
-    
-    NSUInteger existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
     NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
-    if (existingEntryIndex != NSNotFound && currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized) {
-        [userIdentities removeObjectAtIndex:existingEntryIndex];
-    }
-
-    return userIdentities;
+    BOOL notAuthorized = currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized;
+    return [[MPUserIdentityLogic identities:userIdentities removingType:MPIdentityIOSAdvertiserId when:notAuthorized typeKey:kMPUserIdentityTypeKey] mutableCopy];
 }
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
@@ -213,15 +195,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     }
 
     // Remove invalid identities
-    NSMutableArray *userIdentities = [identities mutableCopy];
-    [identities enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        id currentIdentityType = [identities objectAtIndex:idx][kMPUserIdentityTypeKey];
-        // Should be a number and should be one of the valid identity types
-        if (![currentIdentityType isKindOfClass:[NSNumber class]] || [(NSNumber *)currentIdentityType intValue] >= MPIdentityIOSAdvertiserId) {
-            [userIdentities removeObjectAtIndex:idx];
-        }
-    }];
-    return userIdentities;
+    return [[MPUserIdentityLogic validIdentities:identities typeKey:kMPUserIdentityTypeKey maxValidTypeExclusive:MPIdentityIOSAdvertiserId] mutableCopy];
 }
 
 #pragma mark Private methods
@@ -1089,17 +1063,7 @@ static BOOL skipNextUpload = NO;
         messageInfo[kMPErrorMessage] = message;
     }
     
-    NSData* data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
-    NSNumber *maxPLCrashBytesNumber = [MParticle sharedInstance].stateMachine.crashMaxPLReportLength;
-    if (maxPLCrashBytesNumber != nil) {
-        NSInteger maxPLCrashBytes = maxPLCrashBytesNumber.integerValue;
-        if (data.length > maxPLCrashBytes) {
-            NSInteger bytesToTruncate = data.length - maxPLCrashBytes;
-            NSInteger bytesRemaining = data.length - bytesToTruncate;
-            data = [data subdataWithRange:NSMakeRange(0, bytesRemaining)];
-        }
-    }
-    NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
+    NSString *plCrashReportBase64 = [MPBackendMessageInfo base64CrashReport:plCrashReport maxBytes:[MParticle sharedInstance].stateMachine.crashMaxPLReportLength];
     if(plCrashReportBase64) {
         messageInfo[kMPPLCrashReport] = plCrashReportBase64;
     }
@@ -1647,7 +1611,7 @@ static BOOL skipNextUpload = NO;
             userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:currentIdentities];
             
             NSNumber *timeIntervalMilliseconds = currentIdentities[kMPDateUserIdentityWasFirstSet];
-            userIdentityChange.newUserIdentity.dateFirstSet = timeIntervalMilliseconds != nil ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
+            userIdentityChange.newUserIdentity.dateFirstSet = [MPUserIdentityLogic dateFirstSetFromMilliseconds:timeIntervalMilliseconds];
             userIdentityChange.newUserIdentity.isFirstTimeSet = NO;
             
             identityDictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
@@ -1693,23 +1657,14 @@ static BOOL skipNextUpload = NO;
         NSData *deviceToken = userInfo[kMPRemoteNotificationDeviceTokenKey];
         NSData *oldDeviceToken = userInfo[kMPRemoteNotificationOldDeviceTokenKey];
         
-        if ((!deviceToken && !oldDeviceToken) || [deviceToken isEqualToData:oldDeviceToken]) {
+        MPPushRegistrationDecision *decision = [MPBackendMessageInfo pushRegistrationForDeviceToken:deviceToken oldDeviceToken:oldDeviceToken];
+        if (!decision) {
             return;
         }
-        
-        NSData *logDeviceToken;
-        NSString *status;
-        BOOL pushNotificationsEnabled = deviceToken != nil;
-        if (pushNotificationsEnabled) {
-            logDeviceToken = deviceToken;
-            status = @"true";
-        } else if (!pushNotificationsEnabled && oldDeviceToken) {
-            logDeviceToken = oldDeviceToken;
-            status = @"false";
-        }
-        NSMutableDictionary *messageInfo = [@{kMPPushStatusKey:status}
-        mutableCopy];
-        
+
+        NSData *logDeviceToken = decision.logToken;
+        NSMutableDictionary *messageInfo = [@{kMPPushStatusKey:decision.status} mutableCopy];
+
         NSString *tokenString = [MPUserDefaults stringFromDeviceToken:logDeviceToken];
         if (tokenString) {
             messageInfo[kMPDeviceTokenKey] = tokenString;
