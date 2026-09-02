@@ -240,8 +240,8 @@
 		72E8785C2F2AB29A00F355F2 /* MPSideloadedKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 72E8785B2F2AB29A00F355F2 /* MPSideloadedKit.m */; };
 		72FEBD182E86FE3B00B8341F /* MPIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */; };
 		7AF100032F50000300E74801 /* MPLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = 7AF100012F50000100E74801 /* MPLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		7AF100072F89801000E74802 /* MPRoktKitDispatchTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 7AF100062F89801000E74801 /* MPRoktKitDispatchTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7AF100042F50000400E74801 /* MPLocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AF100022F50000200E74801 /* MPLocation.m */; };
+		7AF100072F89801000E74802 /* MPRoktKitDispatchTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 7AF100062F89801000E74801 /* MPRoktKitDispatchTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7B0C1A022F70000100000002 /* NSDictionaryMPCaseInsensitiveTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7B0C1A012F70000100000001 /* NSDictionaryMPCaseInsensitiveTests.m */; };
 		7E0387812DB913D2003B7D5E /* MPRokt.h in Headers */ = {isa = PBXBuildFile; fileRef = 7E03877F2DB913D2003B7D5E /* MPRokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E0387802DB913D2003B7D5E /* MPRokt.m */; };
@@ -546,8 +546,8 @@
 		72E8785B2F2AB29A00F355F2 /* MPSideloadedKit.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPSideloadedKit.m; sourceTree = "<group>"; };
 		72FEBD162E86FE2D00B8341F /* MPIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIdentityTests.swift; sourceTree = "<group>"; };
 		7AF100012F50000100E74801 /* MPLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLocation.h; sourceTree = "<group>"; };
-		7AF100062F89801000E74801 /* MPRoktKitDispatchTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPRoktKitDispatchTarget.h; sourceTree = "<group>"; };
 		7AF100022F50000200E74801 /* MPLocation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLocation.m; sourceTree = "<group>"; };
+		7AF100062F89801000E74801 /* MPRoktKitDispatchTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPRoktKitDispatchTarget.h; sourceTree = "<group>"; };
 		7B0C1A012F70000100000001 /* NSDictionaryMPCaseInsensitiveTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSDictionaryMPCaseInsensitiveTests.m; sourceTree = "<group>"; };
 		7E03877F2DB913D2003B7D5E /* MPRokt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPRokt.h; sourceTree = "<group>"; };
 		7E0387802DB913D2003B7D5E /* MPRokt.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPRokt.m; sourceTree = "<group>"; };
@@ -574,22 +574,22 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
-				Test/Kits/MPEventProjectionParserTests.swift,
 				Test/Kits/MPDataPlanFilterPolicyTests.swift,
-				Test/Kits/MPKitFilterEngineTests.swift,
+				Test/Kits/MPEventProjectionParserTests.swift,
 				Test/Kits/MPKitConfigurationParserTests.swift,
-				Test/Kits/MPProjectionFieldParserTests.swift,
+				Test/Kits/MPKitFilterEngineTests.swift,
 				Test/Kits/MPKitProjectionEngineTests.swift,
 				Test/Kits/MPKitSelectorInvokerTests.swift,
+				Test/Kits/MPProjectionFieldParserTests.swift,
 				Test/Network/MParticleReachabilityTests.swift,
 				Test/Network/MPDataPlanQueryTests.swift,
 				Test/Network/MPEndpointHostResolverTests.swift,
 				Test/Network/MPEndpointPathStyleTests.swift,
 				Test/Network/MPRequestSignerTests.swift,
 				Test/Network/MPURLRequestPlanTests.swift,
+				Test/Notifications/MParticleUserNotificationTests.swift,
 				Test/Notifications/MPDeviceTokenStoreTests.swift,
 				Test/Notifications/MPPushTrackingLogicTests.swift,
-				Test/Notifications/MParticleUserNotificationTests.swift,
 				Test/Notifications/SceneDelegateLogicTests.swift,
 				Test/Persistence/MPPersistenceFileSystemTests.swift,
 				Test/Persistence/MPPersistenceSchemaTests.swift,
@@ -623,6 +623,7 @@
 				Test/Utils/MPNetworkCommunicationHelperTests.swift,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPSessionTimingPolicyTests.swift,
+				Test/Utils/MPMessageBatcherTests.swift,
 				Test/Utils/MPSettingsProviderTests.swift,
 				Test/Utils/MPStateMachineTests.swift,
 				Test/Utils/MPUploadSettingsTests.swift,
@@ -641,22 +642,22 @@
 			membershipExceptions = (
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
-				Test/Kits/MPEventProjectionParserTests.swift,
 				Test/Kits/MPDataPlanFilterPolicyTests.swift,
-				Test/Kits/MPKitFilterEngineTests.swift,
+				Test/Kits/MPEventProjectionParserTests.swift,
 				Test/Kits/MPKitConfigurationParserTests.swift,
-				Test/Kits/MPProjectionFieldParserTests.swift,
+				Test/Kits/MPKitFilterEngineTests.swift,
 				Test/Kits/MPKitProjectionEngineTests.swift,
 				Test/Kits/MPKitSelectorInvokerTests.swift,
+				Test/Kits/MPProjectionFieldParserTests.swift,
 				Test/Network/MParticleReachabilityTests.swift,
 				Test/Network/MPDataPlanQueryTests.swift,
 				Test/Network/MPEndpointHostResolverTests.swift,
 				Test/Network/MPEndpointPathStyleTests.swift,
 				Test/Network/MPRequestSignerTests.swift,
 				Test/Network/MPURLRequestPlanTests.swift,
+				Test/Notifications/MParticleUserNotificationTests.swift,
 				Test/Notifications/MPDeviceTokenStoreTests.swift,
 				Test/Notifications/MPPushTrackingLogicTests.swift,
-				Test/Notifications/MParticleUserNotificationTests.swift,
 				Test/Notifications/SceneDelegateLogicTests.swift,
 				Test/Persistence/MPPersistenceFileSystemTests.swift,
 				Test/Persistence/MPPersistenceSchemaTests.swift,
@@ -690,6 +691,7 @@
 				Test/Utils/MPNetworkCommunicationHelperTests.swift,
 				Test/Utils/MPResponseConfigTests.swift,
 				Test/Utils/MPSessionTimingPolicyTests.swift,
+				Test/Utils/MPMessageBatcherTests.swift,
 				Test/Utils/MPSettingsProviderTests.swift,
 				Test/Utils/MPStateMachineTests.swift,
 				Test/Utils/MPUploadSettingsTests.swift,
