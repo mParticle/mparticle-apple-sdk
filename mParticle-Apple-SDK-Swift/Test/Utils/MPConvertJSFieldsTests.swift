@@ -155,4 +155,128 @@ final class MPConvertJSFieldsTests: XCTestCase {
         XCTAssertEqual(fields.shipping, NSNumber(value: 0))
         XCTAssertEqual(fields.revenue, NSNumber(value: 0.0))
     }
+
+    // MARK: - product
+
+    func testProductFieldsReadsEveryValue() {
+        let fields = MPConvertJSFields.productFields(from: [
+            "Brand": "Acme",
+            "Category": "widgets",
+            "CouponCode": "SAVE5",
+            "Name": "Widget",
+            "Price": 9.99,
+            "Sku": "SKU-1",
+            "Variant": "blue",
+            "Position": 3,
+            "Quantity": 2
+        ])
+
+        XCTAssertEqual(fields.brand, "Acme")
+        XCTAssertEqual(fields.category, "widgets")
+        XCTAssertEqual(fields.couponCode, "SAVE5")
+        XCTAssertEqual(fields.name, "Widget")
+        XCTAssertEqual(fields.price, NSNumber(value: 9.99))
+        XCTAssertEqual(fields.sku, "SKU-1")
+        XCTAssertEqual(fields.variant, "blue")
+        XCTAssertEqual(fields.position, NSNumber(value: 3))
+        XCTAssertEqual(fields.quantity, NSNumber(value: 2))
+    }
+
+    func testProductPriceAcceptsAStringAndFallsBackToZero() {
+        // The ObjC had a second branch for NSString using -doubleValue, which
+        // yields 0 for text that is not a number rather than dropping the field.
+        XCTAssertEqual(MPConvertJSFields.productFields(from: ["Price": "9.99"]).price, NSNumber(value: 9.99))
+        XCTAssertEqual(MPConvertJSFields.productFields(from: ["Price": "abc"]).price, NSNumber(value: 0.0))
+        XCTAssertNil(MPConvertJSFields.productFields(from: ["Price": NSNull()]).price)
+        XCTAssertNil(MPConvertJSFields.productFields(from: ["Price": ["a": 1]]).price)
+    }
+
+    func testProductPositionIsNilWhenAbsentOrNotANumber() {
+        // position is a scalar on MPProduct, so nil has to mean "do not assign"
+        // rather than "assign zero".
+        XCTAssertNil(MPConvertJSFields.productFields(from: [:]).position)
+        XCTAssertNil(MPConvertJSFields.productFields(from: ["Position": "3"]).position)
+        XCTAssertEqual(MPConvertJSFields.productFields(from: ["Position": 0]).position, NSNumber(value: 0))
+    }
+
+    func testProductAttributesKeepsOnlyStringToStringPairs() {
+        let fields = MPConvertJSFields.productFields(from: ["Attributes": [
+            "good": "value",
+            "numeric": 42,
+            "null": NSNull(),
+            "nested": ["a": "b"]
+        ]])
+
+        XCTAssertEqual(fields.attributes, ["good": "value"])
+    }
+
+    func testProductAttributesIsEmptyWhenAbsentOrNotADictionary() {
+        for value: Any in ["not a dictionary", 7, NSNull(), ["a", "b"]] {
+            XCTAssertTrue(MPConvertJSFields.productFields(from: ["Attributes": value]).attributes.isEmpty)
+        }
+        XCTAssertTrue(MPConvertJSFields.productFields(from: nil).attributes.isEmpty)
+    }
+
+    // MARK: - identity request
+
+    func testIdentityRequestReadsThePairsInApplicationOrder() {
+        let parsed = MPConvertJSFields.identityRequest(from: [
+            "UserIdentities": [
+                ["Identity": "a@example.com", "Type": 7],
+                ["Identity": "cust-1", "Type": 1]
+            ],
+            "Identity": "last@example.com",
+            "Type": 7
+        ])
+
+        XCTAssertEqual(parsed.outcome, .ok)
+        XCTAssertEqual(parsed.pairs.count, 3)
+        XCTAssertEqual(parsed.pairs.map(\.identity), ["a@example.com", "cust-1", "last@example.com"])
+        // The top-level pair is applied last, so a duplicated type overwrites.
+        XCTAssertEqual(parsed.pairs.last?.identityType, 7)
+    }
+
+    func testIdentityRequestReportsAMissingUserIdentitiesArray() {
+        for json: [AnyHashable: Any]? in [[:], nil, ["UserIdentities": NSNull()], ["UserIdentities": "nope"]] {
+            XCTAssertEqual(MPConvertJSFields.identityRequest(from: json).outcome, .missingUserIdentities)
+        }
+    }
+
+    func testIdentityRequestReportsAMalformedEntrySeparately() {
+        // Distinct from the missing-array case: the ObjC logged for that one and
+        // returned nil silently for this one.
+        let cases: [Any] = [
+            ["Type": 7], // no Identity
+            ["Identity": "a@example.com"], // no Type
+            ["Identity": 42, "Type": 7], // Identity not a string
+            ["Identity": "a@example.com", "Type": "7"], // Type not a number
+            "not a dictionary" // crashed the ObjC outright
+        ]
+
+        for entry in cases {
+            let parsed = MPConvertJSFields.identityRequest(from: ["UserIdentities": [entry]])
+            XCTAssertEqual(parsed.outcome, .malformedEntry)
+            XCTAssertTrue(parsed.pairs.isEmpty)
+        }
+    }
+
+    func testIdentityRequestAcceptsAnEmptyArrayWithNoTopLevelPair() {
+        let parsed = MPConvertJSFields.identityRequest(from: ["UserIdentities": []])
+
+        XCTAssertEqual(parsed.outcome, .ok)
+        XCTAssertTrue(parsed.pairs.isEmpty)
+    }
+
+    func testIdentityRequestIgnoresAPartialTopLevelPair() {
+        for json: [AnyHashable: Any] in [
+            ["UserIdentities": [], "Identity": "a@example.com"],
+            ["UserIdentities": [], "Type": 7],
+            ["UserIdentities": [], "Identity": 42, "Type": 7]
+        ] {
+            let parsed = MPConvertJSFields.identityRequest(from: json)
+
+            XCTAssertEqual(parsed.outcome, .ok)
+            XCTAssertTrue(parsed.pairs.isEmpty)
+        }
+    }
 }

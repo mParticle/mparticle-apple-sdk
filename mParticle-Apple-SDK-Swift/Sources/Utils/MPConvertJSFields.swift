@@ -117,3 +117,151 @@ public final class MPConvertJSFields: NSObject {
         value as? NSNumber
     }
 }
+
+/// The values the webview bridge sends for one product. Every field is optional
+/// so the caller can keep the Objective-C guards: `name`, `sku` and `quantity`
+/// are `nonnull` on MPProduct, and `position` is a scalar, so "absent" and
+/// "nil" are not interchangeable the way they are for a promotion.
+@objc(MPProductFieldsJS)
+public final class MPProductFieldsJS: NSObject {
+    @objc public let brand: String?
+    @objc public let category: String?
+    @objc public let couponCode: String?
+    @objc public let name: String?
+    @objc public let price: NSNumber?
+    @objc public let sku: String?
+    @objc public let variant: String?
+    @objc public let position: NSNumber?
+    @objc public let quantity: NSNumber?
+    /// Already filtered to the string-key/string-value pairs the ObjC accepted.
+    @objc public let attributes: [String: String]
+
+    init(
+        brand: String?,
+        category: String?,
+        couponCode: String?,
+        name: String?,
+        price: NSNumber?,
+        sku: String?,
+        variant: String?,
+        position: NSNumber?,
+        quantity: NSNumber?,
+        attributes: [String: String]
+    ) {
+        self.brand = brand
+        self.category = category
+        self.couponCode = couponCode
+        self.name = name
+        self.price = price
+        self.sku = sku
+        self.variant = variant
+        self.position = position
+        self.quantity = quantity
+        self.attributes = attributes
+        super.init()
+    }
+}
+
+/// One `Identity`/`Type` pair from the webview bridge.
+@objc(MPWebviewIdentityPairJS)
+public final class MPWebviewIdentityPairJS: NSObject {
+    @objc public let identity: String
+    @objc public let identityType: UInt
+
+    init(identity: String, identityType: UInt) {
+        self.identity = identity
+        self.identityType = identityType
+        super.init()
+    }
+}
+
+/// Why an identity payload could not be read. The two failures are not
+/// interchangeable: a missing `UserIdentities` array logged before returning
+/// nil, while a malformed entry returned nil silently.
+@objc public enum MPWebviewIdentityOutcomeJS: Int {
+    case ok = 0
+    case missingUserIdentities = 1
+    case malformedEntry = 2
+}
+
+@objc(MPWebviewIdentityRequestJS)
+public final class MPWebviewIdentityRequestJS: NSObject {
+    @objc public let outcome: MPWebviewIdentityOutcomeJS
+    /// In application order: the `UserIdentities` entries, then the top-level
+    /// pair when present, so a duplicated type keeps its last-write-wins result.
+    @objc public let pairs: [MPWebviewIdentityPairJS]
+
+    init(outcome: MPWebviewIdentityOutcomeJS, pairs: [MPWebviewIdentityPairJS]) {
+        self.outcome = outcome
+        self.pairs = pairs
+        super.init()
+    }
+}
+
+public extension MPConvertJSFields {
+    @objc(productFieldsFromJSON:)
+    static func productFields(from json: [AnyHashable: Any]?) -> MPProductFieldsJS {
+        MPProductFieldsJS(
+            brand: json?["Brand"] as? String,
+            category: json?["Category"] as? String,
+            couponCode: json?["CouponCode"] as? String,
+            name: json?["Name"] as? String,
+            price: price(json?["Price"]),
+            sku: json?["Sku"] as? String,
+            variant: json?["Variant"] as? String,
+            position: json?["Position"] as? NSNumber,
+            quantity: json?["Quantity"] as? NSNumber,
+            attributes: stringAttributes(json?["Attributes"])
+        )
+    }
+
+    /// An NSNumber passes through; a string goes through `-doubleValue`, which
+    /// yields 0 for text that is not a number — the ObjC did exactly that, so a
+    /// `"Price": "abc"` still produces 0 rather than being dropped.
+    private static func price(_ value: Any?) -> NSNumber? {
+        switch value {
+        case let number as NSNumber: number
+        case let string as String: NSNumber(value: (string as NSString).doubleValue)
+        default: nil
+        }
+    }
+
+    /// Both the key and the value had to be strings; anything else was skipped.
+    private static func stringAttributes(_ value: Any?) -> [String: String] {
+        guard let dictionary = value as? [AnyHashable: Any] else {
+            return [:]
+        }
+
+        return dictionary.reduce(into: [String: String]()) { result, element in
+            if let key = element.key as? String, let value = element.value as? String {
+                result[key] = value
+            }
+        }
+    }
+
+    @objc(identityRequestFromJSON:)
+    static func identityRequest(from json: [AnyHashable: Any]?) -> MPWebviewIdentityRequestJS {
+        guard let userIdentities = json?["UserIdentities"] as? [Any] else {
+            return MPWebviewIdentityRequestJS(outcome: .missingUserIdentities, pairs: [])
+        }
+
+        var pairs: [MPWebviewIdentityPairJS] = []
+        for entry in userIdentities {
+            let dictionary = entry as? [AnyHashable: Any]
+            guard let identity = dictionary?["Identity"] as? String,
+                  let type = dictionary?["Type"] as? NSNumber
+            else {
+                // One bad entry abandoned the whole request, without logging.
+                return MPWebviewIdentityRequestJS(outcome: .malformedEntry, pairs: [])
+            }
+            pairs.append(MPWebviewIdentityPairJS(identity: identity, identityType: type.uintValue))
+        }
+
+        // Applied last, so it overwrites a type the array already set.
+        if let identity = json?["Identity"] as? String, let type = json?["Type"] as? NSNumber {
+            pairs.append(MPWebviewIdentityPairJS(identity: identity, identityType: type.uintValue))
+        }
+
+        return MPWebviewIdentityRequestJS(outcome: .ok, pairs: pairs)
+    }
+}

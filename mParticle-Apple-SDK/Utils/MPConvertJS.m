@@ -220,113 +220,47 @@
 
 + (MPProduct *)product:(NSDictionary *)json {
     MPProduct *product = [[MPProduct alloc] init];
+    MPProductFieldsJS *fields = [MPConvertJSFields productFieldsFromJSON:json];
 
-    id brand = json[@"Brand"];
-    if ([brand isKindOfClass:[NSString class]]) {
-        product.brand = (NSString *)brand;
-    }
+    // Guarded rather than assigned straight through: name, sku and quantity are
+    // nonnull and position is a scalar, so "absent" is not the same as nil here.
+    if (fields.brand) { product.brand = fields.brand; }
+    if (fields.category) { product.category = fields.category; }
+    if (fields.couponCode) { product.couponCode = fields.couponCode; }
+    if (fields.name) { product.name = fields.name; }
+    if (fields.price) { product.price = fields.price; }
+    if (fields.sku) { product.sku = fields.sku; }
+    if (fields.variant) { product.variant = fields.variant; }
+    if (fields.position) { product.position = fields.position.unsignedIntValue; }
+    if (fields.quantity) { product.quantity = fields.quantity; }
 
-    id category = json[@"Category"];
-    if ([category isKindOfClass:[NSString class]]) {
-        product.category = (NSString *)category;
-    }
-
-    id couponCode = json[@"CouponCode"];
-    if ([couponCode isKindOfClass:[NSString class]]) {
-        product.couponCode = (NSString *)couponCode;
-    }
-
-    id name = json[@"Name"];
-    if ([name isKindOfClass:[NSString class]]) {
-        product.name = (NSString *)name;
-    }
-
-    id price = json[@"Price"];
-    if ([price isKindOfClass:[NSNumber class]]) {
-        product.price = (NSNumber *)price;
-    } else if ([price isKindOfClass:[NSString class]]) {
-        product.price = @([(NSString *)price doubleValue]);
-    }
-
-    id sku = json[@"Sku"];
-    if ([sku isKindOfClass:[NSString class]]) {
-        product.sku = (NSString *)sku;
-    }
-
-    id variant = json[@"Variant"];
-    if ([variant isKindOfClass:[NSString class]]) {
-        product.variant = (NSString *)variant;
-    }
-
-    id position = json[@"Position"];
-    if ([position isKindOfClass:[NSNumber class]]) {
-        product.position = [(NSNumber *)position unsignedIntValue];
-    }
-
-    id quantity = json[@"Quantity"];
-    if ([quantity isKindOfClass:[NSNumber class]]) {
-        product.quantity = (NSNumber *)quantity;
-    }
-
-    id attributes = json[@"Attributes"];
-    if ([attributes isKindOfClass:[NSDictionary class]]) {
-        NSDictionary *jsonAttributes = (NSDictionary *)attributes;
-        [jsonAttributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            if ([key isKindOfClass:[NSString class]] && [obj isKindOfClass:[NSString class]]) {
-                [product setValue:obj forKey:key];
-            }
-        }];
-    }
+    [fields.attributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, __unused BOOL *stop) {
+        [product setValue:value forKey:key];
+    }];
 
     return product;
 }
 
 + (MPIdentityApiRequest *)identityApiRequest:(NSDictionary *)json {
+    // Built before validating, as it was before, in case requestWithEmptyUser
+    // ever does more than allocate.
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
-    
-    NSArray *userIdentities = json[@"UserIdentities"];
-    if (!userIdentities || ![userIdentities isKindOfClass:[NSArray class]]) {
+    MPWebviewIdentityRequestJS *parsed = [MPConvertJSFields identityRequestFromJSON:json];
+
+    if (parsed.outcome == MPWebviewIdentityOutcomeJSMissingUserIdentities) {
         MPILogError(@"Unexpected user identity data received from webview");
         return nil;
     }
-    
-    if (userIdentities.count > 0) {
-        __block BOOL allSuccess = YES;
-        
-        [userIdentities enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull identityDictionary, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSString *identity = identityDictionary[@"Identity"];
-            NSNumber *identityTypeNumber = identityDictionary[@"Type"];
-            
-            if (!identity || ![identity isKindOfClass:[NSString class]]) {
-                allSuccess = NO;
-                *stop = YES;
-                return;
-            }
-            
-            if (identityTypeNumber == nil || ![identityTypeNumber isKindOfClass:[NSNumber class]]) {
-                allSuccess = NO;
-                *stop = YES;
-                return;
-            }
-            
-            MPIdentity identityType = (MPIdentity)[identityTypeNumber unsignedIntegerValue];
-            [request setIdentity:identity identityType:identityType];
-        }];
-        
-        if (!allSuccess) {
-            return nil;
-        }
+
+    // A malformed entry abandoned the whole request without logging.
+    if (parsed.outcome != MPWebviewIdentityOutcomeJSOk) {
+        return nil;
     }
-    
-    NSString *identity = json[@"Identity"];
-    NSNumber *identityTypeNumber = json[@"Type"];
-    
-    if (identity && [identity isKindOfClass:[NSString class]] && 
-        identityTypeNumber && [identityTypeNumber isKindOfClass:[NSNumber class]]) {
-        MPIdentity identityType = (MPIdentity)[identityTypeNumber unsignedIntegerValue];
-        [request setIdentity:identity identityType:identityType];
+
+    for (MPWebviewIdentityPairJS *pair in parsed.pairs) {
+        [request setIdentity:pair.identity identityType:(MPIdentity)pair.identityType];
     }
-    
+
     return request;
 }
 
