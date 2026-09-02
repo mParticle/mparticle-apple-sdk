@@ -52,7 +52,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 + (MPMessageType)messageTypeForString:(NSString *)string {
     NSNumber *rawType = [MPMessageBuilderFields rawMessageTypeForString:string];
-    if (!rawType) {
+    if (rawType == nil) {
         MPILogError(@"Unknown message type string: %@", string);
         return MPMessageTypeUnknown;
     }
