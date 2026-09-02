@@ -2,36 +2,18 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "mParticle.h"
 #import "MPILogger.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MPConvertJS_PRIVATE
 
 + (MPCommerceEventAction)commerceEventAction:(NSNumber *)json {
-    int actionInt = [json intValue];
-    switch (actionInt) {
-        case MPJSCommerceEventActionAddToCart:
-            return MPCommerceEventActionAddToCart;
-        case MPJSCommerceEventActionRemoveFromCart:
-            return MPCommerceEventActionRemoveFromCart;
-        case MPJSCommerceEventActionCheckout:
-            return MPCommerceEventActionCheckout;
-        case MPJSCommerceEventActionCheckoutOptions:
-            return MPCommerceEventActionCheckoutOptions;
-        case MPJSCommerceEventActionClick:
-            return MPCommerceEventActionClick;
-        case MPJSCommerceEventActionViewDetail:
-            return MPCommerceEventActionViewDetail;
-        case MPJSCommerceEventActionPurchase:
-            return MPCommerceEventActionPurchase;
-        case MPJSCommerceEventActionRefund:
-            return MPCommerceEventActionRefund;
-        case MPJSCommerceEventActionAddToWishList:
-            return MPCommerceEventActionAddToWishList;
-        case MPJSCommerceEventActionRemoveFromWishlist:
-            return MPCommerceEventActionRemoveFromWishlist;
-        default:
-            MPILogError(@"Invalid commerce event action received from webview: %@", json);
-            return MPCommerceEventActionAddToCart;
+    NSNumber *action = [MPConvertJSFields commerceEventActionForJSValue:json];
+    if (action == nil) {
+        MPILogError(@"Invalid commerce event action received from webview: %@", json);
+        return MPCommerceEventActionAddToCart;
     }
+
+    return (MPCommerceEventAction)action.unsignedIntegerValue;
 }
 
 + (MPCommerceEvent *)commerceEvent:(NSDictionary *)json {
@@ -204,62 +186,28 @@
 
 + (MPPromotion *)promotion:(NSDictionary *)json {
     MPPromotion *promotion = [[MPPromotion alloc] init];
-    
-    id creative = json[@"Creative"];
-    if ([creative isKindOfClass:[NSString class]]) {
-        promotion.creative = (NSString *)creative;
-    }
+    MPPromotionFieldsJS *fields = [MPConvertJSFields promotionFieldsFromJSON:json];
 
-    id name = json[@"Name"];
-    if ([name isKindOfClass:[NSString class]]) {
-        promotion.name = (NSString *)name;
-    }
+    // Each setter removes its key when handed nil, and the keys are absent on a
+    // fresh instance, so assigning unconditionally matches the ObjC guards.
+    promotion.creative = fields.creative;
+    promotion.name = fields.name;
+    promotion.position = fields.position;
+    promotion.promotionId = fields.promotionId;
 
-    id position = json[@"Position"];
-    if ([position isKindOfClass:[NSString class]]) {
-        promotion.position = (NSString *)position;
-    }
-
-    id promoId = json[@"Id"];
-    if ([promoId isKindOfClass:[NSString class]]) {
-        promotion.promotionId = (NSString *)promoId;
-    }
-    
     return promotion;
 }
 
 + (MPTransactionAttributes *)transactionAttributes:(NSDictionary *)json {
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
-    
-    id affiliation = json[@"Affiliation"];
-    if ([affiliation isKindOfClass:[NSString class]]) {
-        transactionAttributes.affiliation = (NSString *)affiliation;
-    }
+    MPTransactionAttributesFieldsJS *fields = [MPConvertJSFields transactionAttributesFieldsFromJSON:json];
 
-    id couponCode = json[@"CouponCode"];
-    if ([couponCode isKindOfClass:[NSString class]]) {
-        transactionAttributes.couponCode = (NSString *)couponCode;
-    }
-
-    id shippingAmount = json[@"ShippingAmount"];
-    if ([shippingAmount isKindOfClass:[NSNumber class]]) {
-        transactionAttributes.shipping = (NSNumber *)shippingAmount;
-    }
-
-    id taxAmount = json[@"TaxAmount"];
-    if ([taxAmount isKindOfClass:[NSNumber class]]) {
-        transactionAttributes.tax = (NSNumber *)taxAmount;
-    }
-
-    id totalAmount = json[@"TotalAmount"];
-    if ([totalAmount isKindOfClass:[NSNumber class]]) {
-        transactionAttributes.revenue = (NSNumber *)totalAmount;
-    }
-
-    id transactionId = json[@"TransactionId"];
-    if ([transactionId isKindOfClass:[NSString class]]) {
-        transactionAttributes.transactionId = (NSString *)transactionId;
-    }
+    transactionAttributes.affiliation = fields.affiliation;
+    transactionAttributes.couponCode = fields.couponCode;
+    transactionAttributes.shipping = fields.shipping;
+    transactionAttributes.tax = fields.tax;
+    transactionAttributes.revenue = fields.revenue;
+    transactionAttributes.transactionId = fields.transactionId;
 
     return transactionAttributes;
 }
