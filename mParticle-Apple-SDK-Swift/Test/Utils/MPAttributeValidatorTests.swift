@@ -6,7 +6,13 @@ final class MPAttributeValidatorTests: XCTestCase {
     private let valueLimit = 4096
 
     private func validate(key: Any?, value: Any?) -> MPAttributeValidationResult {
-        MPAttributeValidator.validate(key: key, value: value, keyLengthLimit: keyLimit, valueLengthLimit: valueLimit)
+        MPAttributeValidator.validate(
+            key: key,
+            value: value,
+            keyLengthLimit: keyLimit,
+            valueLengthLimit: valueLimit,
+            invalidArrayEntry: nil
+        )
     }
 
     // MARK: - Valid values
@@ -60,11 +66,21 @@ final class MPAttributeValidatorTests: XCTestCase {
     }
 
     func testAnArrayWithANonStringEntryIsInvalid() {
-        XCTAssertEqual(validate(key: "foo", value: ["a", NSNumber(value: 1), "c"]), .invalidType)
+        var invalidArrayEntry: AnyObject?
+        let result = MPAttributeValidator.validate(
+            key: "foo",
+            value: ["a", NSNumber(value: 1), "c"],
+            keyLengthLimit: keyLimit,
+            valueLengthLimit: valueLimit,
+            invalidArrayEntry: &invalidArrayEntry
+        )
+
+        XCTAssertEqual(result, .invalidArrayEntry)
+        XCTAssertEqual(invalidArrayEntry as? NSNumber, NSNumber(value: 1))
     }
 
     func testAnArrayWhoseCombinedLengthExceedsTheLimitIsTooLong() {
         let half = String(repeating: "v", count: valueLimit/2 + 1)
-        XCTAssertEqual(validate(key: "foo", value: [half, half]), .valueTooLong)
+        XCTAssertEqual(validate(key: "foo", value: [half, half]), .arrayValueTooLong)
     }
 }

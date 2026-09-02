@@ -10,12 +10,21 @@ import Foundation
     case nilValue
     case invalidType
     case valueTooLong
+    case invalidArrayEntry
+    case arrayValueTooLong
 }
 
 @objc public final class MPAttributeValidator: NSObject {
-    @objc(validateKey:value:keyLengthLimit:valueLengthLimit:)
-    public static func validate(key: Any?, value: Any?, keyLengthLimit: Int,
-                                valueLengthLimit: Int) -> MPAttributeValidationResult {
+    @objc(validateKey:value:keyLengthLimit:valueLengthLimit:invalidArrayEntry:)
+    public static func validate(
+        key: Any?,
+        value: Any?,
+        keyLengthLimit: Int,
+        valueLengthLimit: Int,
+        invalidArrayEntry: AutoreleasingUnsafeMutablePointer<AnyObject?>?
+    ) -> MPAttributeValidationResult {
+        invalidArrayEntry?.pointee = nil
+
         if key == nil || key is NSNull {
             return .invalidKey
         }
@@ -47,12 +56,13 @@ import Foundation
             var totalValueLength = 0
             for entry in values {
                 guard let entryString = entry as? NSString else {
-                    return .invalidType
+                    invalidArrayEntry?.pointee = entry as AnyObject
+                    return .invalidArrayEntry
                 }
                 totalValueLength += entryString.length
             }
             if totalValueLength > valueLengthLimit {
-                return .valueTooLong
+                return .arrayValueTooLong
             }
         }
 
