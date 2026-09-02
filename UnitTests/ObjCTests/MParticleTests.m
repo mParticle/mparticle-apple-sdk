@@ -4,7 +4,7 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPBackendController.h"
-#import "MPURLRequestBuilder.h"
+#import "MPConnector.h"
 #import "MPPersistenceController.h"
 #import "MPURL.h"
 #import "MPKitContainer+MParticlePrivate.h"
@@ -37,6 +37,16 @@
 
 @interface MPKitContainer_PRIVATE ()
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
+@end
+
+@interface MPConnector (MParticleTests)
+
+- (nullable NSMutableURLRequest *)urlRequestForURL:(nonnull MPURL *)url
+                                           message:(nullable NSString *)message
+                                        httpMethod:(nullable NSString *)httpMethod
+                                          postData:(nullable NSData *)postData
+                                            secret:(nullable NSString *)secret;
+
 @end
 
 @interface MParticleTests : MPBaseTestCase {
@@ -1084,9 +1094,14 @@
 #endif
     id mockMParticle = OCMPartialMock([MParticle sharedInstance]);
     [[[mockMParticle stub] andReturn:mockWebView] webView];
-    NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
+    NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com/events"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
-    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet] build];
+    NSData *body = [@"{}" dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *urlRequest = [[[MPConnector alloc] init] urlRequestForURL:mpURL
+                                                                           message:@"{}"
+                                                                        httpMethod:kMPHTTPMethodPost
+                                                                          postData:body
+                                                                            secret:nil];
     NSDictionary *fields = urlRequest.allHTTPHeaderFields;
     NSString *actualAgent = fields[@"User-Agent"];
     NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
@@ -1104,9 +1119,14 @@
     id mockMParticle = OCMPartialMock([MParticle sharedInstance]);
     [[[mockMParticle stub] andReturn:mockWebView] webView];
     
-    NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
+    NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com/events"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
-    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet] build];
+    NSData *body = [@"{}" dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *urlRequest = [[[MPConnector alloc] init] urlRequestForURL:mpURL
+                                                                           message:@"{}"
+                                                                        httpMethod:kMPHTTPMethodPost
+                                                                          postData:body
+                                                                            secret:nil];
     NSDictionary *fields = urlRequest.allHTTPHeaderFields;
     NSString *actualAgent = fields[@"User-Agent"];
     XCTAssertEqualObjects(actualAgent, customAgent);
