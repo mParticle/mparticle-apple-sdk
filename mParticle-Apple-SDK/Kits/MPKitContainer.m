@@ -299,16 +299,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     [self freeKitRegister:kitRegister integrationId:integrationId];
 }
 
-// configureKits: calls freeKit:/freeKitRegister: while holding kitsSemaphore (see the
-// deactivateKits cleanup there), and dispatch_semaphore is not recursive, so this method
-// cannot take the lock itself. The wrapperInstance = nil detach below has to run inline
-// regardless, since that is what synchronizes with isActiveAndNotDisabled:'s reads of
-// wrapperInstance on other threads under the same lock. Everything after the detach -
-// stop(), disk cleanup, posting mParticleKitDidBecomeInactiveNotification - runs arbitrary
-// kit and observer code, so it is deferred to the main queue instead of running inline:
-// doing that work while still holding kitsSemaphore (as configureKits: does) would stall
-// every other thread waiting on the lock for as long as it takes, or deadlock outright if
-// an observer calls back into a kitsSemaphore-guarded method.
+// Callers of freeKit:/freeKitRegister: (via configureKits:) already hold kitsSemaphore for
+// the whole call, so detaching wrapperInstance here needs no separate lock - it is already
+// serialized against every other access. The detach must stay inline (it is what
+// synchronizes with isActiveAndNotDisabled: on other threads), but the teardown below is
+// deferred past the lock for the same reason flushSerializedKits defers it: stop(), disk
+// I/O and posting mParticleKitDidBecomeInactiveNotification all run arbitrary/observer code
+// on the calling thread, and doing that while still holding kitsSemaphore would stall every
+// other thread waiting on the lock for as long as that takes, or deadlock outright if an
+// observer calls back into any kitsSemaphore-guarded method.
 - (void)freeKitRegister:(id<MPExtensionKitProtocol>)kitRegister integrationId:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
 
@@ -326,12 +325,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
 }
 
-// wrapperInstance must already be detached from its kitRegister (kitRegister.wrapperInstance
-// set to nil) before calling this, by a caller synchronized with kitsSemaphore. This method
-// itself touches no container state, so it does not take kitsSemaphore, and every caller
-// runs it off of that lock regardless (see flushSerializedKits and freeKitRegister: above),
-// since stop(), disk cleanup and the notification post here run arbitrary kit/observer code
-// that must not run while the lock is held.
+// Stops wrapperInstance and cleans up its on-disk state and notification. wrapperInstance
+// must already be detached from its kitRegister (kitRegister.wrapperInstance set to nil)
+// before calling this. This method itself touches no container state, so it does not take
+// kitsSemaphore - but every caller defers it off of that lock regardless (see
+// flushSerializedKits and freeKitRegister:integrationId:), since the work here runs
+// arbitrary kit and observer code that must not run while the lock is held.
 - (void)teardownDetachedWrapperInstance:(id<MPKitProtocol>)wrapperInstance forIntegrationId:(NSNumber *)integrationId {
     if ([wrapperInstance respondsToSelector:@selector(stop)]) {
         [wrapperInstance stop];
