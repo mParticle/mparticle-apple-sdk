@@ -483,40 +483,27 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (NSArray *)batchMessageArraysFromMessageArray:(NSArray *)messages maxBatchMessages:(NSInteger)maxBatchMessages maxBatchBytes:(NSInteger)maxBatchBytes maxMessageBytes:(NSInteger)maxMessageBytes {
-    NSMutableArray *batchMessageArrays = [NSMutableArray array];
-    int batchMessageCount = 0;
-    int batchByteCount = 0;
-    
-    NSMutableArray *batchMessages = [NSMutableArray array];
-    
-    for (int i = 0; i < messages.count; i += 1) {
-        MPMessage *message = messages[i];
-        
-        NSInteger iterationMaxBatchBytes = maxBatchBytes;
-        NSInteger iterationMaxMessageBytes = maxMessageBytes;
-        bool isCrashReport = [message.messageType isEqualToString:kMPMessageTypeStringCrashReport];
-        if(isCrashReport) {
-            iterationMaxBatchBytes = MAX_BYTES_PER_BATCH_CRASH;
-            iterationMaxMessageBytes = MAX_BYTES_PER_EVENT_CRASH;
-        }
-        
-        if (message.messageData.length > iterationMaxMessageBytes) continue;
-        
-        if (batchMessageCount + 1 > maxBatchMessages || batchByteCount + message.messageData.length > iterationMaxBatchBytes) {
-            
-            [batchMessageArrays addObject:[batchMessages copy]];
-            
-            batchMessages = [NSMutableArray array];
-            batchMessageCount = 0;
-            batchByteCount = 0;
-            
-        }
-        [batchMessages addObject:message];
-        batchMessageCount += 1;
-        batchByteCount += message.messageData.length;
+    NSMutableArray<NSNumber *> *byteLengths = [NSMutableArray arrayWithCapacity:messages.count];
+    NSMutableArray<NSNumber *> *isCrashReport = [NSMutableArray arrayWithCapacity:messages.count];
+    for (MPMessage *message in messages) {
+        [byteLengths addObject:@(message.messageData.length)];
+        [isCrashReport addObject:@([message.messageType isEqualToString:kMPMessageTypeStringCrashReport])];
     }
-    
-    if (batchMessages.count > 0) {
+
+    NSArray<NSArray<NSNumber *> *> *indexGroups = [MPMessageBatcher batchGroupsWithLengths:byteLengths
+                                                                                crashFlags:isCrashReport
+                                                                               maxMessages:maxBatchMessages
+                                                                             maxBatchBytes:maxBatchBytes
+                                                                           maxMessageBytes:maxMessageBytes
+                                                                            crashBatchBytes:MAX_BYTES_PER_BATCH_CRASH
+                                                                          crashMessageBytes:MAX_BYTES_PER_EVENT_CRASH];
+
+    NSMutableArray *batchMessageArrays = [NSMutableArray arrayWithCapacity:indexGroups.count];
+    for (NSArray<NSNumber *> *indexGroup in indexGroups) {
+        NSMutableArray *batchMessages = [NSMutableArray arrayWithCapacity:indexGroup.count];
+        for (NSNumber *index in indexGroup) {
+            [batchMessages addObject:messages[index.unsignedIntegerValue]];
+        }
         [batchMessageArrays addObject:[batchMessages copy]];
     }
     return [batchMessageArrays copy];
