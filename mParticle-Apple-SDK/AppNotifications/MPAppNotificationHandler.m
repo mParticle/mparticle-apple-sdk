@@ -5,7 +5,6 @@
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
-#import "MPKitAPI.h"
 #import "mParticle.h"
 
 #if TARGET_OS_IOS == 1
@@ -25,10 +24,6 @@
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 + (dispatch_queue_t)messageQueue;
 
-@end
-
-@interface MPKitAPI ()
-- (id)initWithKitCode:(NSNumber *)integrationId;
 @end
 
 @interface MPForwardRecord ()
