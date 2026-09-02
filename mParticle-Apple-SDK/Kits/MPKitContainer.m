@@ -253,14 +253,20 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     // under the lock rather than enumerating the live one, which raced with the locked
     // mutation in configureKits: and could crash mid-enumeration.
     //
-    // The snapshot is taken here and iterated on the main queue without holding the lock:
-    // waiting on kitsSemaphore from the main queue would let a long background critical
-    // section stall the main thread. Iterating the snapshot lets this path call
-    // freeKitRegister: directly, so it never reads kitsRegistry unguarded - freeKit:
-    // itself has to stay lock-free because configureKits: calls it while holding the
-    // semaphore, and dispatch_semaphore is not recursive.
+    // wrapperInstance is declared nonatomic, so detaching it here is what actually
+    // synchronizes with isActiveAndNotDisabled:, which reads it under this same lock on
+    // other threads - a plain unguarded nil-out on the main queue raced with those reads
+    // and crashed inside objc_retain/objc_release on the freed wrapper. The rest of the
+    // teardown (stop, file cleanup, notification) does not touch container state, so it
+    // runs unlocked on the main queue below - holding kitsSemaphore across that would let
+    // a slow stop() or a slow disk stall every other thread waiting on the lock.
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     NSArray<id<MPExtensionKitProtocol>> *kitsSnapshot = [kitsRegistry allObjects];
+    NSMutableArray<id> *detachedWrapperInstances = [[NSMutableArray alloc] initWithCapacity:kitsSnapshot.count];
+    for (id<MPExtensionKitProtocol> kitRegister in kitsSnapshot) {
+        [detachedWrapperInstances addObject:kitRegister.wrapperInstance ?: [NSNull null]];
+        kitRegister.wrapperInstance = nil;
+    }
     dispatch_semaphore_signal(kitsSemaphore);
 
     // Entered synchronously, here, before returning - not inside the dispatched block below.
@@ -271,13 +277,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     // workspace's kits start before this teardown is even scheduled, let alone done.
     dispatch_group_enter(kitTeardownGroup);
     dispatch_async(dispatch_get_main_queue(), ^{
-        for (id<MPExtensionKitProtocol>kitRegister in kitsSnapshot) {
-            id<MPKitProtocol> wrapperInstance = kitRegister.wrapperInstance;
-            if (wrapperInstance) {
-                kitRegister.wrapperInstance = nil;
+        [kitsSnapshot enumerateObjectsUsingBlock:^(id<MPExtensionKitProtocol> kitRegister, NSUInteger idx, BOOL *stop) {
+            id wrapperInstance = detachedWrapperInstances[idx];
+            if (wrapperInstance != (id)[NSNull null]) {
                 [self teardownDetachedWrapperInstance:wrapperInstance forIntegrationId:kitRegister.code];
             }
-        }
+        }];
         dispatch_group_leave(kitTeardownGroup);
     });
 }
