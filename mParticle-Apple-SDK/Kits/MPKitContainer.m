@@ -2068,10 +2068,19 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 - (void)removeAllSideloadedKits {
     // Remove all sideloaded kits as new instances will be provided in the new MParticleOptions
     // The copy protects the enumeration but not the removal, so both run under the lock.
+    //
+    // Identify sideloaded registers by their code, not by asking wrapperInstance whether it
+    // responds to sideloadedKitCode. Both call sites (resetForSwitchingWorkspaces:, reset:)
+    // call flushSerializedKits immediately before this, and flushSerializedKits now detaches
+    // wrapperInstance to nil synchronously (to close a race with activeKitsRegistry - see that
+    // method) before this ever runs. [nil respondsToSelector:] is NO, so that check stopped
+    // matching anything once wrapperInstance was already nil, and sideloaded kits from the
+    // previous workspace were never removed. initWithInstance:kitCode: assigns every sideloaded
+    // kit a code >= sideloadedKitCodeStartValue, and that assignment survives the detach.
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     NSSet *kits = [kitsRegistry copy];
     for (id<MPExtensionKitProtocol>kitRegister in kits) {
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(sideloadedKitCode)]) {
+        if (kitRegister.code.integerValue >= sideloadedKitCodeStartValue) {
             [kitsRegistry removeObject:kitRegister];
         }
     }
