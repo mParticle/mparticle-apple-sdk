@@ -168,13 +168,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSMutableDictionary *userAttributes = [[userDefaults mpObjectForKey:kMPUserAttributeKey userId:userId] mutableCopy];
     if (userAttributes) {
-        Class NSStringClass = [NSString class];
-        for (NSString *key in [userAttributes allKeys]) {
-            if ([userAttributes[key] isKindOfClass:NSStringClass]) {
-                userAttributes[key] = ![userAttributes[key] isEqualToString:kMPNullUserAttributeString] ? userAttributes[key] : [NSNull null];
-            }
-        }
-        return userAttributes;
+        return [[MPUserAttributeLogic attributesFromStorage:userAttributes nullSentinel:kMPNullUserAttributeString] mutableCopy];
     } else {
         return [NSMutableDictionary dictionary];
     }
@@ -452,18 +446,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         return;
     }
     
-    NSMutableDictionary *userAttributesCopy = [[NSMutableDictionary alloc] initWithCapacity:userAttributes.count];
-    NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
-    NSString *aKey;
-    
-    while ((aKey = [attributeEnumerator nextObject])) {
-        if ((NSNull *)userAttributes[aKey] == [NSNull null]) {
-            userAttributesCopy[aKey] = kMPNullUserAttributeString;
-        } else {
-            userAttributesCopy[aKey] = userAttributes[aKey];
-        }
-    }
-    
+    NSDictionary *userAttributesCopy = [MPUserAttributeLogic attributesForStorage:userAttributes nullSentinel:kMPNullUserAttributeString];
+
     if (userAttributeChange.changed) {
         if ([userAttributeValue isKindOfClass:[NSNumber class]]) {
             userAttributeChange.valueToLog = [(NSNumber *)userAttributeValue stringValue];
@@ -866,10 +850,12 @@ static BOOL skipNextUpload = NO;
 
 + (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
+    id invalidArrayEntry = nil;
     MPAttributeValidationResult result = [MPAttributeValidator validateKey:key
                                                                      value:value
                                                             keyLengthLimit:LIMIT_ATTR_KEY_LENGTH
-                                                          valueLengthLimit:LIMIT_ATTR_VALUE_LENGTH];
+                                                          valueLengthLimit:LIMIT_ATTR_VALUE_LENGTH
+                                                         invalidArrayEntry:&invalidArrayEntry];
 
     if (result == MPAttributeValidationResultValid) {
         return YES;
@@ -896,6 +882,14 @@ static BOOL skipNextUpload = NO;
         case MPAttributeValidationResultValueTooLong:
             code = kExceededAttributeValueMaximumLength;
             MPILogError(@"Error while setting attribute value: value is longer than the maximum allowed %@", value);
+            break;
+        case MPAttributeValidationResultInvalidArrayEntry:
+            code = kInvalidDataType;
+            MPILogError(@"Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: %@", invalidArrayEntry);
+            break;
+        case MPAttributeValidationResultArrayValueTooLong:
+            code = kExceededAttributeValueMaximumLength;
+            MPILogError(@"Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
             break;
         case MPAttributeValidationResultValid:
             break;
@@ -956,10 +950,8 @@ static BOOL skipNextUpload = NO;
         return nil;
     }
     
-    NSDecimalNumber *incrementValue = [[NSDecimalNumber alloc] initWithString:[value stringValue]];
-    NSDecimalNumber *newValue = [[NSDecimalNumber alloc] initWithString:[(NSNumber *)currentValue stringValue]];
-    newValue = [newValue decimalNumberByAdding:incrementValue];
-    
+    NSNumber *newValue = [MPUserAttributeLogic incrementedValueFrom:(NSNumber *)currentValue byValue:value];
+
     session.attributesDictionary[localKey] = newValue;
     
     dispatch_async([MParticle messageQueue], ^{
@@ -987,24 +979,12 @@ static BOOL skipNextUpload = NO;
         currentValue = @0;
     }
     
-    NSDecimalNumber *incrementValue = [[NSDecimalNumber alloc] initWithString:[value stringValue]];
-    NSDecimalNumber *newValue = [[NSDecimalNumber alloc] initWithString:[(NSNumber *)currentValue stringValue]];
-    newValue = [newValue decimalNumberByAdding:incrementValue];
-    
+    NSNumber *newValue = [MPUserAttributeLogic incrementedValueFrom:(NSNumber *)currentValue byValue:value];
+
     NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
     userAttributes[localKey] = newValue;
-    
-    NSMutableDictionary *userAttributesCopy = [[NSMutableDictionary alloc] initWithCapacity:userAttributes.count];
-    NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
-    NSString *aKey;
-    
-    while ((aKey = [attributeEnumerator nextObject])) {
-        if ((NSNull *)userAttributes[aKey] == [NSNull null]) {
-            userAttributesCopy[aKey] = kMPNullUserAttributeString;
-        } else {
-            userAttributesCopy[aKey] = userAttributes[aKey];
-        }
-    }
+
+    NSDictionary *userAttributesCopy = [MPUserAttributeLogic attributesForStorage:userAttributes nullSentinel:kMPNullUserAttributeString];
     
     MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] copy] key:key value:newValue];
     userAttributeChange.timestamp = timestamp;
