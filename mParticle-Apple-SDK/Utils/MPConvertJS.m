@@ -228,11 +228,11 @@
     if (fields.category) { product.category = fields.category; }
     if (fields.couponCode) { product.couponCode = fields.couponCode; }
     if (fields.name) { product.name = fields.name; }
-    if (fields.price) { product.price = fields.price; }
+    if (fields.price != nil) { product.price = fields.price; }
     if (fields.sku) { product.sku = fields.sku; }
     if (fields.variant) { product.variant = fields.variant; }
-    if (fields.position) { product.position = fields.position.unsignedIntValue; }
-    if (fields.quantity) { product.quantity = fields.quantity; }
+    if (fields.position != nil) { product.position = fields.position.unsignedIntValue; }
+    if (fields.quantity != nil) { product.quantity = fields.quantity; }
 
     [fields.attributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, __unused BOOL *stop) {
         [product setValue:value forKey:key];
