@@ -881,77 +881,46 @@ static BOOL skipNextUpload = NO;
 
 + (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
-    if (MPIsNull(key)) {
-        if (error) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidKey userInfo:nil];
-        }
-        MPILogError(@"Error while setting attribute key: the key parameter cannot be nil");
-        return NO;
+    MPAttributeValidationResult result = [MPAttributeValidator validateKey:key
+                                                                     value:value
+                                                            keyLengthLimit:LIMIT_ATTR_KEY_LENGTH
+                                                          valueLengthLimit:LIMIT_ATTR_VALUE_LENGTH];
+
+    if (result == MPAttributeValidationResultValid) {
+        return YES;
     }
-    
-    if (key.length > LIMIT_ATTR_KEY_LENGTH) {
-        if (error) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeKeyMaximumLength userInfo:nil];
-        }
-        MPILogError(@"Error while setting attribute key: the key parameter is longer than the maximum allowed length.");
-        return NO;
-    }
-    
-    if (!value) {
-        //don't log an error here, as this may just be treated as a removal.
-        if (error) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kNilAttributeValue userInfo:nil];
-        }
-        return NO;
-    }
-    
-    BOOL isStringValue = [value isKindOfClass:[NSString class]];
-    BOOL isArrayValue = [value isKindOfClass:[NSArray class]];
-    BOOL isNumberValue = [value isKindOfClass:[NSNumber class]];
-    BOOL isNSNullValue = [value isKindOfClass:[NSNull class]];
-    
-    if (!isStringValue && !isArrayValue && !isNumberValue && !isNSNullValue) {
-        if (error) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
-        }
-        MPILogError(@"Error while setting attribute value: must be an NSString or NSArray");
-        return NO;
-    }
-    
-    if (isStringValue) {
-        if (((NSString *)value).length > LIMIT_ATTR_VALUE_LENGTH) {
-            if (error) {
-                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeValueMaximumLength userInfo:nil];
-            }
+
+    NSInteger code = kInvalidDataType;
+    switch (result) {
+        case MPAttributeValidationResultInvalidKey:
+            code = kInvalidKey;
+            MPILogError(@"Error while setting attribute key: the key parameter cannot be nil");
+            break;
+        case MPAttributeValidationResultKeyTooLong:
+            code = kExceededAttributeKeyMaximumLength;
+            MPILogError(@"Error while setting attribute key: the key parameter is longer than the maximum allowed length.");
+            break;
+        case MPAttributeValidationResultNilValue:
+            // A nil value may just be treated as a removal, so no error is logged.
+            code = kNilAttributeValue;
+            break;
+        case MPAttributeValidationResultInvalidType:
+            code = kInvalidDataType;
+            MPILogError(@"Error while setting attribute value: must be an NSString or NSArray");
+            break;
+        case MPAttributeValidationResultValueTooLong:
+            code = kExceededAttributeValueMaximumLength;
             MPILogError(@"Error while setting attribute value: value is longer than the maximum allowed %@", value);
-            return NO;
-        }
+            break;
+        case MPAttributeValidationResultValid:
+            break;
     }
-    
-    if (isArrayValue) {
-        Class stringClass = [NSString class];
-        NSArray *values = (NSArray *)value;
-        NSInteger totalValueLength = 0;
-        for (id entryValue in values) {
-            if (![entryValue isKindOfClass:stringClass]) {
-                if (error) {
-                    *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
-                }
-                MPILogError(@"Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: %@", entryValue);
-                return NO;
-            }
-            totalValueLength += ((NSString *)entryValue).length;
-        }
-        if (totalValueLength > LIMIT_ATTR_VALUE_LENGTH) {
-            if (error) {
-                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeValueMaximumLength userInfo:nil];
-            }
-            MPILogError(@"Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
-            return NO;
-        }
+
+    if (error) {
+        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:code userInfo:nil];
     }
-    
-    return YES;
+
+    return NO;
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
