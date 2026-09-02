@@ -35,49 +35,22 @@
     _configurationHash = @([[hasher hashString:ekConfigString] intValue]);
     
     // Attribute value filtering
-    NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];
-    if (!MPIsNull(attributeValueFiltering)) {
-        NSNumber *shouldIncludeMatches = !MPIsNull(attributeValueFiltering[@"i"]) ? attributeValueFiltering[@"i"] : nil;
-        NSNumber *hashedAttribute = attributeValueFiltering[@"a"];
-        NSNumber *hashedValue = attributeValueFiltering[@"v"];
-        
-        if (shouldIncludeMatches && hashedAttribute && hashedValue) {
-            _attributeValueFilteringIsActive = YES;
-            _attributeValueFilteringShouldIncludeMatches = [shouldIncludeMatches boolValue];
-            _attributeValueFilteringHashedAttribute = [NSString stringWithFormat:@"%@", hashedAttribute];
-            _attributeValueFilteringHashedValue = [NSString stringWithFormat:@"%@", hashedValue];
-        }
+    MPAttributeValueFilterConfig *attributeValueFilter = [MPKitConfigurationParser attributeValueFilterFromConfiguration:configurationDictionary];
+    if (attributeValueFilter.isActive) {
+        _attributeValueFilteringIsActive = YES;
+        _attributeValueFilteringShouldIncludeMatches = attributeValueFilter.shouldIncludeMatches;
+        _attributeValueFilteringHashedAttribute = attributeValueFilter.hashedAttribute;
+        _attributeValueFilteringHashedValue = attributeValueFilter.hashedValue;
     }
     
     // Filters
     [self setFilters:configurationDictionary[kMPRemoteConfigKitHashesKey]];
     
     // Configuration
-    _configuration = configurationDictionary[@"as"];
-    if (_configuration) {
-        NSMutableDictionary *configDictionary = [_configuration mutableCopy];
-        
-        if (_addEventAttributeList) {
-            configDictionary[@"eaa"] = _addEventAttributeList;
-        }
-        
-        if (_removeEventAttributeList) {
-            configDictionary[@"ear"] = _removeEventAttributeList;
-        }
-        
-        if (_singleItemEventAttributeList) {
-            configDictionary[@"eas"] = _singleItemEventAttributeList;
-        }
-        
-        for (NSString *key in configDictionary.allKeys) {
-            id value = configDictionary[key];
-            if ((NSNull *)value == [NSNull null]) {
-                [configDictionary removeObjectForKey:key];
-            }
-        }
-        
-        _configuration = [configDictionary copy];
-    }
+    _configuration = [MPKitConfigurationParser mergedConfigurationFrom:configurationDictionary[@"as"]
+                                                 addEventAttributeList:_addEventAttributeList
+                                              removeEventAttributeList:_removeEventAttributeList
+                                          singleItemEventAttributeList:_singleItemEventAttributeList];
     
     // Projections
     [self configureProjections:configurationDictionary[@"pr"]];
@@ -151,20 +124,7 @@
         return;
     }
     
-    if (!MPIsNull(filters)) {
-        NSMutableDictionary *sanitizedFilters = [[NSMutableDictionary alloc] initWithCapacity:filters.count];
-        [filters enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-            if (!MPIsNull(obj)) {
-                sanitizedFilters[key] = obj;
-            }
-        }];
-        
-        filters = sanitizedFilters.count > 0 ? [sanitizedFilters copy] : nil;
-    } else {
-        filters = nil;
-    }
-    
-    _filters = filters;
+    _filters = [MPKitConfigurationParser sanitizedFiltersFrom:filters];
     
     _eventTypeFilters = _filters[@"et"];
     _eventNameFilters = _filters[@"ec"];
