@@ -12,6 +12,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
 #import "MPILogger.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MParticleUserNotification
 
@@ -31,7 +32,11 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 
     _behavior = behavior;
     _state = state;
-    _redactedUserNotificationString = [self redactUserNotification:notificationDictionary];
+
+    MParticleUserNotificationPRIVATE *implementation = [[MParticleUserNotificationPRIVATE alloc] initWithNotificationDictionary:notificationDictionary];
+    _redactedUserNotificationString = implementation.redactedUserNotificationString;
+    _categoryIdentifier = implementation.categoryIdentifier;
+
     _uuid = [[NSUUID UUID] UUIDString];
     _actionTitle = nil;
     _actionIdentifier = nil;
@@ -63,117 +68,20 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     return description;
 }
 
-- (BOOL)isEqual:(MParticleUserNotification *)object {
-    BOOL isEqual = NO;
-    
-    if (_userNotificationId > 0 && object.userNotificationId > 0) {
-        isEqual = _userNotificationId == object.userNotificationId;
-        
-        if (isEqual) {
-            return YES;
-        }
+- (BOOL)isEqual:(id)object {
+    if (![object isKindOfClass:[MParticleUserNotification class]]) {
+        return NO;
     }
-    
-    if (_redactedUserNotificationString && object.redactedUserNotificationString) {
-        NSData *redactedUserData1 = [_redactedUserNotificationString dataUsingEncoding:NSUTF8StringEncoding];
-        NSDictionary *redactedUserDictionary1 = [NSJSONSerialization JSONObjectWithData:redactedUserData1 options:0 error:nil];
-        NSData *redactedUserData2 = [object.redactedUserNotificationString dataUsingEncoding:NSUTF8StringEncoding];
-        NSDictionary *redactedUserDictionary2 = [NSJSONSerialization JSONObjectWithData:redactedUserData2 options:0 error:nil];
-        
-        isEqual = [redactedUserDictionary1 isEqualToDictionary:redactedUserDictionary2];
-    }
-    
-    return isEqual;
+
+    MParticleUserNotification *other = (MParticleUserNotification *)object;
+    return [MParticleUserNotificationPRIVATE isEqualWithUserNotificationId:_userNotificationId
+                                                           redactedString:_redactedUserNotificationString
+                                                  otherUserNotificationId:other.userNotificationId
+                                                      otherRedactedString:other.redactedUserNotificationString];
 }
 
 - (NSUInteger)hash {
     return (NSUInteger)self.userNotificationId;
-}
-
-#pragma mark Private methods
-- (NSString *)redactUserNotification:(NSDictionary *)notificationDictionary {
-    NSString * (^dictionaryToString)(NSDictionary *) = ^(NSDictionary *dictionary) {
-        NSString *dictionaryString = nil;
-        
-        if (dictionary == nil) {
-            return dictionaryString;
-        }
-        
-        NSError *error = nil;
-        @try {
-            NSData *dictionaryData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-            
-            if (!error) {
-                dictionaryString = [[NSString alloc] initWithData:dictionaryData encoding:NSUTF8StringEncoding];
-            }
-        } @catch (NSException *exception) {
-            MPILogError(@"Exception serializing a notification dictionary: %@", [exception reason]);
-        }
-        
-        return dictionaryString;
-    };
-    
-    NSString *redactedNotificationString = nil;
-    
-    if (notificationDictionary[kMPUserNotificationContentAvailableKey]) {
-        redactedNotificationString = dictionaryToString(notificationDictionary);
-        return redactedNotificationString;
-    }
-    
-    NSMutableDictionary *mPushNotificationDictionary = [notificationDictionary mutableCopy];
-    NSDictionary *apsDictionary = mPushNotificationDictionary[kMPUserNotificationApsKey];
-    
-    if (![apsDictionary isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    _categoryIdentifier = apsDictionary[kMPUserNotificationCategoryKey];
-    
-    id alert = apsDictionary[kMPUserNotificationAlertKey];
-    
-    if (!alert) {
-        redactedNotificationString = dictionaryToString(notificationDictionary);
-        return redactedNotificationString;
-    }
-    
-    [mPushNotificationDictionary removeObjectForKey:kMPUserNotificationApsKey];
-    NSMutableDictionary *mAPSDictionary = [[NSMutableDictionary alloc] initWithCapacity:apsDictionary.count];
-    NSEnumerator *apsEnumerator = [apsDictionary keyEnumerator];
-    NSString *apsKey;
-    
-    if ([alert isKindOfClass:[NSString class]]) {
-        while ((apsKey = [apsEnumerator nextObject])) {
-            if (![apsKey isEqualToString:kMPUserNotificationAlertKey]) {
-                mAPSDictionary[apsKey] = apsDictionary[apsKey];
-            }
-        }
-    } else if ([alert isKindOfClass:[NSDictionary class]]) {
-        while ((apsKey = [apsEnumerator nextObject])) {
-            if ([apsKey isEqualToString:kMPUserNotificationAlertKey]) {
-                NSMutableDictionary *alertDictionary = [[NSMutableDictionary alloc] init];
-                NSEnumerator *alertEnumerator = [alert keyEnumerator];
-                NSString *alertKey;
-                
-                while ((alertKey = [alertEnumerator nextObject])) {
-                    if ([alertKey isEqualToString:kMPUserNotificationBodyKey]) {
-                        continue;
-                    }
-                    
-                    alertDictionary[alertKey] = alert[alertKey];
-                }
-                
-                mAPSDictionary[kMPUserNotificationAlertKey] = alertDictionary;
-            } else {
-                mAPSDictionary[apsKey] = apsDictionary[apsKey];
-            }
-        }
-    }
-    
-    mPushNotificationDictionary[kMPUserNotificationApsKey] = mAPSDictionary;
-    
-    redactedNotificationString = dictionaryToString(mPushNotificationDictionary);
-    
-    return redactedNotificationString;
 }
 
 #pragma mark NSSecureCoding
