@@ -1,4 +1,5 @@
 #import "MPBaseProjection.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MPBaseProjection
 
@@ -11,106 +12,42 @@
 
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration projectionType:(MPProjectionType)projectionType attributeIndex:(NSUInteger)attributeIndex {
     self = [super init];
-    NSDictionary *actionDictionary = !MPIsNull(configuration[@"action"]) ? configuration[@"action"] : nil;
-    
+    NSDictionary *actionDictionary = [MPProjectionFieldParser actionFromConfiguration:configuration];
+
     if (!self || !actionDictionary) {
         return nil;
     }
-    
+
     _configuration = configuration;
     _attributeIndex = attributeIndex;
     _projectionType = projectionType;
-    NSString *matchType = nil;
-    NSString *auxString;
-    
-    MPProjectionPropertyKind (^propertyKindForString)(NSString *) = ^(NSString *property) {
-        MPProjectionPropertyKind propertyKind;
-        
-        if (!MPIsNull(property) && property.length > 0) {
-            if ([property isEqualToString:@"EventField"]) {
-                propertyKind = MPProjectionPropertyKindEventField;
-            } else if ([property isEqualToString:@"EventAttribute"]) {
-                propertyKind = MPProjectionPropertyKindEventAttribute;
-            } else if ([property isEqualToString:@"ProductField"]) {
-                propertyKind = MPProjectionPropertyKindProductField;
-            } else if ([property isEqualToString:@"ProductAttribute"]) {
-                propertyKind = MPProjectionPropertyKindProductAttribute;
-            } else if ([property isEqualToString:@"PromotionField"]) {
-                propertyKind = MPProjectionPropertyKindPromotionField;
-            } else if ([property isEqualToString:@"PromotionAttribute"]) {
-                propertyKind = MPProjectionPropertyKindPromotionAttribute;
-            } else {
-                propertyKind = MPProjectionPropertyKindEventField;
-            }
-        } else {
-            propertyKind = MPProjectionPropertyKindEventField;
-        }
-        
-        return propertyKind;
-    };
-    
+
+    MPProjectionFields *fields = nil;
+
     switch (projectionType) {
-        case MPProjectionTypeAttribute: {
-                NSArray *attributesMap = !MPIsNull(actionDictionary[@"attribute_maps"]) ? (NSArray *)actionDictionary[@"attribute_maps"] : nil;
-                NSDictionary *attributeMap = nil;
-                
-                if (attributesMap && attributeIndex < attributesMap.count) {
-                    attributeMap = attributesMap[attributeIndex];
-                    
-                    if (!MPIsNull(attributeMap)) {
-                        auxString = attributeMap[@"value"];
-                        _name = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-                        
-                        auxString = attributeMap[@"projected_attribute_name"];
-                        _projectedName = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-                        
-                        auxString = attributeMap[@"property"];
-                        _propertyKind = propertyKindForString(auxString);
-                        
-                        matchType = !MPIsNull(attributeMap[@"match_type"]) ? attributeMap[@"match_type"] : @"String";
-                    }
-                } else {
-                    return nil;
-                }
+        case MPProjectionTypeAttribute:
+            fields = [MPProjectionFieldParser attributeFieldsFromAction:actionDictionary attributeIndex:attributeIndex];
+            if (!fields) {
+                return nil;
             }
             break;
-            
-        case MPProjectionTypeEvent: {
-            _projectionId = [configuration[@"id"] integerValue];
-            NSArray *matches = !MPIsNull(configuration[@"matches"]) ? configuration[@"matches"] : nil;
-            NSDictionary *matchDictionary = !MPIsNull(matches) && matches.count > 0 ? matches[0] : nil;
-            
-            if (matchDictionary) {
-                auxString = matchDictionary[@"event"];
-                _name = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-                
-                auxString = actionDictionary[@"projected_event_name"];
-                _projectedName = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-                
-                matchType = !MPIsNull(matchDictionary[@"event_match_type"]) ? matchDictionary[@"event_match_type"] : nil;
-                
-                auxString = matchDictionary[@"property"];
-                _propertyKind = propertyKindForString(auxString);
-            }
-        }
+
+        case MPProjectionTypeEvent:
+            _projectionId = [MPProjectionFieldParser projectionIdFromConfiguration:configuration];
+            fields = [MPProjectionFieldParser eventFieldsFromConfiguration:configuration action:actionDictionary];
             break;
-        
+
         default:
             break;
     }
-    
-    if (!matchType) {
-        _matchType = MPProjectionMatchTypeNotSpecified;
-    } else if ([matchType isEqualToString:@"String"]) {
-        _matchType = MPProjectionMatchTypeString;
-    } else if ([matchType isEqualToString:@"Hash"]) {
-        _matchType = MPProjectionMatchTypeHash;
-    } else if ([matchType isEqualToString:@"Field"]) {
-        _matchType = MPProjectionMatchTypeField;
-    } else if ([matchType isEqualToString:@"Static"]) {
-        _matchType = MPProjectionMatchTypeStatic;
+
+    if (fields) {
+        _name = fields.name;
+        _projectedName = fields.projectedName;
+        _propertyKind = (MPProjectionPropertyKind)fields.propertyKind;
+        _matchType = (MPProjectionMatchType)fields.matchType;
     }
-    
+
     return self;
 }
 
