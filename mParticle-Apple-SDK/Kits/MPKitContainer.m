@@ -264,7 +264,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSArray<id<MPExtensionKitProtocol>> *kitsSnapshot = [kitsRegistry allObjects];
     NSMutableArray<id> *detachedWrapperInstances = [[NSMutableArray alloc] initWithCapacity:kitsSnapshot.count];
     for (id<MPExtensionKitProtocol> kitRegister in kitsSnapshot) {
-        [detachedWrapperInstances addObject:kitRegister.wrapperInstance ?: [NSNull null]];
+        [detachedWrapperInstances addObject:(id)kitRegister.wrapperInstance ?: [NSNull null]];
         kitRegister.wrapperInstance = nil;
     }
     dispatch_semaphore_signal(kitsSemaphore);
