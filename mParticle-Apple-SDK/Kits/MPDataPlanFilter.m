@@ -68,15 +68,24 @@
     return (MPEvent *)[self mutateEvent:screenEvent isScreenEvent:true];
 }
 
+// An unconstrained point is stored as the NSNull sentinel rather than an array,
+// and NSNull cannot cross into a Swift [Any]? parameter. Unconstrained means
+// every key is planned, which is the same "block nothing" that filterProducts:
+// already reads the sentinel as.
+- (NSArray *)plannedKeysForPointInfoKey:(NSString *)pointInfoKey {
+    id planned = self.pointInfo[pointInfoKey];
+    return [planned isKindOfClass:[NSArray class]] ? planned : nil;
+}
+
 - (BOOL)isBlockedUserAttributeKey:(NSString *)userAttributeKey {
     return [MPDataPlanFilterPolicy isBlockedUserAttributeKey:userAttributeKey
-                                           plannedAttributes:self.pointInfo[@"user_attributes"]
+                                           plannedAttributes:[self plannedKeysForPointInfoKey:@"user_attributes"]
                                          blockUserAttributes:_blockUserAttributes];
 }
 
 - (BOOL)isBlockedUserIdentityType:(MPIdentity)userIdentityType {
     return [MPDataPlanFilterPolicy isBlockedUserIdentityType:userIdentityType
-                                           plannedIdentities:self.pointInfo[@"user_identities"]
+                                           plannedIdentities:[self plannedKeysForPointInfoKey:@"user_identities"]
                                          blockUserIdentities:_blockUserIdentities];
 }
 
