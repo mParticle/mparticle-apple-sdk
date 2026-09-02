@@ -168,10 +168,23 @@
         MPEventProjection *eventProjection = [[MPEventProjection alloc] initWithConfiguration:projectionDictionary];
         
         if (eventProjection) {
-            configuredMessageTypeProjectionsArray[eventProjection.messageType] = @YES;
-            
+            // message_type comes straight from remote configuration and indexes
+            // two arrays holding numberOfMessageTypes entries.
+            // -setObject:atIndexedSubscript: allows index == count and appends,
+            // which is how MPMessageTypeMedia (20) has always been registered
+            // even though +[MPEnum messageTypeSize] is only 20 — so that case is
+            // preserved rather than skipped. A larger value, or a negative one
+            // that wrapped, is a genuine NSRangeException.
+            NSUInteger messageType = eventProjection.messageType;
+            if (messageType > numberOfMessageTypes) {
+                MPILogError(@"Ignoring projection with out-of-range message type: %@", @(messageType));
+                continue;
+            }
+
+            configuredMessageTypeProjectionsArray[messageType] = @YES;
+
             if (eventProjection.isDefault) {
-                defaultProjectionsArray[eventProjection.messageType] = eventProjection;
+                defaultProjectionsArray[messageType] = eventProjection;
             } else {
                 [projectionsArray addObject:eventProjection];
             }
