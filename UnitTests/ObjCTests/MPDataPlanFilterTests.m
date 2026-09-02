@@ -99,6 +99,47 @@
     XCTAssertEqualObjects([additionalAttrsAdapter transformEventForEvent:partlyUnplannedAttrEvent], partlyUnplannedAttrEvent);
 }
 
+#pragma mark Unconstrained user points
+
+- (MPDataPlanFilter *)filterWithUnconstrainedUserPointsBlocking:(BOOL)blocking {
+    NSDictionary *plan = @{@"version_document":@{@"data_points":@[
+        @{@"match":@{@"type":@"user_attributes"},
+          @"validator":@{@"definition":@{@"additionalProperties":@YES,
+                                         @"properties":@{@"planned attribute":@{}}}}},
+        @{@"match":@{@"type":@"user_identities"},
+          @"validator":@{@"definition":@{@"additionalProperties":@YES,
+                                         @"properties":@{@"7":@{}}}}}
+    ]}};
+
+    MPDataPlanOptions *options = [[MPDataPlanOptions alloc] init];
+    options.dataPlan = plan;
+    options.blockUserAttributes = blocking;
+    options.blockUserIdentities = blocking;
+
+    return [[MPDataPlanFilter alloc] initWithDataPlanOptions:options];
+}
+
+- (void)testUnconstrainedUserPointsAreStoredAsTheNullSentinel {
+    NSDictionary *pointInfo = [[self filterWithUnconstrainedUserPointsBlocking:YES] getPointInfo];
+
+    XCTAssertTrue((NSNull *)pointInfo[@"user_attributes"] == [NSNull null]);
+    XCTAssertTrue((NSNull *)pointInfo[@"user_identities"] == [NSNull null]);
+}
+
+- (void)testUnconstrainedUserPointsBlockNothingWhenBlockingIsOff {
+    MPDataPlanFilter *filter = [self filterWithUnconstrainedUserPointsBlocking:NO];
+
+    XCTAssertFalse([filter isBlockedUserAttributeKey:@"any attribute"]);
+    XCTAssertFalse([filter isBlockedUserIdentityType:MPIdentityEmail]);
+}
+
+- (void)testUnconstrainedUserPointsBlockNothingWhenBlockingIsOn {
+    MPDataPlanFilter *filter = [self filterWithUnconstrainedUserPointsBlocking:YES];
+
+    XCTAssertFalse([filter isBlockedUserAttributeKey:@"any attribute"]);
+    XCTAssertFalse([filter isBlockedUserIdentityType:MPIdentityEmail]);
+}
+
 @end
 
 
