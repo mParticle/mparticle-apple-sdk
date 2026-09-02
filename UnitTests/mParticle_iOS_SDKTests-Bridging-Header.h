@@ -7,6 +7,7 @@
 #import "MParticleOptions+MParticlePrivate.h"
 #import "MParticle+PrivateMethods.h"
 #import "SettingsProvider.h"
+#import "SceneDelegateHandler.h"
 #import "MPNetworkPerformance.h"
 #import "MPEnums.h"
 #import "MParticleUserNotification.h"

@@ -265,7 +265,6 @@ IFACE|@interface MParticleOptions : NSObject
 IFACE|@interface MParticleSession : NSObject
 IFACE|@interface MParticleUser : NSObject
 IFACE|@interface NSDictionary(MPCaseInsensitive)
-IFACE|@interface SceneDelegateHandler : NSObject
 METHOD|+ (BOOL)checkAttribute:(nonnull NSDictionary *)attributesDictionary key:(nonnull NSString *)key value:(nonnull id)value error:(out NSError *__autoreleasing _Nullable * _Nullable)error;
 METHOD|+ (BOOL)isAppExtension;
 METHOD|+ (BOOL)isOlderThanConfigMaxAgeSeconds;
@@ -308,7 +307,6 @@ METHOD|+ (void)setRunningInBackground:(BOOL)background;
 METHOD|- (BOOL) shouldDelayMParticleUpload;
 METHOD|- (BOOL)aliasUsers:(MPAliasRequest *)aliasRequest;
 METHOD|- (BOOL)closeDatabase;
-METHOD|- (BOOL)continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^_Nonnull)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler;
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url NS_SWIFT_NAME(handleURLCallback(with:));
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
@@ -356,7 +354,6 @@ METHOD|- (NSUInteger)count;
 METHOD|- (instancetype _Nonnull )initWithMParticleUser:(MParticleUser *_Nonnull)user kitConfiguration:(MPKitConfiguration *_Nonnull)kitConfiguration;
 METHOD|- (instancetype)init NS_UNAVAILABLE;
 METHOD|- (instancetype)initWithAction:(MPCommerceEventAction)action;
-METHOD|- (instancetype)initWithAppNotificationHandler:(id<OpenURLHandlerProtocol>)appNotificationHandler;
 METHOD|- (instancetype)initWithAudienceId:(NSNumber *)audienceId;
 METHOD|- (instancetype)initWithIdentityRequest:(MPIdentityApiRequest *)request kitConfiguration:(MPKitConfiguration *)kitConfiguration;
 METHOD|- (instancetype)initWithInstruction:(MPCommerceInstruction)instruction event:(MPEvent *)event product:(MPProduct *)product __attribute__((objc_designated_initializer));
@@ -557,10 +554,8 @@ METHOD|- (void)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent;
 METHOD|- (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo;
 METHOD|- (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 METHOD|- (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
-METHOD|- (void)handleURLContext:(UIOpenURLContext *)urlContext API_AVAILABLE(ios(13.0));
 METHOD|- (void)handleURLContext:(UIOpenURLContext *)urlContext NS_SWIFT_NAME(handleURLContext(_:)) API_AVAILABLE(ios(13.0));
 METHOD|- (void)handleUserActivity:(NSUserActivity *)userActivity NS_SWIFT_NAME(handleUserActivity(_:));
-METHOD|- (void)handleUserActivity:(NSUserActivity *)userActivity;
 METHOD|- (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
 METHOD|- (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 METHOD|- (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion;
@@ -619,7 +614,6 @@ METHOD|- (void)modifyDeviceID:(NSString *_Nonnull)deviceIdType value:(NSString *
 METHOD|- (void)moveContentFromMpidZeroToMpid:(nonnull NSNumber *)mpid;
 METHOD|- (void)onAttributionCompleteWithResult:(MPAttributionResult *_Nullable)result error:(NSError *_Nullable)error;
 METHOD|- (void)onKitsInitialized:(void(^)(void))block;
-METHOD|- (void)openURL:(NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 METHOD|- (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings NS_SWIFT_NAME(prepareBatches(forUpload:));
 METHOD|- (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings NS_SWIFT_NAME(prepareBatches(forUpload:));
 METHOD|- (void)purchaseFinalized:(NSString *_Nonnull)identifier catalogItemId:(NSString *_Nonnull)catalogItemId success:(BOOL)success;
@@ -1007,6 +1001,5 @@ PROTO|@protocol MPPersistenceControllerProtocol
 PROTO|@protocol MPRoktKitDispatchTarget <NSObject>
 PROTO|@protocol MPStateMachineProtocol
 PROTO|@protocol MPStateMachineProtocol;
-PROTO|@protocol OpenURLHandlerProtocol <NSObject>
 PROTO|@protocol RoktPaymentExtension;
 PROTO|@protocol RoktPaymentExtension;

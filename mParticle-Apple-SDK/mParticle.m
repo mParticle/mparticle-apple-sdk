@@ -141,10 +141,11 @@ MPLog* logger;
         return nil;
     }
 
-    executor = [[Executor alloc] init];
+    executor = (id<ExecutorProtocol>)[[MPExecutorPRIVATE alloc] init];
     sdkInitialized = NO;
     _initialized = NO;
-    _settingsProvider = [[SettingsProvider alloc] init];
+    _settingsProvider = (id<SettingsProviderProtocol>)[[MPSettingsProviderPRIVATE alloc] initWithBundle:NSBundle.mainBundle
+                                                                                          resourceName:kMPConfigPlist];
     _kitActivity = [[MPKitActivity alloc] init];
     _kitsInitializedBlocks = [NSMutableArray array];
     _collectUserAgent = YES;
