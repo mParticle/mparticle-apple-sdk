@@ -704,16 +704,18 @@ static BOOL skipNextUpload = NO;
     if (sessionTimeout == _sessionTimeout) {
         return;
     }
-    
-    _sessionTimeout = MAX(sessionTimeout, MINIMUM_SESSION_TIMEOUT);
+
+    _sessionTimeout = [MPSessionTimingPolicy clampedSessionTimeout:sessionTimeout minimum:MINIMUM_SESSION_TIMEOUT];
     MPILogDebug(@"Set Session Timeout: %.0f", _sessionTimeout);
 }
 
 - (NSTimeInterval)uploadInterval {
     if (_uploadInterval == 0.0) {
-        _uploadInterval = [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment ? DEFAULT_DEBUG_UPLOAD_INTERVAL : DEFAULT_UPLOAD_INTERVAL;
+        _uploadInterval = [MPSessionTimingPolicy defaultUploadIntervalForDevelopment:[MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment
+                                                                        debugInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                                   productionInterval:DEFAULT_UPLOAD_INTERVAL];
     }
-    
+
     // If running in an extension our processor time is extremely limited
     if ([MPStateMachine_PRIVATE isAppExtension]) {
         _uploadInterval = 1.0;
@@ -725,13 +727,9 @@ static BOOL skipNextUpload = NO;
     if (uploadInterval == _uploadInterval) {
         return;
     }
-    
-    _uploadInterval = MAX(uploadInterval, 1.0);
-    
-#if TARGET_OS_TV == 1
-    _uploadInterval = MIN(_uploadInterval, DEFAULT_UPLOAD_INTERVAL);
-#endif
-    
+
+    _uploadInterval = [MPSessionTimingPolicy clampedUploadInterval:uploadInterval tvOSCeiling:DEFAULT_UPLOAD_INTERVAL];
+
     if (self.uploadSource) {
         [self beginUploadTimer];
     }
@@ -1851,13 +1849,9 @@ static BOOL skipNextUpload = NO;
 
 - (BOOL)shouldEndSession {
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval backgroundTime = self.timeOfLastEventInBackground;
-    if (backgroundTime == 0.0) {
-        return NO;
-    }
-    
-    NSTimeInterval idleTimeInBackground = currentTime - backgroundTime;
-    return idleTimeInBackground >= self.sessionTimeout;
+    return [MPSessionTimingPolicy shouldEndSessionWithNow:currentTime
+                                    lastEventInBackground:self.timeOfLastEventInBackground
+                                           sessionTimeout:self.sessionTimeout];
 }
 
 - (void)endSessionIfTimedOut {
