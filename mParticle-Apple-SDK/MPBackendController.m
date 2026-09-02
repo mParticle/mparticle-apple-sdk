@@ -60,13 +60,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @interface MPBackendController_PRIVATE() {
     NSTimeInterval nextCleanUpTime;
-    dispatch_semaphore_t backendSemaphore;
     MParticleSession *tempSession;
 }
 @property NSTimeInterval timeAppWentToBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 @property NSTimeInterval timeOfLastEventInBackground;
-@property dispatch_source_t backgroundSource;
 @property dispatch_source_t uploadSource;
 @property NSMutableSet<NSString *> *deletedUserAttributes;
 @property NSNotification *didFinishLaunchingNotification;
@@ -96,7 +94,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
         _backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
         _delegate = delegate;
-        backendSemaphore = dispatch_semaphore_create(1);
         _backgroundCheckQueue = [[NSOperationQueue alloc] init];
         _backgroundCheckQueue.maxConcurrentOperationCount = 1;
         
@@ -1066,17 +1063,7 @@ static BOOL skipNextUpload = NO;
         messageInfo[kMPErrorMessage] = message;
     }
     
-    NSData* data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
-    NSNumber *maxPLCrashBytesNumber = [MParticle sharedInstance].stateMachine.crashMaxPLReportLength;
-    if (maxPLCrashBytesNumber != nil) {
-        NSInteger maxPLCrashBytes = maxPLCrashBytesNumber.integerValue;
-        if (data.length > maxPLCrashBytes) {
-            NSInteger bytesToTruncate = data.length - maxPLCrashBytes;
-            NSInteger bytesRemaining = data.length - bytesToTruncate;
-            data = [data subdataWithRange:NSMakeRange(0, bytesRemaining)];
-        }
-    }
-    NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
+    NSString *plCrashReportBase64 = [MPBackendMessageInfo base64CrashReport:plCrashReport maxBytes:[MParticle sharedInstance].stateMachine.crashMaxPLReportLength];
     if(plCrashReportBase64) {
         messageInfo[kMPPLCrashReport] = plCrashReportBase64;
     }
@@ -1670,23 +1657,14 @@ static BOOL skipNextUpload = NO;
         NSData *deviceToken = userInfo[kMPRemoteNotificationDeviceTokenKey];
         NSData *oldDeviceToken = userInfo[kMPRemoteNotificationOldDeviceTokenKey];
         
-        if ((!deviceToken && !oldDeviceToken) || [deviceToken isEqualToData:oldDeviceToken]) {
+        MPPushRegistrationDecision *decision = [MPBackendMessageInfo pushRegistrationForDeviceToken:deviceToken oldDeviceToken:oldDeviceToken];
+        if (!decision) {
             return;
         }
-        
-        NSData *logDeviceToken;
-        NSString *status;
-        BOOL pushNotificationsEnabled = deviceToken != nil;
-        if (pushNotificationsEnabled) {
-            logDeviceToken = deviceToken;
-            status = @"true";
-        } else if (!pushNotificationsEnabled && oldDeviceToken) {
-            logDeviceToken = oldDeviceToken;
-            status = @"false";
-        }
-        NSMutableDictionary *messageInfo = [@{kMPPushStatusKey:status}
-        mutableCopy];
-        
+
+        NSData *logDeviceToken = decision.logToken;
+        NSMutableDictionary *messageInfo = [@{kMPPushStatusKey:decision.status} mutableCopy];
+
         NSString *tokenString = [MPUserDefaults stringFromDeviceToken:logDeviceToken];
         if (tokenString) {
             messageInfo[kMPDeviceTokenKey] = tokenString;
