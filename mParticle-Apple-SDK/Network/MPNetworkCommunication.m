@@ -15,7 +15,6 @@
 #import "MPAliasResponse.h"
 #import "MPURL.h"
 #import "MPConnectorFactoryProtocol.h"
-#import "MPIdentityCaching.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -966,10 +965,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     BOOL enableIdentityCaching = MParticle.sharedInstance.stateMachine.enableIdentityCaching;
     BOOL usedCachedResponse = NO;
+    MPIdentityCaching *identityCaching = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                                                  logger:MParticle.sharedInstance.getLogger];
 
     // Try to use the cache if enabled
     if (enableIdentityCaching) {
-        MPIdentityCachedResponse *cachedResponse = [MPIdentityCaching getCachedIdentityResponseForEndpoint:endpointType identityRequest:identityRequest];
+        MPIdentityCachedResponse *cachedResponse = [identityCaching getCachedIdentityResponseForEndpoint:endpointType
+                                                                                       requestDictionary:dictionary];
         if (cachedResponse) {
             @try {
                 NSError *serializationError = nil;
@@ -1035,7 +1037,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                             MPIdentityCachedResponse *cachedResponse = [[MPIdentityCachedResponse alloc] initWithBodyData:responseData
                                                                                                                statusCode:responseCode
                                                                                                                   expires:expires];
-                            [MPIdentityCaching cacheIdentityResponse:cachedResponse endpoint:endpointType identityRequest:identityRequest];
+                            [identityCaching cacheIdentityResponse:cachedResponse
+                                                         endpoint:endpointType
+                                                requestDictionary:dictionary];
                         }
                     }
                 } else {

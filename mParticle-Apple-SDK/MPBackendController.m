@@ -16,7 +16,6 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPURLRequestBuilder.h"
-#import "MPIdentityCaching.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
@@ -55,6 +54,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
 + (void)executeOnMain:(void(^)(void))block;
+- (MPLog *)getLogger;
 
 @end
 
@@ -1902,7 +1902,9 @@ static BOOL skipNextUpload = NO;
         nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
     }
     [persistence purgeMemory];
-    [MPIdentityCaching clearExpiredCache];
+    MPIdentityCaching *identityCaching = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                                                  logger:MParticle.sharedInstance.getLogger];
+    [identityCaching clearExpiredCache];
 }
 
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
