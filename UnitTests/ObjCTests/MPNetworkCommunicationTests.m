@@ -7,7 +7,6 @@
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPPersistenceController.h"
-#import "MPURL.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"

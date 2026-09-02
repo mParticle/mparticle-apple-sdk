@@ -2,10 +2,10 @@
 #import <CommonCrypto/CommonDigest.h>
 #import "MPConnector.h"
 #import "MPBaseTestCase.h"
+@import mParticle_Apple_SDK_Swift;
 #if TARGET_OS_IOS == 1
 #import <OCMock/OCMock.h>
 #import "MPIConstants.h"
-#import "MPURL.h"
 
 @interface MPConnector ()
 
