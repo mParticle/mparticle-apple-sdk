@@ -70,6 +70,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 @interface MPKitContainer_PRIVATE () {
     dispatch_semaphore_t kitsSemaphore;
+    // brackets is per-instance state (unlike kitsRegistry, which is static/shared), so its
+    // lock is scoped to the instance too. It is a separate semaphore from kitsSemaphore,
+    // not reused, because updateBracketsWithConfiguration:integrationId: is called from
+    // inside configureKits:'s kitsSemaphore-locked region - dispatch_semaphore is not
+    // reentrant, so guarding brackets with kitsSemaphore itself would deadlock there.
+    dispatch_semaphore_t bracketsSemaphore;
     NSMutableDictionary<NSNumber *, MPBracket *> *brackets;
     NSInteger sideloadedKitCodeNextValue;
 }
@@ -100,6 +106,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSMutableDictionary *linkInfo = _attributionInfo;
         _initializedTime = [NSDate date];
         kitsSemaphore = dispatch_semaphore_create(1);
+        bracketsSemaphore = dispatch_semaphore_create(1);
         brackets = [[NSMutableDictionary alloc] init];
         sideloadedKitCodeNextValue = sideloadedKitCodeStartValue;
         MParticle* mparticle = MParticle.sharedInstance;
@@ -210,8 +217,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (MPBracket *)bracketForKit:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
-    
-    return brackets[integrationId];
+
+    dispatch_semaphore_wait(bracketsSemaphore, DISPATCH_TIME_FOREVER);
+    MPBracket *bracket = brackets[integrationId];
+    dispatch_semaphore_signal(bracketsSemaphore);
+    return bracket;
 }
 
 - (void)flushSerializedKits {
@@ -249,29 +259,42 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     [self freeKitRegister:kitRegister integrationId:integrationId];
 }
 
+// configureKits: calls freeKit:/freeKitRegister: while holding kitsSemaphore (see the
+// deactivateKits cleanup there), and dispatch_semaphore is not recursive, so this method
+// cannot take the lock itself. The wrapperInstance = nil detach below has to run inline
+// regardless, since that is what synchronizes with isActiveAndNotDisabled:'s reads of
+// wrapperInstance on other threads under the same lock. Everything after the detach -
+// stop(), disk cleanup, posting mParticleKitDidBecomeInactiveNotification - runs arbitrary
+// kit and observer code, so it is deferred to the main queue instead of running inline:
+// doing that work while still holding kitsSemaphore (as configureKits: does) would stall
+// every other thread waiting on the lock for as long as it takes, or deadlock outright if
+// an observer calls back into a kitsSemaphore-guarded method.
 - (void)freeKitRegister:(id<MPExtensionKitProtocol>)kitRegister integrationId:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
 
     if (kitRegister.wrapperInstance) {
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(stop)]) {
-            [kitRegister.wrapperInstance stop];
-        }
-        
+        id<MPKitProtocol> wrapperInstance = kitRegister.wrapperInstance;
         kitRegister.wrapperInstance = nil;
-        
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", integrationId, kitFileExtension]];
-        
-        if ([fileManager fileExistsAtPath:kitPath]) {
-            [fileManager removeItemAtPath:kitPath error:nil];
-        }
-        
-        NSDictionary *userInfo = @{mParticleKitInstanceKey:integrationId};
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
-                                                            object:nil
-                                                          userInfo:userInfo];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([wrapperInstance respondsToSelector:@selector(stop)]) {
+                [wrapperInstance stop];
+            }
+
+            NSFileManager *fileManager = [NSFileManager defaultManager];
+            NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+            NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", integrationId, kitFileExtension]];
+
+            if ([fileManager fileExistsAtPath:kitPath]) {
+                [fileManager removeItemAtPath:kitPath error:nil];
+            }
+
+            NSDictionary *userInfo = @{mParticleKitInstanceKey:integrationId};
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
+                                                                object:nil
+                                                              userInfo:userInfo];
+        });
     }
 }
 
@@ -661,16 +684,19 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
-    
+
+    dispatch_semaphore_wait(bracketsSemaphore, DISPATCH_TIME_FOREVER);
+
     if (!configuration) {
         [brackets removeObjectForKey:integrationId];
+        dispatch_semaphore_signal(bracketsSemaphore);
         return;
     }
-    
+
     long mpId = [[MPPersistenceController_PRIVATE mpId] longValue];
     short low = (short)[configuration[@"lo"] integerValue];
     short high = (short)[configuration[@"hi"] integerValue];
-    
+
     MPBracket *bracket = brackets[integrationId];
     if (bracket) {
         bracket.mpId = mpId;
@@ -679,6 +705,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     } else {
         brackets[integrationId] = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
     }
+
+    dispatch_semaphore_signal(bracketsSemaphore);
 }
 
 #pragma mark Public class methods
