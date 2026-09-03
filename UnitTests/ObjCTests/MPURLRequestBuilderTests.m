@@ -1,7 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
-#import "MPConnector.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
@@ -15,16 +14,6 @@
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-
-@end
-
-@interface MPConnector (MPURLRequestBuilderTests)
-
-- (nullable NSMutableURLRequest *)urlRequestForURL:(nonnull MPURL *)url
-                                           message:(nullable NSString *)message
-                                        httpMethod:(nullable NSString *)httpMethod
-                                          postData:(nullable NSData *)postData
-                                            secret:(nullable NSString *)secret;
 
 @end
 
@@ -43,7 +32,8 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
-    self.connector = [[MPConnector alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    self.connector = [[MPConnector alloc] initWithConfiguration:networkCommunication.connectorConfiguration];
 }
 
 - (void)tearDown {

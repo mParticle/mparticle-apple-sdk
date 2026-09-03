@@ -124,7 +124,6 @@
 		53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ACF29CDFB1F00E7489F /* MPIConstants.h */; };
 		53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA329CDFB1E00E7489F /* MPBackendController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */; };
-		53A79D3029CE23F700E7489F /* MPConnectorResponseProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AAD29CDFB1E00E7489F /* MPConnectorResponseProtocol.h */; };
 		53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */; };
 		53A79D3329CE23F700E7489F /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D3529CE23F700E7489F /* MPDataModelAbstract.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ABE29CDFB1E00E7489F /* MPDataModelAbstract.h */; };
@@ -145,7 +144,6 @@
 		53A79D4C29CE23F700E7489F /* MPDataPlanFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5729CDFB1F00E7489F /* MPDataPlanFilter.h */; };
 		53A79D4D29CE23F700E7489F /* MPPromotion+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B3F29CDFB1F00E7489F /* MPPromotion+Dictionary.h */; };
 		53A79D4E29CE23F700E7489F /* MPBreadcrumb.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AC829CDFB1E00E7489F /* MPBreadcrumb.h */; };
-		53A79D4F29CE23F700E7489F /* MPConnectorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AAF29CDFB1E00E7489F /* MPConnectorProtocol.h */; };
 		53A79D5529CE23F700E7489F /* MPPersistenceController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ABB29CDFB1E00E7489F /* MPPersistenceController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D5829CE23F700E7489F /* MPIdentityDTO.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA029CDFB1E00E7489F /* MPIdentityDTO.h */; };
 		53A79D5929CE23F700E7489F /* MPMessageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B1A29CDFB1F00E7489F /* MPMessageBuilder.h */; };
@@ -153,7 +151,6 @@
 		53A79D6029CE23F700E7489F /* MPUploadBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B2329CDFB1F00E7489F /* MPUploadBuilder.h */; };
 		53A79D6129CE23F700E7489F /* MPKitActivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5E29CDFB1F00E7489F /* MPKitActivity.h */; };
 		53A79D6229CE23F700E7489F /* MPStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B0629CDFB1F00E7489F /* MPStateMachine.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		53A79D6529CE23F700E7489F /* MPConnector.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB529CDFB1E00E7489F /* MPConnector.h */; };
 		53A79D6929CE23F700E7489F /* NSDictionary+MPCaseInsensitive.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B0929CDFB1F00E7489F /* NSDictionary+MPCaseInsensitive.m */; };
 		53A79D6E29CE23F700E7489F /* FilteredMPIdentityApiRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79A9B29CDFB1E00E7489F /* FilteredMPIdentityApiRequest.m */; };
 		53A79D6F29CE23F700E7489F /* mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B3629CDFB1F00E7489F /* mParticle.m */; };
@@ -176,7 +173,6 @@
 		53A79D9029CE23F700E7489F /* MPDatabaseMigrationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AB929CDFB1E00E7489F /* MPDatabaseMigrationController.m */; };
 		53A79D9229CE23F700E7489F /* MPKitRegister.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4C29CDFB1F00E7489F /* MPKitRegister.m */; };
 		53A79D9329CE23F700E7489F /* MPForwardRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79ACA29CDFB1E00E7489F /* MPForwardRecord.m */; };
-		53A79D9429CE23F700E7489F /* MPConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AAE29CDFB1E00E7489F /* MPConnector.m */; };
 		53A79D9529CE23F700E7489F /* MPBreadcrumb.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AC129CDFB1E00E7489F /* MPBreadcrumb.m */; };
 		53A79D9629CE23F700E7489F /* MPEnums.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AD029CDFB1F00E7489F /* MPEnums.m */; };
 		53A79D9729CE23F700E7489F /* MPNetworkPerformance.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AB429CDFB1E00E7489F /* MPNetworkPerformance.m */; };
@@ -345,13 +341,9 @@
 		53A79AA329CDFB1E00E7489F /* MPBackendController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBackendController.h; sourceTree = "<group>"; };
 		53A79AA929CDFB1E00E7489F /* MPNetworkCommunication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkCommunication.m; sourceTree = "<group>"; };
 		53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformance.h; sourceTree = "<group>"; };
-		53A79AAD29CDFB1E00E7489F /* MPConnectorResponseProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConnectorResponseProtocol.h; sourceTree = "<group>"; };
-		53A79AAE29CDFB1E00E7489F /* MPConnector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConnector.m; sourceTree = "<group>"; };
-		53A79AAF29CDFB1E00E7489F /* MPConnectorProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConnectorProtocol.h; sourceTree = "<group>"; };
 		53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConnectorFactoryProtocol.h; sourceTree = "<group>"; };
 		53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
 		53A79AB429CDFB1E00E7489F /* MPNetworkPerformance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkPerformance.m; sourceTree = "<group>"; };
-		53A79AB529CDFB1E00E7489F /* MPConnector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConnector.h; sourceTree = "<group>"; };
 		53A79AB829CDFB1E00E7489F /* MPPersistenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPersistenceController.m; sourceTree = "<group>"; };
 		53A79AB929CDFB1E00E7489F /* MPDatabaseMigrationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDatabaseMigrationController.m; sourceTree = "<group>"; };
 		53A79ABA29CDFB1E00E7489F /* MPDatabaseMigrationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPDatabaseMigrationController.h; sourceTree = "<group>"; };
@@ -574,6 +566,7 @@
 				Test/Network/MPDataPlanQueryTests.swift,
 				Test/Network/MPEndpointHostResolverTests.swift,
 				Test/Network/MPEndpointPathStyleTests.swift,
+				Test/Network/MPConnectorTests.swift,
 				Test/Network/MPRequestSignerTests.swift,
 				Test/Network/MPURLRequestBuilderTests.swift,
 				Test/Network/MPURLRequestPlanTests.swift,
@@ -649,6 +642,7 @@
 				Test/Network/MPDataPlanQueryTests.swift,
 				Test/Network/MPEndpointHostResolverTests.swift,
 				Test/Network/MPEndpointPathStyleTests.swift,
+				Test/Network/MPConnectorTests.swift,
 				Test/Network/MPRequestSignerTests.swift,
 				Test/Network/MPURLRequestBuilderTests.swift,
 				Test/Network/MPURLRequestPlanTests.swift,
@@ -857,12 +851,8 @@
 			children = (
 				53A79AA929CDFB1E00E7489F /* MPNetworkCommunication.m */,
 				53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */,
-				53A79AAD29CDFB1E00E7489F /* MPConnectorResponseProtocol.h */,
-				53A79AAE29CDFB1E00E7489F /* MPConnector.m */,
-				53A79AAF29CDFB1E00E7489F /* MPConnectorProtocol.h */,
 				53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */,
 				53A79AB429CDFB1E00E7489F /* MPNetworkPerformance.m */,
-				53A79AB529CDFB1E00E7489F /* MPConnector.h */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -1259,7 +1249,6 @@
 				7213DE812F30F0DF0007A619 /* SceneDelegateHandler.h in Headers */,
 				35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */,
 				D34286122D419CB800FEC2C8 /* MPUploadSettings.h in Headers */,
-				53A79D3029CE23F700E7489F /* MPConnectorResponseProtocol.h in Headers */,
 				53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */,
 				53A79D3329CE23F700E7489F /* MPNetworkCommunication.h in Headers */,
 				53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */,
@@ -1283,7 +1272,6 @@
 				53A79D4C29CE23F700E7489F /* MPDataPlanFilter.h in Headers */,
 				53A79D4D29CE23F700E7489F /* MPPromotion+Dictionary.h in Headers */,
 				53A79D4E29CE23F700E7489F /* MPBreadcrumb.h in Headers */,
-				53A79D4F29CE23F700E7489F /* MPConnectorProtocol.h in Headers */,
 				53A79D5529CE23F700E7489F /* MPPersistenceController.h in Headers */,
 				53A79D5829CE23F700E7489F /* MPIdentityDTO.h in Headers */,
 				53A79D5929CE23F700E7489F /* MPMessageBuilder.h in Headers */,
@@ -1293,7 +1281,6 @@
 				53A79D6029CE23F700E7489F /* MPUploadBuilder.h in Headers */,
 				53A79D6129CE23F700E7489F /* MPKitActivity.h in Headers */,
 				53A79D6229CE23F700E7489F /* MPStateMachine.h in Headers */,
-				53A79D6529CE23F700E7489F /* MPConnector.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1610,7 +1597,6 @@
 				53A79D9229CE23F700E7489F /* MPKitRegister.m in Sources */,
 				53A79D9329CE23F700E7489F /* MPForwardRecord.m in Sources */,
 				7AF100042F50000400E74801 /* MPLocation.m in Sources */,
-				53A79D9429CE23F700E7489F /* MPConnector.m in Sources */,
 				53A79D9529CE23F700E7489F /* MPBreadcrumb.m in Sources */,
 				53A79D9629CE23F700E7489F /* MPEnums.m in Sources */,
 				7213DE832F30F0EC0007A619 /* SceneDelegateHandler.m in Sources */,
