@@ -210,9 +210,9 @@
     // -attributes/-beautifiedAttributes pattern as MPPromotion.
     if (fields.affiliation) { transactionAttributes.affiliation = fields.affiliation; }
     if (fields.couponCode) { transactionAttributes.couponCode = fields.couponCode; }
-    if (fields.shipping) { transactionAttributes.shipping = fields.shipping; }
-    if (fields.tax) { transactionAttributes.tax = fields.tax; }
-    if (fields.revenue) { transactionAttributes.revenue = fields.revenue; }
+    if (fields.shipping != nil) { transactionAttributes.shipping = fields.shipping; }
+    if (fields.tax != nil) { transactionAttributes.tax = fields.tax; }
+    if (fields.revenue != nil) { transactionAttributes.revenue = fields.revenue; }
     if (fields.transactionId) { transactionAttributes.transactionId = fields.transactionId; }
 
     return transactionAttributes;
