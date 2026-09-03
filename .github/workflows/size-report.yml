@@ -11,6 +11,10 @@ permissions:
 env:
   XCODE_VERSION: "16.4"
   COMMENT_IDENTIFIER: "<!-- sdk-size-report -->"
+  # Fail the job when the SDK's app-bundle impact grows by more than this. Note the
+  # ruleset covering main and workstation/* requires no status checks, so this only
+  # gates a merge once someone marks the check required.
+  SIZE_DELTA_THRESHOLD_KB: "50"
 
 jobs:
   measure-size:
@@ -46,9 +50,15 @@ jobs:
               SDK_IMPACT_KB=$(echo "$RESULT" | jq -r '.sdk_impact_kb')
               SDK_EXECUTABLE_IMPACT=$(echo "$RESULT" | jq -r '.sdk_executable_impact_bytes')
               XCFRAMEWORK_SIZE_KB=$(echo "$RESULT" | jq -r '.xcframework_size_kb // 0')
+              # framework_size_kb and dsym_size_kb were added later, so a base branch
+              # running an older measure_size.sh will not emit them.
+              FRAMEWORK_SIZE_KB=$(echo "$RESULT" | jq -r '.framework_size_kb // 0')
+              DSYM_SIZE_KB=$(echo "$RESULT" | jq -r '.dsym_size_kb // 0')
               echo "sdk_impact_kb=${SDK_IMPACT_KB}" >> $GITHUB_OUTPUT
               echo "sdk_executable_impact=${SDK_EXECUTABLE_IMPACT}" >> $GITHUB_OUTPUT
               echo "xcframework_size_kb=${XCFRAMEWORK_SIZE_KB}" >> $GITHUB_OUTPUT
+              echo "framework_size_kb=${FRAMEWORK_SIZE_KB}" >> $GITHUB_OUTPUT
+              echo "dsym_size_kb=${DSYM_SIZE_KB}" >> $GITHUB_OUTPUT
               echo "exists=true" >> $GITHUB_OUTPUT
             else
               echo "Build failed on base branch"
@@ -56,6 +66,8 @@ jobs:
               echo "sdk_impact_kb=0" >> $GITHUB_OUTPUT
               echo "sdk_executable_impact=0" >> $GITHUB_OUTPUT
               echo "xcframework_size_kb=0" >> $GITHUB_OUTPUT
+              echo "framework_size_kb=0" >> $GITHUB_OUTPUT
+              echo "dsym_size_kb=0" >> $GITHUB_OUTPUT
               echo "exists=false" >> $GITHUB_OUTPUT
             fi
           else
@@ -64,6 +76,8 @@ jobs:
             echo "sdk_impact_kb=0" >> $GITHUB_OUTPUT
             echo "sdk_executable_impact=0" >> $GITHUB_OUTPUT
             echo "xcframework_size_kb=0" >> $GITHUB_OUTPUT
+            echo "framework_size_kb=0" >> $GITHUB_OUTPUT
+            echo "dsym_size_kb=0" >> $GITHUB_OUTPUT
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
@@ -78,9 +92,86 @@ jobs:
           SDK_IMPACT_KB=$(echo "$RESULT" | jq -r '.sdk_impact_kb')
           SDK_EXECUTABLE_IMPACT=$(echo "$RESULT" | jq -r '.sdk_executable_impact_bytes')
           XCFRAMEWORK_SIZE_KB=$(echo "$RESULT" | jq -r '.xcframework_size_kb // 0')
+          FRAMEWORK_SIZE_KB=$(echo "$RESULT" | jq -r '.framework_size_kb // 0')
+          DSYM_SIZE_KB=$(echo "$RESULT" | jq -r '.dsym_size_kb // 0')
           echo "sdk_impact_kb=${SDK_IMPACT_KB}" >> $GITHUB_OUTPUT
           echo "sdk_executable_impact=${SDK_EXECUTABLE_IMPACT}" >> $GITHUB_OUTPUT
           echo "xcframework_size_kb=${XCFRAMEWORK_SIZE_KB}" >> $GITHUB_OUTPUT
+          echo "framework_size_kb=${FRAMEWORK_SIZE_KB}" >> $GITHUB_OUTPUT
+          echo "dsym_size_kb=${DSYM_SIZE_KB}" >> $GITHUB_OUTPUT
+
+      - name: Attribute the framework bytes
+        id: composition
+        continue-on-error: true
+        run: |
+          # analyze_binary.sh only exists on the PR branch, so run the PR branch's copy
+          # against both builds. Splitting the framework into code, Swift metadata,
+          # ObjC metadata and __LINKEDIT is what makes a regression diagnosable from
+          # the comment instead of only visible.
+          ANALYZE="${GITHUB_WORKSPACE}/pr-branch/Tests/SizeReport/analyze_binary.sh"
+          chmod +x "$ANALYZE"
+
+          summarize() {
+            local root="$1" out="$2"
+            local fw
+            fw=$(find "${root}/Tests/SizeReport/build/mParticle_Apple_SDK.xcframework" \
+                   -maxdepth 2 -name '*.framework' -type d 2>/dev/null | head -1)
+            if [[ -n "$fw" ]]; then
+              "$ANALYZE" "$fw" --json > "$out" 2>/dev/null || echo '{}' > "$out"
+            else
+              echo '{}' > "$out"
+            fi
+          }
+
+          summarize "${GITHUB_WORKSPACE}/pr-branch" "${RUNNER_TEMP}/pr-composition.json"
+          summarize "${GITHUB_WORKSPACE}/base-branch" "${RUNNER_TEMP}/base-composition.json"
+
+          # Render a markdown table of the composition and its delta.
+          python3 - "${RUNNER_TEMP}/base-composition.json" "${RUNNER_TEMP}/pr-composition.json" \
+            > "${RUNNER_TEMP}/composition.md" <<'PYEOF'
+          import json, sys
+
+          def load(path):
+              try:
+                  with open(path) as handle:
+                      return json.load(handle)
+              except Exception:
+                  return {}
+
+          base, pr = load(sys.argv[1]), load(sys.argv[2])
+          rows = [
+              ("Executable code (`__text`)", "total_text_bytes"),
+              ("Swift metadata (`__swift5_*`)", "total_swift_metadata_bytes"),
+              ("ObjC metadata (`__objc_*`)", "total_objc_metadata_bytes"),
+              ("Symbol tables (`__LINKEDIT`)", "total_linkedit_bytes"),
+              ("Mach-O images", "image_count"),
+              ("Exported symbols", "total_exported_symbols"),
+          ]
+
+          def show(key, value):
+              if value is None:
+                  return "n/a"
+              if key in ("image_count", "total_exported_symbols"):
+                  return str(value)
+              return f"{value / 1024:.1f} KB"
+
+          if not pr:
+              print("_Composition data unavailable for this run._")
+          else:
+              print("| Component | Target branch | This PR | Change |")
+              print("|---|---|---|---|")
+              for label, key in rows:
+                  b, p = base.get(key), pr.get(key)
+                  if b is None or p is None:
+                      change = "n/a"
+                  elif key in ("image_count", "total_exported_symbols"):
+                      change = f"{p - b:+d}"
+                  else:
+                      change = f"{(p - b) / 1024:+.1f} KB"
+                  print(f"| {label} | {show(key, b)} | {show(key, p)} | {change} |")
+          PYEOF
+
+          echo "path=${RUNNER_TEMP}/composition.md" >> $GITHUB_OUTPUT
 
       - name: Calculate size delta
         id: delta
@@ -91,6 +182,8 @@ jobs:
           PR_EXECUTABLE_IMPACT=${{ steps.pr-size.outputs.sdk_executable_impact }}
           BASE_XCFRAMEWORK=${{ steps.base-size.outputs.xcframework_size_kb }}
           PR_XCFRAMEWORK=${{ steps.pr-size.outputs.xcframework_size_kb }}
+          BASE_FRAMEWORK=${{ steps.base-size.outputs.framework_size_kb }}
+          PR_FRAMEWORK=${{ steps.pr-size.outputs.framework_size_kb }}
           BASE_EXISTS=${{ steps.base-size.outputs.exists }}
 
           # Handle case where base branch doesn't have the test app
@@ -98,12 +191,19 @@ jobs:
             echo "delta_kb=N/A" >> $GITHUB_OUTPUT
             echo "delta_executable=N/A" >> $GITHUB_OUTPUT
             echo "delta_xcframework=N/A" >> $GITHUB_OUTPUT
+            echo "delta_framework=N/A" >> $GITHUB_OUTPUT
             echo "delta_percent=N/A" >> $GITHUB_OUTPUT
             echo "status=new" >> $GITHUB_OUTPUT
           else
             DELTA_KB=$((PR_SDK_IMPACT - BASE_SDK_IMPACT))
             DELTA_EXECUTABLE=$((PR_EXECUTABLE_IMPACT - BASE_EXECUTABLE_IMPACT))
             DELTA_XCFRAMEWORK=$((PR_XCFRAMEWORK - BASE_XCFRAMEWORK))
+            # A zero base means the base branch predates the framework/dSYM split.
+            if [[ "$BASE_FRAMEWORK" -gt 0 ]]; then
+              DELTA_FRAMEWORK=$((PR_FRAMEWORK - BASE_FRAMEWORK))
+            else
+              DELTA_FRAMEWORK="N/A"
+            fi
             
             if [[ "$BASE_SDK_IMPACT" -gt 0 ]]; then
               DELTA_PERCENT=$(awk "BEGIN {printf \"%.2f\", ($DELTA_KB / $BASE_SDK_IMPACT) * 100}")
@@ -114,6 +214,7 @@ jobs:
             echo "delta_kb=${DELTA_KB}" >> $GITHUB_OUTPUT
             echo "delta_executable=${DELTA_EXECUTABLE}" >> $GITHUB_OUTPUT
             echo "delta_xcframework=${DELTA_XCFRAMEWORK}" >> $GITHUB_OUTPUT
+            echo "delta_framework=${DELTA_FRAMEWORK}" >> $GITHUB_OUTPUT
             echo "delta_percent=${DELTA_PERCENT}" >> $GITHUB_OUTPUT
             
             # Determine status emoji
@@ -161,19 +262,26 @@ jobs:
             echo "base_impact_formatted=$(format_size ${{ steps.base-size.outputs.sdk_impact_kb }})" >> $GITHUB_OUTPUT
             echo "base_executable_formatted=$(format_bytes ${{ steps.base-size.outputs.sdk_executable_impact }})" >> $GITHUB_OUTPUT
             echo "base_xcframework_formatted=$(format_size ${{ steps.base-size.outputs.xcframework_size_kb }})" >> $GITHUB_OUTPUT
+            echo "base_framework_formatted=$(format_size ${{ steps.base-size.outputs.framework_size_kb }})" >> $GITHUB_OUTPUT
+            echo "base_dsym_formatted=$(format_size ${{ steps.base-size.outputs.dsym_size_kb }})" >> $GITHUB_OUTPUT
           else
             echo "base_impact_formatted=N/A" >> $GITHUB_OUTPUT
             echo "base_executable_formatted=N/A" >> $GITHUB_OUTPUT
             echo "base_xcframework_formatted=N/A" >> $GITHUB_OUTPUT
+            echo "base_framework_formatted=N/A" >> $GITHUB_OUTPUT
+            echo "base_dsym_formatted=N/A" >> $GITHUB_OUTPUT
           fi
 
           echo "pr_impact_formatted=$(format_size ${{ steps.pr-size.outputs.sdk_impact_kb }})" >> $GITHUB_OUTPUT
           echo "pr_executable_formatted=$(format_bytes ${{ steps.pr-size.outputs.sdk_executable_impact }})" >> $GITHUB_OUTPUT
           echo "pr_xcframework_formatted=$(format_size ${{ steps.pr-size.outputs.xcframework_size_kb }})" >> $GITHUB_OUTPUT
+          echo "pr_framework_formatted=$(format_size ${{ steps.pr-size.outputs.framework_size_kb }})" >> $GITHUB_OUTPUT
+          echo "pr_dsym_formatted=$(format_size ${{ steps.pr-size.outputs.dsym_size_kb }})" >> $GITHUB_OUTPUT
 
           DELTA_KB="${{ steps.delta.outputs.delta_kb }}"
           DELTA_EXECUTABLE="${{ steps.delta.outputs.delta_executable }}"
           DELTA_XCFRAMEWORK="${{ steps.delta.outputs.delta_xcframework }}"
+          DELTA_FRAMEWORK="${{ steps.delta.outputs.delta_framework }}"
 
           if [[ "$DELTA_KB" != "N/A" ]]; then
             if [[ "$DELTA_KB" -ge 0 ]]; then
@@ -193,10 +301,19 @@ jobs:
             else
               echo "delta_xcframework_formatted=$(format_size $DELTA_XCFRAMEWORK)" >> $GITHUB_OUTPUT
             fi
+
+            if [[ "$DELTA_FRAMEWORK" == "N/A" ]]; then
+              echo "delta_framework_formatted=N/A" >> $GITHUB_OUTPUT
+            elif [[ "$DELTA_FRAMEWORK" -ge 0 ]]; then
+              echo "delta_framework_formatted=+$(format_size $DELTA_FRAMEWORK)" >> $GITHUB_OUTPUT
+            else
+              echo "delta_framework_formatted=$(format_size $DELTA_FRAMEWORK)" >> $GITHUB_OUTPUT
+            fi
           else
             echo "delta_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
             echo "delta_executable_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
             echo "delta_xcframework_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
+            echo "delta_framework_formatted=N/A (new baseline)" >> $GITHUB_OUTPUT
           fi
 
       - name: Generate size report
@@ -225,9 +342,27 @@ jobs:
           |--------|---------------|---------|--------|
           | App Bundle Impact | ${{ steps.format.outputs.base_impact_formatted }} | ${{ steps.format.outputs.pr_impact_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
           | Executable Impact | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
-          | XCFramework Size | ${{ steps.format.outputs.base_xcframework_formatted }} | ${{ steps.format.outputs.pr_xcframework_formatted }} | ${{ steps.format.outputs.delta_xcframework_formatted }} |
+          | Framework binary (ships) | ${{ steps.format.outputs.base_framework_formatted }} | ${{ steps.format.outputs.pr_framework_formatted }} | ${{ steps.format.outputs.delta_framework_formatted }} |
 
           ${STATUS_MSG}
+
+          ### Where the bytes are
+
+          $(cat "${{ steps.composition.outputs.path }}" 2>/dev/null || echo "_Composition data unavailable._")
+
+          <details>
+          <summary>Debug symbols (not shipped to users)</summary>
+
+          The SDK is embedded as a dynamic framework, so the app's own executable barely
+          moves and \`App Bundle Impact\` is the number that tracks shipped code.
+          \`xcodebuild -create-xcframework\` folds the dSYM in beside the framework, so the
+          xcframework total is mostly debug symbols and is not a shipping cost.
+
+          | | Target Branch | This PR |
+          |---|---|---|
+          | dSYMs | ${{ steps.format.outputs.base_dsym_formatted }} | ${{ steps.format.outputs.pr_dsym_formatted }} |
+          | XCFramework total | ${{ steps.format.outputs.base_xcframework_formatted }} | ${{ steps.format.outputs.pr_xcframework_formatted }} |
+          </details>
 
           <details>
           <summary>Raw measurements</summary>
@@ -269,3 +404,23 @@ jobs:
 
       - name: Write job summary
         run: cat "${{ steps.report.outputs.path }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Enforce size budget
+        run: |
+          DELTA="${{ steps.delta.outputs.delta_kb }}"
+          THRESHOLD="${SIZE_DELTA_THRESHOLD_KB}"
+
+          # The base-branch measurement is continue-on-error and reports N/A when it
+          # fails, so N/A means "could not verify", not "passed". Say so rather than
+          # letting an unmeasured PR read as a green one.
+          if [[ "$DELTA" == "N/A" ]]; then
+            echo "::warning::SDK size delta could not be measured (no target-branch baseline). Not treating this as a pass."
+            exit 0
+          fi
+
+          if [[ "$DELTA" -gt "$THRESHOLD" ]]; then
+            echo "::error::SDK app-bundle impact grew by ${DELTA} KB, over the ${THRESHOLD} KB budget. See the size report comment for which bytes moved."
+            exit 1
+          fi
+
+          echo "SDK size delta ${DELTA} KB is within the ${THRESHOLD} KB budget."
