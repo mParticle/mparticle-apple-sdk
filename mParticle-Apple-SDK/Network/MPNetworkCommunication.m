@@ -94,11 +94,22 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 @end
 
+/// Thin boundary glue: the Swift kit-batch logging seam forwarding to MParticle.
+@interface MPKitBatchLoggingAdapter : NSObject <MPKitBatchLogging>
+@end
+
+@implementation MPKitBatchLoggingAdapter
+- (void)logKitBatch:(NSString *)uploadString {
+    [[MParticle sharedInstance] logKitBatch:uploadString];
+}
+@end
+
 @interface MPNetworkCommunication_PRIVATE()
 
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
 @property (nonatomic, strong) id<MPUploadPersisting> persistence;
+@property (nonatomic, strong) id<MPKitBatchLogging> kitBatchLogger;
 
 @end
 
@@ -450,6 +461,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         _persistence = [[MPUploadPersistenceAdapter alloc] init];
     }
     return _persistence;
+}
+
+- (id<MPKitBatchLogging>)kitBatchLogger {
+    if (!_kitBatchLogger) {
+        _kitBatchLogger = [[MPKitBatchLoggingAdapter alloc] init];
+    }
+    return _kitBatchLogger;
 }
 
 #pragma mark Private methods
@@ -807,20 +825,17 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
-    BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
-    BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
-    if (isSuccessCode) {
-        [MPTransportErrorDetector resetTransportErrorCounter];
-    }
-    if (isSuccessCode || isInvalidCode) {
-        [self.persistence deleteUpload:upload];
-        if (isSuccessCode && uploadString.length) {
-            [mParticle logKitBatch:uploadString];
-        }
-    }
 
-    BOOL success = isSuccessCode && data && [data length] > 0;
-    if (success) {
+    NSDictionary *httpHeaders = [httpResponse allHeaderFields] ?: @{};
+    MPUploadResponseOutcome *outcome = [MPUploadResponseHandler handleMessageResponseWithStatusCode:responseCode
+                                                                                     transportError:error
+                                                                                            headers:httpHeaders
+                                                                                       uploadString:uploadString
+                                                                                             upload:upload
+                                                                                        persistence:self.persistence
+                                                                                     kitBatchLogger:self.kitBatchLogger];
+
+    if (outcome.isSuccess && data && [data length] > 0) {
         @try {
             NSError *serializationError = nil;
             NSDictionary *responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
@@ -838,25 +853,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     MPILogVerbose(@"Upload execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
 
-    // 429, 503
-    if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-        NSDictionary *httpHeaders = [httpResponse allHeaderFields];
-        NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
-        [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeMessage];
-        return YES;
+    if (outcome.shouldThrottle) {
+        [self throttleWithRetryAfter:outcome.throttleRetryAfter uploadType:MPUploadTypeMessage];
     }
-
-    //5xx, 0, 999, -1, etc
-    if (!isSuccessCode && !isInvalidCode) {
-        if ([self isRetriableTransportError:error]) {
-            MPILogWarning(@"Throttling uploads after transport error.");
-            NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
-            [self throttleWithRetryAfter:retryAfter uploadType:MPUploadTypeMessage];
-        }
-        return YES;
-    }
-
-    return NO;
+    return outcome.willRetry;
 }
 
 - (BOOL)performAliasUpload:(MPUpload *)upload {
