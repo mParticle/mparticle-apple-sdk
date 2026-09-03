@@ -1,6 +1,5 @@
 import Foundation
 
-@objcMembers
 public class Miscellaneous: NSObject {
     public static let kMPFirstSeenUser = "fsu"
     public static let kMPLastSeenUser = "lsu"

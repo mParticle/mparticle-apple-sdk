@@ -1,6 +1,5 @@
 import Foundation
 
-@objcMembers
 public class Notifications: NSObject {
     static let kMPCrashReportOccurredNotification = Notification.Name("MPCrashReportOccurredNotification")
     static let kMPConfigureExceptionHandlingNotification = Notification.Name("MPConfigureExceptionHandlingNotification")
@@ -50,7 +49,6 @@ public protocol MPUserDefaultsConnectorProtocol {
     func compressConfigurationStorage() -> Bool
 }
 
-@objcMembers
 public class RemoteConfig: NSObject {
     static let kMPRemoteConfigExceptionHandlingModeKey = "cue"
     static let kMPRemoteConfigExceptionHandlingModeAppDefined = "appdefined"
