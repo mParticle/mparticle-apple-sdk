@@ -698,65 +698,19 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     [self endSafeBackgroundTask:backgroundTaskIdentifier];
 
-    if (!data) {
-        NSError *audienceError = [NSError errorWithDomain:@"mParticle Audiences"
-                                                     code:httpResponse.statusCode
-                                       userInfo:@{@"message":@"Audiences may not be enabled for this org."}];
-        completionHandler(NO, nil, audienceError);
-        return;
-    }
+    MPAudienceResponsePRIVATE *audienceResponse = [MPAudienceResponsePRIVATE responseFromData:data
+                                                                                   statusCode:[httpResponse statusCode]
+                                                                                       logger:MParticle.sharedInstance.getLogger];
 
     NSMutableArray<MPAudience *> *currentAudiences = nil;
-    BOOL success = NO;
-
-    NSArray *audiencesList = nil;
-    NSInteger responseCode = [httpResponse statusCode];
-    success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
-
-    if (success) {
-        NSError *serializationError = nil;
-        NSDictionary *audiencesDictionary = nil;
-
-        @try {
-            audiencesDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-            success = serializationError == nil;
-        } @catch (NSException *exception) {
-            audiencesDictionary = nil;
-            success = NO;
-            MPILogError(@"Audiences Error: %@", [exception reason]);
-        }
-
-        if (success) {
-            audiencesList = audiencesDictionary[kMPAudienceMembershipKey];
-        }
-
-        if (audiencesList.count > 0) {
-            currentAudiences = [[NSMutableArray alloc] init];
-
-            for (NSDictionary *audienceDictionary in audiencesList) {
-                MPAudience *audience = [[MPAudience alloc] initWithAudienceId:audienceDictionary[kMPAudienceIdKey]];
-                [currentAudiences addObject:audience];
-            }
-
-            MPILogVerbose(@"Audiences Response Code: %ld", (long)responseCode);
-        } else {
-            MPILogWarning(@"Audiences Error - Response Code: %ld", (long)responseCode);
+    if (audienceResponse.audienceIDs.count > 0) {
+        currentAudiences = [[NSMutableArray alloc] initWithCapacity:audienceResponse.audienceIDs.count];
+        for (NSNumber *audienceId in audienceResponse.audienceIDs) {
+            [currentAudiences addObject:[[MPAudience alloc] initWithAudienceId:audienceId]];
         }
     }
 
-    if (currentAudiences.count == 0) {
-        currentAudiences = nil;
-    }
-
-    NSError *audienceError = nil;
-
-    if (responseCode == HTTPStatusCodeForbidden) {
-        audienceError = [NSError errorWithDomain:@"mParticle Audiences"
-                                           code:responseCode
-                                       userInfo:@{@"message":@"Audiences not enabled for this org."}];
-    }
-
-    completionHandler(success, currentAudiences, audienceError);
+    completionHandler(audienceResponse.isSuccess, currentAudiences, audienceResponse.error);
 }
 
 - (BOOL)performMessageUpload:(MPUpload *)upload {
@@ -918,12 +872,15 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Alias response code: %ld", (long)responseCode);
 
-    BOOL isSuccessCode = responseCode >= 200 && responseCode < 300;
-    BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
-    if (isSuccessCode) {
+    MPAliasResponsePlanPRIVATE *plan = [MPAliasResponsePlanPRIVATE planFromRequestData:upload.uploadData
+                                                                          responseData:data
+                                                                            statusCode:responseCode
+                                                                                logger:MParticle.sharedInstance.getLogger];
+
+    if (plan.isSuccessCode) {
         [MPTransportErrorDetector resetTransportErrorCounter];
     }
-    if (isSuccessCode || isInvalidCode) {
+    if (plan.isSuccessCode || plan.isInvalidCode) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
 
@@ -934,38 +891,18 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     MPAliasResponse *aliasResponse = [[MPAliasResponse alloc] init];
     aliasResponse.responseCode = responseCode;
-    aliasResponse.willRetry = NO;
-
-    NSDictionary *requestDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
-    NSNumber *sourceMPID = requestDictionary[@"source_mpid"];
-    NSNumber *destinationMPID = requestDictionary[@"destination_mpid"];
-    NSNumber *startTimeNumber = requestDictionary[@"start_unixtime_ms"];
-    NSNumber *endTimeNumber = requestDictionary[@"end_unixtime_ms"];
-    NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:startTimeNumber.doubleValue/1000];
-    NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:endTimeNumber.doubleValue/1000];
-    aliasResponse.requestID = requestDictionary[@"request_id"];
-    aliasResponse.request = [MPAliasRequest requestWithSourceMPID:sourceMPID destinationMPID:destinationMPID startTime:startTime endTime:endTime];
-
-    if (!isSuccessCode && data && data.length > 0) {
-        @try {
-            NSError *serializationError = nil;
-            NSDictionary *responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-            if (responseDictionary != nil && serializationError == nil) {
-                NSString *message = responseDictionary[@"message"];
-                NSNumber *code = responseDictionary[@"code"];
-                MPILogError(@"Alias request failed - %@ %@", code, message);
-                aliasResponse.errorResponse = message;
-            }
-        } @catch (NSException *exception) {
-            MPILogError(@"Alias error: %@", [exception reason]);
-        }
-    }
+    aliasResponse.willRetry = plan.shouldRetry;
+    aliasResponse.requestID = plan.requestID;
+    aliasResponse.errorResponse = plan.errorMessage;
+    aliasResponse.request = [MPAliasRequest requestWithSourceMPID:plan.sourceMPID
+                                                  destinationMPID:plan.destinationMPID
+                                                        startTime:plan.startTime
+                                                          endTime:plan.endTime];
 
     MPILogVerbose(@"Alias execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
 
     // 429, 503
-    if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-        aliasResponse.willRetry = YES;
+    if (plan.shouldRetry) {
         NSDictionary *httpHeaders = [httpResponse allHeaderFields];
         NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
         [self throttleWithRetryAfter:retryAfter uploadType:upload.uploadType];
@@ -973,7 +910,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 
     //5xx, 0, 999, -1, etc
-    if (!isSuccessCode && !isInvalidCode) {
+    if (!plan.isSuccessCode && !plan.isInvalidCode) {
         if ([self isRetriableTransportError:error]) {
             MPILogWarning(@"Throttling alias requests after transport error.");
             NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];
