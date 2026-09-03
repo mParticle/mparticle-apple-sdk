@@ -188,12 +188,16 @@
     MPPromotion *promotion = [[MPPromotion alloc] init];
     MPPromotionFieldsJS *fields = [MPConvertJSFields promotionFieldsFromJSON:json];
 
-    // Each setter removes its key when handed nil, and the keys are absent on a
-    // fresh instance, so assigning unconditionally matches the ObjC guards.
-    promotion.creative = fields.creative;
-    promotion.name = fields.name;
-    promotion.position = fields.position;
-    promotion.promotionId = fields.promotionId;
+    // Guarded, not unconditional: -attributes/-beautifiedAttributes are lazy and
+    // allocate on first touch, including from a setter's nil-removal branch. An
+    // unconditional assignment when every field is nil still allocates an empty
+    // (non-nil) _attributes, which -dictionaryRepresentation returns as-is —
+    // turning "no valid fields" into a promotion MPPromotionContainer no longer
+    // skips, instead of leaving it nil as before this file moved to Swift.
+    if (fields.creative) { promotion.creative = fields.creative; }
+    if (fields.name) { promotion.name = fields.name; }
+    if (fields.position) { promotion.position = fields.position; }
+    if (fields.promotionId) { promotion.promotionId = fields.promotionId; }
 
     return promotion;
 }
@@ -202,12 +206,14 @@
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
     MPTransactionAttributesFieldsJS *fields = [MPConvertJSFields transactionAttributesFieldsFromJSON:json];
 
-    transactionAttributes.affiliation = fields.affiliation;
-    transactionAttributes.couponCode = fields.couponCode;
-    transactionAttributes.shipping = fields.shipping;
-    transactionAttributes.tax = fields.tax;
-    transactionAttributes.revenue = fields.revenue;
-    transactionAttributes.transactionId = fields.transactionId;
+    // Same guard, same reason: MPTransactionAttributes has the identical lazy
+    // -attributes/-beautifiedAttributes pattern as MPPromotion.
+    if (fields.affiliation) { transactionAttributes.affiliation = fields.affiliation; }
+    if (fields.couponCode) { transactionAttributes.couponCode = fields.couponCode; }
+    if (fields.shipping) { transactionAttributes.shipping = fields.shipping; }
+    if (fields.tax) { transactionAttributes.tax = fields.tax; }
+    if (fields.revenue) { transactionAttributes.revenue = fields.revenue; }
+    if (fields.transactionId) { transactionAttributes.transactionId = fields.transactionId; }
 
     return transactionAttributes;
 }
