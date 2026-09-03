@@ -110,20 +110,31 @@ segment_bytes() {
 # Per-symbol sizes, approximated by address delta.
 #
 # Mach-O symbol tables carry no size field, so llvm-nm --print-size reports 0 for
-# every symbol. Instead take the address-sorted symbol list and use the distance to
-# the next symbol of the same type as the size. Pairing within a type keeps section
-# boundaries from producing one huge bogus symbol; the last symbol of each type is
-# dropped, so totals here run slightly under the true figure.
+# every symbol. Sizes are approximated instead from the distance to the next symbol
+# in the same section, using nm -m to get each symbol's (segment,section).
+#
+# Pairing per section rather than per symbol type matters: type letters like "S"
+# cover several sections at once, so pairing by type alone straddles section
+# boundaries and reports one symbol with the size of the whole gap. The last symbol
+# in each section has no successor and is dropped, so totals here run slightly
+# under the true figure.
 symbol_sizes() {
-	nm -n --defined-only "$1" 2>/dev/null |
+	nm -m -n "$1" 2>/dev/null |
 		perl -ne '
-			next unless /^([0-9a-fA-F]+)\s+(\S)\s+(.+)$/;
-			my ($addr, $type, $name) = (hex($1), uc($2), $3);
-			if (defined $prev_addr{$type}) {
-				printf("%d\t%s\n", $addr - $prev_addr{$type}, $prev_name{$type});
+			next unless /^([0-9a-fA-F]+)\s+\((__[A-Za-z_]+),(__[A-Za-z0-9_.]+)\)\s+(.*)$/;
+			my ($addr, $sect, $rest) = (hex($1), "$2,$3", $4);
+			# Strip nm -m attribute words so what is left is the symbol name. Taking the
+			# last whitespace field instead would truncate Objective-C selectors.
+			$rest =~ s/^(?:\(was\ a\ private\ external\)\s*|non-external\s*|private\ external\s*|external\s*|weak\ external\s*|weak\ definition\s*|absolute\s*|no\ dead\ strip\s*|referenced\ dynamically\s*|\[[^\]]*\]\s*)+//;
+			next unless length $rest;
+			if (defined $prev_addr{$sect}) {
+				my $size = $addr - $prev_addr{$sect};
+				# A single symbol larger than this is an address-delta artifact, not a
+				# real symbol: some sections contain far-apart absolute addresses.
+				printf("%d\t%s\n", $size, $prev_name{$sect}) if $size > 0 && $size < 1048576;
 			}
-			$prev_addr{$type} = $addr;
-			$prev_name{$type} = $name;
+			$prev_addr{$sect} = $addr;
+			$prev_name{$sect} = $rest;
 		'
 }
 
