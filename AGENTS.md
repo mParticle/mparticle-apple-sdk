@@ -89,6 +89,33 @@ mistake to make.
 - Objective-C follows Apple's Cocoa coding guidelines. Swift prefers `let` and value types and
   avoids force-unwraps. Public API needs HeaderDoc (Objective-C) or `///` (Swift). Add a comment
   only where the code cannot be made clear instead.
+- **The migration is net-additive to binary size, so Swift you add costs more than the ObjC you
+  delete.** Measured `main` vs `workstation/swift-migration`: 5,015 lines of ObjC removed bought back
+  125 KB, and 8,479 lines of Swift added cost 777 KB. Source volume grew 8.8 %, the shipped binary grew
+  35 %. Four rules follow from the attribution (`Tests/SizeReport/README.md` has the breakdown, run
+  `Tests/SizeReport/analyze_binary.sh` for a fresh one):
+  - **Delete the ObjC original in the same PR that adds the Swift replacement**, for every leaf class.
+    Copying logic into Swift while leaving the ObjC method as a delegating wrapper ships both. There
+    are currently 11 exact-name pairs doing exactly that. Two-stage really is forced for base classes
+    (ObjC cannot subclass Swift) - say so in the PR when it applies, so the debt stays visible.
+  - **`@objc` per member, never `@objcMembers` per type, and delete the annotation with its last ObjC
+    caller.** Swift's `@objc` declarations generate 106 KB of Objective-C metadata today, none of it
+    strippable, from 955 annotations - roughly one per 11 lines of Swift.
+  - **`internal` and `final` by default.** 145 of 166 Swift types are `public`, almost all of them
+    only so the ObjC core can reach them across the module boundary. Swift emits `public` symbols as
+    `no_dead_strip`, so they can never be removed; the symbol tables describing them are 22 % of the
+    regression. `public` is a size decision, not just an API decision.
+  - **Don't introduce `Codable`, generic helpers, `Mirror`, or Swift Concurrency into the core without
+    measuring.** The core currently uses none of them, which is why `-Osize` is safe and why the Swift
+    metadata sections are only 32 KB. `SWIFT_REFLECTION_METADATA_LEVEL` is left at its default today,
+    but adding runtime reflection would foreclose that option.
+- **Test code can reach the shipped framework through the synchronized group.** The
+  `mParticle-Apple-SDK-Swift` target draws its files from a `PBXFileSystemSynchronizedRootGroup` over
+  the whole `mParticle-Apple-SDK-Swift/` directory, which holds `Sources/` _and_ `Test/`. Test code is
+  excluded by hand-enumerated `membershipExceptions`, historically only `*Tests.swift`/`*Tests.m`, so
+  a mock under `Test/Mocks/` shipped to customers until it was noticed in a symbol dump. Any new file
+  under `Test/` that is not named `*Tests.*` must be added to both exception sets. SwiftPM and
+  CocoaPods scope to `Sources/**` and are unaffected, so this is invisible outside the Xcode build.
 
 ## Kits
 
