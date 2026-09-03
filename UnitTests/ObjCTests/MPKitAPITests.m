@@ -33,6 +33,10 @@
 
 @end
 
+@interface FilteredMParticleUser (RoktFilteringTests)
+- (NSDictionary<NSString *, id> *)mp_filteredUserAttributesByMergingAttributes:(NSDictionary<NSString *, id> *)attributes;
+@end
+
 
 @interface MPKitAPI ()
 
@@ -197,6 +201,39 @@
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+- (void)testMergedCandidateAttributesUseConnectionAttributeHashes {
+    MParticle *mparticle = MParticle.sharedInstance;
+    mparticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mparticle];
+    MParticleUser *currentUser = mparticle.identity.currentUser;
+    [MPUserDefaultsConnector.userDefaults setMPObject:@{@"stored": @"profile"}
+                                               forKey:kMPUserAttributeKey
+                                               userId:currentUser.userId];
+
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *allowedHash = [hasher hashString:@"allowed"];
+    NSString *blockedHash = [hasher hashString:@"blocked"];
+    [_kitContainer configureKits:nil];
+    [_kitContainer configureKits:@[
+        @{
+            @"id": @42,
+            @"as": @{},
+            @"hs": @{@"ua": @{allowedHash: @1, blockedHash: @0}}
+        }
+    ]];
+
+    MPKitAPI *kitAPI = [[MPKitAPI alloc] initWithKitCode:@42];
+    FilteredMParticleUser *kitUser = [kitAPI getCurrentUserWithKit:self];
+    NSDictionary *attributes = [kitUser mp_filteredUserAttributesByMergingAttributes:@{
+        @"allowed": @"forward",
+        @"blocked": @"withhold"
+    }];
+
+    XCTAssertEqualObjects(attributes[@"stored"], @"profile");
+    XCTAssertEqualObjects(attributes[@"allowed"], @"forward");
+    XCTAssertNil(attributes[@"blocked"]);
 }
 
 - (void)testUserAttributeManuallySet {
