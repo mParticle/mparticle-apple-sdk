@@ -1,4 +1,5 @@
 import Foundation
+@testable import mParticle_Apple_SDK_Swift
 
 class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     var logger = MPLog(logLevel: .warning)
