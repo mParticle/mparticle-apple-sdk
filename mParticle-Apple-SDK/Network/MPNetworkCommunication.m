@@ -494,19 +494,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (NSNumber *)maxAgeForCache:(nonnull NSString *)cache {
-    NSNumber *maxAge;
-    cache = cache.lowercaseString;
-
-    if ([cache containsString: @"max-age="]) {
-        NSArray *maxAgeComponents = [cache componentsSeparatedByString:@"max-age="];
-        NSString *beginningOfMaxAgeString = [maxAgeComponents objectAtIndex:1];
-        NSArray *components = [beginningOfMaxAgeString componentsSeparatedByString:@","];
-        NSString *maxAgeValue = [components objectAtIndex:0];
-
-        maxAge = [NSNumber numberWithDouble:MIN([maxAgeValue doubleValue], CONFIG_REQUESTS_MAX_EXPIRATION_AGE)];
-    }
-
-    return maxAge;
+    return [MPConfigResponseParser maxAgeFromCacheControl:cache maxExpirationAge:CONFIG_REQUESTS_MAX_EXPIRATION_AGE];
 }
 
 - (MPURLRequestContext *)requestContextForKind:(MPURLRequestKind)requestKind {
