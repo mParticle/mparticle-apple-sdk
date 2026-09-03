@@ -6,7 +6,6 @@
 #import <OCMock/OCMock.h>
 #import "MPIConstants.h"
 #import "MPURL.h"
-#import "MPURLRequestBuilder.h"
 
 @interface MPConnector ()
 
@@ -15,6 +14,11 @@
 + (NSArray<NSString *> *)defaultPinnedCertificates;
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error;
 - (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error;
+- (nullable NSMutableURLRequest *)urlRequestForURL:(nonnull MPURL *)url
+                                           message:(nullable NSString *)message
+                                        httpMethod:(nullable NSString *)httpMethod
+                                          postData:(nullable NSData *)postData
+                                            secret:(nullable NSString *)secret;
 
 @end
 
@@ -97,32 +101,40 @@
     OCMVerifyAll((id)mockSession);
 }
 
-- (void)testResponseFromGetRequestToURL {
+- (void)testURLRequestForGetRequest {
     MPConnector *connector = [[MPConnector alloc] init];
     NSURL *customURL = [NSURL URLWithString:@"https://192.168.1"];
     NSURL *defaultURL = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:customURL defaultURL:defaultURL];
 
-    id mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
-    NSObject<MPConnectorResponseProtocol> *connectorResponse = [connector responseFromGetRequestToURL:mpURL];
-    
-    OCMVerify([mockRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet]);
-    XCTAssertNotNil(connectorResponse);
-    OCMVerifyAll((id)mockRequestBuilder);
+    NSMutableURLRequest *request = [connector urlRequestForURL:mpURL
+                                                       message:nil
+                                                    httpMethod:kMPHTTPMethodGet
+                                                      postData:nil
+                                                        secret:nil];
+
+    XCTAssertNotNil(request);
+    XCTAssertEqualObjects(request.URL, customURL);
+    XCTAssertEqualObjects(request.HTTPMethod, kMPHTTPMethodGet);
 }
 
-- (void)testResponseFromPostRequestToURL {
+- (void)testURLRequestForPostRequest {
     MPConnector *connector = [[MPConnector alloc] init];
     NSURL *customURL = [NSURL URLWithString:@"https://192.168.1"];
     NSURL *defaultURL = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:customURL defaultURL:defaultURL];
 
-    id mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
-    NSObject<MPConnectorResponseProtocol> *connectorResponse = [connector responseFromPostRequestToURL:mpURL message:nil serializedParams:nil secret:nil];
-    
-    OCMVerify([mockRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodPost]);
-    XCTAssertNotNil(connectorResponse);
-    OCMVerifyAll((id)mockRequestBuilder);
+    NSData *body = [@"{}" dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *request = [connector urlRequestForURL:mpURL
+                                                       message:@"{}"
+                                                    httpMethod:kMPHTTPMethodPost
+                                                      postData:body
+                                                        secret:nil];
+
+    XCTAssertNotNil(request);
+    XCTAssertEqualObjects(request.URL, customURL);
+    XCTAssertEqualObjects(request.HTTPMethod, kMPHTTPMethodPost);
+    XCTAssertEqualObjects(request.HTTPBody, body);
 }
 
 @end

@@ -15,7 +15,6 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "Kits/MPKitContainer+MParticlePrivate.h"
-#import "MPURLRequestBuilder.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"

@@ -1,16 +1,27 @@
 #import "MPConnector.h"
 #import <dispatch/dispatch.h>
 #import "MPIConstants.h"
-#import "MPURLRequestBuilder.h"
+#import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPNetworkCommunication.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPURL.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MPTransportErrorDetector (MPConnectorTimeout)
 + (NSString *)semaphoreTimeoutErrorDomain;
 + (NSNumber *)semaphoreTimeoutErrorCode;
+@end
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, readonly) MParticleWebViewPRIVATE *webView;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
+
+- (MPLog *)getLogger;
+
 @end
 
 static NSArray *mpStoredCertificates = nil;
@@ -39,6 +50,12 @@ static NSArray *mpStoredCertificates = nil;
 @property (nonatomic, copy) void (^completionHandler)(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse);
 @property (nonatomic, strong) NSURLSessionDataTask *dataTask;
 @property (nonatomic, strong) NSURLSession *urlSession;
+
+- (nullable NSMutableURLRequest *)urlRequestForURL:(nonnull MPURL *)url
+                                           message:(nullable NSString *)message
+                                        httpMethod:(nullable NSString *)httpMethod
+                                          postData:(nullable NSData *)postData
+                                            secret:(nullable NSString *)secret;
 
 @end
 
@@ -249,13 +266,97 @@ static NSArray *mpStoredCertificates = nil;
     _urlSession = nil;
 }
 
+- (MPURLRequestContext *)requestContextForKind:(MPURLRequestKind)requestKind {
+    MParticle *mParticle = MParticle.sharedInstance;
+
+    NSString *apiKey = nil;
+    NSString *fallbackSecret = nil;
+    NSString *userAgent = nil;
+    NSArray<NSNumber *> *supportedKits = nil;
+    NSArray<NSNumber *> *configuredKits = nil;
+    NSString *eTag = nil;
+    BOOL hasStoredConfiguration = NO;
+    NSInteger environment = 0;
+
+    if (requestKind != MPURLRequestKindCustom) {
+        fallbackSecret = mParticle.stateMachine.secret;
+    }
+
+    switch (requestKind) {
+        case MPURLRequestKindAudience:
+            apiKey = mParticle.stateMachine.apiKey;
+            userAgent = mParticle.webView.userAgent;
+            break;
+        case MPURLRequestKindIdentity:
+            apiKey = mParticle.stateMachine.apiKey;
+            break;
+        case MPURLRequestKindEvent: {
+            MPKitContainer_PRIVATE *kitContainer = mParticle.kitContainer_PRIVATE;
+            supportedKits = kitContainer.supportedKits;
+            configuredKits = kitContainer.configuredKitsRegistry;
+            userAgent = mParticle.webView.userAgent;
+            break;
+        }
+        case MPURLRequestKindConfig: {
+            MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+            eTag = userDefaults[kMPHTTPETagHeaderKey];
+            hasStoredConfiguration = [userDefaults getConfiguration] != nil;
+            supportedKits = mParticle.kitContainer_PRIVATE.supportedKits;
+            userAgent = mParticle.webView.originalDefaultUserAgent;
+            environment = (NSInteger)[MPStateMachine_PRIVATE environment];
+            break;
+        }
+        case MPURLRequestKindCustom:
+            break;
+    }
+
+    MPLog *logger = mParticle.getLogger;
+    if (!logger) {
+        logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:(NSUInteger)mParticle.logLevel]];
+    }
+
+    return [[MPURLRequestContext alloc] initWithAPIKey:apiKey
+                                        fallbackSecret:fallbackSecret
+                                             userAgent:userAgent
+                                         supportedKits:supportedKits
+                                        configuredKits:configuredKits
+                                                  eTag:eTag
+                                hasStoredConfiguration:hasStoredConfiguration
+                                           environment:environment
+                                        requestTimeout:NETWORK_REQUEST_MAX_WAIT_SECONDS
+                         networkPerformanceMessageType:kMPMessageTypeNetworkPerformance
+                                                logger:logger];
+}
+
+- (nullable NSMutableURLRequest *)urlRequestForURL:(nonnull MPURL *)url
+                                           message:(nullable NSString *)message
+                                        httpMethod:(nullable NSString *)httpMethod
+                                          postData:(nullable NSData *)postData
+                                            secret:(nullable NSString *)secret {
+    MPURLRequestKind requestKind = [MPURLRequestBuilder requestKindForEndpointHint:url.url.accessibilityHint
+                                                                           message:message
+                                                                   isSDKURLRequest:YES];
+    MPURLRequestContext *context = [self requestContextForKind:requestKind];
+    MPURLRequestBuilder *builder = [[MPURLRequestBuilder alloc] initWithURL:url.url
+                                                                defaultURL:url.defaultURL
+                                                                   message:message
+                                                                httpMethod:httpMethod
+                                                               requestKind:requestKind
+                                                                   context:context];
+    return [[[builder withPostData:postData] withSecret:secret] build];
+}
+
 #pragma mark Public methods
 - (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromGetRequestToURL:(nonnull MPURL *)url {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
     
     MPILogDebug(@"Starting GET request to: %@", url.url.host);
     
-    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
+    NSMutableURLRequest *urlRequest = [self urlRequestForURL:url
+                                                    message:nil
+                                                 httpMethod:kMPHTTPMethodGet
+                                                   postData:nil
+                                                     secret:nil];
     
     if (urlRequest) {
         requestStartTime = [NSDate date];
@@ -303,7 +404,11 @@ static NSArray *mpStoredCertificates = nil;
     
     MPILogDebug(@"Starting POST request to: %@", url.url.host);
     
-    NSMutableURLRequest *urlRequest = [[[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost] withPostData:serializedParams] withSecret:secret] build];
+    NSMutableURLRequest *urlRequest = [self urlRequestForURL:url
+                                                    message:message
+                                                 httpMethod:kMPHTTPMethodPost
+                                                   postData:serializedParams
+                                                     secret:secret];
     
     if (urlRequest) {
         requestStartTime = [NSDate date];
