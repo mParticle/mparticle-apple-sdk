@@ -220,7 +220,6 @@ ENUM|MPWrapperSdk|MPWrapperSdkXamarin
 IFACE|@interface FilteredMPIdentityApiRequest : NSObject
 IFACE|@interface FilteredMParticleUser : NSObject
 IFACE|@interface MPAliasRequest : NSObject
-IFACE|@interface MPAliasResponse : NSObject
 IFACE|@interface MPAttributionResult : NSObject
 IFACE|@interface MPAudience : NSObject
 IFACE|@interface MPBackendController_PRIVATE : NSObject<MPBackendControllerProtocol>
@@ -712,7 +711,6 @@ PROP|@property (nonatomic) BOOL enableAudienceAPI;
 PROP|@property (nonatomic) BOOL enableIdentityCaching;
 PROP|@property (nonatomic) BOOL eventsOnly;
 PROP|@property (nonatomic) BOOL eventsOnly;
-PROP|@property (nonatomic) BOOL isSuccessful;
 PROP|@property (nonatomic) BOOL nonInteractive;
 PROP|@property (nonatomic) BOOL optOut;
 PROP|@property (nonatomic) BOOL optOut;
@@ -726,7 +724,6 @@ PROP|@property (nonatomic) BOOL pinningDisabled;
 PROP|@property (nonatomic) BOOL pinningDisabledInDevelopment;
 PROP|@property (nonatomic) BOOL shouldBeginSession;
 PROP|@property (nonatomic) BOOL shouldUploadEvent;
-PROP|@property (nonatomic) BOOL willRetry;
 PROP|@property (nonatomic) MPCommerceEventAction action;
 PROP|@property (nonatomic) MPEventType type;
 PROP|@property (nonatomic) MPILogLevel logLevel;
@@ -740,7 +737,6 @@ PROP|@property (nonatomic) NSArray<NSData *> *certificates;
 PROP|@property (nonatomic) NSDictionary *linkInfo;
 PROP|@property (nonatomic) NSInteger checkoutStep;
 PROP|@property (nonatomic) NSInteger httpCode;
-PROP|@property (nonatomic) NSInteger responseCode;
 PROP|@property (nonatomic) NSNumber * _Nullable attAuthorizationStatus;
 PROP|@property (nonatomic) NSNumber * _Nullable attAuthorizationStatus;
 PROP|@property (nonatomic) NSNumber * _Nullable attAuthorizationTimestamp;
@@ -752,7 +748,6 @@ PROP|@property (nonatomic) uint64_t forwardRecordId;
 PROP|@property (nonatomic, assign) BOOL consented;
 PROP|@property (nonatomic, assign) BOOL consented;
 PROP|@property (nonatomic, copy) NSDictionary *_Nullable (^onCreateBatch)(NSDictionary * batch);
-PROP|@property (nonatomic, copy) NSString *errorResponse;
 PROP|@property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 PROP|@property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 PROP|@property (nonatomic, copy, nonnull) NSString *apiKey;
@@ -828,11 +823,9 @@ PROP|@property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
 PROP|@property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
 PROP|@property (nonatomic, readwrite) NSTimeInterval uploadInterval;
 PROP|@property (nonatomic, readwrite) NSTimeInterval uploadInterval;
-PROP|@property (nonatomic, strong) MPAliasRequest *request;
 PROP|@property (nonatomic, strong) NSDate *timestamp;
 PROP|@property (nonatomic, strong) NSDate *timestamp;
 PROP|@property (nonatomic, strong) NSDate *timestamp;
-PROP|@property (nonatomic, strong) NSString *requestID;
 PROP|@property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 PROP|@property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 PROP|@property (nonatomic, strong, nonnull) MPNotificationController_PRIVATE *notificationController;

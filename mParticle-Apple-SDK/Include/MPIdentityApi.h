@@ -7,7 +7,6 @@
 #import "MParticleUser.h"
 #import "MPIdentityApiRequest.h"
 #import "MPAliasRequest.h"
-#import "MPAliasResponse.h"
 #import "FilteredMParticleUser.h"
 #import "FilteredMPIdentityApiRequest.h"
 

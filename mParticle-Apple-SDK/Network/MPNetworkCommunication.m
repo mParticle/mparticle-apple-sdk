@@ -10,7 +10,6 @@
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
-#import "MPAliasResponse.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
@@ -872,15 +871,14 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Alias response code: %ld", (long)responseCode);
 
-    MPAliasResponsePlanPRIVATE *plan = [MPAliasResponsePlanPRIVATE planFromRequestData:upload.uploadData
-                                                                          responseData:data
-                                                                            statusCode:responseCode
-                                                                                logger:MParticle.sharedInstance.getLogger];
+    MPAliasUploadOutcomePRIVATE *outcome = [MPAliasUploadOutcomePRIVATE outcomeFromResponseData:data
+                                                                                     statusCode:responseCode
+                                                                                         logger:MParticle.sharedInstance.getLogger];
 
-    if (plan.isSuccessCode) {
+    if (outcome.isSuccessCode) {
         [MPTransportErrorDetector resetTransportErrorCounter];
     }
-    if (plan.isSuccessCode || plan.isInvalidCode) {
+    if (outcome.isSuccessCode || outcome.isInvalidCode) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
 
@@ -889,20 +887,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         MPILogVerbose(@"Alias response:\n%@", responseString);
     }
 
-    MPAliasResponse *aliasResponse = [[MPAliasResponse alloc] init];
-    aliasResponse.responseCode = responseCode;
-    aliasResponse.willRetry = plan.shouldRetry;
-    aliasResponse.requestID = plan.requestID;
-    aliasResponse.errorResponse = plan.errorMessage;
-    aliasResponse.request = [MPAliasRequest requestWithSourceMPID:plan.sourceMPID
-                                                  destinationMPID:plan.destinationMPID
-                                                        startTime:plan.startTime
-                                                          endTime:plan.endTime];
-
     MPILogVerbose(@"Alias execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
 
     // 429, 503
-    if (plan.shouldRetry) {
+    if (outcome.shouldRetry) {
         NSDictionary *httpHeaders = [httpResponse allHeaderFields];
         NSTimeInterval retryAfter = [[MPNetworkCommunicationHelper calculateRetryTimeForHeaders:httpHeaders] doubleValue];
         [self throttleWithRetryAfter:retryAfter uploadType:upload.uploadType];
@@ -910,7 +898,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 
     //5xx, 0, 999, -1, etc
-    if (!plan.isSuccessCode && !plan.isInvalidCode) {
+    if (!outcome.isSuccessCode && !outcome.isInvalidCode) {
         if ([self isRetriableTransportError:error]) {
             MPILogWarning(@"Throttling alias requests after transport error.");
             NSTimeInterval retryAfter = [[MPTransportErrorDetector calculateRetryTimeForTransportError] doubleValue];

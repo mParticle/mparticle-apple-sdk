@@ -48,7 +48,6 @@ mParticle-Apple-SDK/Identity/MPIdentityApi.m
 mParticle-Apple-SDK/Identity/MPIdentityApiRequest.m
 mParticle-Apple-SDK/Identity/MParticleUser.m
 mParticle-Apple-SDK/Identity/MPAliasRequest.m
-mParticle-Apple-SDK/Identity/MPAliasResponse.m
 mParticle-Apple-SDK/Identity/MPAudience.m
 mParticle-Apple-SDK/Utils/NSDictionary+MPCaseInsensitive.m
 

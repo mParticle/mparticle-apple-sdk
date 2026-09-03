@@ -4,6 +4,23 @@
 
 This document provides migration guidance for breaking changes in the mParticle Apple SDK.
 
+## Migrating from 9.4.x to 9.5.0
+
+### Removed MPAliasResponse
+
+The `MPAliasResponse` class has been removed.
+
+The SDK's only way of delivering an `MPAliasResponse` was `-onAliasRequestFinished:` on
+`MPListenerController`, which was removed in 9.1.0 ("Removed MPListenerController" below). Since
+then the SDK has built an `MPAliasResponse` for every alias upload and discarded it — no callback,
+notification, or return value ever surfaced one, so no application could observe it.
+
+If you referenced the type, delete those references. `-[MPIdentityApi aliasUsers:]` is unchanged
+and still returns whether local validation of the request succeeded; alias failures continue to be
+reported through the SDK log at the error level.
+
+---
+
 ## Migrating from 9.0.x to 9.1.0
 
 ### Rokt SDK 5.1.0 + RoktContracts 2.0.0
