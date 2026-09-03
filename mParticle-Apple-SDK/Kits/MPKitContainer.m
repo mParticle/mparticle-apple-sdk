@@ -40,6 +40,16 @@
 
 NSString *const kitFileExtension = @"eks";
 static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
+// Tracks kit teardown work deferred to the main queue by flushSerializedKits and
+// freeKitRegister:integrationId: (stop(), disk cleanup, notification). Workspace-switch
+// callers enter this group before dispatching that work and leave it after, so
+// notifyWhenKitTeardownComplete:block: lets mParticle.m wait for old kits to actually
+// finish stopping before starting the next workspace's kits - deferring the work off
+// kitsSemaphore (to avoid holding that lock across arbitrary kit/observer code) would
+// otherwise leave no guarantee that a kit with process-wide teardown (e.g. one whose
+// stop() shuts down a shared SDK singleton) finishes before the new workspace's identical
+// kit starts back up.
+static dispatch_group_t kitTeardownGroup;
 
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
@@ -95,7 +105,16 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 + (void)initialize {
     if (self == [MPKitContainer_PRIVATE class]) {
         kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
+        kitTeardownGroup = dispatch_group_create();
     }
+}
+
+// Lets a caller (see resetForSwitchingWorkspaces: and reset: in mParticle.m) wait for every
+// currently in-flight deferred kit teardown - queued by flushSerializedKits or
+// freeKitRegister:integrationId: - to finish before proceeding, e.g. before starting the
+// next workspace's kits.
++ (void)notifyWhenKitTeardownComplete:(dispatch_queue_t)queue block:(void (^)(void))block {
+    dispatch_group_notify(kitTeardownGroup, queue, block);
 }
 
 - (instancetype)init {
@@ -240,10 +259,22 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSArray<id<MPExtensionKitProtocol>> *kitsSnapshot = [kitsRegistry allObjects];
     dispatch_semaphore_signal(kitsSemaphore);
 
+    // Entered synchronously, here, before returning - not inside the dispatched block below.
+    // notifyWhenKitTeardownComplete:block: (see mParticle.m) can be called immediately after
+    // this method returns, and dispatch_group_notify fires as soon as the group's enter count
+    // is back to zero; entering inside the async block would leave a window where the group
+    // still reads as empty because the enter itself hasn't executed yet, letting the next
+    // workspace's kits start before this teardown is even scheduled, let alone done.
+    dispatch_group_enter(kitTeardownGroup);
     dispatch_async(dispatch_get_main_queue(), ^{
         for (id<MPExtensionKitProtocol>kitRegister in kitsSnapshot) {
-            [self freeKitRegister:kitRegister integrationId:kitRegister.code];
+            id<MPKitProtocol> wrapperInstance = kitRegister.wrapperInstance;
+            if (wrapperInstance) {
+                kitRegister.wrapperInstance = nil;
+                [self teardownDetachedWrapperInstance:wrapperInstance forIntegrationId:kitRegister.code];
+            }
         }
+        dispatch_group_leave(kitTeardownGroup);
     });
 }
 
@@ -276,26 +307,40 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         id<MPKitProtocol> wrapperInstance = kitRegister.wrapperInstance;
         kitRegister.wrapperInstance = nil;
 
+        // Entered synchronously here, before dispatch_async - see flushSerializedKits above
+        // for why entering inside the dispatched block itself would be too late.
+        dispatch_group_enter(kitTeardownGroup);
         dispatch_async(dispatch_get_main_queue(), ^{
-            if ([wrapperInstance respondsToSelector:@selector(stop)]) {
-                [wrapperInstance stop];
-            }
-
-            NSFileManager *fileManager = [NSFileManager defaultManager];
-            NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-            NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", integrationId, kitFileExtension]];
-
-            if ([fileManager fileExistsAtPath:kitPath]) {
-                [fileManager removeItemAtPath:kitPath error:nil];
-            }
-
-            NSDictionary *userInfo = @{mParticleKitInstanceKey:integrationId};
-
-            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
-                                                                object:nil
-                                                              userInfo:userInfo];
+            [self teardownDetachedWrapperInstance:wrapperInstance forIntegrationId:integrationId];
+            dispatch_group_leave(kitTeardownGroup);
         });
     }
+}
+
+// wrapperInstance must already be detached from its kitRegister (kitRegister.wrapperInstance
+// set to nil) before calling this, by a caller synchronized with kitsSemaphore. This method
+// itself touches no container state, so it does not take kitsSemaphore, and every caller
+// runs it off of that lock regardless (see flushSerializedKits and freeKitRegister: above),
+// since stop(), disk cleanup and the notification post here run arbitrary kit/observer code
+// that must not run while the lock is held.
+- (void)teardownDetachedWrapperInstance:(id<MPKitProtocol>)wrapperInstance forIntegrationId:(NSNumber *)integrationId {
+    if ([wrapperInstance respondsToSelector:@selector(stop)]) {
+        [wrapperInstance stop];
+    }
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", integrationId, kitFileExtension]];
+
+    if ([fileManager fileExistsAtPath:kitPath]) {
+        [fileManager removeItemAtPath:kitPath error:nil];
+    }
+
+    NSDictionary *userInfo = @{mParticleKitInstanceKey:integrationId};
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
+                                                        object:nil
+                                                      userInfo:userInfo];
 }
 
 - (void)registerSideloadedKits {

@@ -616,7 +616,17 @@ MPLog* logger;
         [self.persistenceController resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
-        [executor executeOnMain:^{
+        //
+        // flushSerializedKits/removeAllSideloadedKits defer each kit's actual stop() and
+        // teardown to the main queue rather than running it under kitsSemaphore (see
+        // MPKitContainer.m), so by the time this point is reached those calls have only been
+        // *scheduled*, not completed. completion() below starts the next workspace, which can
+        // configure and start a kit with the same integration ID before the old instance has
+        // actually stopped - for a kit whose stop() has process-wide effects (for example one
+        // that shuts down a shared SDK singleton), that can tear down the integration that was
+        // just started. Waiting on notifyWhenKitTeardownComplete: here blocks starting the new
+        // workspace until every kit scheduled for teardown by this reset has actually finished.
+        [MPKitContainer_PRIVATE notifyWhenKitTeardownComplete:dispatch_get_main_queue() block:^{
             [MParticle setSharedInstance:nil];
             if (completion) {
                 completion();
@@ -723,7 +733,12 @@ MPLog* logger;
         [self.kitContainer removeAllSideloadedKits];
         [MPUserDefaultsConnector.userDefaults resetDefaults];
         [self.persistenceController resetDatabase];
-        [executor executeOnMain:^{
+        // See the matching comment in resetForSwitchingWorkspaces: - flushSerializedKits/
+        // removeAllSideloadedKits only schedule each kit's stop() and teardown on the main
+        // queue rather than completing it here, so waiting on notifyWhenKitTeardownComplete:
+        // ensures that work has actually finished before completion() (which per this
+        // method's documented contract is where a caller restarts the SDK) can start new kits.
+        [MPKitContainer_PRIVATE notifyWhenKitTeardownComplete:dispatch_get_main_queue() block:^{
             predicate = 0;
             _sharedInstance = nil;
             if (completion) {
