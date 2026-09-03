@@ -1,5 +1,7 @@
 #import "MPAttributeProjection.h"
 
+@import mParticle_Apple_SDK_Swift;
+
 @implementation MPAttributeProjection
 
 - (id)init {
@@ -13,13 +15,14 @@
         return nil;
     }
     
-    NSDictionary *actionDictionary = configuration[@"action"];
-    NSArray *attributeMaps = actionDictionary[@"attribute_maps"];
-    NSDictionary *attributeMap = attributeMaps[attributeIndex];
-    
-    self.dataType = !MPIsNull(attributeMap[@"data_type"]) ? (MPDataType)[attributeMap[@"data_type"] integerValue] : MPDataTypeString;
-    _required = !MPIsNull(attributeMap[@"is_required"]) ? [attributeMap[@"is_required"] boolValue] : NO;
-    
+    MPAttributeProjectionFields *fields =
+        [MPProjectionFieldParser attributeProjectionFieldsFromConfiguration:configuration
+                                                            attributeIndex:attributeIndex];
+
+    // The setter keeps the range clamp, so it stays the single source of it.
+    self.dataType = (MPDataType)fields.dataType;
+    _required = fields.isRequired;
+
     return self;
 }
 

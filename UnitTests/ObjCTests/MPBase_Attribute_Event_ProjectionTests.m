@@ -152,6 +152,30 @@
     XCTAssertNil(attributeProjection, @"Should have been nil.");
 }
 
+- (void)testAttributeInstanceWithNullAttributeMap {
+    // The ObjC subscripted attribute_maps[attributeIndex] with no guard on the
+    // element, so a null entry crashed with -[NSNull objectForKeyedSubscript:].
+    NSDictionary *configuration = @{@"action":@{@"attribute_maps":@[[NSNull null]]}};
+
+    MPAttributeProjection *attributeProjection = [[MPAttributeProjection alloc] initWithConfiguration:configuration
+                                                                                       projectionType:MPProjectionTypeAttribute
+                                                                                       attributeIndex:0];
+
+    XCTAssertNotNil(attributeProjection, @"Should not have been nil.");
+    XCTAssertEqual(attributeProjection.dataType, MPDataTypeString, @"Should have defaulted.");
+    XCTAssertFalse(attributeProjection.required, @"Should have defaulted to NO.");
+}
+
+- (void)testAttributeInstanceWithANonArrayAttributeMaps {
+    NSDictionary *configuration = @{@"action":@{@"attribute_maps":@"not an array"}};
+
+    MPAttributeProjection *attributeProjection = [[MPAttributeProjection alloc] initWithConfiguration:configuration
+                                                                                       projectionType:MPProjectionTypeAttribute
+                                                                                       attributeIndex:0];
+
+    XCTAssertNil(attributeProjection, @"Should have been nil.");
+}
+
 - (void)testAttributeEquality {
     NSDictionary *configuration = @{@"action":@{@"attribute_maps":@[@{@"value":@"original attribute",
                                                                       @"projected_attribute_name":@"projected attribute",

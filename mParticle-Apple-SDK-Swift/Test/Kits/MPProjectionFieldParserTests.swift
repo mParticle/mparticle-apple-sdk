@@ -182,4 +182,88 @@ final class MPProjectionFieldParserTests: XCTestCase {
         XCTAssertEqual(MPProjectionFieldParser.projectionId(from: ["id": "314"]), 314)
         XCTAssertEqual(MPProjectionFieldParser.projectionId(from: ["id": "not a number"]), 0)
     }
+
+    // MARK: - attribute projection fields
+
+    private func attributeConfiguration(_ attributeMaps: Any) -> [AnyHashable: Any] {
+        ["action": ["attribute_maps": attributeMaps]]
+    }
+
+    func testAttributeProjectionFieldsReadsTheDataTypeAndRequiredFlag() {
+        let fields = MPProjectionFieldParser.attributeProjectionFields(
+            from: attributeConfiguration([["data_type": 3, "is_required": true]]),
+            attributeIndex: 0
+        )
+
+        XCTAssertEqual(fields.dataType, 3)
+        XCTAssertTrue(fields.isRequired)
+    }
+
+    func testAttributeProjectionFieldsDefaultsWhenTheKeysAreAbsent() {
+        let fields = MPProjectionFieldParser.attributeProjectionFields(
+            from: attributeConfiguration([["value": "attr"]]),
+            attributeIndex: 0
+        )
+
+        // MPDataTypeString, and not required.
+        XCTAssertEqual(fields.dataType, 1)
+        XCTAssertFalse(fields.isRequired)
+    }
+
+    func testAttributeProjectionFieldsDefaultsOnExplicitNulls() {
+        let fields = MPProjectionFieldParser.attributeProjectionFields(
+            from: attributeConfiguration([["data_type": NSNull(), "is_required": NSNull()]]),
+            attributeIndex: 0
+        )
+
+        XCTAssertEqual(fields.dataType, 1)
+        XCTAssertFalse(fields.isRequired)
+    }
+
+    func testAttributeProjectionFieldsAcceptsStringEncodedValues() {
+        // -integerValue and -boolValue were defined on NSString too, and remote
+        // configuration uses either form.
+        let fields = MPProjectionFieldParser.attributeProjectionFields(
+            from: attributeConfiguration([["data_type": "3", "is_required": "true"]]),
+            attributeIndex: 0
+        )
+
+        XCTAssertEqual(fields.dataType, 3)
+        XCTAssertTrue(fields.isRequired)
+    }
+
+    func testAttributeProjectionFieldsDefaultsOnANullAttributeMap() {
+        // The ObjC subscripted this element unguarded, so NSNull crashed with
+        // -[NSNull objectForKeyedSubscript:].
+        let fields = MPProjectionFieldParser.attributeProjectionFields(
+            from: attributeConfiguration([NSNull()]),
+            attributeIndex: 0
+        )
+
+        XCTAssertEqual(fields.dataType, 1)
+        XCTAssertFalse(fields.isRequired)
+    }
+
+    func testAttributeProjectionFieldsDefaultsWhenAttributeMapsIsNotAnArray() {
+        for maps: Any in [["not": "an array"] as [AnyHashable: Any], "string", 7, NSNull()] {
+            let fields = MPProjectionFieldParser.attributeProjectionFields(
+                from: attributeConfiguration(maps),
+                attributeIndex: 0
+            )
+
+            XCTAssertEqual(fields.dataType, 1)
+            XCTAssertFalse(fields.isRequired)
+        }
+    }
+
+    func testAttributeProjectionFieldsDefaultsOutOfBoundsAndWithoutAConfiguration() {
+        let outOfBounds = MPProjectionFieldParser.attributeProjectionFields(
+            from: attributeConfiguration([["data_type": 3]]),
+            attributeIndex: 9
+        )
+        let missing = MPProjectionFieldParser.attributeProjectionFields(from: nil, attributeIndex: 0)
+
+        XCTAssertEqual(outOfBounds.dataType, 1)
+        XCTAssertEqual(missing.dataType, 1)
+    }
 }

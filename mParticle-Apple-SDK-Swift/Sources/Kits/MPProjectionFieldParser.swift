@@ -40,8 +40,26 @@ public final class MPProjectionFields: NSObject {
     }
 }
 
+@objc(MPAttributeProjectionFields)
+public final class MPAttributeProjectionFields: NSObject {
+    /// Raw `MPDataType`. Objective-C defaulted to `MPDataTypeString` when the
+    /// key was absent or null; the ObjC setter still owns the range clamp.
+    @objc public let dataType: Int
+    @objc public let isRequired: Bool
+
+    init(dataType: Int, isRequired: Bool) {
+        self.dataType = dataType
+        self.isRequired = isRequired
+        super.init()
+    }
+}
+
 @objc(MPProjectionFieldParser)
 public final class MPProjectionFieldParser: NSObject {
+    /// `MPDataTypeString` (MPIConstants.h:41). Mirrored because the Swift module
+    /// cannot import the ObjC module.
+    private static let dataTypeString = 1
+
     @objc(actionFromConfiguration:)
     public static func action(from configuration: [AnyHashable: Any]?) -> [AnyHashable: Any]? {
         configuration?["action"] as? [AnyHashable: Any]
@@ -143,6 +161,43 @@ public final class MPProjectionFieldParser: NSObject {
         // zero default, which is String rather than NotSpecified.
         default: return .string
         }
+    }
+
+    /// `data_type` and `is_required` for one attribute map.
+    ///
+    /// The Objective-C read `attributeMaps[attributeIndex]` with no guard on the
+    /// container, the index, or the element, so a null or non-dictionary entry
+    /// crashed. Missing or unreadable values now fall back to the same defaults
+    /// the absent-key path always used.
+    @objc(attributeProjectionFieldsFromConfiguration:attributeIndex:)
+    public static func attributeProjectionFields(
+        from configuration: [AnyHashable: Any]?,
+        attributeIndex: UInt
+    ) -> MPAttributeProjectionFields {
+        guard let attributeMap = attributeMap(from: configuration, attributeIndex: attributeIndex) else {
+            return MPAttributeProjectionFields(dataType: dataTypeString, isRequired: false)
+        }
+
+        return MPAttributeProjectionFields(
+            dataType: MPJSONCoercion.integerValue(attributeMap["data_type"]) ?? dataTypeString,
+            isRequired: MPJSONCoercion.boolValue(attributeMap["is_required"]) ?? false
+        )
+    }
+
+    /// The same navigation and guards `attributeFields(from:attributeIndex:)`
+    /// applies, so the two readers cannot drift.
+    private static func attributeMap(
+        from configuration: [AnyHashable: Any]?,
+        attributeIndex: UInt
+    ) -> [AnyHashable: Any]? {
+        guard let action = action(from: configuration),
+              let attributeMaps = action["attribute_maps"] as? [Any],
+              attributeIndex < attributeMaps.count
+        else {
+            return nil
+        }
+
+        return attributeMaps[Int(attributeIndex)] as? [AnyHashable: Any]
     }
 
     private static func isNull(_ value: Any?) -> Bool {
