@@ -94,14 +94,6 @@ static NSString *MPIdentityEnvironmentString(void) {
 
 @end
 
-@implementation MPIdentityHTTPClientSDK
-
-+ (NSDictionary *)clientSDKDictionaryWithVersion:(NSString *)sdkVersion {
-    return [MPIdentityHTTPRequestBuilderPRIVATE clientSDKDictionaryWithVersion:sdkVersion];
-}
-
-@end
-
 @implementation MPIdentityHTTPModifyRequest
 
 - (instancetype)initWithIdentityChanges:(NSArray *)identityChanges {
@@ -261,39 +253,6 @@ static NSString *MPIdentityEnvironmentString(void) {
 
 - (NSMutableDictionary *)dictionaryRepresentation {
     return [self.implementation dictionaryRepresentation];
-}
-
-@end
-
-@implementation MPIdentityHTTPSuccessResponse
-
-- (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
-    self = [super init];
-    if (self) {
-        NSDictionary *fields = [MPIdentityHTTPRequestBuilderPRIVATE successFieldsFrom:dictionary];
-        _context = fields[@"context"];
-        _mpid = fields[@"mpid"];
-        _isEphemeral = [fields[@"is_ephemeral"] boolValue];
-        _isLoggedIn = [fields[@"is_logged_in"] boolValue];
-    }
-    return self;
-}
-
-@end
-
-@implementation MPIdentityHTTPBaseSuccessResponse
-
-@end
-
-@implementation MPIdentityHTTPModifySuccessResponse
-
-- (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
-    self = [super initWithJsonObject:dictionary];
-    if (self) {
-        NSDictionary *fields = [MPIdentityHTTPRequestBuilderPRIVATE successFieldsFrom:dictionary];
-        _changeResults = fields[@"change_results"];
-    }
-    return self;
 }
 
 @end
