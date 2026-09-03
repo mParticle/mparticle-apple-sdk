@@ -1,4 +1,6 @@
 #import <XCTest/XCTest.h>
+#import <CommonCrypto/CommonDigest.h>
+#import <Security/Security.h>
 #import "MPConnector.h"
 #import "MPBaseTestCase.h"
 #if TARGET_OS_IOS == 1
@@ -11,6 +13,8 @@
 
 @property (nonatomic) NSURLSession *urlSession;
 
++ (NSArray<NSString *> *)defaultPinnedCertificates;
+
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error;
 - (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error;
 
@@ -21,6 +25,42 @@
 @end
 
 @implementation MPConnectorTests
+
+- (NSString *)sha256FingerprintForData:(NSData *)data {
+    unsigned char digest[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(data.bytes, (CC_LONG)data.length, digest);
+
+    NSMutableString *fingerprint = [NSMutableString stringWithCapacity:CC_SHA256_DIGEST_LENGTH * 2];
+    for (NSUInteger index = 0; index < CC_SHA256_DIGEST_LENGTH; index++) {
+        [fingerprint appendFormat:@"%02X", digest[index]];
+    }
+    return fingerprint;
+}
+
+- (void)testDefaultPinnedCertificatesContainGoDaddyTLSRootR1 {
+    NSString *expectedFingerprint = @"25CF3DA8E9B97ADDBF92543C2B82527C8A4E2CFF2062A6483040D4B64ACE719F";
+    NSArray<NSString *> *pinnedCertificates = [MPConnector defaultPinnedCertificates];
+    BOOL containsCertificate = NO;
+
+    XCTAssertEqual(pinnedCertificates.count, 6);
+
+    for (NSString *encodedCertificate in pinnedCertificates) {
+        NSData *certificateData = [[NSData alloc] initWithBase64EncodedString:encodedCertificate options:0];
+        XCTAssertNotNil(certificateData);
+
+        SecCertificateRef certificate = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)certificateData);
+        XCTAssertTrue(certificate != NULL);
+        if (certificate != NULL) {
+            CFRelease(certificate);
+        }
+
+        if ([[self sha256FingerprintForData:certificateData] isEqualToString:expectedFingerprint]) {
+            containsCertificate = YES;
+        }
+    }
+
+    XCTAssertTrue(containsCertificate);
+}
 
 - (void)testSessionIsInvalidatedWithError {
     MPConnector *connector = [[MPConnector alloc] init];
