@@ -12,7 +12,6 @@
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
 #import "MPAliasResponse.h"
-#import "MPURL.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"

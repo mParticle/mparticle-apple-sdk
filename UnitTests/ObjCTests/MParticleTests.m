@@ -6,7 +6,6 @@
 #import "MPBackendController.h"
 #import "MPConnector.h"
 #import "MPPersistenceController.h"
-#import "MPURL.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitTestClassSideloaded.h"
 #import "MPKitTestClassNoStartImmediately.h"
