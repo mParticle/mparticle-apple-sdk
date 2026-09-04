@@ -3530,28 +3530,48 @@
     dispatch_queue_t concurrentQueue = dispatch_queue_create("com.mparticle.test.brackets", DISPATCH_QUEUE_CONCURRENT);
     
     NSInteger iterations = 100;
-    __block BOOL encounteredError = NO;
-    
+    // Shared across four concurrent blocks, so it is guarded rather than a plain
+    // __block BOOL - an unsynchronized flag is itself a data race, and reporting
+    // failures off the main thread is not safe with XCTest.
+    NSLock *errorLock = [[NSLock alloc] init];
+    __block NSException *firstException = nil;
+    __block NSString *firstExceptionSource = nil;
+
+    BOOL (^hasFailed)(void) = ^BOOL{
+        [errorLock lock];
+        BOOL failed = firstException != nil;
+        [errorLock unlock];
+        return failed;
+    };
+
+    void (^recordException)(NSException *, NSString *) = ^(NSException *exception, NSString *source) {
+        [errorLock lock];
+        if (firstException == nil) {
+            firstException = exception;
+            firstExceptionSource = source;
+        }
+        [errorLock unlock];
+    };
+
     // Multiple threads reading brackets
     for (NSInteger i = 0; i < 3; i++) {
         dispatch_group_async(group, concurrentQueue, ^{
-            for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+            for (NSInteger j = 0; j < iterations && !hasFailed(); j++) {
                 @try {
                     for (NSNumber *integrationId in integrationIds) {
                         id bracket = [kitContainer bracketForKit:integrationId];
                         (void)bracket; // Use the result to prevent optimization
                     }
                 } @catch (NSException *exception) {
-                    encounteredError = YES;
-                    XCTFail(@"Exception in bracketForKit: %@", exception);
+                    recordException(exception, @"bracketForKit");
                 }
             }
         });
     }
-    
+
     // Thread modifying brackets
     dispatch_group_async(group, concurrentQueue, ^{
-        for (NSInteger j = 0; j < iterations && !encounteredError; j++) {
+        for (NSInteger j = 0; j < iterations && !hasFailed(); j++) {
             @try {
                 for (NSNumber *integrationId in integrationIds) {
                     // Alternate between adding and removing brackets
@@ -3562,14 +3582,20 @@
                     }
                 }
             } @catch (NSException *exception) {
-                encounteredError = YES;
-                XCTFail(@"Exception in updateBracketsWithConfiguration: %@", exception);
+                recordException(exception, @"updateBracketsWithConfiguration");
             }
         }
     });
-    
+
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        XCTAssertFalse(encounteredError, @"Thread safety test should complete without errors");
+        [errorLock lock];
+        NSException *exception = firstException;
+        NSString *source = firstExceptionSource;
+        [errorLock unlock];
+
+        if (exception != nil) {
+            XCTFail(@"Exception in %@: %@", source, exception);
+        }
         [expectation fulfill];
     });
     

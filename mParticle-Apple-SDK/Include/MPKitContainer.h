@@ -39,6 +39,7 @@
 
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
++ (void)notifyWhenKitTeardownComplete:(nonnull dispatch_queue_t)queue block:(nonnull void (^)(void))block;
 
 - (void)flushSerializedKits;
 - (void)removeAllSideloadedKits;
