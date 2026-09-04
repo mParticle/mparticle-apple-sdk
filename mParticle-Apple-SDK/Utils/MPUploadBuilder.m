@@ -41,26 +41,11 @@
     
     _uploadSettings = uploadSettings;
     _sessionId = sessionId;
-    _containsOptOutMessage = NO;
-    
-    NSUInteger numberOfMessages = messages.count;
-    NSMutableArray *messageDictionaries = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
-    _preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
 
-    [messages enumerateObjectsUsingBlock:^(MPMessage *message, NSUInteger idx, BOOL *stop) {
-        if (message != nil && (NSNull *)message != [NSNull null]) {
-            if ([message.messageType isEqualToString:kMPMessageTypeStringOptOut]) {
-                self->_containsOptOutMessage = YES;
-            }
-            
-            [self->_preparedMessageIds addObject:@(message.messageId)];
-            
-            NSDictionary *messageDictionaryRepresentation = [message dictionaryRepresentation];
-            if (messageDictionaryRepresentation) {
-                [messageDictionaries addObject:messageDictionaryRepresentation];
-            }
-        }
-    }];
+    MPPreparedMessages *preparedMessages = [MPUploadBuilderFields preparedMessagesFrom:messages];
+    NSArray *messageDictionaries = preparedMessages.messageDictionaries;
+    _preparedMessageIds = [preparedMessages.preparedMessageIds mutableCopy];
+    _containsOptOutMessage = preparedMessages.containsOptOutMessage;
     
     NSNumber *ltv;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
