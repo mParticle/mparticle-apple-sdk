@@ -14,15 +14,11 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 #### Fixed
 
-- `MPRokt.selectPlacements` and `MPRokt.selectShoppableAds` now deliver a `RoktPlacementFailure` event to the caller's `onEvent` handler when the Rokt kit configuration is unavailable. Previously the call was dropped with only a log message, leaving callers waiting on a callback that never arrived. ([#814](https://github.com/mParticle/mparticle-apple-sdk/pull/814))
-
 ### Kits
 
 #### Rokt
 
 ##### Added
-
-- Report non-sensitive mParticle public API usage diagnostics when the Rokt kit is active.
 
 ## [9.4.3] - 2026-09-04
 
@@ -30,12 +26,7 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 #### Fixed
 
-- Eliminate the kitsRegistry thread-safety crash ([#916](https://github.com/mParticle/mparticle-apple-sdk/pull/916))
-- Close the kitsRegistry flush race and stabilise the ObjC test suite ([#878](https://github.com/mParticle/mparticle-apple-sdk/pull/878))
-
-#### Changed
-
-- Correct 8.27.0 release month in migration guide ([#950](https://github.com/mParticle/mparticle-apple-sdk/pull/950))
+- Code-sign the nested Swift framework inside the release XCFramework ([#948](https://github.com/mParticle/mparticle-apple-sdk/pull/948))
 
 ## [9.4.2] - 2026-09-04
 
