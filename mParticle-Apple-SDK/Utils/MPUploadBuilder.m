@@ -70,26 +70,19 @@
     }
     
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    _uploadDictionary = [@{
-        kMPOptOutKey:@(stateMachine.optOut),
-        kMPUploadIntervalKey:@(uploadInterval),
-        kMPLifeTimeValueKey:ltv
-    } mutableCopy];
-    
+
+    _uploadDictionary = [[MPUploadBuilderFields seedDictionaryWithOptOut:stateMachine.optOut
+                                                           uploadInterval:uploadInterval
+                                                            lifetimeValue:ltv] mutableCopy];
+
     if (dataPlanId != nil) {
-        NSMutableDictionary<NSString *, id> *dataPlanDictionary = [@{
-        } mutableCopy];
-        
-        dataPlanDictionary[kMPDataPlanIdKey] = dataPlanId;
         _dPId = dataPlanId;
-        
         if (dataPlanVersion != nil) {
-            dataPlanDictionary[kMPDataPlanVersionKey] = dataPlanVersion;
             _dPVersion = dataPlanVersion;
         }
-        
-        _uploadDictionary[kMPContextKey] = @{kMPDataPlanKey:dataPlanDictionary};
+
+        NSDictionary *dataPlanContext = [MPUploadBuilderFields dataPlanDictionaryWithDataPlanId:dataPlanId dataPlanVersion:dataPlanVersion];
+        _uploadDictionary[kMPContextKey] = dataPlanContext;
     }
 
     if (messageDictionaries.count > 0) {
@@ -99,17 +92,12 @@
     if (sessionTimeout > 0) {
         _uploadDictionary[kMPSessionTimeoutKey] = @(sessionTimeout);
     }
-    
-    if (stateMachine.customModules) {
-        NSMutableDictionary *customModulesDictionary = [[NSMutableDictionary alloc] initWithCapacity:stateMachine.customModules.count];
-        
-        for (MPCustomModule *customModule in stateMachine.customModules) {
-            customModulesDictionary[[customModule.customModuleId stringValue]] = [customModule dictionaryRepresentation];
-        }
-        
+
+    NSDictionary *customModulesDictionary = [MPUploadBuilderFields customModulesDictionaryFrom:stateMachine.customModules];
+    if (customModulesDictionary) {
         _uploadDictionary[kMPRemoteConfigCustomModuleSettingsKey] = customModulesDictionary;
     }
-    
+
     _uploadDictionary[kMPRemoteConfigMPIDKey] = mpid;
     
     return self;
@@ -258,33 +246,17 @@
 }
 
 - (MPUploadBuilder *)withUserAttributes:(NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(NSSet<NSString *> *)deletedUserAttributes {
-    if ([userAttributes count] > 0) {
-        NSMutableDictionary<NSString *, id> *userAttributesCopy = [userAttributes mutableCopy];
-        if (!userAttributesCopy) {
-            return self;
-        }
-        
-        NSArray *keys = [userAttributesCopy allKeys];
-        Class numberClass = [NSNumber class];
-        
-        for (NSString *key in keys) {
-            id currentValue = userAttributesCopy[key];
-            NSString *newValue = [currentValue isKindOfClass:numberClass] ? [(NSNumber *)currentValue stringValue] : currentValue;
-            
-            if (newValue) {
-                userAttributesCopy[key] = newValue;
-            }
-        }
-        
-        if (userAttributesCopy.count > 0) {
-            _uploadDictionary[kMPUserAttributeKey] = userAttributesCopy;
+    if (userAttributes.count > 0) {
+        NSDictionary<NSString *, id> *stringifiedAttributes = [MPUploadBuilderFields stringifiedUserAttributes:userAttributes];
+        if (stringifiedAttributes.count > 0) {
+            _uploadDictionary[kMPUserAttributeKey] = stringifiedAttributes;
         }
     }
-    
+
     if (deletedUserAttributes.count > 0 && _sessionId) {
         _uploadDictionary[kMPUserAttributeDeletedKey] = [deletedUserAttributes allObjects];
     }
-    
+
     return self;
 }
 
