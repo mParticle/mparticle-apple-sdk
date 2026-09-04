@@ -68,4 +68,116 @@ final class MPUploadBuilderFieldsTests: XCTestCase {
         let result = MPUploadBuilderFields.stringifiedUserAttributes(["color": "blue"])
         XCTAssertEqual(result["color"] as? String, "blue")
     }
+
+    // MARK: - headerFields
+
+    func testHeaderFieldsContainsEveryField() {
+        let fields = MPUploadBuilderFields.headerFields(
+            messageId: "uuid-1",
+            timestampMs: 123456,
+            sdkVersion: "9.4.1",
+            apiKey: "key-1"
+        )
+
+        XCTAssertEqual(fields["dt"] as? String, "h")
+        XCTAssertEqual(fields["sdk"] as? String, "9.4.1")
+        XCTAssertEqual(fields["id"] as? String, "uuid-1")
+        XCTAssertEqual(fields["ct"] as? NSNumber, 123456)
+        XCTAssertEqual(fields["a"] as? String, "key-1")
+    }
+
+    func testHeaderFieldsOmitsApplicationKeyWhenApiKeyIsNil() {
+        let fields = MPUploadBuilderFields.headerFields(
+            messageId: "uuid-1",
+            timestampMs: 123456,
+            sdkVersion: "9.4.1",
+            apiKey: nil
+        )
+
+        XCTAssertNil(fields["a"])
+    }
+
+    // MARK: - deviceInfoDictionary(byAddingAdvertiserId:isATTAuthorized:to:)
+
+    func testDeviceInfoDictionaryAddsAdvertiserIdWhenAuthorized() {
+        let result = MPUploadBuilderFields.deviceInfoDictionary(
+            byAddingAdvertiserId: "aid-1",
+            isATTAuthorized: true,
+            to: ["existing": "value"]
+        )
+
+        XCTAssertEqual(result?["aid"] as? String, "aid-1")
+        XCTAssertEqual(result?["existing"] as? String, "value")
+    }
+
+    func testDeviceInfoDictionaryIsNilWhenNotAuthorized() {
+        XCTAssertNil(MPUploadBuilderFields.deviceInfoDictionary(
+            byAddingAdvertiserId: "aid-1",
+            isATTAuthorized: false,
+            to: ["existing": "value"]
+        ))
+    }
+
+    func testDeviceInfoDictionaryIsNilWithoutAnAdvertiserId() {
+        XCTAssertNil(MPUploadBuilderFields.deviceInfoDictionary(
+            byAddingAdvertiserId: nil,
+            isATTAuthorized: true,
+            to: ["existing": "value"]
+        ))
+    }
+
+    func testDeviceInfoDictionaryIsNilWithoutAnExistingDictionary() {
+        XCTAssertNil(MPUploadBuilderFields.deviceInfoDictionary(
+            byAddingAdvertiserId: "aid-1",
+            isATTAuthorized: true,
+            to: nil
+        ))
+    }
+
+    // MARK: - forwardRecordBatch
+
+    func testForwardRecordBatchKeepsOnlyRecordsWithADataDictionary() {
+        let batch = MPUploadBuilderFields.forwardRecordBatch(
+            dataDictionaries: [["a": 1], NSNull(), ["b": 2]],
+            recordIds: [10, 20, 30]
+        )
+
+        XCTAssertEqual(batch.dataDictionaries as? [[String: Int]], [["a": 1], ["b": 2]])
+        XCTAssertEqual(batch.recordIds, [10, 30])
+    }
+
+    func testForwardRecordBatchIsEmptyWhenNoRecordHasData() {
+        let batch = MPUploadBuilderFields.forwardRecordBatch(
+            dataDictionaries: [NSNull(), NSNull()],
+            recordIds: [10, 20]
+        )
+
+        XCTAssertTrue(batch.dataDictionaries.isEmpty)
+        XCTAssertTrue(batch.recordIds.isEmpty)
+    }
+
+    // MARK: - mergedIntegrationAttributesDictionary
+
+    func testMergedIntegrationAttributesDictionaryMergesAllEntries() {
+        let merged = MPUploadBuilderFields.mergedIntegrationAttributesDictionary(from: [
+            ["a": "1"],
+            ["b": "2"]
+        ])
+
+        XCTAssertEqual(merged["a"] as? String, "1")
+        XCTAssertEqual(merged["b"] as? String, "2")
+    }
+
+    func testMergedIntegrationAttributesDictionaryLaterEntryWinsOnCollision() {
+        let merged = MPUploadBuilderFields.mergedIntegrationAttributesDictionary(from: [
+            ["a": "1"],
+            ["a": "2"]
+        ])
+
+        XCTAssertEqual(merged["a"] as? String, "2")
+    }
+
+    func testMergedIntegrationAttributesDictionaryIsEmptyForNoAttributes() {
+        XCTAssertTrue(MPUploadBuilderFields.mergedIntegrationAttributesDictionary(from: []).isEmpty)
+    }
 }

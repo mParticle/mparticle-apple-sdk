@@ -118,12 +118,12 @@
 #pragma mark Public instance methods
 - (void)build:(void (^)(MPUpload *upload))completionHandler {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    _uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
-    _uploadDictionary[kMPmParticleSDKVersionKey] = kMParticleSDKVersion;
-    _uploadDictionary[kMPMessageIdKey] = [[NSUUID UUID] UUIDString];
-    _uploadDictionary[kMPTimestampKey] = MPMilliseconds([[NSDate date] timeIntervalSince1970]);
-    _uploadDictionary[kMPApplicationKey] = stateMachine.apiKey;
+
+    NSDictionary *headerFields = [MPUploadBuilderFields headerFieldsWithMessageId:[[NSUUID UUID] UUIDString]
+                                                                       timestampMs:MPMilliseconds([[NSDate date] timeIntervalSince1970])
+                                                                        sdkVersion:kMParticleSDKVersion
+                                                                            apiKey:stateMachine.apiKey];
+    [_uploadDictionary addEntriesFromDictionary:headerFields];
     
     NSDictionary *appAndDeviceInfoDict = [[MParticle sharedInstance].persistenceController appAndDeviceInfoForSessionId:_sessionId];
     
@@ -164,11 +164,13 @@
     NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
     NSDictionary *userIdentities = [[[MParticle sharedInstance] identity] getUser:mpid].identities;
     NSString *advertiserId = userIdentities[@(MPIdentityIOSAdvertiserId)];
+    BOOL isATTAuthorized = authStatus != nil && authStatus.intValue == MPATTAuthorizationStatusAuthorized;
 
-    if (authStatus && advertiserId && authStatus.intValue == MPATTAuthorizationStatusAuthorized) {
-        NSMutableDictionary *deviceInfoDictCopy = [_uploadDictionary[kMPDeviceInformationKey] mutableCopy];
-        deviceInfoDictCopy[kMPDeviceAdvertiserIdKey] = advertiserId;
-        _uploadDictionary[kMPDeviceInformationKey] = [deviceInfoDictCopy copy];
+    NSDictionary *updatedDeviceInfo = [MPUploadBuilderFields deviceInfoDictionaryByAddingAdvertiserId:advertiserId
+                                                                                       isATTAuthorized:isATTAuthorized
+                                                                                                    to:_uploadDictionary[kMPDeviceInformationKey]];
+    if (updatedDeviceInfo) {
+        _uploadDictionary[kMPDeviceInformationKey] = updatedDeviceInfo;
     }
     
     MPConsumerInfo *consumerInfo = stateMachine.consumerInfo;
@@ -185,35 +187,30 @@
     
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     NSArray<MPForwardRecord *> *forwardRecords = [persistence fetchForwardRecords];
-    NSMutableArray<NSNumber *> *forwardRecordsIds = nil;
-    
+
     if (forwardRecords) {
-        NSUInteger numberOfRecords = forwardRecords.count;
-        NSMutableArray *fsr = [[NSMutableArray alloc] initWithCapacity:numberOfRecords];
-        forwardRecordsIds = [[NSMutableArray alloc] initWithCapacity:numberOfRecords];
-        
+        NSMutableArray *dataDictionaries = [NSMutableArray arrayWithCapacity:forwardRecords.count];
+        NSMutableArray<NSNumber *> *recordIds = [NSMutableArray arrayWithCapacity:forwardRecords.count];
         for (MPForwardRecord *forwardRecord in forwardRecords) {
-            if (forwardRecord.dataDictionary) {
-                [fsr addObject:forwardRecord.dataDictionary];
-                [forwardRecordsIds addObject:@(forwardRecord.forwardRecordId)];
-            }
+            [dataDictionaries addObject:forwardRecord.dataDictionary ?: [NSNull null]];
+            [recordIds addObject:@(forwardRecord.forwardRecordId)];
         }
-        
-        if (fsr.count > 0) {
-            _uploadDictionary[kMPForwardStatsRecord] = fsr;
-            [persistence deleteForwardRecordsIds:forwardRecordsIds];
+
+        MPForwardRecordBatch *batch = [MPUploadBuilderFields forwardRecordBatchFromDataDictionaries:dataDictionaries recordIds:recordIds];
+        if (batch.dataDictionaries.count > 0) {
+            _uploadDictionary[kMPForwardStatsRecord] = batch.dataDictionaries;
+            [persistence deleteForwardRecordsIds:batch.recordIds];
         }
     }
-    
+
     NSArray<MPIntegrationAttributes *> *integrationAttributesArray = [persistence fetchIntegrationAttributes];
     if (integrationAttributesArray) {
-        NSMutableDictionary *integrationAttributesDictionary = [[NSMutableDictionary alloc] initWithCapacity:integrationAttributesArray.count];
-        
+        NSMutableArray<NSDictionary *> *integrationAttributesDictionaries = [NSMutableArray arrayWithCapacity:integrationAttributesArray.count];
         for (MPIntegrationAttributes *integrationAttributes in integrationAttributesArray) {
-            [integrationAttributesDictionary addEntriesFromDictionary:[integrationAttributes dictionaryRepresentation]];
+            [integrationAttributesDictionaries addObject:[integrationAttributes dictionaryRepresentation]];
         }
-        
-        _uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
+
+        _uploadDictionary[MPIntegrationAttributesKey] = [MPUploadBuilderFields mergedIntegrationAttributesDictionaryFrom:integrationAttributesDictionaries];
     }
     
     MPConsentState *consentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
