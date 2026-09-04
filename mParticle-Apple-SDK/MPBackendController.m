@@ -5,7 +5,6 @@
 #import "MPNetworkPerformance.h"
 #import "MPBreadcrumb.h"
 #import "MPAudience.h"
-#import "MPMessageBuilder.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
 #import "NSDictionary+MPCaseInsensitive.h"
@@ -199,6 +198,13 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 #pragma mark Private methods
 
+- (MPMessageBuilderContext *)messageBuilderContext {
+    MParticle *mparticle = [MParticle sharedInstance];
+    return [[MPMessageBuilderContext alloc] initWithDataPlanId:mparticle.dataPlanId
+                                               dataPlanVersion:mparticle.dataPlanVersion
+                                                        logger:[mparticle getLogger]];
+}
+
 - (void)confirmEndSessionMessage:(MPSession *)session {
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     
@@ -212,7 +218,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
             messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
         }
         
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo context:self.messageBuilderContext];
 
         [messageBuilder timestamp:session.endTime];
         message = [messageBuilder build];
@@ -255,7 +261,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeUserAttributeChange
                                                                              session:self.session
-                                                                 userAttributeChange:userAttributeChange];
+                                                                 userAttributeChange:userAttributeChange context:self.messageBuilderContext];
     if (userAttributeChange.timestamp) {
         [messageBuilder timestamp:[userAttributeChange.timestamp timeIntervalSince1970]];
     }
@@ -272,7 +278,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeUserIdentityChange
                                                                              session:self.session
-                                                                  userIdentityChange:userIdentityChange];
+                                                                  userIdentityChange:userIdentityChange context:self.messageBuilderContext];
     if (userIdentityChange.timestamp) {
         [messageBuilder timestamp:[userIdentityChange.timestamp timeIntervalSince1970]];
     }
@@ -318,9 +324,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         if (isInstallOrUpgrade && MParticle.sharedInstance.automaticSessionTracking) {
             [self beginSession];
         }
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
 
-        [messageBuilder stateTransition:YES previousSession:nil];
+        [messageBuilder stateTransition:YES previousSession:nil launchInfo:stateMachine.launchInfo];
         MPMessage *message = [messageBuilder build];
         
         [self saveMessage:message updateSession:YES];
@@ -769,7 +775,7 @@ static BOOL skipNextUpload = NO;
 
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionStart
                                                                                  session:_session
-                                                                             messageInfo:messageInfo];
+                                                                             messageInfo:messageInfo context:self.messageBuilderContext];
 
         [messageBuilder timestamp:_session.startTime];
         MPMessage *message = [messageBuilder build];
@@ -976,7 +982,7 @@ static BOOL skipNextUpload = NO;
     
     NSDictionary *messageInfo = [event breadcrumbDictionaryRepresentation];
     
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
     if (event.timestamp) {
         [messageBuilder timestamp:[event.timestamp timeIntervalSince1970]];
     }
@@ -1037,7 +1043,7 @@ static BOOL skipNextUpload = NO;
         [messageInfo addEntriesFromDictionary:appImageInfo];
     }
     
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport session:self.session messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
 
     MPMessage *errorMessage = [messageBuilder build];
     
@@ -1090,7 +1096,7 @@ static BOOL skipNextUpload = NO;
         }
     }
     
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport session:crashSession messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport session:crashSession messageInfo:messageInfo context:self.messageBuilderContext];
     MPMessage *crashMessage = [messageBuilder build];
     
     NSInteger maxBytes = [MPPersistenceController_PRIVATE maxBytesPerEvent:crashMessage.messageType];
@@ -1113,7 +1119,7 @@ static BOOL skipNextUpload = NO;
     if ([event isKindOfClass:[MPEvent class]] || [event isKindOfClass:[MPCommerceEvent class]]) {
         NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
             
-            MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
+            MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
             if (event.timestamp) {
                 [messageBuilder timestamp:[event.timestamp timeIntervalSince1970]];
             }
@@ -1158,7 +1164,7 @@ static BOOL skipNextUpload = NO;
     
     NSDictionary *messageInfo = [networkPerformance dictionaryRepresentation];
     
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeNetworkPerformance session:self.session messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeNetworkPerformance session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
 
     MPMessage *message = [messageBuilder build];
     
@@ -1184,7 +1190,7 @@ static BOOL skipNextUpload = NO;
     
     NSDictionary *messageInfo = [event screenDictionaryRepresentation];
     
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
     if (event.timestamp) {
         [messageBuilder timestamp:[event.timestamp timeIntervalSince1970]];
     }
@@ -1211,7 +1217,7 @@ static BOOL skipNextUpload = NO;
         
         [MParticle sharedInstance].stateMachine.optOut = optOutStatus;
         
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")}];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")} context:self.messageBuilderContext];
 
         MPMessage *message = [messageBuilder build];
         
@@ -1307,7 +1313,7 @@ static BOOL skipNextUpload = NO;
             [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
         }
         
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil context:self.messageBuilderContext];
                 
         [self processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
         
@@ -1353,7 +1359,7 @@ static BOOL skipNextUpload = NO;
     
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     
-    MPMessageType messageTypeCode = [MPMessageBuilder messageTypeForString:message.messageType];
+    MPMessageType messageTypeCode = (MPMessageType)[MPMessageBuilder messageTypeForString:message.messageType logger:[[MParticle sharedInstance] getLogger]];
     
     if ([MParticle sharedInstance].stateMachine.optOut && (messageTypeCode != MPMessageTypeOptOut)) {
         return;
@@ -1673,7 +1679,7 @@ static BOOL skipNextUpload = NO;
             messageInfo[kMPDeviceTokenTypeKey] = [MParticle sharedInstance].stateMachine.deviceTokenType;
         }
         
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushRegistration session:self.session messageInfo:messageInfo];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushRegistration session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
         MPMessage *message = [messageBuilder build];
         
         [self saveMessage:message updateSession:YES];
@@ -1714,7 +1720,7 @@ static BOOL skipNextUpload = NO;
             messageInfo[kMPPushNotificationBehaviorKey] = @(userNotification.behavior);
         }
     
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushNotification session:self.session messageInfo:messageInfo];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushNotification session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
 
         MPMessage *message = [messageBuilder build];
     
@@ -1844,7 +1850,7 @@ static BOOL skipNextUpload = NO;
                 
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition
                                                                                  session:self.session
-                                                                             messageInfo:@{kMPAppStateTransitionType: kMPASTBackgroundKey}];
+                                                                             messageInfo:@{kMPAppStateTransitionType: kMPASTBackgroundKey} context:self.messageBuilderContext];
         MPMessage *message = [messageBuilder build];
         
         [self.session suspendSession];
@@ -1965,9 +1971,9 @@ static BOOL skipNextUpload = NO;
             messageDictionary[kMPAppForePreviousForegroundTime] = self.previousForegroundTime;
             isLaunch = NO;
         }
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageDictionary];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageDictionary context:self.messageBuilderContext];
         self.previousForegroundTime = MPCurrentEpochInMilliseconds;
-        [messageBuilder stateTransition:isLaunch previousSession:nil];
+        [messageBuilder stateTransition:isLaunch previousSession:nil launchInfo:[MParticle sharedInstance].stateMachine.launchInfo];
 
         MPMessage *message = [messageBuilder build];
         [self saveMessage:message updateSession:YES];
