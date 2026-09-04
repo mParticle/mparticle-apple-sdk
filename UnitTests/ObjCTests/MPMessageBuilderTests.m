@@ -1,6 +1,5 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
-#import "MPMessageBuilder.h"
 #import "mParticle.h"
 #import "MPIConstants.h"
 #import "MPProduct.h"
@@ -55,7 +54,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:self.session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"e", @"Message type not being set properly.");
@@ -84,7 +83,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                            session:nil
-                                                       messageInfo:messageInfo];
+                                                       messageInfo:messageInfo context:self.messageBuilderContext];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     
@@ -99,7 +98,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:self.session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     XCTAssertNil(messageBuilder.messageInfo[kMPStateInformationKey]);
 }
@@ -111,7 +110,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:self.session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"e", @"Message type not being set properly.");
@@ -140,7 +139,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                            session:nil
-                                                       messageInfo:messageInfo];
+                                                       messageInfo:messageInfo context:self.messageBuilderContext];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     
@@ -201,7 +200,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCommerceEvent
                                                                              session:self.session
-                                                                         messageInfo:commerceEvent.customAttributes];
+                                                                         messageInfo:commerceEvent.customAttributes context:self.messageBuilderContext];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"cm", @"Incorrect message type.");
@@ -225,7 +224,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCommerceEvent
                                                                              session:self.session
-                                                                         messageInfo:commerceEvent.customAttributes];
+                                                                         messageInfo:commerceEvent.customAttributes context:self.messageBuilderContext];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"cm", @"Incorrect message type.");
@@ -274,7 +273,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeUserAttributeChange
                                                                              session:self.session
-                                                                 userAttributeChange:userAttributeChange];
+                                                                 userAttributeChange:userAttributeChange context:self.messageBuilderContext];
     XCTAssertNotNil(messageBuilder);
     MPMessage *message = [messageBuilder build];
     XCTAssertNotNil(message);
@@ -293,7 +292,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeUserAttributeChange
                                                            session:self.session
-                                               userAttributeChange:userAttributeChange];
+                                               userAttributeChange:userAttributeChange context:self.messageBuilderContext];
 
     XCTAssertNotNil(messageBuilder);
     message = [messageBuilder build];
@@ -313,7 +312,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeUserAttributeChange
                                                            session:self.session
-                                               userAttributeChange:userAttributeChange];
+                                               userAttributeChange:userAttributeChange context:self.messageBuilderContext];
 
     XCTAssertNotNil(messageBuilder);
     message = [messageBuilder build];
@@ -332,7 +331,7 @@ NSString *const kMPStateInformationKey = @"cs";
     
     messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeUserAttributeChange
                                                            session:self.session
-                                               userAttributeChange:userAttributeChange];
+                                               userAttributeChange:userAttributeChange context:self.messageBuilderContext];
 
     XCTAssertNotNil(messageBuilder);
     message = [messageBuilder build];
@@ -357,7 +356,7 @@ NSString *const kMPStateInformationKey = @"cs";
             expectedType = MPMessageTypeUnknown;
         }
         
-        XCTAssertEqual(expectedType, [MPMessageBuilder messageTypeForString:[MPMessageBuilder stringForMessageType:(MPMessageType)i]]);
+        XCTAssertEqual(expectedType, (MPMessageType)[MPMessageBuilder messageTypeForString:[MPMessageBuilder stringForMessageType:(MPMessageType)i logger:nil] logger:nil]);
         
     }
     
@@ -371,7 +370,7 @@ NSString *const kMPStateInformationKey = @"cs";
     [MPPersistenceController_PRIVATE setMpid:@1];
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:nil
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], message.userId);
@@ -386,7 +385,7 @@ NSString *const kMPStateInformationKey = @"cs";
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:@0];
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], message.userId);

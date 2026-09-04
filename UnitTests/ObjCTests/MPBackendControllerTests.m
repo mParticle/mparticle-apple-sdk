@@ -8,7 +8,6 @@
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
 #import "MPUploadBuilder.h"
-#import "MPMessageBuilder.h"
 #import "mParticle.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitConfiguration.h"
@@ -895,7 +894,7 @@
         
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                                  session:session
-                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
         MPMessage *message = [messageBuilder build];
         
         MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
@@ -953,7 +952,7 @@
         for (NSString *value in @[@"v1", @"v2"]) {
             MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                                      session:session
-                                                                                 messageInfo:@{@"MessageKey1":value}];
+                                                                                 messageInfo:@{@"MessageKey1":value} context:self.messageBuilderContext];
             [persistence saveMessage:[messageBuilder build]];
         }
 
@@ -1635,7 +1634,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
     
@@ -1654,7 +1653,7 @@
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
     
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")} context:self.messageBuilderContext];
     
     MPMessage *message = [messageBuilder build];
     [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
@@ -1675,7 +1674,7 @@
     for (int i=0; i<10; i++) {
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                                  session:session
-                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
         MPMessage *message = [messageBuilder build];
         [unlimitedMessages addObject:message];
     }
@@ -1695,7 +1694,7 @@
     for (int i=0; i<10; i++) {
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                                  session:session
-                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
         MPMessage *message = [messageBuilder build];
         [unlimitedMessages addObject:message];
     }
@@ -1712,7 +1711,7 @@
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
@@ -1741,7 +1740,7 @@
     }
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":longString}];
+                                                                         messageInfo:@{@"MessageKey1":longString} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
     for (int i=0; i<10; i++) {
@@ -1772,7 +1771,7 @@
     }
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:type
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":longString}];
+                                                                         messageInfo:@{@"MessageKey1":longString} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     NSInteger bytesToTruncate = message.messageData.length - length;
     NSInteger bytesLongString = longString.length - bytesToTruncate;

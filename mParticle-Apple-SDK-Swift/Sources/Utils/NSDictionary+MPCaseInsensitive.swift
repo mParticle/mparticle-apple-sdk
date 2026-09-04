@@ -65,4 +65,33 @@ public extension NSDictionary {
         }
         return nil
     }
+
+    /// Transforms every supported value in `dictionary`, dropping entries whose type is not
+    /// supported — the Swift-side equivalent of `-[NSDictionary transformValuesToString]`.
+    ///
+    /// That category deliberately keeps its own copy of this loop: it is called from arbitrary
+    /// threads, and routing it here would mean reading `MParticle.sharedInstance` to build the
+    /// logger, which deadlocks against the background-time-check loop's `dispatch_sync` to main.
+    /// Both copies share the per-value work in `isSupportedValue`/`transformedValue(for:)`.
+    ///
+    /// `logger` reproduces `MPILogError`'s level gate: the message is only built when the
+    /// logger would actually emit it, so an unsupported value is never eagerly stringified.
+    /// Several Objective-C tests pass mocks stubbed for a single selector, and eager
+    /// interpolation would make them throw.
+    @objc(transformedAttributeValuesIn:logger:)
+    public static func transformedAttributeValues(in dictionary: NSDictionary, logger: MPLog?) -> NSDictionary {
+        let transformed = NSMutableDictionary(capacity: dictionary.count)
+        for (key, value) in dictionary {
+            guard isSupportedValue(value) else {
+                if let logger, logger.logLevel.rawValue >= MPILogLevelSwift.error.rawValue {
+                    logger.error(
+                        "Data type is not supported as an attribute value: \(value) - \(type(of: value as AnyObject))"
+                    )
+                }
+                continue
+            }
+            transformed[key] = transformedValue(for: value)
+        }
+        return transformed
+    }
 }
