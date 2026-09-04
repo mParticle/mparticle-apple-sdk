@@ -76,7 +76,6 @@ jobs:
         uses: ffurrer2/extract-release-notes@273da39a24fb7db106a35526c8162815faffd31d # v3.1.0
         with:
           changelog_file: CHANGELOG.md
-          prerelease: true
 
       - name: Create GitHub release
         if: env.DRY_RUN != 'true'
@@ -293,12 +292,11 @@ jobs:
           repositories: ${{ matrix.kit.dest_repo }}
           permission-contents: write
 
-      - name: Extract release notes from root CHANGELOG
+      - name: Extract latest release notes from root CHANGELOG
         id: release-notes
         uses: ffurrer2/extract-release-notes@273da39a24fb7db106a35526c8162815faffd31d # v3.1.0
         with:
           changelog_file: CHANGELOG.md
-          prerelease: true
 
       - name: Split kit and push to mirror
         id: mirror

@@ -10,20 +10,6 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [Unreleased]
 
-### Core
-
-#### Fixed
-
-- `MPRokt.selectPlacements` and `MPRokt.selectShoppableAds` now deliver a `RoktPlacementFailure` event to the caller's `onEvent` handler when the Rokt kit configuration is unavailable. Previously the call was dropped with only a log message, leaving callers waiting on a callback that never arrived. ([#814](https://github.com/mParticle/mparticle-apple-sdk/pull/814))
-
-### Kits
-
-#### Rokt
-
-##### Added
-
-- Report non-sensitive mParticle public API usage diagnostics when the Rokt kit is active.
-
 ## [9.4.2] - 2026-09-04
 
 ### Core
