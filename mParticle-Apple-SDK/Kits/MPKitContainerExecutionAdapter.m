@@ -21,7 +21,6 @@
 #import "MPConsumerInfo.h"
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
-#import "MPIntegrationAttributes.h"
 #import "mParticle.h"
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
