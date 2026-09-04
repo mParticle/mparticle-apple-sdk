@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		AA0008012F50000000000001 /* MPKitRokt.m in Sources */ = {isa = PBXBuildFile; fileRef = AA0001032F50000000000003 /* MPKitRokt.m */; };
 		AA0008022F50000000000002 /* MPRoktLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001042F50000000000004 /* MPRoktLayout.swift */; };
+		AA0008082F50000000000008 /* MPRoktKitImplementation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001072F50000000000007 /* MPRoktKitImplementation.swift */; };
 
 		AA0008032F50000000000003 /* MPKitRokt.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0001012F50000000000001 /* MPKitRokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA0008042F50000000000004 /* mParticle_Rokt.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0001022F50000000000002 /* mParticle_Rokt.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -22,6 +23,7 @@
 		AA0001022F50000000000002 /* mParticle_Rokt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle_Rokt.h; sourceTree = "<group>"; };
 		AA0001032F50000000000003 /* MPKitRokt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitRokt.m; sourceTree = "<group>"; };
 		AA0001042F50000000000004 /* MPRoktLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPRoktLayout.swift; sourceTree = "<group>"; };
+		AA0001072F50000000000007 /* MPRoktKitImplementation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPRoktKitImplementation.swift; sourceTree = "<group>"; };
 
 		AA0001052F50000000000005 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0001062F50000000000006 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -45,6 +47,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0002042F50000000000004 /* mParticle-Rokt */,
+				AA0002072F50000000000007 /* mParticle-Rokt-Internal */,
 				AA0002062F50000000000006 /* mParticle-Rokt-Swift */,
 				AA0001052F50000000000005 /* Info.plist */,
 			);
@@ -77,6 +80,14 @@
 
 			);
 			path = "mParticle-Rokt-Swift";
+			sourceTree = "<group>";
+		};
+		AA0002072F50000000000007 /* mParticle-Rokt-Internal */ = {
+			isa = PBXGroup;
+			children = (
+				AA0001072F50000000000007 /* MPRoktKitImplementation.swift */,
+			);
+			path = "mParticle-Rokt-Internal";
 			sourceTree = "<group>";
 		};
 		AA0002012F50000000000001 = {
@@ -186,6 +197,7 @@
 			files = (
 				AA0008012F50000000000001 /* MPKitRokt.m in Sources */,
 				AA0008022F50000000000002 /* MPRoktLayout.swift in Sources */,
+				AA0008082F50000000000008 /* MPRoktKitImplementation.swift in Sources */,
 
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -67,16 +67,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 @end
 
-@interface MPRokt ()
-- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
-- (NSDictionary * _Nullable)getRoktKitConfiguration;
-- (NSNumber *)getRoktHashedEmailUserIdentityType;
-- (void)confirmUser:(NSDictionary<NSString *, NSString *> *)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
-- (NSMutableDictionary<NSString *, NSString *> *)mapPlacementAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-                                                             attributeMap:(NSArray<NSDictionary<NSString *, NSString *> *> *)attributeMap
-                                                                  forUser:(MParticleUser * _Nullable)user;
-@end
-
 @interface MPRokt (Testing)
 - (void)logRoktApiDiagnostic:(NSString *)code;
 @end
@@ -165,7 +155,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 - (void)testSelectPlacementsSimpleWithValidParameters {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
@@ -224,7 +213,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 
 - (void)testSelectPlacementsExpandedWithValidParameters {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -234,7 +222,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
     // Set up test parameters
     NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
-    NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
+    NSDictionary *finalAttributes = @{@"key": @"value"};
     RoktEmbeddedView *exampleView = [[RoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *embeddedViews = @{@"placement": exampleView};
     
@@ -288,7 +276,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 
 - (void)testSelectPlacementsExpandedWithNilParameters {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -302,7 +289,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
     SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
-    NSDictionary *finalAttributes = @{@"sandbox": @"true"};
+    NSDictionary *finalAttributes = @{};
 
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
@@ -331,50 +318,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
     [self waitForExpectationsWithTimeout:kMPRoktForwardTimeout handler:nil];
     
-    // Verify
-    OCMVerifyAll(self.mockContainer);
-}
-
-- (void)testSelectPlacementsSimpleWithMapping {
-    [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    
-    // Set up test parameters
-    NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"f.name": @"Brandon"};
-    NSDictionary *mappedAttributes = @{@"firstname": @"Brandon", @"sandbox": @"true"};
-    
-    // Set up expectations for kit container
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
-    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
-                                      event:nil
-                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        XCTAssertEqualObjects(params[0], identifier);
-        XCTAssertEqualObjects(params[1], mappedAttributes);
-        XCTAssertNil(params[2]);
-        XCTAssertNil(params[3]);
-        XCTAssertNil(params[4]);
-        // Verify placement options exists
-        RoktPlacementOptions *options = params[5];
-        XCTAssertNotNil(options);
-        return true;
-    }]
-                                messageType:MPMessageTypeEvent
-                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
-        [expectation fulfill];
-    });
-    
-    // Execute method
-    [self.rokt selectPlacements:identifier
-                     attributes:attributes];
-    
-    [self waitForExpectationsWithTimeout:kMPRoktForwardTimeout handler:nil];
-
     // Verify
     OCMVerifyAll(self.mockContainer);
 }
@@ -408,7 +351,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
         for (NSString *key in attributes) {
             XCTAssertEqualObjects(forwarded[key], attributes[key], @"unmapped key %@ should be preserved", key);
         }
-        XCTAssertNotNil(forwarded[@"sandbox"]);
+        XCTAssertNil(forwarded[@"sandbox"]);
         XCTAssertNotNil(params[5]);
         return YES;
     }]
@@ -421,7 +364,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 
 - (void)testSelectPlacementsSimpleWithNilMappingForwardsUnmappedAttributes {
-    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -436,18 +378,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
     [self waitForExpectationsWithTimeout:kMPRoktForwardTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
-}
-
-- (void)testGetRoktKitConfigurationReturnsNilWhenOriginalConfigEmpty {
-    [self mp_stubSharedInstanceWithOriginalConfig:@[] kitsInitialized:NO];
-    XCTAssertNil([self.rokt getRoktKitConfiguration]);
-    XCTAssertNil([self.rokt getRoktPlacementAttributesMapping]);
-}
-
-- (void)testGetRoktKitConfigurationReturnsNilWhenOriginalConfigLacksKit181 {
-    NSArray *kitConfig = @[@{@"id": @80, kMPRemoteConfigKitConfigurationKey: @{}}];
-    [self mp_stubSharedInstanceWithOriginalConfig:kitConfig kitsInitialized:YES];
-    XCTAssertNil([self.rokt getRoktKitConfiguration]);
 }
 
 - (void)testSelectPlacementsForwardsWhenOriginalConfigEmptyBeforeKitsInitialized {
@@ -508,7 +438,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 
 - (void)testSelectPlacementsWithNilMappingDoesNotInvokeOnEventWithPlacementFailure {
-    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -536,7 +465,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 
 - (void)testSelectPlacementsWithNilMappingAndNilOnEventDoesNotCrash {
-    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -551,295 +479,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
     [self waitForExpectationsWithTimeout:kMPRoktForwardTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
-}
-
-- (void)testGetRoktPlacementAttributesMapping {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    NSArray *kitConfig = @[@{
-        @"id": kTestRoktKitId,
-        kMPRemoteConfigKitConfigurationKey: @{
-            @"AllowJavaScriptResponse": @"True",
-            @"accountId": @12345,
-            @"onboardingExpProvider": @"None",
-            kMPPlacementAttributesMapping: @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
-            @"sandboxMode": @"True",
-            @"eau": @0,
-            @"hs": @{
-                @"pur": @{},
-                @"reg": @{}
-            }
-        }
-    }];
-    [[[self.mockContainer stub] andReturn:kitConfig.firstObject] launchConfigurationForKitCode:kTestRoktKitId];
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    
-    NSArray<NSDictionary<NSString *, NSString *> *> *testResult = [self.rokt getRoktPlacementAttributesMapping];
-    NSArray<NSDictionary<NSString *, NSString *> *> *expectedResult = @[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname", @"jsmap": [NSNull null]}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode", @"jsmap": [NSNull null]}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname", @"jsmap": [NSNull null]}];
-    
-    XCTAssertEqualObjects(testResult, expectedResult, @"Mapping does not match .");
-}
-
-- (void)testGetRoktHashedEmailUserIdentityType {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    NSArray *kitConfig = @[@{
-        @"id": kTestRoktKitId,
-        kMPRemoteConfigKitConfigurationKey: @{
-            @"AllowJavaScriptResponse": @"True",
-            @"accountId": @12345,
-            kMPHashedEmailUserIdentityType: @"other3",
-            @"sandboxMode": @"True"
-        }
-    }];
-    [[[self.mockContainer stub] andReturn:kitConfig.firstObject] launchConfigurationForKitCode:kTestRoktKitId];
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    
-    NSNumber *testResult = [self.rokt getRoktHashedEmailUserIdentityType];
-    
-    XCTAssertEqualObjects(testResult, @(MPIdentityOther3), @"Hashed email identity type does not match.");
-}
-
-- (void)testGetRoktHashedEmailUserIdentityTypeReturnsNilWhenNotConfigured {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    NSArray *kitConfig = @[@{
-        @"id": kTestRoktKitId,
-        kMPRemoteConfigKitConfigurationKey: @{
-            @"AllowJavaScriptResponse": @"True",
-            @"accountId": @12345,
-            @"sandboxMode": @"True"
-        }
-    }];
-    [[[self.mockContainer stub] andReturn:kitConfig.firstObject] launchConfigurationForKitCode:kTestRoktKitId];
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    
-    NSNumber *testResult = [self.rokt getRoktHashedEmailUserIdentityType];
-    
-    XCTAssertNil(testResult, @"Hashed email identity type should be nil when not configured.");
-}
-
-- (void)testSelectPlacementsIdentifyUser {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    
-    // Set up test parameters
-    NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
-    
-    // Set up expectations for kit container
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    OCMExpect([self.mockRokt confirmUser:attributes user:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
-        [expectation fulfill];
-    });
-    
-    // Execute method
-    [self.rokt selectPlacements:identifier attributes:attributes];
-    
-    [self waitForExpectationsWithTimeout:kMPRoktForwardTimeout handler:nil];
-
-    // Verify
-    OCMVerifyAll(self.mockContainer);
-}
-
-- (void)testTriggeredIdentifyWithNoIdentities {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-
-    //Mock Identity as needed
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.identityMock = OCMClassMock([MPIdentityApi class]);
-    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    [[[self.identityMock stub] andReturn:currentUser] currentUser];
-    
-    [[self.identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
-        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
-        return true;
-    }] completion:OCMOCK_ANY];
-    
-    NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
-    
-    [self.rokt selectPlacements:identifier attributes:attributes];
-    
-    [self.identityMock verifyWithDelay:kMPRoktForwardTimeout];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@yahoo.com"}];
-    
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityEmail)], @"test@yahoo.com");
-    
-    //Mock Identity as needed
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.identityMock = OCMClassMock([MPIdentityApi class]);
-    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    [[[self.identityMock stub] andReturn:currentUser] currentUser];
-    
-    [[self.identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
-        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
-        return true;
-    }] completion:OCMOCK_ANY];
-    
-    NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
-    
-    [self.rokt selectPlacements:identifier attributes:attributes];
-    
-    [self.identityMock verifyWithDelay:kMPRoktForwardTimeout];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOtherIdentity {
-    [self hashedIdentityTest: MPIdentityOther];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOther2Identity {
-    [self hashedIdentityTest: MPIdentityOther2];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOther3Identity {
-    [self hashedIdentityTest: MPIdentityOther3];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOther4Identity {
-    [self hashedIdentityTest: MPIdentityOther4];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOther5Identity {
-    [self hashedIdentityTest: MPIdentityOther5];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOther6Identity {
-    [self hashedIdentityTest: MPIdentityOther6];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOther7Identity {
-    [self hashedIdentityTest: MPIdentityOther7];
-}
-- (void)testTriggeredIdentifyWithMismatchedOther8Identity {
-    [self hashedIdentityTest: MPIdentityOther8];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOther9Identity {
-    [self hashedIdentityTest: MPIdentityOther9];
-}
-
-- (void)testTriggeredIdentifyWithMismatchedOther10Identity {
-    [self hashedIdentityTest: MPIdentityOther10];
-}
-
-- (void)hashedIdentityTest: (MPIdentity)mpIdentity {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:mpIdentity], @"i" : @"test@yahoo.com"}];
-    
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(mpIdentity)], @"test@yahoo.com");
-    
-    //Mock Identity as needed
-    [[[self.mockRokt stub] andReturn:@(mpIdentity)] getRoktHashedEmailUserIdentityType];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.identityMock = OCMClassMock([MPIdentityApi class]);
-    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    [[[self.identityMock stub] andReturn:currentUser] currentUser];
-    
-    [[self.identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
-        XCTAssertEqualObjects([request.identities objectForKey:@(mpIdentity)], @"test@gmail.com");
-        return true;
-    }] completion:OCMOCK_ANY];
-    
-    NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"emailsha256": @"test@gmail.com", @"sandbox": @"false"};
-    
-    [self.rokt selectPlacements:identifier attributes:attributes];
-    
-    [self.identityMock verifyWithDelay:kMPRoktForwardTimeout];
-}
-
-- (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityType {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
-    
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
-    
-    //Mock Identity as needed
-    [[[self.mockRokt stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.identityMock = OCMClassMock([MPIdentityApi class]);
-    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    [[[self.identityMock stub] andReturn:currentUser] currentUser];
-    
-    [[self.identityMock reject] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
-        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityOther)], @"test@yahoo.com");
-        return true;
-    }] completion:OCMOCK_ANY];
-    
-    NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"emailsha256": @"test@gmail.com", @"sandbox": @"false"};
-    
-    [self.rokt selectPlacements:identifier attributes:attributes];
-    
-    [self.identityMock verifyWithDelay:kMPRoktForwardTimeout];
-}
-
-- (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityType {
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
-    
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
-    
-    //Mock Identity as needed
-    [[[self.mockRokt stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.identityMock = OCMClassMock([MPIdentityApi class]);
-    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    [[[self.identityMock stub] andReturn:currentUser] currentUser];
-    
-    [[self.identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
-        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
-        return true;
-    }] completion:OCMOCK_ANY];
-    
-    NSString *identifier = @"testView";
-    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"emailsha256": @"test@outlook.com", @"sandbox": @"false"};
-    
-    [self.rokt selectPlacements:identifier attributes:attributes];
-    
-    [self.identityMock verifyWithDelay:kMPRoktForwardTimeout];
 }
 
 - (void)testPurchaseFinalized {
@@ -1126,7 +765,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 - (void)testSelectShoppableAdsShortForwardsToKitWithValidParameters {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
@@ -1170,7 +808,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 
 - (void)testSelectShoppableAdsFullForwardsToKitWithConfigAndCallback {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -1179,7 +816,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
     NSString *identifier = @"shoppableView";
     NSDictionary *attributes = @{@"key": @"value"};
-    NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
+    NSDictionary *finalAttributes = @{@"key": @"value"};
 
     void (^exampleOnEvent)(RoktEvent * _Nonnull) = ^(RoktEvent * _Nonnull event) {
     };
@@ -1214,7 +851,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 
 - (void)testSelectShoppableAdsWithNilMappingForwardsUnmappedAttributes {
-    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -1231,7 +867,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
         XCTAssertEqualObjects(params[0], identifier);
         NSDictionary *forwarded = params[1];
         XCTAssertEqualObjects(forwarded[@"f.name"], @"Brandon");
-        XCTAssertNotNil(forwarded[@"sandbox"]);
+        XCTAssertNil(forwarded[@"sandbox"]);
         return YES;
     }]
                                      messageType:MPMessageTypeEvent
@@ -1246,7 +882,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 }
 
 - (void)testSelectShoppableAdsWithNilMappingDoesNotInvokeOnEventWithPlacementFailure {
-    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -1279,28 +914,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)testSelectShoppableAdsInvokesConfirmUser {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-
-    NSString *identifier = @"shoppableView";
-    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
-
-    XCTestExpectation *expectation = [self expectationWithDescription:@"confirmUser called"];
-    OCMExpect([self.mockRokt confirmUser:attributes user:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
-        [expectation fulfill];
-    });
-
-    [self.rokt selectShoppableAds:identifier attributes:attributes];
-
-    [self waitForExpectationsWithTimeout:kMPRoktForwardTimeout handler:nil];
-    OCMVerifyAll(self.mockContainer);
-}
-
 #pragma mark - confirmUser nil-user path
 
 - (void)testIdentityCurrentUserGetterNeverReturnsNil {
@@ -1308,87 +921,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
     XCTAssertNotNil(user, @"iOS currentUser synthesizes an MParticleUser from persisted MPID; a nil-user Android-style guard would not fire after identity is accessed");
 }
 
-- (void)testConfirmUserNilUserWithoutEmailCompletesImmediately {
-    __block BOOL completed = NO;
-    [self.rokt confirmUser:@{@"f.name": @"Brandon"} user:nil completion:^(MParticleUser *resolved) {
-        completed = YES;
-        XCTAssertNil(resolved);
-    }];
-    XCTAssertTrue(completed);
-}
-
-- (void)testConfirmUserNilUserWithEmailCallsIdentifyAndBlocksUntilCompletion {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.identityMock = OCMClassMock([MPIdentityApi class]);
-    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-
-    __block BOOL identifyCalled = NO;
-    __block BOOL identifyCompletionInvokedBySDK = NO;
-    [[[self.identityMock stub] andDo:^(NSInvocation *invocation) {
-        identifyCalled = YES;
-        void (^identityCompletion)(MPIdentityApiResult *_Nullable, NSError *_Nullable);
-        [invocation getArgument:&identityCompletion atIndex:3];
-        identifyCompletionInvokedBySDK = identityCompletion != nil;
-        // Intentionally do not invoke identityCompletion — hang, matching a stuck identify.
-    }] identify:[OCMArg any] completion:[OCMArg any]];
-
-    XCTestExpectation *didNotComplete = [self expectationWithDescription:@"confirmUser must not complete while identify hangs"];
-    didNotComplete.inverted = YES;
-
-    [self.rokt confirmUser:@{@"email": @"a@b.com"} user:nil completion:^(MParticleUser *resolved) {
-        (void)resolved;
-        [didNotComplete fulfill];
-    }];
-
-    [self waitForExpectationsWithTimeout:kMPRoktNegativeTimeout handler:nil];
-    XCTAssertTrue(identifyCalled);
-    XCTAssertTrue(identifyCompletionInvokedBySDK);
-}
-
 #pragma mark - mapPlacementAttributes
-
-- (void)testMapPlacementAttributesRemapsKeysPerDashboardMapping {
-    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = @[
-        @{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"},
-        @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}
-    ];
-    NSDictionary *attributes = @{@"f.name": @"Brandon", @"zip": @"12345", @"unmapped": @"keep"};
-
-    NSMutableDictionary *result = [self.rokt mapPlacementAttributes:attributes attributeMap:attributeMap forUser:nil];
-
-    XCTAssertEqualObjects(result[@"firstname"], @"Brandon");
-    XCTAssertEqualObjects(result[@"billingzipcode"], @"12345");
-    XCTAssertEqualObjects(result[@"unmapped"], @"keep");
-    XCTAssertNil(result[@"f.name"]);
-    XCTAssertNil(result[@"zip"]);
-}
-
-- (void)testMapPlacementAttributesNilAttributesReturnsEmptyMutableDictionary {
-    NSMutableDictionary *result = [self.rokt mapPlacementAttributes:nil attributeMap:@[] forUser:nil];
-
-    XCTAssertNotNil(result);
-    XCTAssertEqual(result.count, 0U);
-    XCTAssertTrue([result isKindOfClass:[NSMutableDictionary class]]);
-}
-
-- (void)testMapPlacementAttributesDoesNotSetSandboxOnUser {
-    MParticleUser *mockUser = OCMClassMock([MParticleUser class]);
-    __block NSMutableArray<NSString *> *keysSet = [NSMutableArray array];
-    OCMStub([(MParticleUser *)mockUser setUserAttribute:[OCMArg any] value:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
-        NSString *key;
-        [invocation getArgument:&key atIndex:2];
-        [keysSet addObject:key];
-    });
-
-    NSDictionary *attributes = @{@"email": @"a@b.com", @"sandbox": @"true", @"name": @"Pat"};
-    [self.rokt mapPlacementAttributes:attributes attributeMap:@[] forUser:mockUser];
-
-    XCTAssertTrue([keysSet containsObject:@"email"]);
-    XCTAssertTrue([keysSet containsObject:@"name"]);
-    XCTAssertFalse([keysSet containsObject:@"sandbox"]);
-}
 
 #pragma mark - setSessionId Tests
 
