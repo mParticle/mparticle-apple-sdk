@@ -135,7 +135,7 @@ Support for migrating from SDK versions prior to **SDK 8.27.0** (internal databa
 
 This change only affects users who:
 
-1. Are upgrading directly from mParticle SDK versions **before 8.27.0** (released August 2024)
+1. Are upgrading directly from mParticle SDK versions **before 8.27.0** (released September 2024)
 2. Have pending events that have not yet been uploaded to mParticle
 
 ---
