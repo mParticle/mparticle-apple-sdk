@@ -194,4 +194,85 @@ final class MPIdentityUserStorageTests: XCTestCase {
         XCTAssertTrue(MPIdentityUserStoragePRIVATE.isUserIdentity(MPIdentitySwift.phoneNumber3.rawValue))
         XCTAssertFalse(MPIdentityUserStoragePRIVATE.isUserIdentity(MPIdentitySwift.iosAdvertiserId.rawValue))
     }
+
+    // MARK: - Success responses
+
+    func testSuccessResponsePreservesObjectiveCRuntimeNames() {
+        XCTAssertEqual(
+            NSStringFromClass(MPIdentityHTTPBaseSuccessResponse.self),
+            "MPIdentityHTTPBaseSuccessResponse"
+        )
+        XCTAssertEqual(NSStringFromClass(MPIdentityHTTPSuccessResponse.self), "MPIdentityHTTPSuccessResponse")
+        XCTAssertEqual(
+            NSStringFromClass(MPIdentityHTTPModifySuccessResponse.self),
+            "MPIdentityHTTPModifySuccessResponse"
+        )
+    }
+
+    func testSuccessResponseHierarchyIsPreserved() {
+        let modify = MPIdentityHTTPModifySuccessResponse()
+
+        XCTAssertTrue(modify.isKind(of: MPIdentityHTTPSuccessResponse.self))
+        XCTAssertTrue(modify.isKind(of: MPIdentityHTTPBaseSuccessResponse.self))
+        XCTAssertFalse(MPIdentityHTTPSuccessResponse().isKind(of: MPIdentityHTTPModifySuccessResponse.self))
+    }
+
+    func testSuccessResponseMapsFields() {
+        let response = MPIdentityHTTPSuccessResponse(jsonObject: [
+            "context": "ctx",
+            "mpid": "8675309",
+            "is_ephemeral": true,
+            "is_logged_in": true
+        ])
+
+        XCTAssertEqual(response.context, "ctx")
+        XCTAssertEqual(response.mpid, 8_675_309)
+        XCTAssertTrue(response.isEphemeral)
+        XCTAssertTrue(response.isLoggedIn)
+    }
+
+    func testSuccessResponseDefaultsWhenFieldsAreAbsent() {
+        let response = MPIdentityHTTPSuccessResponse(jsonObject: [:])
+
+        XCTAssertNil(response.context)
+        XCTAssertNil(response.mpid)
+        XCTAssertFalse(response.isEphemeral)
+        XCTAssertFalse(response.isLoggedIn)
+    }
+
+    func testSuccessResponseIgnoresNullMPIDAndNonStringContext() {
+        let response = MPIdentityHTTPSuccessResponse(jsonObject: ["mpid": NSNull(), "context": 7])
+
+        XCTAssertNil(response.mpid)
+        XCTAssertNil(response.context)
+    }
+
+    func testModifySuccessResponseCarriesChangeResultsAndInheritedFields() {
+        let changeResults = [
+            ["identity_type": "email", "modified_mpid": "123"],
+            ["identity_type": "customerid", "modified_mpid": "456"]
+        ]
+
+        let response = MPIdentityHTTPModifySuccessResponse(jsonObject: [
+            "mpid": "42",
+            "change_results": changeResults
+        ])
+
+        XCTAssertEqual(response.mpid, 42)
+        XCTAssertEqual(response.changeResults, changeResults as NSArray)
+    }
+
+    func testModifySuccessResponseKeepsNumericChangeResultValues() throws {
+        let response = MPIdentityHTTPModifySuccessResponse(jsonObject: [
+            "change_results": [["identity_type": "email", "modified_mpid": 123]]
+        ])
+
+        let results = try XCTUnwrap(response.changeResults)
+        let first = try XCTUnwrap(results.firstObject as? [String: Any])
+        XCTAssertEqual(first["modified_mpid"] as? NSNumber, 123)
+    }
+
+    func testModifySuccessResponseHasNoChangeResultsWhenAbsent() {
+        XCTAssertNil(MPIdentityHTTPModifySuccessResponse(jsonObject: [:]).changeResults)
+    }
 }

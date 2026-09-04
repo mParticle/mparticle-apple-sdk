@@ -43,12 +43,6 @@
 
 @end
 
-@interface MPIdentityHTTPClientSDK : NSObject
-
-+ (NSDictionary *)clientSDKDictionaryWithVersion:(NSString *)mParticleVersion;
-
-@end
-
 @interface MPIdentityHTTPBaseRequest : NSObject
 
 - (NSDictionary *)dictionaryRepresentation;
@@ -83,18 +77,6 @@
 
 @end
 
-@protocol MPIdentityRequesting <NSObject>
-
-- (NSDictionary *)dictionaryRepresentation;
-
-@end
-
-@protocol MPIdentityResponding <NSObject>
-
-- (NSDictionary *)initWithJson:(id)json;
-
-@end
-
 @interface MPIdentityHTTPIdentityChange : NSObject
 
 @property (nonatomic) NSString *oldValue;
@@ -103,36 +85,5 @@
 
 - (instancetype)initWithOldValue:(NSString *)oldValue value:(NSString *)value identityType:(NSString *)identityType;
 - (NSMutableDictionary *)dictionaryRepresentation;
-
-@end
-
-static NSString *kMPIdentityRequestKeyMPID = @"mpid";
-static NSString *kMPIdentityRequestKeyContext = @"context";
-static NSString *kMPIdentityRequestKeyIsEphemeral = @"is_ephemeral";
-static NSString *kMPIdentityRequestKeyIsLoggedIn = @"is_logged_in";
-static NSString *kMPIdentityRequestKeyCode = @"code";
-static NSString *kMPIdentityRequestKeyMessage = @"message";
-static NSString *kMPIdentityRequestKeyChangeResults = @"change_results";
-
-@interface MPIdentityHTTPBaseSuccessResponse : NSObject
-
-@end
-
-@interface MPIdentityHTTPSuccessResponse : MPIdentityHTTPBaseSuccessResponse
-
-- (instancetype)initWithJsonObject:(NSDictionary *)dictionary;
-
-@property (nonatomic) NSString *context;
-@property (nonatomic) NSNumber *mpid;
-@property (nonatomic) BOOL isEphemeral;
-@property (nonatomic) BOOL isLoggedIn;
-
-@end
-
-@interface MPIdentityHTTPModifySuccessResponse : MPIdentityHTTPSuccessResponse
-
-- (instancetype)initWithJsonObject:(NSDictionary *)dictionary;
-
-@property (nonatomic) NSArray<NSDictionary<NSString *, NSString *>*> *changeResults;
 
 @end

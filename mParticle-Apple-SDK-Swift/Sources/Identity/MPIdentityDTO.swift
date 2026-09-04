@@ -289,6 +289,54 @@ enum IdentityHTTPKeys {
     }
 }
 
+/// Base class for identity responses, so callers can hold identify/login/logout and modify
+/// results behind one type. Kept as an empty class because the Objective-C
+/// `MPIdentityApiManagerCallback` typedef is declared in terms of it.
+@objc(MPIdentityHTTPBaseSuccessResponse)
+public class MPIdentityHTTPBaseSuccessResponse: NSObject {}
+
+/// Decoded identify, login, or logout response.
+@objc(MPIdentityHTTPSuccessResponse)
+public class MPIdentityHTTPSuccessResponse: MPIdentityHTTPBaseSuccessResponse {
+    @objc public var context: String?
+    @objc public var mpid: NSNumber?
+    @objc public var isEphemeral: Bool = false
+    @objc public var isLoggedIn: Bool = false
+
+    override public init() {
+        super.init()
+    }
+
+    @objc(initWithJsonObject:)
+    public init(jsonObject dictionary: NSDictionary?) {
+        let fields = MPIdentityHTTPRequestBuilderPRIVATE.successFields(from: dictionary)
+        context = fields[IdentityHTTPKeys.context] as? String
+        mpid = fields[IdentityHTTPKeys.mpid] as? NSNumber
+        isEphemeral = (fields[IdentityHTTPKeys.isEphemeral] as? NSNumber)?.boolValue ?? false
+        isLoggedIn = (fields[IdentityHTTPKeys.isLoggedIn] as? NSNumber)?.boolValue ?? false
+        super.init()
+    }
+}
+
+/// Decoded modify response, which adds the per-identity change results.
+@objc(MPIdentityHTTPModifySuccessResponse)
+public final class MPIdentityHTTPModifySuccessResponse: MPIdentityHTTPSuccessResponse {
+    /// Raw `change_results` entries. Left as `NSArray` because the server sends `modified_mpid`
+    /// as a number in some responses, which a `[[String: String]]` cast would silently drop.
+    @objc public var changeResults: NSArray?
+
+    override public init() {
+        super.init()
+    }
+
+    @objc(initWithJsonObject:)
+    override public init(jsonObject dictionary: NSDictionary?) {
+        super.init(jsonObject: dictionary)
+        let fields = MPIdentityHTTPRequestBuilderPRIVATE.successFields(from: dictionary)
+        changeResults = fields[IdentityHTTPKeys.changeResults] as? NSArray
+    }
+}
+
 @objc public final class MPIdentityHTTPIdentityChangePRIVATE: NSObject {
     @objc public var oldValue: String?
     @objc public var value: String?
