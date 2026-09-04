@@ -58,3 +58,65 @@ final class MPSessionTimingPolicyTests: XCTestCase {
         XCTAssertFalse(MPSessionTimingPolicy.shouldEndSession(now: 1059.0, lastEventInBackground: 1000.0, sessionTimeout: 60.0))
     }
 }
+
+extension MPSessionTimingPolicyTests {
+    // MARK: - cleanUpPlan
+
+    private static let ninetyDays: TimeInterval = 90 * 24 * 60 * 60
+    private static let twentyFourHours: TimeInterval = 24 * 60 * 60
+
+    func testNoPlanBeforeTheNextCleanUpTime() {
+        XCTAssertNil(MPSessionTimingPolicy.cleanUpPlan(
+            now: 1000,
+            nextCleanUpTime: 1000,
+            maxAgeSeconds: nil,
+            defaultMaxAge: Self.ninetyDays,
+            interval: Self.twentyFourHours
+        ))
+        XCTAssertNil(MPSessionTimingPolicy.cleanUpPlan(
+            now: 1000,
+            nextCleanUpTime: 2000,
+            maxAgeSeconds: nil,
+            defaultMaxAge: Self.ninetyDays,
+            interval: Self.twentyFourHours
+        ))
+    }
+
+    func testDuePlanUsesTheDefaultRetentionWhenUnconfigured() throws {
+        let plan = try XCTUnwrap(MPSessionTimingPolicy.cleanUpPlan(
+            now: 1_000_000,
+            nextCleanUpTime: 0,
+            maxAgeSeconds: nil,
+            defaultMaxAge: Self.ninetyDays,
+            interval: Self.twentyFourHours
+        ))
+
+        XCTAssertEqual(plan.deleteRecordsOlderThan, 1_000_000 - Self.ninetyDays)
+        XCTAssertEqual(plan.nextCleanUpTime, 1_000_000 + Self.twentyFourHours)
+    }
+
+    func testConfiguredRetentionOverridesTheDefault() throws {
+        let plan = try XCTUnwrap(MPSessionTimingPolicy.cleanUpPlan(
+            now: 1_000_000,
+            nextCleanUpTime: 0,
+            maxAgeSeconds: NSNumber(value: 60),
+            defaultMaxAge: Self.ninetyDays,
+            interval: Self.twentyFourHours
+        ))
+
+        XCTAssertEqual(plan.deleteRecordsOlderThan, 999_940)
+        XCTAssertEqual(plan.nextCleanUpTime, 1_000_000 + Self.twentyFourHours)
+    }
+
+    func testAZeroRetentionPrunesEverythingUpToNow() throws {
+        let plan = try XCTUnwrap(MPSessionTimingPolicy.cleanUpPlan(
+            now: 500,
+            nextCleanUpTime: 0,
+            maxAgeSeconds: NSNumber(value: 0),
+            defaultMaxAge: Self.ninetyDays,
+            interval: Self.twentyFourHours
+        ))
+
+        XCTAssertEqual(plan.deleteRecordsOlderThan, 500)
+    }
+}
