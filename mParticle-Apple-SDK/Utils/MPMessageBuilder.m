@@ -11,7 +11,6 @@
 
 @import mParticle_Apple_SDK_Swift;
 
-NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
 NSString *const kMPLatitudeKey = @"lat";
 NSString *const kMPLongitudeKey = @"lng";
@@ -41,86 +40,23 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 @implementation MPMessageBuilder
 
 + (NSString *)stringForMessageType:(MPMessageType)type {
-    NSString *string = kMPMessageTypeStringUnknown;
-    
-    switch (type) {
-        case MPMessageTypeUnknown:                      string = kMPMessageTypeStringUnknown; break;
-        case MPMessageTypeSessionStart:                 string = kMPMessageTypeStringSessionStart; break;
-        case MPMessageTypeSessionEnd:                   string = kMPMessageTypeStringSessionEnd; break;
-        case MPMessageTypeScreenView:                   string = kMPMessageTypeStringScreenView; break;
-        case MPMessageTypeEvent:                        string = kMPMessageTypeStringEvent; break;
-        case MPMessageTypeCrashReport:                  string = kMPMessageTypeStringCrashReport; break;
-        case MPMessageTypeOptOut:                       string = kMPMessageTypeStringOptOut; break;
-        case MPMessageTypeFirstRun:                     string = kMPMessageTypeStringFirstRun; break;
-        case MPMessageTypePreAttribution:               string = kMPMessageTypeStringPreAttribution; break;
-        case MPMessageTypePushRegistration:             string = kMPMessageTypeStringPushRegistration; break;
-        case MPMessageTypeAppStateTransition:           string = kMPMessageTypeStringAppStateTransition; break;
-        case MPMessageTypePushNotification:             string = kMPMessageTypeStringPushNotification; break;
-        case MPMessageTypeNetworkPerformance:           string = kMPMessageTypeStringNetworkPerformance; break;
-        case MPMessageTypeBreadcrumb:                   string = kMPMessageTypeStringBreadcrumb; break;
-        case MPMessageTypeProfile:                      string = kMPMessageTypeStringProfile; break;
-        case MPMessageTypePushNotificationInteraction:  string = kMPMessageTypeStringPushNotificationInteraction; break;
-        case MPMessageTypeCommerceEvent:                string = kMPMessageTypeStringCommerceEvent; break;
-        case MPMessageTypeUserAttributeChange:          string = kMPMessageTypeStringUserAttributeChange; break;
-        case MPMessageTypeUserIdentityChange:           string = kMPMessageTypeStringUserIdentityChange; break;
-        case MPMessageTypeMedia:                        string = kMPMessageTypeStringMedia; break;
-        default:
-            string = kMPMessageTypeStringUnknown;
-            MPILogError(@"Unknown message type enum: %@", @(type));
-            break;
+    NSString *string = [MPMessageBuilderFields stringForMessageTypeRawValue:type];
+    if (!string) {
+        MPILogError(@"Unknown message type enum: %@", @(type));
+        return kMPMessageTypeStringUnknown;
     }
-    
+
     return string;
 }
 
 + (MPMessageType)messageTypeForString:(NSString *)string {
-    MPMessageType type = MPMessageTypeUnknown;
-        
-    if ([string isEqual:kMPMessageTypeStringUnknown]) {
-        type = MPMessageTypeUnknown;
-    } else if ([string isEqual:kMPMessageTypeStringSessionStart]) {
-        type = MPMessageTypeSessionStart;
-    } else if ([string isEqual:kMPMessageTypeStringSessionEnd]) {
-        type = MPMessageTypeSessionEnd;
-    } else if ([string isEqual:kMPMessageTypeStringScreenView]) {
-        type = MPMessageTypeScreenView;
-    } else if ([string isEqual:kMPMessageTypeStringEvent]) {
-        type = MPMessageTypeEvent;
-    } else if ([string isEqual:kMPMessageTypeStringCrashReport]) {
-        type = MPMessageTypeCrashReport;
-    } else if ([string isEqual:kMPMessageTypeStringOptOut]) {
-        type = MPMessageTypeOptOut;
-    } else if ([string isEqual:kMPMessageTypeStringFirstRun]) {
-        type = MPMessageTypeFirstRun;
-    } else if ([string isEqual:kMPMessageTypeStringPreAttribution]) {
-        type = MPMessageTypePreAttribution;
-    } else if ([string isEqual:kMPMessageTypeStringPushRegistration]) {
-        type = MPMessageTypePushRegistration;
-    } else if ([string isEqual:kMPMessageTypeStringAppStateTransition]) {
-        type = MPMessageTypeAppStateTransition;
-    } else if ([string isEqual:kMPMessageTypeStringPushNotification]) {
-        type = MPMessageTypePushNotification;
-    } else if ([string isEqual:kMPMessageTypeStringNetworkPerformance]) {
-        type = MPMessageTypeNetworkPerformance;
-    } else if ([string isEqual:kMPMessageTypeStringBreadcrumb]) {
-        type = MPMessageTypeBreadcrumb;
-    } else if ([string isEqual:kMPMessageTypeStringProfile]) {
-        type = MPMessageTypeProfile;
-    } else if ([string isEqual:kMPMessageTypeStringPushNotificationInteraction]) {
-        type = MPMessageTypePushNotificationInteraction;
-    } else if ([string isEqual:kMPMessageTypeStringCommerceEvent]) {
-        type = MPMessageTypeCommerceEvent;
-    } else if ([string isEqual:kMPMessageTypeStringUserAttributeChange]) {
-        type = MPMessageTypeUserAttributeChange;
-    } else if ([string isEqual:kMPMessageTypeStringUserIdentityChange]) {
-        type = MPMessageTypeUserIdentityChange;
-    } else if ([string isEqual:kMPMessageTypeStringMedia]) {
-        type = MPMessageTypeMedia;
-    } else {
+    NSNumber *rawType = [MPMessageBuilderFields rawMessageTypeForString:string];
+    if (rawType == nil) {
         MPILogError(@"Unknown message type string: %@", string);
+        return MPMessageTypeUnknown;
     }
-    
-    return type;
+
+    return (MPMessageType)rawType.unsignedIntegerValue;
 }
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session {
@@ -145,17 +81,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
             _messageDictionary[kMPSessionStartTimestamp] = MPMilliseconds(_session.startTime);
             
             if (messageType == MPMessageTypeSessionEnd) {
-                NSArray *userIds = [_session.sessionUserIds componentsSeparatedByString:@","];
-                
-                NSMutableArray *userIdNumbers = [NSMutableArray array];
-                [userIds enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                    NSNumber *userId = @(obj.longLongValue);
-                    if (userId && ![userId isEqual:@0]) {
-                        [userIdNumbers addObject:userId];
-                    }
-                    
-                }];
-                
+                NSArray<NSNumber *> *userIdNumbers = [MPMessageBuilderFields filteredUserIdsFrom:_session.sessionUserIds];
                 if (userIdNumbers) {
                     _messageDictionary[kMPSessionUserIdsKey] = userIdNumbers;
                 }
@@ -240,13 +166,17 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 #pragma mark Private methods
 - (void)userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange {
-    _messageDictionary[kMPUserAttributeWasDeletedKey] = userAttributeChange.deleted ? @YES : @NO;
-    _messageDictionary[kMPEventNameKey] = userAttributeChange.key;
-    
     id oldValue = userAttributeChange.userAttributes[userAttributeChange.key];
-    _messageDictionary[kMPUserAttributeOldValueKey] = oldValue ? oldValue : [NSNull null];
-    _messageDictionary[kMPUserAttributeNewValueKey] = userAttributeChange.valueToLog && !userAttributeChange.deleted ? userAttributeChange.valueToLog : [NSNull null];
-    _messageDictionary[kMPUserAttributeNewlyAddedKey] = oldValue ? @NO : @YES;
+    MPUserAttributeChangeFields *fields = [MPMessageBuilderFields userAttributeChangeFieldsWithDeleted:userAttributeChange.deleted
+                                                                                                     key:userAttributeChange.key
+                                                                                                oldValue:oldValue
+                                                                                                newValue:userAttributeChange.valueToLog];
+
+    _messageDictionary[kMPUserAttributeWasDeletedKey] = @(fields.deleted);
+    _messageDictionary[kMPEventNameKey] = fields.attributeKey;
+    _messageDictionary[kMPUserAttributeOldValueKey] = fields.oldValue;
+    _messageDictionary[kMPUserAttributeNewValueKey] = fields.newValue;
+    _messageDictionary[kMPUserAttributeNewlyAddedKey] = @(fields.newlyAdded);
 }
 
 - (void)userIdentityChange:(MPUserIdentityChangePRIVATE *)userIdentityChange {
@@ -266,19 +196,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return _messageDictionary;
 }
 
-- (void)launchInfo:(NSDictionary *)launchInfo {
-    NSString *launchScheme = [launchInfo[UIApplicationLaunchOptionsURLKey] absoluteString];
-    NSString *launchSource = launchInfo[UIApplicationLaunchOptionsSourceApplicationKey];
-    
-    if (launchScheme && launchSource) {
-        NSRange range = [launchScheme rangeOfString:@"?"];
-        NSString *sourcePrefix = (range.length > 0) ? @"&" : @"?";
-        
-        NSString *launchInfoString = [NSString stringWithFormat:launchInfoStringFormat, launchScheme, sourcePrefix, kMPLaunchSourceKey, launchSource];
-        _messageDictionary[kMPLaunchURLKey] = launchInfoString;
-    }
-}
-
 - (void)timestamp:(NSTimeInterval)timestamp {
     _timestamp = timestamp;
     _messageDictionary[kMPTimestampKey] = MPMilliseconds(_timestamp);
@@ -287,21 +204,27 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 // NOTE: Here "sessionFinalized" is really referring to if we are starting a new session on launch, see Facebook event forwarder backend code
 - (void)stateTransition:(BOOL)sessionFinalized previousSession:(MPSession *)previousSession {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    if (stateMachine.launchInfo.sourceApplication) {
-        _messageDictionary[kMPLaunchSourceKey] = stateMachine.launchInfo.sourceApplication;
+
+    MPStateTransitionFields *fields = [MPMessageBuilderFields stateTransitionFieldsWithSourceApplication:stateMachine.launchInfo.sourceApplication
+                                                                                           launchURLString:stateMachine.launchInfo.url.absoluteString
+                                                                                          launchParameters:stateMachine.launchInfo.annotation
+                                                                             previousSessionInterruptions:previousSession ? previousSession.numberOfInterruptions : 0
+                                                                                         sessionFinalized:sessionFinalized];
+
+    if (fields.sourceApplication) {
+        _messageDictionary[kMPLaunchSourceKey] = fields.sourceApplication;
     }
-    
-    if (stateMachine.launchInfo.url) {
-        _messageDictionary[kMPLaunchURLKey] = [stateMachine.launchInfo.url absoluteString];
+
+    if (fields.launchURLString) {
+        _messageDictionary[kMPLaunchURLKey] = fields.launchURLString;
     }
-    
-    if (stateMachine.launchInfo.annotation) {
-        _messageDictionary[kMPLaunchParametersKey] = stateMachine.launchInfo.annotation;
+
+    if (fields.launchParameters) {
+        _messageDictionary[kMPLaunchParametersKey] = fields.launchParameters;
     }
-    
-    _messageDictionary[kMPLaunchNumberOfSessionInterruptionsKey] = previousSession ? @(previousSession.numberOfInterruptions) : @0;
-    _messageDictionary[kMPLaunchSessionFinalizedKey] = @(sessionFinalized);
+
+    _messageDictionary[kMPLaunchNumberOfSessionInterruptionsKey] = @(fields.numberOfSessionInterruptions);
+    _messageDictionary[kMPLaunchSessionFinalizedKey] = @(fields.sessionFinalized);
 }
 
 - (MPMessage *)build {
