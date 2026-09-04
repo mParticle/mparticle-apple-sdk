@@ -4,7 +4,6 @@
 #import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPStateMachine.h"
-#import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"

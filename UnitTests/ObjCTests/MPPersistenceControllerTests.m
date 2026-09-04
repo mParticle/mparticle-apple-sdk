@@ -4,7 +4,6 @@
 #import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPMessageBuilder.h"
-#import "MPIntegrationAttributes.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPKitExecStatus.h"

@@ -1,5 +1,6 @@
 import XCTest
 import mParticle_Apple_SDK
+internal import mParticle_Apple_SDK_Swift
 
 class MPPersistenceControllerMock: MPPersistenceControllerProtocol {
     var resetDatabaseForWorkspaceSwitchingCalled = false
@@ -22,9 +23,9 @@ class MPPersistenceControllerMock: MPPersistenceControllerProtocol {
         saveForwardRecordParam = forwardRecord
     }
 
-    var saveIntegrationAttributesParam: MPIntegrationAttributes?
+    var saveIntegrationAttributesParam: MPIntegrationAttributesPRIVATE?
 
-    func save(_ integrationAttributes: MPIntegrationAttributes) {
+    func save(_ integrationAttributes: MPIntegrationAttributesPRIVATE) {
         saveCalled = true
         saveIntegrationAttributesParam = integrationAttributes
     }

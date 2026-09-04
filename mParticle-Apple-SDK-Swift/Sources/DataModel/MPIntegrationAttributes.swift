@@ -1,6 +1,10 @@
 import Foundation
 
-@objc public final class MPIntegrationAttributesPRIVATE: NSObject {
+/// Keeps the `MPIntegrationAttributes` Objective-C runtime name the deleted wrapper had, so the
+/// baselined `-saveIntegrationAttributes:` / `-fetchIntegrationAttributes` signatures in
+/// `Include/MPPersistenceController.h` stay byte-identical.
+@objc(MPIntegrationAttributes)
+public final class MPIntegrationAttributesPRIVATE: NSObject {
     @objc public var integrationId: NSNumber
     @objc public var attributes: NSDictionary
 
