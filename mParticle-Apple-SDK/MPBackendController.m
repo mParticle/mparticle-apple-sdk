@@ -1535,75 +1535,48 @@ static BOOL skipNextUpload = NO;
     
     userIdentityChange.timestamp = timestamp;
     
-    NSNumber *identityTypeNumber = @(userIdentityChange.newUserIdentity.type);
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPUserIdentityTypeKey, identityTypeNumber];
-    NSDictionary *currentIdentities = [[[self userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]] filteredArrayUsingPredicate:predicate] lastObject];
-    
-    BOOL oldIdentityIsValid = currentIdentities && !MPIsNull(currentIdentities[kMPUserIdentityIdKey]);
-    BOOL newIdentityIsValid = !MPIsNull(userIdentityChange.newUserIdentity.value);
-    
-    if (oldIdentityIsValid
-        && newIdentityIsValid
-        && [currentIdentities[kMPUserIdentityIdKey] isEqualToString:userIdentityChange.newUserIdentity.value]) {
+    NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]];
+
+    MPUserIdentityChangePlan *plan = [MPUserIdentityLogic planForIdentityType:@(userIdentityChange.newUserIdentity.type)
+                                                                        value:userIdentityChange.newUserIdentity.value
+                                                            currentIdentities:userIdentities
+                                                                      typeKey:kMPUserIdentityTypeKey
+                                                                        idKey:kMPUserIdentityIdKey
+                                                              dateFirstSetKey:kMPDateUserIdentityWasFirstSet
+                                                                          now:[NSDate date]];
+
+    if (plan.kind == MPUserIdentityChangeKindUnchanged) {
         completionHandler(identityString, identityType, MPExecStatusFail);
         return;
     }
-    
-    BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
-        NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
-        BOOL foundMatch = [currentIdentityType isEqualToNumber:identityTypeNumber];
-        
-        if (foundMatch) {
-            *stop = YES;
-        }
-        
-        return foundMatch;
-    };
-    
-    NSMutableDictionary<NSString *, id> *identityDictionary;
-    NSUInteger existingEntryIndex;
-    BOOL persistUserIdentities = NO;
-    
-    NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]];
-    
-    if (userIdentityChange.newUserIdentity.value == nil || (NSNull *)userIdentityChange.newUserIdentity.value == [NSNull null] || [userIdentityChange.newUserIdentity.value isEqualToString:@""]) {
-        existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
-        
-        if (existingEntryIndex != NSNotFound) {
-            identityDictionary = [userIdentities[existingEntryIndex] mutableCopy];
-            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:identityDictionary];
+
+    BOOL persistUserIdentities = plan.kind != MPUserIdentityChangeKindNothingToRemove;
+
+    switch (plan.kind) {
+        case MPUserIdentityChangeKindRemove:
+            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:plan.existingIdentity];
             userIdentityChange.newUserIdentity = nil;
-            
-            [userIdentities removeObjectAtIndex:existingEntryIndex];
-            persistUserIdentities = YES;
-        }
-    } else {
-        existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
-        
-        if (existingEntryIndex == NSNotFound) {
-            userIdentityChange.newUserIdentity.dateFirstSet = [NSDate date];
-            userIdentityChange.newUserIdentity.isFirstTimeSet = YES;
-            
-            identityDictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
-            
-            [userIdentities addObject:identityDictionary];
-        } else {
-            currentIdentities = userIdentities[existingEntryIndex];
-            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:currentIdentities];
-            
-            NSNumber *timeIntervalMilliseconds = currentIdentities[kMPDateUserIdentityWasFirstSet];
-            userIdentityChange.newUserIdentity.dateFirstSet = [MPUserIdentityLogic dateFirstSetFromMilliseconds:timeIntervalMilliseconds];
-            userIdentityChange.newUserIdentity.isFirstTimeSet = NO;
-            
-            identityDictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
-            
-            [userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
-        }
-        
-        persistUserIdentities = YES;
+            [userIdentities removeObjectAtIndex:plan.index];
+            break;
+
+        case MPUserIdentityChangeKindAdd:
+            userIdentityChange.newUserIdentity.dateFirstSet = plan.dateFirstSet;
+            userIdentityChange.newUserIdentity.isFirstTimeSet = plan.isFirstTimeSet;
+            [userIdentities addObject:[userIdentityChange.newUserIdentity dictionaryRepresentation]];
+            break;
+
+        case MPUserIdentityChangeKindReplace:
+            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:plan.existingIdentity];
+            userIdentityChange.newUserIdentity.dateFirstSet = plan.dateFirstSet;
+            userIdentityChange.newUserIdentity.isFirstTimeSet = plan.isFirstTimeSet;
+            [userIdentities replaceObjectAtIndex:plan.index withObject:[userIdentityChange.newUserIdentity dictionaryRepresentation]];
+            break;
+
+        case MPUserIdentityChangeKindNothingToRemove:
+        case MPUserIdentityChangeKindUnchanged:
+            break;
     }
-    
+
     if (persistUserIdentities) {
         if (userIdentityChange.changed) {
             [self logUserIdentityChange:userIdentityChange];
