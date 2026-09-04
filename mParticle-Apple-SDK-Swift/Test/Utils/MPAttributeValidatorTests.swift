@@ -84,3 +84,34 @@ final class MPAttributeValidatorTests: XCTestCase {
         XCTAssertEqual(validate(key: "foo", value: [half, half]), .arrayValueTooLong)
     }
 }
+
+extension MPAttributeValidatorTests {
+    // MARK: - isAcceptableScalarValue
+
+    func testNilScalarIsAcceptedSoItCanReachTheRemovalPath() {
+        XCTAssertTrue(MPAttributeValidator.isAcceptableScalarValue(nil))
+    }
+
+    func testNonEmptyStringsAndNumbersAreAcceptedAsScalars() {
+        XCTAssertTrue(MPAttributeValidator.isAcceptableScalarValue("abc"))
+        XCTAssertTrue(MPAttributeValidator.isAcceptableScalarValue(NSNumber(value: 0)))
+        XCTAssertTrue(MPAttributeValidator.isAcceptableScalarValue(NSNumber(value: false)))
+    }
+
+    func testEmptyStringsAndOtherTypesAreRejectedAsScalars() {
+        XCTAssertFalse(MPAttributeValidator.isAcceptableScalarValue(""))
+        XCTAssertFalse(MPAttributeValidator.isAcceptableScalarValue(NSNull()))
+        XCTAssertFalse(MPAttributeValidator.isAcceptableScalarValue(["a"]))
+        XCTAssertFalse(MPAttributeValidator.isAcceptableScalarValue(Date()))
+    }
+
+    // MARK: - isAcceptableValueList
+
+    func testOnlyANonEmptyArrayIsAnAcceptableValueList() {
+        XCTAssertTrue(MPAttributeValidator.isAcceptableValueList(["a"]))
+        XCTAssertTrue(MPAttributeValidator.isAcceptableValueList([NSNumber(value: 1)]))
+        XCTAssertFalse(MPAttributeValidator.isAcceptableValueList([]))
+        XCTAssertFalse(MPAttributeValidator.isAcceptableValueList(nil))
+        XCTAssertFalse(MPAttributeValidator.isAcceptableValueList("abc"))
+    }
+}
