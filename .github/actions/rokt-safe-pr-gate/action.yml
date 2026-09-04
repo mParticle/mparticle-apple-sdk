@@ -1,0 +1,26 @@
+name: Rokt Safe PR Gate
+description: Evaluates low-risk pull requests for the required Rokt Safe PR Gate check.
+inputs:
+  api-url:
+    required: true
+  event-path:
+    required: true
+  policy-path:
+    required: true
+  mparticle-token:
+    required: true
+  rokt-token:
+    required: true
+  gate-app-id:
+    required: true
+  employee-team-slug:
+    required: true
+  manual-review-team-slug:
+    required: true
+  pr-number:
+    required: false
+  mode:
+    required: true
+runs:
+  using: node20
+  main: index.js

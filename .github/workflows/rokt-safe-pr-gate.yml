@@ -1,0 +1,86 @@
+name: Rokt Safe PR Gate
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: Pull request number to re-evaluate
+        required: false
+        type: string
+  pull_request_target:
+    types:
+      [
+        opened,
+        reopened,
+        ready_for_review,
+        converted_to_draft,
+        synchronize,
+        edited,
+      ]
+  workflow_run:
+    workflows: [Pull request]
+    types: [completed]
+
+permissions: {}
+
+concurrency:
+  group: rokt-safe-pr-gate-${{ github.event_name == 'schedule' && 'poll' || github.event.pull_request.number || github.event.workflow_run.id || inputs.pull_request_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    if: >-
+      vars.ROKT_SAFE_PR_GATE_ENABLED == 'true' &&
+      (github.event_name == 'pull_request_target' ||
+       github.event_name == 'schedule' ||
+       github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.event == 'pull_request')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create mParticle App token
+        id: mparticle-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.ROKT_SAFE_PR_GATE_MPARTICLE_APP_ID }}
+          private-key: ${{ secrets.ROKT_SAFE_PR_GATE_MPARTICLE_APP_PRIVATE_KEY }}
+          owner: mParticle
+          repositories: mparticle-apple-sdk
+          permission-actions: read
+          permission-checks: write
+          permission-contents: read
+          permission-members: read
+          permission-pull-requests: read
+
+      - name: Create Rokt App token
+        id: rokt-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.ROKT_SAFE_PR_GATE_ROKT_APP_ID }}
+          private-key: ${{ secrets.ROKT_SAFE_PR_GATE_ROKT_APP_PRIVATE_KEY }}
+          owner: ROKT
+          permission-members: read
+
+      - name: Checkout trusted policy
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.event.repository.default_branch }}
+          token: ${{ steps.mparticle-token.outputs.token }}
+
+      - name: Evaluate pull request
+        uses: ./.github/actions/rokt-safe-pr-gate
+        with:
+          api-url: ${{ github.api_url }}
+          employee-team-slug: ${{ vars.ROKT_SAFE_PR_GATE_EMPLOYEE_TEAM_SLUG }}
+          event-path: ${{ github.event_path }}
+          gate-app-id: ${{ vars.ROKT_SAFE_PR_GATE_MPARTICLE_APP_ID }}
+          manual-review-team-slug: ${{ vars.ROKT_SAFE_PR_GATE_MANUAL_REVIEW_TEAM_SLUG }}
+          mparticle-token: ${{ steps.mparticle-token.outputs.token }}
+          policy-path: .github/rokt-safe-pr-gate-policy.json
+          pr-number: ${{ inputs.pull_request_number }}
+          rokt-token: ${{ steps.rokt-token.outputs.token }}
+          mode: ${{ vars.ROKT_SAFE_PR_GATE_MODE }}
