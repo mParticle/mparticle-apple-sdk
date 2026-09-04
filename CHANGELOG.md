@@ -24,6 +24,19 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 - Report non-sensitive mParticle public API usage diagnostics when the Rokt kit is active.
 
+## [9.4.3] - 2026-09-04
+
+### Core
+
+#### Fixed
+
+- Eliminate the kitsRegistry thread-safety crash ([#916](https://github.com/mParticle/mparticle-apple-sdk/pull/916))
+- Close the kitsRegistry flush race and stabilise the ObjC test suite ([#878](https://github.com/mParticle/mparticle-apple-sdk/pull/878))
+
+#### Changed
+
+- Correct 8.27.0 release month in migration guide ([#950](https://github.com/mParticle/mparticle-apple-sdk/pull/950))
+
 ## [9.4.2] - 2026-09-04
 
 ### Core
@@ -2534,7 +2547,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.2...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.3...HEAD
+[9.4.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.2...v9.4.3
 [9.4.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.1...v9.4.2
 [9.4.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.0...v9.4.1
 [9.4.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.5...v9.4.0
