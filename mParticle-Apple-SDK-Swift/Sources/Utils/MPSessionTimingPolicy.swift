@@ -40,4 +40,35 @@ import Foundation
         }
         return now - lastEventInBackground >= sessionTimeout
     }
+
+    /// When the periodic database clean-up is due, what cutoff to prune to and when to run next.
+    ///
+    /// `nil` means the clean-up is not due yet, so the caller prunes nothing and leaves its stored
+    /// next-run time alone. `maxAgeSeconds` falls back to `defaultMaxAge` when the caller has not
+    /// configured a retention window.
+    @objc(cleanUpPlanWithNow:nextCleanUpTime:maxAgeSeconds:defaultMaxAge:interval:)
+    public static func cleanUpPlan(
+        now: TimeInterval,
+        nextCleanUpTime: TimeInterval,
+        maxAgeSeconds: NSNumber?,
+        defaultMaxAge: TimeInterval,
+        interval: TimeInterval
+    ) -> MPCleanUpPlan? {
+        guard nextCleanUpTime < now else { return nil }
+        let maxAge = maxAgeSeconds?.doubleValue ?? defaultMaxAge
+        return MPCleanUpPlan(deleteRecordsOlderThan: now - maxAge, nextCleanUpTime: now + interval)
+    }
+}
+
+/// The outcome of a due database clean-up: what to prune and when to run again.
+@objc(MPCleanUpPlan)
+public final class MPCleanUpPlan: NSObject {
+    @objc public let deleteRecordsOlderThan: TimeInterval
+    @objc public let nextCleanUpTime: TimeInterval
+
+    init(deleteRecordsOlderThan: TimeInterval, nextCleanUpTime: TimeInterval) {
+        self.deleteRecordsOlderThan = deleteRecordsOlderThan
+        self.nextCleanUpTime = nextCleanUpTime
+        super.init()
+    }
 }
