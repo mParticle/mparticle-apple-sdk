@@ -55,3 +55,119 @@ final class MPBackendMessageInfoTests: XCTestCase {
         XCTAssertEqual(decision?.logToken, tokenA)
     }
 }
+
+extension MPBackendMessageInfoTests {
+    // MARK: - crashReportBytesToRetain
+
+    func testNoTruncationWhenTheMessageAlreadyFits() {
+        XCTAssertNil(MPBackendMessageInfo.crashReportBytesToRetain(
+            messageLength: 100,
+            maxBytes: 100,
+            base64ReportLength: 40
+        ))
+        XCTAssertNil(MPBackendMessageInfo.crashReportBytesToRetain(
+            messageLength: 99,
+            maxBytes: 100,
+            base64ReportLength: 40
+        ))
+    }
+
+    func testOverflowIsSubtractedFromTheReportLength() {
+        // 120 byte message, 100 byte limit -> 20 bytes must go, all from the 40 byte report.
+        XCTAssertEqual(
+            MPBackendMessageInfo.crashReportBytesToRetain(messageLength: 120, maxBytes: 100, base64ReportLength: 40),
+            20
+        )
+    }
+
+    func testRetainedLengthGoesNegativeWhenTheRestOfTheMessageAlreadyOverflows() {
+        // The caller passes this straight to `truncateMessageDataProperty:toLength:`, which ignores
+        // a negative length and leaves the report intact — the original arithmetic did the same.
+        XCTAssertEqual(
+            MPBackendMessageInfo.crashReportBytesToRetain(messageLength: 200, maxBytes: 100, base64ReportLength: 40),
+            -60
+        )
+    }
+
+    // MARK: - shouldUploadMessage
+
+    private var hasher: MPIHasher { MPIHasher(logger: MPLog(logLevel: .none)) }
+
+    func testTriggerMessageTypeMatchUploads() {
+        XCTAssertTrue(MPBackendMessageInfo.shouldUploadMessage(
+            ofType: "e",
+            messageDictionary: nil,
+            triggerMessageTypes: ["x", "e"],
+            triggerEventTypes: nil,
+            hasher: hasher
+        ))
+    }
+
+    func testNoTriggersConfiguredNeverUploads() {
+        XCTAssertFalse(MPBackendMessageInfo.shouldUploadMessage(
+            ofType: "e",
+            messageDictionary: ["n": "purchase", "et": "1"],
+            triggerMessageTypes: nil,
+            triggerEventTypes: nil,
+            hasher: hasher
+        ))
+    }
+
+    func testUnknownMessageTypeDoesNotMatch() {
+        XCTAssertFalse(MPBackendMessageInfo.shouldUploadMessage(
+            ofType: "v",
+            messageDictionary: nil,
+            triggerMessageTypes: ["e"],
+            triggerEventTypes: nil,
+            hasher: hasher
+        ))
+        XCTAssertFalse(MPBackendMessageInfo.shouldUploadMessage(
+            ofType: nil,
+            messageDictionary: nil,
+            triggerMessageTypes: ["e"],
+            triggerEventTypes: nil,
+            hasher: hasher
+        ))
+    }
+
+    func testHashedTriggerEventMatchUploads() {
+        let hashed = hasher.hashTriggerEventName("purchase", eventType: "1")
+
+        XCTAssertTrue(MPBackendMessageInfo.shouldUploadMessage(
+            ofType: "e",
+            messageDictionary: ["n": "purchase", "et": "1"],
+            triggerMessageTypes: ["x"],
+            triggerEventTypes: [hashed],
+            hasher: hasher
+        ))
+    }
+
+    func testHashedTriggerEventMissDoesNotUpload() {
+        XCTAssertFalse(MPBackendMessageInfo.shouldUploadMessage(
+            ofType: "e",
+            messageDictionary: ["n": "purchase", "et": "1"],
+            triggerMessageTypes: ["x"],
+            triggerEventTypes: ["some-other-hash"],
+            hasher: hasher
+        ))
+    }
+
+    func testAMessageMissingEventNameOrTypeCannotMatchAnEventTrigger() {
+        let hashed = hasher.hashTriggerEventName("purchase", eventType: "1")
+
+        XCTAssertFalse(MPBackendMessageInfo.shouldUploadMessage(
+            ofType: "e",
+            messageDictionary: ["n": "purchase"],
+            triggerMessageTypes: nil,
+            triggerEventTypes: [hashed],
+            hasher: hasher
+        ))
+        XCTAssertFalse(MPBackendMessageInfo.shouldUploadMessage(
+            ofType: "e",
+            messageDictionary: nil,
+            triggerMessageTypes: nil,
+            triggerEventTypes: [hashed],
+            hasher: hasher
+        ))
+    }
+}

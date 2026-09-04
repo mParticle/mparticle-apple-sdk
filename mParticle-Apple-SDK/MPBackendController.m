@@ -1087,11 +1087,11 @@ static BOOL skipNextUpload = NO;
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport session:crashSession messageInfo:messageInfo context:self.messageBuilderContext];
     MPMessage *crashMessage = [messageBuilder build];
     
-    NSInteger maxBytes = [MPPersistenceController_PRIVATE maxBytesPerEvent:crashMessage.messageType];
-    if(crashMessage.messageData.length > maxBytes) {
-        NSInteger bytesToTruncate = crashMessage.messageData.length - maxBytes;
-        NSInteger bytesToRetain = plCrashReportBase64.length - bytesToTruncate;
-        [crashMessage truncateMessageDataProperty:kMPPLCrashReport toLength:bytesToRetain];
+    NSNumber *bytesToRetain = [MPBackendMessageInfo crashReportBytesToRetainForMessageLength:crashMessage.messageData.length
+                                                                                    maxBytes:[MPPersistenceController_PRIVATE maxBytesPerEvent:crashMessage.messageType]
+                                                                          base64ReportLength:plCrashReportBase64.length];
+    if (bytesToRetain) {
+        [crashMessage truncateMessageDataProperty:kMPPLCrashReport toLength:bytesToRetain.integerValue];
     }
     [persistence saveMessage:crashMessage];
     
@@ -1374,24 +1374,13 @@ static BOOL skipNextUpload = NO;
     }
     
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    BOOL shouldUpload = [stateMachine.triggerMessageTypes containsObject:message.messageType];
-    
-    if (!shouldUpload && stateMachine.triggerEventTypes) {
-        NSError *error = nil;
-        NSDictionary *messageDictionary = [message dictionaryRepresentation];
-        NSString *eventName = messageDictionary[kMPEventNameKey];
-        NSString *eventType = messageDictionary[kMPEventTypeKey];
-        
-        if (!error && eventName && eventType) {
-            MParticle* mparticle = MParticle.sharedInstance;
-            MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-            logger.customLogger = mparticle.customLogger;
-            MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
-            NSString *hashedEvent = [hasher hashTriggerEventName:eventName eventType:eventType];
-            shouldUpload = [stateMachine.triggerEventTypes containsObject:hashedEvent];
-        }
-    }
-    
+    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:[[MParticle sharedInstance] getLogger]];
+    BOOL shouldUpload = [MPBackendMessageInfo shouldUploadMessageOfType:message.messageType
+                                                      messageDictionary:[message dictionaryRepresentation]
+                                                    triggerMessageTypes:stateMachine.triggerMessageTypes
+                                                      triggerEventTypes:stateMachine.triggerEventTypes
+                                                                 hasher:hasher];
+
     if (shouldUpload) {
         dispatch_async([MParticle messageQueue], ^{
             [self waitForKitsAndUploadWithCompletionHandler:nil];
@@ -1810,11 +1799,14 @@ static BOOL skipNextUpload = NO;
 
 - (void)cleanUp:(NSTimeInterval)currentTime {
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
-    if (nextCleanUpTime < currentTime) {
-        NSNumber *persistanceMaxAgeSeconds = [MParticle sharedInstance].persistenceMaxAgeSeconds;
-        NSTimeInterval maxAgeSeconds = persistanceMaxAgeSeconds == nil ? NINETY_DAYS : persistanceMaxAgeSeconds.doubleValue;
-        [persistence deleteRecordsOlderThan:(currentTime - maxAgeSeconds)];
-        nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
+    MPCleanUpPlan *plan = [MPSessionTimingPolicy cleanUpPlanWithNow:currentTime
+                                                   nextCleanUpTime:nextCleanUpTime
+                                                     maxAgeSeconds:[MParticle sharedInstance].persistenceMaxAgeSeconds
+                                                     defaultMaxAge:NINETY_DAYS
+                                                          interval:TWENTY_FOUR_HOURS];
+    if (plan) {
+        [persistence deleteRecordsOlderThan:plan.deleteRecordsOlderThan];
+        nextCleanUpTime = plan.nextCleanUpTime;
     }
     [persistence purgeMemory];
     MPIdentityCaching *identityCaching = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
