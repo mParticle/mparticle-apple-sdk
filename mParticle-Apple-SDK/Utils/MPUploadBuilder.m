@@ -4,7 +4,6 @@
 #import "MPPersistenceController.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
-#import "MPIntegrationAttributes.h"
 #import "MPConsentState.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"

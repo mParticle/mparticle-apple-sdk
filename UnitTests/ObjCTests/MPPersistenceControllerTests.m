@@ -3,7 +3,6 @@
 #import "MPPersistenceController.h"
 #import "MPAudience.h"
 #import "MPIConstants.h"
-#import "MPIntegrationAttributes.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPKitExecStatus.h"

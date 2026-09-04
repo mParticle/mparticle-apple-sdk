@@ -1,12 +1,10 @@
 #import "MPPersistenceController.h"
 #import <dispatch/dispatch.h>
 #import "MPDatabaseMigrationController.h"
-#import "MPBreadcrumb.h"
 #import "MPStateMachine.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
-#import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPIConstants.h"
