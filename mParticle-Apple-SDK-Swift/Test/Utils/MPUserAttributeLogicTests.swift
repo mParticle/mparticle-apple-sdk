@@ -57,3 +57,43 @@ final class MPUserAttributeLogicTests: XCTestCase {
         XCTAssertEqual(result, NSDecimalNumber(string: "0.3"))
     }
 }
+
+extension MPUserAttributeLogicTests {
+    // MARK: - mutation(forValidationResult:keyExists:)
+
+    func testAValidPairIsAlwaysStored() {
+        XCTAssertEqual(MPUserAttributeLogic.mutation(forValidationResult: .valid, keyExists: false), .store)
+        XCTAssertEqual(MPUserAttributeLogic.mutation(forValidationResult: .valid, keyExists: true), .store)
+    }
+
+    func testANilValueRemovesOnlyAKeyThatIsPresent() {
+        XCTAssertEqual(MPUserAttributeLogic.mutation(forValidationResult: .nilValue, keyExists: true), .delete)
+        XCTAssertEqual(MPUserAttributeLogic.mutation(forValidationResult: .nilValue, keyExists: false), .reject)
+    }
+
+    func testEveryOtherValidationFailureIsRejected() {
+        let failures: [MPAttributeValidationResult] = [
+            .invalidKey, .keyTooLong, .invalidType, .valueTooLong, .invalidArrayEntry, .arrayValueTooLong
+        ]
+
+        for failure in failures {
+            XCTAssertEqual(MPUserAttributeLogic.mutation(forValidationResult: failure, keyExists: true), .reject, "\(failure)")
+            XCTAssertEqual(MPUserAttributeLogic.mutation(forValidationResult: failure, keyExists: false), .reject, "\(failure)")
+        }
+    }
+
+    // MARK: - valueToLog
+
+    func testNumbersAreLoggedAsStrings() {
+        XCTAssertEqual(MPUserAttributeLogic.valueToLog(for: NSNumber(value: 42)) as? String, "42")
+        XCTAssertEqual(MPUserAttributeLogic.valueToLog(for: NSNumber(value: 3.5)) as? String, "3.5")
+        XCTAssertEqual(MPUserAttributeLogic.valueToLog(for: NSNumber(value: true)) as? String, "1")
+    }
+
+    func testEverythingElseIsLoggedUnchanged() {
+        XCTAssertEqual(MPUserAttributeLogic.valueToLog(for: "abc") as? String, "abc")
+        XCTAssertTrue(MPUserAttributeLogic.valueToLog(for: NSNull()) is NSNull)
+        XCTAssertEqual(MPUserAttributeLogic.valueToLog(for: ["a", "b"]) as? [String], ["a", "b"])
+        XCTAssertNil(MPUserAttributeLogic.valueToLog(for: nil))
+    }
+}
