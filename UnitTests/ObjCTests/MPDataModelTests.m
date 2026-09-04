@@ -1,7 +1,7 @@
 #import <XCTest/XCTest.h>
-#import "MPMessageBuilder.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPBreadcrumb.h"
+#import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
@@ -78,7 +78,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     XCTAssertNotNil(messageBuilder, @"Should not have been nil.");
     
     MPMessage *message = [messageBuilder build];
@@ -166,7 +166,7 @@
     double zed = 0.0;
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@(four/zed)}];
+                                                                         messageInfo:@{@"MessageKey1":@(four/zed)} context:self.messageBuilderContext];
     XCTAssertNotNil(messageBuilder, @"Should not have been nil.");
     
     MPMessage *message = [messageBuilder build];
@@ -200,7 +200,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
@@ -323,7 +323,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:session.uuid
@@ -371,7 +371,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     XCTAssertNotNil(message, @"Should not have been nil.");
@@ -386,7 +386,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:session.uuid
