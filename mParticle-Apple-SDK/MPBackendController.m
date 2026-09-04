@@ -483,49 +483,37 @@ static BOOL skipNextUpload = NO;
     
     //Fetch all stored messages (1)
     NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
-    if (mpidMessages && mpidMessages.count != 0) {
-        [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSMutableDictionary *  _Nonnull sessionMessages, BOOL * _Nonnull stop) {
-            [sessionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull sessionId, NSMutableDictionary *  _Nonnull dataPlanMessages, BOOL * _Nonnull stop) {
-                [dataPlanMessages enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull dataPlanId, NSMutableDictionary *  _Nonnull versionMessages, BOOL * _Nonnull stop) {
-                    [versionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull dataPlanVersion, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
-                        //In batches broken up by mpid and then sessionID create the Uploads (2)
-                        NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
-                        NSString *nullableDataPlanId = [dataPlanId isEqualToString:@"0"] ? nil : dataPlanId;
-                        NSNumber *nullableDataPlanVersion = (dataPlanVersion.integerValue == 0) ? nil : dataPlanVersion;
-                        
-                        //Within a session, within a data plan ID, within a version, we also break up based on limits for messages per batch and (approximately) bytes per batch
-                        NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
 
-                        NSMutableArray<MPUpload *> *uploads = [[NSMutableArray alloc] initWithCapacity:batchMessageArrays.count];
-                        for (int i = 0; i < batchMessageArrays.count; i += 1) {
-                            NSArray *limitedMessages = batchMessageArrays[i];
-                            MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid
-                                                                                         sessionId:nullableSessionID
-                                                                                          messages:limitedMessages
-                                                                                    sessionTimeout:self.sessionTimeout
-                                                                                    uploadInterval:self.uploadInterval
-                                                                                        dataPlanId:nullableDataPlanId
-                                                                                   dataPlanVersion:nullableDataPlanVersion
-                                                                                    uploadSettings:uploadSettings];
-                            [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self.deletedUserAttributes];
-                            [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
-                            [uploadBuilder build:^(MPUpload *upload) {
-                                if (upload) {
-                                    [uploads addObject:upload];
-                                }
-                            }];
-                        }
+    //In batches broken up by mpid, session, data plan id and data plan version create the Uploads (2)
+    for (MPUploadMessageGroup *group in [MPUploadGrouping groupsFromStoredMessages:mpidMessages]) {
+        //Within a session, within a data plan ID, within a version, we also break up based on limits for messages per batch and (approximately) bytes per batch
+        NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:group.messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
 
-                        //Atomically persist the batches (3) and delete the messages they were built from (4),
-                        //so messages are only removed once their upload is durably stored. A failure rolls
-                        //both back, leaving the messages to be retried instead of re-batched into a duplicate.
-                        [persistence saveUploads:uploads deleteMessages:messages];
-
-                        self.deletedUserAttributes = nil;
-                    }];
-                }];
+        NSMutableArray<MPUpload *> *uploads = [[NSMutableArray alloc] initWithCapacity:batchMessageArrays.count];
+        for (NSArray *limitedMessages in batchMessageArrays) {
+            MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:group.mpid
+                                                                         sessionId:group.sessionId
+                                                                          messages:limitedMessages
+                                                                    sessionTimeout:self.sessionTimeout
+                                                                    uploadInterval:self.uploadInterval
+                                                                        dataPlanId:group.dataPlanId
+                                                                   dataPlanVersion:group.dataPlanVersion
+                                                                    uploadSettings:uploadSettings];
+            [uploadBuilder withUserAttributes:[self userAttributesForUserId:group.mpid] deletedUserAttributes:self.deletedUserAttributes];
+            [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:group.mpid]];
+            [uploadBuilder build:^(MPUpload *upload) {
+                if (upload) {
+                    [uploads addObject:upload];
+                }
             }];
-        }];
+        }
+
+        //Atomically persist the batches (3) and delete the messages they were built from (4),
+        //so messages are only removed once their upload is durably stored. A failure rolls
+        //both back, leaving the messages to be retried instead of re-batched into a duplicate.
+        [persistence saveUploads:uploads deleteMessages:group.messages];
+
+        self.deletedUserAttributes = nil;
     }
     
     //Fetch all sessions and delete them if inactive (5)
