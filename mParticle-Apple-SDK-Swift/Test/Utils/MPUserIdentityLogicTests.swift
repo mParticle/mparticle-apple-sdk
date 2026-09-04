@@ -64,3 +64,138 @@ final class MPUserIdentityLogicTests: XCTestCase {
         XCTAssertEqual(date.timeIntervalSince1970, Date().timeIntervalSince1970, accuracy: 2.0)
     }
 }
+
+extension MPUserIdentityLogicTests {
+    private static let typeKey = "n"
+    private static let idKey = "i"
+    private static let dfsKey = "dfs"
+    private static let now = Date(timeIntervalSince1970: 1_700_000_000)
+
+    private func entry(type: Int, value: Any?, firstSetMs: Double? = nil) -> [String: Any] {
+        var entry: [String: Any] = [Self.typeKey: NSNumber(value: type)]
+        if let value { entry[Self.idKey] = value }
+        if let firstSetMs { entry[Self.dfsKey] = NSNumber(value: firstSetMs) }
+        return entry
+    }
+
+    private func plan(
+        type: Int = 7,
+        value: String?,
+        identities: [[String: Any]]
+    ) -> MPUserIdentityChangePlan {
+        MPUserIdentityLogic.plan(
+            forIdentityType: NSNumber(value: type),
+            value: value,
+            currentIdentities: identities,
+            typeKey: Self.typeKey,
+            idKey: Self.idKey,
+            dateFirstSetKey: Self.dfsKey,
+            now: Self.now
+        )
+    }
+
+    // MARK: - unchanged
+
+    func testSettingTheSameValueIsUnchanged() {
+        XCTAssertEqual(plan(value: "abc", identities: [entry(type: 7, value: "abc")]).kind, .unchanged)
+    }
+
+    func testCasingDifferenceIsNotUnchanged() {
+        XCTAssertEqual(plan(value: "ABC", identities: [entry(type: 7, value: "abc")]).kind, .replace)
+    }
+
+    func testTheUnchangedCheckReadsTheLastEntryOfTheType() {
+        // Storage should hold at most one entry per type, but when it does not the original
+        // compared against the last one while mutating the first. Both halves are pinned here.
+        let identities = [entry(type: 7, value: "first"), entry(type: 7, value: "last")]
+
+        XCTAssertEqual(plan(value: "last", identities: identities).kind, .unchanged)
+
+        let replacement = plan(value: "first", identities: identities)
+        XCTAssertEqual(replacement.kind, .replace)
+        XCTAssertEqual(replacement.index, 0)
+    }
+
+    func testAnEmptyStringOverAStoredEmptyStringIsUnchangedRatherThanARemoval() {
+        // "" is not null, so it satisfies the equality check before the removal branch sees it.
+        XCTAssertEqual(plan(value: "", identities: [entry(type: 7, value: "")]).kind, .unchanged)
+    }
+
+    func testANullStoredValueIsNotTreatedAsAMatch() {
+        XCTAssertEqual(plan(value: "abc", identities: [entry(type: 7, value: NSNull())]).kind, .replace)
+        XCTAssertEqual(plan(value: "abc", identities: [entry(type: 7, value: nil)]).kind, .replace)
+    }
+
+    // MARK: - remove
+
+    func testNilValueRemovesTheExistingEntry() {
+        let result = plan(value: nil, identities: [entry(type: 1, value: "x"), entry(type: 7, value: "abc")])
+
+        XCTAssertEqual(result.kind, .remove)
+        XCTAssertEqual(result.index, 1)
+        XCTAssertEqual(result.existingIdentity?[Self.idKey] as? String, "abc")
+    }
+
+    func testEmptyStringRemovesTheExistingEntry() {
+        let result = plan(value: "", identities: [entry(type: 7, value: "abc")])
+        XCTAssertEqual(result.kind, .remove)
+        XCTAssertEqual(result.index, 0)
+    }
+
+    func testRemovalTargetsTheFirstMatchingEntry() {
+        let result = plan(value: nil, identities: [entry(type: 7, value: "first"), entry(type: 7, value: "last")])
+        XCTAssertEqual(result.kind, .remove)
+        XCTAssertEqual(result.index, 0)
+    }
+
+    func testRemovingSomethingThatIsNotStoredPersistsNothing() {
+        // Distinct from `.unchanged`: the caller still reports success here.
+        XCTAssertEqual(plan(value: nil, identities: []).kind, .nothingToRemove)
+        XCTAssertEqual(plan(value: "", identities: [entry(type: 1, value: "x")]).kind, .nothingToRemove)
+    }
+
+    // MARK: - add
+
+    func testANewTypeIsAddedAndStampedAsFirstTimeSet() {
+        let result = plan(value: "abc", identities: [entry(type: 1, value: "x")])
+
+        XCTAssertEqual(result.kind, .add)
+        XCTAssertEqual(result.index, NSNotFound)
+        XCTAssertNil(result.existingIdentity)
+        XCTAssertEqual(result.dateFirstSet, Self.now)
+        XCTAssertTrue(result.isFirstTimeSet)
+    }
+
+    // MARK: - replace
+
+    func testReplaceKeepsTheStoredFirstSetDate() {
+        let result = plan(value: "new", identities: [entry(type: 7, value: "old", firstSetMs: 1_500_000_000_000)])
+
+        XCTAssertEqual(result.kind, .replace)
+        XCTAssertEqual(result.index, 0)
+        XCTAssertEqual(result.existingIdentity?[Self.idKey] as? String, "old")
+        XCTAssertEqual(result.dateFirstSet, Date(timeIntervalSince1970: 1_500_000_000))
+        XCTAssertFalse(result.isFirstTimeSet)
+    }
+
+    func testReplaceWithoutAStoredFirstSetDateFallsBackToTheCurrentDate() throws {
+        let result = plan(value: "new", identities: [entry(type: 7, value: "old")])
+
+        XCTAssertEqual(result.kind, .replace)
+        // `dateFirstSetFromMilliseconds:` answers "now" when the stamp is absent.
+        let stamped = try XCTUnwrap(result.dateFirstSet)
+        XCTAssertEqual(stamped.timeIntervalSinceNow, 0, accuracy: 5)
+    }
+
+    // MARK: - malformed storage
+
+    func testEntriesWithoutANumericTypeAreIgnored() {
+        let identities: [[String: Any]] = [
+            [Self.typeKey: "not-a-number", Self.idKey: "abc"],
+            [Self.idKey: "abc"]
+        ]
+        let result = plan(value: "abc", identities: identities)
+
+        XCTAssertEqual(result.kind, .add)
+    }
+}
