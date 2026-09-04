@@ -86,6 +86,14 @@ mParticle-Apple-SDK/Utils/MPUserDefaultsConnector.m
 # kMParticleSDKVersion in this exact file.
 mParticle-Apple-SDK/MPIConstants.m
 
+# The data-plan filter's entire interface is SDK types the Swift module cannot import:
+# it takes and returns MPEvent, MPCommerceEvent and MPBaseEvent, and is constructed from
+# MPDataPlanOptions. transformEventForEvent: mutates the event in place. Its pure
+# decision logic already lives in Sources/Kits/MPDataPlanFilterPolicy.swift; what remains
+# is marshalling and event mutation that has to sit on the ObjC side of the boundary.
+# MPDataPlanFilterProtocol is the Swift-facing seam, exactly as with MPUserDefaultsConnector.
+mParticle-Apple-SDK/Kits/MPDataPlanFilter.m
+
 # The ObjC<->Swift kit execution bridge. It has no ObjC callers and no public
 # header; the Swift MPKitContainer_PRIVATE reaches it only by
 # NSClassFromString("MPKitContainerExecutionAdapter"). It owns the Swift kit
