@@ -279,4 +279,204 @@ final class MPConvertJSFieldsTests: XCTestCase {
             XCTAssertTrue(parsed.pairs.isEmpty)
         }
     }
+
+    // MARK: - promotion container
+
+    private func promotionAction(_ inner: [AnyHashable: Any]) -> [AnyHashable: Any] {
+        ["PromotionAction": inner]
+    }
+
+    func testPromotionContainerReadsTheActionAndList() {
+        let fields = MPConvertJSFields.promotionContainerFields(from: promotionAction([
+            "PromotionActionType": 1,
+            "PromotionList": [["Name": "a"], ["Name": "b"]]
+        ]))
+
+        XCTAssertEqual(fields.outcome, .ok)
+        XCTAssertTrue(fields.isViewAction)
+        XCTAssertEqual(fields.promotions.count, 2)
+    }
+
+    func testPromotionContainerTreatsEveryNonOneActionAsClick() {
+        // The ObjC ternary was `== 1 ? View : Click`.
+        for raw in [0, 2, 99, -1] {
+            let fields = MPConvertJSFields.promotionContainerFields(from: promotionAction([
+                "PromotionActionType": raw,
+                "PromotionList": []
+            ]))
+
+            XCTAssertEqual(fields.outcome, .ok)
+            XCTAssertFalse(fields.isViewAction, "raw \(raw) should be Click")
+        }
+    }
+
+    func testPromotionContainerReportsEachFailureSeparately() {
+        // Three distinct MPILogError messages hang off these, so they cannot collapse.
+        XCTAssertEqual(MPConvertJSFields.promotionContainerFields(from: [:]).outcome, .missingAction)
+        XCTAssertEqual(MPConvertJSFields.promotionContainerFields(from: nil).outcome, .missingAction)
+        XCTAssertEqual(
+            MPConvertJSFields.promotionContainerFields(from: ["PromotionAction": "nope"]).outcome,
+            .missingAction
+        )
+        XCTAssertEqual(
+            MPConvertJSFields.promotionContainerFields(from: promotionAction([:])).outcome,
+            .missingActionType
+        )
+        XCTAssertEqual(
+            MPConvertJSFields.promotionContainerFields(from: promotionAction(["PromotionActionType": "1"])).outcome,
+            .missingActionType
+        )
+        XCTAssertEqual(
+            MPConvertJSFields.promotionContainerFields(from: promotionAction(["PromotionActionType": 1])).outcome,
+            .missingList
+        )
+    }
+
+    func testPromotionContainerSkipsNonDictionaryPromotions() {
+        // Each of these crashed the ObjC, which passed the element straight into
+        // +promotion: and subscripted it.
+        let fields = MPConvertJSFields.promotionContainerFields(from: promotionAction([
+            "PromotionActionType": 1,
+            "PromotionList": ["a string", 7, NSNull(), ["Name": "kept"]]
+        ]))
+
+        XCTAssertEqual(fields.promotions.count, 1)
+        XCTAssertEqual(fields.promotions.first?["Name"] as? String, "kept")
+    }
+
+    // MARK: - commerce event
+
+    func testCommerceEventReportsAMalformedProductAction() {
+        XCTAssertEqual(
+            MPConvertJSFields.commerceEventFields(from: ["ProductAction": "not a dictionary"]).outcome,
+            .malformedProductAction
+        )
+    }
+
+    func testCommerceEventReportsAnInvalidPayload() {
+        for json: [AnyHashable: Any]? in [[:], nil, ["ProductAction": [:]], ["Unrelated": 1]] {
+            XCTAssertEqual(MPConvertJSFields.commerceEventFields(from: json).outcome, .invalidPayload)
+        }
+    }
+
+    func testCommerceEventReportsAMalformedProductActionType() {
+        XCTAssertEqual(
+            MPConvertJSFields.commerceEventFields(from: ["ProductAction": ["ProductActionType": "1"]]).outcome,
+            .malformedProductActionType
+        )
+    }
+
+    func testCommerceEventTreatsAnExplicitNullActionTypeAsPresentThenMalformed() {
+        // The ObjC presence check was a bare != nil, so NSNull counted as present
+        // and then failed the isKindOfClass: check.
+        XCTAssertEqual(
+            MPConvertJSFields.commerceEventFields(from: ["ProductAction": ["ProductActionType": NSNull()]]).outcome,
+            .malformedProductActionType
+        )
+    }
+
+    func testCommerceEventKindPrefersProductActionThenPromotion() {
+        // The ObjC was if / else if / else, so a payload that is several things
+        // at once resolves in that order.
+        let all: [AnyHashable: Any] = [
+            "ProductAction": ["ProductActionType": 1],
+            "PromotionAction": ["PromotionActionType": 1],
+            "ProductImpressions": []
+        ]
+        XCTAssertEqual(MPConvertJSFields.commerceEventFields(from: all).kind, .productAction)
+
+        var withoutAction = all
+        withoutAction["ProductAction"] = nil
+        XCTAssertEqual(MPConvertJSFields.commerceEventFields(from: withoutAction).kind, .promotion)
+
+        XCTAssertEqual(
+            MPConvertJSFields.commerceEventFields(from: ["ProductImpressions": []]).kind,
+            .impression
+        )
+    }
+
+    func testCommerceEventReadsTheSimpleFields() {
+        let fields = MPConvertJSFields.commerceEventFields(from: [
+            "ProductImpressions": [],
+            "EventAttributes": ["k": "v"],
+            "CheckoutOptions": "options",
+            "productActionListName": "list",
+            "productActionListSource": "source",
+            "CurrencyCode": "USD",
+            "CheckoutStep": 3
+        ])
+
+        XCTAssertEqual(fields.customAttributes?["k"] as? String, "v")
+        XCTAssertEqual(fields.checkoutOptions, "options")
+        XCTAssertEqual(fields.productListName, "list")
+        XCTAssertEqual(fields.productListSource, "source")
+        XCTAssertEqual(fields.currency, "USD")
+        XCTAssertEqual(fields.checkoutStep, NSNumber(value: 3))
+    }
+
+    func testCommerceEventCheckoutStepIsNilUnlessItIsANumber() {
+        // checkoutStep is a scalar on MPCommerceEvent, so nil must mean "leave it".
+        XCTAssertNil(MPConvertJSFields.commerceEventFields(from: ["ProductImpressions": []]).checkoutStep)
+        XCTAssertNil(
+            MPConvertJSFields.commerceEventFields(from: ["ProductImpressions": [], "CheckoutStep": "3"]).checkoutStep
+        )
+    }
+
+    func testCommerceEventCustomFlagsAcceptAStringOrAnAllStringArray() {
+        let fields = MPConvertJSFields.commerceEventFields(from: [
+            "ProductImpressions": [],
+            "CustomFlags": [
+                "single": "one",
+                "many": ["a", "b"],
+                "mixed": ["a", 2],
+                "numeric": 7,
+                "null": NSNull()
+            ]
+        ])
+
+        let byKey = Dictionary(uniqueKeysWithValues: fields.customFlags.map { ($0.key, $0.values) })
+        XCTAssertEqual(byKey["single"], ["one"])
+        XCTAssertEqual(byKey["many"], ["a", "b"])
+        // A partially-string array was dropped whole, not filtered.
+        XCTAssertNil(byKey["mixed"])
+        XCTAssertNil(byKey["numeric"])
+        XCTAssertNil(byKey["null"])
+        XCTAssertEqual(fields.customFlags.count, 2)
+    }
+
+    func testCommerceEventProductsComeFromTheProductActionAndSkipNonDictionaries() {
+        let fields = MPConvertJSFields.commerceEventFields(from: [
+            "ProductAction": [
+                "ProductActionType": 1,
+                "ProductList": [["Name": "a"], "skip me", NSNull(), ["Name": "b"]]
+            ]
+        ])
+
+        XCTAssertEqual(fields.products.count, 2)
+        XCTAssertEqual(fields.products.compactMap { $0["Name"] as? String }, ["a", "b"])
+    }
+
+    func testCommerceEventImpressionsNeedBothAListNameAndAnArray() {
+        let fields = MPConvertJSFields.commerceEventFields(from: ["ProductImpressions": [
+            ["ProductImpressionList": "kept", "ProductList": [["Name": "a"], "skip"]],
+            ["ProductImpressionList": 7, "ProductList": [["Name": "b"]]],
+            ["ProductImpressionList": "no list"],
+            "not a dictionary"
+        ]])
+
+        XCTAssertEqual(fields.impressions.count, 1)
+        XCTAssertEqual(fields.impressions.first?.listName, "kept")
+        XCTAssertEqual(fields.impressions.first?.products.count, 1)
+    }
+
+    func testCommerceEventProductActionIsExposedWheneverItIsADictionary() {
+        // Reading transaction attributes was gated on this, not on the kind.
+        let fields = MPConvertJSFields.commerceEventFields(from: [
+            "ProductImpressions": [],
+            "ProductAction": ["Affiliation": "store"]
+        ])
+
+        XCTAssertEqual(fields.kind, .impression)
+        XCTAssertEqual(fields.productAction?["Affiliation"] as? String, "store")
+    }
 }

@@ -265,3 +265,258 @@ public extension MPConvertJSFields {
         return MPWebviewIdentityRequestJS(outcome: .ok, pairs: pairs)
     }
 }
+
+/// Why a promotion container payload could not be read. Each case maps to a
+/// distinct MPILogError the caller still emits.
+@objc public enum MPPromotionContainerOutcomeJS: Int {
+    case ok = 0
+    case missingAction = 1
+    case missingActionType = 2
+    case missingList = 3
+}
+
+@objc(MPPromotionContainerFieldsJS)
+public final class MPPromotionContainerFieldsJS: NSObject {
+    @objc public let outcome: MPPromotionContainerOutcomeJS
+    /// The ObjC ternary was `== 1 ? View : Click`, so every other value — including
+    /// a negative one — is Click.
+    @objc public let isViewAction: Bool
+    /// Only the dictionary entries of PromotionList.
+    @objc public let promotions: [[AnyHashable: Any]]
+
+    init(
+        outcome: MPPromotionContainerOutcomeJS,
+        isViewAction: Bool,
+        promotions: [[AnyHashable: Any]]
+    ) {
+        self.outcome = outcome
+        self.isViewAction = isViewAction
+        self.promotions = promotions
+        super.init()
+    }
+}
+
+/// Why a commerce event payload could not be read.
+@objc public enum MPCommerceEventOutcomeJS: Int {
+    case ok = 0
+    case malformedProductAction = 1
+    case invalidPayload = 2
+    case malformedProductActionType = 3
+}
+
+/// Which initialiser the caller should use.
+@objc public enum MPCommerceEventKindJS: Int {
+    case none = 0
+    case productAction = 1
+    case promotion = 2
+    case impression = 3
+}
+
+@objc(MPCommerceFlagJS)
+public final class MPCommerceFlagJS: NSObject {
+    @objc public let key: String
+    @objc public let values: [String]
+
+    init(key: String, values: [String]) {
+        self.key = key
+        self.values = values
+        super.init()
+    }
+}
+
+@objc(MPCommerceImpressionJS)
+public final class MPCommerceImpressionJS: NSObject {
+    @objc public let listName: String
+    @objc public let products: [[AnyHashable: Any]]
+
+    init(listName: String, products: [[AnyHashable: Any]]) {
+        self.listName = listName
+        self.products = products
+        super.init()
+    }
+}
+
+@objc(MPCommerceEventFieldsJS)
+public final class MPCommerceEventFieldsJS: NSObject {
+    @objc public let outcome: MPCommerceEventOutcomeJS
+    @objc public let kind: MPCommerceEventKindJS
+    /// The raw ProductActionType, still to go through commerceEventActionForJSValue:.
+    @objc public let productActionType: NSNumber?
+    /// Present whenever ProductAction was a dictionary, which is what gated
+    /// reading transaction attributes off it.
+    @objc public let productAction: [AnyHashable: Any]?
+    @objc public let customAttributes: [AnyHashable: Any]?
+    @objc public let checkoutOptions: String?
+    @objc public let productListName: String?
+    @objc public let productListSource: String?
+    @objc public let currency: String?
+    @objc public let checkoutStep: NSNumber?
+    @objc public let customFlags: [MPCommerceFlagJS]
+    @objc public let products: [[AnyHashable: Any]]
+    @objc public let impressions: [MPCommerceImpressionJS]
+
+    // swiftlint:disable:next function_parameter_count
+    init(
+        outcome: MPCommerceEventOutcomeJS,
+        kind: MPCommerceEventKindJS,
+        productActionType: NSNumber?,
+        productAction: [AnyHashable: Any]?,
+        customAttributes: [AnyHashable: Any]?,
+        checkoutOptions: String?,
+        productListName: String?,
+        productListSource: String?,
+        currency: String?,
+        checkoutStep: NSNumber?,
+        customFlags: [MPCommerceFlagJS],
+        products: [[AnyHashable: Any]],
+        impressions: [MPCommerceImpressionJS]
+    ) {
+        self.outcome = outcome
+        self.kind = kind
+        self.productActionType = productActionType
+        self.productAction = productAction
+        self.customAttributes = customAttributes
+        self.checkoutOptions = checkoutOptions
+        self.productListName = productListName
+        self.productListSource = productListSource
+        self.currency = currency
+        self.checkoutStep = checkoutStep
+        self.customFlags = customFlags
+        self.products = products
+        self.impressions = impressions
+        super.init()
+    }
+
+    static func failed(_ outcome: MPCommerceEventOutcomeJS) -> MPCommerceEventFieldsJS {
+        MPCommerceEventFieldsJS(
+            outcome: outcome, kind: .none, productActionType: nil, productAction: nil,
+            customAttributes: nil, checkoutOptions: nil, productListName: nil,
+            productListSource: nil, currency: nil, checkoutStep: nil,
+            customFlags: [], products: [], impressions: []
+        )
+    }
+}
+
+public extension MPConvertJSFields {
+    @objc(promotionContainerFieldsFromJSON:)
+    static func promotionContainerFields(from json: [AnyHashable: Any]?) -> MPPromotionContainerFieldsJS {
+        guard let action = json?["PromotionAction"] as? [AnyHashable: Any] else {
+            return MPPromotionContainerFieldsJS(outcome: .missingAction, isViewAction: false, promotions: [])
+        }
+        guard let type = action["PromotionActionType"] as? NSNumber else {
+            return MPPromotionContainerFieldsJS(outcome: .missingActionType, isViewAction: false, promotions: [])
+        }
+        // -intValue, then `== 1 ? View : Click`.
+        let isViewAction = type.intValue == 1
+        guard let list = action["PromotionList"] as? [Any] else {
+            return MPPromotionContainerFieldsJS(outcome: .missingList, isViewAction: isViewAction, promotions: [])
+        }
+
+        return MPPromotionContainerFieldsJS(
+            outcome: .ok,
+            isViewAction: isViewAction,
+            promotions: dictionaries(in: list)
+        )
+    }
+
+    @objc(commerceEventFieldsFromJSON:)
+    static func commerceEventFields(from json: [AnyHashable: Any]?) -> MPCommerceEventFieldsJS {
+        let rawProductAction = json?["ProductAction"]
+        if rawProductAction != nil, !(rawProductAction is [AnyHashable: Any]) {
+            return .failed(.malformedProductAction)
+        }
+        let productAction = rawProductAction as? [AnyHashable: Any]
+
+        // Each of these was a bare nil check, so an explicit null still counts as
+        // present, exactly as before.
+        let isProductAction = productAction?["ProductActionType"] != nil
+        let isPromotion = json?["PromotionAction"] != nil
+        let isImpression = json?["ProductImpressions"] != nil
+
+        guard isProductAction || isPromotion || isImpression else {
+            return .failed(.invalidPayload)
+        }
+
+        var productActionType: NSNumber?
+        if isProductAction {
+            guard let type = productAction?["ProductActionType"] as? NSNumber else {
+                return .failed(.malformedProductActionType)
+            }
+            productActionType = type
+        }
+
+        // The ObjC chain was if/else-if/else, so a payload that is both a product
+        // action and a promotion is a product action.
+        let kind: MPCommerceEventKindJS = if isProductAction {
+            .productAction
+        } else if isPromotion {
+            .promotion
+        } else {
+            .impression
+        }
+
+        return MPCommerceEventFieldsJS(
+            outcome: .ok,
+            kind: kind,
+            productActionType: productActionType,
+            productAction: productAction,
+            customAttributes: json?["EventAttributes"] as? [AnyHashable: Any],
+            checkoutOptions: json?["CheckoutOptions"] as? String,
+            productListName: json?["productActionListName"] as? String,
+            productListSource: json?["productActionListSource"] as? String,
+            currency: json?["CurrencyCode"] as? String,
+            checkoutStep: json?["CheckoutStep"] as? NSNumber,
+            customFlags: commerceFlags(json?["CustomFlags"]),
+            products: dictionaries(in: productAction?["ProductList"] as? [Any] ?? []),
+            impressions: impressions(json?["ProductImpressions"])
+        )
+    }
+
+    /// A string value becomes a single-element array: -addCustomFlag:withKey:
+    /// forwards to -addCustomFlags:@[flag]:withKey: (MPBaseEvent.m:100), and its
+    /// only extra behaviour is a nil check the isKindOfClass: guard already made
+    /// unreachable. An array is kept only when every element is a string.
+    private static func commerceFlags(_ value: Any?) -> [MPCommerceFlagJS] {
+        guard let dictionary = value as? [AnyHashable: Any] else {
+            return []
+        }
+
+        return dictionary.compactMap { element in
+            guard let key = element.key as? String else {
+                return nil
+            }
+            if let single = element.value as? String {
+                return MPCommerceFlagJS(key: key, values: [single])
+            }
+            guard let array = element.value as? [Any] else {
+                return nil
+            }
+            let strings = array.compactMap { $0 as? String }
+            guard strings.count == array.count else {
+                return nil
+            }
+            return MPCommerceFlagJS(key: key, values: strings)
+        }
+    }
+
+    /// An impression needs both a string list name and an array of products;
+    /// anything else was skipped rather than partially applied.
+    private static func impressions(_ value: Any?) -> [MPCommerceImpressionJS] {
+        guard let list = value as? [Any] else {
+            return []
+        }
+
+        return dictionaries(in: list).compactMap { entry in
+            guard let listName = entry["ProductImpressionList"] as? String,
+                  let products = entry["ProductList"] as? [Any]
+            else {
+                return nil
+            }
+            return MPCommerceImpressionJS(listName: listName, products: dictionaries(in: products))
+        }
+    }
+
+    private static func dictionaries(in list: [Any]) -> [[AnyHashable: Any]] {
+        list.compactMap { $0 as? [AnyHashable: Any] }
+    }
+}
