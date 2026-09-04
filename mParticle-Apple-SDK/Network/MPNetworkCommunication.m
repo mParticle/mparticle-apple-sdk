@@ -82,10 +82,23 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @end
 
+/// Thin boundary glue: the Swift upload seam forwarding to the retained ObjC
+/// persistence controller. Lets the upload paths depend on the Swift
+/// `MPUploadPersisting` protocol instead of the concrete controller.
+@interface MPUploadPersistenceAdapter : NSObject <MPUploadPersisting>
+@end
+
+@implementation MPUploadPersistenceAdapter
+- (void)deleteUpload:(MPUpload *)upload {
+    [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+}
+@end
+
 @interface MPNetworkCommunication_PRIVATE()
 
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
+@property (nonatomic, strong) id<MPUploadPersisting> persistence;
 
 @end
 
@@ -432,6 +445,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 }
 
+- (id<MPUploadPersisting>)persistence {
+    if (!_persistence) {
+        _persistence = [[MPUploadPersistenceAdapter alloc] init];
+    }
+    return _persistence;
+}
+
 #pragma mark Private methods
 - (BOOL)isRetriableTransportError:(NSError *)error {
     return [MPTransportErrorDetector isRetriableTransportError:error];
@@ -716,7 +736,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 - (BOOL)performMessageUpload:(MPUpload *)upload {
     MParticle *mParticle = MParticle.sharedInstance;
     MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
-    MPPersistenceController_PRIVATE *persistenceController = mParticle.persistenceController;
 
     NSDate *minUploadDate = [stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
@@ -773,7 +792,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 
     if (zipUploadData == nil || zipUploadData.length <= 0) {
-        [persistenceController deleteUpload:upload];
+        [self.persistence deleteUpload:upload];
         return NO;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
@@ -794,7 +813,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         [MPTransportErrorDetector resetTransportErrorCounter];
     }
     if (isSuccessCode || isInvalidCode) {
-        [persistenceController deleteUpload:upload];
+        [self.persistence deleteUpload:upload];
         if (isSuccessCode && uploadString.length) {
             [mParticle logKitBatch:uploadString];
         }
@@ -854,7 +873,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPILogVerbose(@"Beginning alias request with upload ID: %@", upload.uuid);
 
     if (upload.uploadData == nil || upload.uploadData.length <= 0) {
-        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        [self.persistence deleteUpload:upload];
         return NO;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
@@ -881,7 +900,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         [MPTransportErrorDetector resetTransportErrorCounter];
     }
     if (plan.isSuccessCode || plan.isInvalidCode) {
-        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        [self.persistence deleteUpload:upload];
     }
 
     NSString *responseString = [[NSString alloc] initWithData:response.data encoding:NSUTF8StringEncoding];
