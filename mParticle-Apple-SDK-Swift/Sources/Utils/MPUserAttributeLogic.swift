@@ -35,4 +35,39 @@ import Foundation
         let increment = NSDecimalNumber(string: value.stringValue)
         return base.adding(increment)
     }
+
+    /// What applying an attribute change should do to the stored attributes.
+    ///
+    /// A nil value is only a removal when the key is actually present; asking to remove an absent
+    /// key is rejected, as is every other validation failure. The caller reports
+    /// `MPExecStatusInvalidDataType` for `reject` regardless of which rule failed, which is what
+    /// the original did once its redundant early return for `kInvalidDataType` is folded in.
+    @objc(mutationForValidationResult:keyExists:)
+    public static func mutation(
+        forValidationResult result: MPAttributeValidationResult,
+        keyExists: Bool
+    ) -> MPUserAttributeMutation {
+        switch result {
+        case .valid: .store
+        case .nilValue: keyExists ? .delete : .reject
+        default: .reject
+        }
+    }
+
+    /// The value as it is reported in the attribute-change message: numbers are logged as their
+    /// string representation, everything else unchanged.
+    @objc(valueToLogFor:)
+    public static func valueToLog(for value: Any?) -> Any? {
+        (value as? NSNumber)?.stringValue ?? value
+    }
+}
+
+/// What `setUserAttributeChange:` should do to the stored attribute dictionary.
+@objc public enum MPUserAttributeMutation: Int {
+    /// Write the value at the key.
+    case store
+    /// Remove the key and record it as deleted for the next upload.
+    case delete
+    /// Change nothing and report an invalid data type.
+    case reject
 }
