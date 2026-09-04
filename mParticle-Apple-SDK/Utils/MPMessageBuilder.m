@@ -11,7 +11,6 @@
 
 @import mParticle_Apple_SDK_Swift;
 
-NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
 NSString *const kMPLatitudeKey = @"lat";
 NSString *const kMPLongitudeKey = @"lng";
@@ -195,13 +194,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 #pragma mark Public instance methods
 - (NSDictionary *)messageInfo {
     return _messageDictionary;
-}
-
-- (void)launchInfo:(NSDictionary *)launchInfo {
-    NSString *launchInfoString = [MPMessageBuilderFields launchInfoStringFrom:launchInfo];
-    if (launchInfoString) {
-        _messageDictionary[kMPLaunchURLKey] = launchInfoString;
-    }
 }
 
 - (void)timestamp:(NSTimeInterval)timestamp {

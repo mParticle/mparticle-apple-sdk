@@ -1,4 +1,4 @@
-import UIKit
+import Foundation
 
 /// Mirrors the Objective-C `MPMessageType`; raw values must stay in step.
 @objc public enum MPMessageTypeSwift: UInt {
@@ -177,23 +177,6 @@ public final class MPMessageBuilderFields: NSObject {
             .filter { $0 != 0 }
     }
 
-    /// Builds the launch-info string mParticle logs when the app cold-starts
-    /// from a URL scheme. `launchInfo` is the `NSDictionary` UIKit hands the
-    /// app delegate at launch.
-    @objc(launchInfoStringFrom:)
-    public static func launchInfoString(from launchInfo: [AnyHashable: Any]) -> String? {
-        guard let launchURL = launchInfo[UIApplication.LaunchOptionsKey.url] as? URL else {
-            return nil
-        }
-        guard let launchSource = launchInfo[UIApplication.LaunchOptionsKey.sourceApplication] as? String else {
-            return nil
-        }
-
-        let launchScheme = launchURL.absoluteString
-        let sourcePrefix = launchScheme.contains("?") ? "&" : "?"
-        return "\(launchScheme)\(sourcePrefix)\(kMPLaunchSourceKeySwift)=\(launchSource)"
-    }
-
     @objc(userAttributeChangeFieldsWithDeleted:key:oldValue:newValue:)
     public static func userAttributeChangeFields(
         deleted: Bool,
@@ -233,6 +216,3 @@ public final class MPMessageBuilderFields: NSObject {
 /// `kMPMessageTypeStringUnknown` ("unknown", `MPIConstants.m`). Mirrored
 /// because the Swift module cannot import the ObjC module.
 private let kMPMessageTypeStringUnknownSwift = "unknown"
-
-/// `kMPLaunchSourceKey` (`MPIConstants.m:23`). Mirrored for the same reason.
-private let kMPLaunchSourceKeySwift = "src"

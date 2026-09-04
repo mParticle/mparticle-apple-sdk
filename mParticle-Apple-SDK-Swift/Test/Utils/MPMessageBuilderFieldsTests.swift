@@ -102,42 +102,6 @@ final class MPMessageBuilderFieldsTests: XCTestCase {
         XCTAssertEqual(MPMessageBuilderFields.filteredUserIds(from: "abc"), [])
     }
 
-    // MARK: - launchInfoString
-
-    func testLaunchInfoStringAppendsQueryWhenSchemeHasNoQuestionMark() {
-        let launchInfo: [AnyHashable: Any] = [
-            UIApplication.LaunchOptionsKey.url: URL(string: "myapp://open")!,
-            UIApplication.LaunchOptionsKey.sourceApplication: "com.example.app"
-        ]
-
-        XCTAssertEqual(
-            MPMessageBuilderFields.launchInfoString(from: launchInfo),
-            "myapp://open?src=com.example.app"
-        )
-    }
-
-    func testLaunchInfoStringAppendsAmpersandWhenSchemeAlreadyHasQuery() {
-        let launchInfo: [AnyHashable: Any] = [
-            UIApplication.LaunchOptionsKey.url: URL(string: "myapp://open?x=1")!,
-            UIApplication.LaunchOptionsKey.sourceApplication: "com.example.app"
-        ]
-
-        XCTAssertEqual(
-            MPMessageBuilderFields.launchInfoString(from: launchInfo),
-            "myapp://open?x=1&src=com.example.app"
-        )
-    }
-
-    func testLaunchInfoStringIsNilWhenEitherFieldIsMissing() {
-        XCTAssertNil(MPMessageBuilderFields.launchInfoString(from: [:]))
-        XCTAssertNil(MPMessageBuilderFields.launchInfoString(from: [
-            UIApplication.LaunchOptionsKey.url: URL(string: "myapp://open")!
-        ]))
-        XCTAssertNil(MPMessageBuilderFields.launchInfoString(from: [
-            UIApplication.LaunchOptionsKey.sourceApplication: "com.example.app"
-        ]))
-    }
-
     // MARK: - userAttributeChangeFields
 
     func testUserAttributeChangeFieldsForANewAttribute() {

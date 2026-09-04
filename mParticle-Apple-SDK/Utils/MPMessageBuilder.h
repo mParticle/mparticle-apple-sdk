@@ -30,14 +30,12 @@
                                      session:(nonnull MPSession *)session
                          userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
 
-- (void)launchInfo:(nonnull NSDictionary *)launchInfo;
 - (void)timestamp:(NSTimeInterval)timestamp;
 - (void)stateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
 - (nonnull MPMessage *)build;
 
 @end
 
-extern NSString * _Nonnull const launchInfoStringFormat;
 extern NSString * _Nonnull const kMPHorizontalAccuracyKey;
 extern NSString * _Nonnull const kMPLatitudeKey;
 extern NSString * _Nonnull const kMPLongitudeKey;
