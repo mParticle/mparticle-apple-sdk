@@ -14,15 +14,19 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 #### Fixed
 
-- `MPRokt.selectPlacements` and `MPRokt.selectShoppableAds` now deliver a `RoktPlacementFailure` event to the caller's `onEvent` handler when the Rokt kit configuration is unavailable. Previously the call was dropped with only a log message, leaving callers waiting on a callback that never arrived. ([#814](https://github.com/mParticle/mparticle-apple-sdk/pull/814))
-
 ### Kits
 
 #### Rokt
 
 ##### Added
 
-- Report non-sensitive mParticle public API usage diagnostics when the Rokt kit is active.
+## [9.4.3] - 2026-09-04
+
+### Core
+
+#### Fixed
+
+- Code-sign the nested Swift framework inside the release XCFramework ([#948](https://github.com/mParticle/mparticle-apple-sdk/pull/948))
 
 ## [9.4.2] - 2026-09-04
 
@@ -2534,7 +2538,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.2...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.3...HEAD
+[9.4.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.2...v9.4.3
 [9.4.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.1...v9.4.2
 [9.4.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.0...v9.4.1
 [9.4.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.3.5...v9.4.0
