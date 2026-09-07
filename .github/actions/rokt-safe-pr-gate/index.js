@@ -121,11 +121,16 @@ async function getGateCheck(api, owner, repository, sha, gateAppId, checkName) {
   );
 }
 
-function isCheckNewerThanEvaluation(check, evaluationStartedAt) {
-  if (!evaluationStartedAt) return false;
+function isCheckCompletedAfterEvaluation(check, evaluationStartedAt) {
+  if (
+    !evaluationStartedAt ||
+    check.status !== "completed" ||
+    !check.completed_at
+  ) {
+    return false;
+  }
 
-  const checkTimestamp = check.completed_at || check.started_at;
-  const checkTime = Date.parse(checkTimestamp);
+  const checkTime = Date.parse(check.completed_at);
   const evaluationTime = Date.parse(evaluationStartedAt);
 
   return (
@@ -165,7 +170,7 @@ async function upsertGateCheck(api, details, state) {
 
     if (
       state.status === "completed" &&
-      isCheckNewerThanEvaluation(check, details.evaluationStartedAt)
+      isCheckCompletedAfterEvaluation(check, details.evaluationStartedAt)
     ) {
       return;
     }
@@ -211,7 +216,10 @@ async function ensureGatePending(api, details, summary) {
     details.checkName,
   );
 
-  if (check && isCheckNewerThanEvaluation(check, details.evaluationStartedAt)) {
+  if (
+    check &&
+    isCheckCompletedAfterEvaluation(check, details.evaluationStartedAt)
+  ) {
     return;
   }
 
