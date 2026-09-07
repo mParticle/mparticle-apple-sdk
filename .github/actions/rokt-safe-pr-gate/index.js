@@ -121,6 +121,20 @@ async function getGateCheck(api, owner, repository, sha, gateAppId, checkName) {
   );
 }
 
+function isCheckNewerThanEvaluation(check, evaluationStartedAt) {
+  if (!evaluationStartedAt) return false;
+
+  const checkTimestamp = check.completed_at || check.started_at;
+  const checkTime = Date.parse(checkTimestamp);
+  const evaluationTime = Date.parse(evaluationStartedAt);
+
+  return (
+    Number.isFinite(checkTime) &&
+    Number.isFinite(evaluationTime) &&
+    checkTime >= evaluationTime
+  );
+}
+
 async function upsertGateCheck(api, details, state) {
   const check = await getGateCheck(
     api,
@@ -146,6 +160,13 @@ async function upsertGateCheck(api, details, state) {
 
   if (check) {
     if (state.status === "in_progress" && check.status === "completed") {
+      return;
+    }
+
+    if (
+      state.status === "completed" &&
+      isCheckNewerThanEvaluation(check, details.evaluationStartedAt)
+    ) {
       return;
     }
 
@@ -189,6 +210,10 @@ async function ensureGatePending(api, details, summary) {
     details.gateAppId,
     details.checkName,
   );
+
+  if (check && isCheckNewerThanEvaluation(check, details.evaluationStartedAt)) {
+    return;
+  }
 
   if (check && check.status !== "completed") {
     await api.request(
@@ -348,6 +373,7 @@ async function completeDecision(context, details, conclusion, summary) {
 }
 
 async function evaluatePullRequest(context, prNumber) {
+  const evaluationStartedAt = new Date().toISOString();
   const { mparticleApi, owner, policy, repository, roktApi } = context;
   const pr = (
     await mparticleApi.request(
@@ -361,6 +387,7 @@ async function evaluatePullRequest(context, prNumber) {
 
   const details = {
     checkName: policy.gateCheckName,
+    evaluationStartedAt,
     gateAppId: context.gateAppId,
     owner,
     prNumber,
@@ -629,4 +656,5 @@ module.exports = {
   evaluatePullRequest,
   getInput,
   resolvePullRequestNumbers,
+  upsertGateCheck,
 };
