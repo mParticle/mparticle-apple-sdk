@@ -17,6 +17,7 @@ const {
   evaluatePullRequest,
   getInput,
   resolvePullRequestNumbers,
+  upsertGateCheck,
 } = require("../index");
 
 const policy = {
@@ -386,6 +387,40 @@ test("replaces a completed Gate check while required CI is pending", async () =>
   assert.match(requests[0].path, /\/check-runs$/);
   assert.equal(requests[0].options.method, "POST");
   assert.equal(requests[0].options.body.status, "in_progress");
+});
+
+test("does not let an older evaluation reopen a newer completed Gate check", async () => {
+  const requests = [];
+  const api = {
+    paginate: async () => [
+      {
+        app: { id: 99 },
+        completed_at: "2026-09-08T01:00:00.000Z",
+        id: 42,
+        name: "Rokt Safe PR Gate",
+        status: "completed",
+      },
+    ],
+    request: async (path, options) => requests.push({ options, path }),
+  };
+  const details = {
+    checkName: "Rokt Safe PR Gate",
+    evaluationStartedAt: "2026-09-08T00:59:00.000Z",
+    gateAppId: "99",
+    owner: "mParticle",
+    prNumber: 7,
+    repository: "mparticle-apple-sdk",
+    sha: "b".repeat(40),
+  };
+
+  await ensureGatePending(api, details, "Waiting for CI.");
+  await upsertGateCheck(api, details, {
+    conclusion: "success",
+    status: "completed",
+    summary: "An older evaluator should not overwrite this check.",
+  });
+
+  assert.equal(requests.length, 0);
 });
 
 function gateContext(mparticleApi) {
