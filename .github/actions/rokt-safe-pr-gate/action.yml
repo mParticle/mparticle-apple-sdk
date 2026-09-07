@@ -5,6 +5,8 @@ inputs:
     required: true
   event-path:
     required: true
+  evaluation-id:
+    required: true
   policy-path:
     required: true
   mparticle-token:

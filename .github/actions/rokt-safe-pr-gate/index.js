@@ -140,16 +140,33 @@ function isCheckCompletedAfterEvaluation(check, evaluationStartedAt) {
   );
 }
 
-async function upsertGateCheck(api, details, state) {
-  const check = await getGateCheck(
-    api,
-    details.owner,
-    details.repository,
-    details.sha,
-    details.gateAppId,
-    details.checkName,
+function gateCheckExternalId(details) {
+  return `rokt-safe-pr-gate:${details.prNumber}:${details.sha}:${Date.parse(details.evaluationStartedAt)}:${details.evaluationId}`;
+}
+
+function ownsGateCheck(check, details) {
+  return check.external_id === gateCheckExternalId(details);
+}
+
+function isCheckClaimedAfterEvaluation(check, evaluationStartedAt) {
+  if (!evaluationStartedAt) return false;
+
+  const match = check.external_id?.match(
+    /^rokt-safe-pr-gate:\d+:[a-f0-9]{40}:(\d+):/,
   );
+  const claimedAt = Number(match?.[1]);
+  const evaluationTime = Date.parse(evaluationStartedAt);
+
+  return (
+    Number.isFinite(claimedAt) &&
+    Number.isFinite(evaluationTime) &&
+    claimedAt >= evaluationTime
+  );
+}
+
+function gateCheckBody(details, state) {
   const body = {
+    external_id: gateCheckExternalId(details),
     name: details.checkName,
     status: state.status,
     output: {
@@ -163,39 +180,89 @@ async function upsertGateCheck(api, details, state) {
     body.completed_at = new Date().toISOString();
   }
 
-  if (check) {
-    if (state.status === "in_progress" && check.status === "completed") {
-      return;
-    }
+  return body;
+}
 
-    if (
-      state.status === "completed" &&
-      isCheckCompletedAfterEvaluation(check, details.evaluationStartedAt)
-    ) {
-      return;
-    }
-
-    await api.request(
-      `/repos/${details.owner}/${details.repository}/check-runs/${check.id}`,
-      {
-        method: "PATCH",
-        body,
-      },
-    );
-    return;
-  }
-
+async function createGateCheck(api, details, state) {
   await api.request(
     `/repos/${details.owner}/${details.repository}/check-runs`,
     {
       method: "POST",
       body: {
-        ...body,
+        ...gateCheckBody(details, state),
         head_sha: details.sha,
-        external_id: `rokt-safe-pr-gate:${details.prNumber}:${details.sha}`,
       },
     },
   );
+}
+
+async function patchGateCheck(api, check, details, state) {
+  await api.request(
+    `/repos/${details.owner}/${details.repository}/check-runs/${check.id}`,
+    {
+      method: "PATCH",
+      body: gateCheckBody(details, state),
+    },
+  );
+}
+
+async function claimCompletedGateCheck(api, check, details, summary) {
+  await api.request(
+    `/repos/${details.owner}/${details.repository}/check-runs/${check.id}`,
+    {
+      method: "PATCH",
+      body: {
+        external_id: gateCheckExternalId(details),
+        name: details.checkName,
+        output: { title: "Rokt Safe PR Gate", summary },
+      },
+    },
+  );
+}
+
+async function upsertGateCheck(api, details, state) {
+  const check = await getGateCheck(
+    api,
+    details.owner,
+    details.repository,
+    details.sha,
+    details.gateAppId,
+    details.checkName,
+  );
+  if (check) {
+    if (state.status === "in_progress") {
+      if (!ownsGateCheck(check, details)) {
+        if (
+          isCheckClaimedAfterEvaluation(check, details.evaluationStartedAt) ||
+          isCheckCompletedAfterEvaluation(check, details.evaluationStartedAt)
+        ) {
+          return;
+        }
+
+        if (check.status === "completed") {
+          await claimCompletedGateCheck(api, check, details, state.summary);
+          return;
+        }
+
+        await patchGateCheck(api, check, details, state);
+        return;
+      }
+
+      if (check.status !== "completed") {
+        await patchGateCheck(api, check, details, state);
+      }
+      return;
+    }
+
+    if (!ownsGateCheck(check, details)) {
+      return;
+    }
+
+    await patchGateCheck(api, check, details, state);
+    return;
+  }
+
+  await createGateCheck(api, details, state);
 }
 
 async function completeGate(api, details, conclusion, summary) {
@@ -216,41 +283,24 @@ async function ensureGatePending(api, details, summary) {
     details.checkName,
   );
 
+  const state = { status: "in_progress", summary };
+
+  if (check && ownsGateCheck(check, details) && check.status !== "completed") {
+    await patchGateCheck(api, check, details, state);
+    return;
+  }
+
   if (
     check &&
-    isCheckCompletedAfterEvaluation(check, details.evaluationStartedAt)
+    (isCheckClaimedAfterEvaluation(check, details.evaluationStartedAt) ||
+      isCheckCompletedAfterEvaluation(check, details.evaluationStartedAt))
   ) {
     return;
   }
 
-  if (check && check.status !== "completed") {
-    await api.request(
-      `/repos/${details.owner}/${details.repository}/check-runs/${check.id}`,
-      {
-        method: "PATCH",
-        body: {
-          name: details.checkName,
-          output: { title: "Rokt Safe PR Gate", summary },
-          status: "in_progress",
-        },
-      },
-    );
-    return;
+  if (!check || check.status === "completed") {
+    await createGateCheck(api, details, state);
   }
-
-  await api.request(
-    `/repos/${details.owner}/${details.repository}/check-runs`,
-    {
-      method: "POST",
-      body: {
-        external_id: `rokt-safe-pr-gate:${details.prNumber}:${details.sha}`,
-        head_sha: details.sha,
-        name: details.checkName,
-        output: { title: "Rokt Safe PR Gate", summary },
-        status: "in_progress",
-      },
-    },
-  );
 }
 
 async function isActiveTeamMember(api, organization, teamSlug, login) {
@@ -395,6 +445,7 @@ async function evaluatePullRequest(context, prNumber) {
 
   const details = {
     checkName: policy.gateCheckName,
+    evaluationId: context.evaluationId,
     evaluationStartedAt,
     gateAppId: context.gateAppId,
     owner,
@@ -625,6 +676,7 @@ async function main() {
   const mparticleApi = createApi(apiUrl, requiredInput("mparticle-token"));
   const context = {
     employeeTeamSlug: requiredInput("employee-team-slug"),
+    evaluationId: requiredInput("evaluation-id"),
     gateAppId: requiredInput("gate-app-id"),
     manualReviewTeamSlug: requiredInput("manual-review-team-slug"),
     mparticleApi,
