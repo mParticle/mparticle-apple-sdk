@@ -423,6 +423,45 @@ test("does not let an older evaluation reopen a newer completed Gate check", asy
   assert.equal(requests.length, 0);
 });
 
+test("completes an in-progress Gate check created by the same evaluation", async () => {
+  const requests = [];
+  const api = {
+    paginate: async () => [
+      {
+        app: { id: 99 },
+        id: 42,
+        name: "Rokt Safe PR Gate",
+        started_at: "2026-09-08T01:00:00.000Z",
+        status: "in_progress",
+      },
+    ],
+    request: async (path, options) => requests.push({ options, path }),
+  };
+
+  await upsertGateCheck(
+    api,
+    {
+      checkName: "Rokt Safe PR Gate",
+      evaluationStartedAt: "2026-09-08T00:59:00.000Z",
+      gateAppId: "99",
+      owner: "mParticle",
+      prNumber: 7,
+      repository: "mparticle-apple-sdk",
+      sha: "b".repeat(40),
+    },
+    {
+      conclusion: "success",
+      status: "completed",
+      summary: "The current evaluation completed.",
+    },
+  );
+
+  assert.equal(requests.length, 1);
+  assert.match(requests[0].path, /\/check-runs\/42$/);
+  assert.equal(requests[0].options.method, "PATCH");
+  assert.equal(requests[0].options.body.conclusion, "success");
+});
+
 function gateContext(mparticleApi) {
   return {
     employeeTeamSlug: "employees",
