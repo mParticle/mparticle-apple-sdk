@@ -77,6 +77,7 @@ jobs:
           api-url: ${{ github.api_url }}
           employee-team-slug: ${{ vars.ROKT_SAFE_PR_GATE_EMPLOYEE_TEAM_SLUG }}
           event-path: ${{ github.event_path }}
+          evaluation-id: ${{ github.run_id }}-${{ github.run_attempt }}
           gate-app-id: ${{ vars.ROKT_SAFE_PR_GATE_MPARTICLE_APP_ID }}
           manual-review-team-slug: ${{ vars.ROKT_SAFE_PR_GATE_MANUAL_REVIEW_TEAM_SLUG }}
           mparticle-token: ${{ steps.mparticle-token.outputs.token }}

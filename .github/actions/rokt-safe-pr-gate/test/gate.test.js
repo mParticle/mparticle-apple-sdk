@@ -374,6 +374,7 @@ test("replaces a completed Gate check while required CI is pending", async () =>
     api,
     {
       checkName: "Rokt Safe PR Gate",
+      evaluationId: "pending-run",
       gateAppId: "99",
       owner: "mParticle",
       prNumber: 7,
@@ -405,6 +406,7 @@ test("does not let an older evaluation reopen a newer completed Gate check", asy
   };
   const details = {
     checkName: "Rokt Safe PR Gate",
+    evaluationId: "old-run",
     evaluationStartedAt: "2026-09-08T00:59:00.000Z",
     gateAppId: "99",
     owner: "mParticle",
@@ -429,6 +431,7 @@ test("completes an in-progress Gate check created by the same evaluation", async
     paginate: async () => [
       {
         app: { id: 99 },
+        external_id: `rokt-safe-pr-gate:7:${"b".repeat(40)}:1788829140000:current-run`,
         id: 42,
         name: "Rokt Safe PR Gate",
         started_at: "2026-09-08T01:00:00.000Z",
@@ -442,6 +445,7 @@ test("completes an in-progress Gate check created by the same evaluation", async
     api,
     {
       checkName: "Rokt Safe PR Gate",
+      evaluationId: "current-run",
       evaluationStartedAt: "2026-09-08T00:59:00.000Z",
       gateAppId: "99",
       owner: "mParticle",
@@ -462,9 +466,150 @@ test("completes an in-progress Gate check created by the same evaluation", async
   assert.equal(requests[0].options.body.conclusion, "success");
 });
 
+test("allows only the latest evaluator to complete its claimed Gate check", async () => {
+  const sha = "f".repeat(40);
+  const check = {
+    app: { id: 99 },
+    external_id: `rokt-safe-pr-gate:7:${sha}:1788829200000:older-run`,
+    id: 42,
+    name: "Rokt Safe PR Gate",
+    started_at: "2026-09-08T01:00:00.000Z",
+    status: "in_progress",
+  };
+  const requests = [];
+  const api = {
+    paginate: async () => [check],
+    request: async (path, options) => {
+      requests.push({ options, path });
+      Object.assign(check, options.body);
+    },
+  };
+  const olderDetails = {
+    checkName: "Rokt Safe PR Gate",
+    evaluationId: "older-run",
+    evaluationStartedAt: "2026-09-08T01:00:00.000Z",
+    gateAppId: "99",
+    owner: "mParticle",
+    prNumber: 7,
+    repository: "mparticle-apple-sdk",
+    sha,
+  };
+  const newerDetails = {
+    ...olderDetails,
+    evaluationId: "newer-run",
+    evaluationStartedAt: "2026-09-08T01:01:00.000Z",
+  };
+
+  await upsertGateCheck(api, newerDetails, {
+    status: "in_progress",
+    summary: "The newer evaluator claimed this check.",
+  });
+  await upsertGateCheck(api, olderDetails, {
+    conclusion: "success",
+    status: "completed",
+    summary: "The older evaluator must not complete this check.",
+  });
+  await upsertGateCheck(api, newerDetails, {
+    conclusion: "action_required",
+    status: "completed",
+    summary: "The newer evaluator completes its own check.",
+  });
+
+  assert.equal(requests.length, 2);
+  assert.equal(
+    requests[0].options.body.external_id,
+    `rokt-safe-pr-gate:7:${sha}:1788829260000:newer-run`,
+  );
+  assert.equal(requests[1].options.body.conclusion, "action_required");
+});
+
+test("does not let a delayed evaluator reclaim a newer completed Gate check", async () => {
+  const sha = "a".repeat(40);
+  const requests = [];
+  const api = {
+    paginate: async () => [
+      {
+        app: { id: 99 },
+        completed_at: "2026-09-08T01:02:00.000Z",
+        external_id: `rokt-safe-pr-gate:7:${sha}:1788829260000:newer-run`,
+        id: 42,
+        name: "Rokt Safe PR Gate",
+        status: "completed",
+      },
+    ],
+    request: async (path, options) => requests.push({ options, path }),
+  };
+
+  await upsertGateCheck(
+    api,
+    {
+      checkName: "Rokt Safe PR Gate",
+      evaluationId: "older-run",
+      evaluationStartedAt: "2026-09-08T01:00:00.000Z",
+      gateAppId: "99",
+      owner: "mParticle",
+      prNumber: 7,
+      repository: "mparticle-apple-sdk",
+      sha,
+    },
+    {
+      status: "in_progress",
+      summary: "The delayed evaluator must not claim this check.",
+    },
+  );
+
+  assert.equal(requests.length, 0);
+});
+
+test("claims an old completed Gate check without creating another check run", async () => {
+  const sha = "e".repeat(40);
+  const check = {
+    app: { id: 99 },
+    completed_at: "2026-09-08T01:00:00.000Z",
+    external_id: `rokt-safe-pr-gate:7:${sha}:1788829140000:older-run`,
+    id: 42,
+    name: "Rokt Safe PR Gate",
+    status: "completed",
+  };
+  const requests = [];
+  const api = {
+    paginate: async () => [check],
+    request: async (path, options) => {
+      requests.push({ options, path });
+      Object.assign(check, options.body);
+    },
+  };
+  const details = {
+    checkName: "Rokt Safe PR Gate",
+    evaluationId: "newer-run",
+    evaluationStartedAt: "2026-09-08T01:01:00.000Z",
+    gateAppId: "99",
+    owner: "mParticle",
+    prNumber: 7,
+    repository: "mparticle-apple-sdk",
+    sha,
+  };
+
+  await upsertGateCheck(api, details, {
+    status: "in_progress",
+    summary: "The newer evaluator claimed this check.",
+  });
+  await upsertGateCheck(api, details, {
+    conclusion: "success",
+    status: "completed",
+    summary: "The newer evaluator completed its check.",
+  });
+
+  assert.equal(requests.length, 2);
+  assert.match(requests[0].path, /\/check-runs\/42$/);
+  assert.equal(requests[0].options.body.status, undefined);
+  assert.equal(requests[1].options.body.conclusion, "success");
+});
+
 function gateContext(mparticleApi) {
   return {
     employeeTeamSlug: "employees",
+    evaluationId: "test-run",
     gateAppId: "99",
     manualReviewTeamSlug: "sdk-team",
     mode: "enforce",
