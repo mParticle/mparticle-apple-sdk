@@ -1193,7 +1193,6 @@
 #pragma mark Workspace Switching Tests
 
 #define WORKSPACE_SWITCHING_TIMEOUT 60
-#define WORKSPACE_SWITCHING_DELAY (int64_t)(10 * NSEC_PER_SEC)
 
 // Spins the main run loop until condition() is true, so main-queue work the SDK
 // schedules during start-up still runs. Returns NO if timeout elapses first.
@@ -1210,47 +1209,43 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
 }
 
 - (void)testSwitchWorkspaceOptions {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-
     MParticle *instance = [MParticle sharedInstance];
     XCTAssertNotNil(instance);
     XCTAssertNil(instance.options);
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        MParticleOptions *options1 = [MParticleOptions optionsWithKey:@"unit-test-key1" secret:@"unit-test-secret1"];
-        [instance startWithOptions:options1];
-        XCTAssertNotNil(instance.options);
-        XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
-        XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
+    MParticleOptions *options1 = [MParticleOptions optionsWithKey:@"unit-test-key1" secret:@"unit-test-secret1"];
+    [instance startWithOptions:options1];
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key2" secret:@"unit-test-secret2"];
-            [instance switchWorkspaceWithOptions:options2];
-            
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-                MParticle *instance3 = [MParticle sharedInstance];
-                MParticle *instance4 = [MParticle sharedInstance];
-                XCTAssertNotNil(instance.options);
-                XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
-                XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
-                
-                XCTAssertNotNil(instance3.options);
-                XCTAssertEqualObjects(instance3.options.apiKey, @"unit-test-key2");
-                XCTAssertEqualObjects(instance3.options.apiSecret, @"unit-test-secret2");
-                XCTAssertNotEqual(instance, instance3);
-                XCTAssertEqual(instance3, instance4);
-                
-                [expectation fulfill];
-            });
-        });
-    });
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return instance.initialized && instance.options != nil;
+    }), @"SDK did not finish initializing");
+    XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
+    XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
 
-    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+    MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key2" secret:@"unit-test-secret2"];
+    [instance switchWorkspaceWithOptions:options2];
+
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        MParticle *current = [MParticle sharedInstance];
+        return current != instance && current.initialized && current.options != nil;
+    }), @"Workspace switch did not complete");
+
+    MParticle *instance3 = [MParticle sharedInstance];
+    MParticle *instance4 = [MParticle sharedInstance];
+
+    // The replaced instance keeps the options it was started with.
+    XCTAssertNotNil(instance.options);
+    XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
+    XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
+
+    XCTAssertNotNil(instance3.options);
+    XCTAssertEqualObjects(instance3.options.apiKey, @"unit-test-key2");
+    XCTAssertEqualObjects(instance3.options.apiSecret, @"unit-test-secret2");
+    XCTAssertNotEqual(instance, instance3);
+    XCTAssertEqual(instance3, instance4);
 }
 
 - (void)testSwitchWorkspaceSideloadedKits {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-     
     // Start with a sideloaded kit
     MParticleOptions *options1 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     MPKitTestClassSideloaded *kitTestSideloaded1 = [[MPKitTestClassSideloaded alloc] init];
@@ -1258,40 +1253,44 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
     
     [[MParticle sharedInstance] startWithOptions:options1];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-        XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
-       
-        // Switch workspace with a new sideloaded kit
-        MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-        MPKitTestClassSideloaded *kitTestSideloaded2 = [[MPKitTestClassSideloaded alloc] init];
-        options2.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:kitTestSideloaded2]];
-        
-        [[MParticle sharedInstance] switchWorkspaceWithOptions:options2];
-        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-            XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
-            
-            // Switch workspace with no sideloaded kits
-            MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-            [[MParticle sharedInstance] switchWorkspaceWithOptions:options3];
-            
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-                XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
-                
-                [expectation fulfill];
-            });
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:(WORKSPACE_SWITCHING_TIMEOUT) handler:nil];
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance].initialized
+            && MPKitContainer_PRIVATE.registeredKits.count == 1;
+    }), @"Sideloaded kit was not registered");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+    XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
+
+    // Switch workspace with a new sideloaded kit
+    MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    MPKitTestClassSideloaded *kitTestSideloaded2 = [[MPKitTestClassSideloaded alloc] init];
+    options2.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:kitTestSideloaded2]];
+
+    MParticle *instanceBeforeFirstSwitch = [MParticle sharedInstance];
+    [instanceBeforeFirstSwitch switchWorkspaceWithOptions:options2];
+
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance] != instanceBeforeFirstSwitch
+            && [MParticle sharedInstance].initialized
+            && MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance == kitTestSideloaded2;
+    }), @"Replacement sideloaded kit was not registered");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+    XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
+
+    // Switch workspace with no sideloaded kits
+    MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    MParticle *instanceBeforeSecondSwitch = [MParticle sharedInstance];
+    [instanceBeforeSecondSwitch switchWorkspaceWithOptions:options3];
+
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance] != instanceBeforeSecondSwitch
+            && [MParticle sharedInstance].initialized
+            && MPKitContainer_PRIVATE.registeredKits.count == 0;
+    }), @"Sideloaded kits were not cleared by the workspace switch");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
 }
 
 // Kits without configurations should NOT be removed from the registry even if they implement `stop` becuase it means they weren't used by the previous workspace
 - (void)testSwitchWorkspaceKitsNoConfigurations {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     [MParticle registerExtension:[[MPKitRegister alloc] initWithName:@"TestKitNoStop" className:@"MPKitTestClassNoStartImmediately"]];
     [MParticle registerExtension:[[MPKitRegister alloc] initWithName:@"TestKitWithStop" className:@"MPKitTestClassNoStartImmediatelyWithStop"]];
@@ -1300,23 +1299,23 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     [[MParticle sharedInstance] startWithOptions:options];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
-        [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
-       
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
-            [expectation fulfill];
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance].initialized;
+    }), @"SDK did not finish initializing");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
+
+    MParticle *instanceBeforeSwitch = [MParticle sharedInstance];
+    [instanceBeforeSwitch switchWorkspaceWithOptions:options];
+
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance] != instanceBeforeSwitch
+            && [MParticle sharedInstance].initialized;
+    }), @"Workspace switch did not complete");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
 }
 
 // Kits with configurations that don't implement `stop` should be removed from the registry because they can't be cleanly restarted
 - (void)testSwitchWorkspaceKitsWithoutStop {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     MPKitRegister *registerNoStop = [[MPKitRegister alloc] initWithName:@"TestKitNoStop" className:@"MPKitTestClassNoStartImmediately"];
     [MParticle registerExtension:registerNoStop];
@@ -1324,21 +1323,26 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     [[MParticle sharedInstance] startWithOptions:options];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
-        [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
-        
-        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
-                
-        [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
-       
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
-            [expectation fulfill];
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance].initialized;
+    }), @"SDK did not finish initializing");
+
+    registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
+
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+
+    MParticle *instanceBeforeSwitch = [MParticle sharedInstance];
+    [instanceBeforeSwitch switchWorkspaceWithOptions:options];
+
+    // The registry is emptied by the flush the switch triggers, which lands on the main
+    // queue, so wait for the observable outcome rather than for the switch alone.
+    XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
+        return [MParticle sharedInstance] != instanceBeforeSwitch
+            && [MParticle sharedInstance].initialized
+            && MPKitContainer_PRIVATE.registeredKits.count == 0;
+    }), @"Kits were not released by the workspace switch");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
 }
 
 // Kits with configurations that implement `stop` shouldn't be removed from the registry because they can be cleanly restarted
