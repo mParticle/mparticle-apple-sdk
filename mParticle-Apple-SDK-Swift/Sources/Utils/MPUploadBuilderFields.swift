@@ -185,3 +185,132 @@ private let kMPMessageIdKeySwift = "id"
 private let kMPTimestampKeySwift = "ct"
 /// `kMPDeviceAdvertiserIdKey` (`MPIConstants.m:391`).
 private let kMPDeviceAdvertiserIdKeySwift = "aid"
+
+/// One `(mpid, session, data plan)` bucket of stored messages, ready to be batched into uploads.
+///
+/// The persistence layer nests messages four dictionaries deep and encodes "absent" as a sentinel
+/// value rather than omitting the key. This type carries the decoded form: a sentinel becomes nil.
+@objc(MPUploadMessageGroup)
+public final class MPUploadMessageGroup: NSObject {
+    @objc public let mpid: NSNumber
+    @objc public let sessionId: NSNumber?
+    @objc public let dataPlanId: String?
+    @objc public let dataPlanVersion: NSNumber?
+    @objc public let messages: [MPMessagePRIVATE]
+
+    init(
+        mpid: NSNumber,
+        sessionId: NSNumber?,
+        dataPlanId: String?,
+        dataPlanVersion: NSNumber?,
+        messages: [MPMessagePRIVATE]
+    ) {
+        self.mpid = mpid
+        self.sessionId = sessionId
+        self.dataPlanId = dataPlanId
+        self.dataPlanVersion = dataPlanVersion
+        self.messages = messages
+        super.init()
+    }
+}
+
+@objc(MPUploadGrouping)
+public final class MPUploadGrouping: NSObject {
+    /// Sentinels the persistence layer writes for "no session" / "no data plan".
+    private enum Sentinel {
+        static let sessionId = -1
+        static let dataPlanId = "0"
+        static let dataPlanVersion = 0
+    }
+
+    /// Flattens `fetchMessagesForUploading`'s `mpid -> sessionId -> dataPlanId -> dataPlanVersion`
+    /// nesting into one group per innermost bucket, decoding the sentinels on the way.
+    ///
+    /// Entries whose shape does not match are skipped rather than crashing, which is the same for
+    /// every well-formed payload. Buckets with no messages are kept: the caller still runs its
+    /// save/delete for them, as the original nested enumeration did.
+    @objc(groupsFromStoredMessages:)
+    public static func groups(fromStoredMessages storedMessages: [AnyHashable: Any]?) -> [MPUploadMessageGroup] {
+        var groups: [MPUploadMessageGroup] = []
+
+        for (mpidKey, sessionMessages) in storedMessages ?? [:] {
+            guard let mpid = mpidKey as? NSNumber,
+                  let sessionMessages = sessionMessages as? [AnyHashable: Any] else { continue }
+
+            for (sessionKey, dataPlanMessages) in sessionMessages {
+                guard let sessionId = sessionKey as? NSNumber,
+                      let dataPlanMessages = dataPlanMessages as? [AnyHashable: Any] else { continue }
+
+                for (dataPlanKey, versionMessages) in dataPlanMessages {
+                    guard let dataPlanId = dataPlanKey as? String,
+                          let versionMessages = versionMessages as? [AnyHashable: Any] else { continue }
+
+                    for (versionKey, messages) in versionMessages {
+                        guard let dataPlanVersion = versionKey as? NSNumber,
+                              let messages = messages as? [Any] else { continue }
+
+                        groups.append(
+                            MPUploadMessageGroup(
+                                mpid: mpid,
+                                sessionId: sessionId.intValue == Sentinel.sessionId ? nil : sessionId,
+                                dataPlanId: dataPlanId == Sentinel.dataPlanId ? nil : dataPlanId,
+                                dataPlanVersion: dataPlanVersion.intValue == Sentinel.dataPlanVersion
+                                    ? nil
+                                    : dataPlanVersion,
+                                messages: messages.compactMap { $0 as? MPMessagePRIVATE }
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        return groups
+    }
+}
+
+/// The per-message values `MPUploadBuilder` derives before it starts assembling an upload.
+@objc(MPPreparedMessages)
+public final class MPPreparedMessages: NSObject {
+    @objc public let messageDictionaries: [NSDictionary]
+    @objc public let preparedMessageIds: [NSNumber]
+    @objc public let containsOptOutMessage: Bool
+
+    init(messageDictionaries: [NSDictionary], preparedMessageIds: [NSNumber], containsOptOutMessage: Bool) {
+        self.messageDictionaries = messageDictionaries
+        self.preparedMessageIds = preparedMessageIds
+        self.containsOptOutMessage = containsOptOutMessage
+        super.init()
+    }
+}
+
+public extension MPUploadBuilderFields {
+    /// Every message contributes its id; only those that serialize contribute a dictionary, so the
+    /// two arrays are deliberately allowed to differ in length. `NSNull` placeholders are skipped.
+    @objc(preparedMessagesFrom:)
+    static func preparedMessages(from messages: [Any]) -> MPPreparedMessages {
+        var dictionaries: [NSDictionary] = []
+        var ids: [NSNumber] = []
+        var containsOptOut = false
+
+        for case let message as MPMessagePRIVATE in messages {
+            if message.messageType == kMPMessageTypeStringOptOut {
+                containsOptOut = true
+            }
+            ids.append(NSNumber(value: message.messageId))
+            if let dictionary = message.dictionaryRepresentation() {
+                dictionaries.append(dictionary)
+            }
+        }
+
+        return MPPreparedMessages(
+            messageDictionaries: dictionaries,
+            preparedMessageIds: ids,
+            containsOptOutMessage: containsOptOut
+        )
+    }
+}
+
+/// `kMPMessageTypeStringOptOut` ("o", `MPIConstants.m`), mirrored because the Swift module cannot
+/// import the ObjC module.
+private let kMPMessageTypeStringOptOut = "o"
