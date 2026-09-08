@@ -43,4 +43,48 @@ import Foundation
         }
         return MPPushRegistrationDecision(status: "false", logToken: oldDeviceToken)
     }
+
+    /// How many bytes of the base64 crash report survive once the assembled message is trimmed to
+    /// `maxBytes`. Returns `nil` when the message already fits and no truncation is needed.
+    ///
+    /// The result can be negative when the rest of the message alone exceeds the limit; that is
+    /// the original arithmetic, and `truncateMessageDataProperty:toLength:` ignores a negative
+    /// length, so the report is left intact rather than emptied.
+    @objc(crashReportBytesToRetainForMessageLength:maxBytes:base64ReportLength:)
+    public static func crashReportBytesToRetain(
+        messageLength: Int,
+        maxBytes: Int,
+        base64ReportLength: Int
+    ) -> NSNumber? {
+        guard messageLength > maxBytes else { return nil }
+        return NSNumber(value: base64ReportLength - (messageLength - maxBytes))
+    }
+
+    /// Whether saving this message should trigger an upload.
+    ///
+    /// A message uploads when its type is one of the configured trigger message types, or — only
+    /// when trigger event types are configured at all — when its hashed `name`+`type` pair is one
+    /// of them. A message without both an event name and an event type can never match the second
+    /// rule.
+    @objc(shouldUploadMessageOfType:messageDictionary:triggerMessageTypes:triggerEventTypes:hasher:)
+    public static func shouldUploadMessage(
+        ofType messageType: String?,
+        messageDictionary: [AnyHashable: Any]?,
+        triggerMessageTypes: [AnyHashable]?,
+        triggerEventTypes: [AnyHashable]?,
+        hasher: MPIHasher
+    ) -> Bool {
+        if let messageType, triggerMessageTypes?.contains(messageType) == true {
+            return true
+        }
+
+        guard let triggerEventTypes,
+              let eventName = messageDictionary?[MessageKeys.kMPEventNameKey] as? String,
+              let eventType = messageDictionary?[MessageKeys.kMPEventTypeKey] as? String
+        else {
+            return false
+        }
+
+        return triggerEventTypes.contains(hasher.hashTriggerEventName(eventName, eventType: eventType))
+    }
 }
