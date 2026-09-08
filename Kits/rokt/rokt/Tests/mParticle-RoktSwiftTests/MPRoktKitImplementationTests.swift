@@ -109,6 +109,15 @@ private final class DeferredIdentityClient: MPRoktIdentityClient {
         completion?(nil, nil)
         completion = nil
     }
+
+    func completeAndWaitForMainQueue() async {
+        complete()
+        await withCheckedContinuation { continuation in
+            DispatchQueue.main.async {
+                continuation.resume()
+            }
+        }
+    }
 }
 
 private final class TestFilteredUser: FilteredMParticleUser {
@@ -374,7 +383,7 @@ struct MPRoktKitImplementationTests {
         #expect(results[1]["second"] == "two")
     }
 
-    @Test func sessionOperationsRemainOrderedBehindPlacementPreparation() {
+    @Test func sessionOperationsRemainOrderedBehindPlacementPreparation() async {
         let client = MockRoktSDKClient()
         let identityClient = DeferredIdentityClient()
         let implementation = MPRoktKitImplementation(
@@ -397,7 +406,7 @@ struct MPRoktKitImplementationTests {
         _ = implementation.close()
 
         #expect(client.calls.isEmpty)
-        identityClient.complete()
+        await identityClient.completeAndWaitForMainQueue()
 
         #expect(client.calls == [
             "selectPlacements:checkout",

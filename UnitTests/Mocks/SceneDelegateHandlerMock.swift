@@ -1,7 +1,7 @@
 import XCTest
 import mParticle_Apple_SDK
 
-class OpenURLHandlerProtocolMock: NSObject, OpenURLHandlerProtocol {
+class OpenURLHandlerProtocolMock: NSObject, OpenURLHandlerProtocolPRIVATE {
     var openURLWithOptionsCalled = false
     var openURLWithOptionsURLParam: URL?
     var openURLWithOptionsOptionsParam: [String: Any]?

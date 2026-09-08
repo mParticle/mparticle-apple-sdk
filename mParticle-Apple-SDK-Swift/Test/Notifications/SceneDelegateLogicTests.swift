@@ -1,6 +1,20 @@
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
+private final class SceneOpenURLHandlerMock: NSObject, OpenURLHandlerProtocolPRIVATE {
+    var continuedActivity: NSUserActivity?
+
+    func open(_: URL, options _: [String: Any]?) {}
+
+    func `continue`(
+        _ userActivity: NSUserActivity,
+        restorationHandler _: @escaping ([UIUserActivityRestoring]?) -> Void
+    ) -> Bool {
+        continuedActivity = userActivity
+        return true
+    }
+}
+
 final class SceneDelegateLogicTests: XCTestCase {
     // MARK: - openURLOptions
 
@@ -107,5 +121,22 @@ final class SceneDelegateLogicTests: XCTestCase {
 
         XCTAssertEqual(lines[2], "User Activity Title: ")
         XCTAssertEqual(lines.last, "Opening UserActivity URL: ")
+    }
+
+    func testHandlerForwardsUserActivityAndUsesInjectedLogger() {
+        let activity = NSUserActivity(activityType: "com.example.activity")
+        activity.title = "Test Activity"
+        let forwardingHandler = SceneOpenURLHandlerMock()
+        let logger = MPLog(logLevel: .debug)
+        var messages: [String] = []
+        logger.customLogger = { messages.append($0) }
+        let handler = SceneDelegateHandlerPRIVATE(appNotificationHandler: forwardingHandler)
+        handler.logger = logger
+
+        handler.handleUserActivity(activity)
+
+        XCTAssertTrue(forwardingHandler.continuedActivity === activity)
+        XCTAssertEqual(messages.first, "mParticle -> User Activity Received")
+        XCTAssertTrue(messages.contains("mParticle -> User Activity Title: Test Activity"))
     }
 }
