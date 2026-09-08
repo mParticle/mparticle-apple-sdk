@@ -140,7 +140,7 @@ extension MPPersistenceStorePRIVATE {
             _ = try statement.step()
             let consumerInfoId = sqlite3_last_insert_rowid(connection.handle)
             for cookie in cookies {
-                try saveCookie(cookie, consumerInfoId: consumerInfoId, mpid: mpid.int64Value)
+                _ = try saveCookie(cookie, consumerInfoId: consumerInfoId, mpid: mpid.int64Value)
             }
             return consumerInfoId
         }
@@ -201,7 +201,7 @@ extension MPPersistenceStorePRIVATE {
         _ = try statement.step()
     }
 
-    func saveCookie(_ cookie: MPPersistedCookie) throws {
+    func saveCookie(_ cookie: MPPersistedCookie) throws -> Int64 {
         try saveCookie(cookie, consumerInfoId: cookie.consumerInfoId, mpid: cookie.mpid)
     }
 
@@ -233,7 +233,7 @@ extension MPPersistenceStorePRIVATE {
         _ cookie: MPPersistedCookie,
         consumerInfoId: Int64,
         mpid: Int64
-    ) throws {
+    ) throws -> Int64 {
         let statement = try requireConnection().prepare(
             "INSERT INTO cookies "
                 + "(consumer_info_id, content, domain, expiration, name, mpid) "
@@ -246,6 +246,7 @@ extension MPPersistenceStorePRIVATE {
         try statement.bind(cookie.name, at: 5)
         try statement.bind(mpid, at: 6)
         _ = try statement.step()
+        return sqlite3_last_insert_rowid(try requireConnection().handle)
     }
 }
 

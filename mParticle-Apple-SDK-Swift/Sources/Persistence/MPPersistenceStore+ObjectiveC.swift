@@ -265,11 +265,11 @@ extension MPPersistenceStorePRIVATE {
     }
 
     @objc(saveRawCookie:)
-    public func objectiveCSaveRawCookie(_ cookie: NSDictionary) {
+    public func objectiveCSaveRawCookie(_ cookie: NSDictionary) -> Int64 {
         guard let cookie = persistedCookie(cookie) else {
-            return
+            return 0
         }
-        try? saveCookie(cookie)
+        return (try? saveCookie(cookie)) ?? 0
     }
 
     @objc(updateRawCookie:)

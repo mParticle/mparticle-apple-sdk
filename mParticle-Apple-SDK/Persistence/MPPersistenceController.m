@@ -5,7 +5,6 @@
 #import "MPConsentState.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
-#import "MPIntegrationAttributes.h"
 #import "MPPersistenceUploadSettingsCodec.h"
 #import "MPStateMachine.h"
 #import "MPUploadSettings.h"
@@ -296,30 +295,11 @@
 }
 
 - (void)saveIntegrationAttributes:(MPIntegrationAttributes *)integrationAttributes {
-    MPIntegrationAttributesPRIVATE *attributes =
-        [[MPIntegrationAttributesPRIVATE alloc] initWithIntegrationId:integrationAttributes.integrationId
-                                                            attributes:integrationAttributes.attributes];
-    if (attributes) {
-        [self.store saveIntegrationAttributes:attributes];
-    }
+    [self.store saveIntegrationAttributes:integrationAttributes];
 }
 
 - (NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes {
-    NSArray<MPIntegrationAttributesPRIVATE *> *attributes = [self.store fetchIntegrationAttributes];
-    if (attributes.count == 0) {
-        return nil;
-    }
-    NSMutableArray<MPIntegrationAttributes *> *result =
-        [NSMutableArray arrayWithCapacity:attributes.count];
-    for (MPIntegrationAttributesPRIVATE *value in attributes) {
-        MPIntegrationAttributes *wrapper =
-            [[MPIntegrationAttributes alloc] initWithIntegrationId:value.integrationId
-                                                        attributes:value.attributes];
-        if (wrapper) {
-            [result addObject:wrapper];
-        }
-    }
-    return result;
+    return [self.store fetchIntegrationAttributes];
 }
 
 - (NSDictionary *)fetchIntegrationAttributesForId:(NSNumber *)integrationId {
@@ -354,13 +334,14 @@
 
 - (MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber *)userId {
     NSDictionary *rawInfo = [self.store fetchRawConsumerInfoForUserId:userId];
-    if (!rawInfo) {
+    NSArray<MPCookie *> *cookies = [self fetchCookiesForUserId:userId];
+    if (!rawInfo && cookies.count == 0) {
         return nil;
     }
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
     consumerInfo.consumerInfoId = [rawInfo[@"id"] longLongValue];
     consumerInfo.uniqueIdentifier = [self nullableString:rawInfo[@"uniqueIdentifier"]];
-    consumerInfo.cookies = [self fetchCookiesForUserId:userId];
+    consumerInfo.cookies = cookies;
     return consumerInfo;
 }
 
@@ -398,7 +379,7 @@
                 [self.store deleteCookieId:cookie.cookieId];
             }
         } else if (cookie.cookieId == 0) {
-            [self.store saveRawCookie:raw];
+            cookie.cookieId = [self.store saveRawCookie:raw];
         } else {
             [self.store updateRawCookie:raw];
         }

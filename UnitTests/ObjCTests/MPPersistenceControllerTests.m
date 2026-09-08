@@ -35,6 +35,10 @@
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
 @end
 
+@interface MPPersistenceController_PRIVATE (Tests)
+- (NSString *)databasePath;
+@end
+
 
 @interface MPPersistenceControllerTests : MPBaseTestCase
 
@@ -782,6 +786,16 @@
     
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     [persistence saveConsumerInfo:consumerInfo];
+    MPCookie *newCookie = [[MPCookie alloc] initWithName:@"new-cookie"
+                                           configuration:@{
+                                               kMPCKContent: @"initial",
+                                               kMPCKExpiration: @"2099-01-01T00:00:00Z"
+                                           }];
+    consumerInfo.cookies = [consumerInfo.cookies arrayByAddingObject:newCookie];
+    [persistence updateConsumerInfo:consumerInfo];
+    XCTAssertNotEqual(newCookie.cookieId, 0);
+    newCookie.content = @"updated";
+    [persistence updateConsumerInfo:consumerInfo];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Consumer Info"];
     
@@ -792,6 +806,10 @@
         NSDictionary *cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
         NSDictionary *fetchedCookiesDictionary = [fetchedConsumerInfo cookiesDictionaryRepresentation];
         XCTAssertEqualObjects(cookiesDictionary, fetchedCookiesDictionary);
+        NSPredicate *newCookiePredicate = [NSPredicate predicateWithFormat:@"name = %@", @"new-cookie"];
+        NSArray<MPCookie *> *newCookies = [fetchedConsumerInfo.cookies filteredArrayUsingPredicate:newCookiePredicate];
+        XCTAssertEqual(newCookies.count, 1);
+        XCTAssertEqualObjects(newCookies.firstObject.content, @"updated");
         
         [persistence deleteConsumerInfo];
         fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController_PRIVATE mpId]];
@@ -809,6 +827,30 @@
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+- (void)testFetchConsumerInfoWithCookiesButNoConsumerInfoRow {
+    NSNumber *mpid = @91919;
+    [MPPersistenceController_PRIVATE setMpid:mpid];
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    [persistence deleteConsumerInfo];
+
+    sqlite3 *database = NULL;
+    XCTAssertEqual(sqlite3_open(persistence.databasePath.UTF8String, &database), SQLITE_OK);
+    sqlite3_stmt *insert = NULL;
+    const char *sql = "INSERT INTO cookies (consumer_info_id, content, name, mpid) VALUES (0, 'value', 'cookie-only', ?)";
+    XCTAssertEqual(sqlite3_prepare_v2(database, sql, -1, &insert, NULL), SQLITE_OK);
+    sqlite3_bind_int64(insert, 1, mpid.longLongValue);
+    XCTAssertEqual(sqlite3_step(insert), SQLITE_DONE);
+    sqlite3_finalize(insert);
+    sqlite3_close(database);
+
+    MPConsumerInfo *consumerInfo = [persistence fetchConsumerInfoForUserId:mpid];
+    XCTAssertNotNil(consumerInfo);
+    XCTAssertEqual(consumerInfo.cookies.count, 1);
+    XCTAssertEqualObjects(consumerInfo.cookies.firstObject.name, @"cookie-only");
+
+    [persistence deleteConsumerInfo];
 }
 
 - (void)testForwardRecord {
