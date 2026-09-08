@@ -21,4 +21,5 @@ Pod::Spec.new do |s|
     
     s.source_files = 'mParticle-Apple-SDK-Swift/Sources/**/*.swift'
     s.frameworks = 'SystemConfiguration'
+    s.libraries = 'sqlite3'
 end
