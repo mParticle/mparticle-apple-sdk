@@ -1,6 +1,11 @@
 import Foundation
 
-@objc public final class MPCookiePRIVATE: NSObject {
+// Keeps the MPCookie Objective-C runtime name the deleted wrapper had, so the @class forward
+// declaration and the -deleteCookie: / -fetchCookiesForUserId: signatures in
+// Include/MPPersistenceController.h stay byte-identical. Reference MPCookiePRIVATE from Swift,
+// MPCookie from Objective-C.
+@objc(MPCookie)
+public final class MPCookiePRIVATE: NSObject, NSSecureCoding {
     @objc public var cookieId: Int64 = 0
 
     private var storedContent: String?
@@ -47,9 +52,9 @@ import Foundation
         }
 
         self.name = name
-        content = stringValue(configuration["c"])
-        domain = stringValue(configuration["d"])
-        expiration = stringValue(configuration["e"])
+        content = stringValue(configuration[Keys.content])
+        domain = stringValue(configuration[Keys.domain])
+        expiration = stringValue(configuration[Keys.expiration])
     }
 
     @objc public var expired: Bool {
@@ -60,9 +65,9 @@ import Foundation
 
     @objc public func dictionaryRepresentation() -> NSDictionary? {
         let dictionary = NSMutableDictionary()
-        if let content { dictionary["c"] = content }
-        if let domain { dictionary["d"] = domain }
-        if let expiration { dictionary["e"] = expiration }
+        if let content { dictionary[Keys.content] = content }
+        if let domain { dictionary[Keys.domain] = domain }
+        if let expiration { dictionary[Keys.expiration] = expiration }
         return dictionary.allKeys.isEmpty ? nil : dictionary
     }
 
@@ -70,8 +75,74 @@ import Foundation
         name == other.name
     }
 
+    override public func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? MPCookiePRIVATE else { return false }
+        return isEqual(toCookie: other)
+    }
+
     override public var hash: Int {
         name.hashValue
+    }
+
+    // MARK: - NSSecureCoding
+
+    public static var supportsSecureCoding: Bool { true }
+
+    public func encode(with coder: NSCoder) {
+        coder.encode(name, forKey: CodingKeys.name)
+
+        if let content { coder.encode(content, forKey: CodingKeys.content) }
+        if let domain { coder.encode(domain, forKey: CodingKeys.domain) }
+        if let expiration { coder.encode(expiration, forKey: CodingKeys.expiration) }
+    }
+
+    /// Ported verbatim from the deleted Objective-C wrapper, including a defect: `content`,
+    /// `domain` and `expiration` are encoded as strings but decoded with `NSDictionary` as the
+    /// expected class, so they never survive a round trip and a restored cookie carries only its
+    /// name.
+    ///
+    /// The production persistence path does not go through here — cookies are written as raw
+    /// sqlite columns, and the only production archives are `MPUploadSettings` and a
+    /// configuration dictionary. Cookies *are* archivable, though: `MPConsumerInfo` conforms to
+    /// `NSSecureCoding` and encodes its `cookies` array, and `MPConsumerInfoTests.testInstance`
+    /// and `testConsumerInfoEncoding` exercise exactly that. Neither asserts the cookie fields,
+    /// and `isEqual(toCookie:)` compares names only, which is why the loss goes unnoticed there
+    /// and in `testCookie`.
+    ///
+    /// Left as-is deliberately: repairing it would change what a decoded cookie contains, which is
+    /// a behaviour change rather than a migration. Tracked as a follow-up.
+    public convenience init?(coder: NSCoder) {
+        let name = coder.decodeObject(of: NSString.self, forKey: CodingKeys.name) as String?
+
+        let configuration = NSMutableDictionary()
+        if let content = coder.decodeObject(of: NSDictionary.self, forKey: CodingKeys.content) {
+            configuration[Keys.content] = content
+        }
+        if let domain = coder.decodeObject(of: NSDictionary.self, forKey: CodingKeys.domain) {
+            configuration[Keys.domain] = domain
+        }
+        if let expiration = coder.decodeObject(of: NSDictionary.self, forKey: CodingKeys.expiration) {
+            configuration[Keys.expiration] = expiration
+        }
+
+        self.init(name: name, configuration: configuration)
+    }
+
+    /// Private copies of the `kMPCKContent` / `kMPCKDomain` / `kMPCKExpiration` C globals declared
+    /// in `MPConsumerInfo.h`. They stay Objective-C because Swift cannot emit C globals and
+    /// Objective-C callers still reference them by name; this module cannot read them, so the
+    /// three literals are duplicated here. Keep the two in step.
+    private enum Keys {
+        static let content = "c"
+        static let domain = "d"
+        static let expiration = "e"
+    }
+
+    private enum CodingKeys {
+        static let name = "name"
+        static let content = "content"
+        static let domain = "domain"
+        static let expiration = "expiration"
     }
 }
 
