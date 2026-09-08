@@ -393,7 +393,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         return;
     }
     
-    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceUtilities mpId]];
     NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
 
     MPAttributeValidationResult validation = [MPBackendController_PRIVATE validateAndLogAttributeKey:localKey
@@ -671,7 +671,7 @@ static BOOL skipNextUpload = NO;
     tempSession = [[MParticleSession alloc] initWithUUID:[NSUUID UUID].UUIDString];
     
     MPSession *mpSession = [[MPSession alloc] initWithStartTime:[NSDate date].timeIntervalSince1970
-                                                        userId:[MPPersistenceController_PRIVATE mpId]];
+                                                        userId:[MPPersistenceUtilities mpId]];
     mpSession.uuid = tempSession.UUID;
     
     tempSession.startTime = MPMilliseconds(mpSession.startTime);
@@ -714,7 +714,7 @@ static BOOL skipNextUpload = NO;
         
         id<MPBackendPersistence> persistence = self.persistence;
         
-        NSNumber *mpId = [MPPersistenceController_PRIVATE mpId];
+        NSNumber *mpId = [MPPersistenceUtilities mpId];
         date = date ?: [NSDate date];
         if (tempSession) {
             _session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:mpId uuid:tempSession.UUID];
@@ -947,13 +947,13 @@ static BOOL skipNextUpload = NO;
     NSAssert([value isKindOfClass:[NSNumber class]], @"'value' must be a number.");
     
     NSDate *timestamp = [NSDate date];
-    NSString *localKey = [[self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] caseInsensitiveKey:key];
+    NSString *localKey = [[self userAttributesForUserId:[MPPersistenceUtilities mpId]] caseInsensitiveKey:key];
     if (!localKey) {
         [self setUserAttribute:key value:value timestamp:timestamp completionHandler:nil];
         return value;
     }
     
-    id currentValue = [self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]][localKey];
+    id currentValue = [self userAttributesForUserId:[MPPersistenceUtilities mpId]][localKey];
     if (currentValue && ![currentValue isKindOfClass:[NSNumber class]]) {
         return nil;
     } else if (MPIsNull(currentValue)) {
@@ -962,12 +962,12 @@ static BOOL skipNextUpload = NO;
     
     NSNumber *newValue = [MPUserAttributeLogic incrementedValueFrom:(NSNumber *)currentValue byValue:value];
 
-    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceUtilities mpId]];
     userAttributes[localKey] = newValue;
 
     NSDictionary *userAttributesCopy = [MPUserAttributeLogic attributesForStorage:userAttributes nullSentinel:kMPNullUserAttributeString];
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] copy] key:key value:newValue];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:key value:newValue];
     userAttributeChange.timestamp = timestamp;
     [self setUserAttributeChange:userAttributeChange completionHandler:nil];
  
@@ -1102,7 +1102,7 @@ static BOOL skipNextUpload = NO;
     MPMessage *crashMessage = [messageBuilder build];
     
     NSNumber *bytesToRetain = [MPBackendMessageInfo crashReportBytesToRetainForMessageLength:crashMessage.messageData.length
-                                                                                    maxBytes:[MPPersistenceController_PRIVATE maxBytesPerEvent:crashMessage.messageType]
+                                                                                    maxBytes:[MPPersistenceUtilities maxBytesPerEvent:crashMessage.messageType]
                                                                           base64ReportLength:plCrashReportBase64.length];
     if (bytesToRetain != nil) {
         [crashMessage truncateMessageDataProperty:kMPPLCrashReport toLength:bytesToRetain.integerValue];
@@ -1263,9 +1263,9 @@ static BOOL skipNextUpload = NO;
     MPILogDebug(@"Backend controller starting - firstRun: %@, startKitsAsync: %@",
                 firstRun ? @"YES" : @"NO", startKitsAsync ? @"YES" : @"NO");
     
-    MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
+    MPConsentState *storedConsentState = [MPPersistenceUtilities consentStateForMpid:[MPPersistenceUtilities mpId]];
     if (consentState != nil && storedConsentState == nil) {
-        [MPPersistenceController_PRIVATE setConsentState:consentState forMpid:[MPPersistenceController_PRIVATE mpId]];
+        [MPPersistenceUtilities setConsentState:consentState forMpid:[MPPersistenceUtilities mpId]];
     }
     
     if (![MParticle sharedInstance].stateMachine.optOut) {
@@ -1463,7 +1463,7 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] copy] key:keyCopy value:[NSNull null]];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:keyCopy value:[NSNull null]];
     userAttributeChange.timestamp = timestamp;
     [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
 }
@@ -1487,7 +1487,7 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] copy] key:keyCopy value:value];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:keyCopy value:value];
     userAttributeChange.timestamp = timestamp;
     [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
 }
@@ -1512,7 +1512,7 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] copy] key:keyCopy value:values];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:keyCopy value:values];
     userAttributeChange.isArray = YES;
     
     
@@ -1531,7 +1531,7 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] copy] key:keyCopy value:nil];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:keyCopy value:nil];
     userAttributeChange.timestamp = timestamp;
     [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
 }
@@ -1548,11 +1548,11 @@ static BOOL skipNextUpload = NO;
                                                                                                      value:identityString];
     
     MPUserIdentityChangePRIVATE *userIdentityChange = [[MPUserIdentityChangePRIVATE alloc] initWithNewUserIdentity:newUserIdentity
-                                                                                                      userIdentities:[self identitiesForUserId:[MPPersistenceController_PRIVATE mpId]]];
+                                                                                                      userIdentities:[self identitiesForUserId:[MPPersistenceUtilities mpId]]];
     
     userIdentityChange.timestamp = timestamp;
     
-    NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPPersistenceUtilities mpId]];
 
     MPUserIdentityChangePlan *plan = [MPUserIdentityLogic planForIdentityType:@(userIdentityChange.newUserIdentity.type)
                                                                         value:userIdentityChange.newUserIdentity.value

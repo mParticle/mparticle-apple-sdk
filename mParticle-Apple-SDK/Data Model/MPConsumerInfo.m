@@ -2,6 +2,7 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPPersistenceController.h"
+#import "../Persistence/MPPersistenceAdapter.h"
 #import "mParticle.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -12,7 +13,7 @@ NSString *const kMPCKExpiration = @"e";
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
@@ -214,10 +215,10 @@ NSString *const kMPCKExpiration = @"e";
         return;
     }
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
     
     NSMutableArray<MPCookie *> *cookies = [[NSMutableArray alloc] init];
-    NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookiesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookiesForUserId:[MPPersistenceUtilities mpId]];
     if (fetchedCookies) {
         [cookies addObjectsFromArray:fetchedCookies];
     }
@@ -257,7 +258,7 @@ NSString *const kMPCKExpiration = @"e";
 
 - (NSDictionary *)localCookiesDictionary {
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSDictionary *localCookies = [userDefaults mpObjectForKey:kMPRemoteConfigCookiesKey userId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *localCookies = [userDefaults mpObjectForKey:kMPRemoteConfigCookiesKey userId:[MPPersistenceUtilities mpId]];
     
     if (!localCookies) {
         return nil;

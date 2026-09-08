@@ -142,7 +142,7 @@
     }
     
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSArray *storedIdentities = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController_PRIVATE mpId]];
+    NSArray *storedIdentities = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceUtilities mpId]];
     NSArray *identities = [MPIdentityUserStoragePRIVATE applyingIdentity:identityString
                                                                     type:(NSInteger)identityType
                                                           toStoredArray:storedIdentities];
@@ -412,12 +412,12 @@
 - (void)setConsentState:(MPConsentState *)state {
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"SET_CONSENT_STATE"];
 
-    [MPPersistenceController_PRIVATE setConsentState:state forMpid:self.userId];
+    [MPPersistenceUtilities setConsentState:state forMpid:self.userId];
     
     [[MParticle sharedInstance].kitContainer_PRIVATE reconfigureKits];
     
     // Device-level consent supersedes user-level, so forward the effective consent to kits.
-    MPConsentState *effectiveConsentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:self.userId];
+    MPConsentState *effectiveConsentState = [MPPersistenceUtilities effectiveConsentStateForMpid:self.userId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setConsentState:) consentState:effectiveConsentState kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
             MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
@@ -430,7 +430,7 @@
 
 - (nullable MPConsentState *)consentState {
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"GET_CONSENT_STATE"];
-    return [MPPersistenceController_PRIVATE consentStateForMpid:self.userId];
+    return [MPPersistenceUtilities consentStateForMpid:self.userId];
 }
 
 

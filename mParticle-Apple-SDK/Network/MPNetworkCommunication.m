@@ -15,6 +15,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
+#import "../Persistence/MPPersistenceAdapter.h"
 @import mParticle_Apple_SDK_Swift;
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
@@ -55,7 +56,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MParticleWebViewPRIVATE *webView;
@@ -90,7 +91,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @implementation MPUploadPersistenceAdapter
 - (void)deleteUpload:(MPUpload *)upload {
-    [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+    [[MParticle sharedInstance].persistenceAdapter deleteUpload:upload];
 }
 @end
 
@@ -260,7 +261,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                                                        defaultHost:self.defaultEventHost
                                                                      attAuthorized:NO];
     NSString *audienceURLFormat = [audienceFormat stringByAppendingString:@"?mpid=%@"];
-    NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+    NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceUtilities mpId]];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
     MPEndpointPathStyle *style = [MPEndpointPathStyle styleWithDefaultVersion:kMPAudienceVersion
@@ -272,10 +273,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     if (style.usesOverrideFormat) {
         audienceURLFormat = [urlFormatOverride stringByAppendingString:@"?mpid=%@"];
-        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceUtilities mpId]];
     } else {
         audienceURLFormat = [urlFormat stringByAppendingString:@"?mpid=%@"];
-        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, style.versionSegment, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, style.versionSegment, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceUtilities mpId]];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -371,7 +372,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                                                                  host:modifyNetworkOptions.identityHost
                                                                           defaultHost:self.defaultIdentityHost
                                                                         attAuthorized:[self attAuthorized]];
-    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId],  pathComponent];
+    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceUtilities mpId],  pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
     MPEndpointPathStyle *style = [MPEndpointPathStyle styleWithDefaultVersion:kMPIdentityVersion
@@ -382,9 +383,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesIdentitySubdirectory is unsupported for CDN routing; overridesIdentitySubdirectory will be ignored.");
     }
     if (style.usesOverrideFormat) {
-        urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController_PRIVATE mpId], pathComponent];
+        urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceUtilities mpId], pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, style.versionSegment, [MPPersistenceController_PRIVATE mpId], pathComponent];
+        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, style.versionSegment, [MPPersistenceUtilities mpId], pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -1210,13 +1211,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         return;
     }
 
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
 
     // Consumer Information
     MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
     [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
     [persistence updateConsumerInfo:consumerInfo];
-    MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController_PRIVATE mpId]];
+    MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceUtilities mpId]];
     if (persistenceInfo.cookies != nil) {
         [MParticle sharedInstance].stateMachine.consumerInfo.cookies = persistenceInfo.cookies;
     }

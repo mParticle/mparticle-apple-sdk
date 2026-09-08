@@ -1,4 +1,5 @@
 #import "MPPersistenceController.h"
+#import "MPPersistenceAdapter.h"
 
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
@@ -16,10 +17,95 @@
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPNetworkOptions *networkOptions;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 - (MPLog *)getLogger;
 @end
 
 @interface MPPersistenceUploadSettingsProvider : NSObject <MPUploadSettingsProviding>
+@end
+
+@implementation MPPersistenceAdapter
+
+- (MPPersistenceController_PRIVATE *)controller {
+    return [MParticle sharedInstance].persistenceController;
+}
+
+- (NSDictionary<NSString *,NSDictionary *> *)appAndDeviceInfoForSessionId:(NSNumber *)sessionId {
+    return [self.controller appAndDeviceInfoForSessionId:sessionId];
+}
+
+- (NSArray<MPForwardRecord *> *)fetchForwardRecords {
+    return [self.controller fetchForwardRecords];
+}
+
+- (void)saveForwardRecord:(MPForwardRecord *)forwardRecord {
+    [self.controller saveForwardRecord:forwardRecord];
+}
+
+- (void)deleteForwardRecordsIds:(NSArray<NSNumber *> *)recordIds {
+    [self.controller deleteForwardRecordsIds:recordIds];
+}
+
+- (NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes {
+    return [self.controller fetchIntegrationAttributes];
+}
+
+- (NSDictionary *)fetchIntegrationAttributesForId:(NSNumber *)integrationId {
+    return [self.controller fetchIntegrationAttributesForId:integrationId];
+}
+
+- (void)saveIntegrationAttributes:(MPIntegrationAttributes *)integrationAttributes {
+    [self.controller saveIntegrationAttributes:integrationAttributes];
+}
+
+- (void)deleteIntegrationAttributesForIntegrationId:(NSNumber *)integrationId {
+    [self.controller deleteIntegrationAttributesForIntegrationId:integrationId];
+}
+
+- (void)deleteAllIntegrationAttributes {
+    [self.controller deleteAllIntegrationAttributes];
+}
+
+- (MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber *)userId {
+    return [self.controller fetchConsumerInfoForUserId:userId];
+}
+
+- (NSArray<MPCookie *> *)fetchCookiesForUserId:(NSNumber *)userId {
+    return [self.controller fetchCookiesForUserId:userId];
+}
+
+- (void)saveConsumerInfo:(MPConsumerInfo *)consumerInfo {
+    [self.controller saveConsumerInfo:consumerInfo];
+}
+
+- (void)updateConsumerInfo:(MPConsumerInfo *)consumerInfo {
+    [self.controller updateConsumerInfo:consumerInfo];
+}
+
+- (void)moveContentFromMpidZeroToMpid:(NSNumber *)mpid {
+    [self.controller moveContentFromMpidZeroToMpid:mpid];
+}
+
+- (void)updateSession:(MPSession *)session {
+    [self.controller updateSession:session];
+}
+
+- (void)saveUpload:(MPUpload *)upload {
+    [self.controller saveUpload:upload];
+}
+
+- (void)deleteUpload:(MPUpload *)upload {
+    [self.controller deleteUpload:upload];
+}
+
+- (void)resetDatabase {
+    [self.controller resetDatabase];
+}
+
+- (void)resetDatabaseForWorkspaceSwitching {
+    [self.controller resetDatabaseForWorkspaceSwitching];
+}
+
 @end
 
 @implementation MPPersistenceUploadSettingsProvider

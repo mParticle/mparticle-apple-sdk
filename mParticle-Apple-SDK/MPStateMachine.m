@@ -4,6 +4,7 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
+#import "Persistence/MPPersistenceAdapter.h"
 #import "Kits/MPKitContainer+MParticlePrivate.h"
 #import <UIKit/UIKit.h>
 #import "MPDataPlanFilter.h"
@@ -16,7 +17,7 @@
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
@@ -216,8 +217,8 @@
         return _consumerInfo;
     }
 
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
-    _consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController_PRIVATE mpId]];
+    MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
+    _consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceUtilities mpId]];
 
     if (!_consumerInfo) {
         _consumerInfo = [[MPConsumerInfo alloc] init];

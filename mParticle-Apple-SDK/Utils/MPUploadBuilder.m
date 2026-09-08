@@ -9,11 +9,12 @@
 #import "mParticle.h"
 #import "MPILogger.h"
 #import "MPUserDefaultsConnector.h"
+#import "../Persistence/MPPersistenceAdapter.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
@@ -109,7 +110,7 @@
                                                                             apiKey:stateMachine.apiKey];
     [_uploadDictionary addEntriesFromDictionary:headerFields];
     
-    NSDictionary *appAndDeviceInfoDict = [[MParticle sharedInstance].persistenceController appAndDeviceInfoForSessionId:_sessionId];
+    NSDictionary *appAndDeviceInfoDict = [[MParticle sharedInstance].persistenceAdapter appAndDeviceInfoForSessionId:_sessionId];
     
     NSDictionary *appInfoDict = appAndDeviceInfoDict[MPApplicationKeys.kMPApplicationInformationKey];
     if (appInfoDict) {
@@ -169,7 +170,7 @@
         _uploadDictionary[kMPDeviceApplicationStampKey] = deviceApplicationStamp;
     }
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
     NSArray<MPForwardRecord *> *forwardRecords = [persistence fetchForwardRecords];
 
     if (forwardRecords) {
@@ -197,7 +198,7 @@
         _uploadDictionary[MPIntegrationAttributesKey] = [MPUploadBuilderFields mergedIntegrationAttributesDictionaryFrom:integrationAttributesDictionaries];
     }
     
-    MPConsentState *consentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
+    MPConsentState *consentState = [MPPersistenceUtilities effectiveConsentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
     if (consentState) {
         NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
         if (consentStateDictionary) {

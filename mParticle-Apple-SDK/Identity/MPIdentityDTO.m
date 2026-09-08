@@ -46,7 +46,7 @@ static NSString *MPIdentityEnvironmentString(void) {
     if (self) {
         _knownIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:apiRequest.identities];
 
-        NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
+        NSNumber *mpid = [MPPersistenceUtilities mpId];
         if (mpid.longLongValue != 0) {
             _previousMPID = mpid.stringValue;
         }

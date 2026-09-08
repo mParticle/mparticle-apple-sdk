@@ -6,6 +6,7 @@
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
 #import "MPPersistenceController.h"
+#import "../Persistence/MPPersistenceAdapter.h"
 #import "MPILogger.h"
 #import "MPKitFilter.h"
 #import "MPEvent.h"
@@ -35,7 +36,7 @@
 NSString *const kitFileExtension = @"eks";
 
 @interface MParticle ()
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 + (dispatch_queue_t)messageQueue;
@@ -712,7 +713,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
-    int64_t mpId = [[MPPersistenceController_PRIVATE mpId] longLongValue];
+    int64_t mpId = [[MPPersistenceUtilities mpId] longLongValue];
     int16_t low = (int16_t)[bracketConfiguration[@"lo"] integerValue];
     int16_t high = (int16_t)[bracketConfiguration[@"hi"] integerValue];
     return [self.filterEngine isDisabledByBracketWithMpId:mpId
@@ -807,8 +808,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         dispatch_semaphore_signal(bracketsSemaphore);
         return;
     }
-
-    long mpId = [[MPPersistenceController_PRIVATE mpId] longValue];
+    long mpId = [[MPPersistenceUtilities mpId] longValue];
     short low = (short)[configuration[@"lo"] integerValue];
     short high = (short)[configuration[@"hi"] integerValue];
 
@@ -1422,7 +1422,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     MPBracket *bracket = [self bracketForKit:kitRegister.code];
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     MPKitConfiguration *configuration = self.kitConfigurations[kitRegister.code];
-    MPConsentState *state = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:currentUser.userId];
+    MPConsentState *state = [MPPersistenceUtilities effectiveConsentStateForMpid:currentUser.userId];
 
     return [self.filterEngine isKitActiveWithActive:active
                                               mpId:bracket.mpId
@@ -1867,7 +1867,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     
     if (forwardRecord != nil) {
         dispatch_async([MParticle messageQueue], ^{
-            [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
+            [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord];
         });
     }
 }
@@ -1878,7 +1878,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                                                                         kitFilter:kitFilter
                                                                     originalEvent:commerceEvent];
     dispatch_async([MParticle messageQueue], ^{
-        [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
+        [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord];
     });
 }
 
@@ -2054,7 +2054,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 
 - (nullable NSDictionary<NSString *, NSString *> *)integrationAttributesForKit:(nonnull NSNumber *)integrationId {
-    NSArray<MPIntegrationAttributes *> *array = [[MParticle sharedInstance].persistenceController fetchIntegrationAttributes];
+    NSArray<MPIntegrationAttributes *> *array = [[MParticle sharedInstance].persistenceAdapter fetchIntegrationAttributes];
     __block NSDictionary<NSString *, NSString *> *dictionary = nil;
     [array enumerateObjectsUsingBlock:^(MPIntegrationAttributes * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.integrationId.intValue == integrationId.intValue) {
