@@ -250,7 +250,7 @@ extension MPPersistenceStorePRIVATE: MPSessionPersisting, MPMessagePersisting {
             guard let message = message(from: statement, sessionIdColumn: 7) else {
                 continue
             }
-            let sessionId = message.sessionId ?? -1
+            let sessionId = message.sessionId ?? 0
             let dataPlanId = message.dataPlanId ?? "0"
             let dataPlanVersion = message.dataPlanVersion ?? 0
             var sessions = groups[message.userId] ?? [:]

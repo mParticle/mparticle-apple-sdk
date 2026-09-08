@@ -231,6 +231,32 @@ final class MPPersistenceStoreTests: XCTestCase {
         XCTAssertTrue(try store.fetchMessagesForUploading().isEmpty)
     }
 
+    func testSessionlessMessagesGroupUnderZeroSessionId() throws {
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            mpidProvider: { 42 }
+        )
+        let message = MPMessagePRIVATE(
+            sessionId: nil,
+            messageId: 0,
+            uuid: "sessionless",
+            messageType: "e",
+            messageData: Data(#"{"event":"value"}"#.utf8),
+            timestamp: 10,
+            uploadStatus: 1,
+            userId: 42,
+            dataPlanId: nil,
+            dataPlanVersion: nil
+        )
+
+        try store.saveMessage(message)
+
+        let groups = try store.fetchMessagesForUploading()
+        XCTAssertEqual(groups[42]?[0]?["0"]?[0]?.map(\.uuid), ["sessionless"])
+        XCTAssertNil(groups[42]?[-1])
+    }
+
     func testSessionEndAndUploadedMessageQueries() throws {
         let store = MPPersistenceStorePRIVATE(
             fileSystem: fileSystem,
