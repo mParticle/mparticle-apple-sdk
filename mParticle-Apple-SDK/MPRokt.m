@@ -27,6 +27,8 @@ static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
     return kitInstance;
 }
 
+static NSInteger const kMPRoktKitCode = 181;
+
 @implementation MPRokt
 
 /// Displays a Rokt ad placement with the specified identifier and user attributes.
@@ -67,46 +69,24 @@ static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
     long long jointSdkSelectPlacementsTimestamp = (long long)([[NSDate date] timeIntervalSince1970] * 1000);
     RoktPlacementOptions *placementOptions = [[RoktPlacementOptions alloc] initWithTimestamp:jointSdkSelectPlacementsTimestamp];
     
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-    if (!currentUser) {
-        MPILogWarning(@"MPRokt selectPlacements - currentUser is nil, identity sync may not work as expected");
-    } else {
-        MPILogDebug(@"MPRokt current user present - userId: %@", currentUser.userId);
-    }
-    
-    // If email is passed in as an attribute and it's different than the existing identity, identify with it
-    [self confirmUser:attributes user:currentUser completion:^(MParticleUser *_Nullable resolvedUser) {
-        MPILogDebug(@"MPRokt confirmUser completed - resolvedUser: %@, userId: %@",
-                    resolvedUser ? @"present" : @"nil", resolvedUser.userId);
-        
-        NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping] ?: @[];
+    MPILogVerbose(@"MParticle.Rokt selectPlacements called with attributes: %@", attributes);
+    dispatch_async([MParticle messageQueue], ^{
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:identifier];
+        [queueParameters addParameter:attributes ?: @{}];
+        [queueParameters addParameter:embeddedViews];
+        [queueParameters addParameter:config];
+        [queueParameters addParameter:onEvent];
+        [queueParameters addParameter:placementOptions];
 
-        MPILogVerbose(@"MParticle.Rokt selectPlacements called with attributes: %@", attributes);
-
-        NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
-                                                                attributeMap:attributeMap
-                                                                     forUser:resolvedUser];
-
-        dispatch_async([MParticle messageQueue], ^{
-            MPILogDebug(@"MPRokt forwarding to kit - identifier: %@, mappedAttributes count: %lu",
-                        identifier, (unsigned long)mappedAttributes.count);
-            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-            [queueParameters addParameter:identifier];
-            [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
-            [queueParameters addParameter:embeddedViews];
-            [queueParameters addParameter:config];
-            [queueParameters addParameter:onEvent];
-            [queueParameters addParameter:placementOptions];
-            
-            SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
-            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                      event:nil
-                                                                 parameters:queueParameters
-                                                                messageType:MPMessageTypeEvent
-                                                                   userInfo:nil
-            ];
-        });
-    }];
+        SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
 }
 
 /// Notifies Rokt that a purchase from a placement offer has been finalized.
@@ -257,7 +237,7 @@ static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
     }
     
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
-        if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
+        if ([kitRegister.code integerValue] == kMPRoktKitCode) {
             id<MPRoktKitDispatchTarget> target = MPRoktKitAsDispatchTarget(kitRegister.wrapperInstance);
             if (target && [target respondsToSelector:@selector(getSessionId)]) {
                 result = [target getSessionId];
@@ -282,7 +262,7 @@ static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
     }
     NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
-        if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
+        if ([kitRegister.code integerValue] == kMPRoktKitCode) {
             id<MPRoktKitDispatchTarget> target = MPRoktKitAsDispatchTarget(kitRegister.wrapperInstance);
             if ([target respondsToSelector:@selector(logMParticleApiDiagnostic:)]) {
                 [target logMParticleApiDiagnostic:code];
@@ -354,44 +334,22 @@ static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
                 config ? @"present" : @"nil",
                 onEvent ? @"present" : @"nil");
     
-    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-    if (!currentUser) {
-        MPILogWarning(@"MPRokt selectShoppableAds - currentUser is nil, identity sync may not work as expected");
-    } else {
-        MPILogDebug(@"MPRokt current user present - userId: %@", currentUser.userId);
-    }
-    
-    // If email is passed in as an attribute and it's different than the existing identity, identify with it
-    [self confirmUser:attributes user:currentUser completion:^(MParticleUser *_Nullable resolvedUser) {
-        MPILogDebug(@"MPRokt confirmUser completed - resolvedUser: %@, userId: %@",
-                    resolvedUser ? @"present" : @"nil", resolvedUser.userId);
-        
-        NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping] ?: @[];
+    MPILogVerbose(@"MParticle.Rokt selectShoppableAds called with attributes: %@", attributes);
+    dispatch_async([MParticle messageQueue], ^{
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:identifier];
+        [queueParameters addParameter:attributes];
+        [queueParameters addParameter:config];
+        [queueParameters addParameter:onEvent];
 
-        MPILogVerbose(@"MParticle.Rokt selectShoppableAds called with attributes: %@", attributes);
-
-        NSMutableDictionary *mappedAttributes = [self mapPlacementAttributes:attributes
-                                                                attributeMap:attributeMap
-                                                                     forUser:resolvedUser];
-
-        dispatch_async([MParticle messageQueue], ^{
-            MPILogDebug(@"MPRokt forwarding selectShoppableAds to kit - identifier: %@, mappedAttributes count: %lu",
-                        identifier, (unsigned long)mappedAttributes.count);
-            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-            [queueParameters addParameter:identifier];
-            [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
-            [queueParameters addParameter:config];
-            [queueParameters addParameter:onEvent];
-            
-            SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
-            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                      event:nil
-                                                                 parameters:queueParameters
-                                                                messageType:MPMessageTypeEvent
-                                                                   userInfo:nil
-            ];
-        });
-    }];
+        SEL roktSelector = @selector(selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
 }
 
 /// Forwards a redirect URL (e.g. Afterpay, PayPal) to the registered Rokt payment extension(s) via the Rokt Kit.
@@ -412,7 +370,7 @@ static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
     }
 
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
-        if ([kitRegister.code integerValue] == [MPRoktLogicPRIVATE kitId]) {
+        if ([kitRegister.code integerValue] == kMPRoktKitCode) {
             id<MPRoktKitDispatchTarget> target = MPRoktKitAsDispatchTarget(kitRegister.wrapperInstance);
             if (target && [target respondsToSelector:@selector(handleURLCallback:)]) {
                 BOOL handled = [target handleURLCallback:url];
@@ -426,138 +384,6 @@ static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
 
     MPILogDebug(@"MPRokt handleURLCallback - Rokt Kit not found in active kits");
     return NO;
-}
-
-#pragma mark - Private Helper Methods
-
-/// Applies dashboard placement attribute key mapping, then sets each non-sandbox key on the user.
-/// @return Mutable dictionary after remapping (empty when \p attributes is nil).
-- (NSMutableDictionary<NSString *, NSString *> *)mapPlacementAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-                                                           attributeMap:(NSArray<NSDictionary<NSString *, NSString *> *> *)attributeMap
-                                                                forUser:(MParticleUser * _Nullable)user {
-    NSMutableDictionary<NSString *, NSString *> *mappedAttributes = [MPRoktLogicPRIVATE mappedPlacementAttributes:attributes
-                                                                                                    attributeMap:attributeMap];
-    if (user) {
-        NSString *sandboxKey = [MPRoktLogicPRIVATE sandboxAttributeKey];
-        for (NSString *key in mappedAttributes) {
-            if (![key isEqual:sandboxKey]) {
-                [user setUserAttribute:key value:mappedAttributes[key]];
-            }
-        }
-    }
-    return mappedAttributes;
-}
-
-/// Retrieves the Rokt Kit configuration from the kit container.
-/// @return The Rokt Kit configuration dictionary, or nil if Rokt Kit is not configured.
-- (NSDictionary * _Nullable)getRoktKitConfiguration {
-    NSInteger roktKitId = [MPRoktLogicPRIVATE kitId];
-    NSDictionary *kitConfiguration = [[MParticle sharedInstance].kitContainer_PRIVATE
-        launchConfigurationForKitCode:@(roktKitId)];
-    if (!kitConfiguration) {
-        MPILogWarning(@"MPRokt kit (ID %ld) not found in configurations", (long)roktKitId);
-    }
-    return kitConfiguration;
-}
-
-/// Retrieves the attribute mapping configuration for the Rokt Kit from the mParticle dashboard settings.
-/// The mapping defines how attribute keys should be renamed before being sent to Rokt (e.g., "userEmail" → "email").
-/// @return An array of mapping dictionaries with "map" (source key) and "value" (destination key), or nil if Rokt Kit is not configured.
-- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
-    NSDictionary *roktKitConfig = [self getRoktKitConfiguration];
-    if (!roktKitConfig) {
-        MPILogWarning(@"MPRokt kit configuration not found");
-        return nil;
-    }
-    
-    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [MPRoktLogicPRIVATE placementAttributesMappingFromKitConfig:roktKitConfig];
-    if (attributeMap) {
-        MPILogDebug(@"MPRokt successfully parsed placement attribute map with %lu entries", (unsigned long)attributeMap.count);
-    } else {
-        MPILogError(@"MPRokt failed to parse placement attribute map");
-    }
-    return attributeMap;
-}
-
-/// Retrieves the configured identity type to use for hashed email from the Rokt Kit configuration.
-/// The hashed email identity type is determined by dashboard settings and may vary (e.g., CustomerId, Other, etc.).
-/// @return The NSNumber representing the MPIdentity type for hashed email, or nil if not configured.
-- (NSNumber *)getRoktHashedEmailUserIdentityType {
-    NSDictionary *roktKitConfig = [self getRoktKitConfiguration];
-    NSNumber *hashedIdentityTypeNumber = [MPRoktLogicPRIVATE hashedEmailIdentityTypeFromKitConfig:roktKitConfig];
-    MPILogDebug(@"MPRokt getRoktHashedEmailUserIdentityType - typeNumber: %@",
-                hashedIdentityTypeNumber ?: @"nil");
-    return hashedIdentityTypeNumber;
-}
-
-/// Ensures the "sandbox" attribute is present in the attributes dictionary.
-/// If not already set by the caller, the sandbox value is automatically determined based on the current mParticle environment
-/// (MPEnvironmentDevelopment → "true", production → "false"). This tells Rokt whether to show test or production ads.
-/// - Parameter attributes: The input attributes dictionary to validate
-/// @return A dictionary with the sandbox attribute guaranteed to be present
-- (NSDictionary<NSString *, NSString *> *)confirmSandboxAttribute:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    MPEnvironment currentEnvironment = [[MParticle sharedInstance] environment];
-    BOOL isDevelopment = (currentEnvironment == MPEnvironmentDevelopment);
-    MPILogDebug(@"MPRokt confirmSandboxAttribute - environment: %ld, sandbox: %@",
-                (long)currentEnvironment, isDevelopment ? @"true" : @"false");
-    return [MPRoktLogicPRIVATE attributesByConfirmingSandbox:attributes isDevelopment:isDevelopment];
-}
-
-/// Synchronizes user identity with mParticle if email or hashed email is provided in attributes.
-/// If the email or hashed email in attributes differs from the current user's identity, this method performs
-/// an identity API call to update the user before proceeding. This ensures Rokt has the most current user identity.
-/// - Parameters:
-///   - attributes: Dictionary that may contain "email" or "emailsha256" keys
-///   - user: The current mParticle user
-///   - completion: Completion handler called with the resolved (possibly updated) user
-- (void)confirmUser:(NSDictionary<NSString *, NSString *> * _Nullable)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion {
-    MPILogDebug(@"MPRokt confirmUser - user: %@, email in attributes: %@, hashedEmail in attributes: %@",
-                user.userId,
-                attributes[@"email"] ? @"present" : @"nil",
-                attributes[@"emailsha256"] ? @"present" : @"nil");
-    
-    NSString *email = attributes[[MPRoktLogicPRIVATE emailAttributeKey]];
-    NSString *hashedEmail = attributes[[MPRoktLogicPRIVATE hashedEmailAttributeKey]];
-    NSNumber *hashedEmailIdentity = [self getRoktHashedEmailUserIdentityType];
-    MPRoktConfirmUserDecisionPRIVATE *decision = [MPRoktLogicPRIVATE confirmUserDecisionWithEmail:email
-                                                                                      hashedEmail:hashedEmail
-                                                                              hashedEmailIdentity:hashedEmailIdentity
-                                                                                       identities:user.identities];
-    BOOL shouldIdentifyFromEmail = decision.shouldIdentifyFromEmail;
-    BOOL shouldIdentifyFromHash = decision.shouldIdentifyFromHash;
-
-    MPILogDebug(@"MPRokt confirmUser decision - shouldIdentifyFromEmail: %@, shouldIdentifyFromHash: %@",
-                shouldIdentifyFromEmail ? @"YES" : @"NO",
-                shouldIdentifyFromHash ? @"YES" : @"NO");
-
-    if (decision.shouldIdentify) {
-        // Identify the user with the new identity information
-        MPIdentityApiRequest *identityRequest = user ? [MPIdentityApiRequest requestWithUser:user] : [MPIdentityApiRequest requestWithEmptyUser];
-        [identityRequest setIdentity:email identityType:MPIdentityEmail];
-        if (hashedEmailIdentity != nil) {
-            [identityRequest setIdentity:hashedEmail identityType:hashedEmailIdentity.unsignedIntegerValue];
-        }
-        
-        MPILogDebug(@"MPRokt confirmUser - calling identity API to sync user");
-        [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
-            if (error) {
-                MPILogError(@"MPRokt failed to sync email from selectPlacement to user: %@", error);
-                completion(user);
-            } else {
-                MPILogVerbose(@"MPRokt updated user identity based off selectPlacement's attributes: %@", apiResult.user.identities);
-                completion(apiResult.user);
-            }
-        }];
-        
-        // Warn the customer if we had to identify and therefore delay their Rokt placement.
-        if (shouldIdentifyFromEmail) {
-            MPILogWarning(@"MPRokt the existing email on the user does not match the email passed in to `selectPlacements:`. Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`");
-        } else if (shouldIdentifyFromHash) {
-            MPILogWarning(@"MPRokt the existing hashed email on the user does not match the hashed email passed in to `selectPlacements:`. Please remember to sync the hashed email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`");
-        }
-    } else {
-        completion(user);
-    }
 }
 
 @end

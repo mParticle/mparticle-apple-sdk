@@ -88,8 +88,8 @@ jobs:
 
       - name: Update hardcoded version strings in kit source files
         run: |
-          sed -i '' "s/kMPRoktKitVersion = @\"[^\"]*\"/kMPRoktKitVersion = @\"${VERSION}\"/" \
-            Kits/rokt/rokt/Sources/mParticle-Rokt/MPKitRokt.m
+          sed -i '' "s/static let kitVersion = \"[^\"]*\"/static let kitVersion = \"${VERSION}\"/" \
+            Kits/rokt/rokt/Sources/mParticle-Rokt-Internal/MPRoktKitImplementation.swift
           sed -i '' 's/public static let version = "[^"]*"/public static let version = "'"${VERSION}"'"/' \
             Kits/rokt-sdk-plus/rokt-sdk-plus-ios/Sources/RoktSDKPlus/RoktSDKPlus.swift
           sed -i '' 's/^let version = "[^"]*"/let version = "'"${VERSION}"'"/' \
@@ -163,7 +163,7 @@ jobs:
           ### Files updated
           - All podspecs (core, Swift, kits) → \`${VERSION}\`
           - \`mParticle-Apple-SDK/MPIConstants.m\`
-          - Kit source version strings (Rokt \`kMPRoktKitVersion\`, RoktSDKPlus \`RoktSDKPlus.version\`, CleverTap \`kLibVersion\`, Branch \`registerPluginName\`)
+          - Kit source version strings (Rokt \`kitVersion\`, RoktSDKPlus \`RoktSDKPlus.version\`, CleverTap \`kLibVersion\`, Branch \`registerPluginName\`)
           - \`Framework/Info.plist\`
           - Integration test mappings
           - Kit \`Package.swift\`: \`let version\` for \`Kits/rokt-sdk-plus/rokt-sdk-plus-ios\` on every release; other kits’ \`let version\` only on **major** bumps (core SDK SPM pin)

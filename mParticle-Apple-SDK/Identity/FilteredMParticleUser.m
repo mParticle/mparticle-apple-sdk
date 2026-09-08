@@ -19,6 +19,8 @@
 
 @property (nonatomic, strong) MPKitConfiguration *kitConfiguration;
 
+- (NSDictionary<NSString *, id> *)filteredUserAttributes:(NSDictionary<NSString *, id> *)attributes;
+
 @end
 
 @implementation FilteredMParticleUser
@@ -70,7 +72,17 @@
 }
 
 -(NSDictionary<NSString *, id> *) userAttributes {
-    NSDictionary<NSString *, id> *attributes = self.user.userAttributes;
+    return [self filteredUserAttributes:self.user.userAttributes];
+}
+
+- (NSDictionary<NSString *, id> *)mp_filteredUserAttributesByMergingAttributes:(NSDictionary<NSString *, id> *)attributes {
+    NSMutableDictionary<NSString *, id> *mergedAttributes =
+        [NSMutableDictionary dictionaryWithDictionary:self.user.userAttributes ?: @{}];
+    [mergedAttributes addEntriesFromDictionary:attributes];
+    return [self filteredUserAttributes:mergedAttributes];
+}
+
+- (NSDictionary<NSString *, id> *)filteredUserAttributes:(NSDictionary<NSString *, id> *)attributes {
     // Nothing to filter: return before reading kitConfiguration, which some kit callers pass as a raw NSDictionary.
     if (attributes.count == 0) {
         return [NSMutableDictionary dictionary];
