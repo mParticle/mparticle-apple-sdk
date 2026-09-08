@@ -1,6 +1,11 @@
 import Foundation
 
-@objc public final class MPBreadcrumbPRIVATE: NSObject {
+/// A persisted breadcrumb. Keeps the `MPBreadcrumb` Objective-C runtime name the deleted wrapper
+/// had, so `Include/MPPersistenceController.h`'s forward declaration and `-fetchBreadcrumbs`
+/// signature stay byte-identical. Reference `MPBreadcrumbPRIVATE` from Swift, `MPBreadcrumb` from
+/// Objective-C.
+@objc(MPBreadcrumb)
+public final class MPBreadcrumbPRIVATE: NSObject, NSCopying, NSSecureCoding {
     @objc public var sessionUUID: String?
     @objc public var breadcrumbId: Int64
     @objc public var uuid: String?
@@ -48,6 +53,10 @@ import Foundation
         return String(data: breadcrumbData, encoding: .utf8)
     }
 
+    public func copy(with zone: NSZone? = nil) -> Any {
+        copyBreadcrumb()
+    }
+
     @objc public func copyBreadcrumb() -> MPBreadcrumbPRIVATE {
         MPBreadcrumbPRIVATE(
             sessionUUID: sessionUUID,
@@ -56,6 +65,11 @@ import Foundation
             breadcrumbData: breadcrumbData,
             timestamp: timestamp
         )
+    }
+
+    override public func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? MPBreadcrumbPRIVATE else { return false }
+        return isEqual(toBreadcrumb: other)
     }
 
     @objc public func isEqual(toBreadcrumb other: MPBreadcrumbPRIVATE) -> Bool {
@@ -73,6 +87,48 @@ import Foundation
         result ^= sessionUUID?.hashValue ?? 0
         result ^= breadcrumbData?.hashValue ?? 0
         return result
+    }
+
+    override public var description: String {
+        let renderedTimestamp = String(format: "%.0f", timestamp)
+        return "Breadcrumb\n UUID: \(uuid ?? "(null)")\n"
+            + " Content: \(content ?? "(null)")\n"
+            + " timestamp: \(renderedTimestamp)\n"
+    }
+
+    // MARK: - NSSecureCoding
+
+    public static var supportsSecureCoding: Bool { true }
+
+    /// Persists `content` rather than `breadcrumbData`; `init(coder:)` rebuilds the data from it.
+    /// The asymmetry is load-bearing for archive round-trip equality — do not "fix" it.
+    public func encode(with coder: NSCoder) {
+        coder.encode(sessionUUID, forKey: CodingKeys.sessionUUID)
+        coder.encode(breadcrumbId, forKey: CodingKeys.breadcrumbId)
+        coder.encode(uuid, forKey: CodingKeys.uuid)
+        coder.encode(content, forKey: CodingKeys.content)
+        coder.encode(breadcrumbData, forKey: CodingKeys.breadcrumbData)
+        coder.encode(timestamp, forKey: CodingKeys.timestamp)
+    }
+
+    public convenience init?(coder: NSCoder) {
+        let content = coder.decodeObject(of: NSString.self, forKey: CodingKeys.content) as String?
+        self.init(
+            sessionUUID: coder.decodeObject(of: NSString.self, forKey: CodingKeys.sessionUUID) as String?,
+            breadcrumbId: coder.decodeInt64(forKey: CodingKeys.breadcrumbId),
+            uuid: coder.decodeObject(of: NSString.self, forKey: CodingKeys.uuid) as String?,
+            breadcrumbData: content?.data(using: .utf8),
+            timestamp: coder.decodeDouble(forKey: CodingKeys.timestamp)
+        )
+    }
+
+    private enum CodingKeys {
+        static let sessionUUID = "sessionUUID"
+        static let breadcrumbId = "breadcrumbId"
+        static let uuid = "uuid"
+        static let content = "content"
+        static let breadcrumbData = "breadcrumbData"
+        static let timestamp = "timestamp"
     }
 
     private func nsStringEqual(_ lhs: String?, _ rhs: String?) -> Bool {

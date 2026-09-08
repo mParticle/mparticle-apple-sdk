@@ -4,7 +4,6 @@
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
-#import "MPIntegrationAttributes.h"
 #import "MPKitActivity.h"
 #import "MPKitFilter.h"
 #import "MPNetworkPerformance.h"

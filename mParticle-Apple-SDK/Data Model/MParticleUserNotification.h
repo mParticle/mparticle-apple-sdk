@@ -1,4 +1,4 @@
-#import "MPDataModelAbstract.h"
+#import <Foundation/Foundation.h>
 
 typedef NS_OPTIONS(NSUInteger, MPUserNotificationBehavior) {
     MPUserNotificationBehaviorReceived = 1 << 0,
@@ -20,7 +20,11 @@ extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
 
 #if TARGET_OS_IOS == 1
 
-@interface MParticleUserNotification : MPDataModelAbstract <NSSecureCoding>
+@interface MParticleUserNotification : NSObject <NSSecureCoding>
+
+// Was inherited from the dissolved abstract data-model base class. Only this class's own
+// NSSecureCoding implementation reads it; nothing outside the SDK does.
+@property (nonatomic, strong, nullable) NSString *uuid;
 
 @property (nonatomic, strong, nullable) NSString *actionTitle;
 @property (nonatomic, strong, nullable) NSString *actionIdentifier;

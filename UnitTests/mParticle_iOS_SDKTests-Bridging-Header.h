@@ -15,4 +15,3 @@
 #import "MPKitProtocol.h"
 #import "MPKitConfiguration.h"
 #import "MPForwardRecord.h"
-#import "MPIntegrationAttributes.h"

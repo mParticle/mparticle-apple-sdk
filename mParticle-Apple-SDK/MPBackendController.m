@@ -3,7 +3,6 @@
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPNetworkPerformance.h"
-#import "MPBreadcrumb.h"
 #import "MPAudience.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"

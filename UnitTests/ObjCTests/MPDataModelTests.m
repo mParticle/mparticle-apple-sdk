@@ -1,6 +1,5 @@
 #import <XCTest/XCTest.h>
 @import mParticle_Apple_SDK_Swift;
-#import "MPBreadcrumb.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"
