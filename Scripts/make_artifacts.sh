@@ -31,6 +31,7 @@ function build_xcframework_artifacts() {
 
 	# Sign the xcframework
 	codesign --force --timestamp -s "${IDENTITY}" mParticle_Apple_SDK.xcframework
+	codesign --verify --deep --strict --verbose=2 mParticle_Apple_SDK.xcframework
 
 	# Zip the xcframework
 	zip -r mParticle_Apple_SDK.xcframework.zip mParticle_Apple_SDK.xcframework
