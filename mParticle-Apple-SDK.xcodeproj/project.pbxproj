@@ -201,8 +201,6 @@
 		53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5329CDFB1F00E7489F /* MPBaseProjection.m */; };
 		53A79DBF29CE23F700E7489F /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */; };
 		7213DE7F2F2D85980007A619 /* SceneDelegateHandlerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7213DE7E2F2D85980007A619 /* SceneDelegateHandlerMock.swift */; };
-		7213DE812F30F0DF0007A619 /* SceneDelegateHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */; };
-		7213DE832F30F0EC0007A619 /* SceneDelegateHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 7213DE822F30F0EC0007A619 /* SceneDelegateHandler.m */; };
 		7231B80E2EB3C4AC001565E5 /* MPKitMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B80C2EB3C4AC001565E5 /* MPKitMock.swift */; };
 		7231B81A2EB94DCD001565E5 /* MParticleTestBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B8192EB94DCD001565E5 /* MParticleTestBase.swift */; };
 		7231B81D2EB94EAA001565E5 /* MParticleConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7231B81C2EB94EAA001565E5 /* MParticleConfigurationTests.swift */; };
@@ -497,8 +495,6 @@
 		53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK.modulemap"; path = "Framework/mParticle-Apple-SDK.modulemap"; sourceTree = "<group>"; };
 		53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7213DE7E2F2D85980007A619 /* SceneDelegateHandlerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegateHandlerMock.swift; sourceTree = "<group>"; };
-		7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegateHandler.h; sourceTree = "<group>"; };
-		7213DE822F30F0EC0007A619 /* SceneDelegateHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegateHandler.m; sourceTree = "<group>"; };
 		7231B80C2EB3C4AC001565E5 /* MPKitMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPKitMock.swift; sourceTree = "<group>"; };
 		7231B8192EB94DCD001565E5 /* MParticleTestBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleTestBase.swift; sourceTree = "<group>"; };
 		7231B81C2EB94EAA001565E5 /* MParticleConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleConfigurationTests.swift; sourceTree = "<group>"; };
@@ -806,8 +802,6 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
-				7213DE822F30F0EC0007A619 /* SceneDelegateHandler.m */,
-				7213DE802F30F0DF0007A619 /* SceneDelegateHandler.h */,
 				3513083F2E6B28F5002A3AD6 /* Executor.h */,
 				53A79C2229CDFB4800E7489F /* Include */,
 				53A79B3629CDFB1F00E7489F /* mParticle.m */,
@@ -1260,7 +1254,6 @@
 				35C3DE712F2919B40077C0FD /* MPCCPAConsent.h in Headers */,
 				35C3DE752F291DAF0077C0FD /* MPGDPRConsent.h in Headers */,
 				35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */,
-				7213DE812F30F0DF0007A619 /* SceneDelegateHandler.h in Headers */,
 				35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */,
 				D34286122D419CB800FEC2C8 /* MPUploadSettings.h in Headers */,
 				53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */,
@@ -1613,7 +1606,6 @@
 				7AF100042F50000400E74801 /* MPLocation.m in Sources */,
 				53A79D9529CE23F700E7489F /* MPBreadcrumb.m in Sources */,
 				53A79D9629CE23F700E7489F /* MPEnums.m in Sources */,
-				7213DE832F30F0EC0007A619 /* SceneDelegateHandler.m in Sources */,
 				53A79D9729CE23F700E7489F /* MPNetworkPerformance.m in Sources */,
 				53A79D9929CE23F700E7489F /* MPDataPlanFilter.m in Sources */,
 				53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */,
