@@ -154,4 +154,134 @@ final class MPPersistenceStoreTests: XCTestCase {
         XCTAssertTrue(store.isDatabaseOpen)
         XCTAssertTrue(try XCTUnwrap(store.connection).integrityCheck())
     }
+
+    func testSessionRoundTripUpdateArchiveAndDelete() throws {
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            mpidProvider: { 42 }
+        )
+        let session = MPSessionPRIVATE(
+            sessionId: 0,
+            uuid: "session",
+            backgroundTime: 2,
+            startTime: 10,
+            endTime: 20,
+            attributes: ["first": "value"],
+            numberOfInterruptions: 1,
+            eventCounter: 2,
+            suspendTime: 15,
+            userId: 42,
+            sessionUserIds: "42",
+            applicationInfo: ["app": "info"],
+            deviceInfo: ["device": "info"]
+        )
+
+        try store.saveSession(session)
+        XCTAssertNotEqual(session.sessionId, 0)
+        var fetched = try XCTUnwrap(store.fetchSessions().first)
+        XCTAssertEqual(fetched.uuid, "session")
+        XCTAssertEqual(fetched.attributesDictionary["first"] as? String, "value")
+        XCTAssertEqual(fetched.appInfo?["app"] as? String, "info")
+
+        session.attributesDictionary["second"] = "updated"
+        session.endTime = 30
+        try store.updateSession(session)
+        fetched = try XCTUnwrap(store.fetchSessions().first)
+        XCTAssertEqual(fetched.attributesDictionary["second"] as? String, "updated")
+        XCTAssertEqual(fetched.endTime, 30)
+
+        XCTAssertNotNil(try store.archiveSession(session))
+        XCTAssertNil(try store.archiveSession(session))
+        XCTAssertEqual(try store.fetchPreviousSession()?.uuid, "session")
+
+        try store.deleteSession(session)
+        XCTAssertTrue(try store.fetchSessions().isEmpty)
+    }
+
+    func testMessagesRoundTripGroupAndDelete() throws {
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            mpidProvider: { 42 }
+        )
+        let session = MPSessionPRIVATE(startTime: 1, userId: 42, uuid: "session")
+        try store.saveSession(session)
+        let message = MPMessagePRIVATE(
+            sessionId: NSNumber(value: session.sessionId),
+            messageId: 0,
+            uuid: "message",
+            messageType: "e",
+            messageData: Data(#"{"event":"value"}"#.utf8),
+            timestamp: 10,
+            uploadStatus: 1,
+            userId: 42,
+            dataPlanId: "plan",
+            dataPlanVersion: 3
+        )
+
+        try store.saveMessage(message)
+        XCTAssertNotEqual(message.messageId, 0)
+        let groups = try store.fetchMessagesForUploading()
+        let grouped = groups[42]?[NSNumber(value: session.sessionId)]?["plan"]?[3]
+        XCTAssertEqual(grouped?.first?.uuid, "message")
+
+        message.uploadStatus = 2
+        try store.deleteMessages([message])
+        XCTAssertTrue(try store.fetchMessagesForUploading().isEmpty)
+    }
+
+    func testSessionEndAndUploadedMessageQueries() throws {
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            mpidProvider: { 42 }
+        )
+        let session = MPSessionPRIVATE(startTime: 1, userId: 42, uuid: "session")
+        try store.saveSession(session)
+        let message = MPMessagePRIVATE(
+            sessionId: NSNumber(value: session.sessionId),
+            messageId: 0,
+            uuid: "end",
+            messageType: "se",
+            messageData: Data("{}".utf8),
+            timestamp: 10,
+            uploadStatus: 2,
+            userId: 42,
+            dataPlanId: nil,
+            dataPlanVersion: nil
+        )
+        try store.saveMessage(message)
+
+        XCTAssertEqual(try store.fetchSessionEndMessage(in: session)?.uuid, "end")
+        XCTAssertEqual(try store.fetchUploadedMessages(in: session).map(\.uuid), ["end"])
+    }
+
+    func testBreadcrumbsAreScopedAndPruned() throws {
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            mpidProvider: { 42 }
+        )
+        for index in 0...MPPersistenceSchemaPRIVATE.maxBreadcrumbs {
+            let message = MPMessagePRIVATE(
+                sessionId: nil,
+                messageId: 0,
+                uuid: "breadcrumb-\(index)",
+                messageType: "b",
+                messageData: Data(#"{"message":"value"}"#.utf8),
+                timestamp: TimeInterval(index),
+                uploadStatus: 1,
+                userId: 42,
+                dataPlanId: nil,
+                dataPlanVersion: nil
+            )
+            try store.saveBreadcrumb(message)
+        }
+
+        let breadcrumbs = try store.fetchBreadcrumbs()
+        XCTAssertEqual(breadcrumbs.count, MPPersistenceSchemaPRIVATE.maxBreadcrumbs)
+        XCTAssertEqual(breadcrumbs.first?.uuid, "breadcrumb-1")
+        XCTAssertEqual(breadcrumbs.last?.uuid, "breadcrumb-50")
+    }
 }

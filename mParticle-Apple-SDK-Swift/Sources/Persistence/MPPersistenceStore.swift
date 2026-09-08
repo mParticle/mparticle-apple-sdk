@@ -4,6 +4,7 @@ import SQLite3
 final class MPPersistenceStorePRIVATE {
     private let fileSystem: MPPersistenceFileSystemPRIVATE
     private let logger: MPLog
+    private let mpidProvider: () -> NSNumber
     private(set) var connection: MPSQLiteConnection?
     let databasePath: String
 
@@ -11,9 +12,15 @@ final class MPPersistenceStorePRIVATE {
         connection != nil
     }
 
-    init(fileSystem: MPPersistenceFileSystemPRIVATE, logger: MPLog, openImmediately: Bool = true) {
+    init(
+        fileSystem: MPPersistenceFileSystemPRIVATE,
+        logger: MPLog,
+        openImmediately: Bool = true,
+        mpidProvider: @escaping () -> NSNumber = { MPUserDefaults.storedMpId() }
+    ) {
         self.fileSystem = fileSystem
         self.logger = logger
+        self.mpidProvider = mpidProvider
 
         fileSystem.migrateLegacyDatabaseDirectoryIfNeeded()
         fileSystem.removeLegacySessionNumberFileIfNeeded()
@@ -93,6 +100,18 @@ final class MPPersistenceStorePRIVATE {
 
     func purgeMemory() {
         connection?.releaseMemory()
+    }
+
+    func currentMpid() -> NSNumber {
+        mpidProvider()
+    }
+
+    func requireConnection() throws -> MPSQLiteConnection {
+        try openDatabase()
+        guard let connection else {
+            throw MPSQLiteError(code: SQLITE_CANTOPEN, message: "Database is not open", sql: nil)
+        }
+        return connection
     }
 
     private func setupDatabase() throws {
