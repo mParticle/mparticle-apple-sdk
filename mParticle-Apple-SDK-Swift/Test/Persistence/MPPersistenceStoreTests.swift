@@ -1,6 +1,19 @@
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
+private final class TestUploadSettingsCodec: NSObject, MPUploadSettingsCoding {
+    let decodedSettings = NSObject()
+    var shouldEncode = true
+
+    func archiveUploadSettings(_: NSObject) -> Data? {
+        shouldEncode ? Data("settings".utf8) : nil
+    }
+
+    func unarchiveUploadSettings(_ data: Data) -> NSObject? {
+        data == Data("settings".utf8) ? decodedSettings : nil
+    }
+}
+
 final class MPPersistenceStoreTests: XCTestCase {
     private var rootDirectory: URL!
     private var logger: MPLog!
@@ -309,5 +322,112 @@ final class MPPersistenceStoreTests: XCTestCase {
         XCTAssertEqual(breadcrumbs.count, MPPersistenceSchemaPRIVATE.maxBreadcrumbs)
         XCTAssertEqual(breadcrumbs.first?.uuid, "breadcrumb-1")
         XCTAssertEqual(breadcrumbs.last?.uuid, "breadcrumb-50")
+    }
+
+    func testUploadRoundTripOrderingAndDelete() throws {
+        let codec = TestUploadSettingsCodec()
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsCodec: codec
+        )
+        let later = upload(uuid: "later", timestamp: 20)
+        let earlier = upload(uuid: "earlier", timestamp: 10)
+
+        XCTAssertTrue(try store.saveUpload(later))
+        XCTAssertTrue(try store.saveUpload(earlier))
+
+        var fetched = try store.fetchUploads()
+        XCTAssertEqual(fetched.map(\.uuid), ["earlier", "later"])
+        XCTAssertTrue(fetched.allSatisfy { $0.uploadSettings === codec.decodedSettings })
+
+        try store.deleteUpload(earlier)
+        fetched = try store.fetchUploads()
+        XCTAssertEqual(fetched.map(\.uuid), ["later"])
+    }
+
+    func testOptOutSuppressesOrdinaryUploadsButKeepsOptOutMessage() throws {
+        let codec = TestUploadSettingsCodec()
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsCodec: codec,
+            isOptedOut: { true }
+        )
+        let ordinary = upload(uuid: "ordinary", timestamp: 1)
+        let optOut = upload(uuid: "opt-out", timestamp: 2)
+        optOut.containsOptOutMessage = true
+
+        XCTAssertTrue(try store.saveUpload(ordinary))
+        XCTAssertEqual(ordinary.uploadId, 0)
+        XCTAssertTrue(try store.saveUpload(optOut))
+        XCTAssertEqual(try store.fetchUploads().map(\.uuid), ["opt-out"])
+    }
+
+    func testAtomicBatchRollsBackWhenUploadSettingsCannotEncode() throws {
+        let codec = TestUploadSettingsCodec()
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsCodec: codec
+        )
+        let message = MPMessagePRIVATE(
+            sessionId: nil,
+            messageId: 0,
+            uuid: "message",
+            messageType: "e",
+            messageData: Data("{}".utf8),
+            timestamp: 1,
+            uploadStatus: 1,
+            userId: 42,
+            dataPlanId: nil,
+            dataPlanVersion: nil
+        )
+        try store.saveMessage(message)
+        codec.shouldEncode = false
+
+        XCTAssertFalse(try store.saveUploads([upload(uuid: "upload", timestamp: 1)], deleting: [message]))
+        XCTAssertFalse(try store.fetchMessagesForUploading().isEmpty)
+        XCTAssertTrue(try store.fetchUploads().isEmpty)
+    }
+
+    func testAtomicBatchPersistsUploadsAndDeletesMessages() throws {
+        let codec = TestUploadSettingsCodec()
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsCodec: codec
+        )
+        let message = MPMessagePRIVATE(
+            sessionId: nil,
+            messageId: 0,
+            uuid: "message",
+            messageType: "e",
+            messageData: Data("{}".utf8),
+            timestamp: 1,
+            uploadStatus: 1,
+            userId: 42,
+            dataPlanId: nil,
+            dataPlanVersion: nil
+        )
+        try store.saveMessage(message)
+
+        XCTAssertTrue(try store.saveUploads([upload(uuid: "upload", timestamp: 1)], deleting: [message]))
+        XCTAssertTrue(try store.fetchMessagesForUploading().isEmpty)
+        XCTAssertEqual(try store.fetchUploads().map(\.uuid), ["upload"])
+    }
+
+    private func upload(uuid: String, timestamp: TimeInterval) -> MPUploadPRIVATE {
+        MPUploadPRIVATE(
+            sessionId: nil,
+            uploadId: 0,
+            uuid: uuid,
+            uploadData: Data(#"{"events":[]}"#.utf8),
+            timestamp: timestamp,
+            uploadType: 0,
+            dataPlanId: nil,
+            dataPlanVersion: nil,
+            uploadSettings: NSObject()
+        )
     }
 }
