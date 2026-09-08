@@ -84,6 +84,8 @@
 - (void)processDidFinishLaunching:(NSNotification *)notification;
 - (void)beginBackgroundTask;
 - (void)endBackgroundTask;
+- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
+                     persistence:(id<MPBackendPersistence>)persistence;
 - (void)beginBackgroundTimeCheckLoop;
 - (void)cancelBackgroundTimeCheckLoop;
 - (void)endSessionIfTimedOut;
@@ -2320,15 +2322,15 @@
     options.persistenceMaxAgeSeconds = @(maxAge); // 24 hours
     instance.options = options;
     
-    MPBackendController_PRIVATE *backendController = [[MPBackendController_PRIVATE alloc] init];
-    MPPersistenceController_PRIVATE *persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
-    id mockPersistenceController = OCMPartialMock(persistenceController);
+    id mockPersistenceController = OCMProtocolMock(@protocol(MPBackendPersistence));
+    MPBackendController_PRIVATE *backendController =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:nil
+                                                 persistence:mockPersistenceController];
     
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
     [[mockPersistenceController expect] deleteRecordsOlderThan:(currentTime - maxAge)];
     
     instance.backendController = backendController;
-    instance.persistenceController = mockPersistenceController;
     
     [instance.backendController cleanUp:currentTime];
     
