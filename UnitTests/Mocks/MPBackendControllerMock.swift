@@ -309,9 +309,9 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         // MARK: - Notifications
 
         var logUserNotificationCalled = false
-        var logUserNotificationParam: MParticleUserNotification?
+        var logUserNotificationParam: MParticleUserNotificationPRIVATE?
 
-        func logUserNotification(_ userNotification: MParticleUserNotification) {
+        func logUserNotification(_ userNotification: MParticleUserNotificationPRIVATE) {
             logUserNotificationCalled = true
             logUserNotificationParam = userNotification
         }
