@@ -383,56 +383,37 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     }
     
     NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
-    id<NSObject> userAttributeValue = nil;
     NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
-    
-    NSError *error = nil;
-    BOOL success = [MPBackendController_PRIVATE checkAttribute:userAttributeChange.userAttributes
-                     key:localKey
-                   value:userAttributeChange.value
-                   error:&error];
-    
-    if ((!success && error) && error.code == kInvalidDataType) {
-        if (completionHandler) {
-            completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
-        }
-        return;
-    }
-    
-    if (userAttributeChange.isArray) {
-        userAttributeValue = userAttributeChange.value;
-        userAttributeChange.deleted = error.code == kNilAttributeValue && userAttributes[localKey];
-    } else {
-        userAttributeValue = userAttributeChange.value;
-        
-        userAttributeChange.deleted = error.code == kNilAttributeValue && userAttributes[localKey];
-    }
-    
-    if (!error) {
-        userAttributes[localKey] = userAttributeValue;
-    } else if (userAttributeChange.deleted) {
-        [userAttributes removeObjectForKey:localKey];
-        
-        if (!self.deletedUserAttributes) {
-            self.deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
-        }
-        [self.deletedUserAttributes addObject:userAttributeChange.key];
-    } else {
-        if (completionHandler) {
-            completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
-        }
-        
-        return;
+
+    MPAttributeValidationResult validation = [MPBackendController_PRIVATE validateAndLogAttributeKey:localKey
+                                                                                                value:userAttributeChange.value];
+
+    switch ([MPUserAttributeLogic mutationForValidationResult:validation keyExists:userAttributes[localKey] != nil]) {
+        case MPUserAttributeMutationStore:
+            userAttributes[localKey] = userAttributeChange.value;
+            break;
+
+        case MPUserAttributeMutationDelete:
+            userAttributeChange.deleted = YES;
+            [userAttributes removeObjectForKey:localKey];
+
+            if (!self.deletedUserAttributes) {
+                self.deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
+            }
+            [self.deletedUserAttributes addObject:userAttributeChange.key];
+            break;
+
+        case MPUserAttributeMutationReject:
+            if (completionHandler) {
+                completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
+            }
+            return;
     }
     
     NSDictionary *userAttributesCopy = [MPUserAttributeLogic attributesForStorage:userAttributes nullSentinel:kMPNullUserAttributeString];
 
     if (userAttributeChange.changed) {
-        if ([userAttributeValue isKindOfClass:[NSNumber class]]) {
-            userAttributeChange.valueToLog = [(NSNumber *)userAttributeValue stringValue];
-        } else {
-            userAttributeChange.valueToLog = userAttributeValue;
-        }
+        userAttributeChange.valueToLog = [MPUserAttributeLogic valueToLogFor:userAttributeChange.value];
         [self logUserAttributeChange:userAttributeChange];
     }
     
@@ -815,8 +796,9 @@ static BOOL skipNextUpload = NO;
     completionHandler(event, MPExecStatusSuccess);
 }
 
-+ (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
-    static NSString *attributeValidationErrorDomain = @"Attribute Validation";
+// Validates a key/value pair and logs the matching console message. Logging stays here so the
+// `MPILogError` level gate keeps deciding whether the offending value is ever interpolated.
++ (MPAttributeValidationResult)validateAndLogAttributeKey:(NSString *)key value:(id)value {
     id invalidArrayEntry = nil;
     MPAttributeValidationResult result = [MPAttributeValidator validateKey:key
                                                                      value:value
@@ -824,46 +806,65 @@ static BOOL skipNextUpload = NO;
                                                           valueLengthLimit:LIMIT_ATTR_VALUE_LENGTH
                                                          invalidArrayEntry:&invalidArrayEntry];
 
-    if (result == MPAttributeValidationResultValid) {
-        return YES;
-    }
-
-    NSInteger code = kInvalidDataType;
     switch (result) {
         case MPAttributeValidationResultInvalidKey:
-            code = kInvalidKey;
             MPILogError(@"Error while setting attribute key: the key parameter cannot be nil");
             break;
         case MPAttributeValidationResultKeyTooLong:
-            code = kExceededAttributeKeyMaximumLength;
             MPILogError(@"Error while setting attribute key: the key parameter is longer than the maximum allowed length.");
             break;
         case MPAttributeValidationResultNilValue:
             // A nil value may just be treated as a removal, so no error is logged.
-            code = kNilAttributeValue;
             break;
         case MPAttributeValidationResultInvalidType:
-            code = kInvalidDataType;
             MPILogError(@"Error while setting attribute value: must be an NSString or NSArray");
             break;
         case MPAttributeValidationResultValueTooLong:
-            code = kExceededAttributeValueMaximumLength;
             MPILogError(@"Error while setting attribute value: value is longer than the maximum allowed %@", value);
             break;
         case MPAttributeValidationResultInvalidArrayEntry:
-            code = kInvalidDataType;
             MPILogError(@"Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: %@", invalidArrayEntry);
             break;
         case MPAttributeValidationResultArrayValueTooLong:
-            code = kExceededAttributeValueMaximumLength;
             MPILogError(@"Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
             break;
         case MPAttributeValidationResultValid:
             break;
     }
 
+    return result;
+}
+
++ (NSInteger)errorCodeForValidationResult:(MPAttributeValidationResult)result {
+    switch (result) {
+        case MPAttributeValidationResultInvalidKey:
+            return kInvalidKey;
+        case MPAttributeValidationResultKeyTooLong:
+            return kExceededAttributeKeyMaximumLength;
+        case MPAttributeValidationResultNilValue:
+            return kNilAttributeValue;
+        case MPAttributeValidationResultValueTooLong:
+        case MPAttributeValidationResultArrayValueTooLong:
+            return kExceededAttributeValueMaximumLength;
+        case MPAttributeValidationResultInvalidType:
+        case MPAttributeValidationResultInvalidArrayEntry:
+        case MPAttributeValidationResultValid:
+            return kInvalidDataType;
+    }
+}
+
++ (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
+    static NSString *attributeValidationErrorDomain = @"Attribute Validation";
+    MPAttributeValidationResult result = [self validateAndLogAttributeKey:key value:value];
+
+    if (result == MPAttributeValidationResultValid) {
+        return YES;
+    }
+
     if (error) {
-        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:code userInfo:nil];
+        *error = [NSError errorWithDomain:attributeValidationErrorDomain
+                                     code:[self errorCodeForValidationResult:result]
+                                 userInfo:nil];
     }
 
     return NO;
@@ -1462,7 +1463,7 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    if (!(([value isKindOfClass:[NSString class]] && ((NSString *)value).length > 0) || [value isKindOfClass:[NSNumber class]]) && value != nil) {
+    if (![MPAttributeValidator isAcceptableScalarValue:value]) {
         if (completionHandler) {
             completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
         }
@@ -1487,7 +1488,7 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    if (!([values isKindOfClass:[NSArray class]] && values.count > 0)) {
+    if (![MPAttributeValidator isAcceptableValueList:values]) {
         if (completionHandler) {
             completionHandler(keyCopy, values, MPExecStatusInvalidDataType);
         }
