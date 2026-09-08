@@ -51,6 +51,35 @@ final class MPSQLiteTests: XCTestCase {
         XCTAssertEqual(count.int(at: 0), 2)
     }
 
+    func testEmptyBlobIsDistinctFromNull() throws {
+        let database = try MPSQLiteConnection(path: ":memory:")
+        try database.execute("CREATE TABLE blobs (value BLOB)")
+        let insert = try database.prepare("INSERT INTO blobs VALUES (?), (?)")
+        try insert.bind(Data(), at: 1)
+        try insert.bind(nil as Data?, at: 2)
+        XCTAssertEqual(try insert.step(), .done)
+
+        let select = try database.prepare("SELECT value FROM blobs ORDER BY rowid")
+        XCTAssertEqual(try select.step(), .row)
+        XCTAssertFalse(select.isNull(at: 0))
+        XCTAssertEqual(select.data(at: 0), Data())
+        XCTAssertEqual(try select.step(), .row)
+        XCTAssertTrue(select.isNull(at: 0))
+        XCTAssertNil(select.data(at: 0))
+    }
+
+    func testCloseRetainsBusyConnectionUntilStatementsFinalize() throws {
+        let database = try MPSQLiteConnection(path: ":memory:")
+        var statement: MPSQLiteStatement? = try database.prepare("SELECT 1")
+
+        XCTAssertFalse(database.close())
+        XCTAssertNotNil(database.handle)
+
+        statement = nil
+        XCTAssertTrue(database.close())
+        XCTAssertNil(database.handle)
+    }
+
     func testTransactionCommitsSuccessfulWork() throws {
         let database = try MPSQLiteConnection(path: ":memory:")
         try database.execute("CREATE TABLE records (value INTEGER)")

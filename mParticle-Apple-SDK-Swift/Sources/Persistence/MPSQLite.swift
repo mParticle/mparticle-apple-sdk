@@ -48,12 +48,16 @@ final class MPSQLiteConnection {
         close()
     }
 
-    func close() {
+    @discardableResult
+    func close() -> Bool {
         guard let handle else {
-            return
+            return true
         }
-        sqlite3_close(handle)
+        guard sqlite3_close(handle) == SQLITE_OK else {
+            return false
+        }
         self.handle = nil
+        return true
     }
 
     func execute(_ sql: String) throws {
@@ -132,7 +136,7 @@ final class MPSQLiteConnection {
 }
 
 final class MPSQLiteStatement {
-    private unowned let connection: MPSQLiteConnection
+    private let connection: MPSQLiteConnection
     private var handle: OpaquePointer?
     let sql: String
 
@@ -188,6 +192,10 @@ final class MPSQLiteStatement {
             try bindNull(at: index)
             return
         }
+        if value.isEmpty {
+            try checkBind(sqlite3_bind_zeroblob(requiredHandle(), index, 0))
+            return
+        }
         let result = value.withUnsafeBytes { bytes in
             sqlite3_bind_blob(requiredHandle(), index, bytes.baseAddress, Int32(bytes.count), Self.transient)
         }
@@ -230,10 +238,17 @@ final class MPSQLiteStatement {
     }
 
     func data(at index: Int32) -> Data? {
-        guard !isNull(at: index), let bytes = sqlite3_column_blob(requiredHandle(), index) else {
+        guard !isNull(at: index) else {
             return nil
         }
-        return Data(bytes: bytes, count: Int(sqlite3_column_bytes(requiredHandle(), index)))
+        let count = Int(sqlite3_column_bytes(requiredHandle(), index))
+        guard count > 0 else {
+            return Data()
+        }
+        guard let bytes = sqlite3_column_blob(requiredHandle(), index) else {
+            return nil
+        }
+        return Data(bytes: bytes, count: count)
     }
 
     func jsonDictionary(at index: Int32) -> [String: Any]? {
