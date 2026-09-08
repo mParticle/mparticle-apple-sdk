@@ -184,6 +184,27 @@ extension MPPersistenceStorePRIVATE {
         return cookies
     }
 
+    func deleteCookie(id: Int64) throws {
+        let statement = try requireConnection().prepare("DELETE FROM cookies WHERE _id = ?")
+        try statement.bind(id, at: 1)
+        _ = try statement.step()
+    }
+
+    func updateCookie(_ cookie: MPPersistedCookie) throws {
+        let statement = try requireConnection().prepare(
+            "UPDATE cookies SET content = ?, domain = ?, expiration = ? WHERE _id = ?"
+        )
+        try statement.bind(cookie.content, at: 1)
+        try statement.bind(cookie.domain, at: 2)
+        try statement.bind(cookie.expiration, at: 3)
+        try statement.bind(cookie.id, at: 4)
+        _ = try statement.step()
+    }
+
+    func saveCookie(_ cookie: MPPersistedCookie) throws {
+        try saveCookie(cookie, consumerInfoId: cookie.consumerInfoId, mpid: cookie.mpid)
+    }
+
     func deleteConsumerInfo() throws {
         let connection = try requireConnection()
         try connection.transaction {
