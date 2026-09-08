@@ -54,6 +54,9 @@ final class MPPersistenceStorePRIVATE {
 
     func resetDatabaseForWorkspaceSwitching() throws {
         try openDatabase()
+        defer {
+            closeDatabase()
+        }
         guard let connection else {
             return
         }
@@ -61,9 +64,12 @@ final class MPPersistenceStorePRIVATE {
             guard let statement = statement as? String else {
                 continue
             }
-            try connection.execute(statement)
+            do {
+                try connection.execute(statement)
+            } catch {
+                logger.error("Failed to delete workspace persistence records: \(error)")
+            }
         }
-        closeDatabase()
     }
 
     func deleteRecordsOlderThan(_ timestamp: TimeInterval) throws {

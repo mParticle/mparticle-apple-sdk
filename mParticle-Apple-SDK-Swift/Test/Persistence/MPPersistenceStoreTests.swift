@@ -90,6 +90,28 @@ final class MPPersistenceStoreTests: XCTestCase {
         }
     }
 
+    func testWorkspaceResetContinuesAfterDeleteFailureAndClosesDatabase() throws {
+        let store = MPPersistenceStorePRIVATE(fileSystem: fileSystem, logger: logger)
+        let connection = try XCTUnwrap(store.connection)
+        try connection.execute(
+            "INSERT INTO forwarding_records (forwarding_data, mpid) VALUES (X'01', 1)"
+        )
+        try connection.execute(
+            "INSERT INTO integration_attributes (kit_code, attributes_data) VALUES (1, X'01')"
+        )
+        try connection.execute("DROP TABLE messages")
+
+        try store.resetDatabaseForWorkspaceSwitching()
+
+        XCTAssertFalse(store.isDatabaseOpen)
+        try store.openDatabase()
+        for table in ["forwarding_records", "integration_attributes"] {
+            let count = try XCTUnwrap(store.connection?.prepare("SELECT COUNT(*) FROM \(table)"))
+            XCTAssertEqual(try count.step(), .row)
+            XCTAssertEqual(count.int(at: 0), 0)
+        }
+    }
+
     func testRetentionDeletesOnlyExpiredRecords() throws {
         let store = MPPersistenceStorePRIVATE(fileSystem: fileSystem, logger: logger)
         let connection = try XCTUnwrap(store.connection)
