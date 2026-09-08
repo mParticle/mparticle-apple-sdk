@@ -2,7 +2,6 @@
 #import <sqlite3.h>
 #import "mParticle.h"
 #import "MPBackendController.h"
-#import "MPPersistenceController.h"
 #import "MPILogger.h"
 #import "MPStateMachine.h"
 @import mParticle_Apple_SDK_Swift;
@@ -13,7 +12,6 @@ static void MPPrepareStatement(sqlite3 *database, NSString *sql, sqlite3_stmt **
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 - (MPLog *)getLogger;

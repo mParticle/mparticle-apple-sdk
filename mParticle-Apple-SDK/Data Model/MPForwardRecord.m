@@ -7,7 +7,7 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPEventProjection.h"
 #import "MPKitExecStatus.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "mParticle.h"
 @import mParticle_Apple_SDK_Swift;
 

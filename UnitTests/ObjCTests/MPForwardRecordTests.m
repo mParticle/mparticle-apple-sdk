@@ -9,7 +9,7 @@
 #import "MPProduct.h"
 #import "MPCommerceEvent.h"
 #import "MPBaseTestCase.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 
 @interface MPForwardRecord ()
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;

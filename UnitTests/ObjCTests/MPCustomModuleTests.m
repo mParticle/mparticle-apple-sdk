@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MPIConstants.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -99,7 +99,7 @@
 
 - (void)setUp {
     [super setUp];
-    [MPPersistenceController_PRIVATE setMpid:@1];
+    [MPPersistenceUtilities setMpid:@1];
 }
 
 - (void)testConfiguration {

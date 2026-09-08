@@ -5,8 +5,8 @@
 #import "MPEnums.h"
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
-#import "MPPersistenceController.h"
-#import "../Persistence/MPPersistenceAdapter.h"
+#import "MPPersistenceUtilities.h"
+#import "MPPersistenceAdapter.h"
 #import "MPILogger.h"
 #import "MPKitFilter.h"
 #import "MPEvent.h"
@@ -723,14 +723,14 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter {
-    MPConsentState *state = [MPPersistenceController_PRIVATE
+    MPConsentState *state = [MPPersistenceUtilities
         effectiveConsentStateForMpid:[MParticle sharedInstance].identity.currentUser.userId];
     return [self.filterEngine isDisabledByConsentFilter:[self consentFilterSnapshotForFilter:kitFilter]
                                                 consent:[self consentSnapshotForState:state]];
 }
 
 - (BOOL)isKitDisabled:(NSNumber *)kitCode {
-    MPConsentState *state = [MPPersistenceController_PRIVATE
+    MPConsentState *state = [MPPersistenceUtilities
         effectiveConsentStateForMpid:[MParticle sharedInstance].identity.currentUser.userId];
     return [self.filterEngine isKitDisabledWithIsDisabledKit:[_disabledKits containsObject:kitCode]
                                                consentFilter:[self consentFilterSnapshotForFilter:self.kitConfigurations[kitCode].consentKitFilter]

@@ -17,7 +17,8 @@
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPRokt+MParticlePrivate.h"
-#import "Persistence/MPPersistenceAdapter.h"
+#import "MPPersistenceAdapter.h"
+#import "Persistence/MPPersistenceUploadSettingsCodec.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -38,8 +39,39 @@ static NSString *const kMPStateKey = @"state";
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
 @end
 
+@interface MPBackendController_PRIVATE (PersistenceInjection)
+- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
+                     persistence:(id<MPBackendPersistence>)persistence;
+@end
+
 @interface MPKitContainer_PRIVATE ()
 - (BOOL)kitsInitialized;
+@end
+
+@interface MPPersistenceUploadSettingsProvider : NSObject <MPUploadSettingsProviding>
+- (instancetype)initWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine
+                      networkOptions:(nullable MPNetworkOptions *)networkOptions;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nullable) MPNetworkOptions *networkOptions;
+@end
+
+@implementation MPPersistenceUploadSettingsProvider
+
+- (instancetype)initWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine
+                      networkOptions:(MPNetworkOptions *)networkOptions {
+    self = [super init];
+    if (self) {
+        _stateMachine = stateMachine;
+        _networkOptions = networkOptions;
+    }
+    return self;
+}
+
+- (NSObject *)currentUploadSettings {
+    return [MPUploadSettings currentUploadSettingsWithStateMachine:self.stateMachine
+                                                    networkOptions:self.networkOptions];
+}
+
 @end
 
 @interface MParticle() <MPBackendControllerDelegate
@@ -50,7 +82,7 @@ static NSString *const kMPStateKey = @"state";
     BOOL sdkInitialized;
 }
 
-@property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 @property (nonatomic, strong) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
@@ -91,7 +123,6 @@ static NSString *const kMPStateKey = @"state";
 @synthesize identity = _identity;
 @synthesize rokt = _rokt;
 @synthesize optOut = _optOut;
-@synthesize persistenceController = _persistenceController;
 @synthesize stateMachine = _stateMachine;
 @synthesize kitContainer_PRIVATE = _kitContainer_PRIVATE;
 @synthesize kitContainer = _kitContainer;
@@ -156,13 +187,38 @@ MPLog* logger;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
-    _persistenceAdapter = [[MPPersistenceAdapter alloc] initWithMParticle:self];
     logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
     _sceneDelegateHandler.logger = logger;
 
     _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger sdkVersion:kMParticleSDKVersion];
     return self;
+}
+
+- (void)initializePersistence {
+    if (self.persistenceStore) {
+        return;
+    }
+    MPPersistenceFileSystemPRIVATE *fileSystem =
+        [[MPPersistenceFileSystemPRIVATE alloc] initWithLogger:logger];
+    [fileSystem migrateLegacyDatabaseDirectoryIfNeeded];
+    [fileSystem removeLegacySessionNumberFileIfNeeded];
+    MPPersistenceUploadSettingsCodec *codec = [[MPPersistenceUploadSettingsCodec alloc] init];
+    MPDatabaseMigratorPRIVATE *migrator =
+        [[MPDatabaseMigratorPRIVATE alloc] initWithDatabaseVersions:MPPersistenceSchemaPRIVATE.databaseVersions
+                                                         fileSystem:fileSystem
+                                                             logger:logger
+                                             uploadSettingsProvider:[[MPPersistenceUploadSettingsProvider alloc] initWithStateMachine:_stateMachine
+                                                                                                                   networkOptions:_networkOptions]
+                                               uploadSettingsCodec:codec];
+    NSNumber *version = migrator.versionNeedingMigration;
+    if (version) {
+        [migrator migrateFromVersion:version];
+    }
+    _persistenceStore = [[MPPersistenceStorePRIVATE alloc] initWithFileSystem:fileSystem
+                                                                       logger:logger
+                                                          uploadSettingsCodec:codec];
+    _persistenceAdapter = [[MPPersistenceAdapter alloc] initWithStore:_persistenceStore];
 }
 
 - (void)setExecutor: (id<ExecutorProtocol>)newExecutor {
@@ -478,7 +534,8 @@ MPLog* logger;
                 (long)options.environment, (unsigned long)options.logLevel);
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultUserAgentOverride:options.defaultAgent];
     
-    _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self];
+    _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self
+                                                                   persistence:self.persistenceStore];
     
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;

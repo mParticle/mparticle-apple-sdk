@@ -1,7 +1,7 @@
 #import "MPUploadBuilder.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPConsentState.h"
@@ -9,7 +9,7 @@
 #import "mParticle.h"
 #import "MPILogger.h"
 #import "MPUserDefaultsConnector.h"
-#import "../Persistence/MPPersistenceAdapter.h"
+#import "MPPersistenceAdapter.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()

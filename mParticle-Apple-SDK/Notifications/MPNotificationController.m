@@ -1,6 +1,5 @@
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
-#import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"

@@ -21,7 +21,7 @@
 #import "MPTransactionAttributes.h"
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
@@ -2566,7 +2566,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     
     [state setGDPRConsentState:[gdprState copy]];
     
-    [MPPersistenceController_PRIVATE setConsentState:state forMpid:[MPPersistenceController_PRIVATE mpId]];
+    [MPPersistenceUtilities setConsentState:state forMpid:[MPPersistenceUtilities mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
     
     isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
@@ -2606,7 +2606,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         
     [state setCCPAConsentState: [ccpaConsent copy]];
     
-    [MPPersistenceController_PRIVATE setConsentState:state forMpid:[MPPersistenceController_PRIVATE mpId]];
+    [MPPersistenceUtilities setConsentState:state forMpid:[MPPersistenceUtilities mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
     
     BOOL isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
@@ -2633,7 +2633,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     userConsent.document = @"user-document";
     [userState addGDPRConsentState:userConsent purpose:@"Processing"];
 
-    [MPPersistenceController_PRIVATE setConsentState:userState forMpid:[MPPersistenceController_PRIVATE mpId]];
+    [MPPersistenceUtilities setConsentState:userState forMpid:[MPPersistenceUtilities mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = userState;
 
     XCTAssertTrue([[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter]);

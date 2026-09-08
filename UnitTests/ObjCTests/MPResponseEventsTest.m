@@ -1,7 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
@@ -47,10 +47,10 @@
     NSString *newDas = @"abcd1234";
 
     stateMachine.consumerInfo.uniqueIdentifier = originalDas;
-    [MPPersistenceController_PRIVATE setMpid:originalMpId];
+    [MPPersistenceUtilities setMpid:originalMpId];
     stateMachine.consumerInfo.cookies = originalCookies;
     
-    XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], originalMpId);
+    XCTAssertEqualObjects([MPPersistenceUtilities mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));
     
@@ -61,7 +61,7 @@
                                        }};
     
     [MPNetworkCommunication_PRIVATE parseConfiguration:response];
-    XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], originalMpId);
+    XCTAssertEqualObjects([MPPersistenceUtilities mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));
 }

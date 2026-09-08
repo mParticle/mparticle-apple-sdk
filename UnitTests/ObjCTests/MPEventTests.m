@@ -5,7 +5,7 @@
 #import "MPStateMachine.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPProduct.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPBaseTestCase.h"
@@ -137,7 +137,7 @@
 }
 
 - (void)testDictionaryRepresentation {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
@@ -171,7 +171,7 @@
 }
 
 - (void)testDictionaryRepresentationWithDictionaryValues {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
@@ -206,7 +206,7 @@
 }
 
 - (void)testDictionaryRepresentationWithDictionaryValuesContainingDictionary {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
@@ -241,7 +241,7 @@
 }
 
 - (void)testDictionaryRepresentationWithNullValues {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
