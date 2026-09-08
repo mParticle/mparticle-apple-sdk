@@ -53,12 +53,19 @@
 
 @end
 
+@interface MPPersistenceController_PRIVATE (Tests)
+
+@property (nonatomic, strong, readonly) MPPersistenceStorePRIVATE *store;
+
+@end
+
 #pragma mark - MPBackendController+Tests category
 @interface MPBackendController_PRIVATE(Tests)
 
 @property (nonatomic, strong) MPNetworkCommunication_PRIVATE *networkCommunication;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
+@property (nonatomic, strong) id<MPBackendPersistence> persistence;
 
 - (NSString *)caseInsensitiveKeyInDictionary:(NSDictionary *)dictionary withKey:(NSString *)key;
 - (void)cleanUp;
@@ -124,7 +131,10 @@
     
     [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     
-    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    [MParticle sharedInstance].backendController =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]
+                                                 persistence:persistence.store];
     self.backendController = [MParticle sharedInstance].backendController;
     messageQueue = [MParticle messageQueue];
     
@@ -1951,8 +1961,7 @@
                        plCrashReport:plCrashReport
                    completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
-    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSDictionary *messagesDictionary = [self.backendController.persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
