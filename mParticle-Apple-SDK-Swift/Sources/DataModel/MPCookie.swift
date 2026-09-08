@@ -96,32 +96,28 @@ public final class MPCookiePRIVATE: NSObject, NSSecureCoding {
         if let expiration { coder.encode(expiration, forKey: CodingKeys.expiration) }
     }
 
-    /// Ported verbatim from the deleted Objective-C wrapper, including a defect: `content`,
-    /// `domain` and `expiration` are encoded as strings but decoded with `NSDictionary` as the
-    /// expected class, so they never survive a round trip and a restored cookie carries only its
-    /// name.
+    /// `content`, `domain` and `expiration` are encoded as strings, so they are decoded as strings.
     ///
-    /// The production persistence path does not go through here — cookies are written as raw
-    /// sqlite columns, and the only production archives are `MPUploadSettings` and a
-    /// configuration dictionary. Cookies *are* archivable, though: `MPConsumerInfo` conforms to
+    /// The deleted Objective-C wrapper passed `NSDictionary` as the expected class for all three,
+    /// which never matches an `NSString`, so every restored cookie carried only its name.
+    ///
+    /// It went unnoticed because no production path archives a cookie — cookies are written as raw
+    /// sqlite columns, and the only production archives are `MPUploadSettings` and a configuration
+    /// dictionary. Cookies are archivable in principle: `MPConsumerInfo` conforms to
     /// `NSSecureCoding` and encodes its `cookies` array, and `MPConsumerInfoTests.testInstance`
-    /// and `testConsumerInfoEncoding` exercise exactly that. Neither asserts the cookie fields,
-    /// and `isEqual(toCookie:)` compares names only, which is why the loss goes unnoticed there
-    /// and in `testCookie`.
-    ///
-    /// Left as-is deliberately: repairing it would change what a decoded cookie contains, which is
-    /// a behaviour change rather than a migration. Tracked as a follow-up.
+    /// and `testConsumerInfoEncoding` do exercise that. Neither asserts the cookie fields, and
+    /// `isEqual(toCookie:)` compares names only, so the round-trip assertions passed over the loss.
     public convenience init?(coder: NSCoder) {
         let name = coder.decodeObject(of: NSString.self, forKey: CodingKeys.name) as String?
 
         let configuration = NSMutableDictionary()
-        if let content = coder.decodeObject(of: NSDictionary.self, forKey: CodingKeys.content) {
+        if let content = coder.decodeObject(of: NSString.self, forKey: CodingKeys.content) {
             configuration[Keys.content] = content
         }
-        if let domain = coder.decodeObject(of: NSDictionary.self, forKey: CodingKeys.domain) {
+        if let domain = coder.decodeObject(of: NSString.self, forKey: CodingKeys.domain) {
             configuration[Keys.domain] = domain
         }
-        if let expiration = coder.decodeObject(of: NSDictionary.self, forKey: CodingKeys.expiration) {
+        if let expiration = coder.decodeObject(of: NSString.self, forKey: CodingKeys.expiration) {
             configuration[Keys.expiration] = expiration
         }
 
