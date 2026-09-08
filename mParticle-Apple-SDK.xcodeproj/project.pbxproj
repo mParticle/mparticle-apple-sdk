@@ -175,7 +175,6 @@
 		53A79D9329CE23F700E7489F /* MPForwardRecord.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79ACA29CDFB1E00E7489F /* MPForwardRecord.m */; };
 		53A79D9529CE23F700E7489F /* MPBreadcrumb.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AC129CDFB1E00E7489F /* MPBreadcrumb.m */; };
 		53A79D9629CE23F700E7489F /* MPEnums.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AD029CDFB1F00E7489F /* MPEnums.m */; };
-		53A79D9729CE23F700E7489F /* MPNetworkPerformance.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AB429CDFB1E00E7489F /* MPNetworkPerformance.m */; };
 		53A79D9929CE23F700E7489F /* MPDataPlanFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4B29CDFB1F00E7489F /* MPDataPlanFilter.m */; };
 		53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79ACD29CDFB1E00E7489F /* MPIntegrationAttributes.m */; };
 		53A79D9C29CE23F700E7489F /* MPAliasRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79A9C29CDFB1E00E7489F /* MPAliasRequest.m */; };
@@ -341,7 +340,6 @@
 		53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformance.h; sourceTree = "<group>"; };
 		53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConnectorFactoryProtocol.h; sourceTree = "<group>"; };
 		53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
-		53A79AB429CDFB1E00E7489F /* MPNetworkPerformance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkPerformance.m; sourceTree = "<group>"; };
 		53A79AB829CDFB1E00E7489F /* MPPersistenceController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPersistenceController.m; sourceTree = "<group>"; };
 		53A79AB929CDFB1E00E7489F /* MPDatabaseMigrationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDatabaseMigrationController.m; sourceTree = "<group>"; };
 		53A79ABA29CDFB1E00E7489F /* MPDatabaseMigrationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPDatabaseMigrationController.h; sourceTree = "<group>"; };
@@ -571,6 +569,7 @@
 				Test/Network/MPUploadResponseHandlerTests.swift,
 				Test/Network/MPUploadDeviceInfoTests.swift,
 				Test/Network/MPConfigResponseParserTests.swift,
+				Test/Network/MPNetworkPerformanceTests.swift,
 				Test/Network/MPURLTests.swift,
 				Test/Notifications/MParticleUserNotificationTests.swift,
 				Test/Notifications/MPDeviceTokenStoreTests.swift,
@@ -654,6 +653,7 @@
 				Test/Network/MPUploadResponseHandlerTests.swift,
 				Test/Network/MPUploadDeviceInfoTests.swift,
 				Test/Network/MPConfigResponseParserTests.swift,
+				Test/Network/MPNetworkPerformanceTests.swift,
 				Test/Network/MPURLTests.swift,
 				Test/Notifications/MParticleUserNotificationTests.swift,
 				Test/Notifications/MPDeviceTokenStoreTests.swift,
@@ -860,7 +860,6 @@
 				53A79AA929CDFB1E00E7489F /* MPNetworkCommunication.m */,
 				53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */,
 				53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */,
-				53A79AB429CDFB1E00E7489F /* MPNetworkPerformance.m */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -1606,7 +1605,6 @@
 				7AF100042F50000400E74801 /* MPLocation.m in Sources */,
 				53A79D9529CE23F700E7489F /* MPBreadcrumb.m in Sources */,
 				53A79D9629CE23F700E7489F /* MPEnums.m in Sources */,
-				53A79D9729CE23F700E7489F /* MPNetworkPerformance.m in Sources */,
 				53A79D9929CE23F700E7489F /* MPDataPlanFilter.m in Sources */,
 				53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */,
 				53A79D9C29CE23F700E7489F /* MPAliasRequest.m in Sources */,
