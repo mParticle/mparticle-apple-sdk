@@ -13,6 +13,9 @@
 
 @interface MParticle (Tests)
 @property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
+- (MPLog *)getLogger;
 @end
 
 @interface MPTestConnectorFactory : NSObject <MPConnectorFactoryProtocol>
@@ -50,6 +53,13 @@
 - (void)tearDown {
     MPNetworkCommunication_PRIVATE.connectorFactory = nil;
     [super tearDown];
+}
+
+- (MPMessageBuilderContext *)messageBuilderContext {
+    MParticle *mparticle = [MParticle sharedInstance];
+    return [[MPMessageBuilderContext alloc] initWithDataPlanId:mparticle.dataPlanId
+                                               dataPlanVersion:mparticle.dataPlanVersion
+                                                        logger:[mparticle getLogger]];
 }
 
 - (id)attemptSecureEncodingwithClass:(Class)class Object:(id)object {

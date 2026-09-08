@@ -68,4 +68,24 @@ import Foundation
 
         return .valid
     }
+
+    /// Whether a scalar attribute value may be passed on for full validation: a non-empty string,
+    /// any number, or nil — a nil value reaches the change path as a removal rather than being
+    /// rejected here.
+    @objc(isAcceptableScalarValue:)
+    public static func isAcceptableScalarValue(_ value: Any?) -> Bool {
+        guard let value else { return true }
+        if let string = value as? NSString { return string.length > 0 }
+        return value is NSNumber
+    }
+
+    /// Whether a list attribute value may be passed on: a non-empty array. Entry types are checked
+    /// later by `validate(key:value:...)`, which reports the offending entry.
+    @objc(isAcceptableValueList:)
+    public static func isAcceptableValueList(_ values: Any?) -> Bool {
+        // `[Any]`, not `NSArray`: the bridged Swift array has `isEmpty`, which SwiftLint's
+        // `empty_count` rule requires and which `NSArray` does not provide.
+        guard let values = values as? [Any] else { return false }
+        return !values.isEmpty
+    }
 }

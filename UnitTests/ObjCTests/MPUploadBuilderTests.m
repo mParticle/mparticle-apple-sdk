@@ -1,6 +1,5 @@
 #import <XCTest/XCTest.h>
 #import "MPUploadBuilder.h"
-#import "MPMessageBuilder.h"
 #import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPStateMachine.h"
@@ -126,7 +125,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
@@ -200,7 +199,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:nil
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
@@ -280,7 +279,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
@@ -362,7 +361,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
@@ -441,7 +440,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
@@ -523,7 +522,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
@@ -608,7 +607,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
@@ -689,7 +688,7 @@
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:messageInfo];
+                                                                         messageInfo:messageInfo context:self.messageBuilderContext];
     
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
