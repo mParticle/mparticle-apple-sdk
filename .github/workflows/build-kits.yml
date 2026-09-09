@@ -43,10 +43,14 @@ jobs:
           path: |
             ~/.cocoapods
             ~/Library/Caches/CocoaPods
-          key: cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.CACHE_WEEK }}-${{ hashFiles(format('{0}/*.podspec', matrix.kit.local_path)) }}
+          # "::" terminates the kit name unambiguously — restore-keys is a plain
+          # string-prefix match, and kit names share hyphens (e.g. "rokt" is a
+          # literal prefix of "rokt-sdk-plus-ios"), so a plain "-" boundary lets
+          # a small kit's cache miss restore a much bigger kit's cache instead.
+          key: cocoapods-${{ runner.os }}-${{ matrix.kit.name }}::${{ env.CACHE_WEEK }}-${{ hashFiles(format('{0}/*.podspec', matrix.kit.local_path)) }}
           restore-keys: |
-            cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.CACHE_WEEK }}-
-            cocoapods-${{ runner.os }}-${{ matrix.kit.name }}-
+            cocoapods-${{ runner.os }}-${{ matrix.kit.name }}::${{ env.CACHE_WEEK }}-
+            cocoapods-${{ runner.os }}-${{ matrix.kit.name }}::
       - name: Pod Lib Lint
         run: |
           echo "Linting: ${{ matrix.kit.podspec }}"
@@ -99,9 +103,13 @@ jobs:
           # It never holds compiled objects, so nothing here can go stale: every
           # step still runs a full xcodebuild compile against these sources.
           path: ~/Library/Caches/org.swift.swiftpm
-          key: spm-sources-${{ runner.os }}-${{ matrix.kit.name }}-${{ env.CACHE_WEEK }}
+          # "::" terminates the kit name unambiguously — restore-keys is a plain
+          # string-prefix match, and kit names share hyphens (e.g. "rokt" is a
+          # literal prefix of "rokt-sdk-plus-ios"), so a plain "-" boundary lets
+          # a small kit's cache miss restore a much bigger kit's cache instead.
+          key: spm-sources-${{ runner.os }}-${{ matrix.kit.name }}::${{ env.CACHE_WEEK }}
           restore-keys: |
-            spm-sources-${{ runner.os }}-${{ matrix.kit.name }}-
+            spm-sources-${{ runner.os }}-${{ matrix.kit.name }}::
 
       - name: Resolve SPM dependencies
         timeout-minutes: 20
