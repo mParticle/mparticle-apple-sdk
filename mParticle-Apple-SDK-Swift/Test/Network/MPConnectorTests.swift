@@ -1,3 +1,4 @@
+import CommonCrypto
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
@@ -5,6 +6,32 @@ final class MPConnectorSwiftTests: XCTestCase {
     override func tearDown() {
         MPConnectorURLProtocolStub.requestHandler = nil
         super.tearDown()
+    }
+
+    // Guards against an accidental change to the pinned certificate set: fails if the
+    // GoDaddy TLS Root CA - R1 certificate is ever dropped or replaced by a different one,
+    // by checking the fingerprint against GoDaddy's published SHA-256 value rather than just
+    // asserting a certificate is present.
+    func testDefaultPinnedCertificatesContainGoDaddyTLSRootR1() {
+        let expectedFingerprint = "25CF3DA8E9B97ADDBF92543C2B82527C8A4E2CFF2062A6483040D4B64ACE719F"
+
+        let containsCertificate = MPPinnedCertificates.values.contains { encodedCertificate in
+            guard let certificateData = Data(base64Encoded: encodedCertificate) else {
+                XCTFail("Pinned certificate is not valid base64")
+                return false
+            }
+            return Self.sha256Fingerprint(for: certificateData) == expectedFingerprint
+        }
+
+        XCTAssertTrue(containsCertificate)
+    }
+
+    private static func sha256Fingerprint(for data: Data) -> String {
+        var digest = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        data.withUnsafeBytes { bytes in
+            _ = CC_SHA256(bytes.baseAddress, CC_LONG(data.count), &digest)
+        }
+        return digest.map { String(format: "%02X", $0) }.joined()
     }
 
     func testPreservesObjectiveCRuntimeContracts() {

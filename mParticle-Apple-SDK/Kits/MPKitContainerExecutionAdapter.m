@@ -259,6 +259,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 @interface MPKitContainerExecutionAdapter () {
     dispatch_semaphore_t kitsSemaphore;
+    // brackets is guarded by its own semaphore rather than kitsSemaphore, because
+    // updateBracketsWithConfiguration:integrationId: is called from inside configureKits:'s
+    // kitsSemaphore-locked region - dispatch_semaphore is not reentrant, so reusing kitsSemaphore
+    // here would deadlock there.
+    dispatch_semaphore_t bracketsSemaphore;
     NSMutableDictionary<NSNumber *, MPBracket *> *brackets;
     NSInteger sideloadedKitCodeNextValue;
 }
@@ -291,6 +296,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSMutableDictionary *linkInfo = _attributionInfo;
         _initializedTime = [NSDate date];
         kitsSemaphore = dispatch_semaphore_create(1);
+        bracketsSemaphore = dispatch_semaphore_create(1);
         brackets = [[NSMutableDictionary alloc] init];
         sideloadedKitCodeNextValue = sideloadedKitCodeStartValue;
         MParticle* mparticle = MParticle.sharedInstance;
@@ -426,45 +432,107 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (MPBracket *)bracketForKit:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
-    
-    return brackets[integrationId];
+
+    dispatch_semaphore_wait(bracketsSemaphore, DISPATCH_TIME_FOREVER);
+    MPBracket *bracket = brackets[integrationId];
+    dispatch_semaphore_signal(bracketsSemaphore);
+    return bracket;
 }
 
 - (void)flushSerializedKits {
+    // wrapperInstance is nonatomic, so detaching it here - under kitsSemaphore - is what
+    // synchronizes with isActiveAndNotDisabled:, which reads it under the same lock from
+    // activeKitsRegistryWhenLocked on other threads. The rest of the teardown (stop, file
+    // cleanup, notification) touches no container state, so it runs unlocked on the main
+    // queue below - holding kitsSemaphore across that would let a slow stop() or a slow disk
+    // stall every other thread waiting on the lock.
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    NSArray<id<MPExtensionKitProtocol>> *kitsSnapshot = [[MPKitContainer_PRIVATE registeredKits] allObjects];
+    NSMutableArray<id> *detachedWrapperInstances = [[NSMutableArray alloc] initWithCapacity:kitsSnapshot.count];
+    for (id<MPExtensionKitProtocol> kitRegister in kitsSnapshot) {
+        [detachedWrapperInstances addObject:(id)kitRegister.wrapperInstance ?: [NSNull null]];
+        kitRegister.wrapperInstance = nil;
+    }
+    dispatch_semaphore_signal(kitsSemaphore);
+
+    // Entered synchronously, before this method returns - not inside the dispatched block
+    // below. notifyWhenKitTeardownComplete:block: (mParticle.m) can be called immediately
+    // after this method returns; entering the group inside the async block would leave a
+    // window where it still reads as empty because the enter itself hasn't executed yet.
+    [MPKitContainer_PRIVATE enterKitTeardownGroup];
     dispatch_async(dispatch_get_main_queue(), ^{
-        for (id<MPExtensionKitProtocol>kitRegister in [MPKitContainer_PRIVATE registeredKits]) {
-            [self freeKit:kitRegister.code];
-        }
+        [kitsSnapshot enumerateObjectsUsingBlock:^(id<MPExtensionKitProtocol> kitRegister, NSUInteger idx, BOOL *stop) {
+            id wrapperInstance = detachedWrapperInstances[idx];
+            if (wrapperInstance != (id)[NSNull null]) {
+                [self teardownDetachedWrapperInstance:wrapperInstance forIntegrationId:kitRegister.code];
+            }
+        }];
+        [MPKitContainer_PRIVATE leaveKitTeardownGroup];
     });
 }
 
+// Resolves the register from the registry, so callers must already hold kitsSemaphore.
+// Callers that already have the register (see flushSerializedKits) should use
+// freeKitRegister:integrationId: instead of reading the registry again.
 - (void)freeKit:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
-    
+
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
     id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer_PRIVATE registeredKits] filteredSetUsingPredicate:predicate] anyObject];
-    
+
+    [self freeKitRegister:kitRegister integrationId:integrationId];
+}
+
+// Callers of freeKit:/freeKitRegister: (via configureKits:) already hold kitsSemaphore for the
+// whole call, so detaching wrapperInstance here needs no separate lock - it is already
+// serialized against every other access. The detach must stay inline (it synchronizes with
+// isActiveAndNotDisabled: on other threads), but the teardown below is deferred past the lock
+// for the same reason flushSerializedKits defers it: stop(), disk I/O and posting
+// mParticleKitDidBecomeInactiveNotification all run arbitrary/observer code on the calling
+// thread, and doing that while still holding kitsSemaphore would stall every other thread
+// waiting on the lock, or deadlock outright if an observer calls back into a kitsSemaphore-
+// guarded method.
+- (void)freeKitRegister:(id<MPExtensionKitProtocol>)kitRegister integrationId:(NSNumber *)integrationId {
+    NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
+
     if (kitRegister.wrapperInstance) {
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(stop)]) {
-            [kitRegister.wrapperInstance stop];
-        }
-        
+        id<MPKitProtocol> wrapperInstance = kitRegister.wrapperInstance;
         kitRegister.wrapperInstance = nil;
-        
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", integrationId, kitFileExtension]];
-        
-        if ([fileManager fileExistsAtPath:kitPath]) {
-            [fileManager removeItemAtPath:kitPath error:nil];
-        }
-        
-        NSDictionary *userInfo = @{mParticleKitInstanceKey:integrationId};
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
-                                                            object:nil
-                                                          userInfo:userInfo];
+
+        // Entered synchronously here, before dispatch_async - see flushSerializedKits above
+        // for why entering inside the dispatched block itself would be too late.
+        [MPKitContainer_PRIVATE enterKitTeardownGroup];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self teardownDetachedWrapperInstance:wrapperInstance forIntegrationId:integrationId];
+            [MPKitContainer_PRIVATE leaveKitTeardownGroup];
+        });
     }
+}
+
+// Stops wrapperInstance and cleans up its on-disk state and notification. wrapperInstance must
+// already be detached from its kitRegister (kitRegister.wrapperInstance set to nil) before
+// calling this. This method itself touches no container state, so it does not take
+// kitsSemaphore - but every caller defers it off of that lock regardless (see
+// flushSerializedKits and freeKitRegister:integrationId:), since the work here runs arbitrary
+// kit and observer code that must not run while the lock is held.
+- (void)teardownDetachedWrapperInstance:(id<MPKitProtocol>)wrapperInstance forIntegrationId:(NSNumber *)integrationId {
+    if ([wrapperInstance respondsToSelector:@selector(stop)]) {
+        [wrapperInstance stop];
+    }
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", integrationId, kitFileExtension]];
+
+    if ([fileManager fileExistsAtPath:kitPath]) {
+        [fileManager removeItemAtPath:kitPath error:nil];
+    }
+
+    NSDictionary *userInfo = @{mParticleKitInstanceKey:integrationId};
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
+                                                        object:nil
+                                                      userInfo:userInfo];
 }
 
 - (void)registerSideloadedKits {
@@ -731,16 +799,19 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
-    
+
+    dispatch_semaphore_wait(bracketsSemaphore, DISPATCH_TIME_FOREVER);
+
     if (!configuration) {
         [brackets removeObjectForKey:integrationId];
+        dispatch_semaphore_signal(bracketsSemaphore);
         return;
     }
-    
+
     long mpId = [[MPPersistenceController_PRIVATE mpId] longValue];
     short low = (short)[configuration[@"lo"] integerValue];
     short high = (short)[configuration[@"hi"] integerValue];
-    
+
     MPBracket *bracket = brackets[integrationId];
     if (bracket) {
         bracket.mpId = mpId;
@@ -749,6 +820,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     } else {
         brackets[integrationId] = [[MPBracket alloc] initWithMpId:mpId low:low high:high];
     }
+
+    dispatch_semaphore_signal(bracketsSemaphore);
 }
 
 #pragma mark Public accessors

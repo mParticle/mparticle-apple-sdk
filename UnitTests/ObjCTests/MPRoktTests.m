@@ -82,6 +82,15 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 @property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @end
 
+// A shared CI runner can miss a sub-second budget for work that hops through
+// [MParticle messageQueue]. XCTest and OCMock both return as soon as the expectation
+// is satisfied, so a generous ceiling costs nothing when the machine is fast and stops
+// a slow moment from failing every async test in this class at once.
+static const NSTimeInterval kMPRoktAsyncTimeout = 5.0;
+// A rejection has to wait out its whole window to prove the call never came, so it
+// stays tighter - but still five times the old budget.
+static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
+
 @interface MPRoktTests : XCTestCase
 @property (nonatomic, strong) MPRokt *rokt;
 @property (nonatomic, strong) id mockRokt;
@@ -97,6 +106,28 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
     [super setUp];
     self.rokt = [[MPRokt alloc] init];
     self.mockRokt = OCMPartialMock(self.rokt);
+}
+
+// Waits for work already queued on the SDK's message queue to finish, spinning the main
+// run loop so blocks that queue back onto main can also complete. Bounded, so a wedged
+// queue slows teardown instead of hanging the suite.
+- (void)mp_drainSDKWork {
+    dispatch_queue_t messageQueue = [MParticle messageQueue];
+    if (messageQueue == nil) {
+        return;
+    }
+
+    dispatch_semaphore_t drained = dispatch_semaphore_create(0);
+    dispatch_async(messageQueue, ^{
+        dispatch_semaphore_signal(drained);
+    });
+
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:2.0];
+    while (dispatch_semaphore_wait(drained, DISPATCH_TIME_NOW) != 0 &&
+           [[NSDate date] compare:deadline] == NSOrderedAscending) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
+    }
 }
 
 - (void)tearDown {
