@@ -1363,9 +1363,19 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 
 - (void)removeAllSideloadedKits {
     // Remove all sideloaded kits as new instances will be provided in the new MParticleOptions
+    //
+    // Identify sideloaded registers by their code, not by asking wrapperInstance whether it
+    // responds to sideloadedKitCode. Both call sites (resetForSwitchingWorkspaces:, reset: in
+    // mParticle.m) call flushSerializedKits immediately before this, and flushSerializedKits
+    // detaches wrapperInstance to nil synchronously (to close a race with activeKitsRegistry -
+    // see flushSerializedKits above) before this ever runs. [nil respondsToSelector:] is NO, so
+    // that check stopped matching anything once wrapperInstance was already nil, and sideloaded
+    // kits from the previous workspace were never removed. initWithInstance:kitCode: assigns
+    // every sideloaded kit a code >= sideloadedKitCodeStartValue, and that assignment survives
+    // the detach.
     NSSet *kits = [MPKitContainer_PRIVATE registeredKits];
     for (id<MPExtensionKitProtocol>kitRegister in kits) {
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(sideloadedKitCode)]) {
+        if (kitRegister.code.integerValue >= sideloadedKitCodeStartValue) {
             [MPKitContainer_PRIVATE removeRegisteredKit:kitRegister];
         }
     }
