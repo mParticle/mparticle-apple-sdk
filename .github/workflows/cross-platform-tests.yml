@@ -32,8 +32,14 @@ jobs:
           distribution: "zulu"
           java-version: "17"
           cache: "gradle"
+      - name: Cache Ruby gems
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.gem
+          key: gems-cocoapods-${{ runner.os }}-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: gems-cocoapods-${{ runner.os }}
       - name: "Install Cocoapods"
-        run: sudo gem install cocoapods; sudo gem install cocoapods-generate
+        run: gem install cocoapods cocoapods-generate --user-install && echo "$(ruby -e 'puts Gem.user_dir')/bin" >> $GITHUB_PATH
       - name: Choose Xcode version
         run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer; xcode-select -p
       - name: Run Tests
