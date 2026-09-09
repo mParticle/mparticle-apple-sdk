@@ -8,7 +8,6 @@ public final class MPPersistenceStorePRIVATE: NSObject {
     private let mpidProvider: () -> NSNumber
     private let uploadSettingsCodec: MPUploadSettingsCoding?
     private let isOptedOut: () -> Bool
-    @objc public var optedOut = false
     private(set) var connection: MPSQLiteConnection?
     @objc public let databasePath: String
 
@@ -139,7 +138,7 @@ public final class MPPersistenceStorePRIVATE: NSObject {
         uploadSettingsCodec?.unarchiveUploadSettings(data)
     }
 
-    func shouldSuppress(_ upload: MPUploadPRIVATE) -> Bool {
+    func shouldSuppress(_ upload: MPUploadPRIVATE, optedOut: Bool) -> Bool {
         (optedOut || isOptedOut()) && !upload.containsOptOutMessage
     }
 

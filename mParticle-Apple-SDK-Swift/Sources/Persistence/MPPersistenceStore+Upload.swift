@@ -7,15 +7,19 @@ import SQLite3
 }
 
 protocol MPUploadPersistingStore {
-    func saveUpload(_ upload: MPUploadPRIVATE) throws -> Bool
+    func saveUpload(_ upload: MPUploadPRIVATE, optedOut: Bool) throws -> Bool
     func fetchUploads() throws -> [MPUploadPRIVATE]
     func deleteUpload(_ upload: MPUploadPRIVATE) throws
-    func saveUploads(_ uploads: [MPUploadPRIVATE], deleting messages: [MPMessagePRIVATE]) throws -> Bool
+    func saveUploads(
+        _ uploads: [MPUploadPRIVATE],
+        deleting messages: [MPMessagePRIVATE],
+        optedOut: Bool
+    ) throws -> Bool
 }
 
 extension MPPersistenceStorePRIVATE: MPUploadPersistingStore {
-    func saveUpload(_ upload: MPUploadPRIVATE) throws -> Bool {
-        if shouldSuppress(upload) {
+    func saveUpload(_ upload: MPUploadPRIVATE, optedOut: Bool = false) throws -> Bool {
+        if shouldSuppress(upload, optedOut: optedOut) {
             return true
         }
         guard let uuid = upload.uuid,
@@ -94,12 +98,16 @@ extension MPPersistenceStorePRIVATE: MPUploadPersistingStore {
         _ = try statement.step()
     }
 
-    func saveUploads(_ uploads: [MPUploadPRIVATE], deleting messages: [MPMessagePRIVATE]) throws -> Bool {
+    func saveUploads(
+        _ uploads: [MPUploadPRIVATE],
+        deleting messages: [MPMessagePRIVATE],
+        optedOut: Bool = false
+    ) throws -> Bool {
         let connection = try requireConnection()
         do {
             try connection.transaction {
                 for upload in uploads {
-                    guard try saveUpload(upload) else {
+                    guard try saveUpload(upload, optedOut: optedOut) else {
                         throw MPPersistenceStoreError.uploadSettingsEncodingFailed
                     }
                 }

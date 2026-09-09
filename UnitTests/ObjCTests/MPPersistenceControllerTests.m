@@ -802,6 +802,8 @@
     dispatch_sync([MParticle messageQueue], ^{
         MPConsumerInfo *fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController_PRIVATE mpId]];
         XCTAssertNotNil(fetchedConsumerInfo);
+        XCTAssertEqual(fetchedConsumerInfo.consumerInfoId, 0);
+        XCTAssertNil(fetchedConsumerInfo.uniqueIdentifier);
         
         NSDictionary *cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
         NSDictionary *fetchedCookiesDictionary = [fetchedConsumerInfo cookiesDictionaryRepresentation];
@@ -829,6 +831,19 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+- (void)testFetchConsumerInfoIgnoresRowWithoutCookies {
+    [MPPersistenceController_PRIVATE setMpid:@91918];
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    [persistence deleteConsumerInfo];
+    MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+    consumerInfo.uniqueIdentifier = @"persisted-identifier";
+
+    [persistence saveConsumerInfo:consumerInfo];
+
+    XCTAssertNil([persistence fetchConsumerInfoForUserId:@91918]);
+    [persistence deleteConsumerInfo];
+}
+
 - (void)testFetchConsumerInfoWithCookiesButNoConsumerInfoRow {
     NSNumber *mpid = @91919;
     [MPPersistenceController_PRIVATE setMpid:mpid];
@@ -847,6 +862,8 @@
 
     MPConsumerInfo *consumerInfo = [persistence fetchConsumerInfoForUserId:mpid];
     XCTAssertNotNil(consumerInfo);
+    XCTAssertEqual(consumerInfo.consumerInfoId, 0);
+    XCTAssertNil(consumerInfo.uniqueIdentifier);
     XCTAssertEqual(consumerInfo.cookies.count, 1);
     XCTAssertEqualObjects(consumerInfo.cookies.firstObject.name, @"cookie-only");
 

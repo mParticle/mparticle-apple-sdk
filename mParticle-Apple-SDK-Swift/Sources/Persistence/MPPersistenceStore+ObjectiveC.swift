@@ -142,9 +142,9 @@ extension MPPersistenceStorePRIVATE {
         return breadcrumbs as NSArray
     }
 
-    @objc(saveUpload:)
-    public func objectiveCSaveUpload(_ upload: MPUploadPRIVATE) {
-        _ = try? saveUpload(upload)
+    @objc(saveUpload:optedOut:)
+    public func objectiveCSaveUpload(_ upload: MPUploadPRIVATE, optedOut: Bool) {
+        _ = try? saveUpload(upload, optedOut: optedOut)
     }
 
     @objc(fetchUploads)
@@ -165,12 +165,13 @@ extension MPPersistenceStorePRIVATE {
         try? deleteUpload(id: id)
     }
 
-    @objc(saveUploads:deleteMessages:)
+    @objc(saveUploads:deleteMessages:optedOut:)
     public func objectiveCSaveUploads(
         _ uploads: [MPUploadPRIVATE],
-        deleteMessages messages: [MPMessagePRIVATE]
+        deleteMessages messages: [MPMessagePRIVATE],
+        optedOut: Bool
     ) -> Bool {
-        (try? saveUploads(uploads, deleting: messages)) ?? false
+        (try? saveUploads(uploads, deleting: messages, optedOut: optedOut)) ?? false
     }
 
     @objc(saveForwardRecord:)
