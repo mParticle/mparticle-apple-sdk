@@ -14,6 +14,27 @@ private final class TestUploadSettingsCodec: NSObject, MPUploadSettingsCoding {
     }
 }
 
+private final class TestPersistenceKeyValueStorage: MPPersistenceKeyValueStorage {
+    var values: [String: Any] = [:]
+    private(set) var synchronizeCount = 0
+
+    func mpObject(forKey key: String, userId: NSNumber) -> Any? {
+        values["\(userId)::\(key)"]
+    }
+
+    func setMPObject(_ value: Any?, forKey key: String, userId: NSNumber) {
+        values["\(userId)::\(key)"] = value
+    }
+
+    func removeMPObject(forKey key: String, userId: NSNumber) {
+        values.removeValue(forKey: "\(userId)::\(key)")
+    }
+
+    func synchronize() {
+        synchronizeCount += 1
+    }
+}
+
 final class MPPersistenceStoreTests: XCTestCase {
     private var rootDirectory: URL!
     private var logger: MPLog!
@@ -415,6 +436,157 @@ final class MPPersistenceStoreTests: XCTestCase {
         XCTAssertTrue(try store.saveUploads([upload(uuid: "upload", timestamp: 1)], deleting: [message]))
         XCTAssertTrue(try store.fetchMessagesForUploading().isEmpty)
         XCTAssertEqual(try store.fetchUploads().map(\.uuid), ["upload"])
+    }
+
+    func testForwardRecordsAndIntegrationAttributesRoundTrip() throws {
+        let store = MPPersistenceStorePRIVATE(fileSystem: fileSystem, logger: logger)
+        let record = MPForwardRecordPRIVATE(
+            recordId: 0,
+            dataDictionary: ["timestamp": 1],
+            mpid: 42
+        )
+        try store.saveForwardRecord(record)
+        XCTAssertNotEqual(record.forwardRecordId, 0)
+        XCTAssertEqual(try store.fetchForwardRecords().first?.mpid, 42)
+
+        let attributes = try XCTUnwrap(MPIntegrationAttributesPRIVATE(
+            integrationId: 7,
+            attributes: ["key": "value"]
+        ))
+        try store.saveIntegrationAttributes(attributes)
+        XCTAssertEqual(
+            try store.fetchIntegrationAttributes(for: 7)?["key"] as? String,
+            "value"
+        )
+
+        try store.deleteForwardRecords(ids: [NSNumber(value: record.forwardRecordId)])
+        try store.deleteIntegrationAttributes(for: 7)
+        XCTAssertTrue(try store.fetchForwardRecords().isEmpty)
+        XCTAssertTrue(try store.fetchIntegrationAttributes().isEmpty)
+    }
+
+    func testConsumerInfoAndCookiesRoundTrip() throws {
+        let store = MPPersistenceStorePRIVATE(fileSystem: fileSystem, logger: logger)
+        let cookie = MPPersistedCookie(
+            id: 0,
+            consumerInfoId: 0,
+            content: "content",
+            domain: "example.com",
+            expiration: nil,
+            name: "cookie",
+            mpid: 42
+        )
+
+        let id = try store.saveConsumerInfo(
+            mpid: 42,
+            uniqueIdentifier: "identifier",
+            cookies: [cookie]
+        )
+        let fetched = try XCTUnwrap(store.fetchConsumerInfo(for: 42))
+        XCTAssertEqual(fetched.id, id)
+        XCTAssertEqual(fetched.uniqueIdentifier, "identifier")
+        XCTAssertEqual(fetched.cookies.first?.name, "cookie")
+
+        try store.deleteConsumerInfo()
+        XCTAssertNil(try store.fetchConsumerInfo(for: 42))
+        XCTAssertTrue(try store.fetchCookies(for: 42).isEmpty)
+    }
+
+    func testMovesDatabaseContentFromMpidZero() throws {
+        let store = MPPersistenceStorePRIVATE(fileSystem: fileSystem, logger: logger)
+        let connection = try XCTUnwrap(store.connection)
+        try connection.execute(
+            "INSERT INTO messages (message_type, uuid, timestamp, message_data, mpid) "
+                + "VALUES ('e', 'message', 1, X'01', 0)"
+        )
+
+        try store.moveDatabaseContentFromMpidZero(to: 42)
+
+        let mpid = try connection.prepare("SELECT mpid FROM messages")
+        XCTAssertEqual(try mpid.step(), .row)
+        XCTAssertEqual(mpid.int64(at: 0), 42)
+    }
+
+    func testConsentStringStoragePrefersDeviceConsent() {
+        let storage = TestPersistenceKeyValueStorage()
+        let consent = MPPersistenceConsentStringStore(storage: storage)
+
+        consent.setConsentString("user", forMpid: 42)
+        XCTAssertEqual(consent.effectiveConsentString(forMpid: 42), "user")
+        consent.setDeviceConsentString("device")
+        XCTAssertEqual(consent.effectiveConsentString(forMpid: 42), "device")
+        consent.setDeviceConsentString(nil)
+        XCTAssertEqual(consent.effectiveConsentString(forMpid: 42), "user")
+        XCTAssertEqual(storage.synchronizeCount, 3)
+    }
+
+    func testUserDefaultsMpidZeroMigrationDoesNotOverwriteDestination() throws {
+        let suiteName = "MPPersistenceStoreTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set("source", forKey: "mParticle::0::source")
+        defaults.set("existing", forKey: "mParticle::42::existing")
+        defaults.set("ignored", forKey: "other::0::value")
+
+        MPPersistenceUserDefaultsMigrator(userDefaults: defaults)
+            .moveContentFromMpidZero(to: 42)
+
+        XCTAssertEqual(defaults.string(forKey: "mParticle::42::source"), "source")
+        XCTAssertEqual(defaults.string(forKey: "mParticle::42::existing"), "existing")
+        XCTAssertNil(defaults.object(forKey: "mParticle::0::source"))
+        XCTAssertEqual(defaults.string(forKey: "other::0::value"), "ignored")
+    }
+
+    func testMigratesVersion30RowsAndPurgesExpiredRecords() throws {
+        let oldName = MPPersistenceSchemaPRIVATE.databaseName(for: 30)
+        let oldPath = fileSystem.resolvedDatabasePath(databaseName: oldName)
+        let old = try MPSQLiteConnection(path: oldPath, logger: logger)
+        for sql in MPPersistenceSchemaPRIVATE.createTableStatements {
+            try old.execute(try XCTUnwrap(sql as? String))
+        }
+        try old.execute("DROP TABLE uploads")
+        try old.execute(
+            "CREATE TABLE uploads ("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, session_id INTEGER, uuid TEXT NOT NULL, "
+                + "message_data BLOB NOT NULL, timestamp REAL NOT NULL, upload_type INTEGER NOT NULL, "
+                + "data_plan_id TEXT, data_plan_version INTEGER)"
+        )
+        let freshTimestamp = Date().timeIntervalSince1970
+        let staleTimestamp = freshTimestamp - MPPersistenceSchemaPRIVATE.sevenDays - 1
+        try old.execute(
+            "INSERT INTO messages (message_type, uuid, timestamp, message_data, upload_status, mpid) "
+                + "VALUES ('e', 'fresh', \(freshTimestamp), X'7B7D', 1, 42), "
+                + "('e', 'stale', \(staleTimestamp), X'7B7D', 1, 42)"
+        )
+        try old.execute(
+            "INSERT INTO uploads (uuid, message_data, timestamp, upload_type) "
+                + "VALUES ('upload', X'7B7D', \(freshTimestamp), 0)"
+        )
+        try old.execute(MPPersistenceSchemaPRIVATE.userVersionPragma(for: 30))
+        old.close()
+
+        let codec = TestUploadSettingsCodec()
+        let migrator = MPDatabaseMigratorPRIVATE(
+            databaseVersions: [30, 31],
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsProvider: { NSObject() },
+            uploadSettingsCodec: codec
+        )
+        XCTAssertEqual(migrator.versionNeedingMigration(), 30)
+
+        try migrator.migrate(from: 30)
+
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            mpidProvider: { 42 },
+            uploadSettingsCodec: codec
+        )
+        let messages = try store.fetchMessagesForUploading()
+        XCTAssertEqual(messages[42]?[-1]?["0"]?[0]?.map(\.uuid), ["fresh"])
+        XCTAssertEqual(try store.fetchUploads().map(\.uuid), ["upload"])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: oldPath))
     }
 
     private func upload(uuid: String, timestamp: TimeInterval) -> MPUploadPRIVATE {
