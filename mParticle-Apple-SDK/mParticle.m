@@ -543,10 +543,7 @@ MPLog* logger;
     MPILogDebug(@"SDK initialization starting - environment: %ld, logLevel: %lu",
                 (long)options.environment, (unsigned long)options.logLevel);
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultUserAgentOverride:options.defaultAgent];
-    
-    _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self
-                                                                   persistence:self.persistenceStore];
-    
+
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;
         MPILogDebug(@"Network options configured - pinningDisabled: %@, pinningDisabledInDevelopment: %@, configHost: %@",
@@ -564,6 +561,10 @@ MPLog* logger;
     NSAssert((NSNull *)apiKey != [NSNull null] && (NSNull *)secret != [NSNull null], @"mParticle SDK apiKey and secret cannot be null.");
     
     self.options = options;
+    self.stateMachine.apiKey = apiKey;
+    self.stateMachine.secret = secret;
+    _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self
+                                                                   persistence:self.persistenceStore];
     
     self.dataPlanId = options.dataPlanId;
     if (self.dataPlanId != nil) {
