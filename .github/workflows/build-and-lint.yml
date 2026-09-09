@@ -34,7 +34,12 @@ jobs:
       - name: Cache Ruby gems
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: ~/.gem
+          # RubyGems only uses ~/.gem when that directory already exists; a
+          # fresh runner has neither, so --user-install falls back to the XDG
+          # path. Cache both so whichever one RubyGems actually picks is saved.
+          path: |
+            ~/.gem
+            ~/.local/share/gem
           key: gems-xcodeproj-${{ runner.os }}
 
       - name: Update xcodeproj gem
