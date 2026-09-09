@@ -14,6 +14,7 @@
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
 #import "MPCCPAConsent.h"
+#import "MPPersistenceAdapter.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
@@ -23,7 +24,10 @@
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MParticleOptions *options;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
+@property (nonatomic, strong) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic) BOOL initialized;
+- (void)initializePersistence;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
@@ -78,6 +82,7 @@
 - (void)testResetInstance {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
     MParticle *instance2 = [MParticle sharedInstance];
     XCTAssertNotNil(instance);
     XCTAssertEqual(instance, instance2);
@@ -89,6 +94,15 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+    OCMVerify([mockInstance initializePersistence]);
+    [mockInstance stopMocking];
+}
+
+- (void)testPersistenceAccessorsInitializeStore {
+    MParticle *instance = [[MParticle alloc] init];
+
+    XCTAssertNotNil(instance.persistenceStore);
+    XCTAssertNotNil(instance.persistenceAdapter);
 }
 
 - (void)testOptOut {

@@ -196,7 +196,7 @@ MPLog* logger;
 }
 
 - (void)initializePersistence {
-    if (self.persistenceStore) {
+    if (_persistenceStore) {
         return;
     }
     MPPersistenceFileSystemPRIVATE *fileSystem =
@@ -219,6 +219,16 @@ MPLog* logger;
                                                                        logger:logger
                                                           uploadSettingsCodec:codec];
     _persistenceAdapter = [[MPPersistenceAdapter alloc] initWithStore:_persistenceStore];
+}
+
+- (MPPersistenceStorePRIVATE *)persistenceStore {
+    [self initializePersistence];
+    return _persistenceStore;
+}
+
+- (MPPersistenceAdapter *)persistenceAdapter {
+    [self initializePersistence];
+    return _persistenceAdapter;
 }
 
 - (void)setExecutor: (id<ExecutorProtocol>)newExecutor {
