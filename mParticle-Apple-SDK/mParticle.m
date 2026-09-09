@@ -49,15 +49,15 @@ static NSString *const kMPStateKey = @"state";
 @end
 
 @interface MPPersistenceUploadSettingsProvider : NSObject <MPUploadSettingsProviding>
-- (instancetype)initWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine
+- (instancetype)initWithStateMachine:(id<MPStateMachineProtocol>)stateMachine
                       networkOptions:(nullable MPNetworkOptions *)networkOptions;
-@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong, nullable) MPNetworkOptions *networkOptions;
 @end
 
 @implementation MPPersistenceUploadSettingsProvider
 
-- (instancetype)initWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine
+- (instancetype)initWithStateMachine:(id<MPStateMachineProtocol>)stateMachine
                       networkOptions:(MPNetworkOptions *)networkOptions {
     self = [super init];
     if (self) {
@@ -212,8 +212,8 @@ MPLog* logger;
                                                                                                                    networkOptions:_networkOptions]
                                                uploadSettingsCodec:codec];
     NSNumber *version = migrator.versionNeedingMigration;
-    if (version) {
-        [migrator migrateFromVersion:version];
+    if (version != nil) {
+        (void)[migrator migrateFromVersion:version];
     }
     _persistenceStore = [[MPPersistenceStorePRIVATE alloc] initWithFileSystem:fileSystem
                                                                        logger:logger
