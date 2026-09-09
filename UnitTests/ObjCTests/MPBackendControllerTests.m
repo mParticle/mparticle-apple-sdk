@@ -573,7 +573,7 @@
     [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]] deletedUserAttributes:nil];
     [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceUtilities mpId]]];
     [uploadBuilder build:^(MPUpload *upload) {
-        [persistence saveUpload:upload];
+        [persistence saveUpload:upload optedOut:NO];
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
@@ -651,7 +651,7 @@
     [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:mpid] deletedUserAttributes:nil];
     [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:mpid]];
     [uploadBuilder build:^(MPUpload *upload) {
-        [persistence saveUpload:upload];
+        [persistence saveUpload:upload optedOut:NO];
         NSDictionary *uploadDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
         XCTAssertEqualObjects(uploadDictionary[kMPDeviceInformationKey][kMPDeviceAdvertiserIdKey], @"bar-id");
     }];
@@ -743,7 +743,7 @@
         [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]] deletedUserAttributes:nil];
         [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceUtilities mpId]]];
         [uploadBuilder build:^(MPUpload *upload) {
-            [persistence saveUpload:upload];
+            [persistence saveUpload:upload optedOut:NO];
             
             NSArray *uploads = [persistence fetchUploads];
             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
@@ -922,7 +922,7 @@
         [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]] deletedUserAttributes:nil];
         [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceUtilities mpId]]];
         [uploadBuilder build:^(MPUpload *upload) {
-            [persistence saveUpload:upload];
+            [persistence saveUpload:upload optedOut:NO];
             
             NSArray *uploads = [persistence fetchUploads];
             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");

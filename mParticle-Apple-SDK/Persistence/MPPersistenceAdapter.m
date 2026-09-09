@@ -96,14 +96,11 @@
 }
 
 - (MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber *)userId {
-    NSDictionary *rawInfo = [self.store fetchRawConsumerInfoForUserId:userId];
     NSArray<MPCookie *> *cookies = [self fetchCookiesForUserId:userId];
-    if (!rawInfo && cookies.count == 0) {
+    if (cookies.count == 0) {
         return nil;
     }
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
-    consumerInfo.consumerInfoId = [rawInfo[@"id"] longLongValue];
-    consumerInfo.uniqueIdentifier = [self nullableString:rawInfo[@"uniqueIdentifier"]];
     consumerInfo.cookies = cookies;
     return consumerInfo;
 }
@@ -170,8 +167,7 @@
 }
 
 - (void)saveUpload:(MPUpload *)upload {
-    self.store.optedOut = MParticle.sharedInstance.stateMachine.optOut;
-    [self.store saveUpload:upload];
+    [self.store saveUpload:upload optedOut:MParticle.sharedInstance.stateMachine.optOut];
 }
 
 - (void)deleteUpload:(MPUpload *)upload {

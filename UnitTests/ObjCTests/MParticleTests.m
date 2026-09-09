@@ -14,6 +14,7 @@
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
 #import "MPCCPAConsent.h"
+#import "MPConsumerInfo.h"
 #import "MPPersistenceAdapter.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -103,6 +104,42 @@
 
     XCTAssertNotNil(instance.persistenceStore);
     XCTAssertNotNil(instance.persistenceAdapter);
+}
+
+- (void)testPersistenceAdapterPreservesCookieOnlyConsumerFetch {
+    NSNumber *mpid = @91919;
+    [MPPersistenceUtilities setMpid:mpid];
+    MParticle *instance = [MParticle sharedInstance];
+    [instance.persistenceStore deleteConsumerInfo];
+    (void)[instance.persistenceStore saveRawCookie:@{
+        @"id": @0,
+        @"consumerInfoId": @0,
+        @"content": @"value",
+        @"domain": [NSNull null],
+        @"expiration": [NSNull null],
+        @"name": @"cookie-only",
+        @"mpid": mpid
+    }];
+
+    MPConsumerInfo *consumerInfo = [instance.persistenceAdapter fetchConsumerInfoForUserId:mpid];
+
+    XCTAssertNotNil(consumerInfo);
+    XCTAssertEqual(consumerInfo.consumerInfoId, 0);
+    XCTAssertNil(consumerInfo.uniqueIdentifier);
+    [instance.persistenceStore deleteConsumerInfo];
+}
+
+- (void)testPersistenceAdapterIgnoresConsumerRowWithoutCookies {
+    NSNumber *mpid = @91918;
+    [MPPersistenceUtilities setMpid:mpid];
+    MParticle *instance = [MParticle sharedInstance];
+    [instance.persistenceStore deleteConsumerInfo];
+    (void)[instance.persistenceStore saveRawConsumerInfoForMpid:mpid
+                                               uniqueIdentifier:@"already%20escaped"
+                                                        cookies:@[]];
+
+    XCTAssertNil([instance.persistenceAdapter fetchConsumerInfoForUserId:mpid]);
+    [instance.persistenceStore deleteConsumerInfo];
 }
 
 - (void)testOptOut {
