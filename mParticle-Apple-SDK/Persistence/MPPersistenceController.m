@@ -59,8 +59,8 @@
                                              uploadSettingsProvider:[[MPPersistenceUploadSettingsProvider alloc] init]
                                                uploadSettingsCodec:_uploadSettingsCodec];
     NSNumber *version = [migrator versionNeedingMigration];
-    if (version) {
-        [migrator migrateFromVersion:version];
+    if (version != nil) {
+        (void)[migrator migrateFromVersion:version];
     }
 
     _store = [[MPPersistenceStorePRIVATE alloc] initWithFileSystem:_fileSystem
@@ -125,7 +125,7 @@
 }
 
 + (MPConsentState *)effectiveConsentStateForMpid:(NSNumber *)mpid {
-    return [self deviceConsentState] ?: (mpid ? [self consentStateForMpid:mpid] : nil);
+    return [self deviceConsentState] ?: (mpid != nil ? [self consentStateForMpid:mpid] : nil);
 }
 
 + (NSInteger)maxBytesPerEvent:(NSString *)messageType {
