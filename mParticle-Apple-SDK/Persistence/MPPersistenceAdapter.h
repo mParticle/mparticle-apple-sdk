@@ -5,6 +5,7 @@
 @class MPForwardRecord;
 @class MPIntegrationAttributes;
 @class MPMessage;
+@class MParticle;
 @class MPSession;
 @class MPUpload;
 
@@ -15,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// cannot be constructed by the Swift target.
 @interface MPPersistenceAdapter : NSObject
 
+- (instancetype)initWithMParticle:(MParticle *)mParticle;
 - (NSDictionary<NSString *, NSDictionary *> *)appAndDeviceInfoForSessionId:(NSNumber *)sessionId;
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords;
 - (void)saveForwardRecord:(MPForwardRecord *)forwardRecord;

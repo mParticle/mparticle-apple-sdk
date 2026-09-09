@@ -24,10 +24,22 @@
 @interface MPPersistenceUploadSettingsProvider : NSObject <MPUploadSettingsProviding>
 @end
 
+@interface MPPersistenceAdapter ()
+@property (nonatomic, weak) MParticle *mParticle;
+@end
+
 @implementation MPPersistenceAdapter
 
+- (instancetype)initWithMParticle:(MParticle *)mParticle {
+    self = [super init];
+    if (self) {
+        _mParticle = mParticle;
+    }
+    return self;
+}
+
 - (MPPersistenceController_PRIVATE *)controller {
-    return [MParticle sharedInstance].persistenceController;
+    return self.mParticle.persistenceController;
 }
 
 - (NSDictionary<NSString *,NSDictionary *> *)appAndDeviceInfoForSessionId:(NSNumber *)sessionId {

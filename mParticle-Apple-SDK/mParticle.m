@@ -156,7 +156,7 @@ MPLog* logger;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
-    _persistenceAdapter = [[MPPersistenceAdapter alloc] init];
+    _persistenceAdapter = [[MPPersistenceAdapter alloc] initWithMParticle:self];
     logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
     _sceneDelegateHandler.logger = logger;
