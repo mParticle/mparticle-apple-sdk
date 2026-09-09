@@ -89,6 +89,7 @@
 		534CD29F29CE2CE1008452B3 /* MPAppNotificationHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CB529CE019F00E7489F /* MPAppNotificationHandlerTests.m */; };
 		534CD2A029CE2CE1008452B3 /* MParticleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8E29CE019F00E7489F /* MParticleTests.m */; };
 		534CD2A229CE2CE1008452B3 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79CFB29CE046800E7489F /* libsqlite3.tbd */; };
+		B5A001012F5F900000000001 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79CFB29CE046800E7489F /* libsqlite3.tbd */; };
 		534CD2A429CE2CE1008452B3 /* OCMock.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79C8829CE019F00E7489F /* OCMock.xcframework */; };
 		534CD2A629CE2CE1008452B3 /* sample_dataplan2.json in Resources */ = {isa = PBXBuildFile; fileRef = 53A79C9829CE019F00E7489F /* sample_dataplan2.json */; };
 		534CD2AC29CE2CF1008452B3 /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */; };
@@ -560,6 +561,7 @@
 				Test/Persistence/MPIdentityCachingTests.swift,
 				Test/Persistence/MPPersistenceFileSystemTests.swift,
 				Test/Persistence/MPPersistenceSchemaTests.swift,
+				Test/Persistence/MPSQLiteTests.swift,
 				Test/Utils/AppEnvironmentProviderTests.swift,
 				Test/Utils/HasherTests.m,
 				Test/Utils/MPApplicationInfoProviderTests.swift,
@@ -645,6 +647,7 @@
 				Test/Persistence/MPIdentityCachingTests.swift,
 				Test/Persistence/MPPersistenceFileSystemTests.swift,
 				Test/Persistence/MPPersistenceSchemaTests.swift,
+				Test/Persistence/MPSQLiteTests.swift,
 				Test/Utils/AppEnvironmentProviderTests.swift,
 				Test/Utils/HasherTests.m,
 				Test/Utils/MPApplicationInfoProviderTests.swift,
@@ -706,6 +709,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5A001012F5F900000000001 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

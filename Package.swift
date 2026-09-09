@@ -23,7 +23,8 @@ let package = Package(
             name: "mParticle_Apple_SDK_Swift",
             path: "mParticle-Apple-SDK-Swift/Sources",
             linkerSettings: [
-                .linkedFramework("SystemConfiguration")
+                .linkedFramework("SystemConfiguration"),
+                .linkedLibrary("sqlite3")
             ]
         ),
         // Objective-C SDK - source-based distribution (internal module: mParticle_Apple_SDK_ObjC)
