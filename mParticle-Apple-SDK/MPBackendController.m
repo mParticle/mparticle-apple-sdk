@@ -503,7 +503,9 @@ static BOOL skipNextUpload = NO;
         //Atomically persist the batches (3) and delete the messages they were built from (4),
         //so messages are only removed once their upload is durably stored. A failure rolls
         //both back, leaving the messages to be retried instead of re-batched into a duplicate.
-        [persistence saveUploads:uploads deleteMessages:group.messages];
+        [persistence saveUploads:uploads
+                 deleteMessages:group.messages
+                       optedOut:[MParticle sharedInstance].stateMachine.optOut];
 
         self.deletedUserAttributes = nil;
     }

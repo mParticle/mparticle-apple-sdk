@@ -1679,6 +1679,32 @@
     XCTAssertEqual(messages.count, 1, @"The Opt Out Message wasn't saved.");
 }
 
+- (void)testPrepareBatchesSuppressesMessagesQueuedBeforeOptOut {
+    [MPPersistenceController_PRIVATE setMpid:@2];
+    [MParticle sharedInstance].stateMachine.optOut = NO;
+
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]
+                                                      userId:[MPPersistenceController_PRIVATE mpId]];
+    MPMessageBuilder *messageBuilder =
+        [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                             session:session
+                                         messageInfo:@{@"MessageKey1": @"MessageValue1"}
+                                             context:self.messageBuilderContext];
+    MPMessage *message = [messageBuilder build];
+    [self.backendController saveMessage:message updateSession:NO];
+    XCTAssertGreaterThan(message.messageId, 0);
+
+    [MParticle sharedInstance].stateMachine.optOut = YES;
+    MPUploadSettings *uploadSettings =
+        [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                 networkOptions:[MParticle sharedInstance].networkOptions];
+    [self.backendController prepareBatchesForUpload:uploadSettings];
+
+    XCTAssertEqual([persistence fetchUploads].count, 0);
+    XCTAssertEqual([persistence fetchMessagesForUploading].count, 0);
+}
+
 - (void)testBatchAndMessageLimitsMessagesPerBatch {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
     
