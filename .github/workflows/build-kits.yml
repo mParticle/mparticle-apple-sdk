@@ -36,7 +36,7 @@ jobs:
         with:
           xcode-version: "26.2"
       - name: Compute weekly cache key
-        run: echo "CACHE_WEEK=$(date +%Y-W%V)" >> "$GITHUB_ENV"
+        run: echo "CACHE_WEEK=$(date +%G-W%V)" >> "$GITHUB_ENV"
       - name: Cache CocoaPods sources
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
@@ -88,7 +88,7 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Compute weekly cache key
-        run: echo "CACHE_WEEK=$(date +%Y-W%V)" >> "$GITHUB_ENV"
+        run: echo "CACHE_WEEK=$(date +%G-W%V)" >> "$GITHUB_ENV"
 
       - name: Cache SwiftPM package sources
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
