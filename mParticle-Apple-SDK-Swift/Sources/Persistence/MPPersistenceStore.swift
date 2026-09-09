@@ -5,6 +5,8 @@ final class MPPersistenceStorePRIVATE {
     private let fileSystem: MPPersistenceFileSystemPRIVATE
     private let logger: MPLog
     private let mpidProvider: () -> NSNumber
+    private let uploadSettingsCodec: MPUploadSettingsCoding?
+    private let isOptedOut: () -> Bool
     private(set) var connection: MPSQLiteConnection?
     let databasePath: String
 
@@ -16,11 +18,15 @@ final class MPPersistenceStorePRIVATE {
         fileSystem: MPPersistenceFileSystemPRIVATE,
         logger: MPLog,
         openImmediately: Bool = true,
-        mpidProvider: @escaping () -> NSNumber = { MPUserDefaults.storedMpId() }
+        mpidProvider: @escaping () -> NSNumber = { MPUserDefaults.storedMpId() },
+        uploadSettingsCodec: MPUploadSettingsCoding? = nil,
+        isOptedOut: @escaping () -> Bool = { false }
     ) {
         self.fileSystem = fileSystem
         self.logger = logger
         self.mpidProvider = mpidProvider
+        self.uploadSettingsCodec = uploadSettingsCodec
+        self.isOptedOut = isOptedOut
 
         fileSystem.migrateLegacyDatabaseDirectoryIfNeeded()
         fileSystem.removeLegacySessionNumberFileIfNeeded()
@@ -104,6 +110,18 @@ final class MPPersistenceStorePRIVATE {
 
     func currentMpid() -> NSNumber {
         mpidProvider()
+    }
+
+    func encodeUploadSettings(_ settings: NSObject) -> Data? {
+        uploadSettingsCodec?.archiveUploadSettings(settings)
+    }
+
+    func decodeUploadSettings(_ data: Data) -> NSObject? {
+        uploadSettingsCodec?.unarchiveUploadSettings(data)
+    }
+
+    func shouldSuppress(_ upload: MPUploadPRIVATE) -> Bool {
+        isOptedOut() && !upload.containsOptOutMessage
     }
 
     func requireConnection() throws -> MPSQLiteConnection {
