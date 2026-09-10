@@ -1,12 +1,11 @@
 #import "MPAppNotificationHandler.h"
 #import "MPForwardRecord.h"
-#import "MPPersistenceController.h"
 #import "MPILogger.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
 #import "mParticle.h"
-#import "../Persistence/MPPersistenceAdapter.h"
+#import "MPPersistenceAdapter.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"

@@ -6,7 +6,7 @@
 #import "MPBackendController.h"
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitTestClassSideloaded.h"
 #import "MPKitTestClassNoStartImmediately.h"
@@ -14,6 +14,8 @@
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
 #import "MPCCPAConsent.h"
+#import "MPConsumerInfo.h"
+#import "MPPersistenceAdapter.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
@@ -23,7 +25,10 @@
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MParticleOptions *options;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
+@property (nonatomic, strong) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic) BOOL initialized;
+- (void)initializePersistence;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
@@ -78,6 +83,7 @@
 - (void)testResetInstance {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
     MParticle *instance2 = [MParticle sharedInstance];
     XCTAssertNotNil(instance);
     XCTAssertEqual(instance, instance2);
@@ -89,6 +95,95 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+    OCMVerify([mockInstance initializePersistence]);
+    [mockInstance stopMocking];
+}
+
+- (void)testPersistenceAccessorsInitializeStore {
+    MParticle *instance = [[MParticle alloc] init];
+
+    XCTAssertNotNil(instance.persistenceStore);
+    XCTAssertNotNil(instance.persistenceAdapter);
+}
+
+- (void)testPersistenceAdapterPreservesCookieOnlyConsumerFetch {
+    NSNumber *mpid = @91919;
+    [MPPersistenceUtilities setMpid:mpid];
+    MParticle *instance = [MParticle sharedInstance];
+    [instance.persistenceStore deleteConsumerInfo];
+    (void)[instance.persistenceStore saveRawCookie:@{
+        @"id": @0,
+        @"consumerInfoId": @0,
+        @"content": @"value",
+        @"domain": [NSNull null],
+        @"expiration": [NSNull null],
+        @"name": @"cookie-only",
+        @"mpid": mpid
+    }];
+
+    MPConsumerInfo *consumerInfo = [instance.persistenceAdapter fetchConsumerInfoForUserId:mpid];
+
+    XCTAssertNotNil(consumerInfo);
+    XCTAssertEqual(consumerInfo.consumerInfoId, 0);
+    XCTAssertNil(consumerInfo.uniqueIdentifier);
+    [instance.persistenceStore deleteConsumerInfo];
+}
+
+- (void)testPersistenceAdapterIgnoresConsumerRowWithoutCookies {
+    NSNumber *mpid = @91918;
+    [MPPersistenceUtilities setMpid:mpid];
+    MParticle *instance = [MParticle sharedInstance];
+    [instance.persistenceStore deleteConsumerInfo];
+    (void)[instance.persistenceStore saveRawConsumerInfoForMpid:mpid
+                                               uniqueIdentifier:@"already%20escaped"
+                                                        cookies:@[]];
+
+    XCTAssertNil([instance.persistenceAdapter fetchConsumerInfoForUserId:mpid]);
+    [instance.persistenceStore deleteConsumerInfo];
+}
+
+- (void)testPersistenceAdapterAssignsDistinctIdsToSameNameCookies {
+    NSNumber *mpid = @91917;
+    [MPPersistenceUtilities setMpid:mpid];
+    MParticle *instance = [MParticle sharedInstance];
+    [instance.persistenceStore deleteConsumerInfo];
+    MPCookie *first = [[MPCookie alloc] initWithName:@"shared-name"
+                                      configuration:@{
+                                          kMPCKContent: @"first",
+                                          kMPCKDomain: @"first.example",
+                                          kMPCKExpiration: @"2099-01-01T00:00:00Z"
+                                      }];
+    MPCookie *second = [[MPCookie alloc] initWithName:@"shared-name"
+                                       configuration:@{
+                                           kMPCKContent: @"second",
+                                           kMPCKDomain: @"second.example",
+                                           kMPCKExpiration: @"2099-01-01T00:00:00Z"
+                                       }];
+    MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+    consumerInfo.cookies = @[first, second];
+
+    [instance.persistenceAdapter saveConsumerInfo:consumerInfo];
+
+    XCTAssertNotEqual(first.cookieId, 0);
+    XCTAssertNotEqual(second.cookieId, 0);
+    XCTAssertNotEqual(first.cookieId, second.cookieId);
+    first.content = @"updated";
+    [instance.persistenceAdapter updateConsumerInfo:consumerInfo];
+    NSArray<MPCookie *> *savedCookies =
+        [instance.persistenceAdapter fetchCookiesForUserId:mpid];
+    NSPredicate *firstDomain =
+        [NSPredicate predicateWithFormat:@"domain = %@", @"first.example"];
+    NSPredicate *secondDomain =
+        [NSPredicate predicateWithFormat:@"domain = %@", @"second.example"];
+    XCTAssertEqualObjects(
+        [savedCookies filteredArrayUsingPredicate:firstDomain].firstObject.content,
+        @"updated"
+    );
+    XCTAssertEqualObjects(
+        [savedCookies filteredArrayUsingPredicate:secondDomain].firstObject.content,
+        @"second"
+    );
+    [instance.persistenceStore deleteConsumerInfo];
 }
 
 - (void)testOptOut {
@@ -337,7 +432,7 @@
     options.consentState = newConsentState;
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
+        MPConsentState *storedConsentState = [MPPersistenceUtilities consentStateForMpid:[MPPersistenceUtilities mpId]];
         XCTAssert(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
@@ -355,7 +450,7 @@
     MPConsentState *storedConsentState = [[MPConsentState alloc] init];
     [storedConsentState setCCPAConsentState:ccpaConsent];
     [storedConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
-    [MPPersistenceController_PRIVATE setConsentState:storedConsentState forMpid:[MPPersistenceController_PRIVATE mpId]];
+    [MPPersistenceUtilities setConsentState:storedConsentState forMpid:[MPPersistenceUtilities mpId]];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
@@ -375,7 +470,7 @@
     options.consentState = newConsentState;
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
+        MPConsentState *storedConsentState = [MPPersistenceUtilities consentStateForMpid:[MPPersistenceUtilities mpId]];
         XCTAssertFalse(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
@@ -383,7 +478,7 @@
 }
 
 - (void)testOptionsDeviceConsentStateApplied {
-    [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+    [MPPersistenceUtilities setDeviceConsentState:nil];
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
@@ -398,10 +493,10 @@
 
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        MPConsentState *stored = [MPPersistenceController_PRIVATE deviceConsentState];
+        MPConsentState *stored = [MPPersistenceUtilities deviceConsentState];
         XCTAssertNotNil(stored);
         XCTAssertTrue(stored.ccpaConsentState.consented);
-        [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+        [MPPersistenceUtilities setDeviceConsentState:nil];
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
@@ -413,7 +508,7 @@
     ccpaConsent.document = @"device_ccpa_persisted";
     MPConsentState *persisted = [[MPConsentState alloc] init];
     [persisted setCCPAConsentState:ccpaConsent];
-    [MPPersistenceController_PRIVATE setDeviceConsentState:persisted];
+    [MPPersistenceUtilities setDeviceConsentState:persisted];
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
@@ -422,10 +517,10 @@
 
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        MPConsentState *stored = [MPPersistenceController_PRIVATE deviceConsentState];
+        MPConsentState *stored = [MPPersistenceUtilities deviceConsentState];
         XCTAssertNotNil(stored);
         XCTAssertTrue(stored.ccpaConsentState.consented);
-        [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+        [MPPersistenceUtilities setDeviceConsentState:nil];
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
@@ -436,7 +531,7 @@
     ccpaConsent.consented = YES;
     MPConsentState *persisted = [[MPConsentState alloc] init];
     [persisted setCCPAConsentState:ccpaConsent];
-    [MPPersistenceController_PRIVATE setDeviceConsentState:persisted];
+    [MPPersistenceUtilities setDeviceConsentState:persisted];
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
@@ -445,7 +540,7 @@
 
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        XCTAssertNil([MPPersistenceController_PRIVATE deviceConsentState]);
+        XCTAssertNil([MPPersistenceUtilities deviceConsentState]);
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
@@ -453,7 +548,7 @@
 
 - (void)testDeviceConsentStateSingletonSetterAndClear {
     MParticle *instance = [MParticle sharedInstance];
-    [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+    [MPPersistenceUtilities setDeviceConsentState:nil];
 
     MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
     ccpaConsent.consented = YES;

@@ -67,7 +67,7 @@ class MParticleTestBase: XCTestCase {
         mparticle.appNotificationHandler = appNotificationHandler
 
         persistenceController = MPPersistenceControllerMock()
-        mparticle.persistenceController = persistenceController
+        mparticle.persistenceAdapter = persistenceController
 
         settingsProvider = SettingsProviderMock()
         mparticle.settingsProvider = settingsProvider

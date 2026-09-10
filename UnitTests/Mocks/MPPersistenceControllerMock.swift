@@ -2,7 +2,13 @@ import XCTest
 import mParticle_Apple_SDK
 internal import mParticle_Apple_SDK_Swift
 
-class MPPersistenceControllerMock: MPPersistenceControllerProtocol {
+class MPPersistenceControllerMock: NSObject, MPPersistenceAdapting {
+    func appAndDeviceInfo(forSessionId sessionId: NSNumber) -> [String: [AnyHashable: Any]] {
+        [:]
+    }
+
+    func fetchForwardRecords() -> [MPForwardRecord]? { nil }
+
     var resetDatabaseForWorkspaceSwitchingCalled = false
 
     func resetDatabaseForWorkspaceSwitching() {
@@ -22,6 +28,10 @@ class MPPersistenceControllerMock: MPPersistenceControllerProtocol {
         saveCalled = true
         saveForwardRecordParam = forwardRecord
     }
+
+    func deleteForwardRecordsIds(_ recordIds: [NSNumber]) {}
+
+    func fetchIntegrationAttributes() -> [MPIntegrationAttributesPRIVATE]? { nil }
 
     var saveIntegrationAttributesParam: MPIntegrationAttributesPRIVATE?
 
@@ -47,4 +57,10 @@ class MPPersistenceControllerMock: MPPersistenceControllerProtocol {
         fetchIntegrationAttributesIntegrationIdParam = integrationId
         return fetchIntegrationAttributesReturnValue
     }
+
+    func deleteAllIntegrationAttributes() {}
+    func fetchConsumerInfo(forUserId userId: NSNumber) -> MPConsumerInfo? { nil }
+    func fetchCookies(forUserId userId: NSNumber) -> [MPCookie]? { nil }
+    func save(_ consumerInfo: MPConsumerInfo) {}
+    func update(_ consumerInfo: MPConsumerInfo) {}
 }

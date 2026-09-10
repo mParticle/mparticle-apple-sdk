@@ -3,7 +3,8 @@
 #import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPStateMachine.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
+#import "MPPersistenceAdapter.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPConsentState.h"
@@ -13,7 +14,7 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
@@ -36,8 +37,7 @@
 - (void)setUp {
     [super setUp];
     
-    [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
     
     NSNumber *integrationId = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"clientID":@"123abc",
@@ -114,7 +114,7 @@
 - (void)testInstanceWithSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (session)"];
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
 
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -129,7 +129,7 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId]
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId]
                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                   messages:@[message]
                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
@@ -203,7 +203,7 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId]
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId]
                                                                  sessionId:nil
                                                                   messages:@[message]
                                                             sessionTimeout:0
@@ -268,7 +268,7 @@
     
     [MParticle sharedInstance].dataPlanId = @"test";
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
 
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -283,7 +283,7 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId]
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId]
                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                   messages:@[message]
                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
@@ -350,7 +350,7 @@
     [MParticle sharedInstance].dataPlanId = @"test";
     [MParticle sharedInstance].dataPlanVersion = @1;
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
 
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -365,7 +365,7 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId]
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId]
                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                   messages:@[message]
                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
@@ -429,7 +429,7 @@
 - (void)testInstanceWithAdvertiserIdInSessionNoAttStatus {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (session)"];
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -444,7 +444,7 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId]
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId]
                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                   messages:@[message]
                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
@@ -511,7 +511,7 @@
     
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -526,7 +526,7 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId]
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId]
                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                   messages:@[message]
                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
@@ -596,7 +596,7 @@
     
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusDenied withATTStatusTimestampMillis:nil];
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -611,7 +611,7 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId]
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId]
                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                   messages:@[message]
                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
@@ -677,7 +677,7 @@
 }
 
 - (MPUploadBuilder *)createTestUploadBuilder {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -692,7 +692,7 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId]
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId]
                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                   messages:@[message]
                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
@@ -814,14 +814,14 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Upload uses device consent"];
 
     // The current user has no consent of its own; only the device-level consent is set.
-    [MPPersistenceController_PRIVATE setConsentState:nil forMpid:[MPPersistenceController_PRIVATE mpId]];
+    [MPPersistenceUtilities setConsentState:nil forMpid:[MPPersistenceUtilities mpId]];
 
     MPConsentState *deviceState = [[MPConsentState alloc] init];
     MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
     ccpaConsent.consented = YES;
     ccpaConsent.document = @"device-ccpa-document";
     [deviceState setCCPAConsentState:ccpaConsent];
-    [MPPersistenceController_PRIVATE setDeviceConsentState:deviceState];
+    [MPPersistenceUtilities setDeviceConsentState:deviceState];
 
     MPUploadBuilder *uploadBuilder = [self createTestUploadBuilder];
 
@@ -831,7 +831,7 @@
         NSDictionary *expectedConsent = [MPConsentSerialization serverDictionaryFromConsentState:deviceState];
         XCTAssertNotNil(uploadDictionary[kMPConsentState]);
         XCTAssertEqualObjects(uploadDictionary[kMPConsentState], expectedConsent);
-        [MPPersistenceController_PRIVATE setDeviceConsentState:nil];
+        [MPPersistenceUtilities setDeviceConsentState:nil];
         [expectation fulfill];
     }];
 

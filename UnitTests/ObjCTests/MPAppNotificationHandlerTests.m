@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "MPAppNotificationHandler.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
+#import "MPPersistenceAdapter.h"
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPIConstants.h"
@@ -11,7 +12,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPAppNotificationHandler *appNotificationHandler;
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 
 @end
 
@@ -31,13 +32,13 @@
     [MParticle sharedInstance];
     [appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
     
     error = nil;
     [appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     
-    forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
+    forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 
@@ -48,13 +49,13 @@
     NSData *deviceToken = [@"<1234 5678>" dataUsingEncoding:NSUTF8StringEncoding];
     [appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
     
     deviceToken = nil;
     [appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     
-    forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
+    forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 
@@ -69,7 +70,7 @@
     notificationDictionary = nil;
     [appNotificationHandler handleActionWithIdentifier:actionIdentifier forRemoteNotification:notificationDictionary];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 

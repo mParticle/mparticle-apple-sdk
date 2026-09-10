@@ -2,7 +2,7 @@
 #import <OCMock/OCMock.h>
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPAppNotificationHandler.h"
@@ -12,10 +12,11 @@
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle (Tests)
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 - (MPLog *)getLogger;
+- (void)initializePersistence;
 @end
 
 @interface MPTestConnectorFactory : NSObject <MPConnectorFactoryProtocol>
@@ -39,10 +40,7 @@
 - (void)setUpWithCompletionHandler:(void (^)(NSError * _Nullable))completion {
     [super setUp];
     MParticle *instance = [MParticle sharedInstance];
-    if (!instance.persistenceController) {
-        // Ensure we have a persistence controller to reset the db etc
-        instance.persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
-    }
+    [instance initializePersistence];
     
     [instance reset:^{
         MPNetworkCommunication_PRIVATE.connectorFactory = [[MPTestConnectorFactory alloc] init];

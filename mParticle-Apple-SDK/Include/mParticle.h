@@ -24,7 +24,7 @@
 #import "MPBackendController.h"
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPRokt.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"

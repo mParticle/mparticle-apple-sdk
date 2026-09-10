@@ -2,7 +2,7 @@
 @import mParticle_Apple_SDK_Swift;
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 
@@ -26,7 +26,7 @@
 }
 
 - (void)testSessionInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     XCTAssertNotNil(session, @"Should not have been nil");
     
     MPSession *sessionCopy = [session copy];
@@ -61,7 +61,7 @@
 
 - (void)testSessionCounterIsThreadSafe {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]
-                                                     userId:[MPPersistenceController_PRIVATE mpId]];
+                                                     userId:[MPPersistenceUtilities mpId]];
     const size_t iterationCount = 1000;
 
     dispatch_apply(iterationCount, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t index) {
@@ -73,7 +73,7 @@
 }
 
 - (void)testMessageInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
@@ -159,7 +159,7 @@
 }
 
 - (void)testMessageInstanceWithInfinite {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     double four = 4.0;
     double zed = 0.0;
@@ -195,7 +195,7 @@
 }
 
 - (void)testUploadInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
@@ -318,7 +318,7 @@
 }
 
 - (void)testBreadcrumbInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
@@ -366,7 +366,7 @@
 }
 
 - (void)testMessageEncoding {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
@@ -381,7 +381,7 @@
 }
 
 - (void)testBreadcrumbEncoding {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session

@@ -1,5 +1,5 @@
 #import "MPBackendController.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPNetworkPerformance.h"
@@ -41,7 +41,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
@@ -52,11 +52,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 + (void)executeOnMessage:(void(^)(void))block;
 + (void)executeOnMain:(void(^)(void))block;
 - (MPLog *)getLogger;
+- (void)initializePersistence;
 
-@end
-
-@interface MPPersistenceController_PRIVATE ()
-@property (nonatomic, strong, readonly) MPPersistenceStorePRIVATE *store;
 @end
 
 @interface MPBackendController_PRIVATE() {
@@ -86,8 +83,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 #endif
 
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
+    [[MParticle sharedInstance] initializePersistence];
     return [self initWithDelegate:delegate
-                     persistence:[MParticle sharedInstance].persistenceController.store];
+                     persistence:[MParticle sharedInstance].persistenceStore];
 }
 
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
@@ -1291,12 +1289,9 @@ static BOOL skipNextUpload = NO;
     }
     
     dispatch_async([MParticle messageQueue], ^{
-        MPILogDebug(@"Creating persistence controller");
-        MPPersistenceController_PRIVATE *persistenceController =
-            [[MPPersistenceController_PRIVATE alloc] init];
-        [MParticle sharedInstance].persistenceController = persistenceController;
-        self.persistence = persistenceController.store;
-        
+        [[MParticle sharedInstance] initializePersistence];
+        self.persistence = [MParticle sharedInstance].persistenceStore;
+
         // Check if we've switched workspaces on startup
         MPUploadSettings *lastUploadSettings = [UploadSettingsUtils lastUploadSettingsWithUserDefaults: MPUserDefaultsConnector.userDefaults];
         if (![lastUploadSettings.apiKey isEqualToString:apiKey]) {

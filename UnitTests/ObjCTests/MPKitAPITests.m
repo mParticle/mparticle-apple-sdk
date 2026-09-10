@@ -3,7 +3,7 @@
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
@@ -21,7 +21,6 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
@@ -61,7 +60,6 @@
     [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     _kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
     
-    [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {

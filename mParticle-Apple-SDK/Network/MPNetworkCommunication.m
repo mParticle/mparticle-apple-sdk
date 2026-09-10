@@ -4,7 +4,7 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
 #import "MPEnums.h"
@@ -15,7 +15,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
-#import "../Persistence/MPPersistenceAdapter.h"
+#import "MPPersistenceAdapter.h"
 @import mParticle_Apple_SDK_Swift;
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path

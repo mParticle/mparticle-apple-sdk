@@ -280,7 +280,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Serialized background access"];
 
     [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
-    [MPPersistenceController_PRIVATE setMpid:@12345];
+    [MPPersistenceUtilities setMpid:@12345];
 
     MPUserDefaults *defaults = MPUserDefaultsConnector.userDefaults;
 
@@ -294,11 +294,11 @@
         });
 
         dispatch_group_async(group, sdkMessageQueue, ^{
-            [defaults setMPObject:@(i) forKey:@"testBg" userId:[MPPersistenceController_PRIVATE mpId]];
+            [defaults setMPObject:@(i) forKey:@"testBg" userId:[MPPersistenceUtilities mpId]];
         });
 
         dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            NSNumber *mpId = [MPPersistenceController_PRIVATE mpId];
+            NSNumber *mpId = [MPPersistenceUtilities mpId];
             (void)mpId;
         });
     }
@@ -317,7 +317,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Subscript thread safety"];
 
     [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
-    [MPPersistenceController_PRIVATE setMpid:@42];
+    [MPPersistenceUtilities setMpid:@42];
 
     MPUserDefaults *defaults = MPUserDefaultsConnector.userDefaults;
 
@@ -354,7 +354,7 @@
 
 - (void)testUpdateLastUseDateWithNilDate {
     [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
-    [MPPersistenceController_PRIVATE setMpid:@1];
+    [MPPersistenceUtilities setMpid:@1];
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wnonnull"

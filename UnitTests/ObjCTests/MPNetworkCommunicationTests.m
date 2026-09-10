@@ -5,7 +5,8 @@
 #import "MPNetworkCommunication+Tests.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
+#import "MPPersistenceAdapter.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
@@ -16,7 +17,7 @@
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong) id<MPPersistenceAdapting> persistenceAdapter;
 @property (nonatomic, strong, readwrite) MPNetworkOptions *networkOptions;
 - (void)logKitBatch:(NSString *)batch;
 
@@ -878,11 +879,11 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
-    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
+    id mockPersistenceController = OCMProtocolMock(@protocol(MPPersistenceAdapting));
     [[mockPersistenceController reject] deleteUpload:OCMOCK_ANY];
 
     MParticle *instance = [MParticle sharedInstance];
-    instance.persistenceController = mockPersistenceController;
+    instance.persistenceAdapter = mockPersistenceController;
 
     MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
@@ -910,7 +911,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
-    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
+    id mockPersistenceController = OCMProtocolMock(@protocol(MPPersistenceAdapting));
 
     MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
@@ -927,7 +928,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         }
         return NO;
     }]];
-    ((MParticle *)mockInstance).persistenceController = mockPersistenceController;
+    ((MParticle *)mockInstance).persistenceAdapter = mockPersistenceController;
 
     NSArray *uploads = @[eventUpload, aliasUpload];
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
@@ -952,7 +953,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
-    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
+    id mockPersistenceController = OCMProtocolMock(@protocol(MPPersistenceAdapting));
 
     MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
@@ -966,7 +967,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [(MParticle *)[mockInstance expect] logKitBatch:[OCMArg checkWithBlock:^BOOL(id obj) {
         return NO; // reject
     }]];
-    ((MParticle *)mockInstance).persistenceController = mockPersistenceController;
+    ((MParticle *)mockInstance).persistenceAdapter = mockPersistenceController;
 
     NSArray *uploads = @[eventUpload, aliasUpload];
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];

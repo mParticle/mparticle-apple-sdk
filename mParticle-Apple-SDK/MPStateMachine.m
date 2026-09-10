@@ -3,8 +3,8 @@
 #import "MPNotificationController.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
-#import "MPPersistenceController.h"
-#import "Persistence/MPPersistenceAdapter.h"
+#import "MPPersistenceUtilities.h"
+#import "MPPersistenceAdapter.h"
 #import "Kits/MPKitContainer+MParticlePrivate.h"
 #import <UIKit/UIKit.h>
 #import "MPDataPlanFilter.h"

@@ -11,7 +11,7 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 @import mParticle_Apple_SDK_Swift;
@@ -43,7 +43,7 @@ NSString *const kMPStateInformationKey = @"cs";
         return _session;
     }
     
-    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     return _session;
 }
 
@@ -367,13 +367,13 @@ NSString *const kMPStateInformationKey = @"cs";
                                   @"key2":@"value2",
                                   @"key3":@"value3"};
     
-    [MPPersistenceController_PRIVATE setMpid:@1];
+    [MPPersistenceUtilities setMpid:@1];
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:nil
                                                                          messageInfo:messageInfo context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
-    XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], message.userId);
+    XCTAssertEqualObjects([MPPersistenceUtilities mpId], message.userId);
 }
 
 - (void)testMessageUserIdSessionIdZero {
@@ -381,14 +381,14 @@ NSString *const kMPStateInformationKey = @"cs";
                                   @"key2":@"value2",
                                   @"key3":@"value3"};
     
-    [MPPersistenceController_PRIVATE setMpid:@1];
+    [MPPersistenceUtilities setMpid:@1];
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:@0];
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
                                                                          messageInfo:messageInfo context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
-    XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], message.userId);
+    XCTAssertEqualObjects([MPPersistenceUtilities mpId], message.userId);
 }
 
 @end

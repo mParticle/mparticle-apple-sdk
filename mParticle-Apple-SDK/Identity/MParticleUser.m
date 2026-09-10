@@ -6,7 +6,7 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPAudience.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
@@ -24,7 +24,6 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;

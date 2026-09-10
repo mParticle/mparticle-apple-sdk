@@ -7,14 +7,14 @@
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPConsumerInfo.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPIdentityDTO.h"
 #import "MPEnums.h"
 #import "MPILogger.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
-#import "../Persistence/MPPersistenceAdapter.h"
+#import "MPPersistenceAdapter.h"
 @import mParticle_Apple_SDK_Swift;
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {

@@ -1,8 +1,8 @@
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "MPPersistenceController.h"
-#import "../Persistence/MPPersistenceAdapter.h"
+#import "MPPersistenceUtilities.h"
+#import "MPPersistenceAdapter.h"
 #import "mParticle.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;

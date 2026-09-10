@@ -4,7 +4,7 @@
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
@@ -28,7 +28,7 @@
 - (void)setUp {
     [super setUp];
 
-    [MPPersistenceController_PRIVATE setMpid:@12];
+    [MPPersistenceUtilities setMpid:@12];
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
