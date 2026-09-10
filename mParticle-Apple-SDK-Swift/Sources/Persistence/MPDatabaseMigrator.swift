@@ -1,6 +1,11 @@
 import Foundation
 
-final class MPDatabaseMigratorPRIVATE {
+@objc public protocol MPUploadSettingsProviding: AnyObject {
+    func currentUploadSettings() -> NSObject?
+}
+
+@objc(MPDatabaseMigratorPRIVATE)
+public final class MPDatabaseMigratorPRIVATE: NSObject {
     private let databaseVersions: [NSNumber]
     private let fileSystem: MPPersistenceFileSystemPRIVATE
     private let logger: MPLog
@@ -19,10 +24,40 @@ final class MPDatabaseMigratorPRIVATE {
         self.logger = logger
         self.uploadSettingsProvider = uploadSettingsProvider
         self.uploadSettingsCodec = uploadSettingsCodec
+        super.init()
     }
 
-    func versionNeedingMigration() -> NSNumber? {
+    @objc(initWithDatabaseVersions:fileSystem:logger:uploadSettingsProvider:uploadSettingsCodec:)
+    public convenience init(
+        databaseVersions: NSArray,
+        fileSystem: MPPersistenceFileSystemPRIVATE,
+        logger: MPLog,
+        uploadSettingsProvider: MPUploadSettingsProviding,
+        uploadSettingsCodec: MPUploadSettingsCoding
+    ) {
+        self.init(
+            databaseVersions: databaseVersions.compactMap { $0 as? NSNumber },
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsProvider: { uploadSettingsProvider.currentUploadSettings() },
+            uploadSettingsCodec: uploadSettingsCodec
+        )
+    }
+
+    @objc
+    public func versionNeedingMigration() -> NSNumber? {
         fileSystem.versionNeedingMigration(from: databaseVersions as NSArray)
+    }
+
+    @objc(migrateFromVersion:)
+    public func objectiveCMigrate(from oldVersion: NSNumber) -> Bool {
+        do {
+            try migrate(from: oldVersion)
+            return true
+        } catch {
+            logger.error("Failed to migrate persistence database: \(error)")
+            return false
+        }
     }
 
     func migrate(from oldVersion: NSNumber, deleteOldDatabase: Bool = true) throws {

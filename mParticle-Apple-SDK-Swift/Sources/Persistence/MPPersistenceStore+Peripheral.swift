@@ -130,6 +130,18 @@ extension MPPersistenceStorePRIVATE {
         uniqueIdentifier: String?,
         cookies: [MPPersistedCookie]
     ) throws -> Int64 {
+        try saveConsumerInfoWithCookieIds(
+            mpid: mpid,
+            uniqueIdentifier: uniqueIdentifier,
+            cookies: cookies
+        ).consumerInfoId
+    }
+
+    func saveConsumerInfoWithCookieIds(
+        mpid: NSNumber,
+        uniqueIdentifier: String?,
+        cookies: [MPPersistedCookie]
+    ) throws -> (consumerInfoId: Int64, cookieIds: [Int64]) {
         let connection = try requireConnection()
         return try connection.transaction {
             let statement = try connection.prepare(
@@ -139,10 +151,13 @@ extension MPPersistenceStorePRIVATE {
             try statement.bind(uniqueIdentifier, at: 2)
             _ = try statement.step()
             let consumerInfoId = sqlite3_last_insert_rowid(connection.handle)
+            var cookieIds: [Int64] = []
             for cookie in cookies {
-                try saveCookie(cookie, consumerInfoId: consumerInfoId, mpid: mpid.int64Value)
+                cookieIds.append(
+                    try saveCookie(cookie, consumerInfoId: consumerInfoId, mpid: mpid.int64Value)
+                )
             }
-            return consumerInfoId
+            return (consumerInfoId, cookieIds)
         }
     }
 
@@ -184,6 +199,27 @@ extension MPPersistenceStorePRIVATE {
         return cookies
     }
 
+    func deleteCookie(id: Int64) throws {
+        let statement = try requireConnection().prepare("DELETE FROM cookies WHERE _id = ?")
+        try statement.bind(id, at: 1)
+        _ = try statement.step()
+    }
+
+    func updateCookie(_ cookie: MPPersistedCookie) throws {
+        let statement = try requireConnection().prepare(
+            "UPDATE cookies SET content = ?, domain = ?, expiration = ? WHERE _id = ?"
+        )
+        try statement.bind(cookie.content, at: 1)
+        try statement.bind(cookie.domain, at: 2)
+        try statement.bind(cookie.expiration, at: 3)
+        try statement.bind(cookie.id, at: 4)
+        _ = try statement.step()
+    }
+
+    func saveCookie(_ cookie: MPPersistedCookie) throws -> Int64 {
+        try saveCookie(cookie, consumerInfoId: cookie.consumerInfoId, mpid: cookie.mpid)
+    }
+
     func deleteConsumerInfo() throws {
         let connection = try requireConnection()
         try connection.transaction {
@@ -212,7 +248,7 @@ extension MPPersistenceStorePRIVATE {
         _ cookie: MPPersistedCookie,
         consumerInfoId: Int64,
         mpid: Int64
-    ) throws {
+    ) throws -> Int64 {
         let statement = try requireConnection().prepare(
             "INSERT INTO cookies "
                 + "(consumer_info_id, content, domain, expiration, name, mpid) "
@@ -225,6 +261,7 @@ extension MPPersistenceStorePRIVATE {
         try statement.bind(cookie.name, at: 5)
         try statement.bind(mpid, at: 6)
         _ = try statement.step()
+        return sqlite3_last_insert_rowid(try requireConnection().handle)
     }
 }
 

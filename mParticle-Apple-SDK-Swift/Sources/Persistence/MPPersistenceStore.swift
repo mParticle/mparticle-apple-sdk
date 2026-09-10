@@ -1,14 +1,15 @@
 import Foundation
 import SQLite3
 
-final class MPPersistenceStorePRIVATE {
+@objc(MPPersistenceStorePRIVATE)
+public final class MPPersistenceStorePRIVATE: NSObject {
     private let fileSystem: MPPersistenceFileSystemPRIVATE
     private let logger: MPLog
     private let mpidProvider: () -> NSNumber
     private let uploadSettingsCodec: MPUploadSettingsCoding?
     private let isOptedOut: () -> Bool
     private(set) var connection: MPSQLiteConnection?
-    let databasePath: String
+    @objc public let databasePath: String
 
     var isDatabaseOpen: Bool {
         connection != nil
@@ -34,6 +35,7 @@ final class MPPersistenceStorePRIVATE {
             for: MPPersistenceSchemaPRIVATE.currentDatabaseVersion
         )
         databasePath = fileSystem.resolvedDatabasePath(databaseName: databaseName)
+        super.init()
 
         do {
             try setupDatabase()
@@ -43,6 +45,22 @@ final class MPPersistenceStorePRIVATE {
         } catch {
             logger.error("Failed to initialize persistence database: \(error)")
         }
+    }
+
+    @objc(initWithFileSystem:logger:uploadSettingsCodec:)
+    public convenience init(
+        fileSystem: MPPersistenceFileSystemPRIVATE,
+        logger: MPLog,
+        uploadSettingsCodec: MPUploadSettingsCoding
+    ) {
+        self.init(
+            fileSystem: fileSystem,
+            logger: logger,
+            openImmediately: true,
+            mpidProvider: { MPUserDefaults.storedMpId() },
+            uploadSettingsCodec: uploadSettingsCodec,
+            isOptedOut: { false }
+        )
     }
 
     @discardableResult
@@ -120,8 +138,8 @@ final class MPPersistenceStorePRIVATE {
         uploadSettingsCodec?.unarchiveUploadSettings(data)
     }
 
-    func shouldSuppress(_ upload: MPUploadPRIVATE) -> Bool {
-        isOptedOut() && !upload.containsOptOutMessage
+    func shouldSuppress(_ upload: MPUploadPRIVATE, optedOut: Bool) -> Bool {
+        (optedOut || isOptedOut()) && !upload.containsOptOutMessage
     }
 
     func requireConnection() throws -> MPSQLiteConnection {

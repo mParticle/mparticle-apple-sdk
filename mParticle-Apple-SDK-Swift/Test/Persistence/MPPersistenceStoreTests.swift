@@ -385,6 +385,22 @@ final class MPPersistenceStoreTests: XCTestCase {
         XCTAssertEqual(try store.fetchUploads().map(\.uuid), ["opt-out"])
     }
 
+    func testExplicitOptOutStateIsScopedToEachSave() throws {
+        let codec = TestUploadSettingsCodec()
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsCodec: codec
+        )
+        let suppressed = upload(uuid: "suppressed", timestamp: 1)
+        let persisted = upload(uuid: "persisted", timestamp: 2)
+
+        XCTAssertTrue(try store.saveUpload(suppressed, optedOut: true))
+        XCTAssertEqual(suppressed.uploadId, 0)
+        XCTAssertTrue(try store.saveUpload(persisted, optedOut: false))
+        XCTAssertEqual(try store.fetchUploads().map(\.uuid), ["persisted"])
+    }
+
     func testAtomicBatchRollsBackWhenUploadSettingsCannotEncode() throws {
         let codec = TestUploadSettingsCodec()
         let store = MPPersistenceStorePRIVATE(
@@ -584,7 +600,7 @@ final class MPPersistenceStoreTests: XCTestCase {
             uploadSettingsCodec: codec
         )
         let messages = try store.fetchMessagesForUploading()
-        XCTAssertEqual(messages[42]?[-1]?["0"]?[0]?.map(\.uuid), ["fresh"])
+        XCTAssertEqual(messages[42]?[0]?["0"]?[0]?.map(\.uuid), ["fresh"])
         XCTAssertEqual(try store.fetchUploads().map(\.uuid), ["upload"])
         XCTAssertFalse(FileManager.default.fileExists(atPath: oldPath))
     }
