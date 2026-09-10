@@ -1,6 +1,10 @@
 #import "MPUserDefaultsConnector.h"
 #import "mParticle.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
+#import "MPPersistenceUtilities.h"
+#import "MPIConstants.h"
+#import "MPConsentSerialization.h"
+#import "MPConsentState.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -13,6 +17,71 @@
 @end
 
 @interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol>
+
+@end
+
+@implementation MPPersistenceUtilities
+
++ (NSNumber *)mpId {
+    return MPUserDefaults.storedMpId;
+}
+
++ (void)setMpid:(NSNumber *)mpId {
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    userDefaults[@"mpid"] = mpId;
+    [userDefaults synchronize];
+}
+
++ (MPConsentState *)consentStateForMpid:(NSNumber *)mpid {
+    NSString *string = [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPConsentStateKey userId:mpid];
+    return string ? [MPConsentSerialization consentStateFromString:string] : nil;
+}
+
++ (void)setConsentState:(MPConsentState *)state forMpid:(NSNumber *)mpid {
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    if (!state) {
+        [userDefaults removeMPObjectForKey:kMPConsentStateKey userId:mpid];
+    } else {
+        NSString *string = [MPConsentSerialization stringFromConsentState:state];
+        if (!string) {
+            return;
+        }
+        [userDefaults setMPObject:string forKey:kMPConsentStateKey userId:mpid];
+    }
+    [userDefaults synchronize];
+}
+
++ (MPConsentState *)deviceConsentState {
+    NSString *string = [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPConsentDeviceStateKey userId:@0];
+    return string ? [MPConsentSerialization consentStateFromString:string] : nil;
+}
+
++ (void)setDeviceConsentState:(MPConsentState *)state {
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    if (!state) {
+        [userDefaults removeMPObjectForKey:kMPConsentDeviceStateKey userId:@0];
+    } else {
+        NSString *string = [MPConsentSerialization stringFromConsentState:state];
+        if (!string) {
+            return;
+        }
+        [userDefaults setMPObject:string forKey:kMPConsentDeviceStateKey userId:@0];
+    }
+    [userDefaults synchronize];
+}
+
++ (MPConsentState *)effectiveConsentStateForMpid:(NSNumber *)mpid {
+    return self.deviceConsentState
+        ?: (mpid != nil ? [self consentStateForMpid:mpid] : nil);
+}
+
++ (NSInteger)maxBytesPerEvent:(NSString *)messageType {
+    return [MPPersistenceSchemaPRIVATE maxBytesPerEventForMessageType:messageType];
+}
+
++ (NSInteger)maxBytesPerBatch:(NSString *)messageType {
+    return [MPPersistenceSchemaPRIVATE maxBytesPerBatchForMessageType:messageType];
+}
 
 @end
 
@@ -124,7 +193,7 @@
 }
 
 - (nonnull NSNumber*)mpId {
-    return [MPPersistenceController_PRIVATE mpId];
+    return [MPPersistenceUtilities mpId];
 }
 
 - (nullable NSNumber*)configMaxAgeSeconds {

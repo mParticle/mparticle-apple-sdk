@@ -6,6 +6,7 @@
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
 #import "mParticle.h"
+#import "../Persistence/MPPersistenceAdapter.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -19,7 +20,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 + (dispatch_queue_t)messageQueue;
@@ -238,7 +239,7 @@
                     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification execStatus:execStatus];
                     
                     dispatch_async([MParticle messageQueue], ^{
-                        [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
+                        [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord];
                     });
                     
                     MPILogDebug(@"Forwarded user notifications call to kit: %@", kitRegister.name);
@@ -275,7 +276,7 @@
                     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotificationInteraction execStatus:execStatus];
                     
                     dispatch_async([MParticle messageQueue], ^{
-                        [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
+                        [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord];
                     });
                     
                     MPILogDebug(@"Forwarded user notifications response call to kit: %@", kitRegister.name);

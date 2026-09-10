@@ -14,6 +14,7 @@
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
+#import "../Persistence/MPPersistenceAdapter.h"
 @import mParticle_Apple_SDK_Swift;
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
@@ -25,7 +26,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
@@ -148,8 +149,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
         return;
     }
-    NSNumber *previousMPID = [MPPersistenceController_PRIVATE mpId];
-    [MPPersistenceController_PRIVATE setMpid:httpResponse.mpid];
+    NSNumber *previousMPID = [MPPersistenceUtilities mpId];
+    [MPPersistenceUtilities setMpid:httpResponse.mpid];
     MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
     MParticleUser *previousUser = self.currentUser;
     MParticleUser *user = [[MParticleUser alloc] init];
@@ -176,7 +177,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     }
     
     session.sessionUserIds = userIds.count > 0 ? [userIds componentsJoinedByString:@","] : @"";
-    [[MParticle sharedInstance].persistenceController updateSession:session];
+    [[MParticle sharedInstance].persistenceAdapter updateSession:session];
     
     if (request.identities) {
         NSMutableDictionary *userIDsCopy = [request.identities mutableCopy];
@@ -224,7 +225,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [userDefaults setMPObject:@(httpResponse.isEphemeral) forKey:kMPIsEphemeralKey userId:httpResponse.mpid];
     [userDefaults synchronize];
     
-    [[MParticle sharedInstance].persistenceController moveContentFromMpidZeroToMpid:httpResponse.mpid];
+    [[MParticle sharedInstance].persistenceAdapter moveContentFromMpidZeroToMpid:httpResponse.mpid];
     
     if (newUser) {
         NSDictionary *userInfo = nil;
@@ -294,7 +295,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             return _currentUser;
         }
 
-        NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
+        NSNumber *mpid = [MPPersistenceUtilities mpId];
         MParticleUser *user = [[MParticleUser alloc] init];
         user.userId = mpid;
         _currentUser = user;
@@ -474,7 +475,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
                                                    dataPlanVersion:[MParticle sharedInstance].dataPlanVersion
                                                     uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
             
-            [MParticle.sharedInstance.persistenceController saveUpload:upload];
+            [MParticle.sharedInstance.persistenceAdapter saveUpload:upload];
             [MParticle.sharedInstance.backendController waitForKitsAndUploadWithCompletionHandler:nil];
         }];
         

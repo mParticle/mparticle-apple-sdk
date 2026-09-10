@@ -84,7 +84,7 @@ NSString *const kMPFROptOutState = @"s";
         return nil;
     }
     
-    NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
+    NSNumber *mpid = [MPPersistenceUtilities mpId];
     NSMutableDictionary *dataDictionary = [[NSMutableDictionary alloc] init];
     dataDictionary[kMPFRModuleId] = execStatus.integrationId;
     dataDictionary[kMPTimestampKey] = MPCurrentEpochInMilliseconds;

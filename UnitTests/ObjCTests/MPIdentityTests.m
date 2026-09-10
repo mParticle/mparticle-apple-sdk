@@ -16,6 +16,8 @@
 #import "MPStateMachine.h"
 @import mParticle_Apple_SDK_Swift;
 
+@class MPPersistenceAdapter;
+
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
     MPIdentityRequestLogin = 1,
@@ -64,6 +66,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @interface MParticle ()
 
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
@@ -807,6 +810,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockPersistenceController] persistenceController];
+    [[[mockInstance stub] andReturn:mockPersistenceController] persistenceAdapter];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
     id mockUser = OCMClassMock([MParticleUser class]);

@@ -17,6 +17,7 @@
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPRokt+MParticlePrivate.h"
+#import "Persistence/MPPersistenceAdapter.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -50,6 +51,7 @@ static NSString *const kMPStateKey = @"state";
 }
 
 @property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
+@property (nonatomic, strong) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
@@ -154,6 +156,7 @@ MPLog* logger;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
+    _persistenceAdapter = [[MPPersistenceAdapter alloc] initWithMParticle:self];
     logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
     _sceneDelegateHandler.logger = logger;
@@ -298,16 +301,16 @@ MPLog* logger;
 }
 
 - (MPConsentState *)deviceConsentState {
-    return [MPPersistenceController_PRIVATE deviceConsentState];
+    return [MPPersistenceUtilities deviceConsentState];
 }
 
 - (void)setDeviceConsentState:(MPConsentState *)deviceConsentState {
     [self.rokt logRoktApiDiagnostic:@"SET_DEVICE_CONSENT_STATE"];
-    [MPPersistenceController_PRIVATE setDeviceConsentState:deviceConsentState];
+    [MPPersistenceUtilities setDeviceConsentState:deviceConsentState];
 
     [self.kitContainer_PRIVATE reconfigureKits];
 
-    MPConsentState *effectiveConsentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:self.identity.currentUser.userId];
+    MPConsentState *effectiveConsentState = [MPPersistenceUtilities effectiveConsentStateForMpid:self.identity.currentUser.userId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.kitContainer_PRIVATE forwardSDKCall:@selector(setConsentState:) consentState:effectiveConsentState kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
             MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
@@ -446,7 +449,7 @@ MPLog* logger;
     }];
     
     if (firstRun) {
-        [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]];
+        [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceUtilities mpId]];
         [userDefaults synchronize];
     }
     
@@ -511,11 +514,11 @@ MPLog* logger;
     
     __weak MParticle *weakSelf = self;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]] == nil;
+    BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceUtilities mpId]] == nil;
     if (firstRun) {
         NSDate *firstSeen = [NSDate date];
         NSNumber *firstSeenMs = @([firstSeen timeIntervalSince1970] * 1000.0);
-        [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceController_PRIVATE mpId]];
+        [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceUtilities mpId]];
     }
     
     _automaticSessionTracking = self.options.automaticSessionTracking;
@@ -604,7 +607,7 @@ MPLog* logger;
         
         // Clean up persistence
         [MPUserDefaultsConnector.userDefaults resetDefaults];
-        [self.persistenceController resetDatabaseForWorkspaceSwitching];
+        [self.persistenceAdapter resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
         //
@@ -723,7 +726,7 @@ MPLog* logger;
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
         [MPUserDefaultsConnector.userDefaults resetDefaults];
-        [self.persistenceController resetDatabase];
+        [self.persistenceAdapter resetDatabase];
         // See the matching comment in resetForSwitchingWorkspaces: - flushSerializedKits/
         // removeAllSideloadedKits only schedule each kit's stop() and teardown on the main
         // queue rather than completing it here, so waiting on notifyWhenKitTeardownComplete:
@@ -743,7 +746,7 @@ MPLog* logger;
     [self.rokt logRoktApiDiagnostic:@"RESET"];
     [executor executeOnMessageSync:^{
         [MPUserDefaultsConnector.userDefaults resetDefaults];
-        [[MParticle sharedInstance].persistenceController resetDatabase];
+        [[MParticle sharedInstance].persistenceAdapter resetDatabase];
         [MParticle setSharedInstance:nil];
     }];
 }
@@ -914,7 +917,7 @@ MPLog* logger;
                             if ([forwardRecords isKindOfClass:[NSArray class]]) {
                                 for (MPForwardRecord *forwardRecord in forwardRecords) {
                                     [executor executeOnMessage: ^{
-                                        [self.persistenceController saveForwardRecord:forwardRecord];
+                                        [self.persistenceAdapter saveForwardRecord:forwardRecord];
                                     }];
                                 }
                             }
@@ -1294,7 +1297,7 @@ MPLog* logger;
     
     if (integrationAttributes) {
         [executor executeOnMessage: ^{
-            [[MParticle sharedInstance].persistenceController saveIntegrationAttributes:integrationAttributes];
+        [[MParticle sharedInstance].persistenceAdapter saveIntegrationAttributes:integrationAttributes];
         }];
         
     } else {
@@ -1307,7 +1310,7 @@ MPLog* logger;
 - (nonnull MPKitExecStatus *)clearIntegrationAttributesForKit:(nonnull NSNumber *)integrationId {
     [self.rokt logRoktApiDiagnostic:@"CLEAR_INTEGRATION_ATTRIBUTES"];
     [executor executeOnMessage: ^{
-        [[MParticle sharedInstance].persistenceController deleteIntegrationAttributesForIntegrationId:integrationId];
+        [[MParticle sharedInstance].persistenceAdapter deleteIntegrationAttributesForIntegrationId:integrationId];
     }];
 
     return [[MPKitExecStatus alloc] initWithSDKCode:integrationId returnCode:MPKitReturnCodeSuccess forwardCount:0];
@@ -1315,7 +1318,7 @@ MPLog* logger;
 
 - (nullable NSDictionary *)integrationAttributesForKit:(nonnull NSNumber *)integrationId {
     [self.rokt logRoktApiDiagnostic:@"GET_INTEGRATION_ATTRIBUTES"];
-    return [[MParticle sharedInstance].persistenceController fetchIntegrationAttributesForId:integrationId];
+    return [[MParticle sharedInstance].persistenceAdapter fetchIntegrationAttributesForId:integrationId];
 }
 
 #pragma mark Kits
