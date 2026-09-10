@@ -71,7 +71,8 @@
 }
 
 + (MPConsentState *)effectiveConsentStateForMpid:(NSNumber *)mpid {
-    return self.deviceConsentState ?: (mpid ? [self consentStateForMpid:mpid] : nil);
+    return self.deviceConsentState
+        ?: (mpid != nil ? [self consentStateForMpid:mpid] : nil);
 }
 
 + (NSInteger)maxBytesPerEvent:(NSString *)messageType {
