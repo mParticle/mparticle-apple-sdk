@@ -142,6 +142,50 @@
     [instance.persistenceStore deleteConsumerInfo];
 }
 
+- (void)testPersistenceAdapterAssignsDistinctIdsToSameNameCookies {
+    NSNumber *mpid = @91917;
+    [MPPersistenceUtilities setMpid:mpid];
+    MParticle *instance = [MParticle sharedInstance];
+    [instance.persistenceStore deleteConsumerInfo];
+    MPCookie *first = [[MPCookie alloc] initWithName:@"shared-name"
+                                      configuration:@{
+                                          kMPCKContent: @"first",
+                                          kMPCKDomain: @"first.example",
+                                          kMPCKExpiration: @"2099-01-01T00:00:00Z"
+                                      }];
+    MPCookie *second = [[MPCookie alloc] initWithName:@"shared-name"
+                                       configuration:@{
+                                           kMPCKContent: @"second",
+                                           kMPCKDomain: @"second.example",
+                                           kMPCKExpiration: @"2099-01-01T00:00:00Z"
+                                       }];
+    MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+    consumerInfo.cookies = @[first, second];
+
+    [instance.persistenceAdapter saveConsumerInfo:consumerInfo];
+
+    XCTAssertNotEqual(first.cookieId, 0);
+    XCTAssertNotEqual(second.cookieId, 0);
+    XCTAssertNotEqual(first.cookieId, second.cookieId);
+    first.content = @"updated";
+    [instance.persistenceAdapter updateConsumerInfo:consumerInfo];
+    NSArray<MPCookie *> *savedCookies =
+        [instance.persistenceAdapter fetchCookiesForUserId:mpid];
+    NSPredicate *firstDomain =
+        [NSPredicate predicateWithFormat:@"domain = %@", @"first.example"];
+    NSPredicate *secondDomain =
+        [NSPredicate predicateWithFormat:@"domain = %@", @"second.example"];
+    XCTAssertEqualObjects(
+        [savedCookies filteredArrayUsingPredicate:firstDomain].firstObject.content,
+        @"updated"
+    );
+    XCTAssertEqualObjects(
+        [savedCookies filteredArrayUsingPredicate:secondDomain].firstObject.content,
+        @"second"
+    );
+    [instance.persistenceStore deleteConsumerInfo];
+}
+
 - (void)testOptOut {
     MParticle *instance = [MParticle sharedInstance];
     instance.stateMachine = [[MPStateMachine_PRIVATE alloc] init];
