@@ -13,6 +13,7 @@ const {
   validatePolicy,
 } = require("../lib/gate");
 const {
+  createApi,
   ensureGatePending,
   evaluatePullRequest,
   getInput,
@@ -222,12 +223,47 @@ test("reads array and wrapped GitHub API pagination responses", () => {
   assert.throws(() => getPaginatedItems({ check_runs: [] }), /paginated/);
 });
 
-test("polls every open pull request for a scheduled recheck", async () => {
+test("rejects pagination beyond the configured page limit", async () => {
+  const previousFetch = global.fetch;
+  let requestCount = 0;
+  global.fetch = async () => {
+    requestCount += 1;
+    return {
+      headers: {
+        get: () =>
+          '<https://api.github.test/repos/mParticle/mparticle-apple-sdk/pulls?page=2>; rel="next"',
+      },
+      json: async () => [],
+      ok: true,
+      status: 200,
+    };
+  };
+
+  try {
+    const api = createApi("https://api.github.test", "token", {
+      maxPages: 1,
+    });
+    await assert.rejects(
+      api.paginate("/repos/mParticle/mparticle-apple-sdk/pulls"),
+      /pagination exceeded/,
+    );
+    assert.equal(requestCount, 1);
+  } finally {
+    global.fetch = previousFetch;
+  }
+});
+
+test("bounds scheduled rechecks to recently updated open pull requests", async () => {
   const calls = [];
   const api = {
-    paginate: async (path) => {
+    request: async (path) => {
       calls.push(path);
-      return [{ number: 7 }, { number: 8, state: "open" }];
+      return {
+        data: Array.from({ length: 12 }, (_, index) => ({
+          number: index + 1,
+          state: "open",
+        })),
+      };
     },
   };
 
@@ -239,9 +275,12 @@ test("polls every open pull request for a scheduled recheck", async () => {
       "mparticle-apple-sdk",
       null,
     ),
-    [7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
   );
   assert.match(calls[0], /state=open/);
+  assert.match(calls[0], /per_page=10/);
+  assert.match(calls[0], /sort=updated/);
+  assert.match(calls[0], /direction=desc/);
 });
 
 test("requires a fresh non-author SDK-team approval on the current head SHA", () => {
@@ -339,6 +378,10 @@ test("rejects an unsafe policy definition", () => {
     /gate check name/,
   );
   assert.throws(
+    () => validatePolicy({ ...policy, roktOrganization: "" }),
+    /Rokt organization login/,
+  );
+  assert.throws(
     () =>
       validatePolicy({
         ...policy,
@@ -388,6 +431,49 @@ test("replaces a completed Gate check while required CI is pending", async () =>
   assert.match(requests[0].path, /\/check-runs$/);
   assert.equal(requests[0].options.method, "POST");
   assert.equal(requests[0].options.body.status, "in_progress");
+});
+
+test("reopens a completed Gate check claimed by the current evaluation", async () => {
+  const sha = "d".repeat(40);
+  const check = {
+    app: { id: 99 },
+    completed_at: "2026-09-08T01:00:00.000Z",
+    external_id: `rokt-safe-pr-gate:7:${sha}:1788829200000:older-run`,
+    id: 42,
+    name: "Rokt Safe PR Gate",
+    status: "completed",
+  };
+  const requests = [];
+  const api = {
+    paginate: async () => [check],
+    request: async (path, options) => {
+      requests.push({ options, path });
+      if (options.method === "PATCH") Object.assign(check, options.body);
+    },
+  };
+  const details = {
+    checkName: "Rokt Safe PR Gate",
+    evaluationId: "current-run",
+    evaluationStartedAt: "2026-09-08T01:01:00.000Z",
+    gateAppId: "99",
+    owner: "mParticle",
+    prNumber: 7,
+    repository: "mparticle-apple-sdk",
+    sha,
+  };
+
+  await upsertGateCheck(api, details, {
+    status: "in_progress",
+    summary: "Claiming the completed check.",
+  });
+  await ensureGatePending(api, details, "Waiting for CI.");
+
+  assert.equal(requests.length, 2);
+  assert.match(requests[0].path, /\/check-runs\/42$/);
+  assert.equal(requests[0].options.body.status, undefined);
+  assert.match(requests[1].path, /\/check-runs$/);
+  assert.equal(requests[1].options.method, "POST");
+  assert.equal(requests[1].options.body.status, "in_progress");
 });
 
 test("does not let an older evaluation reopen a newer completed Gate check", async () => {
@@ -612,6 +698,7 @@ function gateContext(mparticleApi) {
     evaluationId: "test-run",
     gateAppId: "99",
     manualReviewTeamSlug: "sdk-team",
+    membershipLookupBudget: { remaining: Number.POSITIVE_INFINITY },
     mode: "enforce",
     mparticleApi,
     owner: "mParticle",
@@ -647,6 +734,60 @@ test("blocks a draft pull request instead of recording a passing Gate", async ()
     ({ options }) => options.body?.conclusion === "action_required",
   );
   assert.ok(completedCheck);
+});
+
+test("posts a neutral Gate conclusion when audit evaluation fails", async () => {
+  const checks = [];
+  const requests = [];
+  const sha = "f".repeat(40);
+  const api = {
+    paginate: async (path) => {
+      if (path.includes("check-runs")) return checks;
+      if (path.includes(`/commits/${sha}/pulls`)) {
+        throw new Error("Evaluation failed.");
+      }
+      throw new Error(`Unexpected paginated path: ${path}`);
+    },
+    request: async (path, options = {}) => {
+      requests.push({ options, path });
+      if (path.endsWith("/pulls/12")) {
+        return {
+          data: {
+            draft: false,
+            head: { sha },
+            state: "open",
+            user: { login: "author" },
+          },
+        };
+      }
+      if (path.endsWith("/check-runs") && options.method === "POST") {
+        checks.unshift({ app: { id: 99 }, id: 42, ...options.body });
+        return { data: checks[0] };
+      }
+      if (path.endsWith("/check-runs/42") && options.method === "PATCH") {
+        Object.assign(checks[0], options.body);
+        return { data: checks[0] };
+      }
+      return { data: {} };
+    },
+  };
+  const context = { ...gateContext(api), mode: "audit" };
+  const previousConsoleError = console.error;
+  console.error = () => {};
+
+  try {
+    assert.equal(await evaluatePullRequest(context, 12), false);
+  } finally {
+    console.error = previousConsoleError;
+  }
+  const completedCheck = requests.find(
+    ({ options }) => options.body?.conclusion === "neutral",
+  );
+  assert.ok(completedCheck);
+  assert.match(
+    completedCheck.options.body.output.summary,
+    /would report failure/,
+  );
 });
 
 test("blocks an oversized safe-path-only pull request", async () => {

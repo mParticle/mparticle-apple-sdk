@@ -70,11 +70,13 @@ set the mode to `enforce` and test these fixture pull requests:
    A fresh SDK-team approval on the current SHA is the only manual exception;
    the Gate never automatically approves this category.
 
-For fork PRs, the Gate's trusted scheduled run re-evaluates manual approvals at
-most five minutes later. An SDK-team maintainer can instead use **Actions →
-Rokt Safe PR Gate → Run workflow** with the pull request number for an immediate
-re-evaluation. The workflow never runs a pull-request review event with secrets;
-it evaluates only code checked out from the default branch.
+For fork PRs, the Gate's trusted scheduled run re-evaluates the ten most recently
+updated open pull requests every five minutes. Each scheduled run also limits API
+pagination and reviewer membership lookups so it can finish within its timeout.
+An SDK-team maintainer can use **Actions → Rokt Safe PR Gate → Run workflow** with
+the pull request number for an immediate re-evaluation. The workflow never runs a
+pull-request review event with secrets; it evaluates only code checked out from
+the default branch.
 
 ## 4. Change the active `main` ruleset atomically
 
