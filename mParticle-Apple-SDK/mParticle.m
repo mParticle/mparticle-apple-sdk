@@ -196,7 +196,7 @@ MPLog* logger;
 }
 
 - (void)initializePersistence {
-    if (_persistenceStore) {
+    if (_persistenceStore || _persistenceAdapter) {
         return;
     }
     MPPersistenceFileSystemPRIVATE *fileSystem =
