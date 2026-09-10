@@ -260,6 +260,28 @@ extension MPPersistenceStorePRIVATE {
         )) ?? 0
     }
 
+    @objc(saveRawConsumerInfoWithCookieIdsForMpid:uniqueIdentifier:cookies:)
+    public func objectiveCSaveRawConsumerInfoWithCookieIds(
+        forMpid mpid: NSNumber,
+        uniqueIdentifier: String?,
+        cookies: [NSDictionary]
+    ) -> NSDictionary? {
+        let rawCookies = cookies.compactMap(persistedCookie)
+        guard rawCookies.count == cookies.count,
+              let result = try? saveConsumerInfoWithCookieIds(
+                  mpid: mpid,
+                  uniqueIdentifier: uniqueIdentifier,
+                  cookies: rawCookies
+              )
+        else {
+            return nil
+        }
+        return [
+            "consumerInfoId": result.consumerInfoId,
+            "cookieIds": result.cookieIds
+        ]
+    }
+
     @objc(deleteCookieId:)
     public func objectiveCDeleteCookie(id: Int64) {
         try? deleteCookie(id: id)

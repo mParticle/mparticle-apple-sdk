@@ -350,17 +350,17 @@
             [rawCookies addObject:[self rawCookie:cookie consumerInfoId:0 mpid:mpid]];
         }
     }
-    consumerInfo.consumerInfoId =
-        [self.store saveRawConsumerInfoForMpid:mpid
-                             uniqueIdentifier:consumerInfo.uniqueIdentifier
-                                      cookies:rawCookies];
-    NSArray<NSDictionary *> *savedCookies = [self.store fetchRawCookiesForUserId:mpid];
+    NSDictionary *savedInfo =
+        [self.store saveRawConsumerInfoWithCookieIdsForMpid:mpid
+                                           uniqueIdentifier:consumerInfo.uniqueIdentifier
+                                                    cookies:rawCookies];
+    consumerInfo.consumerInfoId = [savedInfo[@"consumerInfoId"] longLongValue];
+    NSArray<NSNumber *> *cookieIds = savedInfo[@"cookieIds"];
+    NSUInteger cookieIdIndex = 0;
     for (MPCookie *cookie in consumerInfo.cookies) {
-        for (NSDictionary *saved in savedCookies) {
-            if ([cookie.name isEqualToString:[self nullableString:saved[@"name"]]]) {
-                cookie.cookieId = [saved[@"id"] longLongValue];
-                break;
-            }
+        if (!cookie.expired && cookieIdIndex < cookieIds.count) {
+            cookie.cookieId = cookieIds[cookieIdIndex].longLongValue;
+            cookieIdIndex += 1;
         }
     }
 }

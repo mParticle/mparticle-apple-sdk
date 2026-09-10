@@ -831,6 +831,49 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+- (void)testSaveConsumerInfoAssignsDistinctIdsToSameNameCookies {
+    NSNumber *mpid = @91917;
+    [MPPersistenceController_PRIVATE setMpid:mpid];
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    [persistence deleteConsumerInfo];
+    MPCookie *first = [[MPCookie alloc] initWithName:@"shared-name"
+                                      configuration:@{
+                                          kMPCKContent: @"first",
+                                          kMPCKDomain: @"first.example",
+                                          kMPCKExpiration: @"2099-01-01T00:00:00Z"
+                                      }];
+    MPCookie *second = [[MPCookie alloc] initWithName:@"shared-name"
+                                       configuration:@{
+                                           kMPCKContent: @"second",
+                                           kMPCKDomain: @"second.example",
+                                           kMPCKExpiration: @"2099-01-01T00:00:00Z"
+                                       }];
+    MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+    consumerInfo.cookies = @[first, second];
+
+    [persistence saveConsumerInfo:consumerInfo];
+
+    XCTAssertNotEqual(first.cookieId, 0);
+    XCTAssertNotEqual(second.cookieId, 0);
+    XCTAssertNotEqual(first.cookieId, second.cookieId);
+    first.content = @"updated";
+    [persistence updateConsumerInfo:consumerInfo];
+    NSArray<MPCookie *> *savedCookies = [persistence fetchCookiesForUserId:mpid];
+    NSPredicate *firstDomain =
+        [NSPredicate predicateWithFormat:@"domain = %@", @"first.example"];
+    NSPredicate *secondDomain =
+        [NSPredicate predicateWithFormat:@"domain = %@", @"second.example"];
+    XCTAssertEqualObjects(
+        [savedCookies filteredArrayUsingPredicate:firstDomain].firstObject.content,
+        @"updated"
+    );
+    XCTAssertEqualObjects(
+        [savedCookies filteredArrayUsingPredicate:secondDomain].firstObject.content,
+        @"second"
+    );
+    [persistence deleteConsumerInfo];
+}
+
 - (void)testFetchConsumerInfoIgnoresRowWithoutCookies {
     [MPPersistenceController_PRIVATE setMpid:@91918];
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;

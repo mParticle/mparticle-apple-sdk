@@ -130,6 +130,18 @@ extension MPPersistenceStorePRIVATE {
         uniqueIdentifier: String?,
         cookies: [MPPersistedCookie]
     ) throws -> Int64 {
+        try saveConsumerInfoWithCookieIds(
+            mpid: mpid,
+            uniqueIdentifier: uniqueIdentifier,
+            cookies: cookies
+        ).consumerInfoId
+    }
+
+    func saveConsumerInfoWithCookieIds(
+        mpid: NSNumber,
+        uniqueIdentifier: String?,
+        cookies: [MPPersistedCookie]
+    ) throws -> (consumerInfoId: Int64, cookieIds: [Int64]) {
         let connection = try requireConnection()
         return try connection.transaction {
             let statement = try connection.prepare(
@@ -139,10 +151,13 @@ extension MPPersistenceStorePRIVATE {
             try statement.bind(uniqueIdentifier, at: 2)
             _ = try statement.step()
             let consumerInfoId = sqlite3_last_insert_rowid(connection.handle)
+            var cookieIds: [Int64] = []
             for cookie in cookies {
-                _ = try saveCookie(cookie, consumerInfoId: consumerInfoId, mpid: mpid.int64Value)
+                cookieIds.append(
+                    try saveCookie(cookie, consumerInfoId: consumerInfoId, mpid: mpid.int64Value)
+                )
             }
-            return consumerInfoId
+            return (consumerInfoId, cookieIds)
         }
     }
 
