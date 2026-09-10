@@ -217,7 +217,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)confirmEndSessionMessage:(MPSession *)session {
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    id<MPBackendPersistence> persistence = self.persistence;
     
     MPMessage *message = [persistence fetchSessionEndMessageInSession:session];
     if (!message) {
@@ -352,7 +352,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 - (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(void (^)(void))completionHandler {
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    id<MPBackendPersistence> persistence = self.persistence;
     
     NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
     if (endCurrentSession) {
@@ -710,7 +710,7 @@ static BOOL skipNextUpload = NO;
             return;
         }
         
-        MPPersistenceController_PRIVATE *persistence = mparticle.persistenceController;
+        id<MPBackendPersistence> persistence = self.persistence;
         
         NSNumber *mpId = [MPPersistenceController_PRIVATE mpId];
         date = date ?: [NSDate date];
@@ -793,7 +793,7 @@ static BOOL skipNextUpload = NO;
         MPSession *sessionToEnd = [_session copy];
         [self confirmEndSessionMessage:sessionToEnd];
         
-        [[MParticle sharedInstance].persistenceController archiveSession:sessionToEnd];
+        (void)[self.persistence archiveSession:sessionToEnd];
         [self broadcastSessionDidEnd:sessionToEnd];
         _session = nil;
         [MParticle sharedInstance].stateMachine.currentSession = nil;
@@ -934,7 +934,7 @@ static BOOL skipNextUpload = NO;
     session.attributesDictionary[localKey] = newValue;
     
     dispatch_async([MParticle messageQueue], ^{
-        [[MParticle sharedInstance].persistenceController updateSession:session];
+        [self.persistence updateSession:session];
     });
     
     return (NSNumber *)newValue;
@@ -1252,7 +1252,7 @@ static BOOL skipNextUpload = NO;
     
     session.attributesDictionary[localKey] = value;
     
-    [[MParticle sharedInstance].persistenceController updateSession:session];
+    [self.persistence updateSession:session];
     
     return MPExecStatusSuccess;
 }
@@ -1360,7 +1360,7 @@ static BOOL skipNextUpload = NO;
         self.timeOfLastEventInBackground = lastEventTimestamp;
     }
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    id<MPBackendPersistence> persistence = self.persistence;
     
     MPMessageType messageTypeCode = (MPMessageType)[MPMessageBuilder messageTypeForString:message.messageType logger:[[MParticle sharedInstance] getLogger]];
     
@@ -1770,7 +1770,7 @@ static BOOL skipNextUpload = NO;
             // Reset the time app went to background so that it's correctly calculated in the new session
             self.timeAppWentToBackgroundInCurrentSession = currentTime;
             
-            [[MParticle sharedInstance].persistenceController updateSession:self.session];
+            [self.persistence updateSession:self.session];
             [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
                 MPILogVerbose(@"Session ended in the background. New session will begin if an mParticle event is logged or app enters foreground.");
             }];
