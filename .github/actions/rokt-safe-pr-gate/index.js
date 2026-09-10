@@ -11,6 +11,10 @@ const {
   validatePolicy,
 } = require("./lib/gate");
 
+const SCHEDULE_MEMBERSHIP_LOOKUP_LIMIT = 50;
+const SCHEDULE_PAGINATION_PAGE_LIMIT = 2;
+const SCHEDULE_PULL_REQUEST_LIMIT = 10;
+
 function getInput(name) {
   const normalizedName = name.toUpperCase();
   return (
@@ -63,7 +67,11 @@ function nextPage(linkHeader) {
   return match?.[1] || null;
 }
 
-function createApi(apiUrl, token) {
+function createApi(
+  apiUrl,
+  token,
+  { maxPages = Number.POSITIVE_INFINITY } = {},
+) {
   async function request(path, options = {}) {
     const response = await fetch(new URL(path, apiUrl), {
       method: options.method || "GET",
@@ -90,14 +98,25 @@ function createApi(apiUrl, token) {
     return { data, headers: response.headers, status: response.status };
   }
 
-  async function paginate(path, collectionKey) {
+  async function paginate(
+    path,
+    collectionKey,
+    { truncateAtLimit = false } = {},
+  ) {
     const results = [];
     let next = path;
+    let pageCount = 0;
 
     while (next) {
+      if (pageCount >= maxPages) {
+        if (truncateAtLimit) break;
+        throw new Error("GitHub API pagination exceeded the evaluation limit.");
+      }
+
       const response = await request(next);
 
       results.push(...getPaginatedItems(response.data, collectionKey));
+      pageCount += 1;
       next = nextPage(response.headers.get("link"));
     }
 
@@ -112,7 +131,9 @@ async function getGateCheck(api, owner, repository, sha, gateAppId, checkName) {
     `/repos/${owner}/${repository}/commits/${sha}/check-runs`,
     { check_name: checkName, per_page: "100" },
   );
-  const checks = await api.paginate(path, "check_runs");
+  const checks = await api.paginate(path, "check_runs", {
+    truncateAtLimit: true,
+  });
 
   return (
     checks
@@ -285,8 +306,12 @@ async function ensureGatePending(api, details, summary) {
 
   const state = { status: "in_progress", summary };
 
-  if (check && ownsGateCheck(check, details) && check.status !== "completed") {
-    await patchGateCheck(api, check, details, state);
+  if (check && ownsGateCheck(check, details)) {
+    if (check.status === "completed") {
+      await createGateCheck(api, details, state);
+    } else {
+      await patchGateCheck(api, check, details, state);
+    }
     return;
   }
 
@@ -310,7 +335,14 @@ async function isActiveTeamMember(api, organization, teamSlug, login) {
   return response.status === 200 && response.data?.state === "active";
 }
 
-async function getTeamReviewState(api, organization, teamSlug, reviews, pr) {
+async function getTeamReviewState(
+  api,
+  organization,
+  teamSlug,
+  reviews,
+  pr,
+  membershipLookupBudget,
+) {
   const reviewerLogins = [
     ...new Set(
       getEffectiveReviews(reviews)
@@ -321,6 +353,14 @@ async function getTeamReviewState(api, organization, teamSlug, reviews, pr) {
         ),
     ),
   ];
+
+  if (reviewerLogins.length > membershipLookupBudget.remaining) {
+    throw new Error(
+      "Reviewer membership lookups exceeded the evaluation limit.",
+    );
+  }
+  membershipLookupBudget.remaining -= reviewerLogins.length;
+
   const memberships = await Promise.all(
     reviewerLogins.map(async (login) => ({
       login,
@@ -353,6 +393,7 @@ async function getCurrentTeamReviewState(context, prNumber, pr) {
     context.manualReviewTeamSlug,
     reviews,
     pr,
+    context.membershipLookupBudget,
   );
 }
 
@@ -391,14 +432,18 @@ async function resolvePullRequestNumbers(
   }
 
   if (event.schedule) {
-    const pullRequests = await api.paginate(
+    const response = await api.request(
       toQueryPath(`/repos/${owner}/${repository}/pulls`, {
-        per_page: "100",
+        direction: "desc",
+        per_page: String(SCHEDULE_PULL_REQUEST_LIMIT),
+        sort: "updated",
         state: "open",
       }),
     );
+    const pullRequests = getPaginatedItems(response.data);
 
     return pullRequests
+      .slice(0, SCHEDULE_PULL_REQUEST_LIMIT)
       .filter((pullRequest) => Number.isInteger(pullRequest.number))
       .map((pullRequest) => pullRequest.number);
   }
@@ -645,8 +690,8 @@ async function evaluatePullRequest(context, prNumber) {
     return true;
   } catch (error) {
     try {
-      await completeGate(
-        mparticleApi,
+      await completeDecision(
+        context,
         details,
         "failure",
         "The Gate could not safely complete its evaluation.",
@@ -673,18 +718,31 @@ async function main() {
     throw new Error("Event does not identify a repository.");
   }
 
-  const mparticleApi = createApi(apiUrl, requiredInput("mparticle-token"));
+  const scheduled = Boolean(event.schedule);
+  const apiOptions = scheduled
+    ? { maxPages: SCHEDULE_PAGINATION_PAGE_LIMIT }
+    : undefined;
+  const mparticleApi = createApi(
+    apiUrl,
+    requiredInput("mparticle-token"),
+    apiOptions,
+  );
   const context = {
     employeeTeamSlug: requiredInput("employee-team-slug"),
     evaluationId: requiredInput("evaluation-id"),
     gateAppId: requiredInput("gate-app-id"),
     manualReviewTeamSlug: requiredInput("manual-review-team-slug"),
+    membershipLookupBudget: {
+      remaining: scheduled
+        ? SCHEDULE_MEMBERSHIP_LOOKUP_LIMIT
+        : Number.POSITIVE_INFINITY,
+    },
     mparticleApi,
     mode: requiredMode(),
     owner,
     policy,
     repository,
-    roktApi: createApi(apiUrl, requiredInput("rokt-token")),
+    roktApi: createApi(apiUrl, requiredInput("rokt-token"), apiOptions),
   };
   const prNumbers = await resolvePullRequestNumbers(
     event,
@@ -712,6 +770,7 @@ if (require.main === module) {
 }
 
 module.exports = {
+  createApi,
   ensureGatePending,
   evaluatePullRequest,
   getInput,

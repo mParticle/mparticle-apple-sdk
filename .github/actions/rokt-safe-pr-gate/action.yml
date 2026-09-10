@@ -2,26 +2,37 @@ name: Rokt Safe PR Gate
 description: Evaluates low-risk pull requests for the required Rokt Safe PR Gate check.
 inputs:
   api-url:
+    description: GitHub API base URL.
     required: true
   event-path:
+    description: Path to the triggering event payload.
     required: true
   evaluation-id:
+    description: Unique identifier for this Gate evaluation.
     required: true
   policy-path:
+    description: Path to the trusted Gate policy file.
     required: true
   mparticle-token:
+    description: Repository-scoped token for mParticle API requests.
     required: true
   rokt-token:
+    description: Organization-scoped token for Rokt membership requests.
     required: true
   gate-app-id:
+    description: GitHub App identifier that owns the Gate check.
     required: true
   employee-team-slug:
+    description: Rokt team slug used to verify employee membership.
     required: true
   manual-review-team-slug:
+    description: mParticle team slug used to verify manual reviews.
     required: true
   pr-number:
+    description: Optional pull request number for a manual re-evaluation.
     required: false
   mode:
+    description: Gate execution mode, either audit or enforce.
     required: true
 runs:
   using: node20

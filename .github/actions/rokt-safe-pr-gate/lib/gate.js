@@ -17,6 +17,13 @@ function validatePolicy(policy) {
   }
 
   if (
+    typeof policy.roktOrganization !== "string" ||
+    policy.roktOrganization.trim().length === 0
+  ) {
+    throw new Error("Policy must define the Rokt organization login.");
+  }
+
+  if (
     !Number.isSafeInteger(policy.maxFiles) ||
     policy.maxFiles < 1 ||
     !Number.isSafeInteger(policy.maxChangedLines) ||
