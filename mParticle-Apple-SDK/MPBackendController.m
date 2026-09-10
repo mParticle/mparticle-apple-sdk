@@ -55,6 +55,10 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @end
 
+@interface MPPersistenceController_PRIVATE ()
+@property (nonatomic, strong, readonly) MPPersistenceStorePRIVATE *store;
+@end
+
 @interface MPBackendController_PRIVATE() {
     NSTimeInterval nextCleanUpTime;
     MParticleSession *tempSession;
@@ -68,6 +72,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSOperationQueue *backgroundCheckQueue;
 @property NSNumber *previousForegroundTime;
+@property (nonatomic, strong) id<MPBackendPersistence> persistence;
 
 @end
 
@@ -81,8 +86,15 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 #endif
 
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
+    return [self initWithDelegate:delegate
+                     persistence:[MParticle sharedInstance].persistenceController.store];
+}
+
+- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
+                     persistence:(id<MPBackendPersistence>)persistence {
     self = [super init];
     if (self) {
+        _persistence = persistence;
         _networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
 #if TARGET_OS_IOS == 1
         _notificationController = [[MPNotificationController_PRIVATE alloc] init];
@@ -1278,7 +1290,10 @@ static BOOL skipNextUpload = NO;
     
     dispatch_async([MParticle messageQueue], ^{
         MPILogDebug(@"Creating persistence controller");
-        [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
+        MPPersistenceController_PRIVATE *persistenceController =
+            [[MPPersistenceController_PRIVATE alloc] init];
+        [MParticle sharedInstance].persistenceController = persistenceController;
+        self.persistence = persistenceController.store;
         
         // Check if we've switched workspaces on startup
         MPUploadSettings *lastUploadSettings = [UploadSettingsUtils lastUploadSettingsWithUserDefaults: MPUserDefaultsConnector.userDefaults];
@@ -1771,17 +1786,16 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)cleanUp:(NSTimeInterval)currentTime {
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     MPCleanUpPlan *plan = [MPSessionTimingPolicy cleanUpPlanWithNow:currentTime
                                                    nextCleanUpTime:nextCleanUpTime
                                                      maxAgeSeconds:[MParticle sharedInstance].persistenceMaxAgeSeconds
                                                      defaultMaxAge:NINETY_DAYS
                                                           interval:TWENTY_FOUR_HOURS];
     if (plan) {
-        [persistence deleteRecordsOlderThan:plan.deleteRecordsOlderThan];
+        [self.persistence deleteRecordsOlderThan:plan.deleteRecordsOlderThan];
         nextCleanUpTime = plan.nextCleanUpTime;
     }
-    [persistence purgeMemory];
+    [self.persistence purgeMemory];
     MPIdentityCaching *identityCaching = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
                                                                                   logger:MParticle.sharedInstance.getLogger];
     [identityCaching clearExpiredCache];
