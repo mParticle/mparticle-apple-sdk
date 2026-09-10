@@ -1,5 +1,11 @@
 #import <Foundation/Foundation.h>
 
+// MParticleUserNotification itself now lives in Swift as MParticleUserNotificationPRIVATE, exported
+// under its original Objective-C runtime name. Only the two typedefs stay here: NS_OPTIONS and
+// NS_ENUM are C constructs the Swift module cannot emit, and callers combine
+// MPUserNotificationBehavior with `|`.
+@import mParticle_Apple_SDK_Swift;
+
 typedef NS_OPTIONS(NSUInteger, MPUserNotificationBehavior) {
     MPUserNotificationBehaviorReceived = 1 << 0,
     MPUserNotificationBehaviorDirectOpen = 1 << 1,
@@ -11,37 +17,3 @@ typedef NS_ENUM(NSInteger, MPUserNotificationMode) {
     MPUserNotificationModeRemote,
     MPUserNotificationModeLocal
 };
-
-extern NSString * _Nonnull const kMPUserNotificationApsKey;
-extern NSString * _Nonnull const kMPUserNotificationAlertKey;
-extern NSString * _Nonnull const kMPUserNotificationBodyKey;
-extern NSString * _Nonnull const kMPUserNotificationContentAvailableKey;
-extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
-
-#if TARGET_OS_IOS == 1
-
-@interface MParticleUserNotification : NSObject <NSSecureCoding>
-
-// Was inherited from the dissolved abstract data-model base class. Only this class's own
-// NSSecureCoding implementation reads it; nothing outside the SDK does.
-@property (nonatomic, strong, nullable) NSString *uuid;
-
-@property (nonatomic, strong, nullable) NSString *actionTitle;
-@property (nonatomic, strong, nullable) NSString *actionIdentifier;
-@property (nonatomic, strong, nullable) NSDictionary *deferredPayload;
-@property (nonatomic, strong, nonnull) NSString *type;
-@property (nonatomic, strong, readonly, nullable) NSString *categoryIdentifier;
-@property (nonatomic, strong, readonly, nullable) NSDate *localAlertDate;
-@property (nonatomic, strong, readonly, nullable) NSString *redactedUserNotificationString;
-@property (nonatomic, strong, readonly, nonnull) NSDate *receiptTime;
-@property (nonatomic, strong, readonly, nonnull) NSString *state;
-@property (nonatomic, readwrite) int64_t userNotificationId;
-@property (nonatomic, readwrite) MPUserNotificationBehavior behavior;
-@property (nonatomic, readonly) MPUserNotificationMode mode;
-@property (nonatomic, readwrite) BOOL shouldPersist;
-
-- (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)notificationDictionary state:(nonnull NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode;
-
-@end
-
-#endif
