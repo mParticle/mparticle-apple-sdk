@@ -1229,8 +1229,8 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
     [instance startWithOptions:options1];
 
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
-        return instance.options != nil;
-    }), @"SDK did not finish starting");
+        return instance.initialized && instance.options != nil;
+    }), @"SDK did not finish initializing");
 
     XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
     XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
@@ -1240,11 +1240,14 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
 
     // switchWorkspaceWithOptions: installs a replacement shared instance.
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
-        return [MParticle sharedInstance] != instance && [MParticle sharedInstance].options != nil;
+        MParticle *current = [MParticle sharedInstance];
+        return current != instance && current.initialized && current.options != nil;
     }), @"Workspace switch did not complete");
 
     MParticle *instance3 = [MParticle sharedInstance];
     MParticle *instance4 = [MParticle sharedInstance];
+
+    // The replaced instance keeps the options it was started with.
     XCTAssertNotNil(instance.options);
     XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
     XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
@@ -1265,8 +1268,10 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
     [[MParticle sharedInstance] startWithOptions:options1];
 
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
-        return MPKitContainer_PRIVATE.registeredKits.count == 1;
+        return [MParticle sharedInstance].initialized
+            && MPKitContainer_PRIVATE.registeredKits.count == 1;
     }), @"Sideloaded kit was not registered");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
     XCTAssertEqualObjects(((id<MPExtensionKitProtocol>)MPKitContainer_PRIVATE.registeredKits.anyObject).wrapperInstance, kitTestSideloaded1);
 
     // Switch workspace with a new sideloaded kit
@@ -1274,21 +1279,29 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
     MPKitTestClassSideloaded *kitTestSideloaded2 = [[MPKitTestClassSideloaded alloc] init];
     options2.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:kitTestSideloaded2]];
 
-    [[MParticle sharedInstance] switchWorkspaceWithOptions:options2];
+    MParticle *instanceBeforeFirstSwitch = [MParticle sharedInstance];
+    [instanceBeforeFirstSwitch switchWorkspaceWithOptions:options2];
 
     // Wait for the replacement kit itself, not just for the switch to start.
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
-        return MPKitContainer_PRIVATE.registeredKits.count == 1
+        return [MParticle sharedInstance] != instanceBeforeFirstSwitch
+            && [MParticle sharedInstance].initialized
             && ((id<MPExtensionKitProtocol>)MPKitContainer_PRIVATE.registeredKits.anyObject).wrapperInstance == kitTestSideloaded2;
     }), @"Replacement sideloaded kit did not take over");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+    XCTAssertEqualObjects(((id<MPExtensionKitProtocol>)MPKitContainer_PRIVATE.registeredKits.anyObject).wrapperInstance, kitTestSideloaded2);
 
     // Switch workspace with no sideloaded kits
     MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-    [[MParticle sharedInstance] switchWorkspaceWithOptions:options3];
+    MParticle *instanceBeforeSecondSwitch = [MParticle sharedInstance];
+    [instanceBeforeSecondSwitch switchWorkspaceWithOptions:options3];
 
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
-        return MPKitContainer_PRIVATE.registeredKits.count == 0;
-    }), @"Sideloaded kits were not cleared");
+        return [MParticle sharedInstance] != instanceBeforeSecondSwitch
+            && [MParticle sharedInstance].initialized
+            && MPKitContainer_PRIVATE.registeredKits.count == 0;
+    }), @"Sideloaded kits were not cleared by the workspace switch");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
 }
 
 // Kits without configurations should NOT be removed from the registry even if they implement `stop` becuase it means they weren't used by the previous workspace
@@ -1304,7 +1317,7 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
 
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
         return [MParticle sharedInstance].initialized;
-    }), @"SDK did not finish starting");
+    }), @"SDK did not finish initializing");
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
 
     [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
@@ -1313,7 +1326,6 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
         return [MParticle sharedInstance] != instanceBeforeSwitch
             && [MParticle sharedInstance].initialized;
     }), @"Workspace switch did not complete");
-
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
 }
 
@@ -1328,19 +1340,24 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
 
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
         return [MParticle sharedInstance].initialized;
-    }), @"SDK did not finish starting");
+    }), @"SDK did not finish initializing");
 
     registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
     [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
 
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
 
-    [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
+    MParticle *instanceBeforeSwitch = [MParticle sharedInstance];
+    [instanceBeforeSwitch switchWorkspaceWithOptions:options];
 
-    // The removal lands via the flush on the main queue, so wait for the outcome itself.
+    // The registry is emptied by the flush the switch triggers, which lands on the main
+    // queue, so wait for the observable outcome rather than for the switch alone.
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
-        return MPKitContainer_PRIVATE.registeredKits.count == 0;
-    }), @"Kit without stop was not removed on workspace switch");
+        return [MParticle sharedInstance] != instanceBeforeSwitch
+            && [MParticle sharedInstance].initialized
+            && MPKitContainer_PRIVATE.registeredKits.count == 0;
+    }), @"Kits were not released by the workspace switch");
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
 }
 
 // Kits with configurations that implement `stop` shouldn't be removed from the registry because they can be cleanly restarted
@@ -1355,7 +1372,7 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
 
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
         return [MParticle sharedInstance].initialized;
-    }), @"SDK did not finish starting");
+    }), @"SDK did not finish initializing kits");
 
     registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
     [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
@@ -1364,6 +1381,8 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
 
     [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
 
+    // switchWorkspaceWithOptions: installs a replacement shared instance; once it
+    // has, the switch is far enough along to assert the registry survived it.
     XCTAssertTrue(MPWaitForCondition(WORKSPACE_SWITCHING_TIMEOUT, ^BOOL{
         return [MParticle sharedInstance] != instanceBeforeSwitch
             && [MParticle sharedInstance].initialized;

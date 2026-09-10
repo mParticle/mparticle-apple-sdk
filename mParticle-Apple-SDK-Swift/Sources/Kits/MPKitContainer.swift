@@ -11,6 +11,32 @@ import Foundation
     private static let registryLock = NSLock()
     private static let registry = NSMutableSet(capacity: 2)
 
+    /// Tracks kit teardown work deferred to the main queue by `flushSerializedKits` and
+    /// `freeKitRegister:integrationId:` (stop(), disk cleanup, notification). Workspace-switch
+    /// callers in `mParticle.m` enter this group before dispatching that work and leave it
+    /// after, so `notifyWhenKitTeardownComplete(_:block:)` lets them wait for old kits to
+    /// actually finish stopping before starting the next workspace's kits - deferring the work
+    /// off the execution adapter's kitsSemaphore (to avoid holding that lock across arbitrary
+    /// kit/observer code) would otherwise leave no guarantee that a kit with process-wide
+    /// teardown (e.g. one whose stop() shuts down a shared SDK singleton) finishes before the
+    /// new workspace's identical kit starts back up. Scoped statically alongside the registry
+    /// itself, rather than per `MPKitContainer_PRIVATE` instance, since a workspace switch
+    /// tears down kits registered against the old instance while mParticle.m is already
+    /// constructing the next one.
+    private static let kitTeardownGroup = DispatchGroup()
+
+    @objc public static func enterKitTeardownGroup() {
+        kitTeardownGroup.enter()
+    }
+
+    @objc public static func leaveKitTeardownGroup() {
+        kitTeardownGroup.leave()
+    }
+
+    @objc public static func notifyWhenKitTeardownComplete(_ queue: DispatchQueue, block: @escaping () -> Void) {
+        kitTeardownGroup.notify(queue: queue, execute: block)
+    }
+
     @discardableResult
     @objc public static func registerKit(_ kitRegister: Any) -> Bool {
         registryLock.lock()
