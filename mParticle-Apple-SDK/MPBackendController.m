@@ -471,7 +471,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)prepareBatchesForUpload:(MPUploadSettings *)uploadSettings {
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    id<MPBackendPersistence> persistence = self.persistence;
     
     //Fetch all stored messages (1)
     NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
@@ -503,7 +503,9 @@ static BOOL skipNextUpload = NO;
         //Atomically persist the batches (3) and delete the messages they were built from (4),
         //so messages are only removed once their upload is durably stored. A failure rolls
         //both back, leaving the messages to be retried instead of re-batched into a duplicate.
-        [persistence saveUploads:uploads deleteMessages:group.messages];
+        (void)[persistence saveUploads:uploads
+                       deleteMessages:group.messages
+                             optedOut:[MParticle sharedInstance].stateMachine.optOut];
 
         self.deletedUserAttributes = nil;
     }
@@ -517,7 +519,7 @@ static BOOL skipNextUpload = NO;
     [self prepareBatchesForUpload:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     
     const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    id<MPBackendPersistence> persistence = self.persistence;
     
     if (skipNextUpload) {
         skipNextUpload = NO;
@@ -1016,7 +1018,7 @@ static BOOL skipNextUpload = NO;
             messageInfo[kMPStackTrace] = [callStack componentsJoinedByString:@"\n"];
         }
         
-        NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [[MParticle sharedInstance].persistenceController fetchBreadcrumbs];
+        NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [self.persistence fetchBreadcrumbs];
         if (fetchedbreadcrumbs) {
             NSMutableArray *breadcrumbs = [[NSMutableArray alloc] initWithCapacity:fetchedbreadcrumbs.count];
             for (MPBreadcrumb *breadcrumb in fetchedbreadcrumbs) {
@@ -1073,7 +1075,7 @@ static BOOL skipNextUpload = NO;
         messageInfo[kMPPLCrashReport] = plCrashReportBase64;
     }
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    id<MPBackendPersistence> persistence = self.persistence;
     NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [persistence fetchBreadcrumbs];
     if (fetchedbreadcrumbs) {
         NSMutableArray *breadcrumbs = [[NSMutableArray alloc] initWithCapacity:fetchedbreadcrumbs.count];
@@ -1088,7 +1090,7 @@ static BOOL skipNextUpload = NO;
     }
 
     MPSession *crashSession = nil;
-    NSArray<MPSession *> *sessions = [[MParticle sharedInstance].persistenceController fetchPossibleSessionsFromCrash];
+    NSArray<MPSession *> *sessions = [persistence fetchPossibleSessionsFromCrash];
     for (MPSession *session in sessions) {
         if (![session isEqual:_session]) {
             crashSession = session;
