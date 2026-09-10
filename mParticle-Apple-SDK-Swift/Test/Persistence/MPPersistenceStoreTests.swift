@@ -600,7 +600,7 @@ final class MPPersistenceStoreTests: XCTestCase {
             uploadSettingsCodec: codec
         )
         let messages = try store.fetchMessagesForUploading()
-        XCTAssertEqual(messages[42]?[-1]?["0"]?[0]?.map(\.uuid), ["fresh"])
+        XCTAssertEqual(messages[42]?[0]?["0"]?[0]?.map(\.uuid), ["fresh"])
         XCTAssertEqual(try store.fetchUploads().map(\.uuid), ["upload"])
         XCTAssertFalse(FileManager.default.fileExists(atPath: oldPath))
     }
