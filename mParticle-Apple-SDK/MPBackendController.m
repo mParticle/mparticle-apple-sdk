@@ -793,7 +793,7 @@ static BOOL skipNextUpload = NO;
         MPSession *sessionToEnd = [_session copy];
         [self confirmEndSessionMessage:sessionToEnd];
         
-        [self.persistence archiveSession:sessionToEnd];
+        (void)[self.persistence archiveSession:sessionToEnd];
         [self broadcastSessionDidEnd:sessionToEnd];
         _session = nil;
         [MParticle sharedInstance].stateMachine.currentSession = nil;
