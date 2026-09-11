@@ -1949,6 +1949,17 @@ static BOOL skipNextUpload = NO;
 // Moved here from the deleted MPStateMachine_PRIVATE wrapper: this is its only production caller,
 // and AdServices is already linked on the Objective-C side. The Swift state machine only receives
 // the mapped result through its searchAdsInfo property.
+// Separated so a test can substitute the session and assert the data task is resumed without
+// reaching api-adservices.apple.com.
+- (NSURLSession *)attributionURLSession {
+    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    sessionConfiguration.timeoutIntervalForRequest = 30;
+    sessionConfiguration.timeoutIntervalForResource = 30;
+    return [NSURLSession sessionWithConfiguration:sessionConfiguration
+                                         delegate:nil
+                                    delegateQueue:nil];
+}
+
 - (void)requestAttributionDetailsWithBlock:(void (^_Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
     NSError *error;
     NSString *attributionToken = [AAAttribution attributionTokenWithError:&error];
@@ -1962,14 +1973,9 @@ static BOOL skipNextUpload = NO;
     [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
 
-    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-    sessionConfiguration.timeoutIntervalForRequest = 30;
-    sessionConfiguration.timeoutIntervalForResource = 30;
-    NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
-                                                             delegate:nil
-                                                        delegateQueue:nil];
+    NSURLSession *urlSession = [self attributionURLSession];
     dispatch_async([MParticle messageQueue], ^{
-        [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
+        NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
             if (error) {
                 MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
                 if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
@@ -1988,6 +1994,9 @@ static BOOL skipNextUpload = NO;
                 completionHandler();
             }
         }];
+        // -dataTaskWithRequest:completionHandler: returns a suspended task. Without this the
+        // request was never sent and the completion handler never ran.
+        [task resume];
     });
 }
 #endif

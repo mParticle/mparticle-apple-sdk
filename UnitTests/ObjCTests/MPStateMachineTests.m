@@ -6,12 +6,16 @@
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPIConstants.h"
+#if TARGET_OS_IOS == 1
+    #import <AdServices/AAAttribution.h>
+#endif
 @import mParticle_Apple_SDK_Swift;
 
 // -requestAttributionDetailsWithBlock:requestsCompleted: has no public declaration; it moved to
 // MPBackendController_PRIVATE with the state machine wrapper's deletion.
 @interface MPBackendController_PRIVATE(Tests)
 - (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted;
+- (NSURLSession *)attributionURLSession;
 @end
 
 @interface MParticle ()
@@ -211,6 +215,36 @@
     [[MParticle sharedInstance].backendController requestAttributionDetailsWithBlock:searchAdsCompletion
                                                                   requestsCompleted:0];
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+// Pins the defect this test file could not see: -dataTaskWithRequest:completionHandler: hands back
+// a suspended task, so without -resume the attribution request was never sent and the completion
+// handler never ran. Invisible on the simulator, where AAAttribution fails and the early return
+// fires the handler before a request is ever built.
+- (void)testRequestAttributionResumesTheDataTask {
+    id attribution = OCMClassMock([AAAttribution class]);
+    [[[attribution stub] andReturn:@"attribution-token"] attributionTokenWithError:[OCMArg anyObjectRef]];
+
+    id dataTask = OCMClassMock([NSURLSessionDataTask class]);
+    id session = OCMClassMock([NSURLSession class]);
+    [[[session stub] andReturn:dataTask] dataTaskWithRequest:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    id controllerMock = OCMPartialMock(controller);
+    [[[controllerMock stub] andReturn:session] attributionURLSession];
+
+    XCTestExpectation *resumed = [self expectationWithDescription:@"attribution data task resumed"];
+    [[[dataTask stub] andDo:^(NSInvocation *invocation) {
+        [resumed fulfill];
+    }] resume];
+
+    [controller requestAttributionDetailsWithBlock:^{} requestsCompleted:0];
+
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+
+    [controllerMock stopMocking];
+    [attribution stopMocking];
 }
 #endif
 
