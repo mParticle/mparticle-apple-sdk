@@ -32,8 +32,8 @@ static NSInteger const kMPRoktKitCode = 181;
 
 static __weak MPKitRokt *roktKit = nil;
 
-// Rokt 5.4 deprecates the id-only APIs, but mParticle must retain them for existing callers and
-// for MPRoktSession's documented id-only handoff. Keep the suppression scoped to these adapters.
+// Rokt 5.4 deprecates the id-only APIs, but mParticle must retain them for existing callers.
+// Keep the suppression scoped to these adapters.
 static void MPSetRoktSessionId(NSString *sessionId) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -588,52 +588,39 @@ static NSString *MPGetRoktSessionId(void) {
     [Rokt setSession:session];
 }
 
-- (void)applyRoktSessionId:(NSString *)sessionId {
-    MPSetRoktSessionId(sessionId);
-}
-
 /// Set the session to use for the next execute call.
-/// Matches Web launcher options: id + token → `+[Rokt setSession:]`; id only → `setSessionId`.
-/// Token without a non-empty id is ignored.
+/// A non-empty id and token plus an expiry are required. Incomplete sessions are ignored;
+/// the separate `setSessionId` method remains the legacy id-only path.
 /// Requires Rokt iOS SDK 5.4.0+ (`+[Rokt setSession:]`).
 ///
-/// @param session The mParticle session handoff value (id + optional JWT + optional expiry).
+/// @param session The mParticle session handoff value (id + JWT + expiry).
 - (MPKitExecStatus *)setSession:(MPRoktSession *)session {
     NSString *sessionId = [session.sessionId stringByTrimmingCharactersInSet:
                            [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    if (sessionId.length == 0) {
+    NSString *sessionToken = [session.sessionToken stringByTrimmingCharactersInSet:
+                              [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (sessionId.length == 0 || sessionToken.length == 0 || session.expiresAt == nil) {
         return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     }
 
-    NSString *sessionToken = [session.sessionToken stringByTrimmingCharactersInSet:
-                              [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    if (sessionToken.length > 0) {
-        RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:sessionId
-                                                             sessionToken:sessionToken
-                                                                expiresAt:session.expiresAt];
-        [self applyRoktSession:roktSession];
-    } else {
-        [self applyRoktSessionId:sessionId];
-    }
+    RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:sessionId
+                                                         sessionToken:sessionToken
+                                                            expiresAt:session.expiresAt];
+    [self applyRoktSession:roktSession];
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
 /// Get the current session (id + token) for WebView / non-native handoff.
 - (MPRoktSession *)getSession {
     RoktSession *session = [Rokt getSession];
-    if (session) {
-        return [[MPRoktSession alloc] initWithSessionId:session.sessionId
-                                           sessionToken:session.sessionToken
-                                              expiresAt:session.expiresAt];
-    }
-
-    // Rokt stores id-only handoffs separately, so getSession returns nil when no token was set.
-    // Preserve the round trip promised by MPRoktSession by wrapping that legacy session id.
-    NSString *sessionId = MPGetRoktSessionId();
-    if (sessionId.length == 0) {
+    if (session.sessionId.length == 0 ||
+        session.sessionToken.length == 0 ||
+        session.expiresAt == nil) {
         return nil;
     }
-    return [[MPRoktSession alloc] initWithSessionId:sessionId sessionToken:nil expiresAt:nil];
+    return [[MPRoktSession alloc] initWithSessionId:session.sessionId
+                                       sessionToken:session.sessionToken
+                                          expiresAt:session.expiresAt];
 }
 
 /// Set the session id to use for the next execute call.

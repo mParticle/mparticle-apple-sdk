@@ -83,22 +83,18 @@
  * Use this when you have a session from a non-native integration (e.g. WebView)
  * and want the session to stay consistent across integrations. Call before the next execute.
  *
- * Matches Web launcher options: pass a non-empty `sessionId` with optional `sessionToken`.
- * When the token is present, offers/events can send `Authorization: Bearer`. When only the id
- * is present, the id is applied without Bearer seeding. Empty `sessionId` (or token without id)
- * is ignored.
+ * Pass a non-empty `sessionId`, `sessionToken`, and `expiresAt`. Offers and events can then send
+ * `Authorization: Bearer`. Incomplete sessions are ignored; use `-setSessionId:` for the legacy
+ * id-only handoff.
  *
- * @param session The session id and optional JWT session token (optional expiry).
+ * @param session The session id, JWT session token, and token expiry.
  */
 - (void)setSession:(MPRoktSession * _Nonnull)session;
 
 /**
  * Get the current session (id + token) for use within a non-native integration e.g. WebView.
  *
- * If the token is unavailable or expired but a session id remains, the returned session contains
- * that id with a nil token and expiry.
- *
- * @return The session, or nil if no session id is present.
+ * @return The complete token-bearing session, or nil if none is present or the token has expired.
  */
 - (MPRoktSession * _Nullable)getSession;
 

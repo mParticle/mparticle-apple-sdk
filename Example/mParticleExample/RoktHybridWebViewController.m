@@ -124,8 +124,12 @@ static NSString *const kRoktHybridHTMLResource = @"rokt-hybrid";
 
     NSString *sessionToken = [self stringValue:body[@"sessionToken"]];
     NSNumber *expiresAt = [self numberValue:body[@"expiresAt"]];
+    if (sessionToken.length == 0 || expiresAt == nil) {
+        NSLog(@"Rokt hybrid: webview posted an incomplete token-bearing session");
+        return;
+    }
     MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:sessionId
-                                                         sessionToken:sessionToken.length > 0 ? sessionToken : nil
+                                                         sessionToken:sessionToken
                                                             expiresAt:expiresAt];
 
     NSLog(@"Rokt hybrid: applying web session to native (id=%@, token=%@)",

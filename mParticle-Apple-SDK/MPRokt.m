@@ -205,10 +205,10 @@ static const NSInteger kMPRoktKitId = 181;
 /// Set the session (id + token) to use for the next execute call.
 /// Use this when you have a session from a non-native integration (e.g. WebView)
 /// and want Bearer-authorized offers/events to stay consistent across integrations.
-/// - Note: Matches Web launcher options — pass a non-empty sessionId with optional sessionToken.
-///   Id + token seeds Bearer; id-only applies the session id; empty sessionId is ignored.
+/// - Note: Pass a non-empty sessionId, sessionToken, and expiresAt. Incomplete sessions are
+///   ignored; use setSessionId: for the legacy id-only handoff.
 /// - Parameters:
-///   - session: The session id and optional JWT session token to apply (optional expiry).
+///   - session: The session id, JWT session token, and token expiry to apply.
 - (void)setSession:(MPRoktSession * _Nonnull)session {
     [self logRoktApiDiagnostic:@"ROKT_SET_SESSION"];
     MPILogDebug(@"MPRokt setSession called - sessionId: %@, sessionToken: %@",
@@ -233,9 +233,7 @@ static const NSInteger kMPRoktKitId = 181;
 }
 
 /// Get the current session (id + token) for use within a non-native integration e.g. WebView.
-/// If the token is unavailable or expired but a session id remains, the returned session contains
-/// that id with a nil token and expiry.
-/// - Returns: The session, or nil if no session id is present.
+/// - Returns: The complete token-bearing session, or nil if none is present or the token expired.
 - (MPRoktSession * _Nullable)getSession {
     [self logRoktApiDiagnostic:@"ROKT_GET_SESSION"];
     MPILogDebug(@"MPRokt getSession called");

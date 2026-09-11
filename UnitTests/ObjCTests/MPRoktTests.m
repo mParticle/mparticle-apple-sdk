@@ -1426,7 +1426,7 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
 
     MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:@"sid"
                                                          sessionToken:@"jwt"
-                                                            expiresAt:nil];
+                                                            expiresAt:@(123)];
     XCTestExpectation *sessionForwarded = [self expectationWithDescription:@"setSession forwarded"];
     XCTestExpectation *placementForwarded = [self expectationWithDescription:@"selectPlacements forwarded"];
 

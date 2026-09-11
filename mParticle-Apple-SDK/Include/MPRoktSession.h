@@ -10,9 +10,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A Rokt session suitable for handoff between native and non-native integrations (e.g. WebView).
  *
- * Includes the session id plus an optional short-lived session token used to authorize offers and
- * events. Mirrors Web launcher options: `sessionId` is required for handoff; `sessionToken` is
- * optional (Bearer continuity when present).
+ * Includes the session id, short-lived session token, and token expiry used to authorize offers
+ * and events. Use the legacy session-id APIs for id-only handoff.
  */
 @interface MPRoktSession : NSObject
 
@@ -22,28 +21,25 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, readonly) NSString *sessionId;
 
 /**
- * Optional JWT session token used as a Bearer credential for offers and events.
- * When nil or empty, `-setSession:` applies the session id only (same as Web `sessionId`
- * without `sessionToken`).
+ * JWT session token used as a Bearer credential for offers and events.
  */
-@property (nonatomic, copy, readonly, nullable) NSString *sessionToken;
+@property (nonatomic, copy, readonly) NSString *sessionToken;
 
 /**
- * Optional Unix epoch milliseconds when `sessionToken` expires (matches server `expires_at` when known).
- * Ignored when `sessionToken` is absent.
+ * Unix epoch milliseconds when `sessionToken` expires (matches server `expires_at`).
  */
-@property (nonatomic, strong, readonly, nullable) NSNumber *expiresAt;
+@property (nonatomic, strong, readonly) NSNumber *expiresAt;
 
 /**
  * Creates a session handoff value.
  *
  * @param sessionId The Rokt session identifier.
- * @param sessionToken Optional JWT session token (`nil` for id-only handoff).
- * @param expiresAt Optional token expiry as Unix epoch milliseconds (`nil` if unknown).
+ * @param sessionToken The JWT session token.
+ * @param expiresAt Token expiry as Unix epoch milliseconds.
  */
 - (instancetype)initWithSessionId:(NSString *)sessionId
-                     sessionToken:(nullable NSString *)sessionToken
-                        expiresAt:(nullable NSNumber *)expiresAt NS_DESIGNATED_INITIALIZER;
+                     sessionToken:(NSString *)sessionToken
+                        expiresAt:(NSNumber *)expiresAt NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
