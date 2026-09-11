@@ -3,19 +3,15 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "MPBaseTestCase.h"
-#import "MPStateMachine.h"
 #import "MPKitContainer+MParticlePrivate.h"
+#import "MPUserDefaultsConnector.h"
+#import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 
-#pragma mark - MPStateMachine category
-@interface MPStateMachine_PRIVATE(Tests)
-
-- (void)handleApplicationDidEnterBackground:(NSNotification *)notification;
-- (void)handleApplicationWillEnterForeground:(NSNotification *)notification;
-- (void)handleApplicationWillTerminate:(NSNotification *)notification;
-- (void)resetRampPercentage;
-- (void)resetTriggers;
-
+// -requestAttributionDetailsWithBlock:requestsCompleted: has no public declaration; it moved to
+// MPBackendController_PRIVATE with the state machine wrapper's deletion.
+@interface MPBackendController_PRIVATE(Tests)
+- (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted;
 @end
 
 @interface MParticle ()
@@ -46,13 +42,14 @@
 
 - (void)testRamp {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    [stateMachine configureRampPercentage:@100];
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    [connector configureRampPercentage:@100];
     XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
     
-    [stateMachine configureRampPercentage:@0];
+    [connector configureRampPercentage:@0];
     XCTAssertTrue(stateMachine.dataRamped, @"Data is not being ramped.");
     
-    [stateMachine configureRampPercentage:nil];
+    [connector configureRampPercentage:nil];
     XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not being reset.");
 }
 
@@ -70,7 +67,7 @@
                                                  }
                                         };
     
-    [stateMachine configureTriggers:triggerDictionary[@"tri"]];
+    [stateMachine applyTriggers:triggerDictionary[@"tri"]];
     
     XCTAssertNotNil(stateMachine.triggerEventTypes, @"Trigger event types are not being set.");
     XCTAssertNotNil(stateMachine.triggerMessageTypes, @"Trigger message types are not being set.");
@@ -96,7 +93,7 @@
     NSDictionary *triggerDictionary = @{@"tri":[NSNull null]
                                         };
     
-    [stateMachine configureTriggers:triggerDictionary[@"tri"]];
+    [stateMachine applyTriggers:triggerDictionary[@"tri"]];
     
     XCTAssertNil(stateMachine.triggerEventTypes, @"Trigger event types are being set from a null value.");
     XCTAssertEqual(stateMachine.triggerMessageTypes.count, 1, @"Incorrect count.");
@@ -106,7 +103,7 @@
                                    }
                           };
     
-    [stateMachine configureTriggers:triggerDictionary[@"tri"]];
+    [stateMachine applyTriggers:triggerDictionary[@"tri"]];
     
     XCTAssertNotNil(stateMachine.triggerEventTypes, @"Trigger event types are not being set.");
     XCTAssertEqual(stateMachine.triggerMessageTypes.count, 1, @"Incorrect count.");
@@ -116,7 +113,7 @@
                                    }
                           };
     
-    [stateMachine configureTriggers:triggerDictionary[@"tri"]];
+    [stateMachine applyTriggers:triggerDictionary[@"tri"]];
     
     XCTAssertNil(stateMachine.triggerEventTypes, @"Trigger event types are being set from a null value.");
     XCTAssertNotNil(stateMachine.triggerMessageTypes, @"Trigger message types are not being set.");
@@ -126,7 +123,7 @@
                                    }
                           };
     
-    [stateMachine configureTriggers:triggerDictionary[@"tri"]];
+    [stateMachine applyTriggers:triggerDictionary[@"tri"]];
     
     XCTAssertNil(stateMachine.triggerEventTypes, @"Trigger event types are being set from a null value.");
     XCTAssertEqual(stateMachine.triggerMessageTypes.count, 1, @"Incorrect count.");
@@ -172,7 +169,8 @@
 
 - (void)testRamping {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    [stateMachine configureRampPercentage:@0];
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    [connector configureRampPercentage:@0];
     XCTAssertTrue(stateMachine.dataRamped, @"Should have been true.");
     
     [stateMachine resetRampPercentage];
@@ -183,7 +181,7 @@
     NSDictionary *configuration = @{@"evts":@[@"events"],
                                     @"dts":@[@"messages"]};
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    [stateMachine configureTriggers:configuration];
+    [stateMachine applyTriggers:configuration];
     XCTAssertNotNil(stateMachine.triggerEventTypes, @"Should not have been nil.");
     XCTAssertNotNil(stateMachine.triggerMessageTypes, @"Should not have been nil.");
     
@@ -209,12 +207,38 @@
         [expectation fulfill];
     };
     
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    [stateMachine requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
+    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    [[MParticle sharedInstance].backendController requestAttributionDetailsWithBlock:searchAdsCompletion
+                                                                  requestsCompleted:0];
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 #endif
+
+#pragma mark - Data blocking configuration
+
+// The data-planning payload comes off the configuration response, so its shape is untrusted.
+// MPIsNull only rejects nil and NSNull; keyed subscripting a non-dictionary raises.
+- (void)testConfigureDataBlockingToleratesMalformedShapes {
+    id<MPUserDefaultsConnectorProtocol> connector =
+        (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+
+    // Hoisted into locals: collection literals contain commas, which XCTAssertNoThrow would
+    // otherwise parse as macro argument separators.
+    NSDictionary *nullPlan = @{kMPRemoteConfigDataPlanning: [NSNull null]};
+    NSDictionary *stringPlan = @{kMPRemoteConfigDataPlanning: @"not a dictionary"};
+    NSDictionary *arrayPlan = @{kMPRemoteConfigDataPlanning: @[@1, @2]};
+    NSDictionary *stringBlock = @{kMPRemoteConfigDataPlanning: @{kMPRemoteConfigDataPlanningBlock: @"not a dictionary"}};
+    NSDictionary *arrayBlock = @{kMPRemoteConfigDataPlanning: @{kMPRemoteConfigDataPlanningBlock: @[@1, @2]}};
+
+    XCTAssertNoThrow([connector configureDataBlocking:nil]);
+    XCTAssertNoThrow([connector configureDataBlocking:(NSDictionary *)[NSNull null]]);
+    XCTAssertNoThrow([connector configureDataBlocking:@{}]);
+    XCTAssertNoThrow([connector configureDataBlocking:nullPlan]);
+    XCTAssertNoThrow([connector configureDataBlocking:stringPlan]);
+    XCTAssertNoThrow([connector configureDataBlocking:arrayPlan]);
+    XCTAssertNoThrow([connector configureDataBlocking:stringBlock]);
+    XCTAssertNoThrow([connector configureDataBlocking:arrayBlock]);
+}
 
 #pragma mark - Thread Safety Tests
 

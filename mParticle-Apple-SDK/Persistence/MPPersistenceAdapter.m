@@ -2,7 +2,6 @@
 
 #import "MPForwardRecord.h"
 #import "MPPersistenceUtilities.h"
-#import "MPStateMachine.h"
 #import "MParticle.h"
 
 @import mParticle_Apple_SDK_Swift;

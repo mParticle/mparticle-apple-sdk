@@ -15,7 +15,6 @@
 #import "MPKitTestClass.h"
 #import "MPKitSecondTestClass.h"
 #import "MPKitAppsFlyerTest.h"
-#import "MPStateMachine.h"
 #import "MPKitRegister.h"
 #import "MPTransactionAttributes.h"
 #import "MPEventProjection.h"

@@ -1,7 +1,6 @@
 #import <XCTest/XCTest.h>
 @import mParticle_Apple_SDK_Swift;
 #import "MPIConstants.h"
-#import "MPStateMachine.h"
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"

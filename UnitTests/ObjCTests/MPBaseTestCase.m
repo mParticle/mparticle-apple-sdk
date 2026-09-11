@@ -3,15 +3,16 @@
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPPersistenceUtilities.h"
-#import "MPStateMachine.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPAppNotificationHandler.h"
 #import "MPNetworkCommunication.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle (Tests)
++ (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
@@ -92,6 +93,15 @@
     }
     
     return returnedObject;
+}
+
+- (MPStateMachine_PRIVATE *)freshStateMachine {
+    return [[MPStateMachine_PRIVATE alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                      connector:(id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init]
+                                                   messageQueue:[MParticle messageQueue]
+                                                     sdkVersion:kMParticleSDKVersion
+                                               deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                       buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
 }
 
 @end

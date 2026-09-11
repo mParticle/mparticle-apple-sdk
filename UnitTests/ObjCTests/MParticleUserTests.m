@@ -6,7 +6,7 @@
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
-#import "MPStateMachine.h"
+@import mParticle_Apple_SDK_Swift;
 #import "FilteredMParticleUser.h"
 
 @interface MParticle ()

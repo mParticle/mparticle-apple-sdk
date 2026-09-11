@@ -1,7 +1,6 @@
 #import "MPBackendController.h"
 #import "MPPersistenceUtilities.h"
 #import "MPIConstants.h"
-#import "MPStateMachine.h"
 #import "MPNetworkPerformance.h"
 #import "MPAudience.h"
 #import "MPEvent.h"
@@ -19,6 +18,7 @@
 #import "UploadSettingsUtils.h"
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
+    #import <AdServices/AAAttribution.h>
 #endif
 @import mParticle_Apple_SDK_Swift;
 
@@ -1336,7 +1336,7 @@ static BOOL skipNextUpload = NO;
 #if TARGET_OS_IOS == 1
         if (MParticle.sharedInstance.collectSearchAdsAttribution) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS * NSEC_PER_SEC)), [MParticle messageQueue], searchAdsCompletion);
-            [stateMachine requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
+            [self requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
         } else {
             searchAdsCompletion();
         }
@@ -1944,5 +1944,52 @@ static BOOL skipNextUpload = NO;
         MPILogVerbose(@"Application Did Become Active");
     }];
 }
+
+#if TARGET_OS_IOS == 1
+// Moved here from the deleted MPStateMachine_PRIVATE wrapper: this is its only production caller,
+// and AdServices is already linked on the Objective-C side. The Swift state machine only receives
+// the mapped result through its searchAdsInfo property.
+- (void)requestAttributionDetailsWithBlock:(void (^_Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
+    NSError *error;
+    NSString *attributionToken = [AAAttribution attributionTokenWithError:&error];
+    if (!attributionToken) {
+        completionHandler();
+        return;
+    }
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]];
+    [request setHTTPMethod:@"POST"];
+    [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
+    [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
+
+    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    sessionConfiguration.timeoutIntervalForRequest = 30;
+    sessionConfiguration.timeoutIntervalForResource = 30;
+    NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
+                                                             delegate:nil
+                                                        delegateQueue:nil];
+    dispatch_async([MParticle messageQueue], ^{
+        [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
+            if (error) {
+                MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
+                if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
+                    completionHandler();
+                } else if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
+                    completionHandler();
+                } else {
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
+                    });
+                }
+            } else {
+                NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                NSDictionary *mapped = [MPStateMachine_PRIVATE searchAdsInfoFromAdAttribution:adAttributionDictionary];
+                [MParticle sharedInstance].stateMachine.searchAdsInfo = mapped ?: @{};
+                completionHandler();
+            }
+        }];
+    });
+}
+#endif
 
 @end

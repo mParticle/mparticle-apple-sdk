@@ -1,7 +1,6 @@
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
 #import "MParticleUser.h"
-#import "MPStateMachine.h"
 #import "MPKitConfiguration.h"
 #import "MPDataPlanFilter.h"
 @import mParticle_Apple_SDK_Swift;

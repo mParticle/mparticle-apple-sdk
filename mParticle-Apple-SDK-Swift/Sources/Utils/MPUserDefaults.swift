@@ -576,3 +576,7 @@ public protocol MPUserDefaultsProtocol {
         return compressedData
     }
 }
+
+// MPUserDefaults already satisfies this protocol member for member; declaring the conformance lets
+// Swift callers pass it directly instead of forcing the Objective-C boundary to cast.
+extension MPUserDefaults: MPApplicationMPUserDefaultsProtocol {}
