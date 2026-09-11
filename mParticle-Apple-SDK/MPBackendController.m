@@ -1327,11 +1327,15 @@ static BOOL skipNextUpload = NO;
             MPILogDebug(@"Application First Run");
         }
         
-        void (^searchAdsCompletion)(void) = ^{
+        // Single-shot: the attribution path and the global-timeout fallback below both hold this
+        // block and the timeout is never cancelled, so whichever finishes first has to win.
+        // -processDidFinishLaunching is not idempotent - running it twice forwards a second
+        // install/update and emits a second app-state-transition message.
+        void (^searchAdsCompletion)(void) = [self singleShotBlock:^{
             [self processDidFinishLaunching:self.didFinishLaunchingNotification];
             MPILogDebug(@"Initiating config request and upload cycle");
             [self waitForKitsAndUploadWithCompletionHandler:nil];
-        };
+        }];
         
 #if TARGET_OS_IOS == 1
         if (MParticle.sharedInstance.collectSearchAdsAttribution) {
@@ -1945,10 +1949,30 @@ static BOOL skipNextUpload = NO;
     }];
 }
 
+// Wraps a block so it runs at most once however many callers hold it, from whatever queue. The
+// attribution completion needs this because its two triggers - the request itself and the
+// never-cancelled global timeout - fire on different queues.
+- (dispatch_block_t)singleShotBlock:(dispatch_block_t)block {
+    NSLock *lock = [[NSLock alloc] init];
+    __block BOOL hasRun = NO;
+
+    return ^{
+        [lock lock];
+        BOOL alreadyRan = hasRun;
+        hasRun = YES;
+        [lock unlock];
+
+        if (!alreadyRan) {
+            block();
+        }
+    };
+}
+
 #if TARGET_OS_IOS == 1
 // Moved here from the deleted MPStateMachine_PRIVATE wrapper: this is its only production caller,
 // and AdServices is already linked on the Objective-C side. The Swift state machine only receives
 // the mapped result through its searchAdsInfo property.
+
 // Separated so a test can substitute the session and assert the data task is resumed without
 // reaching api-adservices.apple.com.
 - (NSURLSession *)attributionURLSession {
