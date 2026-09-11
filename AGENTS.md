@@ -1,163 +1,146 @@
-# AGENTS.md
+# mParticle Apple SDK - Agent Instructions
 
-## About mParticle SDKs
+Loaded into every agent session, so it holds only what you cannot get by reading the repository.
+Anything a config file already states is deliberately absent: read the config, which cannot go
+stale, rather than this file, which can. For the rest see `README.md` (install and public API),
+`CONTRIBUTING.md` (commit and PR conventions), `RELEASE.md`, `Kits/README.md`,
+`IntegrationTests/README.md`, and the
+[public SDK docs](https://docs.mparticle.com/developers/sdk/ios/).
 
-mParticle is a Customer Data Platform that collects, validates, and forwards event data to analytics and marketing integrations. The SDK is responsible for:
+## Working rules
 
-- **Event Collection**: Capturing user interactions, commerce events, and custom events
-- **Identity Management**: Managing user identity across sessions and platforms
-- **Event Forwarding**: Routing events to configured integrations (kits/forwarders)
-- **Data Validation**: Enforcing data quality through data plans
-- **Consent Management**: Handling user consent preferences (GDPR, CCPA)
-- **Session Management**: Tracking user sessions and engagement
-- **Batch Upload**: Efficiently uploading events to mParticle servers
+Objective-C and Swift customer-data-platform SDK for iOS and tvOS. Treat it as a public framework,
+not an app: keep the public API additive, deprecate rather than remove, never break the kit
+interface, never block the main thread, never crash on bad input or a failed request, and prefer
+additive changes to refactors unless a refactor was asked for. Do not raise the deployment-target
+floor - it is pinned in `Package.swift` and all three podspecs. Do not edit `.github/`, `Scripts/`
+or `.trunk/` unless the task is about them. Update `PrivacyInfo.xcprivacy` if data-collection
+behaviour changes; the single root copy is what both SwiftPM and CocoaPods ship. Ask first before
+adding a dependency, dropping an OS version, making a breaking API change, or touching the kit
+interface.
 
-### Glossary of Terms
+## Names that collide
 
-- **MPID (mParticle ID)**: Unique identifier for a user across sessions and devices
-- **Kit/Forwarder**: Third-party integration (e.g., Google Analytics, Braze) that receives events from the SDK
-- **Data Plan**: Validation schema that defines expected events and their attributes
-- **Workspace**: A customer's mParticle environment (identified by API key)
-- **Batch**: Collection of events grouped together for efficient server upload
-- **Identity Request**: API call to identify, login, logout, or modify a user's identity
-- **Session**: Period of user activity with automatic timeout (typically 30 minutes)
-- **Consent State**: User's privacy preferences (GDPR, CCPA) that control data collection and forwarding
-- **User Attributes**: Key-value pairs describing user properties (e.g., email, age, preferences)
-- **Custom Events**: Application-specific events defined by the developer
-- **Commerce Events**: Predefined events for e-commerce tracking (purchases, product views, etc.)
-- **Event Type**: Category of event (Navigation, Location, Transaction, UserContent, UserPreference, Social, Other)
+Several unrelated things here answer to "mParticle-Apple-SDK", and confusing them is the easiest
+mistake to make.
 
-## Role for agents
+- `mParticle-Apple-SDK/` (the directory) is the Objective-C core: SwiftPM target
+  `mParticle_Apple_SDK_ObjC`, pod `mParticle-Apple-SDK-ObjC`.
+- `MParticle/Sources/` is the small Swift umbrella that _is_ the consumer-facing SwiftPM product and
+  the pod named `mParticle-Apple-SDK`.
+- `mParticle-Apple-SDK-Swift/Sources/` is internal Swift components: pod
+  `mParticle-Apple-SDK-Swift`, which release does not publish automatically (see `RELEASE.md`).
+- `mParticle-Apple-SDK.xcodeproj` is the Xcode framework build, and the one CI compiles in the
+  build, analyze and unit-test jobs.
 
-You are a senior iOS SDK engineer specializing in customer data platform (CDP) SDK development.
+## Commands
 
-- Treat this as a **public SDK / framework** (distributed via SPM, and CocoaPods), not a full consumer app.
-- Prioritize: API stability, minimal footprint, backward compatibility (iOS 15.0+, tvOS 15.0+), thread-safety, privacy compliance.
-- The SDK handles event tracking, identity management, consent, commerce events, push notifications, and integration kits.
-- Avoid proposing big refactors unless explicitly asked; prefer additive changes + deprecations.
+- Lint and format: `trunk check`
+- Build for iOS:
+  `xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination 'generic/platform=iOS' build`
+- Objective-C unit tests:
+  `xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test`
+- Swift unit tests: the same, with `-scheme mParticle-Apple-SDK-Swift`
+- Podspec lint:
+  `pod lib lint mParticle-Apple-SDK.podspec --include-podspecs="{mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}"`
+- Integration tests: see `IntegrationTests/README.md` - needs Tuist, Java and WireMock
 
-## Quick Start for Agents
+### Command traps
 
-- Open the Xcode project/workspace with Xcode 16.4+.
-- Primary actions:
-  - Build: via Xcode scheme or `xcodebuild`.
-  - Run unit tests: `Rokt_WidgetTests/` or via Xcode (Command + U).
-  - Lint: `trunk check` (primary enforcement tool).
-  - Pod lint: `pod lib lint mParticle-Apple-SDK.podspec --include-podspecs="{mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}"` (same as CI).
-  - Size report: Check binary size impact via CI workflow.
-- Always validate changes with the full sequence in "Code style, quality, and validation" below before proposing or committing.
+1. **There are two test schemes, and each has exactly one testable.** `-scheme mParticle-Apple-SDK`
+   runs only `mParticle-Apple-SDKTests` (`UnitTests/ObjCTests`); the Swift suite is reachable only
+   through `-scheme mParticle-Apple-SDK-Swift`. Run one and you have tested half the SDK. CI runs
+   both schemes against both iOS and tvOS (`.github/workflows/native-tests.yml`).
+2. **The lint configs are not at the repo root.** `.swiftlint.yml` and `.swiftformat` live in
+   `.trunk/configs/`, where a bare `swiftlint` or `swiftformat .` invoked from the root will not
+   find them - those runs silently apply the tools' own defaults instead of this repo's rules. Use
+   `trunk check`; there is no fallback that reproduces it.
+3. **`pod lib lint` needs all three podspecs.** They depend on each other by exact version
+   (`s.dependency 'mParticle-Apple-SDK-ObjC', s.version.to_s`), so the umbrella cannot resolve
+   without `--include-podspecs`.
+4. **`Scripts/check_coverage.sh` cannot fail.** `Scripts/check_coverage.py` appends to
+   `failed_files` and then never exits non-zero, and the shell wrapper ends on `rm -rf venv`. No
+   workflow invokes it. It prints per-file coverage and nothing more. It also only works with
+   `Scripts/` as the working directory, since both the project path and the Python call inside it
+   are relative.
+5. **Xcode is pinned to two different versions, so "the CI Xcode" is ambiguous.** `build-and-lint`,
+   `native-tests` and `size-report` pin one; `integration-tests`, `build-kits` and
+   `verify-kit-xcframework-import` pin a newer one. Read `XCODE_VERSION` (or `xcode-version`) in the
+   workflow you care about rather than assuming a single toolchain covers the repo.
+6. **`CONTRIBUTING.md`'s test command does not work.** It names an `.xcworkspace` and an
+   `mParticle-Apple-SDK-iOS` scheme, neither of which exists. Use the commands above.
 
-## Strict Do's and Don'ts
+## Conventions that no config enforces
 
-### Always Do
+- **Three consumers decide header publicness separately, and it takes two actions.** Moving a header
+  into `mParticle-Apple-SDK/Include/` covers SwiftPM (`publicHeadersPath`) and CocoaPods (the
+  podspec's `public_header_files` glob); the Xcode framework target keeps its own list, so the file
+  also needs `ATTRIBUTES = (Public, )` there. Skip the second action and the header is public to
+  SwiftPM and CocoaPods consumers but missing from the built framework.
+- **SwiftLint never sees test code** - `.trunk/configs/.swiftlint.yml` excludes `UnitTests`.
+- **Never hand-edit a version string.** The Release - Draft workflow rewrites `VERSION`,
+  `Framework/Info.plist`, every core and kit podspec, `MPIConstants.m` and a handful of kit sources
+  in one pass. Introducing a new place a version lives means teaching
+  `.github/workflows/release-draft.yml` about it, or it goes stale silently.
+- **Never hand-write `CHANGELOG.md`.** Release sections are generated from conventional-commit PR
+  titles at release time (same workflow, `exclude-types: chore,ci,test,build`) and inserted below
+  the `## [Unreleased]` heading, which is not itself consumed - so a hand-written entry there is
+  never folded into a release. Your PR title is the changelog entry.
+- Objective-C follows Apple's Cocoa coding guidelines. Swift prefers `let` and value types and
+  avoids force-unwraps. Public API needs HeaderDoc (Objective-C) or `///` (Swift). Add a comment
+  only where the code cannot be made clear instead.
 
-- Maintain compatibility with mParticle's kit/integration ecosystem.
-- Keep public API surface additive; deprecate instead of remove.
-- Mark public APIs with thorough documentation (HeaderDoc for Obj-C, `///` for Swift).
-- Ensure changes work on both iOS and tvOS targets.
-- Run `trunk check` and unit tests before any commit.
-- Measure & report size impact before proposing dependency or asset changes.
-- Update `PrivacyInfo.xcprivacy` if data collection practices change.
+## Kits
 
-### Never
+`Kits/<vendor>/<vendor>-<major>/` is a self-contained package: its own `Package.swift`, podspec,
+`.xcodeproj`, `CHANGELOG.md` and example apps. `Kits/matrix.json` is the registry, mapping each kit
+to its `local_path`, `podspec`, build `schemes` and the `dest_repo` it is mirrored out to on
+release. **A kit missing from `matrix.json` is not built, not pod-linted and not released** -
+nothing else discovers it.
 
-- Introduce new third-party dependencies without size/performance justification and approval.
-- Block the main thread (no synchronous network, heavy computation, etc.).
-- Crash on bad input/network — always provide fallback / error callback.
-- Touch CI configs (`.github/`), `Scripts/` utilities, or CI YAML without explicit request.
-- Propose dropping iOS 15.0 / tvOS 15.0 support or raising min deployment target.
-- Break kit/integration compatibility without explicit coordination.
-- Modify vendored libraries in `Libraries/` without explicit request.
+## Pull requests
 
-## When to Ask for Clarification
+- Base off `main`. `workstation/*` are long-lived integration branches covered by the same ruleset,
+  and stacks of migration PRs often target one of them instead - check what the work you are
+  following up on is based on rather than assuming `main`.
+- Branch name _and_ PR title are both checked against the semantic-commit convention by
+  `.github/workflows/reusable-workflows.yml`; the allowed types are listed in `CONTRIBUTING.md`.
+- **CI is not the merge gate.** The ruleset covering `main` and `workstation/*` requires no status
+  checks at all - re-check that before treating a green run as a gate. What it does require: one
+  CODEOWNERS approval (`* @mParticle/sdk-team`), every review thread resolved, and an extra approval
+  for commits not attributed to a GitHub account, so commit with an email tied to your account. Any
+  push dismisses existing approvals, and only squash and merge commits are allowed, never rebase.
+- **A fork PR cannot go green, whatever it changes.** `size-report` finishes by writing a PR
+  comment, and a `pull_request` event from a fork gets a read-only token whatever the workflow's
+  `permissions:` block asks for. Judge a fork PR on the jobs that _can_ run, and on the merge state
+  rather than the check list.
+- **Place a red or `cancelled` check before debugging it.** `build-kits / Pod Lint <kit>` resolves
+  third-party pods through the CocoaPods CDN, so those jobs fail as a batch, retries exhausted, when
+  that CDN errors. A `cancelled` job is normally a `timeout-minutes` expiry in `native-tests` or a
+  superseded push, since `pull-request.yml` sets `concurrency: cancel-in-progress` keyed on the PR -
+  neither is a test result. Compare the same job on `main` before reading a red one as yours.
 
-- Before adding any new dependency.
-- Before dropping support for OS versions.
-- Before making breaking API changes.
-- When changes affect the kit/integration interface.
-- When test failures suggest the original code may have had bugs.
+## Gotchas
 
-## Project overview
-
-- mParticle Apple SDK (Rokt fork): a comprehensive customer data platform SDK for iOS and tvOS written in Objective-C and Swift.
-- Handles event tracking, user identity management, consent management, commerce events, push notification handling, and integration kit orchestration.
-- Distributed via Swift Package Manager and CocoaPods.
-- Integration kits (like the Rokt kit) plug into this SDK to forward events to third-party services.
-
-## Key paths
-
-- `mParticle-Apple-SDK/` — Main SDK source (40+ subdirectories).
-  - `Include/` — Public headers (46 files).
-  - `AppNotifications/` — Push notification handling.
-  - `Consent/` — Consent management.
-  - `Data Model/` — Core data structures.
-  - `Ecommerce/` — Commerce event handling.
-  - `Event/` — Event processing.
-  - `Identity/` — User identity management.
-  - `Kits/` — Integration kit infrastructure.
-  - `Network/` — Network communication.
-  - `Persistence/` — Data storage.
-- `mParticle-Apple-SDK-Swift/` — Swift-only components.
-- `UnitTests/` — Unit tests (ObjCTests, SwiftTests, Mocks).
-- `IntegrationTests/` — Integration tests (Tuist + WireMock).
-- `Example/` — Sample app (11 subdirectories).
-- `Scripts/` — Build and utility scripts (`xcframework.sh`, `check_coverage.sh`, etc.).
-- `VERSION` — Ecosystem version advanced by the Release – Draft workflow; consumed by publish/mirror workflows.
-- `Package.swift` — SPM manifest (swift-tools-version 5.5).
-- `mParticle-Apple-SDK.podspec` — CocoaPods umbrella (Swift sources; consumer-facing pod name `mParticle-Apple-SDK`).
-- `mParticle-Apple-SDK-ObjC.podspec` — CocoaPods ObjC core (`mParticle-Apple-SDK-ObjC`).
-- `PrivacyInfo.xcprivacy` — iOS privacy manifest.
-- `ARCHITECTURE.md` — Architecture documentation with sequence diagrams.
-- `CHANGELOG.md` — Release notes (extensive).
-- `MIGRATING.md` — Migration guides for older versions.
-- `RELEASE.md` — Release process (GitHub Actions and root `VERSION` file).
-- `CONTRIBUTING.md` — Contribution guidelines.
-
-## Code style, quality, and validation
-
-- **Lint & format tools**:
-  - SwiftFormat: configured in project.
-  - SwiftLint: configured in project.
-  - **Primary enforcement tool**: `trunk check` (via Trunk.io). If Trunk unavailable, fall back to `swiftformat .` && `swiftlint`.
-  - Important: Only add comments if absolutely necessary. If you're adding comments, review why the code is hard to reason with and rewrite that first.
-
-- **Strict post-change validation rule (always follow this)**:
-  After **any** code change, refactor, or addition — even small ones — you **must** run the full validation sequence:
-  1. `trunk check` — to lint, format-check, and catch style/quality issues.
-  2. Build the SDK: via Xcode or `xcodebuild` for both iOS and tvOS.
-  3. Run unit tests: both Objective-C and Swift test suites in `UnitTests/`.
-  4. `pod lib lint` with `--include-podspecs` for Swift + ObjC + umbrella (see Quick Start) — verify CocoaPods specs.
-  5. If change affects code, assets, or dependencies: check coverage via `Scripts/check_coverage.sh`.
-  - Only propose / commit changes if all steps pass cleanly.
-  - If `trunk check` suggests auto-fixes, apply them first and re-validate.
-  - Never bypass this — it's required to maintain SDK stability, footprint, and public API quality.
-
-- **Style preferences**:
-  - Objective-C: follow Apple's Coding Guidelines for Cocoa.
-  - Swift: prefer `let` over `var`; use value types where possible.
-  - Write thorough documentation for all public APIs.
-  - Avoid force-unwraps in Swift; use proper error handling in Objective-C.
-
-- **Testing expectations**:
-  - Unit tests in `UnitTests/ObjCTests/` and `UnitTests/SwiftTests/`.
-  - Mocks in `UnitTests/Mocks/`.
-  - Integration tests in `IntegrationTests/`.
-  - Code coverage tracked via `Scripts/check_coverage.sh`.
-  - After changes, always re-run affected tests + full suite if core/shared code is touched.
-
-- **CHANGELOG.md maintenance**:
-  - For **substantial changes**, **always add a clear entry** to `CHANGELOG.md`.
-  - Use standard categories: `Added`, `Changed`, `Deprecated`, `Fixed`, `Removed`, `Security`.
-  - Keep entries concise and written in imperative mood.
-  - Update `CHANGELOG.md` **before** finalizing a change.
-  - Never auto-generate or hallucinate changelog entries — flag for human review.
-
-## Pull request and branching
-
-- Follow mParticle's standard PR and branching conventions.
-
-## External Resources
-
-- [mParticle Apple SDK Documentation](https://docs.mparticle.com/developers/sdk/ios/)
-- [Rokt mParticle Integration Docs](https://docs.rokt.com/developers/integration-guides/rokt-ads/customer-data-platforms/mparticle/)
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — SDK architecture and sequence diagrams.
+1. **The analyzer job fails on any new clang warning.** `run-analyzer` filters four known warning
+   strings out of the `xcodebuild analyze` log and fails if any `: warning:` line survives
+   (`.github/workflows/build-and-lint.yml`). A warning you would normally ignore breaks the build.
+2. **The custom `mparticle-api-key-check` trunk linter over-matches.** Its pattern
+   `[a-z]{2}[0-9]*-[0-9a-f]{32}` runs against every file and also matches `md5-…` and `sha256-…`
+   digests, so a lockfile integrity hash or a hex test fixture fails `trunk check` as a suspected
+   API key.
+3. **A clean `size-report` is not proof of no size change.** The base-branch measurement is
+   `continue-on-error`, and a base build that fails is reported as `N/A (new baseline)` rather than
+   failing the job.
+4. **The root `Package.swift` is compiled by exactly one PR job.** `integration-tests` pulls it in
+   through Tuist (`.package(path: "../")`); nothing else builds the SwiftPM graph, so an SPM-only
+   break survives every other check.
+5. Integration tests fail on an unmatched request but only _warn_ on a recorded WireMock mapping
+   the app never calls (`IntegrationTests/run_integration_tests_ci.sh`).
+6. **The workflow list and the tree disagree, in both directions.** `cross-platform-tests.yml` is in
+   the tree but `disabled_manually` in repository settings, so it never runs; and
+   `gh workflow list --all` reports a `release-ecosystem-from-main.yml` whose file is not on `main`
+   at all, only on unmerged branches. Separately, `RNExample` is not built on PRs because
+   `build-secondary-platforms` is commented out of `.github/workflows/pull-request.yml`. Neither the
+   tree nor the workflow list is sufficient alone; check the caller too.
+7. `ARCHITECTURE.md` is two diagram images and no prose. There is no written architecture document.

@@ -42,5 +42,15 @@ jobs:
           wait_for_boot: true
           shutdown_after_job: false
 
+      - name: Wait for simulator to finish booting
+        run: xcrun simctl bootstatus '${{ steps.simulator.outputs.udid }}' -b
+
       - name: Run unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme ${{ matrix.scheme }} -destination 'id=${{ steps.simulator.outputs.udid }}' test
+        run: |
+          xcodebuild -project mParticle-Apple-SDK.xcodeproj \
+            -scheme ${{ matrix.scheme }} \
+            -destination 'id=${{ steps.simulator.outputs.udid }}' \
+            -parallel-testing-enabled NO \
+            -test-timeouts-enabled YES \
+            -default-test-execution-time-allowance 120 \
+            test
