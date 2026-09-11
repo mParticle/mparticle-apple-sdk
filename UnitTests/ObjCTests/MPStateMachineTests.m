@@ -16,6 +16,7 @@
 @interface MPBackendController_PRIVATE(Tests)
 - (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted;
 - (NSURLSession *)attributionURLSession;
+- (dispatch_block_t)singleShotBlock:(dispatch_block_t)block;
 @end
 
 @interface MParticle ()
@@ -272,6 +273,56 @@
     XCTAssertNoThrow([connector configureDataBlocking:arrayPlan]);
     XCTAssertNoThrow([connector configureDataBlocking:stringBlock]);
     XCTAssertNoThrow([connector configureDataBlocking:arrayBlock]);
+}
+
+#pragma mark - Search Ads completion
+
+// The attribution completion has two triggers that are never mutually cancelled: the request
+// itself and a 30s global timeout. -processDidFinishLaunching is not idempotent, so the block has
+// to run once regardless of how many fire.
+- (void)testSingleShotBlockRunsOnlyOnce {
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+
+    __block NSInteger runCount = 0;
+    dispatch_block_t once = [controller singleShotBlock:^{
+        runCount += 1;
+    }];
+
+    once();
+    once();
+    once();
+
+    XCTAssertEqual(runCount, 1, @"The wrapped block must run exactly once.");
+}
+
+- (void)testSingleShotBlockRunsOnlyOnceUnderConcurrentCallers {
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+
+    // The two real triggers fire on different queues, so the guard has to hold across threads.
+    NSLock *countLock = [[NSLock alloc] init];
+    __block NSInteger runCount = 0;
+    dispatch_block_t once = [controller singleShotBlock:^{
+        [countLock lock];
+        runCount += 1;
+        [countLock unlock];
+    }];
+
+    dispatch_queue_t concurrentQueue =
+        dispatch_queue_create("com.mparticle.test.singleshot", DISPATCH_QUEUE_CONCURRENT);
+    dispatch_group_t group = dispatch_group_create();
+    for (NSInteger i = 0; i < 200; i++) {
+        dispatch_group_async(group, concurrentQueue, ^{
+            once();
+        });
+    }
+    dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)));
+
+    [countLock lock];
+    NSInteger finalCount = runCount;
+    [countLock unlock];
+    XCTAssertEqual(finalCount, 1, @"The wrapped block must run exactly once across concurrent callers.");
 }
 
 #pragma mark - Thread Safety Tests
