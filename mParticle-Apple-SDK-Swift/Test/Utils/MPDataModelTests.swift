@@ -283,4 +283,106 @@ final class MPDataModelTests: XCTestCase {
         XCTAssertNil(restored.expiration)
         XCTAssertTrue(restored.expired)
     }
+
+    // MARK: - MPConsumerInfo
+
+    /// The Swift class must answer to the Objective-C name the deleted wrapper had, or the
+    /// @class forward declarations in Include/ and the archived class name both break.
+    func testConsumerInfoKeepsTheObjectiveCRuntimeName() {
+        XCTAssertEqual(NSStringFromClass(MPConsumerInfoPRIVATE.self), "MPConsumerInfo")
+    }
+
+    func testConsumerInfoBuildsOneCookiePerConfiguredEntry() {
+        let info = MPConsumerInfoPRIVATE()
+        info.update(withConfiguration: ["ck": ["uid": ["c": "g=abc", "e": "2035-05-26T22:43:31.505262Z"],
+                                               "rpl": ["c": "x=1"]]],
+                    existingCookies: nil)
+
+        XCTAssertEqual(info.cookies?.count, 2)
+        let representation = info.cookiesDictionaryRepresentation()
+        XCTAssertNotNil(representation?["uid"])
+        XCTAssertNotNil(representation?["rpl"])
+    }
+
+    /// A configured cookie whose name matches one already persisted updates that cookie in place
+    /// rather than adding a duplicate — the reason existingCookies is passed in at all.
+    func testConsumerInfoUpdatesAMatchingExistingCookieInPlace() throws {
+        let existing = try XCTUnwrap(MPCookiePRIVATE(name: "uid", configuration: ["c": "g=old"]))
+        let info = MPConsumerInfoPRIVATE()
+
+        info.update(withConfiguration: ["ck": ["uid": ["c": "g=new", "d": "example.com"]]],
+                    existingCookies: [existing])
+
+        XCTAssertEqual(info.cookies?.count, 1)
+        XCTAssertIdentical(info.cookies?.first, existing)
+        XCTAssertEqual(existing.content, "g=new")
+        XCTAssertEqual(existing.domain, "example.com")
+    }
+
+    func testConsumerInfoKeepsExistingCookiesThatTheResponseDoesNotName() throws {
+        let other = try XCTUnwrap(MPCookiePRIVATE(name: "rpl", configuration: ["c": "x=1"]))
+        let info = MPConsumerInfoPRIVATE()
+
+        info.update(withConfiguration: ["ck": ["uid": ["c": "g=abc"]]], existingCookies: [other])
+
+        XCTAssertEqual(info.cookies?.count, 2)
+        XCTAssertEqual(Set(info.cookies?.map(\.name) ?? []), ["uid", "rpl"])
+    }
+
+    /// Every shape the remote config can arrive in as NSNull or empty has to leave the instance
+    /// untouched rather than throw or clear cookies.
+    func testConsumerInfoIgnoresNullAndEmptyConfigurations() {
+        for configuration in [NSNull() as Any, [:] as Any, ["ck": NSNull()] as Any] {
+            let info = MPConsumerInfoPRIVATE()
+            info.update(withConfiguration: configuration, existingCookies: nil)
+            XCTAssertNil(info.cookiesDictionaryRepresentation())
+        }
+    }
+
+    func testConsumerInfoSkipsNullCookieNamesAndNullEntries() {
+        let info = MPConsumerInfoPRIVATE()
+        let configuration: NSDictionary = ["ck": [NSNull(): ["c": "x=1"],
+                                                  "uid": NSNull(),
+                                                  "rpl": ["c": "x=1"]]]
+
+        info.update(withConfiguration: configuration, existingCookies: nil)
+
+        XCTAssertEqual(info.cookies?.map(\.name), ["rpl"])
+    }
+
+    /// The allowed-class set names MPCookiePRIVATE as well as NSArray, so a secure unarchive
+    /// restores the cookies instead of failing outright.
+    func testConsumerInfoArchiveRoundTripRestoresCookiesUnderSecureCoding() throws {
+        let info = MPConsumerInfoPRIVATE()
+        info.update(withConfiguration: ["ck": ["uid": ["c": "g=abc"]]], existingCookies: nil)
+        info.uniqueIdentifier = "7754fbee-1b83-4cab-9b59-34518c14ae85"
+
+        let data = try NSKeyedArchiver.archivedData(withRootObject: info, requiringSecureCoding: true)
+        let restored = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: MPConsumerInfoPRIVATE.self,
+                                                                        from: data))
+
+        XCTAssertEqual(restored.cookies?.map(\.name), ["uid"])
+        XCTAssertEqual(restored.uniqueIdentifier, info.uniqueIdentifier)
+    }
+
+    /// The setter escapes; the decoder must not escape again, or a restored identifier drifts on
+    /// every round trip.
+    func testConsumerInfoDoesNotReEscapeADecodedUniqueIdentifier() throws {
+        let info = MPConsumerInfoPRIVATE()
+        info.uniqueIdentifier = "has space;and semicolon"
+        let escaped = try XCTUnwrap(info.uniqueIdentifier)
+
+        let data = try NSKeyedArchiver.archivedData(withRootObject: info, requiringSecureCoding: true)
+        let restored = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: MPConsumerInfoPRIVATE.self,
+                                                                        from: data))
+
+        XCTAssertEqual(restored.uniqueIdentifier, escaped)
+    }
+
+    func testConsumerInfoUniqueIdentifierSetterIgnoresNil() {
+        let info = MPConsumerInfoPRIVATE()
+        info.uniqueIdentifier = "kept"
+        info.uniqueIdentifier = nil
+        XCTAssertEqual(info.uniqueIdentifier, "kept")
+    }
 }

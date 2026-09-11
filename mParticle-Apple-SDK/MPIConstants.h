@@ -256,6 +256,12 @@ extern NSString * _Nonnull const kMPRemoteConfigKitConfigurationKey;
 extern NSString * _Nonnull const kMPRemoteConfigKitHashesKey;
 extern NSString * _Nonnull const kMPRemoteConfigConsumerInfoKey;
 extern NSString * _Nonnull const kMPRemoteConfigCookiesKey;
+// Keys within one entry of the kMPRemoteConfigCookiesKey table. Moved here from MPConsumerInfo.h
+// when MPConsumerInfo became Swift, which cannot emit C globals. Objective-C callers build a
+// cookie configuration from them; the Swift module keeps its own copies in MPCookie.swift.
+extern NSString * _Nonnull const kMPCKContent;
+extern NSString * _Nonnull const kMPCKDomain;
+extern NSString * _Nonnull const kMPCKExpiration;
 extern NSString * _Nonnull const kMPRemoteConfigMPIDKey;
 extern NSString * _Nonnull const kMPRemoteConfigCustomModuleSettingsKey;
 extern NSString * _Nonnull const kMPRemoteConfigCustomModuleIdKey;

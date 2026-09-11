@@ -1,4 +1,3 @@
-#import "MPConsumerInfo.h"
 #import "MPExtensionProtocol.h"
 #import "MPKitActivity.h"
 #import "MPKitConfiguration.h"
