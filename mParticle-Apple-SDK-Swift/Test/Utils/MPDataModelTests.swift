@@ -227,4 +227,48 @@ final class MPDataModelTests: XCTestCase {
         )
         XCTAssertFalse(breadcrumb.isEqual(toBreadcrumb: other))
     }
+
+    // MARK: - MPCookie as the Objective-C MPCookie
+
+    func testCookieKeepsTheObjectiveCRuntimeName() {
+        XCTAssertEqual(NSStringFromClass(MPCookiePRIVATE.self), "MPCookie")
+    }
+
+    func testCookieEqualityIsByNameAndRejectsForeignTypes() {
+        let cookie = MPCookiePRIVATE(name: "uid", configuration: ["c": "g=abc"])
+        let sameName = MPCookiePRIVATE(name: "uid", configuration: ["c": "different"])
+        let otherName = MPCookiePRIVATE(name: "rpl", configuration: ["c": "g=abc"])
+
+        XCTAssertEqual(cookie, sameName)
+        XCTAssertNotEqual(cookie, otherName)
+        XCTAssertFalse(cookie?.isEqual("a string is not a cookie") ?? true)
+        XCTAssertFalse(cookie?.isEqual(NSNull()) ?? true)
+        XCTAssertFalse(cookie?.isEqual(nil) ?? true)
+    }
+
+    func testCookieDictionaryRepresentationIsNilWhenNothingIsSet() {
+        let cookie = MPCookiePRIVATE(name: "uid", configuration: [:])
+        XCTAssertNotNil(cookie)
+        XCTAssertNil(cookie?.dictionaryRepresentation())
+    }
+
+    /// Pins the ported defect rather than endorsing it: `content`, `domain` and `expiration` are
+    /// encoded as strings but decoded expecting `NSDictionary`, so only the name survives.
+    /// No production path archives a cookie, and equality is by name, so the loss is invisible
+    /// even to `MPConsumerInfoTests`, which does archive cookies through `MPConsumerInfo` but
+    /// asserts only `uniqueIdentifier`. Change this test the day the decode is repaired.
+    func testCookieArchiveRoundTripKeepsOnlyTheName() throws {
+        let cookie = try XCTUnwrap(MPCookiePRIVATE(name: "uid",
+                                                   configuration: ["c": "g=abc", "d": "example.com",
+                                                                   "e": "2035-05-26T22:43:31.505262Z"]))
+
+        let data = try NSKeyedArchiver.archivedData(withRootObject: cookie, requiringSecureCoding: false)
+        let restored = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: MPCookiePRIVATE.self, from: data))
+
+        XCTAssertEqual(restored.name, "uid")
+        XCTAssertEqual(restored, cookie, "equality is by name, which is why the loss below is invisible")
+        XCTAssertNil(restored.content)
+        XCTAssertNil(restored.domain)
+        XCTAssertNil(restored.expiration)
+    }
 }

@@ -1,25 +1,14 @@
 #import <Foundation/Foundation.h>
 
-#pragma mark - MPCookie
+// MPCookie now lives in Swift as MPCookiePRIVATE, exported under its original Objective-C runtime
+// name. MPConsumerInfo still needs the type for its `cookies` property.
+@import mParticle_Apple_SDK_Swift;
 
+// The cookie wire keys stay C globals: Swift cannot emit them, and Objective-C callers still use
+// them to build a cookie configuration (see MParticleTests).
 extern NSString * _Nonnull const kMPCKContent;
 extern NSString * _Nonnull const kMPCKDomain;
 extern NSString * _Nonnull const kMPCKExpiration;
-
-@interface MPCookie : NSObject <NSSecureCoding>
-
-@property (nonatomic) int64_t cookieId;
-@property (nonatomic, strong, nullable) NSString *content;
-@property (nonatomic, strong, nullable) NSString *domain;
-@property (nonatomic, strong, nullable) NSString *expiration;
-@property (nonatomic, strong, nonnull) NSString *name;
-@property (nonatomic, readonly) BOOL expired;
-
-- (nonnull instancetype)initWithName:(nonnull NSString *)name configuration:(nonnull NSDictionary *)configuration;
-- (nullable NSDictionary *)dictionaryRepresentation;
-
-@end
-
 
 #pragma mark - MPConsumerInfo
 @interface MPConsumerInfo : NSObject <NSSecureCoding>
