@@ -2,7 +2,6 @@
 #import <OCMock/OCMock.h>
 #import "MPBackendController.h"
 #import "MPIConstants.h"
-#import "MPStateMachine.h"
 #import "MPPersistenceUtilities.h"
 #import "MPNotificationController.h"
 #import "MPEvent.h"
@@ -928,7 +927,8 @@
             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
             
             MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-            [stateMachine configureRampPercentage:@100];
+            id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+            [connector configureRampPercentage:@100];
             
             XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
             
@@ -2177,7 +2177,7 @@
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"plcrash report test string";
-    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [self freshStateMachine];
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(@7)] crashMaxPLReportLength];
@@ -2229,7 +2229,7 @@
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"plcrash report test string";
-    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [self freshStateMachine];
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[(id)mockStateMachine stub] andReturn:nil] crashMaxPLReportLength];

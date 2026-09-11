@@ -5,7 +5,7 @@
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPIConstants.h"
-#import "MPStateMachine.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 

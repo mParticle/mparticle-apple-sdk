@@ -2,7 +2,6 @@
 #import <OCMock/OCMock.h>
 #import "MPEvent.h"
 #import "MPIConstants.h"
-#import "MPStateMachine.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPProduct.h"
 #import "MPPersistenceUtilities.h"
