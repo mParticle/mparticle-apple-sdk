@@ -244,7 +244,12 @@
 
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 
+    // Every mock has to be stopped, the two class mocks included: OCMClassMock swizzles the class
+    // itself, so leaving NSURLSession or NSURLSessionDataTask mocked would intercept networking in
+    // whatever test runs next in this process.
     [controllerMock stopMocking];
+    [session stopMocking];
+    [dataTask stopMocking];
     [attribution stopMocking];
 }
 #endif
