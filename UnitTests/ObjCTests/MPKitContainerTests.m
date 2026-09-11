@@ -17,7 +17,6 @@
 #import "MPKitAppsFlyerTest.h"
 #import "MPStateMachine.h"
 #import "MPKitRegister.h"
-#import "MPConsumerInfo.h"
 #import "MPTransactionAttributes.h"
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"

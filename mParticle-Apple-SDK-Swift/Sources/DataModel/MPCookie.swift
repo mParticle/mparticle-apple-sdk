@@ -125,7 +125,7 @@ public final class MPCookiePRIVATE: NSObject, NSSecureCoding {
     }
 
     /// Private copies of the `kMPCKContent` / `kMPCKDomain` / `kMPCKExpiration` C globals declared
-    /// in `MPConsumerInfo.h`. They stay Objective-C because Swift cannot emit C globals and
+    /// in `MPIConstants.h`. They stay Objective-C because Swift cannot emit C globals and
     /// Objective-C callers still reference them by name; this module cannot read them, so the
     /// three literals are duplicated here. Keep the two in step.
     private enum Keys {
@@ -139,18 +139,5 @@ public final class MPCookiePRIVATE: NSObject, NSSecureCoding {
         static let content = "content"
         static let domain = "domain"
         static let expiration = "expiration"
-    }
-}
-
-@objc public final class MPConsumerInfoPRIVATE: NSObject {
-    @objc public var consumerInfoId: Int64 = 0
-
-    /// Assigned directly when restoring an already-escaped value from persistence or a decoder.
-    /// New values supplied by callers must go through `escapeAndSetUniqueIdentifier` instead.
-    @objc public var uniqueIdentifier: String?
-
-    @objc public func escapeAndSetUniqueIdentifier(_ uniqueIdentifier: String?) {
-        guard let uniqueIdentifier, !MPSwiftIsNull(uniqueIdentifier) else { return }
-        self.uniqueIdentifier = uniqueIdentifier.percentEscape()
     }
 }

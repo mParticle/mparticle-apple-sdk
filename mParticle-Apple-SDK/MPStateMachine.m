@@ -2,7 +2,6 @@
 #import "MPIConstants.h"
 #import "MPNotificationController.h"
 #import "MPILogger.h"
-#import "MPConsumerInfo.h"
 #import "MPPersistenceUtilities.h"
 #import "MPPersistenceAdapter.h"
 #import "Kits/MPKitContainer+MParticlePrivate.h"

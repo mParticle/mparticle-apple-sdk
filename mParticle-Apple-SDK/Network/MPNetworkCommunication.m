@@ -3,7 +3,6 @@
 #import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "MPConsumerInfo.h"
 #import "MPPersistenceUtilities.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
@@ -1215,7 +1214,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     // Consumer Information
     MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
-    [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
+    // MPConsumerInfo is Swift and cannot import the persistence adapter, so the cookies it merges
+    // the response onto are fetched here and passed in.
+    [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]
+                         existingCookies:[persistence fetchCookiesForUserId:[MPPersistenceUtilities mpId]]];
     [persistence updateConsumerInfo:consumerInfo];
     MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceUtilities mpId]];
     if (persistenceInfo.cookies != nil) {

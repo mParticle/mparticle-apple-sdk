@@ -9,7 +9,6 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUploadBuilder.h"
 #import "MPILogger.h"
-#import "MPConsumerInfo.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "Kits/MPKitContainer+MParticlePrivate.h"
