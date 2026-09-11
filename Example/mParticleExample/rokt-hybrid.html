@@ -43,7 +43,9 @@
       <pre id="debug">Waiting for handoff…</pre>
     </div>
     <div id="rokt-placeholder"></div>
-    <button type="button" id="send-native">Send session to native</button>
+    <button type="button" id="send-native">
+      Reapply injected session to native
+    </button>
     <p class="muted" id="status"></p>
 
     <script>
@@ -148,7 +150,7 @@
               expiresAt: payload.expiresAt,
             });
             setStatus(
-              "Posted session to native setSession, then native selectPlacements.",
+              "Reapplied the injected session with native setSession, then native selectPlacements.",
             );
           } else {
             setStatus("webkit.messageHandlers.roktSession is missing.");

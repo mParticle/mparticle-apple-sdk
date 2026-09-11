@@ -233,7 +233,9 @@ static const NSInteger kMPRoktKitId = 181;
 }
 
 /// Get the current session (id + token) for use within a non-native integration e.g. WebView.
-/// - Returns: The session, or nil if no session is present or the token has expired.
+/// If the token is unavailable or expired but a session id remains, the returned session contains
+/// that id with a nil token and expiry.
+/// - Returns: The session, or nil if no session id is present.
 - (MPRoktSession * _Nullable)getSession {
     [self logRoktApiDiagnostic:@"ROKT_GET_SESSION"];
     MPILogDebug(@"MPRokt getSession called");

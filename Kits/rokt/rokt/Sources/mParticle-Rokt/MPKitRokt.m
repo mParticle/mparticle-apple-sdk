@@ -584,6 +584,14 @@ static NSString *MPGetRoktSessionId(void) {
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
+- (void)applyRoktSession:(RoktSession *)session {
+    [Rokt setSession:session];
+}
+
+- (void)applyRoktSessionId:(NSString *)sessionId {
+    MPSetRoktSessionId(sessionId);
+}
+
 /// Set the session to use for the next execute call.
 /// Matches Web launcher options: id + token → `+[Rokt setSession:]`; id only → `setSessionId`.
 /// Token without a non-empty id is ignored.
@@ -603,9 +611,9 @@ static NSString *MPGetRoktSessionId(void) {
         RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:sessionId
                                                              sessionToken:sessionToken
                                                                 expiresAt:session.expiresAt];
-        [Rokt setSession:roktSession];
+        [self applyRoktSession:roktSession];
     } else {
-        MPSetRoktSessionId(sessionId);
+        [self applyRoktSessionId:sessionId];
     }
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
