@@ -67,6 +67,18 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
         1
     }
 
+    var consumerInfo = MPConsumerInfoPRIVATE()
+
+    func fetchOrCreateConsumerInfo() -> MPConsumerInfoPRIVATE {
+        consumerInfo
+    }
+
+    var clearAdvertiserIdForAllUsersCalled = false
+
+    func clearAdvertiserIdForAllUsers() {
+        clearAdvertiserIdForAllUsersCalled = true
+    }
+
     var configMaxAgeSecondsReturnValue: NSNumber?
 
     func configMaxAgeSeconds() -> NSNumber? {

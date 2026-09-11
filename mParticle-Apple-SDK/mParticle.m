@@ -183,7 +183,12 @@ MPLog* logger;
     _trackNotifications = YES;
     _automaticSessionTracking = YES;
     _appNotificationHandler = (id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol>)[[MPAppNotificationHandler alloc] init];
-    _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
+    _stateMachine = [[MPStateMachine_PRIVATE alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                               connector:(id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init]
+                                                            messageQueue:executor.messageQueue
+                                                              sdkVersion:kMParticleSDKVersion
+                                                        deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
     logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];

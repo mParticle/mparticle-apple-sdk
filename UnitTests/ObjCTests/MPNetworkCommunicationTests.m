@@ -7,7 +7,6 @@
 #import "mParticle.h"
 #import "MPPersistenceUtilities.h"
 #import "MPPersistenceAdapter.h"
-#import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 

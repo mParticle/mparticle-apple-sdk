@@ -2,7 +2,6 @@
 #import <OCMock/OCMock.h>
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
-#import "MPStateMachine.h"
 #import "MPBackendController.h"
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
@@ -187,7 +186,7 @@
 
 - (void)testOptOut {
     MParticle *instance = [MParticle sharedInstance];
-    instance.stateMachine = [[MPStateMachine_PRIVATE alloc] init];
+    instance.stateMachine = [self freshStateMachine];
     
     XCTAssertFalse(instance.optOut, "By Default Opt Out should be set to false");
     
@@ -200,7 +199,7 @@
 
 - (void)testOptOutEndsSession {
     MParticle *instance = [MParticle sharedInstance];
-    instance.stateMachine = [[MPStateMachine_PRIVATE alloc] init];
+    instance.stateMachine = [self freshStateMachine];
     instance.optOut = YES;
     
     MParticleSession *session = instance.currentSession;

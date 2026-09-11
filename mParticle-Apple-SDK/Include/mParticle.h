@@ -19,7 +19,6 @@
 #import "MPForwardRecord.h"
 #import "MPLocation.h"
 #import <UIKit/UIKit.h>
-#import "MPStateMachine.h"
 #import "MPSideloadedKit.h"
 #import "MPBackendController.h"
 #import "MPNotificationController.h"

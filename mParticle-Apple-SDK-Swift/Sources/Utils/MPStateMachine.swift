@@ -1,7 +1,34 @@
 import Darwin
 import Foundation
+import UIKit
 
-@objc public final class MPStateMachinePRIVATE: NSObject {
+// Keeps the MPStateMachineProtocol Objective-C name the deleted header declared, so
+// Include/MPUploadSettings.h's `id<MPStateMachineProtocol>` parameter and mParticle.m's property
+// keep compiling unchanged. Reference MPStateMachineProtocolPRIVATE from Swift.
+//
+// apiKey and secret are non-optional here. The deleted Objective-C wrapper declared them nonnull
+// over a Swift optional, so every caller already assumed a value; an empty string is what they
+// assumed nil would behave as.
+@objc(MPStateMachineProtocol)
+public protocol MPStateMachineProtocolPRIVATE: NSObjectProtocol {
+    var optOut: Bool { get set }
+    var logLevel: UInt { get set }
+    var consumerInfo: MPConsumerInfoPRIVATE { get set }
+    var automaticSessionTracking: Bool { get set }
+    var currentSession: MPSessionPRIVATE? { get set }
+    var attAuthorizationStatus: NSNumber? { get set }
+    var attAuthorizationTimestamp: NSNumber? { get set }
+    var apiKey: String { get set }
+    var secret: String { get set }
+}
+
+// Keeps the MPStateMachine_PRIVATE Objective-C runtime name the deleted wrapper had, so the ~37
+// Objective-C files that name the type keep compiling and nothing that reads it by name changes.
+// Reference MPStateMachinePRIVATE from Swift, MPStateMachine_PRIVATE from Objective-C.
+@objc(MPStateMachine_PRIVATE)
+public final class MPStateMachinePRIVATE: NSObject,
+    MPStateMachineProtocolPRIVATE,
+    MPApplicationStateMachineProtocol {
     private static let environmentLock = NSLock()
     private static var runningEnvironment: UInt = 0
     private static var runningInBackgroundFlag = false
@@ -12,41 +39,275 @@ import Foundation
     private static let developmentAPSEnvironment = "<key>aps-environment</key><string>development</string>"
 
     private let userDefaults: MPUserDefaults
+    private let connector: MPUserDefaultsConnectorProtocol
+    private let messageQueue: DispatchQueue
+    private let deploymentTarget: Int
+    private let buildSDK: Int
+
     private var optOutSet = false
     private var storedOptOut = false
     private var storedSDKVersionValue: String?
+    private var storedConsumerInfo: MPConsumerInfoPRIVATE?
+    private var storedAttAuthorizationStatus: NSNumber?
+    private var storedAttAuthorizationTimestamp: NSNumber?
 
-    @objc public var apiKey: String?
-    @objc public var secret: String?
+    // The deleted wrapper guarded these three with @synchronized(self); the stress test in
+    // MPStateMachineTests.testApiKeySecretThreadSafety reads them from four concurrent queues while
+    // a fifth writes, so the lock has to come with them.
+    private let accessLock = NSLock()
+    private var storedApiKey = ""
+    private var storedSecret = ""
+    private var storedLogLevel: UInt = 0
+
+    @objc public var apiKey: String {
+        get { locked { storedApiKey } }
+        set { locked { storedApiKey = newValue } }
+    }
+
+    @objc public var secret: String {
+        get { locked { storedSecret } }
+        set { locked { storedSecret = newValue } }
+    }
+
+    @objc public var logLevel: UInt {
+        get { locked { storedLogLevel } }
+        set { locked { storedLogLevel = newValue } }
+    }
+
+    // NSLock.withLock needs iOS 16; this module targets iOS 15.
+    private func locked<T>(_ body: () -> T) -> T {
+        accessLock.lock()
+        defer { accessLock.unlock() }
+        return body()
+    }
+
     @objc public var exceptionHandlingMode: String? = RemoteConfig.kMPRemoteConfigExceptionHandlingModeAppDefined
     @objc public var crashMaxPLReportLength: NSNumber?
     @objc public var launchOptions: NSDictionary?
     @objc public var networkPerformanceMeasuringMode: String? = RemoteConfig.kMPRemoteConfigAppDefined
-    @objc public var startTime: Date? = Date(timeIntervalSinceNow: -1)
     @objc public var launchInfo: MPLaunchInfo?
-    @objc public var deviceTokenType: String?
-    @objc public var firstSeenInstallation: NSNumber?
     @objc public var triggerEventTypes: NSArray?
     @objc public var triggerMessageTypes: NSArray?
-    @objc public var logLevel: UInt = 0
-    @objc public var installationType: Int = 0
     @objc public var backgrounded = false
     @objc public var dataRamped = false
-    @objc public var attAuthorizationStatus: NSNumber?
-    @objc public var attAuthorizationTimestamp: NSNumber?
     @objc public var aliasMaxWindow: NSNumber?
-    @objc public var searchAdsInfo: NSDictionary?
     @objc public var automaticSessionTracking = false
     @objc public var allowASR = false
     @objc public var enableAudienceAPI = false
     @objc public var enableIdentityCaching = false
     @objc public var launchDate: Date? = Date()
     @objc public var pushNotificationModeValue: String?
+    @objc public var customModules: [CustomModule]?
 
-    @objc public init(userDefaults: MPUserDefaults) {
+    // Held weakly, as the deleted wrapper's weak property did - the backend controller owns the
+    // session and clears this when it ends.
+    @objc public weak var currentSession: MPSessionPRIVATE?
+
+    // Non-optional because MPApplicationStateMachineProtocol requires it and because the deleted
+    // wrapper substituted a boxed NO for a nil store.
+    @objc public var firstSeenInstallation: NSNumber = false
+
+    /// Non-optional for the same reason. Written by the Ad Services attribution response and read
+    /// by `MPApplication_PRIVATE`.
+    @objc public var searchAdsInfo: [AnyHashable: Any] = [:]
+
+    /// Lazily seeded from the last value the wrapper's `-startTime` getter would have installed.
+    @objc public var startTime: Date = .init(timeIntervalSinceNow: -1)
+
+    @objc public init(userDefaults: MPUserDefaults,
+                      connector: MPUserDefaultsConnectorProtocol,
+                      messageQueue: DispatchQueue,
+                      sdkVersion: String,
+                      deploymentTarget: Int,
+                      buildSDK: Int) {
         self.userDefaults = userDefaults
+        self.connector = connector
+        self.messageQueue = messageQueue
+        self.deploymentTarget = deploymentTarget
+        self.buildSDK = buildSDK
         super.init()
+
+        // Deferred to the main queue exactly as the deleted wrapper's -init was. Reading the launch
+        // counts touches user defaults, which the SDK keeps off the calling thread during start-up.
+        DispatchQueue.main.async { [self] in
+            persistStoredSDKVersion(sdkVersion)
+
+            let center = NotificationCenter.default
+            center.addObserver(self,
+                               selector: #selector(handleApplicationDidEnterBackground(_:)),
+                               name: UIApplication.didEnterBackgroundNotification,
+                               object: nil)
+            center.addObserver(self,
+                               selector: #selector(handleApplicationWillEnterForeground(_:)),
+                               name: UIApplication.willEnterForegroundNotification,
+                               object: nil)
+            center.addObserver(self,
+                               selector: #selector(handleApplicationWillTerminate(_:)),
+                               name: UIApplication.willTerminateNotification,
+                               object: nil)
+
+            MPApplication_PRIVATE.markInitialLaunchTime(userDefaults: userDefaults)
+            MPApplication_PRIVATE.updateLaunchCountsAndDates(userDefaults: userDefaults)
+        }
     }
+
+    // MARK: - Notification handlers
+
+    // @objc so UnitTests/ObjCTests/MPStateMachineTests.m can keep driving them directly, as it does
+    // through a category on the deleted wrapper.
+    @objc public func handleApplicationDidEnterBackground(_: Notification?) {
+        let launchDate = launchDate
+        messageQueue.async {
+            MPApplication_PRIVATE.updateLastUseDate(launchDate, userDefaults: self.userDefaults)
+        }
+        backgrounded = true
+        launchInfo = nil
+    }
+
+    @objc public func handleApplicationWillEnterForeground(_: Notification?) {
+        backgrounded = false
+    }
+
+    @objc public func handleApplicationWillTerminate(_: Notification?) {
+        MPApplication_PRIVATE.updateLastUseDate(launchDate, userDefaults: userDefaults)
+    }
+
+    @objc public func resetRampPercentage() {
+        if dataRamped {
+            dataRamped = false
+        }
+    }
+
+    // MARK: - Lazily derived state
+
+    /// Fetched once from persistence, created and saved when absent. The fetch goes through the
+    /// connector because the persistence adapter is an Objective-C type this module cannot import.
+    @objc public var consumerInfo: MPConsumerInfoPRIVATE {
+        get {
+            if let storedConsumerInfo {
+                return storedConsumerInfo
+            }
+            let fetched = connector.fetchOrCreateConsumerInfo()
+            storedConsumerInfo = fetched
+            return fetched
+        }
+        set { storedConsumerInfo = newValue }
+    }
+
+    @objc public var deviceTokenType: String? {
+        get {
+            if let storedDeviceTokenType {
+                return storedDeviceTokenType
+            }
+            storedDeviceTokenType = MPStateMachinePRIVATE.deviceTokenType(
+                fromProvisioningProfile: MPStateMachinePRIVATE.provisioningProfileString()
+            )
+            return storedDeviceTokenType
+        }
+        set { storedDeviceTokenType = newValue }
+    }
+
+    private var storedDeviceTokenType: String?
+
+    /// Autodetects on first read by comparing the running version and build against the stored
+    /// ones, then caches the verdict. `deploymentTarget` and `buildSDK` are injected because they
+    /// come from the `__IPHONE_OS_VERSION_*` macros, which only the Objective-C side can see.
+    @objc public var installationType: Int {
+        get {
+            if storedInstallationType != MPInstallationTypeSwift.autodetect.rawValue {
+                return storedInstallationType
+            }
+
+            let application = MPApplication_PRIVATE(stateMachine: self,
+                                                    userDefaults: userDefaults,
+                                                    environment: Int(MPStateMachinePRIVATE.environment()),
+                                                    deploymentTarget: deploymentTarget,
+                                                    buildSDK: buildSDK)
+
+            if application.storedVersion != nil || application.storedBuild != nil {
+                if application.version != application.storedVersion
+                    || application.build != application.storedBuild {
+                    storedInstallationType = MPInstallationTypeSwift.knownUpgrade.rawValue
+                } else {
+                    storedInstallationType = MPInstallationTypeSwift.knownSameVersion.rawValue
+                }
+            } else {
+                storedInstallationType = MPInstallationTypeSwift.knownInstall.rawValue
+                firstSeenInstallation = true
+            }
+
+            return storedInstallationType
+        }
+        set {
+            storedInstallationType = newValue
+            firstSeenInstallation = NSNumber(
+                value: newValue == MPInstallationTypeSwift.knownInstall.rawValue
+            )
+        }
+    }
+
+    private var storedInstallationType = MPInstallationTypeSwift.autodetect.rawValue
+
+    @objc public var optOut: Bool {
+        get {
+            if optOutSet {
+                return storedOptOut
+            }
+            if let optOutNumber = userDefaults[Miscellaneous.kMPOptOutStatus] as? NSNumber {
+                storedOptOut = optOutNumber.boolValue
+            } else {
+                storedOptOut = false
+                userDefaults[Miscellaneous.kMPOptOutStatus] = NSNumber(value: storedOptOut)
+            }
+            optOutSet = true
+            return storedOptOut
+        }
+        set {
+            storedOptOut = newValue
+            optOutSet = true
+            userDefaults[Miscellaneous.kMPOptOutStatus] = NSNumber(value: storedOptOut)
+        }
+    }
+
+    /// Setting a status that moves away from `authorized` clears every user's advertiser id. The
+    /// clearing hops through the connector: it needs the identity API and `MParticleUser`, both
+    /// Objective-C contract types.
+    @objc public var attAuthorizationStatus: NSNumber? {
+        get { loadAttAuthorizationStatus() }
+        set {
+            if persistAttAuthorizationStatus(newValue) {
+                connector.clearAdvertiserIdForAllUsers()
+            }
+        }
+    }
+
+    @objc public var attAuthorizationTimestamp: NSNumber? {
+        get { loadAttAuthorizationTimestamp() }
+        set { persistAttAuthorizationTimestamp(newValue) }
+    }
+
+    @objc public var pushNotificationMode: String {
+        get {
+            if let pushNotificationModeValue {
+                return pushNotificationModeValue
+            }
+            if let stored = userDefaults[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] as? String {
+                pushNotificationModeValue = stored
+            } else {
+                pushNotificationModeValue = RemoteConfig.kMPRemoteConfigAppDefined
+            }
+            return pushNotificationModeValue ?? RemoteConfig.kMPRemoteConfigAppDefined
+        }
+        set {
+            if pushNotificationModeValue == newValue {
+                return
+            }
+            pushNotificationModeValue = newValue
+            userDefaults[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] = pushNotificationModeValue
+        }
+    }
+
+    // MARK: - Environment
 
     @objc(environment)
     public static func environment() -> UInt {
@@ -188,6 +449,8 @@ import Foundation
         return ["Version4.0": inner]
     }
 
+    // MARK: - Remote configuration
+
     @objc public func applyTriggers(_ triggerDictionary: Any?) -> Bool {
         var dictionary = triggerDictionary
         if MPSwiftIsNull(dictionary) {
@@ -230,6 +493,22 @@ import Foundation
         self.aliasMaxWindow = aliasMaxWindow as? NSNumber
     }
 
+    /// Builds the custom modules for a configuration response. The connector is both the source of
+    /// the stored preferences and the object `MPCustomModule` needs, so it is passed straight in.
+    @objc(configureCustomModules:)
+    public func configureCustomModules(_ customModuleSettings: Any?) {
+        guard let customModuleSettings = customModuleSettings as? [[AnyHashable: Any]] else {
+            return
+        }
+
+        let modules = customModuleSettings.compactMap {
+            CustomModule(dictionary: $0, connector: connector)
+        }
+        customModules = modules.isEmpty ? nil : modules
+    }
+
+    // MARK: - Upload windows
+
     @objc(minUploadDateForUploadType:)
     public func minUploadDate(forUploadType uploadType: UInt) -> Date {
         guard let defaultsKey = MPStateMachinePRIVATE.minDefaultsKey(forUploadType: uploadType) else {
@@ -256,88 +535,53 @@ import Foundation
         }
     }
 
-    @objc public func optOut() -> Bool {
-        if optOutSet {
-            return storedOptOut
-        }
-        if let optOutNumber = userDefaults[Miscellaneous.kMPOptOutStatus] as? NSNumber {
-            storedOptOut = optOutNumber.boolValue
-        } else {
-            storedOptOut = false
-            userDefaults[Miscellaneous.kMPOptOutStatus] = NSNumber(value: storedOptOut)
-        }
-        optOutSet = true
-        return storedOptOut
-    }
-
-    @objc public func setOptOut(_ optOut: Bool) {
-        storedOptOut = optOut
-        optOutSet = true
-        userDefaults[Miscellaneous.kMPOptOutStatus] = NSNumber(value: storedOptOut)
-    }
+    // MARK: - App Tracking Transparency
 
     @objc public func loadAttAuthorizationStatus() -> NSNumber? {
-        if attAuthorizationStatus != nil {
-            return attAuthorizationStatus
+        if storedAttAuthorizationStatus != nil {
+            return storedAttAuthorizationStatus
         }
         if let authorizationState = userDefaults[Miscellaneous.kMPATT] as? NSNumber,
            authorizationState.intValue >= 0,
            authorizationState.intValue <= 3 {
-            attAuthorizationStatus = authorizationState
+            storedAttAuthorizationStatus = authorizationState
         }
-        return attAuthorizationStatus
+        return storedAttAuthorizationStatus
     }
 
     @objc public func loadAttAuthorizationTimestamp() -> NSNumber? {
-        if attAuthorizationTimestamp != nil {
-            return attAuthorizationTimestamp
+        if storedAttAuthorizationTimestamp != nil {
+            return storedAttAuthorizationTimestamp
         }
-        attAuthorizationTimestamp = userDefaults[Miscellaneous.kMPATTTimestamp] as? NSNumber
-        return attAuthorizationTimestamp
+        storedAttAuthorizationTimestamp = userDefaults[Miscellaneous.kMPATTTimestamp] as? NSNumber
+        return storedAttAuthorizationTimestamp
     }
 
+    /// Returns whether the caller should clear every user's advertiser id.
     @objc public func persistAttAuthorizationStatus(_ authorizationState: NSNumber?) -> Bool {
         let newValue = authorizationState?.intValue ?? -1
         guard newValue >= 0, newValue <= 3 else {
             return false
         }
-        if let current = attAuthorizationStatus, current.intValue == newValue {
+        if let current = storedAttAuthorizationStatus, current.intValue == newValue {
             return false
         }
-        attAuthorizationStatus = authorizationState
-        attAuthorizationTimestamp = NSNumber(value: trunc(Date().timeIntervalSince1970 * 1000))
-        userDefaults[Miscellaneous.kMPATT] = attAuthorizationStatus
-        userDefaults[Miscellaneous.kMPATTTimestamp] = attAuthorizationTimestamp
+        storedAttAuthorizationStatus = authorizationState
+        storedAttAuthorizationTimestamp = NSNumber(value: trunc(Date().timeIntervalSince1970 * 1000))
+        userDefaults[Miscellaneous.kMPATT] = storedAttAuthorizationStatus
+        userDefaults[Miscellaneous.kMPATTTimestamp] = storedAttAuthorizationTimestamp
         return newValue != MPATTAuthorizationStatusSwift.authorized.rawValue
     }
 
     @objc public func persistAttAuthorizationTimestamp(_ timestamp: NSNumber?) {
-        if timestamp?.doubleValue == attAuthorizationTimestamp?.doubleValue {
+        if timestamp?.doubleValue == storedAttAuthorizationTimestamp?.doubleValue {
             return
         }
-        attAuthorizationTimestamp = timestamp
-        userDefaults[Miscellaneous.kMPATTTimestamp] = attAuthorizationTimestamp
+        storedAttAuthorizationTimestamp = timestamp
+        userDefaults[Miscellaneous.kMPATTTimestamp] = storedAttAuthorizationTimestamp
     }
 
-    @objc public func pushNotificationMode() -> String {
-        if let pushNotificationModeValue {
-            return pushNotificationModeValue
-        }
-        if let stored = userDefaults[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] as? String {
-            pushNotificationModeValue = stored
-        } else {
-            pushNotificationModeValue = RemoteConfig.kMPRemoteConfigAppDefined
-        }
-        return pushNotificationModeValue ?? RemoteConfig.kMPRemoteConfigAppDefined
-    }
-
-    @objc public func setPushNotificationMode(_ pushNotificationMode: String?) {
-        if pushNotificationModeValue == pushNotificationMode {
-            return
-        }
-        pushNotificationModeValue = pushNotificationMode
-        userDefaults[RemoteConfig.kMPRemoteConfigPushNotificationModeKey] = pushNotificationModeValue
-    }
+    // MARK: - Stored SDK version
 
     @objc public func loadStoredSDKVersion() -> String? {
         if let storedSDKVersionValue {

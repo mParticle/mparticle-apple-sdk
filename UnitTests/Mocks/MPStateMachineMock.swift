@@ -2,10 +2,10 @@ import XCTest
 import mParticle_Apple_SDK
 internal import mParticle_Apple_SDK_Swift
 
-class MPStateMachineMock: MPStateMachineProtocol {
+class MPStateMachineMock: NSObject, MPStateMachineProtocolPRIVATE {
     var optOut: Bool = false
 
-    var logLevel: MPILogLevel = .none
+    var logLevel: UInt = 0
 
     var consumerInfo: MPConsumerInfoPRIVATE = .init()
 
