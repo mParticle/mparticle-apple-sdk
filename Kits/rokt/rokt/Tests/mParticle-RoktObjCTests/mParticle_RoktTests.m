@@ -22,6 +22,8 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                          catalogItemId:(NSString *)catalogItemId
                                success:(NSNumber *)success;
 
+- (MPKitExecStatus *)setSession:(MPRoktSession *)session;
+- (MPRoktSession *)getSession;
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId;
 - (NSString *)getSessionId;
 
@@ -1041,6 +1043,45 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(status.integrationId, @181);
     OCMVerifyAll(mockRoktSDK);
 
+    [mockRoktSDK stopMocking];
+}
+
+#pragma mark - getSession tests
+
+- (void)testGetSessionReturnsTokenSessionFromRoktSDK {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:@"session-id"
+                                                        sessionToken:@"session-token"
+                                                           expiresAt:@(123)];
+    OCMStub([mockRoktSDK getSession]).andReturn(roktSession);
+
+    MPRoktSession *result = [self.kitInstance getSession];
+
+    XCTAssertEqualObjects(result.sessionId, @"session-id");
+    XCTAssertEqualObjects(result.sessionToken, @"session-token");
+    XCTAssertEqualObjects(result.expiresAt, @(123));
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testGetSessionFallsBackToIdOnlySession {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMStub([mockRoktSDK getSession]).andReturn(nil);
+    OCMStub([mockRoktSDK getSessionId]).andReturn(@"id-only-session");
+
+    MPRoktSession *result = [self.kitInstance getSession];
+
+    XCTAssertEqualObjects(result.sessionId, @"id-only-session");
+    XCTAssertNil(result.sessionToken);
+    XCTAssertNil(result.expiresAt);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testGetSessionReturnsNilWhenRoktSDKHasNoSession {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMStub([mockRoktSDK getSession]).andReturn(nil);
+    OCMStub([mockRoktSDK getSessionId]).andReturn(nil);
+
+    XCTAssertNil([self.kitInstance getSession]);
     [mockRoktSDK stopMocking];
 }
 

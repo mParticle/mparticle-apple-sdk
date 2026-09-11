@@ -32,6 +32,22 @@ static NSInteger const kMPRoktKitCode = 181;
 
 static __weak MPKitRokt *roktKit = nil;
 
+// Rokt 5.4 deprecates the id-only APIs, but mParticle must retain them for existing callers and
+// for MPRoktSession's documented id-only handoff. Keep the suppression scoped to these adapters.
+static void MPSetRoktSessionId(NSString *sessionId) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    [Rokt setSessionIdWithSessionId:sessionId];
+#pragma clang diagnostic pop
+}
+
+static NSString *MPGetRoktSessionId(void) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    return [Rokt getSessionId];
+#pragma clang diagnostic pop
+}
+
 @interface MPKitRokt () <MPKitProtocol>
 
 @property (nonatomic, unsafe_unretained) BOOL started;
@@ -589,7 +605,7 @@ static __weak MPKitRokt *roktKit = nil;
                                                                 expiresAt:session.expiresAt];
         [Rokt setSession:roktSession];
     } else {
-        [Rokt setSessionIdWithSessionId:sessionId];
+        MPSetRoktSessionId(sessionId);
     }
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
@@ -597,12 +613,19 @@ static __weak MPKitRokt *roktKit = nil;
 /// Get the current session (id + token) for WebView / non-native handoff.
 - (MPRoktSession *)getSession {
     RoktSession *session = [Rokt getSession];
-    if (!session) {
+    if (session) {
+        return [[MPRoktSession alloc] initWithSessionId:session.sessionId
+                                           sessionToken:session.sessionToken
+                                              expiresAt:session.expiresAt];
+    }
+
+    // Rokt stores id-only handoffs separately, so getSession returns nil when no token was set.
+    // Preserve the round trip promised by MPRoktSession by wrapping that legacy session id.
+    NSString *sessionId = MPGetRoktSessionId();
+    if (sessionId.length == 0) {
         return nil;
     }
-    return [[MPRoktSession alloc] initWithSessionId:session.sessionId
-                                       sessionToken:session.sessionToken
-                                          expiresAt:session.expiresAt];
+    return [[MPRoktSession alloc] initWithSessionId:sessionId sessionToken:nil expiresAt:nil];
 }
 
 /// Set the session id to use for the next execute call.
@@ -612,7 +635,7 @@ static __weak MPKitRokt *roktKit = nil;
 ///
 /// @param sessionId The session id to be set. Must be a non-empty string.
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId {
-    [Rokt setSessionIdWithSessionId:sessionId];
+    MPSetRoktSessionId(sessionId);
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
@@ -621,7 +644,7 @@ static __weak MPKitRokt *roktKit = nil;
 ///
 /// @return The session id or nil if no session is present.
 - (NSString *)getSessionId {
-    return [Rokt getSessionId];
+    return MPGetRoktSessionId();
 }
 
 /// End the current Rokt session so the next selectPlacements call starts a new one.
