@@ -1327,11 +1327,15 @@ static BOOL skipNextUpload = NO;
             MPILogDebug(@"Application First Run");
         }
         
-        void (^searchAdsCompletion)(void) = ^{
+        // Single-shot: the attribution path and the global-timeout fallback below both hold this
+        // block and the timeout is never cancelled, so whichever finishes first has to win.
+        // -processDidFinishLaunching is not idempotent - running it twice forwards a second
+        // install/update and emits a second app-state-transition message.
+        void (^searchAdsCompletion)(void) = [self singleShotBlock:^{
             [self processDidFinishLaunching:self.didFinishLaunchingNotification];
             MPILogDebug(@"Initiating config request and upload cycle");
             [self waitForKitsAndUploadWithCompletionHandler:nil];
-        };
+        }];
         
 #if TARGET_OS_IOS == 1
         if (MParticle.sharedInstance.collectSearchAdsAttribution) {
@@ -1945,10 +1949,41 @@ static BOOL skipNextUpload = NO;
     }];
 }
 
+// Wraps a block so it runs at most once however many callers hold it, from whatever queue. The
+// attribution completion needs this because its two triggers - the request itself and the
+// never-cancelled global timeout - fire on different queues.
+- (dispatch_block_t)singleShotBlock:(dispatch_block_t)block {
+    NSLock *lock = [[NSLock alloc] init];
+    __block BOOL hasRun = NO;
+
+    return ^{
+        [lock lock];
+        BOOL alreadyRan = hasRun;
+        hasRun = YES;
+        [lock unlock];
+
+        if (!alreadyRan) {
+            block();
+        }
+    };
+}
+
 #if TARGET_OS_IOS == 1
 // Moved here from the deleted MPStateMachine_PRIVATE wrapper: this is its only production caller,
 // and AdServices is already linked on the Objective-C side. The Swift state machine only receives
 // the mapped result through its searchAdsInfo property.
+
+// Separated so a test can substitute the session and assert the data task is resumed without
+// reaching api-adservices.apple.com.
+- (NSURLSession *)attributionURLSession {
+    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    sessionConfiguration.timeoutIntervalForRequest = 30;
+    sessionConfiguration.timeoutIntervalForResource = 30;
+    return [NSURLSession sessionWithConfiguration:sessionConfiguration
+                                         delegate:nil
+                                    delegateQueue:nil];
+}
+
 - (void)requestAttributionDetailsWithBlock:(void (^_Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
     NSError *error;
     NSString *attributionToken = [AAAttribution attributionTokenWithError:&error];
@@ -1962,14 +1997,9 @@ static BOOL skipNextUpload = NO;
     [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
 
-    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-    sessionConfiguration.timeoutIntervalForRequest = 30;
-    sessionConfiguration.timeoutIntervalForResource = 30;
-    NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
-                                                             delegate:nil
-                                                        delegateQueue:nil];
+    NSURLSession *urlSession = [self attributionURLSession];
     dispatch_async([MParticle messageQueue], ^{
-        [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
+        NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
             if (error) {
                 MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
                 if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
@@ -1988,6 +2018,9 @@ static BOOL skipNextUpload = NO;
                 completionHandler();
             }
         }];
+        // -dataTaskWithRequest:completionHandler: returns a suspended task. Without this the
+        // request was never sent and the completion handler never ran.
+        [task resume];
     });
 }
 #endif
