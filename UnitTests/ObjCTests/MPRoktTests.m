@@ -1381,6 +1381,78 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     XCTAssertFalse([keysSet containsObject:@"sandbox"]);
 }
 
+#pragma mark - setSession Tests
+
+- (void)testSetSessionForwardsToKitContainer {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:@"sid"
+                                                         sessionToken:@"jwt"
+                                                            expiresAt:@(123)];
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(setSession:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], session);
+        return true;
+    }]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt setSession:session];
+
+    // Longer than the 0.2s used for main-queue forwards: setSession goes through
+    // [MParticle messageQueue], which may already have work queued ahead of it.
+    [self waitForExpectationsWithTimeout:2.0 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testSetSessionThenSelectPlacementsForwardsSessionFirst {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [self.mockContainer setExpectationOrderMatters:YES];
+
+    MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:@"sid"
+                                                         sessionToken:@"jwt"
+                                                            expiresAt:@(123)];
+    XCTestExpectation *sessionForwarded = [self expectationWithDescription:@"setSession forwarded"];
+    XCTestExpectation *placementForwarded = [self expectationWithDescription:@"selectPlacements forwarded"];
+
+    OCMExpect([self.mockContainer forwardSDKCall:@selector(setSession:)
+                                           event:nil
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [sessionForwarded fulfill];
+    });
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMExpect([self.mockContainer forwardSDKCall:placementSelector
+                                           event:nil
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [placementForwarded fulfill];
+    });
+
+    [self.rokt setSession:session];
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+
+    [self waitForExpectationsWithTimeout:2.0 handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
 #pragma mark - setSessionId Tests
 
 - (void)testSetSessionIdForwardsToKitContainer {

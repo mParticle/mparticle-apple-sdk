@@ -32,6 +32,22 @@ static NSInteger const kMPRoktKitCode = 181;
 
 static __weak MPKitRokt *roktKit = nil;
 
+// Rokt 5.4 deprecates the id-only APIs, but mParticle must retain them for existing callers.
+// Keep the suppression scoped to these adapters.
+static void MPSetRoktSessionId(NSString *sessionId) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    [Rokt setSessionIdWithSessionId:sessionId];
+#pragma clang diagnostic pop
+}
+
+static NSString *MPGetRoktSessionId(void) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    return [Rokt getSessionId];
+#pragma clang diagnostic pop
+}
+
 @interface MPKitRokt () <MPKitProtocol>
 
 @property (nonatomic, unsafe_unretained) BOOL started;
@@ -568,21 +584,62 @@ static __weak MPKitRokt *roktKit = nil;
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
+- (void)applyRoktSession:(RoktSession *)session {
+    [Rokt setSession:session];
+}
+
+/// Set the session to use for the next execute call.
+/// A non-empty id and token plus an expiry are required. Incomplete sessions are ignored;
+/// the separate `setSessionId` method remains the legacy id-only path.
+/// Requires Rokt iOS SDK 5.4.0+ (`+[Rokt setSession:]`).
+///
+/// @param session The mParticle session handoff value (id + JWT + expiry).
+- (MPKitExecStatus *)setSession:(MPRoktSession *)session {
+    NSString *sessionId = [session.sessionId stringByTrimmingCharactersInSet:
+                           [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString *sessionToken = [session.sessionToken stringByTrimmingCharactersInSet:
+                              [NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (sessionId.length == 0 || sessionToken.length == 0 || session.expiresAt == nil) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    }
+
+    RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:sessionId
+                                                         sessionToken:sessionToken
+                                                            expiresAt:session.expiresAt];
+    [self applyRoktSession:roktSession];
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+
+/// Get the current session (id + token) for WebView / non-native handoff.
+- (MPRoktSession *)getSession {
+    RoktSession *session = [Rokt getSession];
+    if (session.sessionId.length == 0 ||
+        session.sessionToken.length == 0 ||
+        session.expiresAt == nil) {
+        return nil;
+    }
+    return [[MPRoktSession alloc] initWithSessionId:session.sessionId
+                                       sessionToken:session.sessionToken
+                                          expiresAt:session.expiresAt];
+}
+
 /// Set the session id to use for the next execute call.
 /// This is useful for cases where you have a session id from a non-native integration,
 /// e.g. WebView, and you want the session to be consistent across integrations.
+/// Prefer `-setSession:` so the session token is also applied for offers and events.
 ///
 /// @param sessionId The session id to be set. Must be a non-empty string.
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId {
-    [Rokt setSessionIdWithSessionId:sessionId];
+    MPSetRoktSessionId(sessionId);
     return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
 }
 
 /// Get the session id to use within a non-native integration e.g. WebView.
+/// Prefer `-getSession` to also read the session token.
 ///
 /// @return The session id or nil if no session is present.
 - (NSString *)getSessionId {
-    return [Rokt getSessionId];
+    return MPGetRoktSessionId();
 }
 
 /// End the current Rokt session so the next selectPlacements call starts a new one.

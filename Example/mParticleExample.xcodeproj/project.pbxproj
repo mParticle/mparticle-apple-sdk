@@ -11,6 +11,8 @@
 		76A5F011073E72F6F0C415DB /* Pods_mParticleExampleTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2EA4B28DA755816DD1F32FC /* Pods_mParticleExampleTests.framework */; };
 		D37FB8E9236208E200E47B6D /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37FB8E8236208E200E47B6D /* Dummy.swift */; };
 		DBD54A12224941630053BD20 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A11224941630053BD20 /* AppDelegate.m */; };
+		A1B2C3D4E5F60718293A4B50 /* RoktHybridWebViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B52 /* RoktHybridWebViewController.m */; };
+		A1B2C3D4E5F60718293A4B54 /* rokt-hybrid.html in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B53 /* rokt-hybrid.html */; };
 		DBD54A15224941630053BD20 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A14224941630053BD20 /* ViewController.m */; };
 		DBD54A18224941630053BD20 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DBD54A16224941630053BD20 /* Main.storyboard */; };
 		DBD54A1A224941640053BD20 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DBD54A19224941640053BD20 /* Assets.xcassets */; };
@@ -66,6 +68,9 @@
 		DBD54A0D224941630053BD20 /* mParticleExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mParticleExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBD54A10224941630053BD20 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		DBD54A11224941630053BD20 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B51 /* RoktHybridWebViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RoktHybridWebViewController.h; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B52 /* RoktHybridWebViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RoktHybridWebViewController.m; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B53 /* rokt-hybrid.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "rokt-hybrid.html"; sourceTree = "<group>"; };
 		DBD54A13224941630053BD20 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		DBD54A14224941630053BD20 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		DBD54A17224941630053BD20 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -166,6 +171,9 @@
 				DBD54A11224941630053BD20 /* AppDelegate.m */,
 				DBD54A13224941630053BD20 /* ViewController.h */,
 				DBD54A14224941630053BD20 /* ViewController.m */,
+				A1B2C3D4E5F60718293A4B51 /* RoktHybridWebViewController.h */,
+				A1B2C3D4E5F60718293A4B52 /* RoktHybridWebViewController.m */,
+				A1B2C3D4E5F60718293A4B53 /* rokt-hybrid.html */,
 				D37FB8E8236208E200E47B6D /* Dummy.swift */,
 				DBD54A16224941630053BD20 /* Main.storyboard */,
 				DBD54A19224941640053BD20 /* Assets.xcassets */,
@@ -306,6 +314,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DBD54A1D224941640053BD20 /* LaunchScreen.storyboard in Resources */,
+				A1B2C3D4E5F60718293A4B54 /* rokt-hybrid.html in Resources */,
 				DBD54A1A224941640053BD20 /* Assets.xcassets in Resources */,
 				DBD54A18224941630053BD20 /* Main.storyboard in Resources */,
 			);
@@ -419,6 +428,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DBD54A15224941630053BD20 /* ViewController.m in Sources */,
+				A1B2C3D4E5F60718293A4B50 /* RoktHybridWebViewController.m in Sources */,
 				DBD54A20224941640053BD20 /* main.m in Sources */,
 				D37FB8E9236208E200E47B6D /* Dummy.swift in Sources */,
 				DBD54A12224941630053BD20 /* AppDelegate.m in Sources */,
