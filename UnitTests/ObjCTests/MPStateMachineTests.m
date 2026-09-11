@@ -5,6 +5,7 @@
 #import "MPBaseTestCase.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 
 // -requestAttributionDetailsWithBlock:requestsCompleted: has no public declaration; it moved to
@@ -212,6 +213,32 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 #endif
+
+#pragma mark - Data blocking configuration
+
+// The data-planning payload comes off the configuration response, so its shape is untrusted.
+// MPIsNull only rejects nil and NSNull; keyed subscripting a non-dictionary raises.
+- (void)testConfigureDataBlockingToleratesMalformedShapes {
+    id<MPUserDefaultsConnectorProtocol> connector =
+        (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+
+    // Hoisted into locals: collection literals contain commas, which XCTAssertNoThrow would
+    // otherwise parse as macro argument separators.
+    NSDictionary *nullPlan = @{kMPRemoteConfigDataPlanning: [NSNull null]};
+    NSDictionary *stringPlan = @{kMPRemoteConfigDataPlanning: @"not a dictionary"};
+    NSDictionary *arrayPlan = @{kMPRemoteConfigDataPlanning: @[@1, @2]};
+    NSDictionary *stringBlock = @{kMPRemoteConfigDataPlanning: @{kMPRemoteConfigDataPlanningBlock: @"not a dictionary"}};
+    NSDictionary *arrayBlock = @{kMPRemoteConfigDataPlanning: @{kMPRemoteConfigDataPlanningBlock: @[@1, @2]}};
+
+    XCTAssertNoThrow([connector configureDataBlocking:nil]);
+    XCTAssertNoThrow([connector configureDataBlocking:(NSDictionary *)[NSNull null]]);
+    XCTAssertNoThrow([connector configureDataBlocking:@{}]);
+    XCTAssertNoThrow([connector configureDataBlocking:nullPlan]);
+    XCTAssertNoThrow([connector configureDataBlocking:stringPlan]);
+    XCTAssertNoThrow([connector configureDataBlocking:arrayPlan]);
+    XCTAssertNoThrow([connector configureDataBlocking:stringBlock]);
+    XCTAssertNoThrow([connector configureDataBlocking:arrayBlock]);
+}
 
 #pragma mark - Thread Safety Tests
 
