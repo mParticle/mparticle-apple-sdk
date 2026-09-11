@@ -43,6 +43,13 @@ public protocol MPUserDefaultsProtocol {
         }
     }
 
+    // The instance a previous standardUserDefaults(connector:) call created, or nil before the
+    // first one. Types inside this module cannot build the connector themselves, since it lives in
+    // the Objective-C module, so this is how they reach the same instance the SDK is already using.
+    @objc public class func cached() -> MPUserDefaults? {
+        userDefaultsQueue.sync { userDefaults }
+    }
+
     @objc public class func storedMpId() -> NSNumber {
         userDefaultsQueue.sync {
             if let mpId = userDefaults?["mpid"] as? NSNumber {

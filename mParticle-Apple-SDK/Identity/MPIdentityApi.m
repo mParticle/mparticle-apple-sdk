@@ -6,7 +6,6 @@
 #import "MPIdentityApiManager.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
-#import "MPConsumerInfo.h"
 #import "MPPersistenceUtilities.h"
 #import "MPIdentityDTO.h"
 #import "MPEnums.h"

@@ -1,11 +1,11 @@
 #import <XCTest/XCTest.h>
 #import "MPStateMachine.h"
-#import "MPConsumerInfo.h"
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
 #import "MPIConstants.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 

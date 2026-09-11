@@ -7,7 +7,7 @@ class MPStateMachineMock: MPStateMachineProtocol {
 
     var logLevel: MPILogLevel = .none
 
-    var consumerInfo: MPConsumerInfo = .init()
+    var consumerInfo: MPConsumerInfoPRIVATE = .init()
 
     var automaticSessionTracking: Bool = false
 

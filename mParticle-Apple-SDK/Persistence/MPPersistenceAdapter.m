@@ -1,6 +1,5 @@
 #import "MPPersistenceAdapter.h"
 
-#import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPPersistenceUtilities.h"
 #import "MPStateMachine.h"

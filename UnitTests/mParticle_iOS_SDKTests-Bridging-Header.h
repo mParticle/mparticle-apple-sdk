@@ -10,7 +10,6 @@
 #import "MPNetworkPerformance.h"
 #import "MPEnums.h"
 #import "MParticleUserNotification.h"
-#import "MPConsumerInfo.h"
 #import "MPBaseEvent.h"
 #import "MPKitProtocol.h"
 #import "MPKitConfiguration.h"
