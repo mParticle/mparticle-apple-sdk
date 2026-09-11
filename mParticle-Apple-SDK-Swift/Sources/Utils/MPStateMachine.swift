@@ -225,8 +225,12 @@ public final class MPStateMachinePRIVATE: NSObject,
                                                     buildSDK: buildSDK)
 
             if application.storedVersion != nil || application.storedBuild != nil {
-                if application.version != application.storedVersion
-                    || application.build != application.storedBuild {
+                // stringsEqual, not !=. It reproduces -isEqualToString:'s nil semantics, where nil
+                // equals nothing at all - not even another nil - so a bundle with no version or no
+                // stored build takes the upgrade path exactly as the deleted wrapper did. Swift's
+                // != would call two nils equal and misreport that case as a same-version launch.
+                if !MPApplication_PRIVATE.stringsEqual(application.version, application.storedVersion)
+                    || !MPApplication_PRIVATE.stringsEqual(application.build, application.storedBuild) {
                     storedInstallationType = MPInstallationTypeSwift.knownUpgrade.rawValue
                 } else {
                     storedInstallationType = MPInstallationTypeSwift.knownSameVersion.rawValue
