@@ -173,15 +173,21 @@
         blockSettings = @{};
     }
 
-    if (MPIsNull(blockSettings[kMPRemoteConfigDataPlanning])) {
+    // These come straight off the configuration response, so the shape is not ours to trust:
+    // MPIsNull only rejects nil and NSNull, and keyed subscripting a non-dictionary raises
+    // -[__NSCFConstantString objectForKeyedSubscript:] / -[NSConstantArray objectForKeyedSubscript:].
+    NSDictionary *dataPlanSettings = blockSettings[kMPRemoteConfigDataPlanning];
+    if (![dataPlanSettings isKindOfClass:[NSDictionary class]]) {
         if (MParticle.sharedInstance.dataPlanOptions == nil) {
             MParticle.sharedInstance.dataPlanFilter = nil;
         }
         return;
     }
 
-    NSDictionary *dataPlanSettings = blockSettings[kMPRemoteConfigDataPlanning];
     NSDictionary *dataBlockSettings = dataPlanSettings[kMPRemoteConfigDataPlanningBlock];
+    if (![dataBlockSettings isKindOfClass:[NSDictionary class]]) {
+        dataBlockSettings = @{};
+    }
 
     MPDataPlanOptions *dataPlanOptions = [[MPDataPlanOptions alloc] init];
     dataPlanOptions.blockEvents = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEvents] boolValue];
