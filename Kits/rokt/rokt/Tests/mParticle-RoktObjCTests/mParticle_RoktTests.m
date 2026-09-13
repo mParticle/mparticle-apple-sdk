@@ -22,8 +22,11 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
                          catalogItemId:(NSString *)catalogItemId
                                success:(NSNumber *)success;
 
+- (MPKitExecStatus *)setSession:(MPRoktSession *)session;
+- (MPRoktSession *)getSession;
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId;
 - (NSString *)getSessionId;
+- (void)applyRoktSession:(RoktSession *)session;
 
 - (NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)confirmEmbeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews;
 
@@ -1022,6 +1025,72 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     [mockMParticleInstance stopMocking];
 }
 
+#pragma mark - setSession tests
+
+- (void)testSetSessionWithTokenCallsRoktSDK {
+    MPKitRokt *mockKit = OCMPartialMock(self.kitInstance);
+    MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:@"session-id"
+                                                         sessionToken:@"session-token"
+                                                            expiresAt:@(123)];
+    OCMExpect([mockKit applyRoktSession:[OCMArg checkWithBlock:^BOOL(RoktSession *roktSession) {
+        XCTAssertEqualObjects(roktSession.sessionId, session.sessionId);
+        XCTAssertEqualObjects(roktSession.sessionToken, session.sessionToken);
+        XCTAssertEqualObjects(roktSession.expiresAt, session.expiresAt);
+        return YES;
+    }]]);
+
+    MPKitExecStatus *status = [mockKit setSession:session];
+
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockKit);
+    [(id)mockKit stopMocking];
+}
+
+- (void)testSetSessionWithoutTokenDoesNotCallRoktSDK {
+    MPKitRokt *mockKit = OCMPartialMock(self.kitInstance);
+    MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:@" session-id "
+                                                         sessionToken:@""
+                                                            expiresAt:@(123)];
+    OCMReject([mockKit applyRoktSession:[OCMArg any]]);
+
+    MPKitExecStatus *status = [mockKit setSession:session];
+
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockKit);
+    [(id)mockKit stopMocking];
+}
+
+- (void)testSetSessionWithEmptyIdDoesNotCallRoktSDK {
+    MPKitRokt *mockKit = OCMPartialMock(self.kitInstance);
+    MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:@" \n "
+                                                         sessionToken:@"session-token"
+                                                            expiresAt:@(123)];
+    OCMReject([mockKit applyRoktSession:[OCMArg any]]);
+
+    MPKitExecStatus *status = [mockKit setSession:session];
+
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockKit);
+    [(id)mockKit stopMocking];
+}
+
+- (void)testSetSessionWithoutExpiryDoesNotCallRoktSDK {
+    MPKitRokt *mockKit = OCMPartialMock(self.kitInstance);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    MPRoktSession *session = [[MPRoktSession alloc] initWithSessionId:@"session-id"
+                                                         sessionToken:@"session-token"
+                                                            expiresAt:nil];
+#pragma clang diagnostic pop
+    OCMReject([mockKit applyRoktSession:[OCMArg any]]);
+
+    MPKitExecStatus *status = [mockKit setSession:session];
+
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(mockKit);
+    [(id)mockKit stopMocking];
+}
+
 #pragma mark - setSessionId tests
 
 - (void)testSetSessionIdCallsRoktSDK {
@@ -1041,6 +1110,47 @@ static NSString * const kMPRoktHashedEmailUserIdentityType = @"hashedEmailUserId
     XCTAssertEqualObjects(status.integrationId, @181);
     OCMVerifyAll(mockRoktSDK);
 
+    [mockRoktSDK stopMocking];
+}
+
+#pragma mark - getSession tests
+
+- (void)testGetSessionReturnsTokenSessionFromRoktSDK {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:@"session-id"
+                                                        sessionToken:@"session-token"
+                                                           expiresAt:@(123)];
+    OCMStub([mockRoktSDK getSession]).andReturn(roktSession);
+
+    MPRoktSession *result = [self.kitInstance getSession];
+
+    XCTAssertEqualObjects(result.sessionId, @"session-id");
+    XCTAssertEqualObjects(result.sessionToken, @"session-token");
+    XCTAssertEqualObjects(result.expiresAt, @(123));
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testGetSessionDoesNotFallBackToIdOnlySession {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    OCMStub([mockRoktSDK getSession]).andReturn(nil);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    OCMReject([mockRoktSDK getSessionId]);
+#pragma clang diagnostic pop
+
+    XCTAssertNil([self.kitInstance getSession]);
+    OCMVerifyAll(mockRoktSDK);
+    [mockRoktSDK stopMocking];
+}
+
+- (void)testGetSessionReturnsNilWhenExpiryIsMissing {
+    id mockRoktSDK = OCMClassMock([Rokt class]);
+    RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:@"session-id"
+                                                        sessionToken:@"session-token"
+                                                           expiresAt:nil];
+    OCMStub([mockRoktSDK getSession]).andReturn(roktSession);
+
+    XCTAssertNil([self.kitInstance getSession]);
     [mockRoktSDK stopMocking];
 }
 

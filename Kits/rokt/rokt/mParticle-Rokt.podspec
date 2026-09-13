@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Rokt"
-    s.version          = "9.4.3"
+    s.version          = "9.5.0"
     s.summary          = "Rokt integration for mParticle"
     s.description      = <<-DESC
                        This is the Rokt integration for mParticle.
@@ -15,5 +15,5 @@ Pod::Spec.new do |s|
     s.ios.resource_bundles  = { 'mParticle-Rokt-Privacy' => ['Sources/mParticle-Rokt/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.1'
     s.ios.dependency 'RoktContracts', '~> 2.0'
-    s.ios.dependency 'Rokt-Widget', '~> 5.4'
+    s.ios.dependency 'Rokt-Widget', '~> 5.4.0'
 end
