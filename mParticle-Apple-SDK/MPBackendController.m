@@ -1985,10 +1985,20 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)requestAttributionDetailsWithBlock:(void (^_Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
+    // The data task's completion handler runs on the URL session's delegate queue and the retry
+    // hop runs on the main queue, but what the completion goes on to do - forwarding install/update
+    // to the kits, starting the config request and the upload cycle - belongs on the SDK's serial
+    // message queue, which is where the global-timeout fallback and every other caller invoke it.
+    // -executeOnMessage: runs the block inline when already on that queue, so the paths that were
+    // reachable before this method's data task was resumed keep their exact timing.
+    void (^completion)(void) = ^{
+        [MParticle executeOnMessage:completionHandler];
+    };
+
     NSError *error;
     NSString *attributionToken = [AAAttribution attributionTokenWithError:&error];
     if (!attributionToken) {
-        completionHandler();
+        completion();
         return;
     }
 
@@ -2003,9 +2013,9 @@ static BOOL skipNextUpload = NO;
             if (error) {
                 MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
                 if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
-                    completionHandler();
+                    completion();
                 } else if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
-                    completionHandler();
+                    completion();
                 } else {
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                         [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
@@ -2015,7 +2025,7 @@ static BOOL skipNextUpload = NO;
                 NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
                 NSDictionary *mapped = [MPStateMachine_PRIVATE searchAdsInfoFromAdAttribution:adAttributionDictionary];
                 [MParticle sharedInstance].stateMachine.searchAdsInfo = mapped ?: @{};
-                completionHandler();
+                completion();
             }
         }];
         // -dataTaskWithRequest:completionHandler: returns a suspended task. Without this the

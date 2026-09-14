@@ -26,6 +26,7 @@
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 + (dispatch_queue_t)messageQueue;
++ (BOOL)isMessageQueue;
 
 @end
 
@@ -253,6 +254,61 @@
     [attribution stopMocking];
 }
 #endif
+
+// The data task's completion handler runs on the URL session's delegate queue, not the SDK's
+// serial message queue. Everything searchAdsCompletion goes on to do - forwarding install/update
+// to kits, the config request, the upload cycle - assumes the message queue, so the completion has
+// to hop back before running.
+- (void)testAttributionCompletionRunsOnTheMessageQueue {
+    id attribution = OCMClassMock([AAAttribution class]);
+    [[[attribution stub] andReturn:@"attribution-token"] attributionTokenWithError:[OCMArg anyObjectRef]];
+
+    // Capture the handler the SDK hands to -dataTaskWithRequest:completionHandler: so the test can
+    // invoke it from a queue that is definitely not the message queue.
+    __block void (^capturedHandler)(NSData *, NSURLResponse *, NSError *) = nil;
+    id dataTask = OCMClassMock([NSURLSessionDataTask class]);
+    id session = OCMClassMock([NSURLSession class]);
+    [[[[session stub] andReturn:dataTask] andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(NSData *, NSURLResponse *, NSError *) = nil;
+        [invocation getArgument:&handler atIndex:3];
+        capturedHandler = [handler copy];
+    }] dataTaskWithRequest:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    id controllerMock = OCMPartialMock(controller);
+    [[[controllerMock stub] andReturn:session] attributionURLSession];
+
+    XCTestExpectation *handlerCaptured = [self expectationWithDescription:@"data task built"];
+    [[[dataTask stub] andDo:^(NSInvocation *invocation) {
+        [handlerCaptured fulfill];
+    }] resume];
+
+    XCTestExpectation *completed = [self expectationWithDescription:@"attribution completion ran"];
+    __block BOOL ranOnMessageQueue = NO;
+    [controller requestAttributionDetailsWithBlock:^{
+        ranOnMessageQueue = [MParticle isMessageQueue];
+        [completed fulfill];
+    } requestsCompleted:0];
+
+    [self waitForExpectations:@[handlerCaptured] timeout:DEFAULT_TIMEOUT];
+    XCTAssertNotNil(capturedHandler);
+
+    // ADClientErrorLimitAdTracking: the shortest path to the completion, no retry, no JSON.
+    NSError *limitAdTracking = [NSError errorWithDomain:@"ADClientErrorDomain" code:1 userInfo:nil];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        XCTAssertFalse([MParticle isMessageQueue], @"the test must drive the handler off the message queue");
+        capturedHandler(nil, nil, limitAdTracking);
+    });
+
+    [self waitForExpectations:@[completed] timeout:DEFAULT_TIMEOUT];
+    XCTAssertTrue(ranOnMessageQueue, @"the attribution completion must run on the SDK message queue");
+
+    [controllerMock stopMocking];
+    [session stopMocking];
+    [dataTask stopMocking];
+    [attribution stopMocking];
+}
 
 #pragma mark - Data blocking configuration
 
