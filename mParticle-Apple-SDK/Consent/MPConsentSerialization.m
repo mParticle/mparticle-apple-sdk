@@ -1,26 +1,18 @@
 #import "MPConsentSerialization.h"
 #import "MPConsentState.h"
-#import "MPCCPAConsent.h"
-#import "MPGDPRConsent.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 @import mParticle_Apple_SDK_Swift;
 
-@interface MPGDPRConsent ()
-@property (nonatomic, strong) MPConsentRecordPRIVATE *implementation;
-- (instancetype)initWithConsentRecord:(MPConsentRecordPRIVATE *)record;
-@end
-
-@interface MPCCPAConsent ()
-@property (nonatomic, strong) MPConsentRecordPRIVATE *implementation;
-- (instancetype)initWithConsentRecord:(MPConsentRecordPRIVATE *)record;
+@interface MPConsentState ()
+@property (nonatomic, strong) MPConsentStatePRIVATE *implementation;
 @end
 
 @implementation MPConsentSerialization
 
 + (nullable NSDictionary *)serverDictionaryFromConsentState:(MPConsentState *)state {
-    NSDictionary *gdprRecords = [self gdprRecordsFromConsentState:state];
-    MPConsentRecordPRIVATE *ccpaRecord = [self ccpaRecordFromConsentState:state];
+    NSDictionary *gdprRecords = state ? [state.implementation gdprConsentRecords] : @{};
+    MPConsentRecordPRIVATE *ccpaRecord = [state.implementation ccpaConsentRecord];
     return [MPConsentSerializationPRIVATE serverDictionaryFromGDPR:gdprRecords ccpa:ccpaRecord];
 }
 
@@ -29,8 +21,8 @@
         return nil;
     }
 
-    NSDictionary *gdprRecords = [self gdprRecordsFromConsentState:state];
-    MPConsentRecordPRIVATE *ccpaRecord = [self ccpaRecordFromConsentState:state];
+    NSDictionary *gdprRecords = [state.implementation gdprConsentRecords];
+    MPConsentRecordPRIVATE *ccpaRecord = [state.implementation ccpaConsentRecord];
     NSDictionary *dictionary = [MPConsentSerializationPRIVATE storageDictionaryFromGDPR:gdprRecords ccpa:ccpaRecord];
     if (!dictionary) {
         return nil;
@@ -60,12 +52,10 @@
 
     MPConsentState *state = [[MPConsentState alloc] init];
     for (NSString *purpose in gdprRecords) {
-        MPConsentRecordPRIVATE *record = gdprRecords[purpose];
-        MPGDPRConsent *gdprState = [[MPGDPRConsent alloc] initWithConsentRecord:record];
-        [state addGDPRConsentState:gdprState purpose:purpose];
+        (void)[state.implementation addGDPRConsentRecord:gdprRecords[purpose] purpose:purpose];
     }
     if (ccpaRecord) {
-        [state setCCPAConsentState:[[MPCCPAConsent alloc] initWithConsentRecord:ccpaRecord]];
+        [state.implementation setCCPAConsentRecord:ccpaRecord];
     }
     return state;
 }
@@ -76,22 +66,6 @@
 
 + (nullable NSDictionary *)dictionaryFromString:(NSString *)string {
     return [MPConsentSerializationPRIVATE dictionaryFrom:string];
-}
-
-+ (NSDictionary *)gdprRecordsFromConsentState:(MPConsentState *)state {
-    NSMutableDictionary *records = [NSMutableDictionary dictionary];
-    NSDictionary<NSString *, MPGDPRConsent *> *gdprState = [state gdprConsentState];
-    for (NSString *purpose in gdprState) {
-        MPConsentRecordPRIVATE *record = gdprState[purpose].implementation;
-        if (record) {
-            records[purpose] = record;
-        }
-    }
-    return records;
-}
-
-+ (MPConsentRecordPRIVATE *)ccpaRecordFromConsentState:(MPConsentState *)state {
-    return [state ccpaConsentState].implementation;
 }
 
 @end

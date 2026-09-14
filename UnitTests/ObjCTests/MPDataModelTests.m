@@ -2,6 +2,7 @@
 @import mParticle_Apple_SDK_Swift;
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
+#import "MPPersistenceUploadSettingsCodec.h"
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
@@ -398,6 +399,47 @@
     
     MPBreadcrumb *persistedBreadcrumb = [self attemptSecureEncodingwithClass:[MPBreadcrumb class] Object:breadcrumb];
     XCTAssertEqualObjects(breadcrumb, persistedBreadcrumb, @"Breadcrumb should have been a match.");
+}
+
+- (void)testPersistenceUploadSettingsCodecRoundTrip {
+    MPUploadSettings *settings = [[MPUploadSettings alloc] initWithApiKey:@"api-key"
+                                                                  secret:@"secret"
+                                                              eventsHost:@"events.example.com"
+                                                       eventsTrackingHost:@"tracking.example.com"
+                                            overridesEventsSubdirectory:YES
+                                                               aliasHost:@"alias.example.com"
+                                                        aliasTrackingHost:@"alias-tracking.example.com"
+                                             overridesAliasSubdirectory:YES
+                                                              eventsOnly:YES];
+    MPPersistenceUploadSettingsCodec *codec = [[MPPersistenceUploadSettingsCodec alloc] init];
+
+    NSData *data = [codec archiveUploadSettings:settings];
+    MPUploadSettings *restored = (MPUploadSettings *)[codec unarchiveUploadSettings:data];
+
+    XCTAssertNotNil(data);
+    XCTAssertTrue([restored isKindOfClass:[MPUploadSettings class]]);
+    XCTAssertEqualObjects(restored.apiKey, settings.apiKey);
+    XCTAssertEqualObjects(restored.secret, settings.secret);
+    XCTAssertEqualObjects(restored.eventsHost, settings.eventsHost);
+    XCTAssertEqualObjects(restored.eventsTrackingHost, settings.eventsTrackingHost);
+    XCTAssertEqual(restored.overridesEventsSubdirectory, settings.overridesEventsSubdirectory);
+    XCTAssertEqualObjects(restored.aliasHost, settings.aliasHost);
+    XCTAssertEqualObjects(restored.aliasTrackingHost, settings.aliasTrackingHost);
+    XCTAssertEqual(restored.overridesAliasSubdirectory, settings.overridesAliasSubdirectory);
+    XCTAssertEqual(restored.eventsOnly, settings.eventsOnly);
+}
+
+- (void)testPersistenceUploadSettingsCodecRejectsUnsupportedInput {
+    MPPersistenceUploadSettingsCodec *codec = [[MPPersistenceUploadSettingsCodec alloc] init];
+
+    XCTAssertNil([codec archiveUploadSettings:@"not upload settings"]);
+}
+
+- (void)testPersistenceUploadSettingsCodecRejectsCorruptArchive {
+    MPPersistenceUploadSettingsCodec *codec = [[MPPersistenceUploadSettingsCodec alloc] init];
+    NSData *data = [@"not an archive" dataUsingEncoding:NSUTF8StringEncoding];
+
+    XCTAssertNil([codec unarchiveUploadSettings:data]);
 }
 
 @end

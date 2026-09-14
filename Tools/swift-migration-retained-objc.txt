@@ -77,6 +77,9 @@ mParticle-Apple-SDK/Utils/MPUploadSettings.m
 
 mParticle-Apple-SDK/Utils/MPUserDefaultsConnector.m
 
+mParticle-Apple-SDK/Persistence/MPPersistenceUploadSettingsCodec.m
+mParticle-Apple-SDK/Utils/UploadSettingsUtils.m
+
 # 360 C global definitions (`NSString *const`, `const NSTimeInterval`,
 # `const NSInteger`) declared extern in the internal MPIConstants.h and referenced by
 # bare identifier from 51 Objective-C files. Swift cannot emit C globals, so these
