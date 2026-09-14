@@ -2007,6 +2007,18 @@ static BOOL skipNextUpload = NO;
     [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
 
+    // The existing retry policy, so the transport-error and unusable-response paths share one
+    // definition of "try again or give up".
+    void (^retryOrComplete)(void) = ^{
+        if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
+            completion();
+            return;
+        }
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
+        });
+    };
+
     NSURLSession *urlSession = [self attributionURLSession];
     dispatch_async([MParticle messageQueue], ^{
         NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
@@ -2014,19 +2026,37 @@ static BOOL skipNextUpload = NO;
                 MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
                 if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
                     completion();
-                } else if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
-                    completion();
                 } else {
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                        [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
-                    });
+                    retryOrComplete();
                 }
-            } else {
-                NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                NSDictionary *mapped = [MPStateMachine_PRIVATE searchAdsInfoFromAdAttribution:adAttributionDictionary];
-                [MParticle sharedInstance].stateMachine.searchAdsInfo = mapped ?: @{};
-                completion();
+                return;
             }
+
+            // NSURLSession reports no error for a non-2xx response, so the status has to be checked
+            // separately. Apple's endpoint answers 404 for a short window while a freshly minted
+            // token becomes resolvable, which is exactly what the retry policy is for - before
+            // -resume was added this branch was unreachable, so nothing ever exercised it.
+            NSInteger statusCode = [urlResponse isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse *)urlResponse).statusCode : 0;
+            if (statusCode < 200 || statusCode > 299) {
+                MPILogError(@"Failed requesting Ads Attribution with HTTP status %ld.", (long)statusCode);
+                retryOrComplete();
+                return;
+            }
+
+            NSDictionary *adAttributionDictionary = nil;
+            if (data) {
+                id parsed = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                adAttributionDictionary = [parsed isKindOfClass:[NSDictionary class]] ? parsed : nil;
+            }
+            if (!adAttributionDictionary) {
+                MPILogError(@"Ads Attribution response body was not a JSON object.");
+                retryOrComplete();
+                return;
+            }
+
+            NSDictionary *mapped = [MPStateMachine_PRIVATE searchAdsInfoFromAdAttribution:adAttributionDictionary];
+            [MParticle sharedInstance].stateMachine.searchAdsInfo = mapped ?: @{};
+            completion();
         }];
         // -dataTaskWithRequest:completionHandler: returns a suspended task. Without this the
         // request was never sent and the completion handler never ran.

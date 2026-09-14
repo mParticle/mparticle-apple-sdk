@@ -307,6 +307,59 @@
     [dataTask stopMocking];
     [attribution stopMocking];
 }
+
+// NSURLSession reports no error for a non-2xx response, so before the status check a 500 fell into
+// the success branch: it parsed nothing, stored an empty searchAdsInfo and completed without ever
+// retrying. Resuming the data task is what made that branch reachable.
+- (void)testAttributionRetriesOnAnHTTPErrorInsteadOfCompleting {
+    id attribution = OCMClassMock([AAAttribution class]);
+    [[[attribution stub] andReturn:@"attribution-token"] attributionTokenWithError:[OCMArg anyObjectRef]];
+
+    __block void (^capturedHandler)(NSData *, NSURLResponse *, NSError *) = nil;
+    id dataTask = OCMClassMock([NSURLSessionDataTask class]);
+    id session = OCMClassMock([NSURLSession class]);
+    [[[[session stub] andReturn:dataTask] andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(NSData *, NSURLResponse *, NSError *) = nil;
+        [invocation getArgument:&handler atIndex:3];
+        capturedHandler = [handler copy];
+    }] dataTaskWithRequest:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    id controllerMock = OCMPartialMock(controller);
+    [[[controllerMock stub] andReturn:session] attributionURLSession];
+
+    XCTestExpectation *built = [self expectationWithDescription:@"data task built"];
+    [[[dataTask stub] andDo:^(NSInvocation *invocation) {
+        [built fulfill];
+    }] resume];
+
+    // Inverted: a retryable response must schedule another attempt, not finish the flow.
+    XCTestExpectation *completed = [self expectationWithDescription:@"completion must not run"];
+    completed.inverted = YES;
+    [controller requestAttributionDetailsWithBlock:^{
+        [completed fulfill];
+    } requestsCompleted:0];
+
+    [self waitForExpectations:@[built] timeout:DEFAULT_TIMEOUT];
+    XCTAssertNotNil(capturedHandler);
+
+    NSHTTPURLResponse *serverError = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]
+                                                                 statusCode:500
+                                                                HTTPVersion:@"HTTP/1.1"
+                                                               headerFields:nil];
+    capturedHandler([@"{}" dataUsingEncoding:NSUTF8StringEncoding], serverError, nil);
+
+    // The retry is scheduled SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY out, so a shorter wait here
+    // proves the completion did not fire on the spot.
+    [self waitForExpectations:@[completed] timeout:1.0];
+
+    [controllerMock stopMocking];
+    [session stopMocking];
+    [dataTask stopMocking];
+    [attribution stopMocking];
+}
+
 #endif
 
 #pragma mark - Data blocking configuration
