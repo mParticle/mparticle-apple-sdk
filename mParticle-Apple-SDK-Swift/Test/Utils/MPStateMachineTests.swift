@@ -10,7 +10,12 @@ final class MPStateMachineTests: XCTestCase {
         super.setUp()
         connector = MPUserDefaultsConnectorMock()
         userDefaults = MPUserDefaults(connector: connector)
-        state = MPStateMachinePRIVATE(userDefaults: userDefaults)
+        state = MPStateMachinePRIVATE(userDefaults: userDefaults,
+                                      connector: connector,
+                                      messageQueue: .main,
+                                      sdkVersion: "0.0.0",
+                                      deploymentTarget: 0,
+                                      buildSDK: 0)
     }
 
     override func tearDown() {
@@ -91,12 +96,17 @@ final class MPStateMachineTests: XCTestCase {
     }
 
     func testOptOutPersistence() {
-        XCTAssertFalse(state.optOut())
-        state.setOptOut(true)
-        XCTAssertTrue(state.optOut())
+        XCTAssertFalse(state.optOut)
+        state.optOut = true
+        XCTAssertTrue(state.optOut)
 
-        let reloaded = MPStateMachinePRIVATE(userDefaults: userDefaults)
-        XCTAssertTrue(reloaded.optOut())
+        let reloaded = MPStateMachinePRIVATE(userDefaults: userDefaults,
+                                             connector: connector,
+                                             messageQueue: .main,
+                                             sdkVersion: "0.0.0",
+                                             deploymentTarget: 0,
+                                             buildSDK: 0)
+        XCTAssertTrue(reloaded.optOut)
     }
 
     func testSearchAdsInfoMapping() {

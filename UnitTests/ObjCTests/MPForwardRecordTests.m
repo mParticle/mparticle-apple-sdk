@@ -2,7 +2,7 @@
 #import "MPForwardRecord.h"
 #import "MPKitFilter.h"
 #import "MPEnums.h"
-#import "MPStateMachine.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPEvent.h"
 #import "MPKitExecStatus.h"
 #import "MPKitFilter.h"

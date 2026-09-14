@@ -1,5 +1,4 @@
 #import <XCTest/XCTest.h>
-#import "MPStateMachine.h"
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"

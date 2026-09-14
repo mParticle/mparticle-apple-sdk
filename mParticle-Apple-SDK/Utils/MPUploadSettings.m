@@ -1,5 +1,4 @@
 #import "MPUploadSettings.h"
-#import "MPStateMachine.h"
 #import "mParticle.h"
 #import "MPILogger.h"
 

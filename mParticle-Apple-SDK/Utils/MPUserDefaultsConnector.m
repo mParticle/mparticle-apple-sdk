@@ -5,6 +5,8 @@
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
 #import "MPConsentState.h"
+#import "MPPersistenceAdapter.h"
+#import "../Kits/MPDataPlanFilter.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -13,7 +15,16 @@
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
+@property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
+@property (nonatomic, readwrite) MPDataPlanFilter *dataPlanFilter;
 
+@end
+
+// Re-declared from the deleted MPStateMachine.m: -setIdentity:identityType: is private to
+// MParticleUser and only reachable through a class extension.
+@interface MParticleUser ()
+- (void)setIdentity:(nullable NSString *)identityString identityType:(MPIdentity)identityType;
 @end
 
 @interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol>
@@ -130,20 +141,85 @@
     [MParticle.sharedInstance.stateMachine configureCustomModules:customModuleSettings];
 }
 
+// The ramp decision itself is Swift (+dataRampedApplyingRampPercentage:deviceIdentifier:). What
+// stays here is building the MPDevice that supplies the identifier, which needs the identity API.
 - (void)configureRampPercentage:(nullable NSNumber *)rampPercentage {
-    [MParticle.sharedInstance.stateMachine configureRampPercentage:rampPercentage];
+    NSString *deviceIdentifier = nil;
+    if (!MPIsNull(rampPercentage) && rampPercentage.integerValue != 0) {
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)self.stateMachine
+                                                     userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                         identity:(id<MPIdentityApiMPDeviceProtocol>)self.identity
+                                                           logger:self.logger];
+        deviceIdentifier = device.deviceIdentifier;
+    }
+
+    self.stateMachine.dataRamped = [MPStateMachine_PRIVATE dataRampedApplyingRampPercentage:rampPercentage
+                                                                          deviceIdentifier:deviceIdentifier];
 }
 
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary {
-    [MParticle.sharedInstance.stateMachine configureTriggers:triggerDictionary];
+    (void)[MParticle.sharedInstance.stateMachine applyTriggers:triggerDictionary];
 }
 
 - (void)configureAliasMaxWindow:(nullable NSNumber *)aliasMaxWindow {
     [MParticle.sharedInstance.stateMachine configureAliasMaxWindow:aliasMaxWindow];
 }
 
+// MPDataPlanOptions and MPDataPlanFilter are both permanently Objective-C, so the data-blocking
+// decision cannot follow the rest of the state machine into Swift. It lives here, in the boundary
+// glue, next to its only caller.
 - (void)configureDataBlocking:(nullable NSDictionary *)blockSettings {
-    [MParticle.sharedInstance.stateMachine configureDataBlocking:blockSettings];
+    if (MPIsNull(blockSettings)) {
+        blockSettings = @{};
+    }
+
+    // These come straight off the configuration response, so the shape is not ours to trust:
+    // MPIsNull only rejects nil and NSNull, and keyed subscripting a non-dictionary raises
+    // -[__NSCFConstantString objectForKeyedSubscript:] / -[NSConstantArray objectForKeyedSubscript:].
+    NSDictionary *dataPlanSettings = blockSettings[kMPRemoteConfigDataPlanning];
+    if (![dataPlanSettings isKindOfClass:[NSDictionary class]]) {
+        if (MParticle.sharedInstance.dataPlanOptions == nil) {
+            MParticle.sharedInstance.dataPlanFilter = nil;
+        }
+        return;
+    }
+
+    NSDictionary *dataBlockSettings = dataPlanSettings[kMPRemoteConfigDataPlanningBlock];
+    if (![dataBlockSettings isKindOfClass:[NSDictionary class]]) {
+        dataBlockSettings = @{};
+    }
+
+    MPDataPlanOptions *dataPlanOptions = [[MPDataPlanOptions alloc] init];
+    dataPlanOptions.blockEvents = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEvents] boolValue];
+    dataPlanOptions.blockEventAttributes = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEventAttributes] boolValue];
+    dataPlanOptions.blockUserAttributes = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedUserAttributes] boolValue];
+    dataPlanOptions.blockUserIdentities = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedIdentities] boolValue];
+    dataPlanOptions.dataPlan = dataPlanSettings[kMPRemoteConfigDataPlanningDataPlanVersionValue];
+
+    if (MParticle.sharedInstance.dataPlanOptions == nil) {
+        MParticle.sharedInstance.dataPlanFilter = [[MPDataPlanFilter alloc] initWithDataPlanOptions:dataPlanOptions];
+    }
+}
+
+// The consumer info and advertiser-id seams: both need Objective-C contract types the Swift state
+// machine cannot import, so it calls back through this protocol.
+- (MPConsumerInfo *)fetchOrCreateConsumerInfo {
+    MPPersistenceAdapter *persistence = MParticle.sharedInstance.persistenceAdapter;
+    MPConsumerInfo *consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceUtilities mpId]];
+
+    if (!consumerInfo) {
+        consumerInfo = [[MPConsumerInfo alloc] init];
+        [persistence saveConsumerInfo:consumerInfo];
+    }
+
+    return consumerInfo;
+}
+
+- (void)clearAdvertiserIdForAllUsers {
+    NSArray<MParticleUser *> *users = MParticle.sharedInstance.identity.getAllUsers;
+    for (MParticleUser *user in users) {
+        [user setIdentity:nil identityType:MPIdentityIOSAdvertiserId];
+    }
 }
 
 - (NSNumber* __nullable)userId {

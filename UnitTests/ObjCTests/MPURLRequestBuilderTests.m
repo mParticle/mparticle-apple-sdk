@@ -5,7 +5,6 @@
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
 #import "MPPersistenceUtilities.h"
-#import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -211,7 +210,7 @@
 }
 
 - (void)testConnectorOmitsSignatureWhenNoSecretIsAvailable {
-    [MParticle sharedInstance].stateMachine.secret = nil;
+    [MParticle sharedInstance].stateMachine.secret = @"";
     MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
 
     NSMutableURLRequest *request = [self.connector urlRequestForURL:networkCommunication.configURL

@@ -4,7 +4,7 @@
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitRegister.h"
 #import "MPKitTestClassNoStartImmediately.h"
-#import "MPStateMachine.h"
+@import mParticle_Apple_SDK_Swift;
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
 #import "MParticle.h"

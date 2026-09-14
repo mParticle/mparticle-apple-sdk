@@ -510,7 +510,12 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSInteger environment = 0;
 
     if (requestKind != MPURLRequestKindCustom) {
-        fallbackSecret = mParticle.stateMachine.secret;
+        // The state machine's secret is a non-optional string that starts empty, so "not set yet"
+        // arrives as @"" rather than nil. Signing needs it to stay nil in that case: an HMAC over
+        // an empty key is not a meaningful signature, and MPURLRequestBuilder omits the
+        // x-mp-signature header entirely when the secret is absent.
+        NSString *stateMachineSecret = mParticle.stateMachine.secret;
+        fallbackSecret = stateMachineSecret.length > 0 ? stateMachineSecret : nil;
     }
 
     switch (requestKind) {
