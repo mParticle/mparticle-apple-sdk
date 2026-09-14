@@ -2,7 +2,6 @@
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPPersistenceUtilities.h"
-#import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPConsentState.h"
 #import "MPConsentSerialization.h"

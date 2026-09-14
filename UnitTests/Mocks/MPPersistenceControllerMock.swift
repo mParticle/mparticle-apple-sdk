@@ -59,8 +59,8 @@ class MPPersistenceControllerMock: NSObject, MPPersistenceAdapting {
     }
 
     func deleteAllIntegrationAttributes() {}
-    func fetchConsumerInfo(forUserId userId: NSNumber) -> MPConsumerInfo? { nil }
+    func fetchConsumerInfo(forUserId userId: NSNumber) -> MPConsumerInfoPRIVATE? { nil }
     func fetchCookies(forUserId userId: NSNumber) -> [MPCookiePRIVATE]? { nil }
-    func save(_ consumerInfo: MPConsumerInfo) {}
-    func update(_ consumerInfo: MPConsumerInfo) {}
+    func save(_ consumerInfo: MPConsumerInfoPRIVATE) {}
+    func update(_ consumerInfo: MPConsumerInfoPRIVATE) {}
 }

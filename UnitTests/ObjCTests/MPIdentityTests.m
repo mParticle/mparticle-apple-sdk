@@ -10,7 +10,6 @@
 #import "MPBaseTestCase.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
-#import "MPConsumerInfo.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPPersistenceUtilities.h"
 #import "MPPersistenceAdapter.h"
