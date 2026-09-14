@@ -253,8 +253,6 @@
     [dataTask stopMocking];
     [attribution stopMocking];
 }
-#endif
-
 // The data task's completion handler runs on the URL session's delegate queue, not the SDK's
 // serial message queue. Everything searchAdsCompletion goes on to do - forwarding install/update
 // to kits, the config request, the upload cycle - assumes the message queue, so the completion has
@@ -309,6 +307,7 @@
     [dataTask stopMocking];
     [attribution stopMocking];
 }
+#endif
 
 #pragma mark - Data blocking configuration
 
