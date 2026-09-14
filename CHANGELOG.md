@@ -20,6 +20,16 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.5.1] - 2026-09-14
+
+### Kits
+
+#### Rokt
+
+##### Fixed
+
+- Correct Dependency Pinning for Rokt Cocoaopods ([#993](https://github.com/mParticle/mparticle-apple-sdk/pull/993))
+
 ## [9.5.0] - 2026-09-11
 
 ### Core
@@ -2554,7 +2564,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.0...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.1...HEAD
+[9.5.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.0...v9.5.1
 [9.5.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.3...v9.5.0
 [9.4.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.2...v9.4.3
 [9.4.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.1...v9.4.2
