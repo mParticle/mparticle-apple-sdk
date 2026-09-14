@@ -46,6 +46,14 @@ public final class MPConsumerInfoPRIVATE: NSObject, NSSecureCoding {
     /// there is no such cookie. Computed once and then persisted, so the stamp is stable for the
     /// lifetime of the install.
     @objc public var deviceApplicationStamp: String? {
+        // nil before the Objective-C boundary has built the shared instance, as above. This one is
+        // a deliberate difference rather than a like-for-like port: MPUserDefaultsConnector.userDefaults
+        // created the singleton on first access, so the wrapper always minted and persisted a UUID,
+        // whereas cached() returns nil without minting. The window does not occur in practice -
+        // mParticle.m builds the state machine during -[MParticle init], and MPStateMachine_PRIVATE's
+        // own -init reads MPUserDefaultsConnector.userDefaults, both before anything can read
+        // consumer info - and returning nil beats minting a stamp with nowhere to persist it, which
+        // would hand out a different value on the next call.
         guard let userDefaults = MPUserDefaults.cached() else { return nil }
 
         if let existing = userDefaults[Keys.deviceApplicationStampStorage] as? String {
