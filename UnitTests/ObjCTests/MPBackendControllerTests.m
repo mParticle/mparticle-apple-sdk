@@ -2016,20 +2016,21 @@
 }
 
 - (void)testNoUploadOrRetryIfConfigFails {
-    id mockBackendController = OCMPartialMock(self.backendController);
-    [[mockBackendController reject] uploadBatchesWithCompletionHandler:[OCMArg any]];
-    
-    [OCMStub([mockBackendController requestConfig:[OCMArg any]]) andDo:^(NSInvocation *invocation) {
-        void (^handler)(BOOL uploadBatch);
-        [invocation getArgument:&handler atIndex:2];
+    id network = OCMPartialMock(self.backendController.networkCommunication);
+    [[network reject] upload:[OCMArg any] completionHandler:[OCMArg any]];
+    [OCMStub([network requestConfig:nil withCompletionHandler:[OCMArg any]]) andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(BOOL uploadBatch);
+        [invocation getArgument:&handler atIndex:3];
         handler(NO);
     }];
-    
-    [mockBackendController checkForKitsAndUploadWithCompletionHandler:^(BOOL didShortCircuit) {
+    __block BOOL completed = NO;
+    [self.backendController checkForKitsAndUploadWithCompletionHandler:^(BOOL didShortCircuit) {
         XCTAssertFalse(didShortCircuit);
+        completed = YES;
     }];
-    
-    [mockBackendController verifyWithDelay:5.0];
+    XCTAssertTrue(completed);
+    [network verifyWithDelay:5.0];
+    [network stopMocking];
 }
 
 #if TARGET_OS_IOS == 1
