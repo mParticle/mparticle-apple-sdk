@@ -1,43 +1,29 @@
 #import "MPUploadBuilder.h"
 #import "MPIConstants.h"
-#import "MPPersistenceUtilities.h"
-#import "MPForwardRecord.h"
-#import "MPConsentState.h"
-#import "MPConsentSerialization.h"
-#import "mParticle.h"
-#import "MPILogger.h"
-#import "MPUserDefaultsConnector.h"
-#import "MPPersistenceAdapter.h"
+#import "MPEnums.h"
 @import mParticle_Apple_SDK_Swift;
-
-@interface MParticle ()
-
-@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
-@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong, nonnull) MParticleOptions *options;
-
-@end
 
 @interface MPUploadBuilder() {
     NSMutableDictionary<NSString *, id> *_uploadDictionary;
     BOOL _containsOptOutMessage;
     NSString *_dPId;
     NSNumber *_dPVersion;
-    MPUploadSettings *_uploadSettings;
+    NSObject *_uploadSettings;
+    MPUploadBuilderContext *_context;
 }
 
 @end
 
 @implementation MPUploadBuilder
 
-- (nonnull instancetype)initWithMpid:(nonnull NSNumber *)mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion uploadSettings:(id)uploadSettings {
+- (nonnull instancetype)initWithMpid:(nonnull NSNumber *)mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion uploadSettings:(id)uploadSettings context:(MPUploadBuilderContext *)context {
     self = [super init];
     if (!self || !messages || messages.count == 0) {
         return nil;
     }
     
     _uploadSettings = uploadSettings;
+    _context = context;
     _sessionId = sessionId;
 
     MPPreparedMessages *preparedMessages = [MPUploadBuilderFields preparedMessagesFrom:messages];
@@ -45,14 +31,8 @@
     _preparedMessageIds = [preparedMessages.preparedMessageIds mutableCopy];
     _containsOptOutMessage = preparedMessages.containsOptOutMessage;
     
-    NSNumber *ltv;
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    ltv = [userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid];
-    if (ltv == nil) {
-        ltv = @0;
-    }
-    
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    NSNumber *ltv = context.lifetimeValue(mpid);
+    MPStateMachine_PRIVATE *stateMachine = context.stateMachine();
 
     _uploadDictionary = [[MPUploadBuilderFields seedDictionaryWithOptOut:stateMachine.optOut
                                                            uploadInterval:uploadInterval
@@ -100,53 +80,34 @@
 
 #pragma mark Public instance methods
 - (void)build:(void (^)(MPUpload *upload))completionHandler {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = _context.stateMachine();
 
-    NSDictionary *headerFields = [MPUploadBuilderFields headerFieldsWithMessageId:[[NSUUID UUID] UUIDString]
-                                                                       timestampMs:MPMilliseconds([[NSDate date] timeIntervalSince1970])
-                                                                        sdkVersion:kMParticleSDKVersion
+    NSDictionary *headerFields = [MPUploadBuilderFields headerFieldsWithMessageId:_context.messageID()
+                                                                       timestampMs:_context.timestamp()
+                                                                        sdkVersion:_context.sdkVersion
                                                                             apiKey:stateMachine.apiKey];
     [_uploadDictionary addEntriesFromDictionary:headerFields];
     
-    NSDictionary *appAndDeviceInfoDict = [[MParticle sharedInstance].persistenceAdapter appAndDeviceInfoForSessionId:_sessionId];
+    NSDictionary *appAndDeviceInfoDict = (_sessionId != nil ? [_context.persistence() appAndDeviceInfoForSessionId:_sessionId] : @{});
     
     NSDictionary *appInfoDict = appAndDeviceInfoDict[MPApplicationKeys.kMPApplicationInformationKey];
     if (appInfoDict) {
         _uploadDictionary[MPApplicationKeys.kMPApplicationInformationKey] = appInfoDict;
     } else {
-        // If the info wasn't saved in the session, use the old behavior and grab it now
-        // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
-        MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
-                                                                                   userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
-                                                                                    environment:[MPStateMachine_PRIVATE environment]
-                                                                               deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
-                                                                                       buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
-        _uploadDictionary[MPApplicationKeys.kMPApplicationInformationKey] = [application dictionaryRepresentation];
+        _uploadDictionary[MPApplicationKeys.kMPApplicationInformationKey] = _context.applicationInfo(stateMachine);
     }
     
     NSDictionary *deviceInfoDict = appAndDeviceInfoDict[kMPDeviceInformationKey];
     if (deviceInfoDict) {
         _uploadDictionary[kMPDeviceInformationKey] = deviceInfoDict;
     } else {
-        // If the info wasn't saved in the session, use the old behavior and grab it now
-        // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
-        MParticle* mparticle = MParticle.sharedInstance;
-        MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-        logger.customLogger = mparticle.customLogger;
-        MPUserDefaults* userDefaults = MPUserDefaultsConnector.userDefaults;
-        MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
-                                                     userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults
-                                                         identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
-                                                           logger:logger];
-        NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
-        _uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentationWithMpid:mpid];
+        _uploadDictionary[kMPDeviceInformationKey] = _context.deviceInfo(_uploadDictionary[kMPRemoteConfigMPIDKey]);
     }
     
     // Update the IDFA if it changed after the session was created/saved (the IDFA changed or the ATTStatus has been set to authorized)
-    NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    NSNumber *authStatus = _context.stateMachine().attAuthorizationStatus;
     NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
-    NSDictionary *userIdentities = [[[MParticle sharedInstance] identity] getUser:mpid].identities;
-    NSString *advertiserId = userIdentities[@(MPIdentityIOSAdvertiserId)];
+    NSString *advertiserId = _context.advertiserID(mpid);
     BOOL isATTAuthorized = authStatus != nil && authStatus.intValue == MPATTAuthorizationStatusAuthorized;
 
     NSDictionary *updatedDeviceInfo = [MPUploadBuilderFields deviceInfoDictionaryByAddingAdvertiserId:advertiserId
@@ -168,13 +129,13 @@
         _uploadDictionary[kMPDeviceApplicationStampKey] = deviceApplicationStamp;
     }
     
-    MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
-    NSArray<MPForwardRecord *> *forwardRecords = [persistence fetchForwardRecords];
+    id<MPUploadEnrichmentPersistence> persistence = _context.persistence();
+    NSArray<MPForwardRecordPRIVATE *> *forwardRecords = [persistence fetchForwardRecords];
 
     if (forwardRecords) {
         NSMutableArray *dataDictionaries = [NSMutableArray arrayWithCapacity:forwardRecords.count];
         NSMutableArray<NSNumber *> *recordIds = [NSMutableArray arrayWithCapacity:forwardRecords.count];
-        for (MPForwardRecord *forwardRecord in forwardRecords) {
+        for (MPForwardRecordPRIVATE *forwardRecord in forwardRecords) {
             [dataDictionaries addObject:forwardRecord.dataDictionary ?: [NSNull null]];
             [recordIds addObject:@(forwardRecord.forwardRecordId)];
         }
@@ -196,26 +157,21 @@
         _uploadDictionary[MPIntegrationAttributesKey] = [MPUploadBuilderFields mergedIntegrationAttributesDictionaryFrom:integrationAttributesDictionaries];
     }
     
-    MPConsentState *consentState = [MPPersistenceUtilities effectiveConsentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
-    if (consentState) {
-        NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
-        if (consentStateDictionary) {
-            _uploadDictionary[kMPConsentState] = consentStateDictionary;
-        }
+    NSDictionary *consentStateDictionary = _context.consent(_uploadDictionary[kMPRemoteConfigMPIDKey]);
+    if (consentStateDictionary) {
+        _uploadDictionary[kMPConsentState] = consentStateDictionary;
     }
-    
-    if (MParticle.sharedInstance.options.onCreateBatch != NULL) {
-        NSDictionary *updatedDictionary = MParticle.sharedInstance.options.onCreateBatch(_uploadDictionary);
-        if (updatedDictionary == nil) {
-            MPILogWarning(@"Not uploading batch due to 'onCreateBatch' handler returning 'nil'");
-            return;
-        } else if ([updatedDictionary isKindOfClass:[NSDictionary class]] && ![updatedDictionary isEqual:_uploadDictionary]) {
-            MPILogWarning(@"Replacing batch with mutated version from 'onCreateBatch' handler");
-            _uploadDictionary = [updatedDictionary mutableCopy];
-            _uploadDictionary[@"mb"] = @YES;
-        }
+
+    id updatedDictionary = _context.transformBatch(_uploadDictionary);
+    if (updatedDictionary == nil) {
+        [_context.logger() warning:@"Not uploading batch due to 'onCreateBatch' handler returning 'nil'"];
+        return;
+    } else if ([updatedDictionary isKindOfClass:[NSDictionary class]] && ![updatedDictionary isEqual:_uploadDictionary]) {
+        [_context.logger() warning:@"Replacing batch with mutated version from 'onCreateBatch' handler"];
+        _uploadDictionary = [updatedDictionary mutableCopy];
+        _uploadDictionary[@"mb"] = @YES;
     }
-    
+
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:_sessionId
                                           uploadDictionary:_uploadDictionary
                                                 dataPlanId:_dPId

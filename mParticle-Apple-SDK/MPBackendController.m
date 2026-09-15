@@ -7,6 +7,7 @@
 #import "MParticleUserNotification.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUploadBuilder.h"
+#import "MPConsentSerialization.h"
 #import "MPILogger.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
@@ -41,6 +42,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @interface MParticle ()
 
 @property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
+@property (nonatomic, strong) MParticleOptions *options;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
@@ -69,6 +71,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property NSOperationQueue *backgroundCheckQueue;
 @property NSNumber *previousForegroundTime;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
+- (MPUploadBuilderContext *)uploadBuilderContext;
++ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
 @end
 
@@ -211,6 +215,52 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     return [[MPMessageBuilderContext alloc] initWithDataPlanId:mparticle.dataPlanId
                                                dataPlanVersion:mparticle.dataPlanVersion
                                                         logger:[mparticle getLogger]];
+}
+
+// The upload builder cannot import the public Objective-C SDK. Keep identity, consent,
+// build macros and customer callbacks at this composition boundary, with live providers.
+- (MPUploadBuilderContext *)uploadBuilderContext {
+    return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{ return self.persistence; }];
+}
+
++ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence {
+    return [[MPUploadBuilderContext alloc]
+        initWithStateMachine:^{ return MParticle.sharedInstance.stateMachine; }
+        lifetimeValue:^NSNumber *(NSNumber *mpid) {
+            return [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid] ?: @0;
+        }
+        persistence:persistence
+        applicationInfo:^NSDictionary *(MPStateMachine_PRIVATE *stateMachine) {
+            MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
+                initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
+                userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                environment:[MPStateMachine_PRIVATE environment]
+                deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
+            return [application dictionaryRepresentation];
+        }
+        deviceInfo:^NSDictionary *(NSNumber *mpid) {
+            MParticle *mparticle = MParticle.sharedInstance;
+            MPDevice *device = [[MPDevice alloc]
+                initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                logger:[mparticle getLogger]];
+            return [device dictionaryRepresentationWithMpid:mpid];
+        }
+        advertiserID:^NSString *(NSNumber *mpid) {
+            return [MParticle.sharedInstance.identity getUser:mpid].identities[@(MPIdentityIOSAdvertiserId)];
+        }
+        consent:^NSDictionary *(NSNumber *mpid) {
+            MPConsentState *consent = [MPPersistenceUtilities effectiveConsentStateForMpid:mpid];
+            return consent ? [MPConsentSerialization serverDictionaryFromConsentState:consent] : nil;
+        }
+        transformBatch:^id(NSDictionary *batch) {
+            MParticle *mparticle = MParticle.sharedInstance;
+            return mparticle.options.onCreateBatch ? mparticle.options.onCreateBatch(batch) : batch;
+        }
+        logger:^{ return [MParticle.sharedInstance getLogger]; }
+        sdkVersion:kMParticleSDKVersion];
 }
 
 - (void)confirmEndSessionMessage:(MPSession *)session {
@@ -472,6 +522,7 @@ static BOOL skipNextUpload = NO;
     
     //Fetch all stored messages (1)
     NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
+    MPUploadBuilderContext *context = [self uploadBuilderContext];
 
     //In batches broken up by mpid, session, data plan id and data plan version create the Uploads (2)
     for (MPUploadMessageGroup *group in [MPUploadGrouping groupsFromStoredMessages:mpidMessages]) {
@@ -487,7 +538,7 @@ static BOOL skipNextUpload = NO;
                                                                     uploadInterval:self.uploadInterval
                                                                         dataPlanId:group.dataPlanId
                                                                    dataPlanVersion:group.dataPlanVersion
-                                                                    uploadSettings:uploadSettings];
+                                                                    uploadSettings:uploadSettings context:context];
             [uploadBuilder withUserAttributes:[self userAttributesForUserId:group.mpid] deletedUserAttributes:self.deletedUserAttributes];
             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:group.mpid]];
             [uploadBuilder build:^(MPUpload *upload) {

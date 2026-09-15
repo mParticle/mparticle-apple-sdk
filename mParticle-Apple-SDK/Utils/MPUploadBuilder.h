@@ -4,6 +4,7 @@
 @class MPUpload;
 @class MPUploadSettings;
 @class MPSession;
+@class MPUploadBuilderContext;
 
 @interface MPUploadBuilder : NSObject
 
@@ -17,7 +18,8 @@
                       uploadInterval:(NSTimeInterval)uploadInterval
                           dataPlanId:(nullable NSString *)dataPlanId
                      dataPlanVersion:(nullable NSNumber *)dataPlanVersion
-                      uploadSettings:(nonnull MPUploadSettings *)uploadSettings;
+                      uploadSettings:(nonnull MPUploadSettings *)uploadSettings
+                             context:(nonnull MPUploadBuilderContext *)context;
 
 - (void)build:(void (^ _Nonnull)(MPUpload * _Nullable upload))completionHandler;
 - (nonnull MPUploadBuilder *)withUserAttributes:(nonnull NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(nullable NSSet<NSString *> *)deletedUserAttributes;
