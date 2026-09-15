@@ -104,7 +104,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 @end
 
-@interface MPNetworkCommunication_PRIVATE()
+@interface MPNetworkCommunication_PRIVATE () <MPBackendUploadNetworking>
 
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
