@@ -71,7 +71,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property NSOperationQueue *backgroundCheckQueue;
 @property NSNumber *previousForegroundTime;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
-+ (MPUploadBuilderContext *)uploadBuilderContext;
+- (MPUploadBuilderContext *)uploadBuilderContext;
 
 @end
 
@@ -218,13 +218,13 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 // The upload builder cannot import the public Objective-C SDK. Keep identity, consent,
 // build macros and customer callbacks at this composition boundary, with live providers.
-+ (MPUploadBuilderContext *)uploadBuilderContext {
+- (MPUploadBuilderContext *)uploadBuilderContext {
     MPUploadBuilderContext *context = [[MPUploadBuilderContext alloc]
         initWithStateMachine:^{ return MParticle.sharedInstance.stateMachine; }
         lifetimeValue:^NSNumber *(NSNumber *mpid) {
             return [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid] ?: @0;
         }
-        persistence:^{ return (id<MPUploadEnrichmentPersistence>)MParticle.sharedInstance.persistenceStore; }
+        persistence:^{ return self.persistence; }
         applicationInfo:^NSDictionary *(MPStateMachine_PRIVATE *stateMachine) {
             MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
                 initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
@@ -534,7 +534,7 @@ static BOOL skipNextUpload = NO;
                                                                     uploadInterval:self.uploadInterval
                                                                         dataPlanId:group.dataPlanId
                                                                    dataPlanVersion:group.dataPlanVersion
-                                                                    uploadSettings:uploadSettings context:[MPBackendController_PRIVATE uploadBuilderContext]];
+                                                                    uploadSettings:uploadSettings context:[self uploadBuilderContext]];
             [uploadBuilder withUserAttributes:[self userAttributesForUserId:group.mpid] deletedUserAttributes:self.deletedUserAttributes];
             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:group.mpid]];
             [uploadBuilder build:^(MPUpload *upload) {

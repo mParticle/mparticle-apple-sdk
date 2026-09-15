@@ -53,6 +53,7 @@ import Foundation
     MPPersistenceLifecycle,
     MPSessionPersistence,
     MPMessagePersistence,
-    MPUploadPersistence {}
+    MPUploadPersistence,
+    MPUploadEnrichmentPersistence {}
 
 extension MPPersistenceStorePRIVATE: MPBackendPersistence {}

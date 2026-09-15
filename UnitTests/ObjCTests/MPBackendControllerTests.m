@@ -57,6 +57,7 @@
 @interface MPBackendController_PRIVATE(Tests)
 
 @property (nonatomic, strong) MPNetworkCommunication_PRIVATE *networkCommunication;
+- (MPUploadBuilderContext *)uploadBuilderContext;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
@@ -597,6 +598,89 @@
         uploads = [persistence fetchUploads];
         XCTAssertNil(uploads, @"Uploads are not being deleted.");
     }];
+}
+
+- (void)testPrepareBatchesUsesInjectedPersistenceForEnrichment {
+    MPPersistenceStorePRIVATE *sharedStore = MParticle.sharedInstance.persistenceStore;
+    MPForwardRecordPRIVATE *sharedRecord = [[MPForwardRecordPRIVATE alloc]
+        initWithId:0 dataDictionary:@{@"source": @"shared"} mpid:@1];
+    [sharedStore saveForwardRecord:sharedRecord];
+    NSArray *sharedRecordsBefore = [sharedStore fetchForwardRecords];
+    NSUInteger sharedUploadCount = [sharedStore fetchUploads].count;
+
+    id injectedStore = OCMClassMock([MPPersistenceStorePRIVATE class]);
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc]
+        initWithDelegate:nil persistence:injectedStore];
+    MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+    NSNumber *sessionId = @(session.sessionId);
+    MPMessage *message = [[[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+        session:session messageInfo:@{@"n": @"injected-store-event"} context:self.messageBuilderContext] build];
+    NSMutableDictionary *groups = [@{@1: @{sessionId: @{@"0": @{@0: @[message]}}}} mutableCopy];
+    OCMStub([injectedStore fetchMessagesForUploading]).andReturn(groups);
+
+    NSDictionary *applicationInfo = @{@"an": @"injected-app"};
+    NSDictionary *deviceInfo = @{@"dmdl": @"injected-device"};
+    NSDictionary *storedInfo = @{MPApplicationKeys.kMPApplicationInformationKey: applicationInfo,
+                                 kMPDeviceInformationKey: deviceInfo};
+    OCMExpect([injectedStore appAndDeviceInfoForSessionId:sessionId]).andReturn(storedInfo);
+    MPForwardRecordPRIVATE *injectedRecord = [[MPForwardRecordPRIVATE alloc]
+        initWithId:1234 dataDictionary:@{@"source": @"injected"} mpid:@1];
+    OCMExpect([injectedStore fetchForwardRecords]).andReturn(@[injectedRecord]);
+    OCMExpect([injectedStore deleteForwardRecordsIds:@[@1234]]);
+    MPIntegrationAttributes *attributes = [[MPIntegrationAttributes alloc]
+        initWithIntegrationId:@77 attributes:@{@"source": @"injected"}];
+    OCMExpect([injectedStore fetchIntegrationAttributes]).andReturn(@[attributes]);
+    OCMExpect([injectedStore saveUploads:[OCMArg checkWithBlock:^BOOL(NSArray<MPUpload *> *uploads) {
+        XCTAssertEqual(uploads.count, 1);
+        NSDictionary *batch = [uploads.firstObject dictionaryRepresentation];
+        XCTAssertEqualObjects(batch[MPApplicationKeys.kMPApplicationInformationKey], applicationInfo);
+        XCTAssertEqualObjects(batch[kMPDeviceInformationKey], deviceInfo);
+        XCTAssertEqualObjects(batch[kMPForwardStatsRecord], @[injectedRecord.dataDictionary]);
+        XCTAssertEqualObjects(batch[MPIntegrationAttributesKey], [attributes dictionaryRepresentation]);
+        return YES;
+    }] deleteMessages:@[message] optedOut:NO]).andReturn(YES);
+    OCMExpect([injectedStore deleteAllSessionsExcept:[OCMArg any]]);
+
+    [backend prepareBatchesForUpload:[[MPUploadSettings alloc] init]];
+
+    OCMVerifyAll(injectedStore);
+    NSArray<MPForwardRecordPRIVATE *> *sharedRecordsAfter = [sharedStore fetchForwardRecords];
+    XCTAssertEqual(sharedRecordsAfter.count, sharedRecordsBefore.count);
+    XCTAssertEqualObjects(sharedRecordsAfter.firstObject.dataDictionary, sharedRecord.dataDictionary);
+    XCTAssertEqual([sharedStore fetchUploads].count, sharedUploadCount);
+}
+
+- (void)testUploadBuilderReadsBackendPersistenceAtBuildTime {
+    id originalStore = OCMProtocolMock(@protocol(MPBackendPersistence));
+    id replacementStore = OCMProtocolMock(@protocol(MPBackendPersistence));
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc]
+        initWithDelegate:nil persistence:originalStore];
+    MPMessage *message = [[[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+        session:nil messageInfo:@{@"n": @"replacement-store-event"} context:self.messageBuilderContext] build];
+    MPUploadBuilder *builder = [[MPUploadBuilder alloc] initWithMpid:@1 sessionId:@42 messages:@[message]
+        sessionTimeout:60 uploadInterval:30 dataPlanId:nil dataPlanVersion:nil
+        uploadSettings:[[MPUploadSettings alloc] init] context:[backend uploadBuilderContext]];
+
+    OCMReject([originalStore appAndDeviceInfoForSessionId:[OCMArg any]]);
+    OCMReject([originalStore fetchForwardRecords]);
+    OCMReject([originalStore fetchIntegrationAttributes]);
+    NSDictionary *applicationInfo = @{@"an": @"replacement-app"};
+    NSDictionary *storedInfo = @{MPApplicationKeys.kMPApplicationInformationKey: applicationInfo,
+                                 kMPDeviceInformationKey: @{@"dmdl": @"replacement-device"}};
+    OCMExpect([replacementStore appAndDeviceInfoForSessionId:@42]).andReturn(storedInfo);
+    OCMExpect([replacementStore fetchForwardRecords]).andReturn(nil);
+    OCMExpect([replacementStore fetchIntegrationAttributes]).andReturn(nil);
+    backend.persistence = replacementStore;
+
+    __block BOOL completed = NO;
+    [builder build:^(MPUpload *upload) {
+        completed = YES;
+        XCTAssertEqualObjects([upload dictionaryRepresentation][MPApplicationKeys.kMPApplicationInformationKey], applicationInfo);
+    }];
+
+    XCTAssertTrue(completed);
+    OCMVerifyAll(originalStore);
+    OCMVerifyAll(replacementStore);
 }
 
 - (void)testUploadWithDifferentUser {

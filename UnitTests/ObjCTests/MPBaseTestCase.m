@@ -37,13 +37,15 @@
 @end
 
 @interface MPBackendController_PRIVATE (UploadBuilderTesting)
-+ (MPUploadBuilderContext *)uploadBuilderContext;
+- (MPUploadBuilderContext *)uploadBuilderContext;
 @end
 
 @implementation MPBaseTestCase
 
 - (MPUploadBuilderContext *)uploadBuilderContext {
-    return [MPBackendController_PRIVATE uploadBuilderContext];
+    // Standalone builder tests do not start the SDK, so they need their own context owner.
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] initWithDelegate:nil];
+    return [backend uploadBuilderContext];
 }
 
 
