@@ -135,7 +135,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion  
-                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -209,7 +209,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion 
-                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -289,7 +289,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion
-                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
 
     XCTAssertNotNil(uploadBuilder);
     
@@ -371,7 +371,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion 
-                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -450,7 +450,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion 
-                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -532,7 +532,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion
-                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -617,7 +617,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion
-                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -698,7 +698,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion
-                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -837,5 +837,41 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+
+
+- (void)testBuildReadsCurrentHookAndCredentials {
+    MParticle.sharedInstance.options = [[MParticleOptions alloc] init];
+    MPUploadBuilder *builder = [self createTestUploadBuilder];
+    MParticle *mparticle = MParticle.sharedInstance;
+    NSString *originalKey = mparticle.stateMachine.apiKey;
+    mparticle.stateMachine.apiKey = @"changed-after-construction";
+    mparticle.options.onCreateBatch = ^NSDictionary *(NSDictionary *batch) {
+        XCTAssertEqualObjects(batch[kMPApplicationKey], @"changed-after-construction");
+        return nil;
+    };
+    __block BOOL called = NO;
+    [builder build:^(MPUpload *upload) { called = YES; }];
+    XCTAssertFalse(called);
+    mparticle.stateMachine.apiKey = originalKey;
+    mparticle.options.onCreateBatch = nil;
+}
+
+- (void)testBuildUsesInjectedHeaderValues {
+    MPUploadBuilderContext *context = self.uploadBuilderContext;
+    context.messageID = ^{ return @"injected-batch-id"; };
+    context.timestamp = ^{ return @12345; };
+    MPMessage *message = [[[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+        session:nil messageInfo:@{@"key":@"value"} context:self.messageBuilderContext] build];
+    MPUploadBuilder *builder = [[MPUploadBuilder alloc] initWithMpid:@1 sessionId:nil
+        messages:@[message] sessionTimeout:60 uploadInterval:30 dataPlanId:nil dataPlanVersion:nil
+        uploadSettings:[[MPUploadSettings alloc] init] context:context];
+    __block BOOL called = NO;
+    [builder build:^(MPUpload *upload) {
+        called = YES;
+        XCTAssertEqualObjects(upload.uuid, @"injected-batch-id");
+        XCTAssertEqualObjects([upload dictionaryRepresentation][kMPTimestampKey], @12345);
+    }];
+    XCTAssertTrue(called);
+}
 
 @end

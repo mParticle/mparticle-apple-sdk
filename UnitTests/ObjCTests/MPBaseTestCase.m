@@ -36,7 +36,16 @@
 
 @end
 
+@interface MPBackendController_PRIVATE (UploadBuilderTesting)
++ (MPUploadBuilderContext *)uploadBuilderContext;
+@end
+
 @implementation MPBaseTestCase
+
+- (MPUploadBuilderContext *)uploadBuilderContext {
+    return [MPBackendController_PRIVATE uploadBuilderContext];
+}
+
 
 - (void)setUpWithCompletionHandler:(void (^)(NSError * _Nullable))completion {
     [super setUp];
