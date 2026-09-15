@@ -242,7 +242,12 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
                 return builder;
             }
             clearDeletedAttributes:^{ weakSelf.deletedUserAttributes = nil; }
-            limits:limits];
+            limits:limits
+            dependencies:[self uploadDependencies]
+            currentSettings:^{
+                return [MPUploadSettings currentUploadSettingsWithStateMachine:MParticle.sharedInstance.stateMachine
+                                                               networkOptions:MParticle.sharedInstance.networkOptions];
+            }];
     }
     return _uploadCoordinator;
 }
@@ -470,12 +475,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler {
-    MPILogDebug(@"Requesting SDK configuration from server");
-    [self.networkCommunication requestConfig:nil withCompletionHandler:^(BOOL success) {
-        if (completionHandler) {
-            completionHandler(success);
-        }
-    }];
+    [self.uploadCoordinator requestConfig:completionHandler];
 }
 
 - (void)setUserAttributeChange:(MPUserAttributeChange *)userAttributeChange completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
@@ -538,10 +538,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     return [self.uploadCoordinator batchMessages:messages limits:limits];
 }
 
-static BOOL skipNextUpload = NO;
-
 - (void)skipNextUpload {
-    skipNextUpload = YES;
+    [self.uploadCoordinator skipNextUpload];
 }
 
 - (void)prepareBatchesForUpload:(MPUploadSettings *)uploadSettings {
@@ -549,39 +547,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
-    // Prepare upload records
-    [self prepareBatchesForUpload:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
-    
-    const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
-    id<MPBackendPersistence> persistence = self.persistence;
-    
-    if (skipNextUpload) {
-        skipNextUpload = NO;
-        completionHandler(YES);
-        return;
-    }
-    
-    // Fetch all Uploads (6)
-    NSArray<MPUpload *> *uploads = [persistence fetchUploads];
-    
-    if (!uploads || uploads.count == 0) {
-        completionHandlerCopy(YES);
-        return;
-    }
-    
-    if ([MParticle sharedInstance].stateMachine.dataRamped) {
-        for (MPUpload *upload in uploads) {
-            [persistence deleteUpload:upload];
-        }
-        
-        [persistence deleteNetworkPerformanceMessages];
-        return;
-    }
-    
-    //Send all Uploads to the backend (7)
-    [self.networkCommunication upload:uploads completionHandler:^{
-        completionHandlerCopy(YES);
-    }];
+    [self.uploadCoordinator uploadBatchesWithCompletionHandler:completionHandler];
 }
 
 - (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(void))completionHandler {
@@ -1441,49 +1407,12 @@ static BOOL skipNextUpload = NO;
 }
 
 - (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler {
-    [self checkForKitsAndUploadWithCompletionHandler:^(BOOL didShortCircuit) {
-        if (!didShortCircuit) {
-            if (completionHandler) {
-                completionHandler();
-            }
-        } else {
-            MPILogVerbose(@"Kits not ready, retrying upload check in 1 second");
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), [MParticle messageQueue], ^{
-                [self waitForKitsAndUploadWithCompletionHandler:completionHandler];
-            });
-        }
-    }];
+    [self.uploadCoordinator waitForKitsAndUploadWithCompletionHandler:completionHandler];
     return MPExecStatusSuccess;
 }
 
 - (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler {
-    [self requestConfig:^(BOOL uploadBatch) {
-        if (!uploadBatch) {
-            MPILogDebug(@"Config request returned uploadBatch: NO, skipping upload");
-            if (completionHandler) {
-                completionHandler(NO);
-            }
-            return;
-        }
-        
-        MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
-        BOOL shouldDelayUploadForKits = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
-        BOOL shouldDelayUpload = shouldDelayUploadForKits || [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
-        if (shouldDelayUpload) {
-            MPILogWarning(@"Delaying upload - kits still initializing (shouldDelayForKits: %@)", shouldDelayUploadForKits ? @"YES" : @"NO");
-            if (completionHandler) {
-                completionHandler(YES);
-            }
-            return;
-        }
-        
-        [self uploadBatchesWithCompletionHandler:^(BOOL success) {
-            if (completionHandler) {
-                completionHandler(NO);
-            }
-        }];
-    }];
-    
+    [self.uploadCoordinator checkForKitsAndUploadWithCompletionHandler:completionHandler];
     return MPExecStatusSuccess;
 }
 

@@ -38,6 +38,8 @@ final class MPBackendUploadDependenciesTests: XCTestCase {
 final class MPBackendUploadNetworkMock: NSObject, MPBackendUploadNetworking {
     var configRequests = 0
     var configSuccess = true
+    var deferUploadCompletion = false
+    var uploadCompletion: (() -> Void)?
     var uploaded: [[MPUploadPRIVATE]] = []
 
     func requestConfig(_: (NSObject & MPConnectorProtocol)?, completionHandler: @escaping (Bool) -> Void) {
@@ -47,6 +49,7 @@ final class MPBackendUploadNetworkMock: NSObject, MPBackendUploadNetworking {
 
     func upload(_ uploads: [MPUploadPRIVATE], completionHandler: @escaping () -> Void) {
         uploaded.append(uploads)
-        completionHandler()
+        uploadCompletion = completionHandler
+        if !deferUploadCompletion { completionHandler() }
     }
 }
