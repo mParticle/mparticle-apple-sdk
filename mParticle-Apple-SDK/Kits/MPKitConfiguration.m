@@ -1,6 +1,5 @@
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
-#import "MPEventProjection.h"
 #import "MPILogger.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
@@ -53,7 +52,8 @@
                                           singleItemEventAttributeList:_singleItemEventAttributeList];
     
     // Projections
-    [self configureProjections:configurationDictionary[@"pr"]];
+    [self configureProjections:configurationDictionary[@"pr"]
+                       factory:[[MPKitProjectionSnapshotFactory alloc] initWithHasher:hasher logger:logger]];
     
     // Consent kit filter
     if (configurationDictionary[kMPConsentKitFilter]) {
@@ -146,54 +146,14 @@
 
 #pragma mark Public methods
 
-- (void)configureProjections:(NSArray *)projections {
-    _defaultProjections = nil;
-    
-    if (MPIsNull(projections) || projections.count == 0) {
-        _projections = nil;
-        return;
-    }
-    
-    NSUInteger numberOfMessageTypes = [MPEnum messageTypeSize];
-    NSMutableArray<NSNumber *> *configuredMessageTypeProjectionsArray = [[NSMutableArray alloc] initWithCapacity:numberOfMessageTypes];
-    NSMutableArray *defaultProjectionsArray = [[NSMutableArray alloc] initWithCapacity:numberOfMessageTypes];
-    NSMutableArray<MPEventProjection *> *projectionsArray = [[NSMutableArray alloc] initWithCapacity:projections.count];
-    
-    for (NSUInteger i = 0; i < numberOfMessageTypes; ++i) {
-        [configuredMessageTypeProjectionsArray addObject:@NO];
-        [defaultProjectionsArray addObject:[NSNull null]];
-    }
-    
-    for (NSDictionary *projectionDictionary in projections) {
-        MPEventProjection *eventProjection = [[MPEventProjection alloc] initWithConfiguration:projectionDictionary];
-        
-        if (eventProjection) {
-            // message_type comes straight from remote configuration and indexes
-            // two arrays holding numberOfMessageTypes entries.
-            // -setObject:atIndexedSubscript: allows index == count and appends,
-            // which is how MPMessageTypeMedia (20) has always been registered
-            // even though +[MPEnum messageTypeSize] is only 20 — so that case is
-            // preserved rather than skipped. A larger value, or a negative one
-            // that wrapped, is a genuine NSRangeException.
-            NSUInteger messageType = eventProjection.messageType;
-            if (messageType > numberOfMessageTypes) {
-                MPILogError(@"Ignoring projection with out-of-range message type: %@", @(messageType));
-                continue;
-            }
+- (void)configureProjections:(NSArray *)projections factory:(MPKitProjectionSnapshotFactory *)factory {
+    MPKitProjectionSet *projectionSet =
+        [factory projectionSetFromConfigurations:(!MPIsNull(projections) ? projections : nil)
+                                messageTypeCount:[MPEnum messageTypeSize]];
 
-            configuredMessageTypeProjectionsArray[messageType] = @YES;
-
-            if (eventProjection.isDefault) {
-                defaultProjectionsArray[messageType] = eventProjection;
-            } else {
-                [projectionsArray addObject:eventProjection];
-            }
-        }
-    }
-    
-    _configuredMessageTypeProjections = configuredMessageTypeProjectionsArray;
-    _defaultProjections = defaultProjectionsArray;
-    _projections = projectionsArray.count > 0 ? projectionsArray : nil;
+    _configuredMessageTypeProjections = projectionSet.configuredMessageTypeProjections;
+    _defaultProjections = projectionSet.defaultProjections;
+    _projections = projectionSet.projections;
 }
 
 @end

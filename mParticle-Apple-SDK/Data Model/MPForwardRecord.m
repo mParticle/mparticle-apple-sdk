@@ -5,7 +5,6 @@
 #import "MPEvent.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPEventProjection.h"
 #import "MPKitExecStatus.h"
 #import "MPPersistenceUtilities.h"
 #import "mParticle.h"
@@ -119,7 +118,7 @@ NSString *const kMPFROptOutState = @"s";
             currentProjectionName = ((MPEvent *)kitFilter.originalEvent).name;
         }
         
-        for (MPEventProjection *eventProjection in kitFilter.appliedProjections) {
+        for (MPKitProjectionSnapshot *eventProjection in kitFilter.appliedProjections) {
             if ([eventProjection.projectedName isEqual:currentProjectionName]) {
                 projectionDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
                 projectionDictionary[kMPFRProjectionId] = @(eventProjection.projectionId);

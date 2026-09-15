@@ -30,7 +30,7 @@
     return [self initWithEvent:event shouldFilter:shouldFilter appliedProjections:nil eventCopy:nil commerceEventCopy:nil];
 }
 
-- (instancetype)initWithEvent:(MPEvent *)event shouldFilter:(BOOL)shouldFilter appliedProjections:(NSArray<MPEventProjection *> *)appliedProjections eventCopy:(MPEvent *)eventCopy commerceEventCopy:(MPCommerceEvent *)commerceEventCopy{
+- (instancetype)initWithEvent:(MPEvent *)event shouldFilter:(BOOL)shouldFilter appliedProjections:(NSArray<MPKitProjectionSnapshot *> *)appliedProjections eventCopy:(MPEvent *)eventCopy commerceEventCopy:(MPCommerceEvent *)commerceEventCopy{
     self = [self initWithFilter:shouldFilter filteredAttributes:event.customAttributes];
     if (!self) {
         return nil;
@@ -49,7 +49,7 @@
     return [self initWithCommerceEvent:commerceEvent shouldFilter:shouldFilter appliedProjections:nil];
 }
 
-- (instancetype)initWithCommerceEvent:(MPCommerceEvent *)commerceEvent shouldFilter:(BOOL)shouldFilter appliedProjections:(NSArray<MPEventProjection *> *)appliedProjections {
+- (instancetype)initWithCommerceEvent:(MPCommerceEvent *)commerceEvent shouldFilter:(BOOL)shouldFilter appliedProjections:(NSArray<MPKitProjectionSnapshot *> *)appliedProjections {
     self = [super init];
     if (!self) {
         return nil;
