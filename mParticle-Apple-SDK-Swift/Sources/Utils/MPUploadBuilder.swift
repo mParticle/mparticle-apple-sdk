@@ -128,6 +128,7 @@ public final class MPUploadBuilderPRIVATE: NSObject {
     }
 
     @objc(withUserAttributes:deletedUserAttributes:)
+    @discardableResult
     public func withUserAttributes(_ attributes: [String: Any], deletedUserAttributes: NSSet?) -> MPUploadBuilderPRIVATE {
         if !attributes.isEmpty {
             let stringified = MPUploadBuilderFields.stringifiedUserAttributes(attributes)
@@ -140,6 +141,7 @@ public final class MPUploadBuilderPRIVATE: NSObject {
     }
 
     @objc(withUserIdentities:)
+    @discardableResult
     public func withUserIdentities(_ identities: [NSDictionary]) -> MPUploadBuilderPRIVATE {
         if !identities.isEmpty { uploadDictionary["ui"] = identities }
         return self
