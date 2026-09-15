@@ -88,7 +88,7 @@
                                                                             apiKey:stateMachine.apiKey];
     [_uploadDictionary addEntriesFromDictionary:headerFields];
     
-    NSDictionary *appAndDeviceInfoDict = (_sessionId ? [_context.persistence() appAndDeviceInfoForSessionId:_sessionId] : @{});
+    NSDictionary *appAndDeviceInfoDict = (_sessionId != nil ? [_context.persistence() appAndDeviceInfoForSessionId:_sessionId] : @{});
     
     NSDictionary *appInfoDict = appAndDeviceInfoDict[MPApplicationKeys.kMPApplicationInformationKey];
     if (appInfoDict) {
