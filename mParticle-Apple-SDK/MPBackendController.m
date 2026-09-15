@@ -1327,11 +1327,15 @@ static BOOL skipNextUpload = NO;
             MPILogDebug(@"Application First Run");
         }
         
-        void (^searchAdsCompletion)(void) = ^{
+        // Single-shot: the attribution path and the global-timeout fallback below both hold this
+        // block and the timeout is never cancelled, so whichever finishes first has to win.
+        // -processDidFinishLaunching is not idempotent - running it twice forwards a second
+        // install/update and emits a second app-state-transition message.
+        void (^searchAdsCompletion)(void) = [self singleShotBlock:^{
             [self processDidFinishLaunching:self.didFinishLaunchingNotification];
             MPILogDebug(@"Initiating config request and upload cycle");
             [self waitForKitsAndUploadWithCompletionHandler:nil];
-        };
+        }];
         
 #if TARGET_OS_IOS == 1
         if (MParticle.sharedInstance.collectSearchAdsAttribution) {
@@ -1945,15 +1949,56 @@ static BOOL skipNextUpload = NO;
     }];
 }
 
+// Wraps a block so it runs at most once however many callers hold it, from whatever queue. The
+// attribution completion needs this because its two triggers - the request itself and the
+// never-cancelled global timeout - fire on different queues.
+- (dispatch_block_t)singleShotBlock:(dispatch_block_t)block {
+    NSLock *lock = [[NSLock alloc] init];
+    __block BOOL hasRun = NO;
+
+    return ^{
+        [lock lock];
+        BOOL alreadyRan = hasRun;
+        hasRun = YES;
+        [lock unlock];
+
+        if (!alreadyRan) {
+            block();
+        }
+    };
+}
+
 #if TARGET_OS_IOS == 1
 // Moved here from the deleted MPStateMachine_PRIVATE wrapper: this is its only production caller,
 // and AdServices is already linked on the Objective-C side. The Swift state machine only receives
 // the mapped result through its searchAdsInfo property.
+
+// Separated so a test can substitute the session and assert the data task is resumed without
+// reaching api-adservices.apple.com.
+- (NSURLSession *)attributionURLSession {
+    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+    sessionConfiguration.timeoutIntervalForRequest = 30;
+    sessionConfiguration.timeoutIntervalForResource = 30;
+    return [NSURLSession sessionWithConfiguration:sessionConfiguration
+                                         delegate:nil
+                                    delegateQueue:nil];
+}
+
 - (void)requestAttributionDetailsWithBlock:(void (^_Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
+    // The data task's completion handler runs on the URL session's delegate queue and the retry
+    // hop runs on the main queue, but what the completion goes on to do - forwarding install/update
+    // to the kits, starting the config request and the upload cycle - belongs on the SDK's serial
+    // message queue, which is where the global-timeout fallback and every other caller invoke it.
+    // -executeOnMessage: runs the block inline when already on that queue, so the paths that were
+    // reachable before this method's data task was resumed keep their exact timing.
+    void (^completion)(void) = ^{
+        [MParticle executeOnMessage:completionHandler];
+    };
+
     NSError *error;
     NSString *attributionToken = [AAAttribution attributionTokenWithError:&error];
     if (!attributionToken) {
-        completionHandler();
+        completion();
         return;
     }
 
@@ -1962,32 +2007,60 @@ static BOOL skipNextUpload = NO;
     [request setValue:@"text/plain" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPBody:[attributionToken dataUsingEncoding:NSUTF8StringEncoding]];
 
-    NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-    sessionConfiguration.timeoutIntervalForRequest = 30;
-    sessionConfiguration.timeoutIntervalForResource = 30;
-    NSURLSession *urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
-                                                             delegate:nil
-                                                        delegateQueue:nil];
+    // The existing retry policy, so the transport-error and unusable-response paths share one
+    // definition of "try again or give up".
+    void (^retryOrComplete)(void) = ^{
+        if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
+            completion();
+            return;
+        }
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
+        });
+    };
+
+    NSURLSession *urlSession = [self attributionURLSession];
     dispatch_async([MParticle messageQueue], ^{
-        [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
+        NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *urlResponse, NSError *error) {
             if (error) {
                 MPILogError(@"Failed requesting Ads Attribution with error: %@.", [error localizedDescription]);
                 if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
-                    completionHandler();
-                } else if ((requestsCompleted + 1) > SEARCH_ADS_ATTRIBUTION_MAX_RETRIES) {
-                    completionHandler();
+                    completion();
                 } else {
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                        [self requestAttributionDetailsWithBlock:completionHandler requestsCompleted:(requestsCompleted + 1)];
-                    });
+                    retryOrComplete();
                 }
-            } else {
-                NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                NSDictionary *mapped = [MPStateMachine_PRIVATE searchAdsInfoFromAdAttribution:adAttributionDictionary];
-                [MParticle sharedInstance].stateMachine.searchAdsInfo = mapped ?: @{};
-                completionHandler();
+                return;
             }
+
+            // NSURLSession reports no error for a non-2xx response, so the status has to be checked
+            // separately. Apple's endpoint answers 404 for a short window while a freshly minted
+            // token becomes resolvable, which is exactly what the retry policy is for - before
+            // -resume was added this branch was unreachable, so nothing ever exercised it.
+            NSInteger statusCode = [urlResponse isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse *)urlResponse).statusCode : 0;
+            if (statusCode < 200 || statusCode > 299) {
+                MPILogError(@"Failed requesting Ads Attribution with HTTP status %ld.", (long)statusCode);
+                retryOrComplete();
+                return;
+            }
+
+            NSDictionary *adAttributionDictionary = nil;
+            if (data) {
+                id parsed = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+                adAttributionDictionary = [parsed isKindOfClass:[NSDictionary class]] ? parsed : nil;
+            }
+            if (!adAttributionDictionary) {
+                MPILogError(@"Ads Attribution response body was not a JSON object.");
+                retryOrComplete();
+                return;
+            }
+
+            NSDictionary *mapped = [MPStateMachine_PRIVATE searchAdsInfoFromAdAttribution:adAttributionDictionary];
+            [MParticle sharedInstance].stateMachine.searchAdsInfo = mapped ?: @{};
+            completion();
         }];
+        // -dataTaskWithRequest:completionHandler: returns a suspended task. Without this the
+        // request was never sent and the completion handler never ran.
+        [task resume];
     });
 }
 #endif

@@ -6,12 +6,17 @@
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPIConstants.h"
+#if TARGET_OS_IOS == 1
+    #import <AdServices/AAAttribution.h>
+#endif
 @import mParticle_Apple_SDK_Swift;
 
 // -requestAttributionDetailsWithBlock:requestsCompleted: has no public declaration; it moved to
 // MPBackendController_PRIVATE with the state machine wrapper's deletion.
 @interface MPBackendController_PRIVATE(Tests)
 - (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted;
+- (NSURLSession *)attributionURLSession;
+- (dispatch_block_t)singleShotBlock:(dispatch_block_t)block;
 @end
 
 @interface MParticle ()
@@ -21,6 +26,7 @@
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 + (dispatch_queue_t)messageQueue;
++ (BOOL)isMessageQueue;
 
 @end
 
@@ -212,6 +218,148 @@
                                                                   requestsCompleted:0];
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
+
+// Pins the defect this test file could not see: -dataTaskWithRequest:completionHandler: hands back
+// a suspended task, so without -resume the attribution request was never sent and the completion
+// handler never ran. Invisible on the simulator, where AAAttribution fails and the early return
+// fires the handler before a request is ever built.
+- (void)testRequestAttributionResumesTheDataTask {
+    id attribution = OCMClassMock([AAAttribution class]);
+    [[[attribution stub] andReturn:@"attribution-token"] attributionTokenWithError:[OCMArg anyObjectRef]];
+
+    id dataTask = OCMClassMock([NSURLSessionDataTask class]);
+    id session = OCMClassMock([NSURLSession class]);
+    [[[session stub] andReturn:dataTask] dataTaskWithRequest:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    id controllerMock = OCMPartialMock(controller);
+    [[[controllerMock stub] andReturn:session] attributionURLSession];
+
+    XCTestExpectation *resumed = [self expectationWithDescription:@"attribution data task resumed"];
+    [[[dataTask stub] andDo:^(NSInvocation *invocation) {
+        [resumed fulfill];
+    }] resume];
+
+    [controller requestAttributionDetailsWithBlock:^{} requestsCompleted:0];
+
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+
+    // Every mock has to be stopped, the two class mocks included: OCMClassMock swizzles the class
+    // itself, so leaving NSURLSession or NSURLSessionDataTask mocked would intercept networking in
+    // whatever test runs next in this process.
+    [controllerMock stopMocking];
+    [session stopMocking];
+    [dataTask stopMocking];
+    [attribution stopMocking];
+}
+// The data task's completion handler runs on the URL session's delegate queue, not the SDK's
+// serial message queue. Everything searchAdsCompletion goes on to do - forwarding install/update
+// to kits, the config request, the upload cycle - assumes the message queue, so the completion has
+// to hop back before running.
+- (void)testAttributionCompletionRunsOnTheMessageQueue {
+    id attribution = OCMClassMock([AAAttribution class]);
+    [[[attribution stub] andReturn:@"attribution-token"] attributionTokenWithError:[OCMArg anyObjectRef]];
+
+    // Capture the handler the SDK hands to -dataTaskWithRequest:completionHandler: so the test can
+    // invoke it from a queue that is definitely not the message queue.
+    __block void (^capturedHandler)(NSData *, NSURLResponse *, NSError *) = nil;
+    id dataTask = OCMClassMock([NSURLSessionDataTask class]);
+    id session = OCMClassMock([NSURLSession class]);
+    [[[[session stub] andReturn:dataTask] andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(NSData *, NSURLResponse *, NSError *) = nil;
+        [invocation getArgument:&handler atIndex:3];
+        capturedHandler = [handler copy];
+    }] dataTaskWithRequest:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    id controllerMock = OCMPartialMock(controller);
+    [[[controllerMock stub] andReturn:session] attributionURLSession];
+
+    XCTestExpectation *handlerCaptured = [self expectationWithDescription:@"data task built"];
+    [[[dataTask stub] andDo:^(NSInvocation *invocation) {
+        [handlerCaptured fulfill];
+    }] resume];
+
+    XCTestExpectation *completed = [self expectationWithDescription:@"attribution completion ran"];
+    __block BOOL ranOnMessageQueue = NO;
+    [controller requestAttributionDetailsWithBlock:^{
+        ranOnMessageQueue = [MParticle isMessageQueue];
+        [completed fulfill];
+    } requestsCompleted:0];
+
+    [self waitForExpectations:@[handlerCaptured] timeout:DEFAULT_TIMEOUT];
+    XCTAssertNotNil(capturedHandler);
+
+    // ADClientErrorLimitAdTracking: the shortest path to the completion, no retry, no JSON.
+    NSError *limitAdTracking = [NSError errorWithDomain:@"ADClientErrorDomain" code:1 userInfo:nil];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        XCTAssertFalse([MParticle isMessageQueue], @"the test must drive the handler off the message queue");
+        capturedHandler(nil, nil, limitAdTracking);
+    });
+
+    [self waitForExpectations:@[completed] timeout:DEFAULT_TIMEOUT];
+    XCTAssertTrue(ranOnMessageQueue, @"the attribution completion must run on the SDK message queue");
+
+    [controllerMock stopMocking];
+    [session stopMocking];
+    [dataTask stopMocking];
+    [attribution stopMocking];
+}
+
+// NSURLSession reports no error for a non-2xx response, so before the status check a 500 fell into
+// the success branch: it parsed nothing, stored an empty searchAdsInfo and completed without ever
+// retrying. Resuming the data task is what made that branch reachable.
+- (void)testAttributionRetriesOnAnHTTPErrorInsteadOfCompleting {
+    id attribution = OCMClassMock([AAAttribution class]);
+    [[[attribution stub] andReturn:@"attribution-token"] attributionTokenWithError:[OCMArg anyObjectRef]];
+
+    __block void (^capturedHandler)(NSData *, NSURLResponse *, NSError *) = nil;
+    id dataTask = OCMClassMock([NSURLSessionDataTask class]);
+    id session = OCMClassMock([NSURLSession class]);
+    [[[[session stub] andReturn:dataTask] andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(NSData *, NSURLResponse *, NSError *) = nil;
+        [invocation getArgument:&handler atIndex:3];
+        capturedHandler = [handler copy];
+    }] dataTaskWithRequest:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    id controllerMock = OCMPartialMock(controller);
+    [[[controllerMock stub] andReturn:session] attributionURLSession];
+
+    XCTestExpectation *built = [self expectationWithDescription:@"data task built"];
+    [[[dataTask stub] andDo:^(NSInvocation *invocation) {
+        [built fulfill];
+    }] resume];
+
+    // Inverted: a retryable response must schedule another attempt, not finish the flow.
+    XCTestExpectation *completed = [self expectationWithDescription:@"completion must not run"];
+    completed.inverted = YES;
+    [controller requestAttributionDetailsWithBlock:^{
+        [completed fulfill];
+    } requestsCompleted:0];
+
+    [self waitForExpectations:@[built] timeout:DEFAULT_TIMEOUT];
+    XCTAssertNotNil(capturedHandler);
+
+    NSHTTPURLResponse *serverError = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]
+                                                                 statusCode:500
+                                                                HTTPVersion:@"HTTP/1.1"
+                                                               headerFields:nil];
+    capturedHandler([@"{}" dataUsingEncoding:NSUTF8StringEncoding], serverError, nil);
+
+    // The retry is scheduled SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY out, so a shorter wait here
+    // proves the completion did not fire on the spot.
+    [self waitForExpectations:@[completed] timeout:1.0];
+
+    [controllerMock stopMocking];
+    [session stopMocking];
+    [dataTask stopMocking];
+    [attribution stopMocking];
+}
+
 #endif
 
 #pragma mark - Data blocking configuration
@@ -238,6 +386,56 @@
     XCTAssertNoThrow([connector configureDataBlocking:arrayPlan]);
     XCTAssertNoThrow([connector configureDataBlocking:stringBlock]);
     XCTAssertNoThrow([connector configureDataBlocking:arrayBlock]);
+}
+
+#pragma mark - Search Ads completion
+
+// The attribution completion has two triggers that are never mutually cancelled: the request
+// itself and a 30s global timeout. -processDidFinishLaunching is not idempotent, so the block has
+// to run once regardless of how many fire.
+- (void)testSingleShotBlockRunsOnlyOnce {
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+
+    __block NSInteger runCount = 0;
+    dispatch_block_t once = [controller singleShotBlock:^{
+        runCount += 1;
+    }];
+
+    once();
+    once();
+    once();
+
+    XCTAssertEqual(runCount, 1, @"The wrapped block must run exactly once.");
+}
+
+- (void)testSingleShotBlockRunsOnlyOnceUnderConcurrentCallers {
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+
+    // The two real triggers fire on different queues, so the guard has to hold across threads.
+    NSLock *countLock = [[NSLock alloc] init];
+    __block NSInteger runCount = 0;
+    dispatch_block_t once = [controller singleShotBlock:^{
+        [countLock lock];
+        runCount += 1;
+        [countLock unlock];
+    }];
+
+    dispatch_queue_t concurrentQueue =
+        dispatch_queue_create("com.mparticle.test.singleshot", DISPATCH_QUEUE_CONCURRENT);
+    dispatch_group_t group = dispatch_group_create();
+    for (NSInteger i = 0; i < 200; i++) {
+        dispatch_group_async(group, concurrentQueue, ^{
+            once();
+        });
+    }
+    dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)));
+
+    [countLock lock];
+    NSInteger finalCount = runCount;
+    [countLock unlock];
+    XCTAssertEqual(finalCount, 1, @"The wrapped block must run exactly once across concurrent callers.");
 }
 
 #pragma mark - Thread Safety Tests
