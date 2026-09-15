@@ -1,0 +1,90 @@
+import Foundation
+
+/// Message and crash limits supplied from the Objective-C constants at composition time.
+@objc(MPUploadBatchLimits)
+public final class MPUploadBatchLimits: NSObject {
+    let maxMessages: Int
+    let maxBatchBytes: Int
+    let maxMessageBytes: Int
+    let crashBatchBytes: Int
+    let crashMessageBytes: Int
+
+    @objc public init(
+        maxMessages: Int,
+        maxBatchBytes: Int,
+        maxMessageBytes: Int,
+        crashBatchBytes: Int,
+        crashMessageBytes: Int
+    ) {
+        self.maxMessages = maxMessages
+        self.maxBatchBytes = maxBatchBytes
+        self.maxMessageBytes = maxMessageBytes
+        self.crashBatchBytes = crashBatchBytes
+        self.crashMessageBytes = crashMessageBytes
+        super.init()
+    }
+}
+
+/// Owns batch preparation on the existing SDK message queue. Callbacks provide the live backend
+/// dependencies without importing the Objective-C SDK or retaining the backend itself.
+@objc(MPBackendUploadCoordinator)
+public final class MPBackendUploadCoordinator: NSObject {
+    private let persistence: () -> MPBackendPersistence?
+    private let stateMachine: () -> MPStateMachinePRIVATE
+    private let makeContext: () -> MPUploadBuilderContext?
+    private let makeBuilder: (MPUploadMessageGroup, [MPMessagePRIVATE], NSObject, MPUploadBuilderContext)
+        -> MPUploadBuilderPRIVATE?
+    private let clearDeletedAttributes: () -> Void
+    private let limits: MPUploadBatchLimits
+
+    @objc public init(
+        persistence: @escaping () -> MPBackendPersistence?,
+        stateMachine: @escaping () -> MPStateMachinePRIVATE,
+        makeContext: @escaping () -> MPUploadBuilderContext?,
+        makeBuilder: @escaping (MPUploadMessageGroup, [MPMessagePRIVATE], NSObject, MPUploadBuilderContext)
+        -> MPUploadBuilderPRIVATE?,
+        clearDeletedAttributes: @escaping () -> Void,
+        limits: MPUploadBatchLimits
+    ) {
+        self.persistence = persistence
+        self.stateMachine = stateMachine
+        self.makeContext = makeContext
+        self.makeBuilder = makeBuilder
+        self.clearDeletedAttributes = clearDeletedAttributes
+        self.limits = limits
+        super.init()
+    }
+
+    @objc(prepareBatchesForUpload:)
+    public func prepareBatches(forUpload settings: NSObject) {
+        guard let persistence = persistence() else { return }
+        let messages = persistence.objectiveCFetchMessagesForUploading() as? [AnyHashable: Any]
+        guard let context = makeContext() else { return }
+        for group in MPUploadGrouping.groups(fromStoredMessages: messages) {
+            let batches = batchMessages(group.messages, limits: limits)
+            var uploads: [MPUploadPRIVATE] = []
+            for messages in batches {
+                makeBuilder(group, messages, settings, context)?.build { upload in
+                    if let upload { uploads.append(upload) }
+                }
+            }
+            // Keep the transaction boundary and the original source group, including messages
+            // intentionally omitted by size limits or a customer hook.
+            _ = persistence.objectiveCSaveUploads(uploads, deleteMessages: group.messages, optedOut: stateMachine().optOut)
+            clearDeletedAttributes()
+        }
+        persistence.objectiveCDeleteAllSessions(except: stateMachine().currentSession)
+    }
+
+    @objc(batchMessages:limits:)
+    public func batchMessages(_ messages: [MPMessagePRIVATE], limits: MPUploadBatchLimits) -> [[MPMessagePRIVATE]] {
+        let groups = MPMessageBatcher.batchIndexGroups(
+            byteLengths: messages.map { $0.messageData?.count ?? 0 },
+            isCrashReport: messages.map { $0.messageType == "x" },
+            maxBatchMessages: limits.maxMessages, maxBatchBytes: limits.maxBatchBytes,
+            maxMessageBytes: limits.maxMessageBytes, crashMaxBatchBytes: limits.crashBatchBytes,
+            crashMaxMessageBytes: limits.crashMessageBytes
+        )
+        return groups.map { indices in indices.map { messages[$0] } }
+    }
+}
