@@ -3,8 +3,8 @@ import Foundation
 /// A Foundation-only view of a projection match.
 @objc(MPKitProjectionMatchSnapshot)
 public final class MPKitProjectionMatchSnapshot: NSObject {
-    fileprivate let attributeKey: String?
-    fileprivate let attributeValues: [String]
+    @objc public let attributeKey: String?
+    @objc public let attributeValues: [String]
 
     /// Creates an immutable projection-match snapshot.
     @objc public init(attributeKey: String?, attributeValues: [String]?) {
@@ -17,12 +17,12 @@ public final class MPKitProjectionMatchSnapshot: NSObject {
 /// A Foundation-only view of an attribute projection.
 @objc(MPKitAttributeProjectionSnapshot)
 public final class MPKitAttributeProjectionSnapshot: NSObject {
-    fileprivate let name: String?
-    fileprivate let projectedName: String?
-    fileprivate let matchType: Int
-    fileprivate let propertyKind: UInt
-    fileprivate let dataType: Int
-    fileprivate let required: Bool
+    @objc public let name: String?
+    @objc public let projectedName: String?
+    @objc public let matchType: Int
+    @objc public let propertyKind: UInt
+    @objc public let dataType: Int
+    @objc public let required: Bool
 
     /// Creates an immutable attribute-projection snapshot.
     @objc public init(
@@ -46,20 +46,20 @@ public final class MPKitAttributeProjectionSnapshot: NSObject {
 /// A Foundation-only view of an event projection.
 @objc(MPKitProjectionSnapshot)
 public final class MPKitProjectionSnapshot: NSObject {
-    fileprivate let projectionId: UInt
-    fileprivate let name: String?
-    fileprivate let projectedName: String?
-    fileprivate let matchType: Int
-    fileprivate let projectionType: UInt
-    fileprivate let propertyKind: UInt
-    fileprivate let projectionMatches: [MPKitProjectionMatchSnapshot]?
-    fileprivate let attributeProjections: [MPKitAttributeProjectionSnapshot]
-    fileprivate let behaviorSelector: UInt
-    fileprivate let eventType: UInt
-    fileprivate let messageType: UInt
-    fileprivate let outboundMessageType: UInt
-    fileprivate let maxCustomParameters: UInt
-    fileprivate let appendAsIs: Bool
+    @objc public let projectionId: UInt
+    @objc public let name: String?
+    @objc public let projectedName: String?
+    @objc public let matchType: Int
+    @objc public let projectionType: UInt
+    @objc public let propertyKind: UInt
+    @objc public let projectionMatches: [MPKitProjectionMatchSnapshot]?
+    @objc public let attributeProjections: [MPKitAttributeProjectionSnapshot]
+    @objc public let behaviorSelector: UInt
+    @objc public let eventType: UInt
+    @objc public let messageType: UInt
+    @objc public let outboundMessageType: UInt
+    @objc public let maxCustomParameters: UInt
+    @objc public let appendAsIs: Bool
 
     /// Creates an immutable event-projection snapshot.
     @objc public init(
