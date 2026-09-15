@@ -293,12 +293,14 @@
 
 - (void)testAutomaticSessionEnd {
     MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Automatic session end"];
     MParticle *mParticle = [MParticle sharedInstance];
     id mockBackendController = OCMPartialMock(self.backendController);
     mParticle.backendController = mockBackendController;
     self.backendController = [MParticle sharedInstance].backendController;
     
-    dispatch_sync(messageQueue, ^{
+    // Keep the main run loop available while session work runs on the SDK queue.
+    dispatch_async(messageQueue, ^{
         [self.backendController beginSession];
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
@@ -326,15 +328,18 @@
         
         [self.backendController processOpenSessionsEndingCurrent:YES completionHandler:nil];
         
-        [mockBackendController verifyWithDelay:5.0];
+        [mockBackendController verify];
+        [expectation fulfill];
     });
+
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testBackgroundBlock {
     MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Begin background block test"];
     
-    dispatch_sync(messageQueue, ^{
+    dispatch_async(messageQueue, ^{
         [self.backendController beginSession];
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
