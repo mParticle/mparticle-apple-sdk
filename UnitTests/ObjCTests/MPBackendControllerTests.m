@@ -111,6 +111,10 @@
 
 @implementation MPBackendControllerTests
 
+- (MPUploadBuilderContext *)uploadBuilderContext {
+    return [self.backendController uploadBuilderContext];
+}
+
 - (void)setUp {
     [super setUp];
 

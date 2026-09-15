@@ -37,15 +37,15 @@
 @end
 
 @interface MPBackendController_PRIVATE (UploadBuilderTesting)
-- (MPUploadBuilderContext *)uploadBuilderContext;
++ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 @end
 
 @implementation MPBaseTestCase
 
 - (MPUploadBuilderContext *)uploadBuilderContext {
-    // Standalone builder tests do not start the SDK, so they need their own context owner.
-    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] initWithDelegate:nil];
-    return [backend uploadBuilderContext];
+    return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{
+        return [MParticle sharedInstance].persistenceStore;
+    }];
 }
 
 

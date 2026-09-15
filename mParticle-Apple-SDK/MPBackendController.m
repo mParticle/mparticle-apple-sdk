@@ -72,6 +72,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property NSNumber *previousForegroundTime;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
 - (MPUploadBuilderContext *)uploadBuilderContext;
++ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
 @end
 
@@ -219,12 +220,16 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 // The upload builder cannot import the public Objective-C SDK. Keep identity, consent,
 // build macros and customer callbacks at this composition boundary, with live providers.
 - (MPUploadBuilderContext *)uploadBuilderContext {
-    MPUploadBuilderContext *context = [[MPUploadBuilderContext alloc]
+    return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{ return self.persistence; }];
+}
+
++ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence {
+    return [[MPUploadBuilderContext alloc]
         initWithStateMachine:^{ return MParticle.sharedInstance.stateMachine; }
         lifetimeValue:^NSNumber *(NSNumber *mpid) {
             return [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid] ?: @0;
         }
-        persistence:^{ return self.persistence; }
+        persistence:persistence
         applicationInfo:^NSDictionary *(MPStateMachine_PRIVATE *stateMachine) {
             MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
                 initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
@@ -256,8 +261,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         }
         logger:^{ return [MParticle.sharedInstance getLogger]; }
         sdkVersion:kMParticleSDKVersion];
-    context.timestamp = ^{ return MPMilliseconds([[NSDate date] timeIntervalSince1970]); };
-    return context;
 }
 
 - (void)confirmEndSessionMessage:(MPSession *)session {
@@ -519,6 +522,7 @@ static BOOL skipNextUpload = NO;
     
     //Fetch all stored messages (1)
     NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
+    MPUploadBuilderContext *context = [self uploadBuilderContext];
 
     //In batches broken up by mpid, session, data plan id and data plan version create the Uploads (2)
     for (MPUploadMessageGroup *group in [MPUploadGrouping groupsFromStoredMessages:mpidMessages]) {
@@ -534,7 +538,7 @@ static BOOL skipNextUpload = NO;
                                                                     uploadInterval:self.uploadInterval
                                                                         dataPlanId:group.dataPlanId
                                                                    dataPlanVersion:group.dataPlanVersion
-                                                                    uploadSettings:uploadSettings context:[self uploadBuilderContext]];
+                                                                    uploadSettings:uploadSettings context:context];
             [uploadBuilder withUserAttributes:[self userAttributesForUserId:group.mpid] deletedUserAttributes:self.deletedUserAttributes];
             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:group.mpid]];
             [uploadBuilder build:^(MPUpload *upload) {

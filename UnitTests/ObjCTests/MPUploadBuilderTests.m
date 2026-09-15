@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPUploadBuilder.h"
 #import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
@@ -18,6 +19,8 @@
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong) MParticleOptions *options;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 
 @end
 
@@ -854,6 +857,43 @@
     XCTAssertFalse(called);
     mparticle.stateMachine.apiKey = originalKey;
     mparticle.options.onCreateBatch = nil;
+}
+
+- (void)testUploadBuilderContextDoesNotCreateBackendObservers {
+    MParticle *mparticle = MParticle.sharedInstance;
+    XCTAssertNil(mparticle.backendController);
+    id notificationCenter = OCMPartialMock(NSNotificationCenter.defaultCenter);
+    OCMReject([notificationCenter addObserver:OCMOCK_ANY
+                                    selector:NSSelectorFromString(@"handleApplicationDidBecomeActive:")
+                                        name:UIApplicationDidBecomeActiveNotification
+                                      object:nil]);
+
+    MPUploadBuilderContext *context = self.uploadBuilderContext;
+
+    XCTAssertNotNil(context);
+    XCTAssertEqual(context.persistence(), mparticle.persistenceStore);
+    XCTAssertNil(mparticle.backendController);
+    [notificationCenter stopMocking];
+}
+
+- (void)testSharedContextGeneratesFreshHeadersForEachBatch {
+    MPUploadBuilderContext *context = self.uploadBuilderContext;
+    __block NSUInteger timestampCalls = 0;
+    context.timestamp = ^{ return @(++timestampCalls); };
+    MPMessage *message = [[[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+        session:nil messageInfo:@{@"key":@"value"} context:self.messageBuilderContext] build];
+    NSMutableSet<NSString *> *batchIDs = [NSMutableSet set];
+    for (NSUInteger index = 0; index < 2; index++) {
+        MPUploadBuilder *builder = [[MPUploadBuilder alloc] initWithMpid:@1 sessionId:nil
+            messages:@[message] sessionTimeout:60 uploadInterval:30 dataPlanId:nil dataPlanVersion:nil
+            uploadSettings:[[MPUploadSettings alloc] init] context:context];
+        [builder build:^(MPUpload *upload) {
+            [batchIDs addObject:upload.uuid];
+            XCTAssertEqualObjects([upload dictionaryRepresentation][kMPTimestampKey], @(index + 1));
+        }];
+    }
+    XCTAssertEqual(batchIDs.count, 2);
+    XCTAssertEqual(timestampCalls, 2);
 }
 
 - (void)testBuildUsesInjectedHeaderValues {
