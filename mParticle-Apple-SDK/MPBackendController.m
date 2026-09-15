@@ -216,6 +216,23 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
                                                         logger:[mparticle getLogger]];
 }
 
+- (MPBackendUploadDependencies *)uploadDependencies {
+    __weak MPBackendController_PRIVATE *weakSelf = self;
+    return [[MPBackendUploadDependencies alloc]
+        initWithNetwork:^{ return (id<MPBackendUploadNetworking>)weakSelf.networkCommunication; }
+        shouldDelayForKits:^{
+            return [MParticle.sharedInstance.kitContainer_PRIVATE shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+        }
+        shouldDelayForWebView:^{
+            return [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
+        }
+        schedule:^(NSTimeInterval delay, dispatch_block_t block) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)),
+                           [MParticle messageQueue], block);
+        }
+        logger:^{ return [MParticle.sharedInstance getLogger]; }];
+}
+
 // The upload builder cannot import the public Objective-C SDK. Keep identity, consent,
 // build macros and customer callbacks at this composition boundary, with live providers.
 - (MPUploadBuilderContext *)uploadBuilderContext {
