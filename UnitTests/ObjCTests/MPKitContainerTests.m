@@ -17,7 +17,6 @@
 #import "MPKitAppsFlyerTest.h"
 #import "MPKitRegister.h"
 #import "MPTransactionAttributes.h"
-#import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
@@ -91,12 +90,12 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
           event:(MPEvent *const)event
     messageType:(MPMessageType)messageType
 completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
-                            NSArray<MPEventProjection *> *appliedProjections))completionHandler;
+                            NSArray<MPKitProjectionSnapshot *> *appliedProjections))completionHandler;
 - (void)project:(id<MPExtensionKitProtocol>)kitRegister
       commerceEvent:(MPCommerceEvent *const)commerceEvent
   completionHandler:(void (^)(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
                               NSArray<MPEvent *> *projectedEvents,
-                              NSArray<MPEventProjection *> *appliedProjections))completionHandler;
+                              NSArray<MPKitProjectionSnapshot *> *appliedProjections))completionHandler;
 
 
 @end
@@ -2025,7 +2024,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     [kitContainer project:kitRegister
                     event:event
               messageType:MPMessageTypeEvent
-        completionHandler:^(NSArray<MPEvent *> *projectedEvents, NSArray<MPEventProjection *> *appliedProjections) {
+        completionHandler:^(NSArray<MPEvent *> *projectedEvents, NSArray<MPKitProjectionSnapshot *> *appliedProjections) {
             XCTAssertEqual(projectedEvents.count, 1);
             XCTAssertEqualObjects(projectedEvents.firstObject.name, @"Projected Event");
             XCTAssertNil(projectedEvents.firstObject.customAttributes);
@@ -2063,7 +2062,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
              commerceEvent:commerceEvent
          completionHandler:^(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
                              NSArray<MPEvent *> *projectedEvents,
-                             NSArray<MPEventProjection *> *appliedProjections) {
+                             NSArray<MPKitProjectionSnapshot *> *appliedProjections) {
              XCTAssertEqual(projectedCommerceEvents.count, 1);
              XCTAssertEqual(projectedCommerceEvents.firstObject, commerceEvent);
              XCTAssertEqual(projectedEvents.count, 0);

@@ -12,8 +12,6 @@
 #import "MPEvent.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPEventProjection.h"
-#import "MPAttributeProjection.h"
 #import "MPPromotion.h"
 #import "MPPromotion+Dictionary.h"
 #import "MPProduct.h"
@@ -933,8 +931,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
     [self project:kitRegister commerceEvent:forwardCommerceEvent completionHandler:^(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
                                                                                      NSArray<MPEvent *> *projectedEvents,
-                                                                                     NSArray<MPEventProjection *> *appliedProjections) {
-        NSArray<MPEventProjection *> *appliedProjectionsArray = appliedProjections.count ? appliedProjections : nil;
+                                                                                     NSArray<MPKitProjectionSnapshot *> *appliedProjections) {
+        NSArray<MPKitProjectionSnapshot *> *appliedProjectionsArray = appliedProjections.count ? appliedProjections : nil;
 
         if (projectedEvents.count != 0) {
             for (MPEvent *projectedEvent in projectedEvents) {
@@ -989,15 +987,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         messageTypeCode = MPMessageTypeUnknown;
     }
     
-    [self project:kitRegister event:forwardEvent messageType:messageTypeCode completionHandler:^(NSArray<MPEvent *> *projectedEvents, NSArray<MPEventProjection *> *appliedProjections) {
-        NSArray<MPEventProjection *> *appliedProjectionsArray = appliedProjections.count > 0 ? appliedProjections : nil;
+    [self project:kitRegister event:forwardEvent messageType:messageTypeCode completionHandler:^(NSArray<MPEvent *> *projectedEvents, NSArray<MPKitProjectionSnapshot *> *appliedProjections) {
+        NSArray<MPKitProjectionSnapshot *> *appliedProjectionsArray = appliedProjections.count > 0 ? appliedProjections : nil;
         
         for (MPEvent *projectedEvent in projectedEvents) {
             kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:appliedProjectionsArray eventCopy:event commerceEventCopy:nil];
             SEL mutableSelector = selector;
             if (selector == @selector(logScreen:)) {
                 for (NSUInteger i = 0; i < appliedProjectionsArray.count; i++) {
-                    MPEventProjection *appliedProjection = appliedProjectionsArray[i];
+                    MPKitProjectionSnapshot *appliedProjection = appliedProjectionsArray[i];
                     if (appliedProjection.outboundMessageType == MPMessageTypeEvent) {
                         mutableSelector = @selector(logBaseEvent:);
                         break;
@@ -1105,55 +1103,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 #pragma mark Projection methods
 
-- (MPKitAttributeProjectionSnapshot *)projectionSnapshotForAttributeProjection:(MPAttributeProjection *)projection {
-    return [[MPKitAttributeProjectionSnapshot alloc] initWithName:projection.name
-                                                    projectedName:projection.projectedName
-                                                        matchType:projection.matchType
-                                                     propertyKind:projection.propertyKind
-                                                         dataType:projection.dataType
-                                                         required:projection.required];
-}
-
-- (MPKitProjectionSnapshot *)projectionSnapshotForProjection:(MPEventProjection *)projection {
-    NSMutableArray<MPKitProjectionMatchSnapshot *> *matches = nil;
-    if (projection.projectionMatches) {
-        matches = [NSMutableArray arrayWithCapacity:projection.projectionMatches.count];
-        for (MPProjectionMatch *match in projection.projectionMatches) {
-            [matches addObject:[[MPKitProjectionMatchSnapshot alloc] initWithAttributeKey:match.attributeKey
-                                                                          attributeValues:match.attributeValues]];
-        }
-    }
-
-    NSMutableArray<MPKitAttributeProjectionSnapshot *> *attributeProjections =
-        [NSMutableArray arrayWithCapacity:projection.attributeProjections.count];
-    for (MPAttributeProjection *attributeProjection in projection.attributeProjections) {
-        [attributeProjections addObject:[self projectionSnapshotForAttributeProjection:attributeProjection]];
-    }
-
-    return [[MPKitProjectionSnapshot alloc] initWithProjectionId:projection.projectionId
-                                                            name:projection.name
-                                                   projectedName:projection.projectedName
-                                                       matchType:projection.matchType
-                                                  projectionType:projection.projectionType
-                                                    propertyKind:projection.propertyKind
-                                               projectionMatches:matches
-                                            attributeProjections:attributeProjections
-                                                behaviorSelector:projection.behaviorSelector
-                                                       eventType:projection.eventType
-                                                     messageType:projection.messageType
-                                             outboundMessageType:projection.outboundMessageType
-                                             maxCustomParameters:projection.maxCustomParameters
-                                                      appendAsIs:projection.appendAsIs];
-}
-
-- (NSArray<MPKitProjectionSnapshot *> *)projectionSnapshotsForProjections:(NSArray<MPEventProjection *> *)projections {
-    NSMutableArray<MPKitProjectionSnapshot *> *snapshots = [NSMutableArray arrayWithCapacity:projections.count];
-    for (MPEventProjection *projection in projections) {
-        [snapshots addObject:[self projectionSnapshotForProjection:projection]];
-    }
-    return snapshots;
-}
-
 - (MPKitCommerceEntityProjectionSource *)projectionSourceForProduct:(MPProduct *)product {
     return [[MPKitCommerceEntityProjectionSource alloc]
         initWithFields:[[product beautifiedAttributes] transformValuesToString]
@@ -1195,14 +1144,14 @@ originalCustomAttributes:commerceEvent.customAttributes
           promotions:promotions];
 }
 
-- (NSDictionary<NSNumber *, MPEventProjection *> *)projectionsByIdForConfiguration:(MPKitConfiguration *)configuration {
-    NSMutableDictionary<NSNumber *, MPEventProjection *> *projectionsById = [NSMutableDictionary dictionary];
-    for (MPEventProjection *projection in configuration.projections) {
+- (NSDictionary<NSNumber *, MPKitProjectionSnapshot *> *)projectionsByIdForConfiguration:(MPKitConfiguration *)configuration {
+    NSMutableDictionary<NSNumber *, MPKitProjectionSnapshot *> *projectionsById = [NSMutableDictionary dictionary];
+    for (MPKitProjectionSnapshot *projection in configuration.projections) {
         projectionsById[@(projection.projectionId)] = projection;
     }
     for (id projection in configuration.defaultProjections) {
         if (!MPIsNull(projection)) {
-            MPEventProjection *eventProjection = projection;
+            MPKitProjectionSnapshot *eventProjection = projection;
             projectionsById[@(eventProjection.projectionId)] = eventProjection;
         }
     }
@@ -1213,7 +1162,7 @@ originalCustomAttributes:commerceEvent.customAttributes
       commerceEvent:(MPCommerceEvent *const)commerceEvent
   completionHandler:(void (^)(NSArray<MPCommerceEvent *> *projectedCommerceEvents,
                               NSArray<MPEvent *> *projectedEvents,
-                              NSArray<MPEventProjection *> *appliedProjections))completionHandler {
+                              NSArray<MPKitProjectionSnapshot *> *appliedProjections))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
     if (!kitConfiguration.configuredMessageTypeProjections ||
@@ -1222,7 +1171,7 @@ originalCustomAttributes:commerceEvent.customAttributes
     {
         NSMutableArray<MPCommerceEvent *> *projectedCommerceEvents = [NSMutableArray array];
         NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
-        NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
+        NSMutableArray<MPKitProjectionSnapshot *> *appliedProjections = [NSMutableArray array];
         
         [projectedCommerceEvents addObject:commerceEvent];
         
@@ -1234,12 +1183,12 @@ originalCustomAttributes:commerceEvent.customAttributes
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     NSArray<MPKitProjectionOutput *> *outputs = [self.projectionEngine
         projectCommerceEvent:[self projectionSourceForCommerceEvent:commerceEvent]
-        projections:[self projectionSnapshotsForProjections:kitConfiguration.projections]];
-    NSDictionary<NSNumber *, MPEventProjection *> *projectionsById =
+        projections:kitConfiguration.projections ?: @[]];
+    NSDictionary<NSNumber *, MPKitProjectionSnapshot *> *projectionsById =
         [self projectionsByIdForConfiguration:kitConfiguration];
     NSMutableArray<MPCommerceEvent *> *projectedCommerceEvents = [NSMutableArray array];
     NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
-    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
+    NSMutableArray<MPKitProjectionSnapshot *> *appliedProjections = [NSMutableArray array];
 
     for (MPKitProjectionOutput *output in outputs) {
         switch (output.kind) {
@@ -1268,7 +1217,7 @@ originalCustomAttributes:commerceEvent.customAttributes
         }
 
         if (output.projectionId != nil) {
-            MPEventProjection *appliedProjection = projectionsById[output.projectionId];
+            MPKitProjectionSnapshot *appliedProjection = projectionsById[output.projectionId];
             if (appliedProjection) {
                 [appliedProjections addObject:appliedProjection];
             }
@@ -1283,7 +1232,7 @@ originalCustomAttributes:commerceEvent.customAttributes
           event:(MPEvent *const)event
     messageType:(MPMessageType)messageType
 completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
-                            NSArray<MPEventProjection *> *appliedProjections))completionHandler {
+                            NSArray<MPKitProjectionSnapshot *> *appliedProjections))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
     if (!kitConfiguration.configuredMessageTypeProjections ||
@@ -1291,7 +1240,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         ![kitConfiguration.configuredMessageTypeProjections[messageType] boolValue])
     {
         NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
-        NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
+        NSMutableArray<MPKitProjectionSnapshot *> *appliedProjections = [NSMutableArray array];
         if (event) {
             [projectedEvents addObject:event];
         }
@@ -1310,17 +1259,15 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
   matchingAttributes:[event.customAttributes transformValuesToString]
          messageType:messageType];
     id defaultProjection = kitConfiguration.defaultProjections[messageType];
-    MPKitProjectionSnapshot *defaultSnapshot = MPIsNull(defaultProjection)
-        ? nil
-        : [self projectionSnapshotForProjection:defaultProjection];
+    MPKitProjectionSnapshot *defaultSnapshot = MPIsNull(defaultProjection) ? nil : defaultProjection;
     NSArray<MPKitProjectionOutput *> *outputs = [self.projectionEngine
         projectEvent:source
-        projections:[self projectionSnapshotsForProjections:kitConfiguration.projections]
+        projections:kitConfiguration.projections ?: @[]
         defaultProjection:defaultSnapshot];
-    NSDictionary<NSNumber *, MPEventProjection *> *projectionsById =
+    NSDictionary<NSNumber *, MPKitProjectionSnapshot *> *projectionsById =
         [self projectionsByIdForConfiguration:kitConfiguration];
     NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray arrayWithCapacity:outputs.count];
-    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray arrayWithCapacity:outputs.count];
+    NSMutableArray<MPKitProjectionSnapshot *> *appliedProjections = [NSMutableArray arrayWithCapacity:outputs.count];
 
     for (MPKitProjectionOutput *output in outputs) {
         if (output.kind == MPKitProjectionOutputKindOriginalEvent) {
@@ -1333,7 +1280,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         projectedEvent.customAttributes = output.attributes;
         [projectedEvents addObject:projectedEvent];
 
-        MPEventProjection *appliedProjection = projectionsById[output.projectionId];
+        MPKitProjectionSnapshot *appliedProjection = projectionsById[output.projectionId];
         if (appliedProjection) {
             [appliedProjections addObject:appliedProjection];
         }

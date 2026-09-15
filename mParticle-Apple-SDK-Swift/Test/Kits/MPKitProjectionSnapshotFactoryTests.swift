@@ -1,8 +1,8 @@
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
-/// Mirrors UnitTests/ObjCTests/MPBase_Attribute_Event_ProjectionTests.m, which
-/// covers the Objective-C projection classes this factory replaces.
+/// Carries over the behavior contract of the Objective-C projection classes
+/// this factory replaces.
 final class MPKitProjectionSnapshotFactoryTests: XCTestCase {
     private let unlimited = UInt(Int32.max)
     private let messageTypeCount: UInt = 20
