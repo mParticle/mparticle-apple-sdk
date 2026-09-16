@@ -70,6 +70,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property NSOperationQueue *backgroundCheckQueue;
 @property NSNumber *previousForegroundTime;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
+@property (nonatomic, strong) MPBackendUploadCoordinator *uploadCoordinator;
 - (MPUploadBuilderContext *)uploadBuilderContext;
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
@@ -214,6 +215,36 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     return [[MPMessageBuilderContext alloc] initWithDataPlanId:mparticle.dataPlanId
                                                dataPlanVersion:mparticle.dataPlanVersion
                                                         logger:[mparticle getLogger]];
+}
+
+- (MPBackendUploadCoordinator *)uploadCoordinator {
+    if (!_uploadCoordinator) {
+        __weak MPBackendController_PRIVATE *weakSelf = self;
+        MPUploadBatchLimits *limits = [[MPUploadBatchLimits alloc]
+            initWithMaxMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH
+            maxMessageBytes:MAX_BYTES_PER_EVENT crashBatchBytes:MAX_BYTES_PER_BATCH_CRASH
+            crashMessageBytes:MAX_BYTES_PER_EVENT_CRASH];
+        _uploadCoordinator = [[MPBackendUploadCoordinator alloc]
+            initWithPersistence:^{ return weakSelf.persistence; }
+            stateMachine:^{ return MParticle.sharedInstance.stateMachine; }
+            makeContext:^{ return [weakSelf uploadBuilderContext]; }
+            makeBuilder:^MPUploadBuilder *(MPUploadMessageGroup *group, NSArray<MPMessage *> *messages, NSObject *settings, MPUploadBuilderContext *context) {
+                MPBackendController_PRIVATE *backend = weakSelf;
+                if (!backend) { return nil; }
+                MPUploadBuilder *builder = [[MPUploadBuilder alloc]
+                    initWithMpid:group.mpid sessionId:group.sessionId messages:messages
+                    sessionTimeout:backend.sessionTimeout uploadInterval:backend.uploadInterval
+                    dataPlanId:group.dataPlanId dataPlanVersion:group.dataPlanVersion
+                    uploadSettings:settings context:context];
+                [builder withUserAttributes:[backend userAttributesForUserId:group.mpid]
+                      deletedUserAttributes:backend.deletedUserAttributes];
+                [builder withUserIdentities:[backend userIdentitiesForUserId:group.mpid]];
+                return builder;
+            }
+            clearDeletedAttributes:^{ weakSelf.deletedUserAttributes = nil; }
+            limits:limits];
+    }
+    return _uploadCoordinator;
 }
 
 - (MPBackendUploadDependencies *)uploadDependencies {
@@ -501,30 +532,10 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (NSArray *)batchMessageArraysFromMessageArray:(NSArray *)messages maxBatchMessages:(NSInteger)maxBatchMessages maxBatchBytes:(NSInteger)maxBatchBytes maxMessageBytes:(NSInteger)maxMessageBytes {
-    NSMutableArray<NSNumber *> *byteLengths = [NSMutableArray arrayWithCapacity:messages.count];
-    NSMutableArray<NSNumber *> *isCrashReport = [NSMutableArray arrayWithCapacity:messages.count];
-    for (MPMessage *message in messages) {
-        [byteLengths addObject:@(message.messageData.length)];
-        [isCrashReport addObject:@([message.messageType isEqualToString:kMPMessageTypeStringCrashReport])];
-    }
-
-    NSArray<NSArray<NSNumber *> *> *indexGroups = [MPMessageBatcher batchGroupsWithLengths:byteLengths
-                                                                                crashFlags:isCrashReport
-                                                                               maxMessages:maxBatchMessages
-                                                                             maxBatchBytes:maxBatchBytes
-                                                                           maxMessageBytes:maxMessageBytes
-                                                                            crashBatchBytes:MAX_BYTES_PER_BATCH_CRASH
-                                                                          crashMessageBytes:MAX_BYTES_PER_EVENT_CRASH];
-
-    NSMutableArray *batchMessageArrays = [NSMutableArray arrayWithCapacity:indexGroups.count];
-    for (NSArray<NSNumber *> *indexGroup in indexGroups) {
-        NSMutableArray *batchMessages = [NSMutableArray arrayWithCapacity:indexGroup.count];
-        for (NSNumber *index in indexGroup) {
-            [batchMessages addObject:messages[index.unsignedIntegerValue]];
-        }
-        [batchMessageArrays addObject:[batchMessages copy]];
-    }
-    return [batchMessageArrays copy];
+    MPUploadBatchLimits *limits = [[MPUploadBatchLimits alloc]
+        initWithMaxMessages:maxBatchMessages maxBatchBytes:maxBatchBytes maxMessageBytes:maxMessageBytes
+        crashBatchBytes:MAX_BYTES_PER_BATCH_CRASH crashMessageBytes:MAX_BYTES_PER_EVENT_CRASH];
+    return [self.uploadCoordinator batchMessages:messages limits:limits];
 }
 
 static BOOL skipNextUpload = NO;
@@ -534,48 +545,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)prepareBatchesForUpload:(MPUploadSettings *)uploadSettings {
-    id<MPBackendPersistence> persistence = self.persistence;
-    
-    //Fetch all stored messages (1)
-    NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
-    MPUploadBuilderContext *context = [self uploadBuilderContext];
-
-    //In batches broken up by mpid, session, data plan id and data plan version create the Uploads (2)
-    for (MPUploadMessageGroup *group in [MPUploadGrouping groupsFromStoredMessages:mpidMessages]) {
-        //Within a session, within a data plan ID, within a version, we also break up based on limits for messages per batch and (approximately) bytes per batch
-        NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:group.messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
-
-        NSMutableArray<MPUpload *> *uploads = [[NSMutableArray alloc] initWithCapacity:batchMessageArrays.count];
-        for (NSArray *limitedMessages in batchMessageArrays) {
-            MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:group.mpid
-                                                                         sessionId:group.sessionId
-                                                                          messages:limitedMessages
-                                                                    sessionTimeout:self.sessionTimeout
-                                                                    uploadInterval:self.uploadInterval
-                                                                        dataPlanId:group.dataPlanId
-                                                                   dataPlanVersion:group.dataPlanVersion
-                                                                    uploadSettings:uploadSettings context:context];
-            [uploadBuilder withUserAttributes:[self userAttributesForUserId:group.mpid] deletedUserAttributes:self.deletedUserAttributes];
-            [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:group.mpid]];
-            [uploadBuilder build:^(MPUpload *upload) {
-                if (upload) {
-                    [uploads addObject:upload];
-                }
-            }];
-        }
-
-        //Atomically persist the batches (3) and delete the messages they were built from (4),
-        //so messages are only removed once their upload is durably stored. A failure rolls
-        //both back, leaving the messages to be retried instead of re-batched into a duplicate.
-        (void)[persistence saveUploads:uploads
-                       deleteMessages:group.messages
-                             optedOut:[MParticle sharedInstance].stateMachine.optOut];
-
-        self.deletedUserAttributes = nil;
-    }
-    
-    //Fetch all sessions and delete them if inactive (5)
-    [persistence deleteAllSessionsExcept:[MParticle sharedInstance].stateMachine.currentSession];
+    [self.uploadCoordinator prepareBatchesForUpload:uploadSettings];
 }
 
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
