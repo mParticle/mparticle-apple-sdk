@@ -36,6 +36,8 @@ public final class MPBackendUploadCoordinator: NSObject {
         -> MPUploadBuilderPRIVATE?
     private let clearDeletedAttributes: () -> Void
     private let limits: MPUploadBatchLimits
+    private let dependencies: MPBackendUploadDependencies
+    private let currentSettings: () -> NSObject
 
     @objc public init(
         persistence: @escaping () -> MPBackendPersistence?,
@@ -44,7 +46,9 @@ public final class MPBackendUploadCoordinator: NSObject {
         makeBuilder: @escaping (MPUploadMessageGroup, [MPMessagePRIVATE], NSObject, MPUploadBuilderContext)
         -> MPUploadBuilderPRIVATE?,
         clearDeletedAttributes: @escaping () -> Void,
-        limits: MPUploadBatchLimits
+        limits: MPUploadBatchLimits,
+        dependencies: MPBackendUploadDependencies,
+        currentSettings: @escaping () -> NSObject
     ) {
         self.persistence = persistence
         self.stateMachine = stateMachine
@@ -52,7 +56,99 @@ public final class MPBackendUploadCoordinator: NSObject {
         self.makeBuilder = makeBuilder
         self.clearDeletedAttributes = clearDeletedAttributes
         self.limits = limits
+        self.dependencies = dependencies
+        self.currentSettings = currentSettings
         super.init()
+    }
+
+    // Access remains confined to the SDK message queue, as with the original file-static flag.
+    private static var shouldSkipNextUpload = false
+
+    @objc public func skipNextUpload() {
+        Self.shouldSkipNextUpload = true
+    }
+
+    /// Discards an unconsumed skip so it cannot outlive the upload cycle that requested it.
+    @objc(resetSkipNextUpload)
+    public static func resetSkipNextUpload() {
+        shouldSkipNextUpload = false
+    }
+
+    @objc(uploadBatchesWithCompletionHandler:)
+    public func uploadBatches(completionHandler: @escaping (Bool) -> Void) {
+        prepareBatches(forUpload: currentSettings())
+        let persistence = persistence()
+        if Self.shouldSkipNextUpload {
+            Self.shouldSkipNextUpload = false
+            completionHandler(true)
+            return
+        }
+        let pending = persistence?.objectiveCFetchUploads() as? [Any] ?? []
+        let uploads = pending.compactMap { $0 as? MPUploadPRIVATE }
+        guard !uploads.isEmpty else {
+            completionHandler(true)
+            return
+        }
+        if stateMachine().dataRamped {
+            for upload in uploads {
+                persistence?.objectiveCDeleteUpload(upload)
+            }
+            persistence?.objectiveCDeleteNetworkPerformanceMessages()
+            // Preserve the existing ramped-path behavior: no completion callback.
+            return
+        }
+        // The provider returns nil once the owning backend is gone. Report the outcome rather
+        // than dropping the callback, which would strand the kit-readiness retry loop.
+        guard let network = dependencies.network() else {
+            completionHandler(false)
+            return
+        }
+        network.upload(uploads) { completionHandler(true) }
+    }
+
+    @objc(requestConfig:)
+    public func requestConfig(_ completionHandler: ((Bool) -> Void)?) {
+        dependencies.logger()?.debug("Requesting SDK configuration from server")
+        guard let network = dependencies.network() else {
+            completionHandler?(false)
+            return
+        }
+        network.requestConfig(nil) { success in completionHandler?(success) }
+    }
+
+    @objc(checkForKitsAndUploadWithCompletionHandler:)
+    public func checkForKitsAndUpload(completionHandler: ((Bool) -> Void)?) {
+        requestConfig { [self] uploadBatch in
+            guard uploadBatch else {
+                dependencies.logger()?.debug("Config request returned uploadBatch: NO, skipping upload")
+                completionHandler?(false)
+                return
+            }
+            let shouldDelayForKits = dependencies.shouldDelayForKits()
+            if shouldDelayForKits || dependencies.shouldDelayForWebView() {
+                dependencies.logger()?
+                    .warning(
+                        "Delaying upload - kits still initializing (shouldDelayForKits: \(shouldDelayForKits ? "YES" : "NO"))"
+                    )
+                completionHandler?(true)
+                return
+            }
+            uploadBatches { _ in completionHandler?(false) }
+        }
+    }
+
+    @objc(waitForKitsAndUploadWithCompletionHandler:)
+    public func waitForKitsAndUpload(completionHandler: (() -> Void)?) {
+        checkForKitsAndUpload { [self] didShortCircuit in
+            if didShortCircuit {
+                dependencies.logger()?.verbose("Kits not ready, retrying upload check in 1 second")
+                dependencies.schedule(1) { [self] in
+                    waitForKitsAndUpload(completionHandler: completionHandler)
+                }
+            } else {
+                completionHandler?()
+            }
+        }
     }
 
     @objc(prepareBatchesForUpload:)

@@ -128,7 +128,15 @@ final class MPBackendUploadCoordinatorTests: XCTestCase {
 final class MPUploadCoordinatorFixture {
     let builder = MPUploadTestFixture()
     var persistence = MPUploadPersistenceMock()
-    let settings = NSObject()
+    var settings = NSObject()
+    var network = MPBackendUploadNetworkMock()
+    var networkAvailable = true
+    var kitsDelayed = false
+    var webDelayed = false
+    var kitChecks = 0
+    var webChecks = 0
+    var scheduled: [() -> Void] = []
+    var delays: [TimeInterval] = []
     var clears = 0
     var contextCreations = 0
     var groups: [MPUploadMessageGroup] = []
@@ -157,7 +165,15 @@ final class MPUploadCoordinatorFixture {
             maxMessageBytes: 500,
             crashBatchBytes: 1500,
             crashMessageBytes: 1000
-        )
+        ),
+        dependencies: MPBackendUploadDependencies(
+            network: { [unowned self] in networkAvailable ? network : nil },
+            shouldDelayForKits: { [unowned self] in kitChecks += 1; return kitsDelayed },
+            shouldDelayForWebView: { [unowned self] in webChecks += 1; return webDelayed },
+            schedule: { [unowned self] delay, action in delays.append(delay); scheduled.append(action) },
+            logger: { nil }
+        ),
+        currentSettings: { [unowned self] in settings }
     )
 
     func message(id: Int64, bytes: Int? = nil, type: String = "e") -> MPMessagePRIVATE {
