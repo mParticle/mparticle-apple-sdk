@@ -3,6 +3,18 @@ import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 final class MPBackendUploadCycleTests: XCTestCase {
+    // The skip flag is deliberately process-wide, so a test that fails before consuming it would
+    // otherwise strand it and skip an unrelated suite's first upload.
+    override func setUp() {
+        super.setUp()
+        MPBackendUploadCoordinator.resetSkipNextUpload()
+    }
+
+    override func tearDown() {
+        MPBackendUploadCoordinator.resetSkipNextUpload()
+        super.tearDown()
+    }
+
     func testConfigurationRejectionCompletesWithoutReadinessOrPreparationOrRetry() {
         let fixture = MPUploadCoordinatorFixture()
         fixture.network.configSuccess = false
@@ -72,6 +84,26 @@ final class MPBackendUploadCycleTests: XCTestCase {
         XCTAssertTrue(fixture.network.uploaded.isEmpty)
         fixture.coordinator.waitForKitsAndUpload(completionHandler: nil)
         XCTAssertEqual(fixture.network.uploaded.count, 1)
+    }
+
+    func testUnavailableNetworkReportsFailureInsteadOfStrandingCallers() {
+        let fixture = MPUploadCoordinatorFixture()
+        fixture.networkAvailable = false
+        fixture.setMessages([fixture.message(id: 1)])
+
+        var configResults: [Bool] = []
+        fixture.coordinator.requestConfig { configResults.append($0) }
+        XCTAssertEqual(configResults, [false])
+
+        var uploadResults: [Bool] = []
+        fixture.coordinator.uploadBatches { uploadResults.append($0) }
+        XCTAssertEqual(uploadResults, [false])
+
+        var completed = false
+        fixture.coordinator.waitForKitsAndUpload { completed = true }
+        XCTAssertTrue(completed)
+        XCTAssertTrue(fixture.scheduled.isEmpty)
+        XCTAssertTrue(fixture.network.uploaded.isEmpty)
     }
 
     func testEmptyQueueCompletesWithoutNetworkSubmission() {

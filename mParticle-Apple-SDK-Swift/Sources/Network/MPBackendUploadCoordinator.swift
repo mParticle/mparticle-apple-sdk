@@ -68,6 +68,12 @@ public final class MPBackendUploadCoordinator: NSObject {
         Self.shouldSkipNextUpload = true
     }
 
+    /// Discards an unconsumed skip so it cannot outlive the upload cycle that requested it.
+    @objc(resetSkipNextUpload)
+    public static func resetSkipNextUpload() {
+        shouldSkipNextUpload = false
+    }
+
     @objc(uploadBatchesWithCompletionHandler:)
     public func uploadBatches(completionHandler: @escaping (Bool) -> Void) {
         prepareBatches(forUpload: currentSettings())
@@ -77,7 +83,9 @@ public final class MPBackendUploadCoordinator: NSObject {
             completionHandler(true)
             return
         }
-        guard let uploads = persistence?.objectiveCFetchUploads() as? [MPUploadPRIVATE], !uploads.isEmpty else {
+        let pending = persistence?.objectiveCFetchUploads() as? [Any] ?? []
+        let uploads = pending.compactMap { $0 as? MPUploadPRIVATE }
+        guard !uploads.isEmpty else {
             completionHandler(true)
             return
         }
@@ -89,13 +97,23 @@ public final class MPBackendUploadCoordinator: NSObject {
             // Preserve the existing ramped-path behavior: no completion callback.
             return
         }
-        dependencies.network()?.upload(uploads) { completionHandler(true) }
+        // The provider returns nil once the owning backend is gone. Report the outcome rather
+        // than dropping the callback, which would strand the kit-readiness retry loop.
+        guard let network = dependencies.network() else {
+            completionHandler(false)
+            return
+        }
+        network.upload(uploads) { completionHandler(true) }
     }
 
     @objc(requestConfig:)
     public func requestConfig(_ completionHandler: ((Bool) -> Void)?) {
         dependencies.logger()?.debug("Requesting SDK configuration from server")
-        dependencies.network()?.requestConfig(nil) { success in completionHandler?(success) }
+        guard let network = dependencies.network() else {
+            completionHandler?(false)
+            return
+        }
+        network.requestConfig(nil) { success in completionHandler?(success) }
     }
 
     @objc(checkForKitsAndUploadWithCompletionHandler:)

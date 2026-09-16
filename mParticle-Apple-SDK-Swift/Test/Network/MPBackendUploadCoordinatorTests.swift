@@ -130,6 +130,7 @@ final class MPUploadCoordinatorFixture {
     var persistence = MPUploadPersistenceMock()
     var settings = NSObject()
     var network = MPBackendUploadNetworkMock()
+    var networkAvailable = true
     var kitsDelayed = false
     var webDelayed = false
     var kitChecks = 0
@@ -166,7 +167,7 @@ final class MPUploadCoordinatorFixture {
             crashMessageBytes: 1000
         ),
         dependencies: MPBackendUploadDependencies(
-            network: { [unowned self] in network },
+            network: { [unowned self] in networkAvailable ? network : nil },
             shouldDelayForKits: { [unowned self] in kitChecks += 1; return kitsDelayed },
             shouldDelayForWebView: { [unowned self] in webChecks += 1; return webDelayed },
             schedule: { [unowned self] delay, action in delays.append(delay); scheduled.append(action) },
