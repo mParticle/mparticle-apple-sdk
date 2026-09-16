@@ -47,12 +47,15 @@ final class MPBackendUploadCoordinatorTests: XCTestCase {
         fixture.coordinator.prepareBatches(forUpload: fixture.settings)
         XCTAssertTrue(fixture.persistence.uploads.isEmpty)
         XCTAssertNotNil(fixture.persistence.messages)
+        // The retained messages are rebatched on the next pass, so their pending user-attribute
+        // deletions must still be present; clearing them here would drop `uad` from the retry.
+        XCTAssertEqual(fixture.clears, 0)
         fixture.persistence.failTransaction = false
         fixture.coordinator.prepareBatches(forUpload: fixture.settings)
         fixture.coordinator.prepareBatches(forUpload: fixture.settings)
         XCTAssertEqual(fixture.persistence.uploads.count, 1)
         XCTAssertEqual(fixture.persistence.transactions.count, 2)
-        XCTAssertEqual(fixture.clears, 2)
+        XCTAssertEqual(fixture.clears, 1)
     }
 
     func testLivePersistenceAndInactiveSessionCleanup() {
