@@ -57,6 +57,7 @@
 @interface MPBackendController_PRIVATE(Tests)
 
 @property (nonatomic, strong) MPNetworkCommunication_PRIVATE *networkCommunication;
+- (MPUploadBuilderContext *)uploadBuilderContext;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
@@ -109,6 +110,10 @@
 @end
 
 @implementation MPBackendControllerTests
+
+- (MPUploadBuilderContext *)uploadBuilderContext {
+    return [self.backendController uploadBuilderContext];
+}
 
 - (void)setUp {
     [super setUp];
@@ -293,12 +298,14 @@
 
 - (void)testAutomaticSessionEnd {
     MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Automatic session end"];
     MParticle *mParticle = [MParticle sharedInstance];
     id mockBackendController = OCMPartialMock(self.backendController);
     mParticle.backendController = mockBackendController;
     self.backendController = [MParticle sharedInstance].backendController;
     
-    dispatch_sync(messageQueue, ^{
+    // Keep the main run loop available while session work runs on the SDK queue.
+    dispatch_async(messageQueue, ^{
         [self.backendController beginSession];
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
@@ -326,15 +333,18 @@
         
         [self.backendController processOpenSessionsEndingCurrent:YES completionHandler:nil];
         
-        [mockBackendController verifyWithDelay:5.0];
+        [mockBackendController verify];
+        [expectation fulfill];
     });
+
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testBackgroundBlock {
     MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Begin background block test"];
     
-    dispatch_sync(messageQueue, ^{
+    dispatch_async(messageQueue, ^{
         [self.backendController beginSession];
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
@@ -566,7 +576,7 @@
     XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
     
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
     
     [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]] deletedUserAttributes:nil];
@@ -592,6 +602,89 @@
         uploads = [persistence fetchUploads];
         XCTAssertNil(uploads, @"Uploads are not being deleted.");
     }];
+}
+
+- (void)testPrepareBatchesUsesInjectedPersistenceForEnrichment {
+    MPPersistenceStorePRIVATE *sharedStore = MParticle.sharedInstance.persistenceStore;
+    MPForwardRecordPRIVATE *sharedRecord = [[MPForwardRecordPRIVATE alloc]
+        initWithId:0 dataDictionary:@{@"source": @"shared"} mpid:@1];
+    [sharedStore saveForwardRecord:sharedRecord];
+    NSArray *sharedRecordsBefore = [sharedStore fetchForwardRecords];
+    NSUInteger sharedUploadCount = [sharedStore fetchUploads].count;
+
+    id injectedStore = OCMClassMock([MPPersistenceStorePRIVATE class]);
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc]
+        initWithDelegate:nil persistence:injectedStore];
+    MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+    NSNumber *sessionId = @(session.sessionId);
+    MPMessage *message = [[[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+        session:session messageInfo:@{@"n": @"injected-store-event"} context:self.messageBuilderContext] build];
+    NSMutableDictionary *groups = [@{@1: @{sessionId: @{@"0": @{@0: @[message]}}}} mutableCopy];
+    OCMStub([injectedStore fetchMessagesForUploading]).andReturn(groups);
+
+    NSDictionary *applicationInfo = @{@"an": @"injected-app"};
+    NSDictionary *deviceInfo = @{@"dmdl": @"injected-device"};
+    NSDictionary *storedInfo = @{MPApplicationKeys.kMPApplicationInformationKey: applicationInfo,
+                                 kMPDeviceInformationKey: deviceInfo};
+    OCMExpect([injectedStore appAndDeviceInfoForSessionId:sessionId]).andReturn(storedInfo);
+    MPForwardRecordPRIVATE *injectedRecord = [[MPForwardRecordPRIVATE alloc]
+        initWithId:1234 dataDictionary:@{@"source": @"injected"} mpid:@1];
+    OCMExpect([injectedStore fetchForwardRecords]).andReturn(@[injectedRecord]);
+    OCMExpect([injectedStore deleteForwardRecordsIds:@[@1234]]);
+    MPIntegrationAttributes *attributes = [[MPIntegrationAttributes alloc]
+        initWithIntegrationId:@77 attributes:@{@"source": @"injected"}];
+    OCMExpect([injectedStore fetchIntegrationAttributes]).andReturn(@[attributes]);
+    OCMExpect([injectedStore saveUploads:[OCMArg checkWithBlock:^BOOL(NSArray<MPUpload *> *uploads) {
+        XCTAssertEqual(uploads.count, 1);
+        NSDictionary *batch = [uploads.firstObject dictionaryRepresentation];
+        XCTAssertEqualObjects(batch[MPApplicationKeys.kMPApplicationInformationKey], applicationInfo);
+        XCTAssertEqualObjects(batch[kMPDeviceInformationKey], deviceInfo);
+        XCTAssertEqualObjects(batch[kMPForwardStatsRecord], @[injectedRecord.dataDictionary]);
+        XCTAssertEqualObjects(batch[MPIntegrationAttributesKey], [attributes dictionaryRepresentation]);
+        return YES;
+    }] deleteMessages:@[message] optedOut:NO]).andReturn(YES);
+    OCMExpect([injectedStore deleteAllSessionsExcept:[OCMArg any]]);
+
+    [backend prepareBatchesForUpload:[[MPUploadSettings alloc] init]];
+
+    OCMVerifyAll(injectedStore);
+    NSArray<MPForwardRecordPRIVATE *> *sharedRecordsAfter = [sharedStore fetchForwardRecords];
+    XCTAssertEqual(sharedRecordsAfter.count, sharedRecordsBefore.count);
+    XCTAssertEqualObjects(sharedRecordsAfter.firstObject.dataDictionary, sharedRecord.dataDictionary);
+    XCTAssertEqual([sharedStore fetchUploads].count, sharedUploadCount);
+}
+
+- (void)testUploadBuilderReadsBackendPersistenceAtBuildTime {
+    id originalStore = OCMProtocolMock(@protocol(MPBackendPersistence));
+    id replacementStore = OCMProtocolMock(@protocol(MPBackendPersistence));
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc]
+        initWithDelegate:nil persistence:originalStore];
+    MPMessage *message = [[[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+        session:nil messageInfo:@{@"n": @"replacement-store-event"} context:self.messageBuilderContext] build];
+    MPUploadBuilder *builder = [[MPUploadBuilder alloc] initWithMpid:@1 sessionId:@42 messages:@[message]
+        sessionTimeout:60 uploadInterval:30 dataPlanId:nil dataPlanVersion:nil
+        uploadSettings:[[MPUploadSettings alloc] init] context:[backend uploadBuilderContext]];
+
+    OCMReject([originalStore appAndDeviceInfoForSessionId:[OCMArg any]]);
+    OCMReject([originalStore fetchForwardRecords]);
+    OCMReject([originalStore fetchIntegrationAttributes]);
+    NSDictionary *applicationInfo = @{@"an": @"replacement-app"};
+    NSDictionary *storedInfo = @{MPApplicationKeys.kMPApplicationInformationKey: applicationInfo,
+                                 kMPDeviceInformationKey: @{@"dmdl": @"replacement-device"}};
+    OCMExpect([replacementStore appAndDeviceInfoForSessionId:@42]).andReturn(storedInfo);
+    OCMExpect([replacementStore fetchForwardRecords]).andReturn(nil);
+    OCMExpect([replacementStore fetchIntegrationAttributes]).andReturn(nil);
+    backend.persistence = replacementStore;
+
+    __block BOOL completed = NO;
+    [builder build:^(MPUpload *upload) {
+        completed = YES;
+        XCTAssertEqualObjects([upload dictionaryRepresentation][MPApplicationKeys.kMPApplicationInformationKey], applicationInfo);
+    }];
+
+    XCTAssertTrue(completed);
+    OCMVerifyAll(originalStore);
+    OCMVerifyAll(replacementStore);
 }
 
 - (void)testUploadWithDifferentUser {
@@ -644,7 +737,7 @@
     XCTAssertNil([MParticle sharedInstance].identity.currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
     
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
     
     [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:mpid] deletedUserAttributes:nil];
@@ -732,7 +825,7 @@
         }
         XCTAssertTrue(testCommerce, @"MPCommerceEvent messages are not being saved.");
         
-        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
         XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
         
         if (!uploadBuilder) {
@@ -911,7 +1004,7 @@
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
         NSArray *persistedMessages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
-        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
         XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
         
         if (!uploadBuilder) {

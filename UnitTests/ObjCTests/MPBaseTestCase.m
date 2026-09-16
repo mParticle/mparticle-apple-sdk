@@ -36,7 +36,18 @@
 
 @end
 
+@interface MPBackendController_PRIVATE (UploadBuilderTesting)
++ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
+@end
+
 @implementation MPBaseTestCase
+
+- (MPUploadBuilderContext *)uploadBuilderContext {
+    return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{
+        return [MParticle sharedInstance].persistenceStore;
+    }];
+}
+
 
 - (void)setUpWithCompletionHandler:(void (^)(NSError * _Nullable))completion {
     [super setUp];
