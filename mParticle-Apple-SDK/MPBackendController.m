@@ -6,7 +6,6 @@
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPUploadBuilder.h"
 #import "MPConsentSerialization.h"
 #import "MPILogger.h"
 #import "MPCommerceEvent.h"

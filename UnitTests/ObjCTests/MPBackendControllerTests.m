@@ -6,7 +6,6 @@
 #import "MPNotificationController.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
-#import "MPUploadBuilder.h"
 #import "mParticle.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitConfiguration.h"

@@ -1,6 +1,5 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
-#import "MPUploadBuilder.h"
 #import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPPersistenceUtilities.h"
