@@ -492,10 +492,6 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         return;
     }
     
-    self->forwardScreenViews = [self configurationTrueStringForKey:@"forwardScreenViews"];
-    
-    self->collectIDFA = [self configurationTrueStringForKey:@"ABKCollectIDFA"];
-    
     if (self->collectIDFA) {
         [self->brazeInstanceLocal setIdentifierForAdvertiser:[self advertisingIdentifierString]];
     }
@@ -504,8 +500,6 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     if ([MPKitBraze urlDelegate]) {
         self->brazeInstanceLocal.delegate = [MPKitBraze urlDelegate];
     }
-    
-    self->subscriptionGroupDictionary = [self getSubscriptionGroupIds:[self configurationStringForKey:subscriptionGroupMapping]];
     
 #if TARGET_OS_IOS
     BrazeInAppMessageUI *inAppMessageUI = [[BrazeInAppMessageUI alloc] init];
