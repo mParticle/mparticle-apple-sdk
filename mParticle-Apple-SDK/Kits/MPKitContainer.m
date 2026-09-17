@@ -158,9 +158,88 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                selector:@selector(handleApplicationDidFinishLaunching:)
                                    name:UIApplicationDidFinishLaunchingNotification
                                  object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(handleKitDidBecomeActive:)
+                                   name:mParticleKitDidBecomeActiveNotification
+                                 object:nil];
     }
     
     return self;
+}
+
+- (void)scheduleConsentReplayForKit:(id<MPExtensionKitProtocol>)kitRegister {
+    id<MPKitProtocol> wrapper = kitRegister.wrapperInstance;
+    if (!wrapper) {
+        return;
+    }
+    NSNumber *userId = [[MParticle sharedInstance].identity.currentUser.userId copy];
+    // Callbacks may reenter the container, so always leave kitsSemaphore first.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self replayConsentForKit:kitRegister wrapper:wrapper userId:userId];
+    });
+}
+
+- (void)replayConsentForKit:(id<MPExtensionKitProtocol>)kitRegister wrapper:(id<MPKitProtocol>)wrapper userId:(NSNumber *)userId {
+    if (self != [MParticle sharedInstance].kitContainer_PRIVATE ||
+        wrapper != kitRegister.wrapperInstance ||
+        ![userId isEqual:[MParticle sharedInstance].identity.currentUser.userId] ||
+        ![wrapper respondsToSelector:@selector(supportsConsentStateReplay)] ||
+        ![wrapper supportsConsentStateReplay] ||
+        ![wrapper respondsToSelector:@selector(setConsentState:)]) {
+        return;
+    }
+    // Configuration can hold the semaphore while a kit waits for the main queue.
+    // Yield instead of blocking that queue, preserving the original replay target.
+    if (dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW) != 0) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+            [self replayConsentForKit:kitRegister wrapper:wrapper userId:userId];
+        });
+        return;
+    }
+    BOOL eligible = wrapper == kitRegister.wrapperInstance &&
+        [userId isEqual:[MParticle sharedInstance].identity.currentUser.userId] &&
+        [kitsRegistry containsObject:kitRegister] && [self isActiveAndNotDisabled:kitRegister];
+    MPConsentState *state = eligible ? [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:userId] : nil;
+    MPKitFilter *filter = state ? [self filter:kitRegister forConsentState:state] : nil;
+    dispatch_semaphore_signal(kitsSemaphore);
+    if (!filter || filter.shouldFilter) {
+        return;
+    }
+    @try {
+        MPKitExecStatus *status = [wrapper setConsentState:filter.forwardConsentState];
+        if (!status.success) {
+            MPILogError(@"Failed to replay consent state for kit=%@", kitRegister.code);
+        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Kit consent handler threw an exception: %@", exception);
+    }
+}
+
+- (void)handleKitDidBecomeActive:(NSNotification *)notification {
+    NSNumber *kitCode = notification.userInfo[mParticleKitInstanceKey];
+    // Some kits post synchronously while configureKits holds kitsSemaphore.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self != [MParticle sharedInstance].kitContainer_PRIVATE) {
+            return;
+        }
+        if (dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW) != 0) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+                [self handleKitDidBecomeActive:notification];
+            });
+            return;
+        }
+        id<MPExtensionKitProtocol> activatedKit = nil;
+        for (id<MPExtensionKitProtocol> kitRegister in kitsRegistry) {
+            if ([kitRegister.code isEqual:kitCode]) {
+                activatedKit = kitRegister;
+                break;
+            }
+        }
+        dispatch_semaphore_signal(kitsSemaphore);
+        if (activatedKit) {
+            [self scheduleConsentReplayForKit:activatedKit];
+        }
+    });
 }
 
 #pragma mark Notification handlers
@@ -195,6 +274,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 if ([kitInstance respondsToSelector:startSelector]) {
                     @try {
                         [kitInstance start];
+                        [self scheduleConsentReplayForKit:kitRegister];
                     }
                     @catch (NSException *exception) {
                         MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
@@ -656,9 +736,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             MPILogDebug(@"startKitRegister - launching kit %@ with configuration", kitRegister.code);
             if ([NSThread isMainThread]) {
                 [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+                [self scheduleConsentReplayForKit:kitRegister];
             } else {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+                    [self scheduleConsentReplayForKit:kitRegister];
                 });
             }
         }
@@ -1156,72 +1238,30 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     if (!state) {
         return nil;
     }
-    
-    MPKitFilter *kitFilter = nil;
-    
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    if (kitConfiguration) {
-        
-        MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
-
-        NSDictionary<NSString *, MPGDPRConsent *> *gdprState = state.gdprConsentState;
-                
-        if (ccpaConsentState != nil) {
-            NSString *regulationHash = [_hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
-            
-            if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
-                kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
-                return kitFilter;
-            } else {
-                MPConsentState *filteredState = [[MPConsentState alloc] init];
-                [filteredState setCCPAConsentState:ccpaConsentState];
-                
-                kitFilter = [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
-                return kitFilter;
-            }
-        }
-
-        if (gdprState) {
-            NSString *regulationHash = [_hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
-            
-            if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
-                kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
-                return kitFilter;
-            }
-        }
-        
-        if (gdprState && gdprState.count > 0) {
-            
-            if (kitConfiguration.consentPurposeFilters) {
-                
-                NSMutableDictionary<NSString *, MPGDPRConsent *> *filteredGDPRState = [NSMutableDictionary dictionary];
-                
-                for (NSString *purpose in gdprState) {
-                    NSString *purposeHash = [_hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
-                    
-                    BOOL shouldFilterPurpose = kitConfiguration.consentPurposeFilters[purposeHash] && [kitConfiguration.consentPurposeFilters[purposeHash] isEqual:@0];
-                    
-                    if (!shouldFilterPurpose) {
-                        MPGDPRConsent *consent = gdprState[purpose];
-                        [filteredGDPRState setObject:consent forKey:purpose];
-                    }
-                }
-                
-                if (filteredGDPRState.count > 0) {
-                    MPConsentState *filteredState = [[MPConsentState alloc] init];
-                    [filteredState setGDPRConsentState:filteredGDPRState];
-                    
-                    kitFilter = [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
-                }
-                
-            }
-            
-        }
-        
+    MPKitConfiguration *configuration = self.kitConfigurations[kitRegister.code];
+    if (!configuration) {
+        return [[MPKitFilter alloc] initWithFilter:YES];
     }
-    
-    return kitFilter;
+    MPConsentState *filteredState = [[MPConsentState alloc] init];
+    BOOL hadConsent = state.ccpaConsentState != nil || state.gdprConsentState.count > 0;
+
+    if (state.ccpaConsentState) {
+        NSString *hash = [_hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
+        if (![configuration.consentRegulationFilters[hash] isEqual:@0]) {
+            [filteredState setCCPAConsentState:state.ccpaConsentState];
+        }
+    }
+    NSString *gdprHash = [_hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
+    if (![configuration.consentRegulationFilters[gdprHash] isEqual:@0]) {
+        for (NSString *purpose in state.gdprConsentState) {
+            NSString *hash = [_hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
+            if (![configuration.consentPurposeFilters[hash] isEqual:@0]) {
+                [filteredState addGDPRConsentState:state.gdprConsentState[purpose] purpose:purpose];
+            }
+        }
+    }
+    BOOL hasConsent = filteredState.ccpaConsentState != nil || filteredState.gdprConsentState.count > 0;
+    return [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:hadConsent && !hasConsent];
 }
 
 #pragma mark Projection methods
@@ -2274,6 +2314,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                         }
                     }
                 }
+                [self scheduleConsentReplayForKit:kitRegister];
             }
         } else {
             MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", integrationId);
@@ -2723,6 +2764,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             
             MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
             kitHandler(kitRegister.wrapperInstance, kitConfiguration);
+            [self scheduleConsentReplayForKit:kitRegister];
         }
     }
 }

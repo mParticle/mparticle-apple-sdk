@@ -103,6 +103,8 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 
 @implementation MPKitBraze
 
+@synthesize configuration = _configuration;
+
 + (NSNumber *)kitCode {
     return @28;
 }
@@ -140,7 +142,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 + (void)setBrazeInstance:(id)instance {
-    if ([instance isKindOfClass:[Braze class]]) {
+    if (instance == nil || [instance isKindOfClass:[Braze class]]) {
         brazeInstance = instance;
     }
 }
@@ -163,6 +165,94 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 #pragma mark Private methods
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    return [value isKindOfClass:[NSString class]] ? value : nil;
+}
+
+- (BOOL)configurationBoolForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    return ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]]) && [value boolValue];
+}
+
+- (BOOL)configurationTrueStringForKey:(NSString *)key {
+    NSString *value = [self configurationStringForKey:key];
+    return value != nil && [value caseInsensitiveCompare:@"true"] == NSOrderedSame;
+}
+
+- (NSString *)mappedUserAttributeForKey:(NSString *)key hash:(NSString *)hash {
+    id mappings = [self configurationValueForKey:key];
+    if (![mappings isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    id name = mappings[hash];
+    return [name isKindOfClass:[NSString class]] && [name length] > 0 ? name : nil;
+}
+
+- (NSArray<NSDictionary<NSString *, NSString *> *> *)mappingEntries:(id)value {
+    if (![value isKindOfClass:[NSString class]] || [value length] == 0) {
+        return @[];
+    }
+    NSData *data = [value dataUsingEncoding:NSUTF8StringEncoding];
+    id entries = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
+    if (![entries isKindOfClass:[NSArray class]]) {
+        return @[];
+    }
+    NSMutableArray *validEntries = [NSMutableArray array];
+    for (id entry in entries) {
+        if (![entry isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+        id map = entry[MPMapKey];
+        id mappedValue = entry[MPValueKey];
+        if ([map isKindOfClass:[NSString class]] && [map length] > 0 &&
+            [mappedValue isKindOfClass:[NSString class]] && [mappedValue length] > 0) {
+            [validEntries addObject:entry];
+        }
+    }
+    return validEntries;
+}
+
+- (void)setConfiguration:(NSDictionary *)configuration {
+    _configuration = [configuration isKindOfClass:[NSDictionary class]] ? [configuration copy] : @{};
+    _host = [self configurationStringForKey:hostConfigKey];
+    _enableTypeDetection = [self configurationBoolForKey:enableTypeDetectionKey];
+    forwardScreenViews = [self configurationTrueStringForKey:@"forwardScreenViews"];
+    collectIDFA = [self configurationTrueStringForKey:@"ABKCollectIDFA"];
+    subscriptionGroupDictionary = [self getSubscriptionGroupIds:[self configurationStringForKey:subscriptionGroupMapping]];
+}
+
+- (NSDate *)dateOfBirthFromString:(NSString *)value {
+    if (value.length != 10 || [value characterAtIndex:4] != '-' || [value characterAtIndex:7] != '-') {
+        return nil;
+    }
+    for (NSUInteger index = 0; index < value.length; index++) {
+        if (index == 4 || index == 7) {
+            continue;
+        }
+        unichar character = [value characterAtIndex:index];
+        if (character < '0' || character > '9') {
+            return nil;
+        }
+    }
+    if ([[value substringToIndex:4] integerValue] == 0) {
+        return nil;
+    }
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+    formatter.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    // Apply Gregorian leap-year rules before the historical 1582 cutover too.
+    formatter.gregorianStartDate = [NSDate distantPast];
+    formatter.dateFormat = @"yyyy-MM-dd";
+    formatter.lenient = NO;
+    NSDate *date = [formatter dateFromString:value];
+    return date && [[formatter stringFromDate:date] isEqualToString:value] ? date : nil;
+}
+
 - (NSString *)stringRepresentation:(id)value {
     NSString *stringRepresentation = nil;
     
@@ -202,24 +292,11 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (NSMutableDictionary *)getSubscriptionGroupIds:(NSString *)subscriptionGroupMap {
-    NSMutableDictionary *subscriptionGroupDictionary = [NSMutableDictionary dictionary];
-    
-    if (!subscriptionGroupMap.length) {
-        return subscriptionGroupDictionary;
+    NSMutableDictionary *mappings = [NSMutableDictionary dictionary];
+    for (NSDictionary *entry in [self mappingEntries:subscriptionGroupMap]) {
+        mappings[entry[MPMapKey]] = entry[MPValueKey];
     }
-    
-    NSData *subsctiprionGroupData = [subscriptionGroupMap dataUsingEncoding:NSUTF8StringEncoding];
-
-    NSError *error = nil;
-    NSArray *subsctiprionGroupDataArray = [NSJSONSerialization JSONObjectWithData:subsctiprionGroupData options:0 error:&error];
-
-    for (NSDictionary *item in subsctiprionGroupDataArray) {
-        NSString *key = item[@"map"];
-        NSString *value = item[@"value"];
-        subscriptionGroupDictionary[key] = value;
-    }
-
-    return subscriptionGroupDictionary;
+    return mappings;
 }
 
 - (MPKitExecStatus *)logBrazeCustomEvent:(MPEvent *)event eventType:(NSUInteger)eventType {
@@ -250,24 +327,24 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             NSString *eventTypePlusNamePlusKey = [[NSString stringWithFormat:@"%@%@%@", eventTypeString, event.name, key] lowercaseString];
             NSString *hashValue = [MPKitAPI hashString:eventTypePlusNamePlusKey];
             
-            NSDictionary *forwardUserAttributes;
+            NSString *forwardUserAttribute;
             
             // Delete from array
-            forwardUserAttributes = self.configuration[@"ear"];
-            if (forwardUserAttributes[hashValue]) {
-                [self->brazeInstanceLocal.user removeFromCustomAttributeStringArrayWithKey:forwardUserAttributes[hashValue] value:eventInfo[key]];
+            forwardUserAttribute = [self mappedUserAttributeForKey:@"ear" hash:hashValue];
+            if (forwardUserAttribute) {
+                [self->brazeInstanceLocal.user removeFromCustomAttributeStringArrayWithKey:forwardUserAttribute value:eventInfo[key]];
             }
             
             // Add to array
-            forwardUserAttributes = self.configuration[@"eaa"];
-            if (forwardUserAttributes[hashValue]) {
-                [self->brazeInstanceLocal.user addToCustomAttributeStringArrayWithKey:forwardUserAttributes[hashValue] value:eventInfo[key]];
+            forwardUserAttribute = [self mappedUserAttributeForKey:@"eaa" hash:hashValue];
+            if (forwardUserAttribute) {
+                [self->brazeInstanceLocal.user addToCustomAttributeStringArrayWithKey:forwardUserAttribute value:eventInfo[key]];
             }
             
             // Add key/value pair
-            forwardUserAttributes = self.configuration[@"eas"];
-            if (forwardUserAttributes[hashValue]) {
-                [self setUserAttribute:forwardUserAttributes[hashValue] value:eventInfo[key]];
+            forwardUserAttribute = [self mappedUserAttributeForKey:@"eas" hash:hashValue];
+            if (forwardUserAttribute) {
+                [self setUserAttribute:forwardUserAttribute value:eventInfo[key]];
             }
         }
     };
@@ -354,18 +431,13 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     
     MPKitExecStatus *execStatus = nil;
     
-    if (!configuration[eabAPIKey]) {
+    self.configuration = configuration;
+    _started = NO;
+    if ([self configurationStringForKey:eabAPIKey].length == 0) {
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
         return execStatus;
     }
     
-    _configuration = configuration;
-    
-    collectIDFA = NO;
-    forwardScreenViews = NO;
-    
-    _host = configuration[hostConfigKey];
-    _enableTypeDetection = [configuration[enableTypeDetectionKey] boolValue];
     
     //If Braze is already initialized, immediately "start" the kit, this
     //is here for:
@@ -388,9 +460,13 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (void)start {
+    if ([self configurationStringForKey:eabAPIKey].length == 0 || (!self->brazeInstanceLocal && self.host.length == 0)) {
+        _started = NO;
+        return;
+    }
     if (!self->brazeInstanceLocal) {
         NSDictionary *optionsDict = [self optionsDictionary];
-        BRZConfiguration *configuration = [[BRZConfiguration alloc] initWithApiKey:self.configuration[eabAPIKey] endpoint:optionsDict[kMPBrazeConfigEndpoint]];
+        BRZConfiguration *configuration = [[BRZConfiguration alloc] initWithApiKey:[self configurationStringForKey:eabAPIKey] endpoint:optionsDict[kMPBrazeConfigEndpoint]];
 
         [configuration.api addSDKMetadata:@[BRZSDKMetadata.mparticle]];
         configuration.api.sdkFlavor = BRZSDKFlavorMparticle;
@@ -416,9 +492,9 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         return;
     }
     
-    self->forwardScreenViews = self.configuration[@"forwardScreenViews"] && [self.configuration[@"forwardScreenViews"] caseInsensitiveCompare:@"true"] == NSOrderedSame;
+    self->forwardScreenViews = [self configurationTrueStringForKey:@"forwardScreenViews"];
     
-    self->collectIDFA = self.configuration[@"ABKCollectIDFA"] && [self.configuration[@"ABKCollectIDFA"] caseInsensitiveCompare:@"true"] == NSOrderedSame;
+    self->collectIDFA = [self configurationTrueStringForKey:@"ABKCollectIDFA"];
     
     if (self->collectIDFA) {
         [self->brazeInstanceLocal setIdentifierForAdvertiser:[self advertisingIdentifierString]];
@@ -429,7 +505,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         self->brazeInstanceLocal.delegate = [MPKitBraze urlDelegate];
     }
     
-    self->subscriptionGroupDictionary = [self getSubscriptionGroupIds:self.configuration[subscriptionGroupMapping]];
+    self->subscriptionGroupDictionary = [self getSubscriptionGroupIds:[self configurationStringForKey:subscriptionGroupMapping]];
     
 #if TARGET_OS_IOS
     BrazeInAppMessageUI *inAppMessageUI = [[BrazeInAppMessageUI alloc] init];
@@ -444,8 +520,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     
     self->_started = YES;
     
-    // Update Consent on start
-    [self updateConsent];
+    // The core delivers effective, kit-filtered consent after activation.
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
@@ -471,7 +546,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     numberFormatter.numberStyle = NSNumberFormatterNoStyle;
     
     [serverKeys enumerateObjectsUsingBlock:^(NSString * _Nonnull serverKey, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSString *optionValue = self.configuration[serverKey];
+        NSString *optionValue = [self configurationStringForKey:serverKey];
         
         if (optionValue != nil && (NSNull *)optionValue != [NSNull null]) {
             NSNumber *numberValue = nil;
@@ -496,8 +571,8 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 
 #if TARGET_OS_IOS
     optionsDictionary[kMPBrazeConfigAutomaticLocationCollection] = @(YES);
-    if (self.configuration[@"ABKDisableAutomaticLocationCollectionKey"]) {
-        if ([self.configuration[@"ABKDisableAutomaticLocationCollectionKey"] caseInsensitiveCompare:@"true"] == NSOrderedSame) {
+    if ([self configurationStringForKey:@"ABKDisableAutomaticLocationCollectionKey"]) {
+        if ([self configurationTrueStringForKey:@"ABKDisableAutomaticLocationCollectionKey"]) {
             optionsDictionary[kMPBrazeConfigAutomaticLocationCollection] = @(NO);
         }
     }
@@ -565,7 +640,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             [properties addEntriesFromDictionary:baseProductAttributes];
         }
         
-        if ([_configuration[bundleCommerceEventData] boolValue]) {
+        if ([self configurationBoolForKey:bundleCommerceEventData]) {
             if (commerceEvent.customAttributes.count > 0) {
                 [properties removeObjectsForKeys:[commerceEvent.customAttributes allKeys]];
                 [properties setValue:commerceEvent.customAttributes forKey:attributesKey];
@@ -600,7 +675,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 }
                 
                 NSString *sanitizedProductName = product.sku;
-                if ([@"True" isEqualToString:_configuration[replaceSkuWithProductName]]) {
+                if ([@"True" isEqualToString:[self configurationStringForKey:replaceSkuWithProductName]]) {
                     sanitizedProductName = product.name;
                 }
                 
@@ -618,7 +693,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             }
         }
     } else {
-        if ([_configuration[bundleCommerceEventData] boolValue]) {
+        if ([self configurationBoolForKey:bundleCommerceEventData]) {
             NSDictionary *transformedEventInfo = [commerceEvent.customAttributes transformValuesToString];
             
             NSMutableDictionary *eventInfo = [[NSMutableDictionary alloc] initWithCapacity:commerceEvent.customAttributes.count];
@@ -734,7 +809,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     MPKitReturnCode returnCode;
     
     if (optOut) {
-        [brazeInstanceLocal.user setEmailSubscriptionState:BRZUserSubscriptionStateSubscribed];
+        [brazeInstanceLocal.user setEmailSubscriptionState:BRZUserSubscriptionStateUnsubscribed];
         returnCode = MPKitReturnCodeSuccess;
     } else {
         returnCode = MPKitReturnCodeCannotExecute;
@@ -785,49 +860,11 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         
         [brazeInstanceLocal.user setDateOfBirth:[calendar dateFromComponents:birthComponents]];
     } else if ([key isEqualToString:brazeUserAttributeDob]) {
-        // Expected Date Format @"yyyy'-'MM'-'dd"
-        NSCalendar *calendar = [NSCalendar currentCalendar];
-
-        NSString *yearString = [value substringToIndex:4];
-        NSRange monthRange = NSMakeRange(5, 2);
-        NSString *monthString = [value substringWithRange:monthRange];
-        NSRange dayRange = NSMakeRange(8, 2);
-        NSString *dayString = [value substringWithRange:dayRange];
-
-        NSInteger year = 0;
-        NSInteger month = 0;
-        NSInteger day = 0;
-           
-       @try {
-           year = [yearString integerValue];
-       } @catch (NSException *exception) {
-           NSLog(@"mParticle -> Invalid dob year: %@ \nPlease use this date format @\"yyyy'-'MM'-'dd\"", yearString);
-           execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeFail];
-           return execStatus;
-       }
-        
-        @try {
-            month = [monthString integerValue];
-        } @catch (NSException *exception) {
-            NSLog(@"mParticle -> Invalid dob month: %@ \nPlease use this date format @\"yyyy'-'MM'-'dd\"", monthString);
-            execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeFail];
-            return execStatus;
+        NSDate *date = [self dateOfBirthFromString:value];
+        if (!date) {
+            return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeFail];
         }
-        
-        @try {
-            day = [dayString integerValue];
-        } @catch (NSException *exception) {
-            NSLog(@"mParticle -> Invalid dob day: %@ \nPlease use this date format @\"yyyy'-'MM'-'dd\"", dayString);
-            execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeFail];
-            return execStatus;
-        }
-       
-       NSDateComponents *birthComponents = [[NSDateComponents alloc] init];
-       birthComponents.year = year;
-       birthComponents.month = month;
-       birthComponents.day = day;
-       
-       [brazeInstanceLocal.user setDateOfBirth:[calendar dateFromComponents:birthComponents]];
+        [brazeInstanceLocal.user setDateOfBirth:date];
    } else if ([key isEqualToString:mParticleUserAttributeCountry]) {
     [brazeInstanceLocal.user setCountry:value];
     } else if ([key isEqualToString:mParticleUserAttributeCity]) {
@@ -939,14 +976,14 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (nonnull MPKitExecStatus *)updateUser:(FilteredMParticleUser *)user request:(NSDictionary<NSNumber *,NSString *> *)userIdentities {
-    MPKitExecStatus *execStatus = nil;
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeCannotExecute];
     
     if (userIdentities) {
         NSMutableDictionary *userIDsCopy = [userIdentities copy];
         NSString *userId;
         
-        if (_configuration[userIdTypeKey]) {
-            NSString *userIdKey = _configuration[userIdTypeKey];
+        NSString *userIdKey = [self configurationStringForKey:userIdTypeKey];
+        if (userIdKey.length > 0) {
             if ([userIdKey isEqualToString:userIdValueOther]) {
                 if (userIDsCopy[@(MPUserIdentityOther)]) {
                     userId = userIDsCopy[@(MPUserIdentityOther)];
@@ -1023,10 +1060,6 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                     if (user != nil) {
                         userId = user.userId.stringValue;
                     }
-            } else {
-                    if (userIDsCopy[@(MPUserIdentityCustomerId)]) {
-                        userId = userIDsCopy[@(MPUserIdentityCustomerId)];
-                    }
             }
         }
         
@@ -1045,8 +1078,8 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         
         NSString *userEmail;
         
-        if (_configuration[emailIdTypeKey]) {
-            NSString *emailIdKey = _configuration[emailIdTypeKey];
+        NSString *emailIdKey = [self configurationStringForKey:emailIdTypeKey];
+        if (emailIdKey.length > 0) {
             if ([emailIdKey isEqualToString:userIdValueOther]) {
                 if (userIDsCopy[@(MPUserIdentityOther)]) {
                     userEmail = userIDsCopy[@(MPUserIdentityOther)];
@@ -1088,10 +1121,6 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                     userEmail = userIDsCopy[@(MPUserIdentityOther10)];
                 }
             } else if ([emailIdKey isEqualToString:userIdValueEmail]) {
-                if (userIDsCopy[@(MPUserIdentityEmail)]) {
-                    userEmail = userIDsCopy[@(MPUserIdentityEmail)];
-                }
-            } else {
                 if (userIDsCopy[@(MPUserIdentityEmail)]) {
                     userEmail = userIDsCopy[@(MPUserIdentityEmail)];
                 }
@@ -1147,38 +1176,26 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
 }
 
-- (MPKitExecStatus *)setConsentState:(nullable MPConsentState *)state {
-    [self updateConsent];
-
-    return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+- (BOOL)supportsConsentStateReplay {
+    return YES;
 }
 
-- (void)updateConsent {
-    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    NSDictionary<NSString *, MPGDPRConsent *> *userConsentMap = currentUser.consentState.gdprConsentState;
-    
-    // Update from mParticle consent
-    if (self.configuration && self.configuration[MPConsentMappingSDKKey]) {
-        // Retrieve the array of Consent Map Dictionaries from the Config
-        NSData *objectData = [self.configuration[MPConsentMappingSDKKey] dataUsingEncoding:NSUTF8StringEncoding];
-        NSArray *consentMappingArray = [NSJSONSerialization JSONObjectWithData:objectData
-                                              options:NSJSONReadingMutableContainers
-                                                error:nil];
-        
-        // For each valid Consent Map check if mParticle has a corresponding consent setting and, if so, send to Braze
-        for (NSDictionary *consentMappingDict in consentMappingArray) {
-            NSString *consentPurpose = consentMappingDict[MPMapKey];
-            if (consentMappingDict[MPValueKey] && userConsentMap[consentPurpose.lowercaseString]) {
-                NSString *brazeConsentName = consentMappingDict[MPValueKey];
-                MPGDPRConsent *consent = userConsentMap[consentPurpose.lowercaseString];
-                if ([brazeConsentName isEqualToString:MPGoogleAdUserDataKey]) {
-                    [brazeInstanceLocal.user setCustomAttributeWithKey:BGoogleAdUserDataKey boolValue:consent.consented];
-                } else if ([brazeConsentName isEqualToString:MPGoogleAdPersonalizationKey]) {
-                    [brazeInstanceLocal.user setCustomAttributeWithKey:BGoogleAdPersonalizationKey boolValue:consent.consented];
-                }
-            }
+- (MPKitExecStatus *)setConsentState:(nullable MPConsentState *)state {
+    NSDictionary<NSString *, MPGDPRConsent *> *userConsentMap = state.gdprConsentState;
+    for (NSDictionary *mapping in [self mappingEntries:[self configurationStringForKey:MPConsentMappingSDKKey]]) {
+        NSString *purpose = [mapping[MPMapKey] lowercaseString];
+        MPGDPRConsent *consent = userConsentMap[purpose];
+        if (!consent) {
+            continue;
+        }
+        NSString *brazeConsentName = mapping[MPValueKey];
+        if ([brazeConsentName isEqualToString:MPGoogleAdUserDataKey]) {
+            [brazeInstanceLocal.user setCustomAttributeWithKey:BGoogleAdUserDataKey boolValue:consent.consented];
+        } else if ([brazeConsentName isEqualToString:MPGoogleAdPersonalizationKey]) {
+            [brazeInstanceLocal.user setCustomAttributeWithKey:BGoogleAdPersonalizationKey boolValue:consent.consented];
         }
     }
+    return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
 }
 
 #pragma mark Configuration Dictionary
@@ -1324,7 +1341,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 #pragma mark Braze recommended eCommerce events
 
 - (BOOL)useEcommerceRecommendedEventsEnabled {
-    return [_configuration[useEcommerceRecommendedEventsKey] boolValue];
+    return [self configurationBoolForKey:useEcommerceRecommendedEventsKey];
 }
 
 - (NSString *)brazeCurrencyForCommerceEvent:(MPCommerceEvent *)commerceEvent {
@@ -1343,7 +1360,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (NSString *)mappedAttributeNameForConfigKey:(NSString *)mappingConfigKey {
-    NSString *configString = [self stringRepresentation:_configuration[mappingConfigKey]];
+    NSString *configString = [self stringRepresentation:[self configurationValueForKey:mappingConfigKey]];
     if (!configString.length) {
         return nil;
     }
@@ -1432,7 +1449,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (NSString *)brazeSource {
-    NSString *configuredSource = [self stringRepresentation:_configuration[mappingSourceKey]];
+    NSString *configuredSource = [self stringRepresentation:[self configurationValueForKey:mappingSourceKey]];
     if (configuredSource.length) {
         return configuredSource;
     }
