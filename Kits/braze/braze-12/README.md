@@ -66,6 +66,23 @@ Included kits: { Braze }
 | iOS      | 15.0            |
 | tvOS     | 15.0            |
 
+## Privacy and consent
+
+Enabling mParticle opt-out unsubscribes the current Braze user from email. Disabling
+opt-out does not automatically resubscribe them. Use the explicit `email_subscribe`
+user attribute to manage subsequent email subscription changes.
+
+The kit forwards Google consent attributes only from consent supplied by the core
+SDK, after device consent overrides and per-kit regulation/purpose filters. Missing
+or filtered purposes do not update Braze attributes; an explicit denial sends `false`.
+Update both the core SDK and this kit to receive the complete consent fix, including
+replay when Braze starts or the current user changes. Older core versions remain
+compatible but do not provide this startup replay.
+
+The opt-out description in the external integration guide currently contradicts
+this behavior and needs correction. The behavior above restores the Apple kit's
+semantics before its [Swift SDK migration](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy/pull/68).
+
 ## Documentation
 
 - [mParticle Braze Integration Guide](https://docs.mparticle.com/integrations/braze/event/)
