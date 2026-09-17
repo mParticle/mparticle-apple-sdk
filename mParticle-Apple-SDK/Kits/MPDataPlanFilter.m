@@ -25,10 +25,13 @@
         _blockUserAttributes = dataPlanOptions.blockUserAttributes;
         _blockUserIdentities = dataPlanOptions.blockUserIdentities;
         _emptyDictionary = [[NSDictionary alloc] initWithObjectsAndKeys: [NSNumber numberWithBool:false], @"additionalProperties", nil];
-        NSDictionary *document = dataPlanOptions.dataPlan[@"version_document"];
-        NSArray *points = document[@"data_points"];
-        for (NSDictionary *point in points) {
+        NSDictionary *dataPlan = MPIsDictionary(dataPlanOptions.dataPlan) ? dataPlanOptions.dataPlan : nil;
+        NSDictionary *document = MPIsDictionary(dataPlan[@"version_document"]) ? dataPlan[@"version_document"] : nil;
+        NSArray *points = MPIsArray(document[@"data_points"]) ? document[@"data_points"] : nil;
+        for (id point in points) {
+            if (!MPIsDictionary(point)) { continue; }
             NSDictionary *match = point[@"match"];
+            if (!MPIsDictionary(match)) { continue; }
             NSString *key = [self keyForMatch:match];
             if (!key) { continue; }
             if ([match[@"type"] isEqual:@"user_attributes"]) {
@@ -72,8 +75,9 @@
         return NO;
     }
     
+    // A missing point, or the NSNull "unconstrained" sentinel, means nothing is blocked.
     NSArray *info = self.pointInfo[@"user_attributes"];
-    if (info == nil) {
+    if (!MPIsArray(info)) {
         return NO;
     }
     if ([info containsObject:userAttributeKey]) {
@@ -87,7 +91,7 @@
         return NO;
     }
     NSArray *info = self.pointInfo[@"user_identities"];
-    if (info == nil) {
+    if (!MPIsArray(info)) {
         return NO;
     }
     if ([info containsObject:@(userIdentityType)]) {
@@ -114,7 +118,11 @@
 
 - (NSArray<NSString *>*)getPlannedUserIdentities:(NSDictionary *)point {
     NSDictionary *definition = [self getDefinitionFromPoint:point];
-    return [[self getConstrainedPropertiesKeySet:definition] valueForKeyPath:@"self.integerValue"];
+    NSArray *keySet = [self getConstrainedPropertiesKeySet:definition];
+    if (!MPIsArray(keySet)) {
+        return keySet;
+    }
+    return [keySet valueForKeyPath:@"self.integerValue"];
 }
 
 - (NSArray<NSString *>*)getPlannedProductImpressionProductCustomAttributes:(NSDictionary *)point {
@@ -123,7 +131,7 @@
     if (productImpressionData == _emptyDictionary) {
         return [[NSArray<NSString *> alloc] init];
     }
-    NSDictionary *items = productImpressionData[@"items"];
+    NSDictionary *items = MPIsDictionary(productImpressionData[@"items"]) ? productImpressionData[@"items"] : nil;
     if (items) {
         NSDictionary *products = [self getConstrainedProperties:items targetName:@"products"];
         if (products == _emptyDictionary) {
@@ -145,7 +153,7 @@
 }
 
 - (NSArray<NSString *> *)getPlannedAttributesFromProducts:(NSDictionary *) products {
-    NSDictionary *productItems = products[@"items"];
+    NSDictionary *productItems = MPIsDictionary(products[@"items"]) ? products[@"items"] : nil;
     if (productItems) {
         NSDictionary *customAttributes = [self getConstrainedProperties:productItems targetName:@"custom_attributes"];
         return [self getConstrainedPropertiesKeySet:customAttributes];
@@ -154,8 +162,9 @@
 }
 
 - (NSDictionary *)getDefinitionFromPoint:(NSDictionary *)point {
-    NSDictionary *validator = point[@"validator"];
-    return validator[@"definition"];
+    NSDictionary *validator = MPIsDictionary(point[@"validator"]) ? point[@"validator"] : nil;
+    NSDictionary *definition = validator[@"definition"];
+    return MPIsDictionary(definition) ? definition : nil;
 }
 
 - (NSDictionary *)getDataFromPoint:(NSDictionary *)point {
@@ -167,13 +176,13 @@
     if (point == _emptyDictionary) {
         return point;
     }
-    NSDictionary *properties = point[@"properties"];
-    NSNumber *additionalProperties = point[@"additionalProperties"];
-    NSDictionary *targetDictionary = properties[targetName];
+    NSDictionary *properties = MPIsDictionary(point[@"properties"]) ? point[@"properties"] : nil;
+    id additionalProperties = point[@"additionalProperties"];
+    NSDictionary *targetDictionary = MPIsDictionary(properties[targetName]) ? properties[targetName] : nil;
     if (properties) {
         return targetDictionary;
     } else {
-        if (additionalProperties && [additionalProperties boolValue] == false) {
+        if ((MPIsNumber(additionalProperties) || MPIsString(additionalProperties)) && [additionalProperties boolValue] == false) {
             return _emptyDictionary;
         } else {
             return nil;
@@ -185,9 +194,9 @@
     if (point == _emptyDictionary) {
         return [[NSArray<NSString *> alloc] init];
     }
-    NSNumber *additionalProperties = point[@"additionalProperties"];
-    NSDictionary *dataProperties = point[@"properties"];
-    if (additionalProperties && ![additionalProperties boolValue]) {
+    id additionalProperties = point[@"additionalProperties"];
+    NSDictionary *dataProperties = MPIsDictionary(point[@"properties"]) ? point[@"properties"] : nil;
+    if ((MPIsNumber(additionalProperties) || MPIsString(additionalProperties)) && ![additionalProperties boolValue]) {
         if (dataProperties) {
             return (NSArray<NSString *>*)dataProperties.allKeys;
         } else {
@@ -217,26 +226,26 @@
 }
 
 - (NSString *)keyForMatch:(NSDictionary *)match {
-    NSDictionary *criteria = match[@"criteria"];
+    NSDictionary *criteria = MPIsDictionary(match[@"criteria"]) ? match[@"criteria"] : nil;
     NSString *matchType = match[@"type"];
     if ([matchType isEqual:@"custom_event"]) {
         NSString *eventName = criteria[@"event_name"];
         NSString *eventType = criteria[@"custom_event_type"];
         
         NSString *key = nil;
-        if (eventName != nil && eventType != nil) {
+        if (MPIsString(eventName) && MPIsString(eventType)) {
             key = [self matchKeyForEventType:eventType eventName:eventName];
         }
         return key;
     } else if ([matchType isEqual:@"screen_view"]) {
         NSString *screenName = criteria[@"screen_name"];
-        return [self matchKeyForScreenName:screenName];
+        return MPIsString(screenName) ? [self matchKeyForScreenName:screenName] : nil;
     } else if ([matchType isEqual:@"product_action"]) {
         NSString *action = criteria[@"action"];
-        return [self matchKeyForMatchType:matchType key:action];
+        return MPIsString(action) ? [self matchKeyForMatchType:matchType key:action] : nil;
     } else if ([matchType isEqual:@"promotion_action"]) {//
         NSString *action = criteria[@"action"];
-        return [self matchKeyForMatchType:matchType key:action];
+        return MPIsString(action) ? [self matchKeyForMatchType:matchType key:action] : nil;
     } else if ([matchType isEqual:@"product_impression"]) {//
         return matchType;
     } else if ([matchType isEqual:@"user_attributes"]) {

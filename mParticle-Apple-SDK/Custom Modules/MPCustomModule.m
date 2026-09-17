@@ -14,6 +14,10 @@
 - (instancetype)initWithDictionary:(NSDictionary *)customModuleDictionary {
     self = [super init];
     if (self) {
+        if (!MPIsDictionary(customModuleDictionary)) {
+            return nil;
+        }
+        
         _customModuleId = customModuleDictionary[kMPRemoteConfigCustomModuleIdKey];
         NSArray *preferences = customModuleDictionary[kMPRemoteConfigCustomModulePreferencesKey];
         Class arrayClass = [NSArray class];
@@ -31,12 +35,16 @@
             }
             
             id temp = preferenceDictionary[kMPRemoteConfigCustomModuleLocationKey];
-            location = !MPIsNull(temp) ? (NSString *)temp : @"NSUserDefaults";
+            location = MPIsString(temp) ? (NSString *)temp : @"NSUserDefaults";
             
             temp = preferenceDictionary[kMPRemoteConfigCustomModulePreferenceSettingsKey];
             preferenceSettings = !MPIsNull(temp) && [temp isKindOfClass:arrayClass] ? (NSArray *)temp : nil;
             
-            for (NSDictionary *preferenceSettingDictionary in preferenceSettings) {
+            for (id preferenceSettingDictionary in preferenceSettings) {
+                if (!MPIsDictionary(preferenceSettingDictionary)) {
+                    continue;
+                }
+                
                 preference = [[MPCustomModulePreference alloc] initWithDictionary:preferenceSettingDictionary location:location moduleId:_customModuleId];
                 
                 if (preference) {
