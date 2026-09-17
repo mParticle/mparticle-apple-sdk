@@ -655,13 +655,23 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
             MPILogDebug(@"startKitRegister - launching kit %@ with configuration", kitRegister.code);
             if ([NSThread isMainThread]) {
-                [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+                [self launchKitRegister:kitRegister withConfiguration:configuration];
             } else {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+                    [self launchKitRegister:kitRegister withConfiguration:configuration];
                 });
             }
         }
+    }
+}
+
+// A kit that throws while reading its server configuration must not take the host app down with it,
+// and must not stop the remaining kits from launching.
+- (void)launchKitRegister:(id<MPExtensionKitProtocol>)kitRegister withConfiguration:(NSDictionary *)configuration {
+    @try {
+        [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+    } @catch (NSException *e) {
+        MPILogError(@"Kit %@ threw an exception while launching with its configuration: %@", kitRegister.code, e);
     }
 }
 
@@ -2722,7 +2732,11 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
             
             MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
-            kitHandler(kitRegister.wrapperInstance, kitConfiguration);
+            @try {
+                kitHandler(kitRegister.wrapperInstance, kitConfiguration);
+            } @catch (NSException *e) {
+                MPILogError(@"Kit handler threw an exception: %@", e);
+            }
         }
     }
 }

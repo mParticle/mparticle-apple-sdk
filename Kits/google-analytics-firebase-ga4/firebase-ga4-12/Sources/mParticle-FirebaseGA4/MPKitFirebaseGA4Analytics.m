@@ -113,7 +113,7 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
         NSAssert(NO, @"There is no instance of Firebase. Check the docs and review your code.");
         return [self execStatus:MPKitReturnCodeFail];
     } else {
-        if ([self.configuration[kMPFIRGA4ForwardRequestsServerSide] isEqualToString: @"True"]) {
+        if ([[self configurationStringForKey:kMPFIRGA4ForwardRequestsServerSide] isEqualToString: @"True"]) {
             forwardRequestsServerSide = true;
         }
 
@@ -621,9 +621,8 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
 
 - (NSString * _Nullable)userIdForFirebase:(FilteredMParticleUser *)currentUser {
     NSString *userId;
-    if (currentUser != nil && self.configuration[kMPFIRGA4ExternalUserIdentityType] != nil) {
-        NSString *externalUserIdentityType = self.configuration[kMPFIRGA4ExternalUserIdentityType];
-
+    NSString *externalUserIdentityType = [self configurationStringForKey:kMPFIRGA4ExternalUserIdentityType];
+    if (currentUser != nil && externalUserIdentityType != nil) {
         if ([externalUserIdentityType isEqualToString: kMPFIRUserIdValueCustomerID] && currentUser.userIdentities[@(MPUserIdentityCustomerId)] != nil) {
             userId = currentUser.userIdentities[@(MPUserIdentityCustomerId)];
         } else if ([externalUserIdentityType isEqualToString: kMPFIRUserIdValueMPID] && currentUser.userId != nil) {
@@ -652,11 +651,11 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
     }
 
     if (userId) {
-        if ([self.configuration[kMPFIRGA4ShouldHashUserId] isEqualToString: @"True"]) {
+        if ([[self configurationStringForKey:kMPFIRGA4ShouldHashUserId] isEqualToString: @"True"]) {
             userId = [MPKitAPI hashString:[userId lowercaseString]];
         }
     } else {
-        NSLog(@"External identity type of %@ not set on the user", self.configuration[kMPFIRGA4ExternalUserIdentityType]);
+        NSLog(@"External identity type of %@ not set on the user", externalUserIdentityType);
     }
     return userId;
 }
@@ -682,6 +681,18 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
 
 #pragma mark - Helpers
 
+// Server configuration values arrive as parsed JSON, so a value the mParticle UI describes as a
+// string may reach the kit as a number, boolean or container. Read them through this accessor so a
+// malformed value is ignored rather than sent a selector it does not respond to.
+- (NSString * _Nullable)configurationStringForKey:(NSString *)key {
+    id value = self.configuration[key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
 - (NSNumber * _Nullable)resolvedConsentForMappingKey:(NSString *)mappingKey
                                           defaultKey:(NSString *)defaultKey
                                         gdprConsents:(NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsents
@@ -697,22 +708,27 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
     }
 
     // Fallback to configuration defaults
-    NSString *value = self->_configuration[defaultKey];
+    NSString *value = [self configurationStringForKey:defaultKey];
     return [value isGranted];
 }
 
 - (NSArray<NSDictionary *>*)mappingForKey:(NSString*)key {
-    NSString *mappingJson = _configuration[key];
-    if (![mappingJson isKindOfClass:[NSString class]]) {
+    NSString *mappingJson = [self configurationStringForKey:key];
+    if (mappingJson == nil) {
         return nil;
     }
 
     NSData *jsonData = [mappingJson dataUsingEncoding:NSUTF8StringEncoding];
     NSError *error;
-    NSArray *result = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+    id result = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
 
     if (error) {
         NSLog(@"Failed to parse consent mapping JSON: %@", error.localizedDescription);
+        return nil;
+    }
+
+    if (![result isKindOfClass:[NSArray class]]) {
+        NSLog(@"Ignoring consent mapping for %@: expected an array, got %@", key, [result class]);
         return nil;
     }
 
@@ -721,12 +737,20 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
 
 - (NSDictionary*)convertToKeyValuePairs:(NSArray<NSDictionary *>*)mappings {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    for (NSDictionary *entry in mappings) {
-        NSString *value = entry[@"value"];
-        NSString *purpose = [entry[@"map"] lowercaseString];
-        if (value && purpose) {
-            dict[value] = purpose;
+    for (id entry in mappings) {
+        if (![entry isKindOfClass:[NSDictionary class]]) {
+            NSLog(@"Ignoring consent mapping entry: expected a dictionary, got %@", [entry class]);
+            continue;
         }
+
+        id value = entry[@"value"];
+        id purpose = entry[@"map"];
+        if (![value isKindOfClass:[NSString class]] || ![purpose isKindOfClass:[NSString class]]) {
+            NSLog(@"Ignoring consent mapping entry: expected string value and map");
+            continue;
+        }
+
+        dict[value] = [(NSString *)purpose lowercaseString];
     }
     return dict;
 }
