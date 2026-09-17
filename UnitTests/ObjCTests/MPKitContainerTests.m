@@ -60,6 +60,7 @@
 + (NSMutableSet<id<MPExtensionKitProtocol>> *)kitsRegistry;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentState *)state;
 - (void)scheduleConsentReplayForKit:(id<MPExtensionKitProtocol>)kitRegister;
+- (void)launchKitRegister:(id<MPExtensionKitProtocol>)kitRegister withConfiguration:(NSDictionary *)configuration;
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration;
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter;
 - (void)replayQueuedItems;
@@ -3780,6 +3781,50 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification object:nil userInfo:@{mParticleKitInstanceKey: @123456}];
     [self drainConsentReplayQueue];
     XCTAssertEqual(kit.receivedConsent.count, 1U);
+}
+
+- (void)testConsentReplaySkipsFailedLaunch {
+    MPKitRegister *registration = [self registerConsentReplayTestKit];
+    MPConsentReplayTestKit *kit = [[MPConsentReplayTestKit alloc] init];
+    registration.wrapperInstance = kit;
+    [kit didFinishLaunchingWithConfiguration:@{}];
+    kitContainer.kitConfigurations[@123456] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @123456}];
+    [MPPersistenceController_PRIVATE setDeviceConsentState:[self consentStateWithMarketing:NO includeCCPA:NO]];
+    id mock = OCMPartialMock(kit);
+    NSException *exception = [NSException exceptionWithName:NSInvalidArgumentException reason:@"Invalid launch configuration" userInfo:nil];
+    OCMStub([mock didFinishLaunchingWithConfiguration:[OCMArg any]]).andThrow(exception);
+    XCTAssertNoThrow([kitContainer launchKitRegister:registration withConfiguration:@{}]);
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(kit.receivedConsent.count, 0U);
+    [mock stopMocking];
+
+    [kitContainer launchKitRegister:registration withConfiguration:@{}];
+    [self drainConsentReplayQueue];
+    XCTAssertGreaterThan(kit.receivedConsent.count, 0U);
+}
+
+- (void)testConsentReplaySkipsFailedIdentityCallback {
+    MPKitRegister *registration = [self registerConsentReplayTestKit];
+    [kitContainer configureKits:@[@{@"id": @123456, @"as": @{@"test": @YES}}]];
+    [self drainConsentReplayQueue];
+    MPConsentReplayTestKit *kit = (id)registration.wrapperInstance;
+    [kit.receivedConsent removeAllObjects];
+    [MPPersistenceController_PRIVATE setDeviceConsentState:[self consentStateWithMarketing:NO includeCCPA:NO]];
+    __block NSUInteger calls = 0;
+    XCTAssertNoThrow([kitContainer forwardIdentitySDKCall:@selector(onLoginComplete:request:) kitHandler:^(id<MPKitProtocol> wrapper, MPKitConfiguration *configuration) {
+        calls++;
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Invalid identity configuration" userInfo:nil];
+    }]);
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(calls, 1U);
+    XCTAssertEqual(kit.receivedConsent.count, 0U);
+
+    [kitContainer forwardIdentitySDKCall:@selector(onLoginComplete:request:) kitHandler:^(id<MPKitProtocol> wrapper, MPKitConfiguration *configuration) {
+        kit.identityCompleted = YES;
+    }];
+    [self drainConsentReplayQueue];
+    XCTAssertGreaterThan(kit.receivedConsent.count, 0U);
+    XCTAssertTrue(kit.receivedConsentAfterIdentity);
 }
 
 - (void)testConsentReplayYieldsToConfigurationWaitingForMainQueue {
