@@ -31,6 +31,18 @@ final class MPKitFirebaseGA4AnalyticsSwiftTests: XCTestCase {
         XCTAssertEqual(result["analytics_storage"] as! String, "analytics")
     }
 
+    func test_convertToKeyValuePairs_skipsEntriesWithNonStringMembers() {
+        let mappings: [[String: Any]] = [
+            ["value": "ad_storage", "map": 5],
+            ["value": 5, "map": "Advertising"],
+            ["value": "analytics_storage", "map": "Analytics"]
+        ]
+
+        let result = kit.convert(toKeyValuePairs: mappings)
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result["analytics_storage"] as! String, "analytics")
+    }
+
     // MARK: - mappingForKey
 
     func test_mappingForKey_withValidJSON_returnsArray() {
@@ -51,6 +63,17 @@ final class MPKitFirebaseGA4AnalyticsSwiftTests: XCTestCase {
         kit.configuration["consentMappingSDK"] = "{ not valid json }"
         let result = kit.mapping(forKey: "consentMappingSDK")
         XCTAssertNil(result)
+    }
+
+    // Well-formed JSON of the wrong shape is the case that syntax validation alone does not cover.
+    func test_mappingForKey_withObjectRoot_returnsNil() {
+        kit.configuration["consentMappingSDK"] = #"{ "ad_storage": "advertising" }"#
+        XCTAssertNil(kit.mapping(forKey: "consentMappingSDK"))
+    }
+
+    func test_mappingForKey_withNonStringConfigurationValue_returnsNil() {
+        kit.configuration["consentMappingSDK"] = 5
+        XCTAssertNil(kit.mapping(forKey: "consentMappingSDK"))
     }
 
     // MARK: - resolvedConsentForMappingKey
@@ -100,6 +123,18 @@ final class MPKitFirebaseGA4AnalyticsSwiftTests: XCTestCase {
     }
 
     func test_resolvedConsentForMappingKey_withNoMappingOrDefault_returnsNil() {
+        let result = kit.resolvedConsent(
+            forMappingKey: "ad_storage",
+            defaultKey: "defaultAdStorageConsentSDK",
+            gdprConsents: [:],
+            mapping: [:]
+        )
+        XCTAssertNil(result)
+    }
+
+    func test_resolvedConsentForMappingKey_withNonStringDefault_returnsNil() {
+        kit.configuration["defaultAdStorageConsentSDK"] = true
+
         let result = kit.resolvedConsent(
             forMappingKey: "ad_storage",
             defaultKey: "defaultAdStorageConsentSDK",
