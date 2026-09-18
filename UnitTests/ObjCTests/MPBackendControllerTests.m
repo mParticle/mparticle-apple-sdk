@@ -395,7 +395,7 @@
         
         XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
         
-        [[mockBackendController expect] uploadOpenSessions:sessions completionHandler:OCMOCK_ANY];
+        [(MPBackendController_PRIVATE *)[mockBackendController expect] waitForKitsAndUploadWithCompletionHandler:OCMOCK_ANY];
         
         [self.backendController processOpenSessionsEndingCurrent:YES completionHandler:nil];
         

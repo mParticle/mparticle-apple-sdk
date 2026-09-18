@@ -1,4 +1,5 @@
 import Foundation
+import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 final class MPBackendSessionFixture {
@@ -19,10 +20,44 @@ final class MPBackendSessionFixture {
         },
         runningInBackground: { [unowned self] in background },
         enqueueOnMessage: { [unowned self] action in persistence.calls.append("enqueue"); enqueued.append(action) },
-        upload: { [unowned self] completion in uploads += 1; completion?() },
+        upload: { [unowned self] completion in uploads += 1; persistence.calls.append("upload"); completion?() },
         logger: { nil }
     )
     lazy var writer = MPBackendMessageWriter(state: state, dependencies: dependencies)
+    var automaticTracking = true
+    var userID: NSNumber = 1
+    var isMessageQueue = true
+    var scheduled: [(TimeInterval, () -> Void)] = []
+    var pendingUUID: String?
+    var pendingStartTime: Double?
+    var began: [MPSessionPRIVATE] = []
+    var ended: [MPSessionPRIVATE] = []
+    var applicationReads = 0
+    var deviceReads = 0
+    var clearPending: (() -> Void)?
+    var onBegin: ((MPSessionPRIVATE) -> Void)?
+    var onEnd: ((MPSessionPRIVATE) -> Void)?
+    lazy var lifecycle = MPBackendSessionLifecycleDependencies(
+        automaticSessionTracking: { [unowned self] in automaticTracking },
+        currentUserID: { [unowned self] in userID },
+        applicationInfo: { [unowned self] in applicationReads += 1; return ["app": "info"] },
+        deviceInfo: { [unowned self] _ in deviceReads += 1; return ["device": "info"] },
+        executeOnMessage: { [unowned self] action in
+            if isMessageQueue { action() } else { enqueued.append(action) }
+        },
+        schedule: { [unowned self] delay, action in scheduled.append((delay, action)) },
+        createPendingSession: { [unowned self] uuid in pendingUUID = uuid },
+        setPendingSessionStartTime: { [unowned self] time in pendingStartTime = time },
+        clearPendingSession: { [unowned self] in clearPending?(); pendingUUID = nil; pendingStartTime = nil },
+        broadcastBegin: { [unowned self] session in began.append(session); onBegin?(session) },
+        broadcastEnd: { [unowned self] session in
+            persistence.calls.append("broadcastEnd"); ended.append(session); onEnd?(session)
+        },
+        clearEmptyTimedEvents: { [unowned self] in persistence.calls.append("clearEvents") }
+    )
+    lazy var coordinator = MPBackendSessionCoordinator(
+        state: state, dependencies: dependencies, lifecycle: lifecycle, writer: writer
+    )
 
     init() {
         let connector = MPUserDefaultsConnectorMock()
@@ -59,10 +94,15 @@ final class MPBackendRecordingPersistence: NSObject, MPBackendPersistence {
     var savedMessages: [MPMessagePRIVATE] = []
     var savedSessions: [MPSessionPRIVATE] = []
     var existingEndMessage: MPMessagePRIVATE?
+    var sessions: [MPSessionPRIVATE] = []
+    var previousSession: MPSessionPRIVATE?
+    var archived: [MPSessionPRIVATE] = []
+    var onSaveMessage: (() -> Void)?
 
     func objectiveCSaveMessage(_ message: MPMessagePRIVATE) {
         calls.append("message")
         savedMessages.append(message)
+        onSaveMessage?()
     }
     func objectiveCSaveBreadcrumb(_: MPMessagePRIVATE) { calls.append("breadcrumb") }
     func objectiveCSaveSession(_ session: MPSessionPRIVATE) {
@@ -83,10 +123,14 @@ final class MPBackendRecordingPersistence: NSObject, MPBackendPersistence {
     func objectiveCCloseDatabase() -> Bool { true }
     func objectiveCPurgeMemory() {}
     func objectiveCDeleteRecords(olderThan _: TimeInterval) {}
-    func objectiveCFetchSessions() -> NSMutableArray? { nil }
+    func objectiveCFetchSessions() -> NSMutableArray? { calls.append("fetchSessions"); return NSMutableArray(array: sessions) }
     func objectiveCFetchPossibleSessionsFromCrash() -> NSArray? { nil }
-    func objectiveCArchiveSession(_: MPSessionPRIVATE) -> MPSessionPRIVATE? { nil }
-    func objectiveCFetchPreviousSession() -> MPSessionPRIVATE? { nil }
+    func objectiveCArchiveSession(_ session: MPSessionPRIVATE) -> MPSessionPRIVATE? {
+        calls.append("archive")
+        archived.append(session)
+        return session
+    }
+    func objectiveCFetchPreviousSession() -> MPSessionPRIVATE? { calls.append("previous"); return previousSession }
     func objectiveCDeletePreviousSession() {}
     func objectiveCDeleteSession(_: MPSessionPRIVATE) {}
     func objectiveCDeleteAllSessions(except _: MPSessionPRIVATE?) {}
@@ -104,4 +148,16 @@ final class MPBackendRecordingPersistence: NSObject, MPBackendPersistence {
     func objectiveCFetchForwardRecords() -> NSArray? { nil }
     func objectiveCDeleteForwardRecords(ids _: [NSNumber]) {}
     func objectiveCFetchIntegrationAttributes() -> NSArray? { nil }
+}
+
+// Exercise workflows on a message queue, including the builder's off-main presentation context.
+class MPBackendWorkflowTestCase: XCTestCase {
+    func onMessageQueue(_ action: @escaping () throws -> Void) {
+        let completed = expectation(description: "message queue workflow")
+        DispatchQueue(label: "com.mparticle.tests.backend-workflow").async {
+            do { try action() } catch { XCTFail("Workflow failed: \(error)") }
+            completed.fulfill()
+        }
+        wait(for: [completed], timeout: 10)
+    }
 }
