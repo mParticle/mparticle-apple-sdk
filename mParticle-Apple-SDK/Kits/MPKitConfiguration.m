@@ -53,9 +53,11 @@
     [self setFilters:configurationDictionary[kMPRemoteConfigKitHashesKey]];
     
     // Configuration
-    _configuration = configurationDictionary[@"as"];
-    if (_configuration) {
-        NSMutableDictionary *configDictionary = [_configuration mutableCopy];
+    // `as` is server-supplied parsed JSON, so anything but a dictionary is dropped rather than
+    // reaching -mutableCopy and the keyed subscript assignments below, which raise on an array.
+    NSDictionary *configurationBlock = configurationDictionary[@"as"];
+    if (MPIsDictionary(configurationBlock)) {
+        NSMutableDictionary *configDictionary = [configurationBlock mutableCopy];
         
         if (_addEventAttributeList) {
             configDictionary[@"eaa"] = _addEventAttributeList;

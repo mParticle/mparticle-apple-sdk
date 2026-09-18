@@ -53,22 +53,64 @@ static void(^deviceAttributionCallback)(NSDictionary *);
     [MParticle registerExtension:kitRegister];
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+- (NSNumber *)configurationNumberForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value == nil) {
+        return nil;
+    }
+    if ([value isKindOfClass:[NSNumber class]]) {
+        return value;
+    }
+    if ([value isKindOfClass:[NSString class]]) {
+        return @([value intValue]);
+    }
+    NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+    return nil;
+}
+
 #pragma mark - MPKitInstanceProtocol methods
 
 #pragma mark Kit instance and lifecycle
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
 
-    [self extractDataFromConfiguration:configuration];
-
-    // If the app key wasn't initialized, error code must be returned to alert mParticle
-    if (!apiKey) {
+    if (![configuration isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"Ignoring launch configuration: expected a dictionary, got %@", [configuration class]);
+        _configuration = @{};
         return [[MPKitExecStatus alloc]
                 initWithSDKCode:[[self class] kitCode]
                 returnCode:MPKitReturnCodeRequirementsNotMet];
     }
 
-    _configuration = configuration;
+    _configuration = [configuration copy];
+
+    // Checks the key this configuration supplied, not the file-scope global, so a missing or
+    // malformed apiKey cannot launch the kit on the strength of an earlier launch's credentials.
+    if ([self configurationStringForKey:API_KEY].length == 0) {
+        return [[MPKitExecStatus alloc]
+                initWithSDKCode:[[self class] kitCode]
+                returnCode:MPKitReturnCodeRequirementsNotMet];
+    }
+
+    // After the requirements check, so a rejected configuration leaves no credentials behind.
+    [self extractDataFromConfiguration];
 
     [self start];
 
@@ -77,17 +119,20 @@ static void(^deviceAttributionCallback)(NSDictionary *);
             returnCode:MPKitReturnCodeSuccess];
 }
 
-- (void)extractDataFromConfiguration:(NSDictionary * _Nonnull)configuration {
-    if(configuration[API_KEY] != nil){
-        apiKey = configuration[API_KEY];
+- (void)extractDataFromConfiguration {
+    NSString *configuredApiKey = [self configurationStringForKey:API_KEY];
+    if (configuredApiKey != nil) {
+        apiKey = configuredApiKey;
     }
 
-    if(configuration[SECRET_KEY] != nil){
-        secret = configuration[SECRET_KEY];
+    NSString *configuredSecret = [self configurationStringForKey:SECRET_KEY];
+    if (configuredSecret != nil) {
+        secret = configuredSecret;
     }
 
-    if(configuration[DDL_TIMEOUT] != nil){
-        ddlTimeout = [configuration[DDL_TIMEOUT] intValue];
+    NSNumber *configuredDdlTimeout = [self configurationNumberForKey:DDL_TIMEOUT];
+    if (configuredDdlTimeout != nil) {
+        ddlTimeout = configuredDdlTimeout.intValue;
         [Singular setDeferredDeepLinkTimeout:ddlTimeout];
     }
 }
