@@ -6,6 +6,7 @@ public final class MPBackendSessionState: NSObject {
     private let lock = NSRecursiveLock()
     private var storedSession: MPSessionPRIVATE?
 
+    @objc public var sessionTimeout: TimeInterval = 0
     @objc public var timeOfLastEventInBackground: TimeInterval = 0
     @objc public var timeAppWentToBackground: TimeInterval = 0
     @objc public var timeAppWentToBackgroundInCurrentSession: TimeInterval = 0

@@ -74,26 +74,30 @@ final class MPBackendSessionFixture {
         return value
     }
 
-    var timeout: TimeInterval = 60
+    var timeout: TimeInterval {
+        get { state.sessionTimeout }
+        set { state.sessionTimeout = newValue }
+    }
     var maxAge: NSNumber?
     lazy var lifecycleDependencies = MPBackendLifecycleDependencies(
-        sessionTimeout: { [unowned self] in timeout },
         persistenceMaxAge: { [unowned self] in maxAge },
         setRunningInBackground: { [unowned self] value in
             background = value; persistence.calls.append("background:\(value)")
         },
         clearIdentityCache: { [unowned self] in persistence.calls.append("clearCache") },
-        requestConfig: { [unowned self] in persistence.calls.append("config") },
-        beginBackgroundTask: { [unowned self] in persistence.calls.append("beginTask") },
-        endBackgroundTask: { [unowned self] in persistence.calls.append("endTask") },
-        beginUploadTimer: { [unowned self] in persistence.calls.append("beginTimer") },
-        beginBackgroundTimeCheckLoop: { [unowned self] in persistence.calls.append("beginLoop") },
-        cancelBackgroundTimeCheckLoop: { [unowned self] in persistence.calls.append("cancelLoop") }
+        requestConfig: { [unowned self] in persistence.calls.append("config") }
     )
-    lazy var application = MPBackendLifecycleCoordinator(
-        state: state, dependencies: dependencies, sessionDependencies: lifecycle,
-        lifecycle: lifecycleDependencies, sessions: coordinator, writer: writer
-    )
+    lazy var scheduling = MPBackendSchedulingFixture(persistence: persistence)
+    lazy var application: MPBackendLifecycleCoordinator = {
+        let owner = MPBackendLifecycleCoordinator(
+            state: state, dependencies: dependencies, sessionDependencies: lifecycle,
+            lifecycle: lifecycleDependencies, sessions: coordinator, writer: writer,
+            scheduling: scheduling.dependencies
+        )
+        owner.backgroundCheckQueue = scheduling.queue
+        owner.backgroundTaskIdentifier = UInt.max
+        return owner
+    }()
 
     func drainMessageQueue() {
         let previous = isMessageQueue
@@ -112,6 +116,7 @@ final class MPBackendSessionFixture {
         machine.optOut = false
         machine.triggerMessageTypes = nil
         machine.triggerEventTypes = nil
+        state.sessionTimeout = 60
         dependencies.now = { 200 }
     }
 
