@@ -19,6 +19,9 @@ static NSNumber * const kTestRoktKitId = @181;
 @property (nonatomic, copy) NSString *sessionIdToReturn;
 @property (nonatomic, copy) NSString *lastDiagnosticCode;
 @property (nonatomic, assign) BOOL handleURLCallbackReturn;
+@property (nonatomic, strong) NSDictionary *configuration;
+@property (nonatomic, assign) BOOL started;
+- (void)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration;
 @property (nonatomic, strong) NSURL *lastHandleURLCallbackURL;
 - (NSString *)getSessionId;
 - (void)logMParticleApiDiagnostic:(NSString *)code;
@@ -26,6 +29,9 @@ static NSNumber * const kTestRoktKitId = @181;
 @end
 
 @implementation MPRoktTestKitInstance
+- (void)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    self.configuration = configuration;
+}
 - (NSString *)getSessionId {
     return self.sessionIdToReturn;
 }
@@ -78,6 +84,8 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
 @property (nonatomic, strong) id mockContainer;
 @property (nonatomic, strong) id identityMock;
 @property (nonatomic, strong) id mockApiResult;
+@property (nonatomic, strong) MPRoktTestKitInstance *configurationKit;
+@property (nonatomic, strong) NSSet *configurationKitRegisters;
 @end
 
 @implementation MPRoktTests
@@ -130,6 +138,8 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     self.mockContainer = nil;
     self.identityMock = nil;
     self.mockApiResult = nil;
+    self.configurationKit = nil;
+    self.configurationKitRegisters = nil;
     [super tearDown];
 }
 
@@ -374,14 +384,23 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)mp_stubSharedInstanceWithOriginalConfig:(NSArray *)kitConfig kitsInitialized:(BOOL)kitsInitialized {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
+- (void)mp_stubSharedInstanceWithKitConfiguration:(NSDictionary *)configuration kitsInitialized:(BOOL)kitsInitialized {
+    self.mockInstance = OCMPartialMock([MParticle sharedInstance]);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
+    self.configurationKit = [[MPRoktTestKitInstance alloc] init];
+    [self.configurationKit didFinishLaunchingWithConfiguration:configuration];
+    id<MPExtensionKitProtocol> kitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([kitRegister code]).andReturn(kTestRoktKitId);
+    OCMStub([kitRegister wrapperInstance]).andReturn(self.configurationKit);
+    self.configurationKitRegisters = [NSSet setWithObject:kitRegister];
+    OCMStub([self.mockContainer registeredKits]).andDo(^(NSInvocation *invocation) {
+        id kits = self.configurationKitRegisters;
+        [invocation setReturnValue:&kits];
+    });
+    OCMReject([self.mockContainer originalConfig]);
     [[[self.mockContainer stub] andReturnValue:OCMOCK_VALUE(kitsInitialized)] kitsInitialized];
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    OCMStub([self.mockInstance kitContainer_PRIVATE]).andReturn(self.mockContainer);
+    OCMStub([self.mockInstance sharedInstance]).andReturn(self.mockInstance);
 }
 
 - (void)mp_expectSelectPlacementsForwardWithIdentifier:(NSString *)identifier
@@ -424,20 +443,21 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)testGetRoktKitConfigurationReturnsNilWhenOriginalConfigEmpty {
-    [self mp_stubSharedInstanceWithOriginalConfig:@[] kitsInitialized:NO];
+- (void)testGetRoktKitConfigurationReturnsNilBeforeLaunch {
+    [self mp_stubSharedInstanceWithKitConfiguration:nil kitsInitialized:NO];
     XCTAssertNil([self.rokt getRoktKitConfiguration]);
     XCTAssertNil([self.rokt getRoktPlacementAttributesMapping]);
 }
 
-- (void)testGetRoktKitConfigurationReturnsNilWhenOriginalConfigLacksKit181 {
-    NSArray *kitConfig = @[@{@"id": @80, kMPRemoteConfigKitConfigurationKey: @{}}];
-    [self mp_stubSharedInstanceWithOriginalConfig:kitConfig kitsInitialized:YES];
+- (void)testGetRoktKitConfigurationReturnsNilWithoutRoktWrapper {
+    [self mp_stubSharedInstanceWithKitConfiguration:@{} kitsInitialized:YES];
+    self.configurationKitRegisters = [NSSet set];
     XCTAssertNil([self.rokt getRoktKitConfiguration]);
 }
 
-- (void)testSelectPlacementsForwardsWhenOriginalConfigEmptyBeforeKitsInitialized {
-    [self mp_stubSharedInstanceWithOriginalConfig:@[] kitsInitialized:NO];
+
+- (void)testSelectPlacementsForwardsBeforeKitLaunch {
+    [self mp_stubSharedInstanceWithKitConfiguration:nil kitsInitialized:NO];
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
     [self mp_expectSelectPlacementsForwardWithIdentifier:@"checkout" unmappedAttributes:attributes];
 
@@ -447,8 +467,8 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)testSelectPlacementsForwardsWhenKitsInitializedFromCacheButOriginalConfigEmpty {
-    [self mp_stubSharedInstanceWithOriginalConfig:@[] kitsInitialized:YES];
+- (void)testSelectPlacementsForwardsWithoutLaunchConfigurationAfterKitsInitialize {
+    [self mp_stubSharedInstanceWithKitConfiguration:nil kitsInitialized:YES];
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
     [self mp_expectSelectPlacementsForwardWithIdentifier:@"checkout" unmappedAttributes:attributes];
 
@@ -458,24 +478,19 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)testSelectPlacementsForwardsWhenOriginalConfigLacksKit181 {
-    NSArray *kitConfig = @[@{@"id": @80, kMPRemoteConfigKitConfigurationKey: @{}}];
-    [self mp_stubSharedInstanceWithOriginalConfig:kitConfig kitsInitialized:YES];
+- (void)testSelectPlacementsForwardsWithoutRoktWrapper {
+    [self mp_stubSharedInstanceWithKitConfiguration:nil kitsInitialized:YES];
+    self.configurationKitRegisters = [NSSet set];
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
     [self mp_expectSelectPlacementsForwardWithIdentifier:@"checkout" unmappedAttributes:attributes];
-
     [self.rokt selectPlacements:@"checkout" attributes:attributes];
-
     [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)testSelectPlacementsForwardsWhenKit181IsInOriginalConfigEvenWithoutAttributeMap {
-    NSArray *kitConfig = @[@{
-        @"id": kTestRoktKitId,
-        kMPRemoteConfigKitConfigurationKey: @{}
-    }];
-    [self mp_stubSharedInstanceWithOriginalConfig:kitConfig kitsInitialized:YES];
+
+- (void)testSelectPlacementsForwardsWithLaunchConfigurationWithoutAttributeMap {
+    [self mp_stubSharedInstanceWithKitConfiguration:@{} kitsInitialized:YES];
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"forwarded to kit container"];
     SEL roktSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
@@ -539,27 +554,19 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
 }
 
 - (void)testGetRoktPlacementAttributesMapping {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    NSArray *kitConfig = @[@{
-        @"id": kTestRoktKitId,
-        kMPRemoteConfigKitConfigurationKey: @{
-            @"AllowJavaScriptResponse": @"True",
-            @"accountId": @12345,
-            @"onboardingExpProvider": @"None",
-            kMPPlacementAttributesMapping: @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
-            @"sandboxMode": @"True",
-            @"eau": @0,
-            @"hs": @{
-                @"pur": @{},
-                @"reg": @{}
-            }
+    NSDictionary *configuration = @{
+        @"AllowJavaScriptResponse": @"True",
+        @"accountId": @"test_account_id",
+        @"onboardingExpProvider": @"None",
+        kMPPlacementAttributesMapping: @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
+        @"sandboxMode": @"True",
+        @"eau": @0,
+        @"hs": @{
+            @"pur": @{},
+            @"reg": @{}
         }
-    }];
-    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    };
+    [self mp_stubSharedInstanceWithKitConfiguration:configuration kitsInitialized:YES];
     
     NSArray<NSDictionary<NSString *, NSString *> *> *testResult = [self.rokt getRoktPlacementAttributesMapping];
     NSArray<NSDictionary<NSString *, NSString *> *> *expectedResult = @[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname", @"jsmap": [NSNull null]}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode", @"jsmap": [NSNull null]}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname", @"jsmap": [NSNull null]}];
@@ -568,21 +575,13 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
 }
 
 - (void)testGetRoktHashedEmailUserIdentityType {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    NSArray *kitConfig = @[@{
-        @"id": kTestRoktKitId,
-        kMPRemoteConfigKitConfigurationKey: @{
-            @"AllowJavaScriptResponse": @"True",
-            @"accountId": @12345,
-            kMPHashedEmailUserIdentityType: @"other3",
-            @"sandboxMode": @"True"
-        }
-    }];
-    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    NSDictionary *configuration = @{
+        @"AllowJavaScriptResponse": @"True",
+        @"accountId": @"test_account_id",
+        kMPHashedEmailUserIdentityType: @"other3",
+        @"sandboxMode": @"True"
+    };
+    [self mp_stubSharedInstanceWithKitConfiguration:configuration kitsInitialized:YES];
     
     NSNumber *testResult = [self.rokt getRoktHashedEmailUserIdentityType];
     
@@ -590,20 +589,12 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
 }
 
 - (void)testGetRoktHashedEmailUserIdentityTypeReturnsNilWhenNotConfigured {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    NSArray *kitConfig = @[@{
-        @"id": kTestRoktKitId,
-        kMPRemoteConfigKitConfigurationKey: @{
-            @"AllowJavaScriptResponse": @"True",
-            @"accountId": @12345,
-            @"sandboxMode": @"True"
-        }
-    }];
-    [[[self.mockContainer stub] andReturn:kitConfig] originalConfig];
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    NSDictionary *configuration = @{
+        @"AllowJavaScriptResponse": @"True",
+        @"accountId": @"test_account_id",
+        @"sandboxMode": @"True"
+    };
+    [self mp_stubSharedInstanceWithKitConfiguration:configuration kitsInitialized:YES];
     
     NSNumber *testResult = [self.rokt getRoktHashedEmailUserIdentityType];
     
@@ -1336,6 +1327,132 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     [self waitForExpectationsWithTimeout:0.3 handler:nil];
     XCTAssertTrue(identifyCalled);
     XCTAssertTrue(identifyCompletionInvokedBySDK);
+}
+
+#pragma mark - Untrusted Rokt configuration
+
+- (void)mp_stubSecurityConfiguration {
+    [self mp_stubSharedInstanceWithKitConfiguration:@{} kitsInitialized:YES];
+}
+
+- (void)testRoktConfigurationUsesLaunchSettingsBeforeProviderStartsAndAfterRefresh {
+    [self mp_stubSecurityConfiguration];
+    NSDictionary *launched = @{kMPHashedEmailUserIdentityType: @"OTHER4"};
+    [self.configurationKit didFinishLaunchingWithConfiguration:launched];
+    XCTAssertFalse(self.configurationKit.started);
+    XCTAssertEqualObjects([self.rokt getRoktKitConfiguration], launched);
+    XCTAssertEqualObjects([self.rokt getRoktHashedEmailUserIdentityType], @(MPIdentityOther4));
+
+    self.configurationKit.configuration = @{kMPHashedEmailUserIdentityType: @"other3"};
+    XCTAssertEqualObjects([self.rokt getRoktHashedEmailUserIdentityType], @(MPIdentityOther3));
+    self.configurationKit.configuration = nil;
+    XCTAssertNil([self.rokt getRoktKitConfiguration]);
+}
+
+- (void)testRoktConfigurationRejectsInvalidSettingsAndHashedEmailTypes {
+    [self mp_stubSecurityConfiguration];
+    for (id value in @[[NSNull null], @1, @"settings", @[]]) {
+        self.configurationKit.configuration = value;
+        XCTAssertNil([self.rokt getRoktKitConfiguration]);
+        XCTAssertNil([self.rokt getRoktPlacementAttributesMapping]);
+        XCTAssertNil([self.rokt getRoktHashedEmailUserIdentityType]);
+    }
+    for (id value in @[[NSNull null], @1, @YES, @[], @{}, @"", @"unknown"]) {
+        self.configurationKit.configuration = @{kMPHashedEmailUserIdentityType: value};
+        XCTAssertNil([self.rokt getRoktHashedEmailUserIdentityType]);
+    }
+    self.configurationKit.configuration = @{kMPHashedEmailUserIdentityType: @"OTHER4"};
+    XCTAssertEqualObjects([self.rokt getRoktHashedEmailUserIdentityType], @(MPIdentityOther4));
+}
+
+- (void)testRoktConfigurationIgnoresMalformedMappings {
+    [self mp_stubSecurityConfiguration];
+    NSArray *invalidMappings = @[[NSNull null], @1, @YES, @{}, @[], @"", @"%ZZ", @"[",
+                                @"{}", @"{\"x\":1}", @"1", @"null", @"[1,\"x\",null,[]]",
+                                @"[{}, {\"map\":\"email\"}, {\"value\":\"target\"}]",
+                                @"[{\"map\":\"email\",\"value\":7}]",
+                                @"[{\"map\":1,\"value\":\"target\"}]",
+                                @"[{\"map\":\"\",\"value\":\"target\"},{\"map\":\"email\",\"value\":\"\"}]"];
+    NSDictionary *attributes = @{@"email": @"synthetic@example.invalid", @"sandbox": @"true"};
+    for (id value in invalidMappings) {
+        self.configurationKit.configuration = @{kMPPlacementAttributesMapping: value};
+        NSArray *mapping = [self.rokt getRoktPlacementAttributesMapping];
+        XCTAssertEqualObjects(mapping, @[], @"Malformed mapping: %@", value);
+        XCTAssertEqualObjects([self.rokt mapPlacementAttributes:attributes attributeMap:mapping forUser:nil], attributes);
+    }
+}
+
+- (void)testRoktConfigurationKeepsValidMappingsInOrder {
+    [self mp_stubSecurityConfiguration];
+    NSString *mapping = @"[1,{\"map\":\"source\",\"value\":\"intermediate\"},{\"map\":\"source\",\"value\":7},{\"map\":\"intermediate\",\"value\":\"target\"}]";
+    for (NSString *value in @[mapping, [mapping stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet alphanumericCharacterSet]]]) {
+        self.configurationKit.configuration = @{kMPPlacementAttributesMapping: value};
+        NSArray *parsed = [self.rokt getRoktPlacementAttributesMapping];
+        XCTAssertEqual(parsed.count, 2U);
+        XCTAssertEqualObjects(([self.rokt mapPlacementAttributes:@{@"source": @"kept", @"sandbox": @"false"}
+                                                  attributeMap:parsed forUser:nil]),
+                              (@{@"target": @"kept", @"sandbox": @"false"}));
+    }
+}
+
+- (void)testRoktMappingNeverPersistsInvalidKeys {
+    id user = OCMStrictClassMock([MParticleUser class]);
+    OCMExpect([(MParticleUser *)user setUserAttribute:@"email" value:@"synthetic@example.invalid"]);
+    NSArray *mapping = @[@1, @{@"map": @"email"}, @{@"map": @"email", @"value": @7}];
+    NSDictionary *attributes = @{@"email": @"synthetic@example.invalid", @"sandbox": @"true", @7: @"invalid"};
+    XCTAssertNoThrow([self.rokt mapPlacementAttributes:attributes attributeMap:mapping forUser:user]);
+    OCMVerifyAll(user);
+    [user stopMocking];
+}
+
+- (void)mp_verifyMalformedConfigurationForwardingWithIdentify:(BOOL)identify {
+    [self mp_stubSecurityConfiguration];
+    self.configurationKit.configuration = @{kMPPlacementAttributesMapping: @"[{\"map\":\"email\",\"value\":7}]",
+                                           kMPHashedEmailUserIdentityType: [NSNull null]};
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
+    OCMStub([self.identityMock currentUser]).andReturn(nil);
+    __block NSUInteger identifies = 0;
+    OCMStub([self.identityMock identify:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        identifies++;
+        void (^completion)(MPIdentityApiResult *, NSError *);
+        [invocation getArgument:&completion atIndex:3];
+        dispatch_async(dispatch_get_main_queue(), ^{ completion(nil, nil); });
+    });
+    NSDictionary *attributes = identify ? @{@"email": @"synthetic@example.invalid"} : @{@"source": @"kept"};
+    NSArray<NSString *> *selectors = @[
+        @"selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:",
+        @"selectShoppableAdsWithIdentifier:attributes:config:onEvent:filteredUser:"
+    ];
+    for (NSString *selectorName in selectors) {
+        SEL selector = NSSelectorFromString(selectorName);
+        XCTestExpectation *forwarded = [self expectationWithDescription:selectorName];
+        OCMExpect([self.mockContainer forwardSDKCall:selector event:nil
+                                         parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+            NSDictionary *payload = params[1];
+            for (NSString *key in attributes) {
+                XCTAssertEqualObjects(payload[key], attributes[key]);
+            }
+            XCTAssertNotNil(payload[@"sandbox"]);
+            XCTAssertNil(payload[@7]);
+            return YES;
+        }] messageType:MPMessageTypeEvent userInfo:nil]).andDo(^(NSInvocation *invocation) {
+            [forwarded fulfill];
+        });
+    }
+    [self.rokt selectPlacements:@"checkout" attributes:attributes];
+    [self.rokt selectShoppableAds:@"checkout" attributes:attributes config:nil onEvent:nil];
+    [self waitForExpectationsWithTimeout:kMPRoktAsyncTimeout handler:nil];
+    XCTAssertEqual(identifies, identify ? 2U : 0U);
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testMalformedRoktConfigurationForwardsBothPlacementAPIsSynchronously {
+    [self mp_verifyMalformedConfigurationForwardingWithIdentify:NO];
+}
+
+- (void)testMalformedRoktConfigurationForwardsBothPlacementAPIsAfterIdentify {
+    [self mp_verifyMalformedConfigurationForwardingWithIdentify:YES];
 }
 
 #pragma mark - mapPlacementAttributes
