@@ -91,14 +91,18 @@ extension MPBackendLifecycleCoordinator {
     @objc public var sessionTimeout: TimeInterval {
         get { state.sessionTimeout }
         set {
-            guard newValue != state.sessionTimeout else { return }
-            state.sessionTimeout = MPSessionTimingPolicy.clampedSessionTimeout(newValue, minimum: 1)
-            dependencies.logger()?.debug(String(format: "Set Session Timeout: %.0f", state.sessionTimeout))
+            state.withSessionLock {
+                guard newValue != state.sessionTimeout else { return }
+                state.sessionTimeout = MPSessionTimingPolicy.clampedSessionTimeout(newValue, minimum: 1)
+                dependencies.logger()?.debug(String(format: "Set Session Timeout: %.0f", state.sessionTimeout))
+            }
         }
     }
 
     @objc public var uploadInterval: TimeInterval {
         get {
+            timerLock.lock()
+            defer { timerLock.unlock() }
             if storedUploadInterval == 0 {
                 storedUploadInterval = MPSessionTimingPolicy.defaultUploadInterval(
                     isDevelopment: scheduling.isDevelopment(), debugInterval: 60, productionInterval: 600
@@ -108,6 +112,8 @@ extension MPBackendLifecycleCoordinator {
             return storedUploadInterval
         }
         set {
+            timerLock.lock()
+            defer { timerLock.unlock() }
             guard newValue != storedUploadInterval else { return }
             storedUploadInterval = MPSessionTimingPolicy.clampedUploadInterval(newValue, tvOSCeiling: 600)
             if uploadTimer != nil { beginUploadTimer() }
