@@ -1,5 +1,8 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const { setTimeout: delay } = require("node:timers/promises");
 const {
   classifyFiles,
   evaluateTeamReviewState,
@@ -40,6 +43,21 @@ const safeFile = {
 };
 
 const safeTree = [{ mode: "100644", path: "README.md", type: "blob" }];
+
+test("serializes every Gate trigger without replacing queued evaluations", () => {
+  const workflow = fs.readFileSync(
+    path.join(__dirname, "../../../workflows/rokt-safe-pr-gate.yml"),
+    "utf8",
+  );
+  const concurrency = workflow.match(
+    /^concurrency:\n((?:[ \t].*\n|\n)*)/m,
+  )?.[1];
+
+  assert.ok(concurrency, "The Gate needs workflow-level concurrency.");
+  assert.match(concurrency, /^  group: rokt-safe-pr-gate$/m);
+  assert.match(concurrency, /^  cancel-in-progress: false$/m);
+  assert.match(concurrency, /^  queue: max$/m);
+});
 
 test("accepts an explicit safe Markdown modification", () => {
   assert.deepEqual(classifyFiles([safeFile], safeTree, policy), {
@@ -707,6 +725,209 @@ function gateContext(mparticleApi) {
     roktApi: {},
   };
 }
+
+function mockGateApi(t, { pages = [[safeFile]], fileStatus = 200 } = {}) {
+  const sha = "a".repeat(40);
+  const pr = {
+    number: 7,
+    state: "open",
+    draft: false,
+    head: { sha },
+    user: { login: "author" },
+  };
+  const state = {
+    checks: [
+      {
+        app: { id: 99 },
+        id: 42,
+        name: policy.gateCheckName,
+        status: "completed",
+        conclusion: "success",
+        completed_at: "2000-01-01T00:00:00.000Z",
+      },
+    ],
+    filePages: [],
+    paths: [],
+    reviews: [],
+  };
+
+  t.mock.method(global, "fetch", async (url, options) => {
+    const pathname = url.pathname;
+    state.paths.push(pathname);
+    const headers = new Headers();
+    let status = 200;
+    let data;
+
+    if (options.method === "PATCH" && /\/check-runs\/\d+$/.test(pathname)) {
+      const check = state.checks.find(
+        (entry) => entry.id === Number(pathname.split("/").pop()),
+      );
+      assert.ok(check);
+      Object.assign(check, JSON.parse(options.body));
+      data = check;
+    } else if (options.method === "POST" && pathname.endsWith("/check-runs")) {
+      data = {
+        app: { id: 99 },
+        id: 42 + state.checks.length,
+        ...JSON.parse(options.body),
+      };
+      state.checks.push(data);
+    } else if (pathname.endsWith(`/commits/${sha}/check-runs`)) {
+      data = { check_runs: state.checks };
+    } else if (pathname.endsWith("/pulls/7")) {
+      data = pr;
+    } else if (pathname.endsWith(`/commits/${sha}/pulls`)) {
+      data = [pr];
+    } else if (pathname.endsWith("/pulls/7/files")) {
+      const page = Number(url.searchParams.get("page") || 1);
+      state.filePages.push(page);
+      assert.ok(pages[page - 1], `Unexpected file page ${page}`);
+      data = pages[page - 1];
+      status = fileStatus;
+      if (page < pages.length) {
+        headers.set(
+          "link",
+          `<https://api.github.test${pathname}?per_page=100&page=${page + 1}>; rel="next"`,
+        );
+      }
+    } else if (pathname.endsWith(`/git/trees/${sha}`)) {
+      data = { tree: safeTree, truncated: false };
+    } else if (pathname.endsWith("/actions/runs")) {
+      data = {
+        workflow_runs: [
+          {
+            ...policy.requiredWorkflows[0],
+            status: "completed",
+            conclusion: "success",
+            updated_at: "2000-01-01T00:00:00.000Z",
+          },
+        ],
+      };
+    } else if (pathname.endsWith("/pulls/7/reviews")) {
+      data = state.reviews;
+    } else if (pathname.includes("/memberships/")) {
+      data = { state: "active" };
+    } else {
+      throw new Error(`Unexpected API request: ${options.method} ${pathname}`);
+    }
+
+    return {
+      headers,
+      json: async () => structuredClone(data),
+      ok: status === 200,
+      status,
+    };
+  });
+
+  const api = createApi("https://api.github.test", "token", { maxPages: 2 });
+  const context = {
+    ...gateContext(api),
+    membershipLookupBudget: { remaining: 50 },
+    roktApi: api,
+  };
+  return { context, pr, state };
+}
+
+test("scheduled checks preserve success for a 201-file source pull request", async (t) => {
+  const files = Array.from({ length: 201 }, (_, index) => ({
+    ...safeFile,
+    filename: `Sources/File${index}.m`,
+  }));
+  const { context, state } = mockGateApi(t, {
+    pages: [files.slice(0, 100), files.slice(100, 200), files.slice(200)],
+  });
+
+  assert.equal(await evaluatePullRequest(context, 7), true);
+  assert.deepEqual(state.filePages, [1]);
+  assert.equal(state.checks.length, 1);
+  assert.equal(state.checks[0].conclusion, "success");
+  assert.match(
+    state.checks[0].output.summary,
+    /ruleset requires SDK-team approval/,
+  );
+  assert.ok(!state.paths.some((entry) => entry.includes("/git/trees/")));
+  assert.ok(!state.paths.some((entry) => entry.endsWith("/reviews")));
+});
+
+test("a later source page hands mixed changes to the ruleset before the page limit", async (t) => {
+  const { context, state } = mockGateApi(t, {
+    pages: [
+      [safeFile],
+      [{ ...safeFile, filename: "Sources/File.m" }],
+      [{ ...safeFile, filename: "Sources/AnotherFile.m" }],
+    ],
+  });
+
+  assert.equal(await evaluatePullRequest(context, 7), true);
+  assert.deepEqual(state.filePages, [1, 2]);
+  assert.equal(state.checks[0].conclusion, "success");
+  assert.match(
+    state.checks[0].output.summary,
+    /ruleset requires SDK-team approval/,
+  );
+  assert.ok(!state.paths.some((entry) => entry.includes("/git/trees/")));
+});
+
+test("safe-only changes still inspect the tree, CI, reviews, and employee membership", async (t) => {
+  const { context, state } = mockGateApi(t);
+
+  assert.equal(await evaluatePullRequest(context, 7), true);
+  assert.equal(state.checks[0].conclusion, "success");
+  assert.match(state.checks[0].output.summary, /Eligible Rokt employee/);
+  assert.ok(state.paths.some((entry) => entry.includes("/git/trees/")));
+  assert.ok(state.paths.some((entry) => entry.endsWith("/actions/runs")));
+  assert.ok(state.paths.some((entry) => entry.endsWith("/reviews")));
+  assert.ok(state.paths.some((entry) => entry.endsWith("/memberships/author")));
+});
+
+test("incomplete safe-only inspection replaces a prior success with failure", async (t) => {
+  const { context, state } = mockGateApi(t, {
+    pages: [[safeFile], [], []],
+  });
+  t.mock.method(console, "error", () => {});
+
+  assert.equal(await evaluatePullRequest(context, 7), false);
+  assert.deepEqual(state.filePages, [1, 2]);
+  assert.equal(state.checks[0].conclusion, "failure");
+  assert.ok(!state.paths.some((entry) => entry.includes("/git/trees/")));
+});
+
+test("a file API failure cannot use a partial response to grant success", async (t) => {
+  const { context, state } = mockGateApi(t, {
+    pages: [[{ ...safeFile, filename: "Sources/File.m" }]],
+    fileStatus: 503,
+  });
+  t.mock.method(console, "error", () => {});
+
+  assert.equal(await evaluatePullRequest(context, 7), false);
+  assert.equal(state.checks[0].conclusion, "failure");
+});
+
+test("serialized evaluations retain a new blocking review on the same head SHA", async (t) => {
+  const { context, pr, state } = mockGateApi(t);
+  assert.equal(await evaluatePullRequest(context, 7), true);
+  assert.equal(state.checks[0].conclusion, "success");
+
+  state.reviews.push({
+    id: 1,
+    state: "CHANGES_REQUESTED",
+    commit_id: pr.head.sha,
+    submitted_at: "2000-01-01T00:00:00.000Z",
+    user: { login: "sdk-reviewer" },
+  });
+
+  for (const evaluationId of ["next-event", "scheduled-recheck"]) {
+    // Distinct queued runs start after the preceding completion timestamp.
+    await delay(5);
+    assert.equal(
+      await evaluatePullRequest({ ...context, evaluationId }, 7),
+      true,
+    );
+    assert.equal(state.checks[0].conclusion, "action_required");
+    assert.match(state.checks[0].output.summary, /review requests changes/);
+  }
+  assert.equal(state.checks.length, 1);
+});
 
 test("blocks a draft pull request instead of recording a passing Gate", async () => {
   const requests = [];

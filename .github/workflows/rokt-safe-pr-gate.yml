@@ -26,8 +26,11 @@ on:
 permissions: {}
 
 concurrency:
-  group: rokt-safe-pr-gate-${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || (github.event_name == 'schedule' && 'poll') || inputs.pull_request_number || github.run_id }}
+  # Scheduled sweeps and event-triggered runs can write checks for the same SHA.
+  group: rokt-safe-pr-gate
   cancel-in-progress: false
+  # trunk-ignore(actionlint/syntax-check): GitHub supports queue; Actionlint 1.7.7 predates it.
+  queue: max
 
 jobs:
   evaluate:

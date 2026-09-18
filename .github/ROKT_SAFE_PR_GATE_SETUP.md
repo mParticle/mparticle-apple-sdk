@@ -73,8 +73,21 @@ set the mode to `enforce` and test these fixture pull requests:
 For fork PRs, the Gate's trusted scheduled run re-evaluates the ten most recently
 updated open pull requests every five minutes. Each scheduled run also limits API
 pagination and reviewer membership lookups so it can finish within its timeout.
+File pagination stops as soon as a non-allowlisted path establishes that the
+ruleset requires SDK-team approval. This preserves the source-change handoff even
+for pull requests exceeding the scheduled two-page limit. Safe-path-only changes
+still require complete file and tree inspection; exceeding an inspection limit
+cannot grant automatic approval.
+
+All Gate triggers share one repository-wide concurrency group. Evaluations run
+one at a time, with up to 100 pending runs queued rather than replaced, so a
+scheduled or manual evaluation cannot overwrite a newer event-triggered decision
+while it is running. Each evaluation reads the current pull request after it
+starts. Runs arriving when the queue is full are cancelled by GitHub; scheduled
+rechecks and manual runs remain available to retry them.
+
 An SDK-team maintainer can use **Actions → Rokt Safe PR Gate → Run workflow** with
-the pull request number for an immediate re-evaluation. The workflow never runs a
+the pull request number to queue a re-evaluation. The workflow never runs a
 pull-request review event with secrets; it evaluates only code checked out from
 the default branch.
 

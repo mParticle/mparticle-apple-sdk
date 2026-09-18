@@ -101,7 +101,7 @@ function createApi(
   async function paginate(
     path,
     collectionKey,
-    { truncateAtLimit = false } = {},
+    { truncateAtLimit = false, stopWhen } = {},
   ) {
     const results = [];
     let next = path;
@@ -117,6 +117,7 @@ function createApi(
 
       results.push(...getPaginatedItems(response.data, collectionKey));
       pageCount += 1;
+      if (stopWhen?.(results)) break;
       next = nextPage(response.headers.get("link"));
     }
 
@@ -532,16 +533,31 @@ async function evaluatePullRequest(context, prNumber) {
       return true;
     }
 
-    const [files, tree] = await Promise.all([
-      mparticleApi.paginate(
-        toQueryPath(`/repos/${owner}/${repository}/pulls/${prNumber}/files`, {
-          per_page: "100",
-        }),
-      ),
-      mparticleApi.request(
-        `/repos/${owner}/${repository}/git/trees/${pr.head.sha}?recursive=1`,
-      ),
-    ]);
+    const requiresRulesetReview = (files) =>
+      getIneligibleFileConclusion(files, policy) === "success";
+    const files = await mparticleApi.paginate(
+      toQueryPath(`/repos/${owner}/${repository}/pulls/${prNumber}/files`, {
+        per_page: "100",
+      }),
+      undefined,
+      { stopWhen: requiresRulesetReview },
+    );
+
+    // One non-allowlisted path is enough to require SDK-team review, even when
+    // the rest of a large diff cannot be inspected within the scheduled budget.
+    if (requiresRulesetReview(files)) {
+      await completeDecision(
+        context,
+        details,
+        "success",
+        "The ruleset requires SDK-team approval for this pull request.",
+      );
+      return true;
+    }
+
+    const tree = await mparticleApi.request(
+      `/repos/${owner}/${repository}/git/trees/${pr.head.sha}?recursive=1`,
+    );
 
     if (tree.data.truncated) {
       await completeDecision(
@@ -556,18 +572,6 @@ async function evaluatePullRequest(context, prNumber) {
     const fileState = classifyFiles(files, tree.data.tree, policy);
 
     if (!fileState.eligible) {
-      const conclusion = getIneligibleFileConclusion(files, policy);
-
-      if (conclusion === "success") {
-        await completeDecision(
-          context,
-          details,
-          conclusion,
-          "The ruleset requires SDK-team approval for this pull request.",
-        );
-        return true;
-      }
-
       const teamReviewState = await getCurrentTeamReviewState(
         context,
         prNumber,
