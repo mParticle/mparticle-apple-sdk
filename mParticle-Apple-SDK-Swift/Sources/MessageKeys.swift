@@ -37,4 +37,11 @@ public enum MessageKeys {
     public static let kMPDataPlanKey = "dpln"
     public static let kMPDataPlanIdKey = "id"
     public static let kMPDataPlanVersionKey = "v"
+    public static let kMPCrashingSeverity = "s"
+    public static let kMPCrashingClass = "c"
+    public static let kMPCrashWasHandled = "eh"
+    public static let kMPErrorMessage = "m"
+    public static let kMPStackTrace = "st"
+    public static let kMPTopmostContext = "tc"
+    public static let kMPPLCrashReport = "plc"
 }
