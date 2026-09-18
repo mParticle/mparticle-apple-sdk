@@ -2,6 +2,21 @@ import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 final class MPBackendSessionCoordinatorTests: MPBackendWorkflowTestCase {
+    func testSessionStartKeepsSDKInstanceSelectedBeforeTrackingRead() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let replacement = MPBackendSessionFixture()
+            fixture.onAutomaticSessionTrackingRead = { [weak fixture] in
+                fixture?.replacementStateMachine = replacement.machine
+                fixture?.automaticTracking = false
+            }
+            fixture.coordinator.beginSession(isManual: false, date: Date(timeIntervalSince1970: 200))
+            XCTAssertNotNil(fixture.state.session)
+            XCTAssertTrue(fixture.machine.currentSession === fixture.state.session)
+            XCTAssertNil(replacement.machine.currentSession)
+        }
+    }
+
     func testAutomaticTrackingGatesBeginAndEndButManualCallsWork() {
         onMessageQueue {
             let fixture = MPBackendSessionFixture()

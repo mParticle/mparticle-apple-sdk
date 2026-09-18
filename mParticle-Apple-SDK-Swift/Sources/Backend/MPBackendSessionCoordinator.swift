@@ -1,9 +1,23 @@
 import Foundation
 
+/// Keeps one SDK instance selected for a session start while its state machine stays live.
+@objc(MPBackendSessionStartContext)
+public final class MPBackendSessionStartContext: NSObject {
+    let automaticSessionTracking: () -> Bool
+    let stateMachine: () -> MPStateMachinePRIVATE
+
+    @objc public init(automaticSessionTracking: @escaping () -> Bool, stateMachine: @escaping () -> MPStateMachinePRIVATE) {
+        self.automaticSessionTracking = automaticSessionTracking
+        self.stateMachine = stateMachine
+        super.init()
+    }
+}
+
 /// Public session facades and SDK-specific metadata stay at the Objective-C boundary.
 @objc(MPBackendSessionLifecycleDependencies)
 public final class MPBackendSessionLifecycleDependencies: NSObject {
     let automaticSessionTracking: () -> Bool
+    let sessionStartContext: () -> MPBackendSessionStartContext
     let currentUserID: () -> NSNumber
     let applicationInfo: () -> NSDictionary?
     let deviceInfo: (NSNumber) -> NSDictionary?
@@ -18,6 +32,7 @@ public final class MPBackendSessionLifecycleDependencies: NSObject {
 
     @objc public init(
         automaticSessionTracking: @escaping () -> Bool,
+        sessionStartContext: @escaping () -> MPBackendSessionStartContext,
         currentUserID: @escaping () -> NSNumber,
         applicationInfo: @escaping () -> NSDictionary?,
         deviceInfo: @escaping (NSNumber) -> NSDictionary?,
@@ -31,6 +46,7 @@ public final class MPBackendSessionLifecycleDependencies: NSObject {
         clearEmptyTimedEvents: @escaping () -> Void
     ) {
         self.automaticSessionTracking = automaticSessionTracking
+        self.sessionStartContext = sessionStartContext
         self.currentUserID = currentUserID
         self.applicationInfo = applicationInfo
         self.deviceInfo = deviceInfo
@@ -88,9 +104,10 @@ public final class MPBackendSessionCoordinator: NSObject {
 
     @objc(beginSessionWithIsManual:date:)
     public func beginSession(isManual: Bool, date: Date?) {
-        guard isManual || lifecycle.automaticSessionTracking() else { return }
+        let context = lifecycle.sessionStartContext()
+        guard isManual || context.automaticSessionTracking() else { return }
         state.withSessionLock {
-            let machine = dependencies.stateMachine()
+            let machine = context.stateMachine()
             guard state.session == nil, !machine.optOut else { return }
             let persistence = dependencies.persistence()
             let userID = lifecycle.currentUserID()

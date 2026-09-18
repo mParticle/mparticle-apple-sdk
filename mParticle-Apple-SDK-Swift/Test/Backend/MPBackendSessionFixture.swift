@@ -13,7 +13,7 @@ final class MPBackendSessionFixture {
     var contextReads = 0
     lazy var dependencies = MPBackendSessionDependencies(
         persistence: { [unowned self] in persistence },
-        stateMachine: { [unowned self] in machine },
+        stateMachine: { [unowned self] in replacementStateMachine ?? machine },
         makeMessageContext: { [unowned self] in
             contextReads += 1
             return MPMessageBuilderContext(dataPlanId: nil, dataPlanVersion: nil, logger: nil)
@@ -25,6 +25,8 @@ final class MPBackendSessionFixture {
     )
     lazy var writer = MPBackendMessageWriter(state: state, dependencies: dependencies)
     var automaticTracking = true
+    var replacementStateMachine: MPStateMachinePRIVATE?
+    var onAutomaticSessionTrackingRead: (() -> Void)?
     var userID: NSNumber = 1
     var isMessageQueue = true
     var scheduled: [(TimeInterval, () -> Void)] = []
@@ -38,7 +40,14 @@ final class MPBackendSessionFixture {
     var onBegin: ((MPSessionPRIVATE) -> Void)?
     var onEnd: ((MPSessionPRIVATE) -> Void)?
     lazy var lifecycle = MPBackendSessionLifecycleDependencies(
-        automaticSessionTracking: { [unowned self] in automaticTracking },
+        automaticSessionTracking: { [unowned self] in automaticSessionTrackingValue() },
+        sessionStartContext: { [unowned self] in
+            let selectedMachine = replacementStateMachine ?? machine
+            return MPBackendSessionStartContext(
+                automaticSessionTracking: { [unowned self] in automaticSessionTrackingValue() },
+                stateMachine: { selectedMachine }
+            )
+        },
         currentUserID: { [unowned self] in userID },
         applicationInfo: { [unowned self] in applicationReads += 1; return ["app": "info"] },
         deviceInfo: { [unowned self] _ in deviceReads += 1; return ["device": "info"] },
@@ -58,6 +67,12 @@ final class MPBackendSessionFixture {
     lazy var coordinator = MPBackendSessionCoordinator(
         state: state, dependencies: dependencies, lifecycle: lifecycle, writer: writer
     )
+
+    func automaticSessionTrackingValue() -> Bool {
+        let value = automaticTracking
+        onAutomaticSessionTrackingRead?()
+        return value
+    }
 
     init() {
         let connector = MPUserDefaultsConnectorMock()

@@ -211,6 +211,12 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         __weak MPBackendController_PRIVATE *weakSelf = self;
         _sessionLifecycleDependencies = [[MPBackendSessionLifecycleDependencies alloc]
             initWithAutomaticSessionTracking:^{ return MParticle.sharedInstance.automaticSessionTracking; }
+            sessionStartContext:^{
+                MParticle *mparticle = MParticle.sharedInstance;
+                return [[MPBackendSessionStartContext alloc]
+                    initWithAutomaticSessionTracking:^{ return mparticle.automaticSessionTracking; }
+                    stateMachine:^{ return mparticle.stateMachine; }];
+            }
             currentUserID:^{ return [MPPersistenceUtilities mpId]; }
             applicationInfo:^{
                 MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
