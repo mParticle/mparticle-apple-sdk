@@ -626,7 +626,7 @@ static const NSInteger kMPRoktKitId = 181;
         return nil;
     }
     NSNumber *identity = [MPIdentityHTTPIdentities identityTypeForString:[identityType lowercaseString]];
-    if (!identity) {
+    if (identity == nil) {
         MPILogError(@"MPRokt ignoring unknown hashed email identity type");
     }
     return identity;

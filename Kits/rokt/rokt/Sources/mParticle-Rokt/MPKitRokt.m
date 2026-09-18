@@ -561,7 +561,7 @@ static NSString *MPGetRoktSessionId(void) {
         return nil;
     }
     NSNumber *identity = [MPKitRokt identityTypeForString:[identityType lowercaseString]];
-    if (!identity) {
+    if (identity == nil) {
         [MPKitRokt MPLog:@"Ignoring unknown hashed email identity type"];
     }
     return identity;
