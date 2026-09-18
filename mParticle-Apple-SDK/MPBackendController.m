@@ -72,10 +72,10 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
 @property (nonatomic, strong) MPBackendUploadCoordinator *uploadCoordinator;
 @property (nonatomic, strong, readonly, nonnull) MPBackendSessionState *sessionState;
-@property (nonatomic, strong) MPBackendSessionDependencies *sessionDependencies;
+@property (nonatomic, strong, nonnull) MPBackendSessionDependencies *sessionDependencies;
 @property (nonatomic, strong) MPBackendMessageWriter *messageWriter;
 @property (nonatomic, strong) MPBackendSessionCoordinator *sessionCoordinator;
-@property (nonatomic, strong) MPBackendSessionLifecycleDependencies *sessionLifecycleDependencies;
+@property (nonatomic, strong, nonnull) MPBackendSessionLifecycleDependencies *sessionLifecycleDependencies;
 - (MPUploadBuilderContext *)uploadBuilderContext;
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
@@ -184,7 +184,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     self.sessionState.timeOfLastEventInBackground = timestamp;
 }
 
-- (MPBackendSessionDependencies *)sessionDependencies {
+- (MPBackendSessionDependencies * _Nonnull)sessionDependencies {
     if (!_sessionDependencies) {
         __weak MPBackendController_PRIVATE *weakSelf = self;
         _sessionDependencies = [[MPBackendSessionDependencies alloc]
@@ -212,7 +212,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     return _messageWriter;
 }
 
-- (MPBackendSessionLifecycleDependencies *)sessionLifecycleDependencies {
+- (MPBackendSessionLifecycleDependencies * _Nonnull)sessionLifecycleDependencies {
     if (!_sessionLifecycleDependencies) {
         __weak MPBackendController_PRIVATE *weakSelf = self;
         _sessionLifecycleDependencies = [[MPBackendSessionLifecycleDependencies alloc]
