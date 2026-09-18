@@ -19,6 +19,11 @@ public final class MPBackendSessionState: NSObject {
             storedTimeOfLastEventInBackground = newValue
         }
     }
+    @objc public var timeAppWentToBackground: TimeInterval = 0
+    @objc public var timeAppWentToBackgroundInCurrentSession: TimeInterval = 0
+    @objc public var nextCleanUpTime: TimeInterval = 0
+    @objc public var previousForegroundTime: NSNumber?
+
 
     // Access pending state only inside withSessionLock so creation and adoption stay atomic.
     var pendingSessionUUID: String?

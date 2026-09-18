@@ -57,9 +57,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @end
 
 @interface MPBackendController_PRIVATE() {
-    NSTimeInterval nextCleanUpTime;
     MParticleSession *tempSession;
 }
+@property NSTimeInterval nextCleanUpTime;
 @property NSTimeInterval timeAppWentToBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 @property NSTimeInterval timeOfLastEventInBackground;
@@ -75,6 +75,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property (nonatomic, strong, nonnull) MPBackendSessionDependencies *sessionDependencies;
 @property (nonatomic, strong) MPBackendMessageWriter *messageWriter;
 @property (nonatomic, strong) MPBackendSessionCoordinator *sessionCoordinator;
+@property (nonatomic, strong) MPBackendLifecycleCoordinator *lifecycleCoordinator;
 @property (nonatomic, strong, nonnull) MPBackendSessionLifecycleDependencies *sessionLifecycleDependencies;
 - (MPUploadBuilderContext *)uploadBuilderContext;
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
@@ -114,7 +115,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         _notificationController = [[MPNotificationController_PRIVATE alloc] init];
 #endif
         _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
-        nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
+        _sessionState.nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
         _backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
         _delegate = delegate;
         _backgroundCheckQueue = [[NSOperationQueue alloc] init];
@@ -287,6 +288,63 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         }
         return _sessionCoordinator;
     }
+}
+
+- (NSTimeInterval)nextCleanUpTime {
+    return self.sessionState.nextCleanUpTime;
+}
+
+- (void)setNextCleanUpTime:(NSTimeInterval)value {
+    self.sessionState.nextCleanUpTime = value;
+}
+
+- (NSTimeInterval)timeAppWentToBackground {
+    return self.sessionState.timeAppWentToBackground;
+}
+
+- (void)setTimeAppWentToBackground:(NSTimeInterval)value {
+    self.sessionState.timeAppWentToBackground = value;
+}
+
+- (NSTimeInterval)timeAppWentToBackgroundInCurrentSession {
+    return self.sessionState.timeAppWentToBackgroundInCurrentSession;
+}
+
+- (void)setTimeAppWentToBackgroundInCurrentSession:(NSTimeInterval)value {
+    self.sessionState.timeAppWentToBackgroundInCurrentSession = value;
+}
+
+- (NSNumber *)previousForegroundTime {
+    return self.sessionState.previousForegroundTime;
+}
+
+- (void)setPreviousForegroundTime:(NSNumber *)value {
+    self.sessionState.previousForegroundTime = value;
+}
+
+- (MPBackendLifecycleCoordinator *)lifecycleCoordinator {
+    if (!_lifecycleCoordinator) {
+        __weak MPBackendController_PRIVATE *weakSelf = self;
+        MPBackendLifecycleDependencies *dependencies = [[MPBackendLifecycleDependencies alloc]
+            initWithSessionTimeout:^{ return weakSelf.sessionTimeout; }
+            persistenceMaxAge:^{ return MParticle.sharedInstance.persistenceMaxAgeSeconds; }
+            setRunningInBackground:^(BOOL background) { [MPStateMachine_PRIVATE setRunningInBackground:background]; }
+            clearIdentityCache:^{
+                MPIdentityCaching *cache = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                    logger:[MParticle.sharedInstance getLogger]];
+                [cache clearExpiredCache];
+            }
+            requestConfig:^{ [weakSelf requestConfig:nil]; }
+            beginBackgroundTask:^{ [weakSelf beginBackgroundTask]; }
+            endBackgroundTask:^{ [weakSelf endBackgroundTask]; }
+            beginUploadTimer:^{ [weakSelf beginUploadTimer]; }
+            beginBackgroundTimeCheckLoop:^{ [weakSelf beginBackgroundTimeCheckLoop]; }
+            cancelBackgroundTimeCheckLoop:^{ [weakSelf cancelBackgroundTimeCheckLoop]; }];
+        _lifecycleCoordinator = [[MPBackendLifecycleCoordinator alloc] initWithState:self.sessionState
+            dependencies:self.sessionDependencies sessionDependencies:self.sessionLifecycleDependencies
+            lifecycle:dependencies sessions:self.sessionCoordinator writer:self.messageWriter];
+    }
+    return _lifecycleCoordinator;
 }
 
 - (NSMutableSet<MPEvent *> *)eventSet {
@@ -1615,100 +1673,29 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 #pragma mark Session Handling
 
 - (void)updateSessionBackgroundTime {
-    if (!self.session || self.timeAppWentToBackgroundInCurrentSession == 0.0) {
-        return;
-    }
-    
-    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    self.session.backgroundTime += currentTime - self.timeAppWentToBackgroundInCurrentSession;
+    [self.lifecycleCoordinator updateSessionBackgroundTime];
 }
 
 - (BOOL)shouldEndSession {
-    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    return [MPSessionTimingPolicy shouldEndSessionWithNow:currentTime
-                                    lastEventInBackground:self.timeOfLastEventInBackground
-                                           sessionTimeout:self.sessionTimeout];
+    return [self.lifecycleCoordinator shouldEndSession];
 }
 
 - (void)endSessionIfTimedOut {
-    if (!MParticle.sharedInstance.automaticSessionTracking) {
-        return;
-    }
-    
-    [MParticle executeOnMessage:^{
-        if (self.session != nil && [self shouldEndSession]) {
-            NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-            NSTimeInterval lastEventTime = self.timeOfLastEventInBackground;
-            self.session.endTime = lastEventTime;
-            
-            [self updateSessionBackgroundTime];
-            
-            // Since we use the timeAppWentToBackground to calculate background time, but timeOfLastEventInBackground as the endTime,
-            // this can result in incorrectly calculated foreground time when ending a session in the background. So subtract the additional
-            // time since timeOfLastEventInBackground from the background time to correct this.
-            self.session.backgroundTime -= currentTime - self.timeOfLastEventInBackground;
-                    
-            // Reset time of last event to reset the session timeout
-            self.timeOfLastEventInBackground = currentTime;
-            
-            // Reset the time app went to background so that it's correctly calculated in the new session
-            self.timeAppWentToBackgroundInCurrentSession = currentTime;
-            
-            [self.persistence updateSession:self.session];
-            [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
-                MPILogVerbose(@"Session ended in the background. New session will begin if an mParticle event is logged or app enters foreground.");
-            }];
-        }
-    }];
+    [self.lifecycleCoordinator endSessionIfTimedOut];
 }
 
 #pragma mark Application Lifecycle
 
 - (void)cleanUp {
-    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    [self cleanUp:currentTime];
+    [self.lifecycleCoordinator cleanUp];
 }
 
 - (void)cleanUp:(NSTimeInterval)currentTime {
-    MPCleanUpPlan *plan = [MPSessionTimingPolicy cleanUpPlanWithNow:currentTime
-                                                   nextCleanUpTime:nextCleanUpTime
-                                                     maxAgeSeconds:[MParticle sharedInstance].persistenceMaxAgeSeconds
-                                                     defaultMaxAge:NINETY_DAYS
-                                                          interval:TWENTY_FOUR_HOURS];
-    if (plan) {
-        [self.persistence deleteRecordsOlderThan:plan.deleteRecordsOlderThan];
-        nextCleanUpTime = plan.nextCleanUpTime;
-    }
-    [self.persistence purgeMemory];
-    MPIdentityCaching *identityCaching = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
-                                                                                  logger:MParticle.sharedInstance.getLogger];
-    [identityCaching clearExpiredCache];
+    [self.lifecycleCoordinator cleanUp:currentTime];
 }
 
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
-    MPILogVerbose(@"Application Did Enter Background");
-    
-    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    [MPStateMachine_PRIVATE setRunningInBackground:YES];
-    [self beginBackgroundTask];
-            
-    [MParticle executeOnMessage:^{
-        self.timeAppWentToBackground = currentTime;
-        self.timeAppWentToBackgroundInCurrentSession = currentTime;
-        self.timeOfLastEventInBackground = currentTime;
-        
-        [self cleanUp];
-                
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition
-                                                                                 session:self.session
-                                                                             messageInfo:@{kMPAppStateTransitionType: kMPASTBackgroundKey} context:self.messageBuilderContext];
-        MPMessage *message = [messageBuilder build];
-        
-        [self.session suspendSession];
-        [self saveMessage:message updateSession:YES];
-        
-        [self beginBackgroundTimeCheckLoop];
-    }];
+    [self.lifecycleCoordinator applicationDidEnterBackground];
 }
 
 - (void)cancelBackgroundTimeCheckLoop {
@@ -1786,51 +1773,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
-    [MPStateMachine_PRIVATE setRunningInBackground:NO];
-    
-    [self cancelBackgroundTimeCheckLoop];
-    
-    [self endBackgroundTask];
-    
-    [MParticle executeOnMessage:^{
-        [self endSessionIfTimedOut];
-        
-        if (self.timeAppWentToBackground == self.timeAppWentToBackgroundInCurrentSession) {
-            // Only update background time if this is the same session that entered the background otherwise foregroundTime will be negative
-            [self updateSessionBackgroundTime];
-        }
-        
-        [self beginSession];
-    
-        [self requestConfig:nil];
-    }];
+    [self.lifecycleCoordinator applicationWillEnterForeground];
 }
 
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
-    if ([MParticle sharedInstance].stateMachine.optOut) {
-        return;
-    }
-    
-    [self beginUploadTimer];
-    [MParticle executeOnMessage:^{
-        self.timeAppWentToBackgroundInCurrentSession = 0.0;
-        self.timeOfLastEventInBackground = 0.0;
-        
-        BOOL isLaunch = YES;
-        NSMutableDictionary *messageDictionary = @{kMPAppStateTransitionType:kMPASTForegroundKey}.mutableCopy;
-        if (self.previousForegroundTime != nil) {
-            messageDictionary[kMPAppForePreviousForegroundTime] = self.previousForegroundTime;
-            isLaunch = NO;
-        }
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageDictionary context:self.messageBuilderContext];
-        self.previousForegroundTime = MPCurrentEpochInMilliseconds;
-        [messageBuilder stateTransition:isLaunch previousSession:nil launchInfo:[MParticle sharedInstance].stateMachine.launchInfo];
-
-        MPMessage *message = [messageBuilder build];
-        [self saveMessage:message updateSession:YES];
-        
-        MPILogVerbose(@"Application Did Become Active");
-    }];
+    [self.lifecycleCoordinator applicationDidBecomeActive];
 }
 
 // Wraps a block so it runs at most once however many callers hold it, from whatever queue. The

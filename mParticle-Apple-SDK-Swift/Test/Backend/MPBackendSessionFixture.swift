@@ -74,6 +74,34 @@ final class MPBackendSessionFixture {
         return value
     }
 
+    var timeout: TimeInterval = 60
+    var maxAge: NSNumber?
+    lazy var lifecycleDependencies = MPBackendLifecycleDependencies(
+        sessionTimeout: { [unowned self] in timeout },
+        persistenceMaxAge: { [unowned self] in maxAge },
+        setRunningInBackground: { [unowned self] value in
+            background = value; persistence.calls.append("background:\(value)")
+        },
+        clearIdentityCache: { [unowned self] in persistence.calls.append("clearCache") },
+        requestConfig: { [unowned self] in persistence.calls.append("config") },
+        beginBackgroundTask: { [unowned self] in persistence.calls.append("beginTask") },
+        endBackgroundTask: { [unowned self] in persistence.calls.append("endTask") },
+        beginUploadTimer: { [unowned self] in persistence.calls.append("beginTimer") },
+        beginBackgroundTimeCheckLoop: { [unowned self] in persistence.calls.append("beginLoop") },
+        cancelBackgroundTimeCheckLoop: { [unowned self] in persistence.calls.append("cancelLoop") }
+    )
+    lazy var application = MPBackendLifecycleCoordinator(
+        state: state, dependencies: dependencies, sessionDependencies: lifecycle,
+        lifecycle: lifecycleDependencies, sessions: coordinator, writer: writer
+    )
+
+    func drainMessageQueue() {
+        let previous = isMessageQueue
+        isMessageQueue = true
+        while !enqueued.isEmpty { enqueued.removeFirst()() }
+        isMessageQueue = previous
+    }
+
     init() {
         let connector = MPUserDefaultsConnectorMock()
         defaults = MPUserDefaults(connector: connector)
@@ -106,6 +134,7 @@ final class MPBackendSessionFixture {
 
 final class MPBackendRecordingPersistence: NSObject, MPBackendPersistence {
     var calls: [String] = []
+    var cutoffs: [TimeInterval] = []
     var savedMessages: [MPMessagePRIVATE] = []
     var savedSessions: [MPSessionPRIVATE] = []
     var existingEndMessage: MPMessagePRIVATE?
@@ -136,8 +165,8 @@ final class MPBackendRecordingPersistence: NSObject, MPBackendPersistence {
     func objectiveCDatabaseOpen() -> Bool { true }
     func objectiveCOpenDatabase() -> Bool { true }
     func objectiveCCloseDatabase() -> Bool { true }
-    func objectiveCPurgeMemory() {}
-    func objectiveCDeleteRecords(olderThan _: TimeInterval) {}
+    func objectiveCPurgeMemory() { calls.append("purge") }
+    func objectiveCDeleteRecords(olderThan time: TimeInterval) { calls.append("deleteRecords"); cutoffs.append(time) }
     func objectiveCFetchSessions() -> NSMutableArray? { calls.append("fetchSessions"); return NSMutableArray(array: sessions) }
     func objectiveCFetchPossibleSessionsFromCrash() -> NSArray? { nil }
     func objectiveCArchiveSession(_ session: MPSessionPRIVATE) -> MPSessionPRIVATE? {
