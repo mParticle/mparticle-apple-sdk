@@ -8,6 +8,9 @@ public final class MPBackendSessionState: NSObject {
 
     @objc public var timeOfLastEventInBackground: TimeInterval = 0
 
+    var pendingSessionUUID: String?
+    var pendingSessionStartTime: TimeInterval?
+
     @objc public var session: MPSessionPRIVATE? {
         get {
             lock.lock()
