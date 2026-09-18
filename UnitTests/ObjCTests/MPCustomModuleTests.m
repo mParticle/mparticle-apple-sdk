@@ -231,6 +231,82 @@
 }
 
 
+#pragma mark - Malformed server configuration
+
+- (void)testNonDictionaryCustomModuleEntryIsRejected {
+    for (id malformed in @[@1, @"Not a dictionary.", [NSNull null], @[]]) {
+        MPCustomModule *customModule = nil;
+        XCTAssertNoThrow(customModule = [[MPCustomModule alloc] initWithDictionary:malformed], @"Threw on cms entry %@.", malformed);
+        XCTAssertNil(customModule, @"Should have been nil for cms entry %@.", malformed);
+    }
+}
+
+- (void)testNonDictionaryPreferenceSettingIsSkipped {
+    for (id malformed in @[@1, @"Not a dictionary.", [NSNull null], @[], @[@[]]]) {
+        NSDictionary *customModuleConfiguration = @{
+                                                    @"id":@11,
+                                                    @"pr":@[
+                                                            @{@"f":@"NSUserDefaults",
+                                                              @"m":@0,
+                                                              @"ps":@[malformed]
+                                                              }
+                                                            ]
+                                                    };
+        
+        MPCustomModule *customModule = nil;
+        XCTAssertNoThrow(customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration], @"Threw on ps entry %@.", malformed);
+        XCTAssertNotNil(customModule, @"Should not have been nil.");
+        XCTAssertNil(customModule.preferences, @"Should have been nil for ps entry %@.", malformed);
+    }
+}
+
+- (void)testPreferenceSettingWithNonStringKeysIsSkipped {
+    NSDictionary *customModuleConfiguration = @{
+                                                @"id":@11,
+                                                @"pr":@[
+                                                        @{@"f":@"NSUserDefaults",
+                                                          @"m":@0,
+                                                          @"ps":@[
+                                                                  @{@"k":@5, @"t":@1, @"n":@"vid", @"d":@"0"},
+                                                                  @{@"k":@"NON_STRING_WRITE_KEY", @"t":@1, @"n":@7, @"d":@"0"},
+                                                                  @{@"k":@[], @"t":@1, @"n":@{}, @"d":@"0"},
+                                                                  @{@"k":@"WELL_FORMED_KEY", @"t":@1, @"n":@"aid", @"d":@"0"}
+                                                                  ]
+                                                          }
+                                                        ]
+                                                };
+    
+    MPCustomModule *customModule = nil;
+    XCTAssertNoThrow(customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration]);
+    XCTAssertEqual(customModule.preferences.count, 1, @"Only the entry with a string k and n should have survived.");
+    
+    MPCustomModulePreference *preference = customModule.preferences.firstObject;
+    XCTAssertEqualObjects(preference.readKey, @"WELL_FORMED_KEY", @"Should have been equal.");
+    XCTAssertNoThrow(preference.value, @"A read key has to be usable as an NSUserDefaults key.");
+}
+
+- (void)testNonStringPreferenceLocationFallsBackToTheDefault {
+    NSDictionary *customModuleConfiguration = @{
+                                                @"id":@11,
+                                                @"pr":@[
+                                                        @{@"f":@7,
+                                                          @"m":@0,
+                                                          @"ps":@[
+                                                                  @{@"k":@"WELL_FORMED_KEY", @"t":@1, @"n":@"vid", @"d":@"0"}
+                                                                  ]
+                                                          }
+                                                        ]
+                                                };
+    
+    MPCustomModule *customModule = nil;
+    XCTAssertNoThrow(customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration]);
+    XCTAssertEqual(customModule.preferences.count, 1, @"Should have been equal.");
+    
+    // The location is archived where NSSecureCoding expects an NSString, so a number must not reach it.
+    MPCustomModulePreference *preference = customModule.preferences.firstObject;
+    XCTAssertEqualObjects([preference valueForKey:@"location"], @"NSUserDefaults", @"Should have fallen back to the default location.");
+}
+
 - (void)testCustomModuleSerialization {
     MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
     
