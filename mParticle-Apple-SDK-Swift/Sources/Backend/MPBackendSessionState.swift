@@ -7,6 +7,10 @@ public final class MPBackendSessionState: NSObject {
     private var storedSession: MPSessionPRIVATE?
 
     @objc public var timeOfLastEventInBackground: TimeInterval = 0
+    @objc public var timeAppWentToBackground: TimeInterval = 0
+    @objc public var timeAppWentToBackgroundInCurrentSession: TimeInterval = 0
+    @objc public var nextCleanUpTime: TimeInterval = 0
+    @objc public var previousForegroundTime: NSNumber?
 
     var pendingSessionUUID: String?
     var pendingSessionStartTime: TimeInterval?
