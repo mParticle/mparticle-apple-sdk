@@ -69,7 +69,7 @@ final class MPBackendLifecycleCoordinatorTests: MPBackendWorkflowTestCase {
             XCTAssertEqual(fixture.state.timeAppWentToBackgroundInCurrentSession, 200)
             XCTAssertEqual(fixture.state.nextCleanUpTime, 86700)
             XCTAssertEqual(session.numberOfInterruptions, 1)
-            XCTAssertEqual(fixture.persistence.calls.suffix(3), ["message", "saveSession", "beginLoop"])
+            XCTAssertEqual(fixture.persistence.calls.suffix(3), ["saveSession", "cancelLoop", "beginLoop"])
             XCTAssertEqual(fixture.persistence.savedMessages.first?.dictionaryRepresentation()?["t"] as? String, "app_back")
             XCTAssertEqual(fixture.state.timeOfLastEventInBackground, fixture.persistence.savedMessages.first?.timestamp)
         }
@@ -82,6 +82,7 @@ final class MPBackendLifecycleCoordinatorTests: MPBackendWorkflowTestCase {
             fixture.state.timeAppWentToBackground = 100
             fixture.state.timeAppWentToBackgroundInCurrentSession = 100
             fixture.isMessageQueue = false
+            fixture.application.backgroundTaskIdentifier = 42
             fixture.application.applicationWillEnterForeground()
             XCTAssertEqual(fixture.persistence.calls, ["background:false", "cancelLoop", "endTask"])
             XCTAssertEqual(session.backgroundTime, 0)
