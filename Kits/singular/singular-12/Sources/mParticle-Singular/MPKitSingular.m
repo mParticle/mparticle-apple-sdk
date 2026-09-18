@@ -11,6 +11,7 @@ NSUInteger MPKitInstanceSingularKitId = 119;
 #define API_KEY @"apiKey"
 #define SECRET_KEY @"secret"
 #define DDL_TIMEOUT @"ddlTimeout"
+#define DEFAULT_DDL_TIMEOUT 60
 #define TOTAL_PRODUCT_AMOUNT @"Total Product Amount"
 #define USER_GENDER_MALE @"m"
 #define USER_GENDER_FEMALE @"f"
@@ -25,7 +26,7 @@ NSUInteger MPKitInstanceSingularKitId = 119;
 
 NSString *apiKey;
 NSString *secret;
-int ddlTimeout = 60;
+int ddlTimeout = DEFAULT_DDL_TIMEOUT;
 void (^singularLinkHandler) (SingularLinkParams*);
 typedef void (^sdidAccessorHandler)(NSString*);
 
@@ -53,22 +54,64 @@ static void(^deviceAttributionCallback)(NSDictionary *);
     [MParticle registerExtension:kitRegister];
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+- (NSNumber *)configurationNumberForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value == nil) {
+        return nil;
+    }
+    if ([value isKindOfClass:[NSNumber class]]) {
+        return value;
+    }
+    if ([value isKindOfClass:[NSString class]]) {
+        return @([value intValue]);
+    }
+    NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+    return nil;
+}
+
 #pragma mark - MPKitInstanceProtocol methods
 
 #pragma mark Kit instance and lifecycle
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
 
-    [self extractDataFromConfiguration:configuration];
-
-    // If the app key wasn't initialized, error code must be returned to alert mParticle
-    if (!apiKey) {
+    if (![configuration isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"Ignoring launch configuration: expected a dictionary, got %@", [configuration class]);
+        _configuration = @{};
         return [[MPKitExecStatus alloc]
                 initWithSDKCode:[[self class] kitCode]
                 returnCode:MPKitReturnCodeRequirementsNotMet];
     }
 
-    _configuration = configuration;
+    _configuration = [configuration copy];
+
+    // Checks the key this configuration supplied, not the file-scope global, so a missing or
+    // malformed apiKey cannot launch the kit on the strength of an earlier launch's credentials.
+    if ([self configurationStringForKey:API_KEY].length == 0) {
+        return [[MPKitExecStatus alloc]
+                initWithSDKCode:[[self class] kitCode]
+                returnCode:MPKitReturnCodeRequirementsNotMet];
+    }
+
+    // After the requirements check, so a rejected configuration leaves no credentials behind.
+    [self extractDataFromConfiguration];
 
     [self start];
 
@@ -77,19 +120,16 @@ static void(^deviceAttributionCallback)(NSDictionary *);
             returnCode:MPKitReturnCodeSuccess];
 }
 
-- (void)extractDataFromConfiguration:(NSDictionary * _Nonnull)configuration {
-    if(configuration[API_KEY] != nil){
-        apiKey = configuration[API_KEY];
-    }
+- (void)extractDataFromConfiguration {
+    // These are file-scope, so the optional values have to be reset rather than only overwritten:
+    // the container re-runs this with replacement settings, and a later configuration that omits
+    // or malforms one would otherwise keep the previous configuration's value.
+    apiKey = [self configurationStringForKey:API_KEY];
+    secret = [self configurationStringForKey:SECRET_KEY];
 
-    if(configuration[SECRET_KEY] != nil){
-        secret = configuration[SECRET_KEY];
-    }
-
-    if(configuration[DDL_TIMEOUT] != nil){
-        ddlTimeout = [configuration[DDL_TIMEOUT] intValue];
-        [Singular setDeferredDeepLinkTimeout:ddlTimeout];
-    }
+    NSNumber *configuredDdlTimeout = [self configurationNumberForKey:DDL_TIMEOUT];
+    ddlTimeout = configuredDdlTimeout != nil ? configuredDdlTimeout.intValue : DEFAULT_DDL_TIMEOUT;
+    [Singular setDeferredDeepLinkTimeout:ddlTimeout];
 }
 
 - (void)start{
