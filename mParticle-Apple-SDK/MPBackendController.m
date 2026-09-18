@@ -63,7 +63,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property NSTimeInterval timeAppWentToBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 @property NSTimeInterval timeOfLastEventInBackground;
-@property dispatch_source_t uploadSource;
 @property NSMutableSet<NSString *> *deletedUserAttributes;
 @property NSNotification *didFinishLaunchingNotification;
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
@@ -84,7 +83,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 
 @implementation MPBackendController_PRIVATE
-@synthesize uploadInterval = _uploadInterval;
 
 #if TARGET_OS_IOS == 1
 @synthesize notificationController = _notificationController;
@@ -113,12 +111,12 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 #if TARGET_OS_IOS == 1
         _notificationController = [[MPNotificationController_PRIVATE alloc] init];
 #endif
-        _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
+        _sessionState.sessionTimeout = DEFAULT_SESSION_TIMEOUT;
         _sessionState.nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
-        _backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        self.lifecycleCoordinator.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         _delegate = delegate;
-        _backgroundCheckQueue = [[NSOperationQueue alloc] init];
-        _backgroundCheckQueue.maxConcurrentOperationCount = 1;
+        self.lifecycleCoordinator.backgroundCheckQueue = [[NSOperationQueue alloc] init];
+        self.lifecycleCoordinator.backgroundCheckQueue.maxConcurrentOperationCount = 1;
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -319,23 +317,36 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         if (!_lifecycleCoordinator) {
             __weak MPBackendController_PRIVATE *weakSelf = self;
             MPBackendLifecycleDependencies *dependencies = [[MPBackendLifecycleDependencies alloc]
-                initWithSessionTimeout:^{ return weakSelf.sessionTimeout; }
-                persistenceMaxAge:^{ return MParticle.sharedInstance.persistenceMaxAgeSeconds; }
+                initWithPersistenceMaxAge:^{ return MParticle.sharedInstance.persistenceMaxAgeSeconds; }
                 setRunningInBackground:^(BOOL background) { [MPStateMachine_PRIVATE setRunningInBackground:background]; }
                 clearIdentityCache:^{
                     MPIdentityCaching *cache = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
                         logger:[MParticle.sharedInstance getLogger]];
                     [cache clearExpiredCache];
                 }
-                requestConfig:^{ [weakSelf requestConfig:nil]; }
-                beginBackgroundTask:^{ [weakSelf beginBackgroundTask]; }
-                endBackgroundTask:^{ [weakSelf endBackgroundTask]; }
-                beginUploadTimer:^{ [weakSelf beginUploadTimer]; }
-                beginBackgroundTimeCheckLoop:^{ [weakSelf beginBackgroundTimeCheckLoop]; }
-                cancelBackgroundTimeCheckLoop:^{ [weakSelf cancelBackgroundTimeCheckLoop]; }];
+                requestConfig:^{ [weakSelf requestConfig:nil]; }];
+            MPBackendLifecycleSchedulingDependencies *scheduling = [[MPBackendLifecycleSchedulingDependencies alloc]
+                initWithMessageQueue:^{ return [MParticle messageQueue]; }
+                executeOnMain:^(dispatch_block_t block) { [MParticle executeOnMain:block]; }
+                executeOnMainSync:^(dispatch_block_t block) { dispatch_sync(dispatch_get_main_queue(), block); }
+                makeApplication:^{
+                    UIApplication *application = [MPApplication_PRIVATE sharedUIApplication];
+                    return [[MPBackendBackgroundApplication alloc]
+                        initWithApplicationState:^{ return (NSInteger)[MPApplication_PRIVATE sharedUIApplication].applicationState; }
+                        timeRemaining:^{ return application.backgroundTimeRemaining; }];
+                }
+                beginBackgroundTask:^NSUInteger(dispatch_block_t expiration) {
+                    return [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:expiration];
+                }
+                endBackgroundTask:^(NSUInteger identifier) {
+                    [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:identifier];
+                }
+                isAppExtension:^{ return [MPStateMachine_PRIVATE isAppExtension]; }
+                isDevelopment:^BOOL { return [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment; }
+                invalidBackgroundTask:UIBackgroundTaskInvalid];
             _lifecycleCoordinator = [[MPBackendLifecycleCoordinator alloc] initWithState:self.sessionState
                 dependencies:self.sessionDependencies sessionDependencies:self.sessionLifecycleDependencies
-                lifecycle:dependencies sessions:self.sessionCoordinator writer:self.messageWriter];
+                lifecycle:dependencies sessions:self.sessionCoordinator writer:self.messageWriter scheduling:scheduling];
         }
         return _lifecycleCoordinator;
     }
@@ -712,80 +723,46 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 #pragma mark Timers
 
-// Timer blocks fire on message queue
-- (dispatch_source_t)createSourceTimer:(uint64_t)interval eventHandler:(dispatch_block_t)eventHandler cancelHandler:(dispatch_block_t)cancelHandler {
-    dispatch_source_t sourceTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, [MParticle messageQueue]);
-
-    if (sourceTimer) {
-        dispatch_source_set_timer(sourceTimer, dispatch_walltime(NULL, 0), interval * NSEC_PER_SEC, 0.1 * NSEC_PER_SEC);
-        dispatch_source_set_event_handler(sourceTimer, eventHandler);
-        dispatch_source_set_cancel_handler(sourceTimer, cancelHandler);
-        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(interval * NSEC_PER_SEC)), [MParticle messageQueue], ^{
-            dispatch_resume(sourceTimer);
-        });
-    }
-    
-    return sourceTimer;
-}
-
 - (void)beginUploadTimer {
-    @synchronized (self) {
-        if (self.uploadSource) {
-            dispatch_source_cancel(self.uploadSource);
-            self.uploadSource = nil;
-        }
-        
-        self.uploadSource = [self createSourceTimer:self.uploadInterval eventHandler:^{
-            [self waitForKitsAndUploadWithCompletionHandler:nil];
-        } cancelHandler:^{}];
-    }
+    [self.lifecycleCoordinator beginUploadTimer];
 }
 
 - (void)endUploadTimer {
-    @synchronized (self) {
-        if (self.uploadSource) {
-            dispatch_source_cancel(self.uploadSource);
-            self.uploadSource = nil;
-        }
-    }
+    [_lifecycleCoordinator endUploadTimer];
 }
 
 #pragma mark Public accessors
 
-- (void)setSessionTimeout:(NSTimeInterval)sessionTimeout {
-    if (sessionTimeout == _sessionTimeout) {
-        return;
-    }
+- (NSTimeInterval)sessionTimeout {
+    return self.lifecycleCoordinator.sessionTimeout;
+}
 
-    _sessionTimeout = [MPSessionTimingPolicy clampedSessionTimeout:sessionTimeout minimum:MINIMUM_SESSION_TIMEOUT];
-    MPILogDebug(@"Set Session Timeout: %.0f", _sessionTimeout);
+- (void)setSessionTimeout:(NSTimeInterval)sessionTimeout {
+    self.lifecycleCoordinator.sessionTimeout = sessionTimeout;
 }
 
 - (NSTimeInterval)uploadInterval {
-    if (_uploadInterval == 0.0) {
-        _uploadInterval = [MPSessionTimingPolicy defaultUploadIntervalForDevelopment:[MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment
-                                                                        debugInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
-                                                                   productionInterval:DEFAULT_UPLOAD_INTERVAL];
-    }
-
-    // If running in an extension our processor time is extremely limited
-    if ([MPStateMachine_PRIVATE isAppExtension]) {
-        _uploadInterval = 1.0;
-    }
-    return _uploadInterval;
+    return self.lifecycleCoordinator.uploadInterval;
 }
 
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval {
-    if (uploadInterval == _uploadInterval) {
-        return;
-    }
+    self.lifecycleCoordinator.uploadInterval = uploadInterval;
+}
 
-    _uploadInterval = [MPSessionTimingPolicy clampedUploadInterval:uploadInterval tvOSCeiling:DEFAULT_UPLOAD_INTERVAL];
+- (NSOperationQueue *)backgroundCheckQueue {
+    return self.lifecycleCoordinator.backgroundCheckQueue;
+}
 
-    if (self.uploadSource) {
-        [self beginUploadTimer];
-    }
+- (void)setBackgroundCheckQueue:(NSOperationQueue *)queue {
+    self.lifecycleCoordinator.backgroundCheckQueue = queue;
+}
+
+- (UIBackgroundTaskIdentifier)backendBackgroundTaskIdentifier {
+    return self.lifecycleCoordinator.backgroundTaskIdentifier;
+}
+
+- (void)setBackendBackgroundTaskIdentifier:(UIBackgroundTaskIdentifier)identifier {
+    self.lifecycleCoordinator.backgroundTaskIdentifier = identifier;
 }
 
 - (void)createTempSession {
@@ -1634,32 +1611,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 #pragma mark Background Task
 
 - (void)beginBackgroundTask {
-    if ([MPStateMachine_PRIVATE isAppExtension]) {
-        return;
-    }
-    
-    [MParticle executeOnMain:^{
-        if (self.backendBackgroundTaskIdentifier == UIBackgroundTaskInvalid) {
-            self.backendBackgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-                MPILogDebug(@"SDK has ended background activity together with the app.");
-                [self cancelBackgroundTimeCheckLoop];
-                [self endBackgroundTask];
-            }];
-        }
-    }];
+    [self.lifecycleCoordinator beginBackgroundTask];
 }
 
 - (void)endBackgroundTask {
-    if ([MPStateMachine_PRIVATE isAppExtension]) {
-        return;
-    }
-    
-    [MParticle executeOnMain:^{
-        if (self.backendBackgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:self.backendBackgroundTaskIdentifier];
-            self.backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }];
+    [self.lifecycleCoordinator endBackgroundTask];
 }
 
 #pragma mark Session Handling
@@ -1691,77 +1647,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)cancelBackgroundTimeCheckLoop {
-    [self.backgroundCheckQueue cancelAllOperations];
+    [self.lifecycleCoordinator cancelBackgroundTimeCheckLoop];
 }
 
 - (void)beginBackgroundTimeCheckLoop {
-    if ([MPStateMachine_PRIVATE isAppExtension]) {
-        return;
-    }
-    
-    // Cancel any existing background check loops
-    [self cancelBackgroundTimeCheckLoop];
-        
-    NSBlockOperation *blockOperation = [[NSBlockOperation alloc] init];
-    __weak NSBlockOperation *weakBlockOperation = blockOperation;
-    [blockOperation addExecutionBlock:^{
-        // Reusable block to check application state on main thread
-        UIApplicationState (^getApplicationState)(void) = ^UIApplicationState(void) {
-            __block UIApplicationState appState;
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                appState = [MPApplication_PRIVATE sharedUIApplication].applicationState;
-            });
-            return appState;
-        };
-        
-        UIApplication *sharedApplication = [MPApplication_PRIVATE sharedUIApplication];
-        UIApplicationState applicationState = getApplicationState();
-        
-        // Loop to check the background state and time remaining to decide when to upload
-        while (applicationState == UIApplicationStateBackground) {
-            [self endSessionIfTimedOut];
-            
-            // Perform cancellation check and backgroundTimeRemaining in a single
-            // dispatch_sync to the main queue. This serializes with the expiration
-            // handler and foreground handler (both fire on the main thread)
-            __block BOOL cancelled = NO;
-            __block NSTimeInterval timeRemaining = 0;
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                NSBlockOperation *strongOperation = weakBlockOperation;
-                if (!strongOperation || strongOperation.isCancelled) {
-                    cancelled = YES;
-                    return;
-                }
-                timeRemaining = sharedApplication.backgroundTimeRemaining;
-            });
-            
-            if (cancelled) {
-                return;
-            }
-            
-            if (timeRemaining <= kMPRemainingBackgroundTimeMinimumThreshold) {
-                // Less than kMPRemainingBackgroundTimeMinimumThreshold seconds left in the background, upload the batch
-                MPILogVerbose(@"Less than %f time remaining in background, uploading batch and ending background task", kMPRemainingBackgroundTimeMinimumThreshold);
-                [MParticle executeOnMessage:^{
-                    [self waitForKitsAndUploadWithCompletionHandler:^{
-                        // Allow iOS to sleep the app
-                        [self endUploadTimer];
-                        [self endBackgroundTask];
-                    }];
-                }];
-                return;
-            }
-            MPILogVerbose(@"Background time remaining %f", timeRemaining);
-            
-            // Short sleep to prevent burning CPU cycles
-            [NSThread sleepForTimeInterval:1.0];
-            applicationState = getApplicationState();
-        }
-        
-        // The app is no longer in the background, so end the background task
-        [self endBackgroundTask];
-    }];
-    [self.backgroundCheckQueue addOperation:blockOperation];
+    [self.lifecycleCoordinator beginBackgroundTimeCheckLoop];
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {

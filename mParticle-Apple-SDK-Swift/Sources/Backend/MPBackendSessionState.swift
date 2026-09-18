@@ -5,6 +5,20 @@ import Foundation
 public final class MPBackendSessionState: NSObject {
     private let lock = NSRecursiveLock()
     private var storedSession: MPSessionPRIVATE?
+    private var storedSessionTimeout: TimeInterval = 0
+
+    @objc public var sessionTimeout: TimeInterval {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return storedSessionTimeout
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            storedSessionTimeout = newValue
+        }
+    }
 
     @objc public var timeOfLastEventInBackground: TimeInterval = 0
     @objc public var timeAppWentToBackground: TimeInterval = 0
