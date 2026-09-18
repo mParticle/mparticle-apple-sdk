@@ -237,4 +237,17 @@
     XCTAssertNil(value);
 }
 
+// `as` is server-supplied parsed JSON, so anything but a dictionary must be dropped before
+// -mutableCopy and the keyed subscript assignments that follow, which raise on an array.
+- (void)testNonDictionaryConfigurationBlockIsIgnored {
+    for (id value in @[@[], @42, @"as", [NSNull null]]) {
+        NSDictionary *configuration = @{@"id": @80, @"as": value};
+
+        MPKitConfiguration *kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+
+        XCTAssertNotNil(kitConfig, @"`as` of %@ should not fail the whole kit configuration", [value class]);
+        XCTAssertEqual(kitConfig.configuration.count, 0, @"`as` of %@ should be ignored", [value class]);
+    }
+}
+
 @end
