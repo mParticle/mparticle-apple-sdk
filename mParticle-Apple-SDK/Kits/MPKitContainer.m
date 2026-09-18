@@ -756,8 +756,14 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
 }
 
-- (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType {
+// The event projection path passes values straight out of event.customAttributes, which
+// MPBaseEvent documents as strings, numbers, booleans or dates, so the argument cannot be
+// assumed to respond to the NSString selectors used below. Numbers are converted natively;
+// any other class takes the same path an unparseable string already takes for its data type.
+- (id)transformValue:(id)originalValue dataType:(MPDataType)dataType {
     id value = nil;
+    NSString *stringValue = MPIsString(originalValue) ? (NSString *)originalValue : nil;
+    NSNumber *numberValue = MPIsNumber(originalValue) ? (NSNumber *)originalValue : nil;
     
     switch (dataType) {
         case MPDataTypeString:
@@ -774,16 +780,22 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 return @0;
             }
             
-            NSInteger integerValue = [originalValue integerValue];
-            
-            if (integerValue != 0) {
-                value = @(integerValue);
+            if (numberValue != nil) {
+                value = @(numberValue.integerValue);
+            } else if (stringValue == nil) {
+                MPILogError(@"Value '%@' was expected to be a number string.", originalValue);
             } else {
-                if ([originalValue isEqualToString:@"0"]) {
+                NSInteger integerValue = [stringValue integerValue];
+                
+                if (integerValue != 0) {
                     value = @(integerValue);
                 } else {
-                    value = nil;
-                    MPILogError(@"Value '%@' was expected to be a number string.", originalValue);
+                    if ([stringValue isEqualToString:@"0"]) {
+                        value = @(integerValue);
+                    } else {
+                        value = nil;
+                        MPILogError(@"Value '%@' was expected to be a number string.", stringValue);
+                    }
                 }
             }
         }
@@ -794,16 +806,23 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 return @0.0;
             }
             
-            float floatValue = [originalValue floatValue];
-            
-            if (floatValue != HUGE_VAL && floatValue != -HUGE_VAL && floatValue != 0.0) {
-                value = @(floatValue);
+            if (numberValue != nil) {
+                value = @(numberValue.floatValue);
+            } else if (stringValue == nil) {
+                value = [NSNull null];
+                MPILogError(@"Attribute '%@' was expected to be a number string.", originalValue);
             } else {
-                if ([originalValue isEqualToString:@"0"] || [originalValue isEqualToString:@"0.0"] || [originalValue isEqualToString:@".0"]) {
+                float floatValue = [stringValue floatValue];
+                
+                if (floatValue != HUGE_VAL && floatValue != -HUGE_VAL && floatValue != 0.0) {
                     value = @(floatValue);
                 } else {
-                    value = [NSNull null];
-                    MPILogError(@"Attribute '%@' was expected to be a number string.", originalValue);
+                    if ([stringValue isEqualToString:@"0"] || [stringValue isEqualToString:@"0.0"] || [stringValue isEqualToString:@".0"]) {
+                        value = @(floatValue);
+                    } else {
+                        value = [NSNull null];
+                        MPILogError(@"Attribute '%@' was expected to be a number string.", stringValue);
+                    }
                 }
             }
         }
@@ -814,7 +833,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 return @NO;
             }
             
-            if ([originalValue caseInsensitiveCompare:@"true"] == NSOrderedSame) {
+            if (numberValue != nil) {
+                value = @(numberValue.boolValue);
+            } else if (stringValue == nil) {
+                value = @NO;
+                MPILogError(@"Attribute '%@' was expected to be a boolean string.", originalValue);
+            } else if ([stringValue caseInsensitiveCompare:@"true"] == NSOrderedSame) {
                 value = @YES;
             } else {
                 value = @NO;
@@ -1296,21 +1320,48 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
+    NSMutableArray<MPCommerceEvent *> *projectedCommerceEvents = [NSMutableArray array];
+    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
+    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
+    
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    
+    // See the note on the event overload: a raise while projecting must still release the lock.
+    @try {
+        [self applyProjectionsForCommerceEvent:commerceEvent
+                              kitConfiguration:kitConfiguration
+                        projectedCommerceEvents:projectedCommerceEvents
+                                projectedEvents:projectedEvents
+                             appliedProjections:appliedProjections];
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception projecting a commerce event for kit %@: %@", kitRegister.code, exception);
+        [projectedCommerceEvents removeAllObjects];
+        [projectedEvents removeAllObjects];
+        [appliedProjections removeAllObjects];
+    } @finally {
+        dispatch_semaphore_signal(kitsSemaphore);
+    }
+    
+    completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
+}
+
+// Computes the projections for one commerce event into the three supplied arrays. Callers hold
+// kitsSemaphore for the duration, and must not run a completion callback until they have
+// released it, because kits reenter the container from those callbacks.
+- (void)applyProjectionsForCommerceEvent:(MPCommerceEvent *const)commerceEvent
+                        kitConfiguration:(MPKitConfiguration *)kitConfiguration
+                 projectedCommerceEvents:(NSMutableArray<MPCommerceEvent *> *)projectedCommerceEvents
+                         projectedEvents:(NSMutableArray<MPEvent *> *)projectedEvents
+                      appliedProjections:(NSMutableArray<MPEventProjection *> *)appliedProjections {
     __weak MPKitContainer_PRIVATE *weakSelf = self;
     
     __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
-    if (strongSelf) {
-        dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
-    }
     
     // Filter projections only to those of 'messageType'
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageType == %ld", (long)MPMessageTypeCommerceEvent];
     NSArray *projections = [kitConfiguration.projections filteredArrayUsingPredicate:predicate];
     
     // Priming projections
-    NSMutableArray<MPCommerceEvent *> *projectedCommerceEvents = [NSMutableArray array];
-    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
-    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
     NSMutableArray<MPEventProjection *> *applicableEventProjections = [NSMutableArray array];
     MPEventType typeOfCommerceEvent = [commerceEvent type];
     MPCommerceEventKind kindOfCommerceEvent = [commerceEvent kind];
@@ -1773,12 +1824,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     if (projectedCommerceEvents.count == 0 && projectedEvents.count == 0) {
         [projectedCommerceEvents addObject:commerceEvent];
     }
-    
-    if (strongSelf) {
-        dispatch_semaphore_signal(kitsSemaphore);
-    }
-    
-    completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
 }
 
 - (void)project:(id<MPExtensionKitProtocol>)kitRegister
@@ -1803,12 +1848,42 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         return;
     }
     
+    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
+    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
+    
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    
+    // Projecting matches server-supplied configuration against caller-supplied attribute
+    // values, so a shape neither side validated can still raise here. The lock has to be
+    // released on that path as well, or every later kit operation waits on it forever.
+    @try {
+        [self applyProjectionsForEvent:event
+                           messageType:messageType
+                      kitConfiguration:kitConfiguration
+                       projectedEvents:projectedEvents
+                    appliedProjections:appliedProjections];
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception projecting an event for kit %@: %@", kitRegister.code, exception);
+        [projectedEvents removeAllObjects];
+        [appliedProjections removeAllObjects];
+    } @finally {
+        dispatch_semaphore_signal(kitsSemaphore);
+    }
+    
+    completionHandler(projectedEvents, appliedProjections);
+}
+
+// Computes the projections for one event into the two supplied arrays. Callers hold
+// kitsSemaphore for the duration, and must not run a completion callback until they have
+// released it, because kits reenter the container from those callbacks.
+- (void)applyProjectionsForEvent:(MPEvent *const)event
+                     messageType:(MPMessageType)messageType
+                kitConfiguration:(MPKitConfiguration *)kitConfiguration
+                 projectedEvents:(NSMutableArray<MPEvent *> *)projectedEvents
+              appliedProjections:(NSMutableArray<MPEventProjection *> *)appliedProjections {
     __weak MPKitContainer_PRIVATE *weakSelf = self;
     
     __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
-    if (strongSelf) {
-        dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
-    }
     
     // Attribute projection lambda function
     NSDictionary * (^projectAttributes)(MPEvent *const, MPEventProjection *const) = ^(MPEvent *const event, MPEventProjection *const eventProjection) {
@@ -1971,8 +2046,6 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     NSArray *projections = [kitConfiguration.projections filteredArrayUsingPredicate:predicate];
     
     // Apply projections
-    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
-    NSMutableArray<MPEventProjection *> *appliedProjections = [NSMutableArray array];
     MPEvent *projectedEvent;
     MPEventProjection *defaultProjection = nil;
     NSDictionary *projectedAttributes;
@@ -2088,12 +2161,6 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             [projectedEvents addObject:event];
         }
     }
-    
-    if (strongSelf) {
-        dispatch_semaphore_signal(kitsSemaphore);
-    }
-    
-    completionHandler(projectedEvents, appliedProjections);
 }
 
 - (nullable NSArray<NSNumber *> *)configuredKitsRegistry {

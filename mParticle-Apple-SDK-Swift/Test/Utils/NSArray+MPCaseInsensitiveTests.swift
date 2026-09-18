@@ -37,4 +37,20 @@ class NSArrayMPCaseInsensitiveTests: XCTestCase {
         XCTAssertFalse(nsArray.caseInsensitiveContainsObject("someotherwords"))
         XCTAssertFalse(nsArray.caseInsensitiveContainsObject("abcdefg"))
     }
+
+    // Objective-C callers in the kit projection engine pass raw attribute values, which can be
+    // any class. A String parameter would be bridged before the body ran, raising instead.
+    func testNSArrayNonStringArgument() {
+        let nsArray = ["someWord", "someOtherWord", "ABC", "AbCdEF"] as NSArray
+        XCTAssertFalse(nsArray.caseInsensitiveContainsObject(NSNull()))
+        XCTAssertFalse(nsArray.caseInsensitiveContainsObject(NSNumber(value: 25)))
+        XCTAssertFalse(nsArray.caseInsensitiveContainsObject(["someWord"] as NSArray))
+        XCTAssertFalse(nsArray.caseInsensitiveContainsObject(nil))
+    }
+
+    func testNSArrayWithNonStringElements() {
+        let nsArray = [NSNull(), NSNumber(value: 25), "someWord"] as NSArray
+        XCTAssertTrue(nsArray.caseInsensitiveContainsObject("SOMEWORD"))
+        XCTAssertFalse(nsArray.caseInsensitiveContainsObject("25"))
+    }
 }

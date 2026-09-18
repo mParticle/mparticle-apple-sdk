@@ -1,5 +1,6 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
+#import <objc/runtime.h>
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPIConstants.h"
@@ -64,7 +65,7 @@
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration;
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter;
 - (void)replayQueuedItems;
-- (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType;
+- (id)transformValue:(id)originalValue dataType:(MPDataType)dataType;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)integrationId;
@@ -2449,6 +2450,251 @@
     XCTAssertNotNil(forwardEvent.customAttributes);
     XCTAssertEqual(forwardEvent.customAttributes.count, 1);
     XCTAssertEqualObjects(forwardEvent.customAttributes[@"af_description"], @"this is a description");
+}
+
+// The projections above carry data_type as a name ("String", "Bool"), which parses to 0 and
+// clamps to MPDataTypeString. Only a numeric code reaches the typed branches of
+// transformValue:dataType:, so the tests below configure data_type that way.
+- (void)configureKitWithTypedAttributeProjections {
+    NSString *configurationStr = @"{ \
+                                     \"id\": 92, \
+                                     \"as\": { \
+                                       \"devKey\": \"INVALID_DEV_KEY\", \
+                                       \"appleAppId\": \"INVALID_APPLE_APP_ID\" \
+                                     }, \
+                                     \"hs\": {}, \
+                                     \"pr\": [ \
+                                       { \
+                                         \"id\": 180, \
+                                         \"pmid\": 360, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"typed_projection\", \
+                                           \"attribute_maps\": [ \
+                                             { \
+                                               \"projected_attribute_name\": \"p_count\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"count\", \
+                                               \"data_type\": 2 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_flag\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"flag\", \
+                                               \"data_type\": 3 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_ratio\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"ratio\", \
+                                               \"data_type\": 4 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_total\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"total\", \
+                                               \"data_type\": 5 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_when\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"when\", \
+                                               \"data_type\": 2 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_items\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"items\", \
+                                               \"data_type\": 3 \
+                                             } \
+                                           ], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"typed_event\" \
+                                           } \
+                                         ] \
+                                       } \
+                                     ] \
+                                   }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[configurationDictionary]];
+}
+
+- (void)testValueTransformationOfNonStringValues {
+    id transformedValue;
+    
+    // A zero NSNumber reaches isEqualToString: in the Int, Long and Float branches, and any
+    // NSNumber at all reaches caseInsensitiveCompare: in the Bool branch.
+    transformedValue = [kitContainer transformValue:@0 dataType:MPDataTypeInt];
+    XCTAssertEqualObjects(transformedValue, @0);
+    
+    transformedValue = [kitContainer transformValue:@0 dataType:MPDataTypeLong];
+    XCTAssertEqualObjects(transformedValue, @0);
+    
+    transformedValue = [kitContainer transformValue:@0.0 dataType:MPDataTypeFloat];
+    XCTAssertNotNil(transformedValue);
+    XCTAssertEqual([transformedValue floatValue], 0.0);
+    
+    transformedValue = [kitContainer transformValue:@25 dataType:MPDataTypeInt];
+    XCTAssertEqualObjects(transformedValue, @25);
+    
+    transformedValue = [kitContainer transformValue:@YES dataType:MPDataTypeBool];
+    XCTAssertEqualObjects(transformedValue, @YES);
+    
+    transformedValue = [kitContainer transformValue:@NO dataType:MPDataTypeBool];
+    XCTAssertEqualObjects(transformedValue, @NO);
+    
+    // Classes with no numeric or boolean reading take the same path an unparseable string does.
+    transformedValue = [kitContainer transformValue:@[@"a"] dataType:MPDataTypeInt];
+    XCTAssertNil(transformedValue);
+    
+    transformedValue = [kitContainer transformValue:@{@"a":@"b"} dataType:MPDataTypeFloat];
+    XCTAssertEqualObjects(transformedValue, [NSNull null]);
+    
+    transformedValue = [kitContainer transformValue:[NSDate date] dataType:MPDataTypeBool];
+    XCTAssertEqualObjects(transformedValue, @NO);
+    
+    // A String projection messages no selector, so it keeps passing the value through as-is.
+    transformedValue = [kitContainer transformValue:@25 dataType:MPDataTypeString];
+    XCTAssertEqualObjects(transformedValue, @25);
+}
+
+- (void)testTypedProjectionOfNonStringAttributeValues {
+    [self setUserAttributesAndIdentities];
+    [self configureKitWithTypedAttributeProjections];
+    
+    NSDate *when = [NSDate dateWithTimeIntervalSince1970:0];
+    MPEvent *event = [[MPEvent alloc] initWithName:@"typed_event" type:MPEventTypeOther];
+    event.customAttributes = @{@"count":@0,
+                               @"flag":@NO,
+                               @"ratio":@0.0,
+                               @"total":@25,
+                               @"when":when,
+                               @"items":@[@"a", @"b"]};
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = nil;
+    XCTAssertNoThrow((kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)]));
+    
+    MPEvent *forwardEvent = (MPEvent *)kitFilter.forwardEvent;
+    XCTAssertEqualObjects(forwardEvent.name, @"typed_projection");
+    
+    NSDictionary *projected = forwardEvent.customAttributes;
+    XCTAssertEqualObjects(projected[@"p_count"], @0);
+    XCTAssertEqualObjects(projected[@"p_flag"], @NO);
+    XCTAssertEqualObjects(projected[@"p_total"], @25);
+    XCTAssertEqualObjects(projected[@"p_items"], @NO);
+    XCTAssertNotNil(projected[@"p_ratio"]);
+    XCTAssertEqual([projected[@"p_ratio"] floatValue], 0.0);
+    
+    // A date has no numeric reading, so the Int projection declines it and the original
+    // attribute is left in place rather than a wrong value being projected.
+    XCTAssertNil(projected[@"p_when"]);
+    XCTAssertEqualObjects(projected[@"when"], when);
+}
+
+- (void)testProjectionMatchWithNullAttributeValue {
+    [self setUserAttributesAndIdentities];
+    
+    NSString *configurationStr = @"{ \
+                                     \"id\": 92, \
+                                     \"as\": { \
+                                       \"devKey\": \"INVALID_DEV_KEY\", \
+                                       \"appleAppId\": \"INVALID_APPLE_APP_ID\" \
+                                     }, \
+                                     \"hs\": {}, \
+                                     \"pr\": [ \
+                                       { \
+                                         \"id\": 181, \
+                                         \"pmid\": 361, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"X_NEW_SUBSCRIPTION\", \
+                                           \"attribute_maps\": [], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"outcome\", \
+                                             \"attribute_values\": [ \
+                                               \"new_subscription\" \
+                                             ] \
+                                           } \
+                                         ] \
+                                       } \
+                                     ] \
+                                   }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[configurationDictionary]];
+    
+    // transformValuesToString keeps an NSNull as NSNull, so the match below compares the
+    // configured values against an NSNull rather than a string.
+    MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
+    event.customAttributes = @{@"outcome":[NSNull null], @"plan_id":@"3"};
+    XCTAssertEqualObjects(event.customAttributes[@"outcome"], [NSNull null]);
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = nil;
+    XCTAssertNoThrow((kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)]));
+    
+    // An NSNull matches no configured value, so the projection does not apply and the event is
+    // forwarded under its original name.
+    MPEvent *forwardEvent = (MPEvent *)kitFilter.forwardEvent;
+    XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+}
+
+- (void)testProjectionExceptionReleasesTheKitsLock {
+    [self setUserAttributesAndIdentities];
+    [self configureKitWithTypedAttributeProjections];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"typed_event" type:MPEventTypeOther];
+    event.customAttributes = @{@"count":@0};
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    
+    // Projecting holds the container's kit lock, so the boundary has to release it on the way
+    // out. Nothing in the projection engine raises on real input any more, so the only way to
+    // reach that path is to make the transform raise.
+    Method method = class_getInstanceMethod([MPKitContainer_PRIVATE class], @selector(transformValue:dataType:));
+    IMP originalImplementation = method_getImplementation(method);
+    IMP raisingImplementation = imp_implementationWithBlock(^id (id container, id value, MPDataType dataType) {
+        [NSException raise:NSInvalidArgumentException format:@"forced projection failure"];
+        return nil;
+    });
+    
+    @try {
+        method_setImplementation(method, raisingImplementation);
+        XCTAssertNoThrow([kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)]);
+    } @finally {
+        method_setImplementation(method, originalImplementation);
+    }
+    
+    // This second projection has to take the same semaphore, so it would never complete if the
+    // exception had escaped while holding it.
+    XCTestExpectation *expectation = [self expectationWithDescription:@"a later projection still completes"];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+        [expectation fulfill];
+    });
+    [self waitForExpectations:@[expectation] timeout:5.0];
 }
 
 - (void)testAllocation {    
