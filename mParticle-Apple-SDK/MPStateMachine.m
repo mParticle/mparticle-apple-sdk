@@ -581,7 +581,7 @@ static BOOL runningInBackground = NO;
 
 #pragma mark Public methods
 - (void)configureCustomModules:(NSArray<NSDictionary *> *)customModuleSettings {
-    if (MPIsNull(customModuleSettings)) {
+    if (!MPIsArray(customModuleSettings)) {
         return;
     }
     
@@ -636,7 +636,7 @@ static BOOL runningInBackground = NO;
     // When configured, triggerMessageTypes will at least have one item: MPMessageTypeCommerceEvent,
     // so if there the received configuration is nil and there are more than 1 trigger configured,
     // then reset the configuration and let commerce event be configured as trigger. Otherwise returns
-    if (MPIsNull(triggerDictionary)) {
+    if (!MPIsDictionary(triggerDictionary)) {
         if (_triggerMessageTypes.count > 1) {
             [self resetTriggers];
         } else if (_triggerMessageTypes.count == 1) {
@@ -646,8 +646,10 @@ static BOOL runningInBackground = NO;
         triggerDictionary = nil;
     }
     
+    // A non-array evts would be stored here and then reach containsObject: on the first custom
+    // event logged, so anything but an array has to clear the trigger list instead.
     NSArray *eventTypes = triggerDictionary[kMPRemoteConfigTriggerEventsKey];
-    if (MPIsNull(eventTypes)) {
+    if (!MPIsArray(eventTypes)) {
         [self willChangeValueForKey:@"triggerEventTypes"];
         _triggerEventTypes = nil;
         [self didChangeValueForKey:@"triggerEventTypes"];
@@ -663,7 +665,7 @@ static BOOL runningInBackground = NO;
     NSMutableArray *messageTypes = [@[messageTypeCommerceEventKey] mutableCopy];
     NSArray *configMessageTypes = triggerDictionary[kMPRemoteConfigTriggerMessageTypesKey];
     
-    if (!MPIsNull(configMessageTypes)) {
+    if (MPIsArray(configMessageTypes)) {
         [messageTypes addObjectsFromArray:configMessageTypes];
     }
     
@@ -679,20 +681,32 @@ static BOOL runningInBackground = NO;
     self.aliasMaxWindow = aliasMaxWindow;
 }
 
+// NSString and NSNumber both answer boolValue, so only the container and null shapes have to be
+// rejected here.
+- (BOOL)blockFlagFromSettings:(NSDictionary *)dataBlockSettings key:(NSString *)key {
+    id flag = dataBlockSettings[key];
+    return (MPIsNumber(flag) || MPIsString(flag)) ? [flag boolValue] : NO;
+}
+
 - (void)configureDataBlocking:(nullable NSDictionary *)blockSettings {
-    if (MPIsNull(blockSettings)) {
+    if (!MPIsDictionary(blockSettings)) {
         blockSettings = @{};
     }
-    if (!MPIsNull(blockSettings[kMPRemoteConfigDataPlanning])) {
+    if (MPIsDictionary(blockSettings[kMPRemoteConfigDataPlanning])) {
         NSDictionary *dataPlanSettings = blockSettings[kMPRemoteConfigDataPlanning];
-        NSDictionary *dataBlockSettings = dataPlanSettings[kMPRemoteConfigDataPlanningBlock];
+        id dataBlockSettings = dataPlanSettings[kMPRemoteConfigDataPlanningBlock];
+        if (!MPIsDictionary(dataBlockSettings)) {
+            dataBlockSettings = @{};
+        }
+        
+        id dataPlan = dataPlanSettings[kMPRemoteConfigDataPlanningDataPlanVersionValue];
         
         self.dataPlanOptions = [[MPDataPlanOptions alloc] init];
-        self.dataPlanOptions.blockEvents = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEvents] boolValue];
-        self.dataPlanOptions.blockEventAttributes = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEventAttributes] boolValue];
-        self.dataPlanOptions.blockUserAttributes = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedUserAttributes] boolValue];
-        self.dataPlanOptions.blockUserIdentities = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedIdentities] boolValue];
-        self.dataPlanOptions.dataPlan = dataPlanSettings[kMPRemoteConfigDataPlanningDataPlanVersionValue];
+        self.dataPlanOptions.blockEvents = [self blockFlagFromSettings:dataBlockSettings key:kMPRemoteConfigDataPlanningBlockUnplannedEvents];
+        self.dataPlanOptions.blockEventAttributes = [self blockFlagFromSettings:dataBlockSettings key:kMPRemoteConfigDataPlanningBlockUnplannedEventAttributes];
+        self.dataPlanOptions.blockUserAttributes = [self blockFlagFromSettings:dataBlockSettings key:kMPRemoteConfigDataPlanningBlockUnplannedUserAttributes];
+        self.dataPlanOptions.blockUserIdentities = [self blockFlagFromSettings:dataBlockSettings key:kMPRemoteConfigDataPlanningBlockUnplannedIdentities];
+        self.dataPlanOptions.dataPlan = MPIsDictionary(dataPlan) ? dataPlan : nil;
         if (MParticle.sharedInstance.dataPlanOptions == nil) {
             MParticle.sharedInstance.dataPlanFilter = [[MPDataPlanFilter alloc] initWithDataPlanOptions:self.dataPlanOptions];
         }

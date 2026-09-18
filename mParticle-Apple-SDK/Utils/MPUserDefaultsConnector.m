@@ -1,4 +1,5 @@
 #import "MPUserDefaultsConnector.h"
+#import "MPILogger.h"
 #import "mParticle.h"
 
 @import mParticle_Apple_SDK_Swift;
@@ -41,8 +42,21 @@
     return logger;
 }
 
+// Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an
+// Objective-C exception raised further down. Without a boundary here a parse defect in one section
+// terminates the host app and stops the remaining sections from being applied.
+- (void)applyConfigurationSection:(NSString *)section usingBlock:(void (^)(void))block {
+    @try {
+        block();
+    } @catch (NSException *e) {
+        MPILogError(@"Failed to apply the %@ configuration section: %@", section, e);
+    }
+}
+
 - (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
-    [MParticle.sharedInstance.kitContainer_PRIVATE configureKits:kitConfigurations];
+    [self applyConfigurationSection:@"kits" usingBlock:^{
+        [MParticle.sharedInstance.kitContainer_PRIVATE configureKits:kitConfigurations];
+    }];
 }
 
 
@@ -55,23 +69,33 @@
 }
 
 - (void)configureCustomModules:(nullable NSArray<NSDictionary *> *)customModuleSettings {
-    [MParticle.sharedInstance.stateMachine configureCustomModules:customModuleSettings];
+    [self applyConfigurationSection:@"custom modules" usingBlock:^{
+        [MParticle.sharedInstance.stateMachine configureCustomModules:customModuleSettings];
+    }];
 }
 
 - (void)configureRampPercentage:(nullable NSNumber *)rampPercentage {
-    [MParticle.sharedInstance.stateMachine configureRampPercentage:rampPercentage];
+    [self applyConfigurationSection:@"ramp percentage" usingBlock:^{
+        [MParticle.sharedInstance.stateMachine configureRampPercentage:rampPercentage];
+    }];
 }
 
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary {
-    [MParticle.sharedInstance.stateMachine configureTriggers:triggerDictionary];
+    [self applyConfigurationSection:@"triggers" usingBlock:^{
+        [MParticle.sharedInstance.stateMachine configureTriggers:triggerDictionary];
+    }];
 }
 
 - (void)configureAliasMaxWindow:(nullable NSNumber *)aliasMaxWindow {
-    [MParticle.sharedInstance.stateMachine configureAliasMaxWindow:aliasMaxWindow];
+    [self applyConfigurationSection:@"alias max window" usingBlock:^{
+        [MParticle.sharedInstance.stateMachine configureAliasMaxWindow:aliasMaxWindow];
+    }];
 }
 
 - (void)configureDataBlocking:(nullable NSDictionary *)blockSettings {
-    [MParticle.sharedInstance.stateMachine configureDataBlocking:blockSettings];
+    [self applyConfigurationSection:@"data blocking" usingBlock:^{
+        [MParticle.sharedInstance.stateMachine configureDataBlocking:blockSettings];
+    }];
 }
 
 - (NSNumber* __nullable)userId {

@@ -101,6 +101,14 @@
 - (nonnull MPKitExecStatus *)onModifyComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request;
 
 #pragma mark Consent state
+/**
+ Opts this kit into replay of effective, kit-filtered consent after activation,
+ configuration updates, and identity completion. The default is NO when omitted.
+ Replays use setConsentState: on the main queue and may repeat the current state.
+ Kits must select the corresponding user before returning from identity callbacks.
+ */
+- (BOOL)supportsConsentStateReplay;
+
 - (nonnull MPKitExecStatus *)setConsentState:(nullable MPConsentState *)state;
 
 #pragma mark e-Commerce

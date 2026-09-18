@@ -24,10 +24,16 @@
 - (instancetype)initWithDictionary:(NSDictionary *)preferenceDictionary location:(NSString *)location moduleId:(NSNumber *)moduleId {
     self = [super init];
 
+    if (!self || !MPIsDictionary(preferenceDictionary) || MPIsNull(moduleId)) {
+        return nil;
+    }
+
     _readKey = preferenceDictionary[kMPRemoteConfigCustomModuleReadKey];
     _writeKey = preferenceDictionary[kMPRemoteConfigCustomModuleWriteKey];
 
-    if (!self || MPIsNull(moduleId) || MPIsNull(_readKey) || MPIsNull(_writeKey)) {
+    // Both keys are used as NSUserDefaults keys and are archived as NSString, so a non-string
+    // value from the server has to be rejected rather than stored.
+    if (!MPIsString(_readKey) || !MPIsString(_writeKey)) {
         return nil;
     }
     
