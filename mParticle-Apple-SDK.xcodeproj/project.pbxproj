@@ -501,6 +501,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Test/Backend/MPBackendSessionStateTests.swift,
+				Test/Backend/MPBackendMessageWriterTests.swift,
+				Test/Backend/MPBackendSessionFixture.swift,
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
 				Test/Kits/MPDataPlanFilterPolicyTests.swift,
@@ -595,6 +597,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Test/Backend/MPBackendSessionStateTests.swift,
+				Test/Backend/MPBackendMessageWriterTests.swift,
+				Test/Backend/MPBackendSessionFixture.swift,
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
 				Test/Kits/MPDataPlanFilterPolicyTests.swift,
