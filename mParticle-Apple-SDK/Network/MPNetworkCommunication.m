@@ -110,6 +110,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @property (nonatomic) BOOL identifying;
 @property (nonatomic, strong) id<MPUploadPersisting> persistence;
 @property (nonatomic, strong) id<MPKitBatchLogging> kitBatchLogger;
+@property (nonatomic, strong) MPEndpointURLFactory *urlFactory;
 
 @end
 
@@ -157,137 +158,95 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     return [self defaultHostWithSubdomain:subdomain apiKey:[MParticle sharedInstance].stateMachine.apiKey];
 }
 
+- (MPEndpointURLFactory *)urlFactory {
+    if (!_urlFactory) {
+        _urlFactory = [[MPEndpointURLFactory alloc] initWithLogger:^MPLog * _Nullable{
+            return [[MParticle sharedInstance] getLogger];
+        }];
+    }
+
+    return _urlFactory;
+}
+
+/// Flattens MPNetworkOptions for the config, audience, identity and modify endpoints.
+- (MPEndpointRouting *)networkRouting {
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPNetworkOptions *networkOptions = mParticle.networkOptions;
+
+    return [[MPEndpointRouting alloc] initWithApiKey:mParticle.stateMachine.apiKey
+                                   customBaseURLHost:networkOptions.customBaseURL.host
+                                    hasCustomBaseURL:networkOptions.customBaseURL != nil
+                                          configHost:networkOptions.configHost
+                                          eventsHost:networkOptions.eventsHost
+                                  eventsTrackingHost:networkOptions.eventsTrackingHost
+                                        identityHost:networkOptions.identityHost
+                                identityTrackingHost:networkOptions.identityTrackingHost
+                                           aliasHost:networkOptions.aliasHost
+                                   aliasTrackingHost:networkOptions.aliasTrackingHost
+                         overridesConfigSubdirectory:networkOptions.overridesConfigSubdirectory
+                         overridesEventsSubdirectory:networkOptions.overridesEventsSubdirectory
+                       overridesIdentitySubdirectory:networkOptions.overridesIdentitySubdirectory
+                          overridesAliasSubdirectory:networkOptions.overridesAliasSubdirectory
+                                          eventsOnly:networkOptions.eventsOnly
+                                       attAuthorized:[self attAuthorized]];
+}
+
+/// Flattens the upload's own MPUploadSettings for the event and alias endpoints. Those
+/// hosts have already been resolved against customBaseURL when the settings were built,
+/// so only the CDN routing flag still comes from MPNetworkOptions.
+- (MPEndpointRouting *)routingForUploadSettings:(MPUploadSettings *)uploadSettings {
+    MPNetworkOptions *networkOptions = [MParticle sharedInstance].networkOptions;
+
+    return [[MPEndpointRouting alloc] initWithApiKey:uploadSettings.apiKey
+                                   customBaseURLHost:networkOptions.customBaseURL.host
+                                    hasCustomBaseURL:networkOptions.customBaseURL != nil
+                                          configHost:nil
+                                          eventsHost:uploadSettings.eventsHost
+                                  eventsTrackingHost:uploadSettings.eventsTrackingHost
+                                        identityHost:nil
+                                identityTrackingHost:nil
+                                           aliasHost:uploadSettings.aliasHost
+                                   aliasTrackingHost:uploadSettings.aliasTrackingHost
+                         overridesConfigSubdirectory:NO
+                         overridesEventsSubdirectory:uploadSettings.overridesEventsSubdirectory
+                       overridesIdentitySubdirectory:NO
+                          overridesAliasSubdirectory:uploadSettings.overridesAliasSubdirectory
+                                          eventsOnly:uploadSettings.eventsOnly
+                                       attAuthorized:[self attAuthorized]];
+}
+
 - (MPURL *)configURL {
     if (_configURL) {
         return _configURL;
     }
 
     MParticle *mParticle = [MParticle sharedInstance];
-    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
-    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)mParticle.stateMachine
                                                                                userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
                                                                                 environment:[MPStateMachine_PRIVATE environment]
                                                                            deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
                                                                                    buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
-    MPNetworkOptions *networkOptions = mParticle.networkOptions;
-    NSString *customHost = networkOptions.customBaseURL.host;
-    if (customHost && networkOptions.configHost) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; configHost is ignored.");
-    }
-    NSString *configHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:customHost
-                                                                       trackingHost:nil
-                                                                               host:networkOptions.configHost
-                                                                        defaultHost:kMPURLHostConfig
-                                                                      attAuthorized:NO];
 
-    MPDataPlanQuery *dataPlanQuery = [MPDataPlanQuery queryWithPlanId:MParticle.sharedInstance.dataPlanId
-                                                          planVersion:MParticle.sharedInstance.dataPlanVersion];
-    if (dataPlanQuery.rejectedVersion != nil) {
-        MPILogWarning(@"Data plan version of %i is out of range and will not be used to fetch remote data plan. Version must be between 1 and 1000.", dataPlanQuery.rejectedVersion.intValue);
-    }
-    NSString *dataPlanConfigString = dataPlanQuery.query;
-    NSString *configURLFormat = [urlFormat stringByAppendingString:@"?av=%@&sv=%@"];
-    NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, kMPURLHostConfig, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
-    NSURL *defaultURL = [NSURL URLWithString:urlString];
-
-    MPEndpointPathStyle *style = [MPEndpointPathStyle styleWithDefaultVersion:kMPConfigVersion
-                                                                  cdnVersion:@"config/v4"
-                                                              usesCustomHost:customHost != nil
-                                                       overridesSubdirectory:networkOptions.overridesConfigSubdirectory];
-    if (style.warnsSubdirectoryOverrideIgnored) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesConfigSubdirectory is unsupported for CDN routing; overridesConfigSubdirectory will be ignored.");
-    }
-    if (style.usesOverrideFormat) {
-        NSString *overrideFormat = [urlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
-        urlString = [NSString stringWithFormat:overrideFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
-    } else {
-        urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, style.versionSegment, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
-    }
-    if (dataPlanConfigString) {
-        urlString = [NSString stringWithFormat:@"%@%@", urlString, dataPlanConfigString];
-    }
-
-    NSURL *modifiedURL = [NSURL URLWithString:urlString];
-    if (modifiedURL && defaultURL) {
-        _configURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
-    }
+    _configURL = [self.urlFactory configURLWithRouting:[self networkRouting]
+                                            appVersion:application.version
+                                            sdkVersion:kMParticleSDKVersion
+                                            dataPlanId:mParticle.dataPlanId
+                                       dataPlanVersion:mParticle.dataPlanVersion];
 
     return _configURL;
 }
 
 - (MPURL *)eventURLForUpload:(MPUpload *)mpUpload {
-    MPUploadSettings *uploadSettings = (MPUploadSettings *)mpUpload.uploadSettings;
-    NSString *eventHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:nil
-                                                                      trackingHost:uploadSettings.eventsTrackingHost
-                                                                              host:uploadSettings.eventsHost
-                                                                       defaultHost:self.defaultEventHost
-                                                                     attAuthorized:[self attAuthorized]];
-    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, uploadSettings.apiKey, kMPEventsURL];
-    NSURL *defaultURL = [NSURL URLWithString:urlString];
-
-    MPEndpointPathStyle *style = [MPEndpointPathStyle styleWithDefaultVersion:kMPEventsVersion
-                                                                  cdnVersion:@"nativeevents/v2"
-                                                              usesCustomHost:[MParticle sharedInstance].networkOptions.customBaseURL != nil
-                                                       overridesSubdirectory:uploadSettings.overridesEventsSubdirectory];
-    if (style.warnsSubdirectoryOverrideIgnored) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesEventsSubdirectory is unsupported for CDN routing; overridesEventsSubdirectory will be ignored.");
-    }
-    if (style.usesOverrideFormat) {
-        urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, uploadSettings.apiKey, kMPEventsURL];
-    } else {
-        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, style.versionSegment, uploadSettings.apiKey, kMPEventsURL];
-    }
-
-    NSURL *modifiedURL = [NSURL URLWithString:urlString];
-    MPURL *eventURL;
-    if (modifiedURL && defaultURL) {
-        eventURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
-    }
-    return eventURL;
+    return [self.urlFactory eventURLWithRouting:[self routingForUploadSettings:(MPUploadSettings *)mpUpload.uploadSettings]
+                               defaultEventHost:self.defaultEventHost];
 }
 
+// Deliberately not memoized, matching the original: the audience URL embeds the current
+// mpid, so caching it would pin the URL to whichever user was current first.
 - (MPURL *)audienceURL {
-    MParticle *mParticle = [MParticle sharedInstance];
-    MPStateMachine_PRIVATE *stateMachine = mParticle.stateMachine;
-    MPNetworkOptions *networkOptions = mParticle.networkOptions;
-    NSString *customHost = networkOptions.customBaseURL.host;
-    if (customHost && networkOptions.eventsHost) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; eventsHost is ignored.");
-    }
-    NSString *eventHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:customHost
-                                                                      trackingHost:nil
-                                                                              host:networkOptions.eventsHost
-                                                                       defaultHost:self.defaultEventHost
-                                                                     attAuthorized:NO];
-    NSString *audienceURLFormat = [audienceFormat stringByAppendingString:@"?mpid=%@"];
-    NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceUtilities mpId]];
-    NSURL *defaultURL = [NSURL URLWithString:urlString];
-
-    MPEndpointPathStyle *style = [MPEndpointPathStyle styleWithDefaultVersion:kMPAudienceVersion
-                                                                  cdnVersion:@"nativeevents/v1"
-                                                              usesCustomHost:customHost != nil
-                                                       overridesSubdirectory:networkOptions.overridesEventsSubdirectory];
-    if (style.warnsSubdirectoryOverrideIgnored) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesEventsSubdirectory is unsupported for CDN routing; overridesEventsSubdirectory will be ignored.");
-    }
-    if (style.usesOverrideFormat) {
-        audienceURLFormat = [urlFormatOverride stringByAppendingString:@"?mpid=%@"];
-        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceUtilities mpId]];
-    } else {
-        audienceURLFormat = [urlFormat stringByAppendingString:@"?mpid=%@"];
-        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, style.versionSegment, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceUtilities mpId]];
-    }
-
-    NSURL *modifiedURL = [NSURL URLWithString:urlString];
-    defaultURL.accessibilityHint = @"audience";
-    modifiedURL.accessibilityHint = @"audience";
-
-    MPURL *audienceURL;
-    if (modifiedURL && defaultURL) {
-        audienceURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
-    }
-
-    return audienceURL;
+    return [self.urlFactory audienceURLWithRouting:[self networkRouting]
+                                  defaultEventHost:self.defaultEventHost
+                                              mpId:[MPPersistenceUtilities mpId]];
 }
 
 - (MPURL *)identifyURL {
@@ -321,126 +280,20 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)identityURL:(NSString *)pathComponent {
-    MPNetworkOptions *identityNetworkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *identityCustomHost = identityNetworkOptions.customBaseURL.host;
-    if (identityCustomHost && (identityNetworkOptions.identityHost || identityNetworkOptions.identityTrackingHost)) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; identityHost/identityTrackingHost are ignored.");
-    }
-    NSString *identityHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:identityCustomHost
-                                                                         trackingHost:identityNetworkOptions.identityTrackingHost
-                                                                                 host:identityNetworkOptions.identityHost
-                                                                          defaultHost:self.defaultIdentityHost
-                                                                        attAuthorized:[self attAuthorized]];
-    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, pathComponent];
-    NSURL *defaultURL = [NSURL URLWithString:urlString];
-
-    MPEndpointPathStyle *style = [MPEndpointPathStyle styleWithDefaultVersion:kMPIdentityVersion
-                                                                  cdnVersion:@"identity/v1"
-                                                              usesCustomHost:identityCustomHost != nil
-                                                       overridesSubdirectory:identityNetworkOptions.overridesIdentitySubdirectory];
-    if (style.warnsSubdirectoryOverrideIgnored) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesIdentitySubdirectory is unsupported for CDN routing; overridesIdentitySubdirectory will be ignored.");
-    }
-    if (style.usesOverrideFormat) {
-        urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
-    } else {
-        urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, style.versionSegment, pathComponent];
-    }
-
-    NSURL *modifiedURL = [NSURL URLWithString:urlString];
-    defaultURL.accessibilityHint = @"identity";
-    modifiedURL.accessibilityHint = @"identity";
-
-    MPURL *identityURL;
-    if (modifiedURL && defaultURL) {
-        identityURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
-    }
-
-    return identityURL;
+    return [self.urlFactory identityURLWithRouting:[self networkRouting]
+                               defaultIdentityHost:self.defaultIdentityHost
+                                     pathComponent:pathComponent];
 }
 
 - (MPURL *)modifyURL {
-    NSString *pathComponent = @"modify";
-    MPNetworkOptions *modifyNetworkOptions = [MParticle sharedInstance].networkOptions;
-    NSString *modifyCustomHost = modifyNetworkOptions.customBaseURL.host;
-    if (modifyCustomHost && (modifyNetworkOptions.identityHost || modifyNetworkOptions.identityTrackingHost)) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL is set; identityHost/identityTrackingHost are ignored.");
-    }
-    NSString *identityHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:modifyCustomHost
-                                                                         trackingHost:modifyNetworkOptions.identityTrackingHost
-                                                                                 host:modifyNetworkOptions.identityHost
-                                                                          defaultHost:self.defaultIdentityHost
-                                                                        attAuthorized:[self attAuthorized]];
-    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceUtilities mpId],  pathComponent];
-    NSURL *defaultURL = [NSURL URLWithString:urlString];
-
-    MPEndpointPathStyle *style = [MPEndpointPathStyle styleWithDefaultVersion:kMPIdentityVersion
-                                                                  cdnVersion:@"identity/v1"
-                                                              usesCustomHost:modifyCustomHost != nil
-                                                       overridesSubdirectory:modifyNetworkOptions.overridesIdentitySubdirectory];
-    if (style.warnsSubdirectoryOverrideIgnored) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesIdentitySubdirectory is unsupported for CDN routing; overridesIdentitySubdirectory will be ignored.");
-    }
-    if (style.usesOverrideFormat) {
-        urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceUtilities mpId], pathComponent];
-    } else {
-        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, style.versionSegment, [MPPersistenceUtilities mpId], pathComponent];
-    }
-
-    NSURL *modifiedURL = [NSURL URLWithString:urlString];
-    defaultURL.accessibilityHint = @"identity";
-    modifiedURL.accessibilityHint = @"identity";
-
-    MPURL *modifyURL;
-    if (modifiedURL && defaultURL) {
-        modifyURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
-    }
-
-    return modifyURL;
+    return [self.urlFactory modifyURLWithRouting:[self networkRouting]
+                             defaultIdentityHost:self.defaultIdentityHost
+                                            mpId:[MPPersistenceUtilities mpId]];
 }
 
 - (MPURL *)aliasURLForUpload:(MPUpload *)mpUpload {
-    MPUploadSettings *uploadSettings = (MPUploadSettings *)mpUpload.uploadSettings;
-    NSString *pathComponent = @"alias";
-
-    NSString *eventHost = [MPEndpointHostResolver resolvedHostWithCustomBaseURLHost:nil
-                                                                      trackingHost:uploadSettings.aliasTrackingHost
-                                                                              host:uploadSettings.aliasHost
-                                                                       defaultHost:self.defaultEventHost
-                                                                     attAuthorized:[self attAuthorized]];
-    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, uploadSettings.apiKey, pathComponent];
-    NSURL *defaultURL = [NSURL URLWithString:urlString];
-
-    BOOL usingCustomBaseURLAlias = [MParticle sharedInstance].networkOptions.customBaseURL != nil;
-    BOOL overrides = uploadSettings.overridesAliasSubdirectory;
-    if (!uploadSettings.eventsOnly && !uploadSettings.aliasHost) {
-        eventHost = uploadSettings.eventsHost ?: self.defaultEventHost;
-        overrides = uploadSettings.overridesEventsSubdirectory;
-    }
-
-    MPEndpointPathStyle *style = [MPEndpointPathStyle styleWithDefaultVersion:kMPIdentityVersion
-                                                                  cdnVersion:@"nativeevents/v1"
-                                                              usesCustomHost:usingCustomBaseURLAlias
-                                                       overridesSubdirectory:overrides];
-    if (style.warnsSubdirectoryOverrideIgnored) {
-        MPILogWarning(@"MPNetworkOptions: customBaseURL with overridesAliasSubdirectory/overridesEventsSubdirectory is unsupported for CDN routing; subdirectory override will be ignored.");
-    }
-    if (style.usesOverrideFormat) {
-        urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, uploadSettings.apiKey, pathComponent];
-    } else {
-        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, style.versionSegment, kMPIdentityKey, uploadSettings.apiKey, pathComponent];
-    }
-
-    NSURL *modifiedURL = [NSURL URLWithString:urlString];
-    defaultURL.accessibilityHint = @"identity";
-    modifiedURL.accessibilityHint = @"identity";
-
-    MPURL *aliasURL;
-    if (modifiedURL && defaultURL) {
-        aliasURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
-    }
-
-    return aliasURL;
+    return [self.urlFactory aliasURLWithRouting:[self routingForUploadSettings:(MPUploadSettings *)mpUpload.uploadSettings]
+                               defaultEventHost:self.defaultEventHost];
 }
 
 
