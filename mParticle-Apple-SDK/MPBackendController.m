@@ -1020,7 +1020,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
     // Saved through the controller, so the opt-out gate and the upload trigger still apply. A
     // crash report deliberately does not take this path.
-    [self saveMessage:errorMessage updateSession:YES];
+    if (errorMessage) {
+        [self saveMessage:errorMessage updateSession:YES];
+    }
 
     completionHandler(execMessage, MPExecStatusSuccess);
 }
