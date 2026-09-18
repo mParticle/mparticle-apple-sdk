@@ -97,7 +97,40 @@
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSTimeInterval timeOfLastEventInBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
+- (MPBackendSessionDependencies *)sessionDependencies;
+- (MPBackendSessionCoordinator *)sessionCoordinator;
 
+@end
+
+@interface MPBackendPausedConstruction : MPBackendController_PRIVATE
+@property (nonatomic, strong) NSLock *constructionLock;
+@property (nonatomic) BOOL didPauseConstruction;
+@property (nonatomic, strong) dispatch_semaphore_t constructionEntered;
+@property (nonatomic, strong) dispatch_semaphore_t continueConstruction;
+@end
+
+@implementation MPBackendPausedConstruction
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _constructionLock = [[NSLock alloc] init];
+        _constructionEntered = dispatch_semaphore_create(0);
+        _continueConstruction = dispatch_semaphore_create(0);
+    }
+    return self;
+}
+
+- (MPBackendSessionDependencies *)sessionDependencies {
+    [self.constructionLock lock];
+    BOOL pause = !self.didPauseConstruction;
+    self.didPauseConstruction = YES;
+    [self.constructionLock unlock];
+    if (pause) {
+        dispatch_semaphore_signal(self.constructionEntered);
+        dispatch_semaphore_wait(self.continueConstruction, DISPATCH_TIME_FOREVER);
+    }
+    return [super sessionDependencies];
+}
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
@@ -184,6 +217,50 @@
         [backend endUploadTimer];
     }];
     XCTAssertEqual(dispatch_group_wait(timers, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+}
+
+- (void)testConcurrentFirstSessionAccessSharesOneCoordinator {
+    MPBackendPausedConstruction *backend = [[MPBackendPausedConstruction alloc] init];
+    dispatch_queue_t queue = dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0);
+    dispatch_group_t group = dispatch_group_create();
+    __block MPBackendSessionCoordinator *first;
+    __block MPBackendSessionCoordinator *second;
+    dispatch_group_async(group, queue, ^{ first = [backend sessionCoordinator]; });
+    XCTAssertEqual(dispatch_semaphore_wait(backend.constructionEntered, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    dispatch_semaphore_t secondStarted = dispatch_semaphore_create(0);
+    dispatch_semaphore_t secondFinished = dispatch_semaphore_create(0);
+    dispatch_group_async(group, queue, ^{
+        dispatch_semaphore_signal(secondStarted);
+        second = [backend sessionCoordinator];
+        dispatch_semaphore_signal(secondFinished);
+    });
+    XCTAssertEqual(dispatch_semaphore_wait(secondStarted, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    XCTAssertNotEqual(dispatch_semaphore_wait(secondFinished, dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC)), 0);
+    dispatch_semaphore_signal(backend.continueConstruction);
+    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    XCTAssertNotNil(first);
+    XCTAssertEqual(first, second);
+}
+
+- (void)testConcurrentFirstAccessSharesEntireSessionGraph {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    NSArray<NSString *> *keys = @[@"sessionDependencies", @"messageWriter", @"sessionLifecycleDependencies", @"sessionCoordinator"];
+    NSMutableArray<NSArray *> *graphs = [[NSMutableArray alloc] init];
+    NSLock *resultsLock = [[NSLock alloc] init];
+    dispatch_apply(32, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t iteration) {
+        NSMutableArray *graph = [[NSMutableArray alloc] init];
+        for (NSUInteger offset = 0; offset < keys.count; offset++) {
+            [graph addObject:[backend valueForKey:keys[(iteration + offset) % keys.count]]];
+        }
+        [resultsLock lock];
+        for (NSUInteger offset = 0; offset < keys.count; offset++) {
+            XCTAssertEqual(graph[offset], [backend valueForKey:keys[(iteration + offset) % keys.count]]);
+        }
+        [graphs addObject:graph];
+        [resultsLock unlock];
+    });
+    XCTAssertEqual(graphs.count, 32);
+
 }
 
 - (void)testSessionOwnershipDoesNotPublishStateMachineMirror {

@@ -113,6 +113,74 @@ final class MPBackendSessionCoordinatorTests: MPBackendWorkflowTestCase {
         }
     }
 
+    func testReentrantTemporaryCreationPublishesOnlyOneSession() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let coordinator = fixture.coordinator
+            fixture.onBegin = { [unowned fixture] _ in
+                if fixture.began.count == 1 { coordinator.createTempSession() }
+            }
+            coordinator.createTempSession()
+            XCTAssertEqual(fixture.began.count, 1)
+            XCTAssertEqual(fixture.pendingUUID, fixture.began.first?.uuid)
+            coordinator.beginSession()
+            XCTAssertEqual(fixture.state.session?.uuid, fixture.began.first?.uuid)
+            XCTAssertEqual(fixture.began.count, 1)
+            XCTAssertNil(fixture.pendingUUID)
+        }
+    }
+
+    func testPreviousSessionLengthUsesIntegerJSONAndHandlesInvalidValues() {
+        onMessageQueue {
+            let cases: [(Double, Int)] = [
+                (12.75, 12), (-0.2, 0), (-12.75, -12),
+                (.nan, 0), (.infinity, 0), (-.infinity, 0),
+                (Double(Int.max), 0), (Double(Int.min), Int.min), (.greatestFiniteMagnitude, 0)
+            ]
+            for (length, expected) in cases {
+                let fixture = MPBackendSessionFixture()
+                let previous = MPSessionPRIVATE(startTime: 10, userId: 1, uuid: "previous")
+                previous.length = length
+                fixture.persistence.previousSession = previous
+                fixture.coordinator.beginSession(isManual: true, date: nil)
+                let data = try XCTUnwrap(fixture.persistence.savedMessages.first?.messageData)
+                let json = try XCTUnwrap(String(data: data, encoding: .utf8))
+                XCTAssertNotNil(json.range(of: "\"psl\":\\s*\(expected)(?=[,}])", options: .regularExpression), json)
+            }
+        }
+    }
+
+    func testConcurrentTemporaryCreationAndAdoptionKeepPublishedUUID() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let coordinator = fixture.coordinator
+            let published = DispatchSemaphore(value: 0)
+            let finishPublication = DispatchSemaphore(value: 0)
+            let started = DispatchSemaphore(value: 0)
+            let group = DispatchGroup()
+            let queue = DispatchQueue.global(qos: .userInitiated)
+            fixture.onBegin = { [unowned fixture] _ in
+                fixture.onBegin = nil
+                published.signal()
+                XCTAssertEqual(finishPublication.wait(timeout: .now() + 2), .success)
+            }
+            queue.async(group: group) { coordinator.createTempSession() }
+            XCTAssertEqual(published.wait(timeout: .now() + 2), .success)
+            queue.async(group: group) { started.signal(); coordinator.createTempSession() }
+            queue.async(group: group) { started.signal(); coordinator.beginSession(isManual: true, date: nil) }
+            XCTAssertEqual(started.wait(timeout: .now() + 2), .success)
+            XCTAssertEqual(started.wait(timeout: .now() + 2), .success)
+            XCTAssertEqual(group.wait(timeout: .now() + 0.1), .timedOut)
+            finishPublication.signal()
+            XCTAssertEqual(group.wait(timeout: .now() + 2), .success)
+            XCTAssertEqual(fixture.began.count, 1)
+            XCTAssertEqual(fixture.state.session?.uuid, fixture.began.first?.uuid)
+            XCTAssertEqual(fixture.persistence.savedSessions.first?.uuid, fixture.began.first?.uuid)
+            XCTAssertNil(fixture.pendingUUID)
+            XCTAssertNil(fixture.state.pendingSessionUUID)
+        }
+    }
+
     func testPreviousSessionFieldsAndCapturedStartDate() throws {
         onMessageQueue {
             let fixture = MPBackendSessionFixture()

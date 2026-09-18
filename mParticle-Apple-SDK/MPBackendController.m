@@ -185,98 +185,106 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (MPBackendSessionDependencies * _Nonnull)sessionDependencies {
-    if (!_sessionDependencies) {
-        __weak MPBackendController_PRIVATE *weakSelf = self;
-        _sessionDependencies = [[MPBackendSessionDependencies alloc]
-            initWithPersistence:^{ return weakSelf.persistence; }
-            stateMachine:^{ return MParticle.sharedInstance.stateMachine; }
-            makeMessageContext:^{
-                return [weakSelf messageBuilderContext] ?: [[MPMessageBuilderContext alloc]
-                    initWithDataPlanId:nil dataPlanVersion:nil logger:nil];
-            }
-            runningInBackground:^{ return MPStateMachine_PRIVATE.runningInBackground; }
-            enqueueOnMessage:^(dispatch_block_t block) {
-                MPBackendController_PRIVATE *backend = weakSelf;
-                dispatch_async([MParticle messageQueue], ^{ if (backend) { block(); } });
-            }
-            upload:^(dispatch_block_t completion) { [weakSelf waitForKitsAndUploadWithCompletionHandler:completion]; }
-            logger:^{ return [MParticle.sharedInstance getLogger]; }];
+    @synchronized (self) {
+        if (!_sessionDependencies) {
+            __weak MPBackendController_PRIVATE *weakSelf = self;
+            _sessionDependencies = [[MPBackendSessionDependencies alloc]
+                initWithPersistence:^{ return weakSelf.persistence; }
+                stateMachine:^{ return MParticle.sharedInstance.stateMachine; }
+                makeMessageContext:^{
+                    return [weakSelf messageBuilderContext] ?: [[MPMessageBuilderContext alloc]
+                        initWithDataPlanId:nil dataPlanVersion:nil logger:nil];
+                }
+                runningInBackground:^{ return MPStateMachine_PRIVATE.runningInBackground; }
+                enqueueOnMessage:^(dispatch_block_t block) {
+                    MPBackendController_PRIVATE *backend = weakSelf;
+                    dispatch_async([MParticle messageQueue], ^{ if (backend) { block(); } });
+                }
+                upload:^(dispatch_block_t completion) { [weakSelf waitForKitsAndUploadWithCompletionHandler:completion]; }
+                logger:^{ return [MParticle.sharedInstance getLogger]; }];
+        }
+        return _sessionDependencies;
     }
-    return _sessionDependencies;
 }
 
 - (MPBackendMessageWriter *)messageWriter {
-    if (!_messageWriter) {
-        _messageWriter = [[MPBackendMessageWriter alloc] initWithState:self.sessionState dependencies:self.sessionDependencies];
+    @synchronized (self) {
+        if (!_messageWriter) {
+            _messageWriter = [[MPBackendMessageWriter alloc] initWithState:self.sessionState dependencies:self.sessionDependencies];
+        }
+        return _messageWriter;
     }
-    return _messageWriter;
 }
 
 - (MPBackendSessionLifecycleDependencies * _Nonnull)sessionLifecycleDependencies {
-    if (!_sessionLifecycleDependencies) {
-        __weak MPBackendController_PRIVATE *weakSelf = self;
-        _sessionLifecycleDependencies = [[MPBackendSessionLifecycleDependencies alloc]
-            initWithAutomaticSessionTracking:^{ return MParticle.sharedInstance.automaticSessionTracking; }
-            sessionStartContext:^{
-                MParticle *mparticle = MParticle.sharedInstance;
-                return [[MPBackendSessionStartContext alloc]
-                    initWithAutomaticSessionTracking:^{ return mparticle.automaticSessionTracking; }
-                    stateMachine:^{ return mparticle.stateMachine; }];
-            }
-            currentUserID:^{ return [MPPersistenceUtilities mpId]; }
-            applicationInfo:^{
-                MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
-                    initWithStateMachine:(id<MPApplicationStateMachineProtocol>)MParticle.sharedInstance.stateMachine
-                    userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
-                    environment:[MPStateMachine_PRIVATE environment]
-                    deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
-                return [application dictionaryRepresentation];
-            }
-            deviceInfo:^NSDictionary *(NSNumber *mpid) {
-                MParticle *mparticle = MParticle.sharedInstance;
-                MPDevice *device = [[MPDevice alloc]
-                    initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
-                    userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
-                    identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:[mparticle getLogger]];
-                return [device dictionaryRepresentationWithMpid:mpid];
-            }
-            executeOnMessage:^(dispatch_block_t block) {
-                MPBackendController_PRIVATE *backend = weakSelf;
-                [MParticle executeOnMessage:^{ if (backend) { block(); } }];
-            }
-            schedule:^(NSTimeInterval delay, dispatch_block_t block) {
-                MPBackendController_PRIVATE *backend = weakSelf;
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)),
-                               [MParticle messageQueue], ^{ if (backend) { block(); } });
-            }
-            createPendingSession:^(NSString *uuid) {
-                MPBackendController_PRIVATE *backend = weakSelf;
-                if (backend) { backend->tempSession = [[MParticleSession alloc] initWithUUID:uuid]; }
-            }
-            setPendingSessionStartTime:^(double timestamp) {
-                MPBackendController_PRIVATE *backend = weakSelf;
-                if (backend) { backend->tempSession.startTime = @(timestamp); }
-            }
-            clearPendingSession:^{
-                MPBackendController_PRIVATE *backend = weakSelf;
-                if (backend) { backend->tempSession = nil; }
-            }
-            broadcastBegin:^(MPSession *session) { [weakSelf broadcastSessionDidBegin:session]; }
-            broadcastEnd:^(MPSession *session) { [weakSelf broadcastSessionDidEnd:session]; }
-            clearEmptyTimedEvents:^{
-                MPBackendController_PRIVATE *backend = weakSelf;
-                if (backend.eventSet.count == 0) { backend.eventSet = nil; }
-            }];
+    @synchronized (self) {
+        if (!_sessionLifecycleDependencies) {
+            __weak MPBackendController_PRIVATE *weakSelf = self;
+            _sessionLifecycleDependencies = [[MPBackendSessionLifecycleDependencies alloc]
+                initWithAutomaticSessionTracking:^{ return MParticle.sharedInstance.automaticSessionTracking; }
+                sessionStartContext:^{
+                    MParticle *mparticle = MParticle.sharedInstance;
+                    return [[MPBackendSessionStartContext alloc]
+                        initWithAutomaticSessionTracking:^{ return mparticle.automaticSessionTracking; }
+                        stateMachine:^{ return mparticle.stateMachine; }];
+                }
+                currentUserID:^{ return [MPPersistenceUtilities mpId]; }
+                applicationInfo:^{
+                    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
+                        initWithStateMachine:(id<MPApplicationStateMachineProtocol>)MParticle.sharedInstance.stateMachine
+                        userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                        environment:[MPStateMachine_PRIVATE environment]
+                        deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
+                    return [application dictionaryRepresentation];
+                }
+                deviceInfo:^NSDictionary *(NSNumber *mpid) {
+                    MParticle *mparticle = MParticle.sharedInstance;
+                    MPDevice *device = [[MPDevice alloc]
+                        initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                        userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                        identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:[mparticle getLogger]];
+                    return [device dictionaryRepresentationWithMpid:mpid];
+                }
+                executeOnMessage:^(dispatch_block_t block) {
+                    MPBackendController_PRIVATE *backend = weakSelf;
+                    [MParticle executeOnMessage:^{ if (backend) { block(); } }];
+                }
+                schedule:^(NSTimeInterval delay, dispatch_block_t block) {
+                    MPBackendController_PRIVATE *backend = weakSelf;
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)),
+                                   [MParticle messageQueue], ^{ if (backend) { block(); } });
+                }
+                createPendingSession:^(NSString *uuid) {
+                    MPBackendController_PRIVATE *backend = weakSelf;
+                    if (backend) { backend->tempSession = [[MParticleSession alloc] initWithUUID:uuid]; }
+                }
+                setPendingSessionStartTime:^(double timestamp) {
+                    MPBackendController_PRIVATE *backend = weakSelf;
+                    if (backend) { backend->tempSession.startTime = @(timestamp); }
+                }
+                clearPendingSession:^{
+                    MPBackendController_PRIVATE *backend = weakSelf;
+                    if (backend) { backend->tempSession = nil; }
+                }
+                broadcastBegin:^(MPSession *session) { [weakSelf broadcastSessionDidBegin:session]; }
+                broadcastEnd:^(MPSession *session) { [weakSelf broadcastSessionDidEnd:session]; }
+                clearEmptyTimedEvents:^{
+                    MPBackendController_PRIVATE *backend = weakSelf;
+                    if (backend.eventSet.count == 0) { backend.eventSet = nil; }
+                }];
+        }
+        return _sessionLifecycleDependencies;
     }
-    return _sessionLifecycleDependencies;
 }
 
 - (MPBackendSessionCoordinator *)sessionCoordinator {
-    if (!_sessionCoordinator) {
-        _sessionCoordinator = [[MPBackendSessionCoordinator alloc] initWithState:self.sessionState
-            dependencies:self.sessionDependencies lifecycle:self.sessionLifecycleDependencies writer:self.messageWriter];
+    @synchronized (self) {
+        if (!_sessionCoordinator) {
+            _sessionCoordinator = [[MPBackendSessionCoordinator alloc] initWithState:self.sessionState
+                dependencies:self.sessionDependencies lifecycle:self.sessionLifecycleDependencies writer:self.messageWriter];
+        }
+        return _sessionCoordinator;
     }
-    return _sessionCoordinator;
 }
 
 - (NSMutableSet<MPEvent *> *)eventSet {
@@ -733,7 +741,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (MParticleSession *)tempSession {
-    return tempSession;
+    __block MParticleSession *pending;
+    [self.sessionState withSessionLock:^{ pending = self->tempSession; }];
+    return pending;
 }
 
 #pragma mark Public methods

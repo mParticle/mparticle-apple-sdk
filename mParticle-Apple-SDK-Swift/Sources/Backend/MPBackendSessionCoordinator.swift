@@ -82,15 +82,18 @@ public final class MPBackendSessionCoordinator: NSObject {
     }
 
     @objc public func createTempSession() {
-        let uuid = UUID().uuidString
-        state.pendingSessionUUID = uuid
-        lifecycle.createPendingSession(uuid)
-        let session = MPSessionPRIVATE(startTime: dependencies.now(), userId: lifecycle.currentUserID())
-        session.uuid = uuid
-        state.pendingSessionStartTime = session.startTime
-        lifecycle.setPendingSessionStartTime(MPMilliseconds(timestamp: session.startTime))
-        lifecycle.broadcastBegin(session)
-        dependencies.logger()?.verbose("New Session Has Begun: \(uuid)")
+        state.withSessionLock {
+            guard state.session == nil, state.pendingSessionUUID == nil else { return }
+            let uuid = UUID().uuidString
+            state.pendingSessionUUID = uuid
+            lifecycle.createPendingSession(uuid)
+            let session = MPSessionPRIVATE(startTime: dependencies.now(), userId: lifecycle.currentUserID())
+            session.uuid = uuid
+            state.pendingSessionStartTime = session.startTime
+            lifecycle.setPendingSessionStartTime(MPMilliseconds(timestamp: session.startTime))
+            lifecycle.broadcastBegin(session)
+            dependencies.logger()?.verbose("New Session Has Begun: \(uuid)")
+        }
     }
 
     @objc public func beginSession() {
@@ -118,7 +121,9 @@ public final class MPBackendSessionCoordinator: NSObject {
             if let session = state.session { persistence?.objectiveCSaveSession(session) }
 
             let previous = persistence?.objectiveCFetchPreviousSession()
-            var info: [AnyHashable: Any] = ["psl": previous.map { trunc($0.length) } ?? 0]
+            // Preserve NSInteger boxing; malformed or unrepresentable lengths use the absent-session value.
+            let previousLength = previous.flatMap { Int(exactly: trunc($0.length)) } ?? 0
+            var info: [AnyHashable: Any] = ["psl": previousLength]
             if let previous {
                 info["pid"] = previous.uuid
                 info["pss"] = MPMilliseconds(timestamp: previous.startTime)
