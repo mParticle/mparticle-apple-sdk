@@ -165,6 +165,122 @@ final class MPBackendLifecycleSchedulingTests: MPBackendWorkflowTestCase {
         }
     }
 
+    func testIntervalUpdateWaitsForTimerCreationAndReplacesOldInterval() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let owner = fixture.application
+            let scheduling = fixture.scheduling.dependencies
+            let makeTimer = scheduling.makeTimer
+            let creating = DispatchSemaphore(value: 0)
+            let finishCreation = DispatchSemaphore(value: 0)
+            let updating = DispatchSemaphore(value: 0)
+            let updated = DispatchSemaphore(value: 0)
+            let group = DispatchGroup()
+            scheduling.makeTimer = { interval, event in
+                if interval == 60 {
+                    creating.signal()
+                    XCTAssertEqual(finishCreation.wait(timeout: .now() + 2), .success)
+                }
+                return makeTimer(interval, event)
+            }
+            DispatchQueue.global().async(group: group) { owner.beginUploadTimer() }
+            XCTAssertEqual(creating.wait(timeout: .now() + 2), .success)
+            DispatchQueue.global().async(group: group) {
+                updating.signal()
+                owner.uploadInterval = 40
+                updated.signal()
+            }
+            XCTAssertEqual(updating.wait(timeout: .now() + 2), .success)
+            XCTAssertEqual(updated.wait(timeout: .now() + 0.1), .timedOut)
+            finishCreation.signal()
+            XCTAssertEqual(group.wait(timeout: .now() + 2), .success)
+            XCTAssertEqual(fixture.scheduling.timers.map(\.interval), [60, 40])
+            XCTAssertEqual(fixture.scheduling.timers.first?.cancelled, true)
+            XCTAssertEqual(fixture.scheduling.timers.last?.cancelled, false)
+            XCTAssertEqual(owner.uploadInterval, 40)
+        }
+    }
+
+    func testStopWaitsForIntervalReplacementAndLaterUpdateDoesNotRestart() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let owner = fixture.application
+            owner.beginUploadTimer()
+            let scheduling = fixture.scheduling.dependencies
+            let makeTimer = scheduling.makeTimer
+            let replacing = DispatchSemaphore(value: 0)
+            let finishReplacement = DispatchSemaphore(value: 0)
+            let stopping = DispatchSemaphore(value: 0)
+            let stopped = DispatchSemaphore(value: 0)
+            let group = DispatchGroup()
+            scheduling.makeTimer = { interval, event in
+                replacing.signal()
+                XCTAssertEqual(finishReplacement.wait(timeout: .now() + 2), .success)
+                return makeTimer(interval, event)
+            }
+            DispatchQueue.global().async(group: group) { owner.uploadInterval = 40 }
+            XCTAssertEqual(replacing.wait(timeout: .now() + 2), .success)
+            DispatchQueue.global().async(group: group) {
+                stopping.signal()
+                owner.endUploadTimer()
+                stopped.signal()
+            }
+            XCTAssertEqual(stopping.wait(timeout: .now() + 2), .success)
+            XCTAssertEqual(stopped.wait(timeout: .now() + 0.1), .timedOut)
+            finishReplacement.signal()
+            XCTAssertEqual(group.wait(timeout: .now() + 2), .success)
+            XCTAssertNil(owner.uploadTimer)
+            XCTAssertTrue(fixture.scheduling.timers.allSatisfy(\.cancelled))
+            owner.uploadInterval = 20
+            XCTAssertEqual(fixture.scheduling.timers.count, 2)
+            XCTAssertNil(owner.uploadTimer)
+        }
+    }
+
+    func testTimeoutUpdateWaitsForSessionTransitionAndClampsSynchronously() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let owner = fixture.application
+            owner.sessionTimeout = 60
+            let started = DispatchSemaphore(value: 0)
+            let finished = DispatchSemaphore(value: 0)
+            fixture.state.withSessionLock {
+                DispatchQueue.global().async {
+                    started.signal()
+                    owner.sessionTimeout = -1
+                    finished.signal()
+                }
+                XCTAssertEqual(started.wait(timeout: .now() + 2), .success)
+                XCTAssertEqual(finished.wait(timeout: .now() + 0.1), .timedOut)
+                XCTAssertEqual(fixture.state.sessionTimeout, 60)
+            }
+            XCTAssertEqual(finished.wait(timeout: .now() + 2), .success)
+            XCTAssertEqual(owner.sessionTimeout, 1)
+            XCTAssertEqual(fixture.state.sessionTimeout, 1)
+        }
+    }
+
+    func testTimeoutReadSeesCompletedSessionTransition() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let owner = fixture.application
+            let started = DispatchSemaphore(value: 0)
+            let finished = DispatchSemaphore(value: 0)
+            fixture.state.withSessionLock {
+                fixture.state.sessionTimeout = 20
+                DispatchQueue.global().async {
+                    started.signal()
+                    XCTAssertEqual(owner.sessionTimeout, 40)
+                    finished.signal()
+                }
+                XCTAssertEqual(started.wait(timeout: .now() + 2), .success)
+                XCTAssertEqual(finished.wait(timeout: .now() + 0.1), .timedOut)
+                fixture.state.sessionTimeout = 40
+            }
+            XCTAssertEqual(finished.wait(timeout: .now() + 2), .success)
+        }
+    }
+
     func testExpirationCancelsPollingBeforeEndingTaskAndEndIsIdempotent() {
         onMessageQueue {
             let fixture = MPBackendSessionFixture()
