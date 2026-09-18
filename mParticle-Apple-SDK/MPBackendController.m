@@ -71,6 +71,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property NSNumber *previousForegroundTime;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
 @property (nonatomic, strong) MPBackendUploadCoordinator *uploadCoordinator;
+@property (nonatomic, strong) MPBackendSessionState *sessionState;
 - (MPUploadBuilderContext *)uploadBuilderContext;
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
@@ -78,12 +79,19 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 
 @implementation MPBackendController_PRIVATE
-@synthesize session = _session;
 @synthesize uploadInterval = _uploadInterval;
 
 #if TARGET_OS_IOS == 1
 @synthesize notificationController = _notificationController;
 #endif
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _sessionState = [[MPBackendSessionState alloc] init];
+    }
+    return self;
+}
 
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
     [[MParticle sharedInstance] initializePersistence];
@@ -93,7 +101,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
                      persistence:(id<MPBackendPersistence>)persistence {
-    self = [super init];
+    self = [self init];
     if (self) {
         _persistence = persistence;
         _networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
@@ -151,15 +159,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 #pragma mark Accessors
 
 - (MPSession *)session {
-    @synchronized (self) {
-        return _session;
-    }
+    return self.sessionState.session;
 }
 
 - (void)setSession:(MPSession *)session {
-    @synchronized (self) {
-        _session = session;
-    }
+    self.sessionState.session = session;
 }
 
 - (NSMutableSet<MPEvent *> *)eventSet {
@@ -456,7 +460,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
     if (endCurrentSession) {
         MPILogVerbose(@"Session Ending: %@", self.session.uuid);
-        _session = nil;
+        self.session = nil;
         [MParticle sharedInstance].stateMachine.currentSession = nil;
         if (self.eventSet.count == 0) {
             self.eventSet = nil;
@@ -706,32 +710,32 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         return;
     }
     
-    @synchronized (self) {
+    [self.sessionState withSessionLock:^{
         MPStateMachine_PRIVATE *stateMachine = mparticle.stateMachine;
-        if (_session != nil || stateMachine.optOut) {
+        if (self.session != nil || stateMachine.optOut) {
             return;
         }
         
         id<MPBackendPersistence> persistence = self.persistence;
         
         NSNumber *mpId = [MPPersistenceUtilities mpId];
-        date = date ?: [NSDate date];
-        if (tempSession) {
-            _session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:mpId uuid:tempSession.UUID];
+        NSDate *sessionDate = date ?: [NSDate date];
+        if (self->tempSession) {
+            self.session = [[MPSession alloc] initWithStartTime:[sessionDate timeIntervalSince1970] userId:mpId uuid:self->tempSession.UUID];
         } else {
-            _session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:mpId];
+            self.session = [[MPSession alloc] initWithStartTime:[sessionDate timeIntervalSince1970] userId:mpId];
         }
         
         // Set the app and device info dicts if they weren't already created
-        if (!_session.appInfo) {
+        if (!self.session.appInfo) {
             MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)MParticle.sharedInstance.stateMachine
                                                                                        userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
                                                                                         environment:[MPStateMachine_PRIVATE environment]
                                                                                    deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
                                                                                            buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
-            _session.appInfo = [application dictionaryRepresentation];
+            self.session.appInfo = [application dictionaryRepresentation];
         }
-        if (!_session.deviceInfo) {
+        if (!self.session.deviceInfo) {
             MParticle* mparticle = MParticle.sharedInstance;
             MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
             logger.customLogger = mparticle.customLogger;
@@ -739,10 +743,10 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
             MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
                                                          userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)userDefaults identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:logger];
 
-            _session.deviceInfo = [device dictionaryRepresentationWithMpid:mpId];
+            self.session.deviceInfo = [device dictionaryRepresentationWithMpid:mpId];
         }
         
-        [persistence saveSession:_session];
+        [persistence saveSession:self.session];
         
         MPSession *previousSession = [persistence fetchPreviousSession];
         NSMutableDictionary *messageInfo = [[NSMutableDictionary alloc] initWithCapacity:2];
@@ -756,24 +760,24 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         messageInfo[kMPPreviousSessionLengthKey] = @(previousSessionLength);
 
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionStart
-                                                                                 session:_session
+                                                                                 session:self.session
                                                                              messageInfo:messageInfo context:self.messageBuilderContext];
 
-        [messageBuilder timestamp:_session.startTime];
+        [messageBuilder timestamp:self.session.startTime];
         MPMessage *message = [messageBuilder build];
         
         [self saveMessage:message updateSession:YES];
         
-        stateMachine.currentSession = _session;
+        stateMachine.currentSession = self.session;
         
-        if (tempSession) {
-            tempSession = nil;
+        if (self->tempSession) {
+            self->tempSession = nil;
         } else {
             [self broadcastSessionDidBegin:self.session];
             
-            MPILogVerbose(@"New Session Has Begun: %@", _session.uuid);
+            MPILogVerbose(@"New Session Has Begun: %@", self.session.uuid);
         }
-    }
+    }];
 }
 
 - (void)endSessionWithIsManual:(BOOL)isManual {
@@ -781,26 +785,26 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         return;
     }
     
-    @synchronized (self) {
-        if ((_session == nil && tempSession == nil) || [MParticle sharedInstance].stateMachine.optOut) {
+    [self.sessionState withSessionLock:^{
+        if ((self.session == nil && self->tempSession == nil) || [MParticle sharedInstance].stateMachine.optOut) {
             return;
         }
-        if (_session == nil && tempSession != nil) {
+        if (self.session == nil && self->tempSession != nil) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), [MParticle messageQueue], ^{
                 [self endSessionWithIsManual:isManual];
             });
             return;
         }
         
-        MPSession *sessionToEnd = [_session copy];
+        MPSession *sessionToEnd = [self.session copy];
         [self confirmEndSessionMessage:sessionToEnd];
         
         (void)[self.persistence archiveSession:sessionToEnd];
         [self broadcastSessionDidEnd:sessionToEnd];
-        _session = nil;
+        self.session = nil;
         [MParticle sharedInstance].stateMachine.currentSession = nil;
         MPILogVerbose(@"Session Ended: %@", sessionToEnd.uuid);
-    }
+    }];
 }
 
 - (void)beginTimedEvent:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
@@ -1092,7 +1096,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     MPSession *crashSession = nil;
     NSArray<MPSession *> *sessions = [persistence fetchPossibleSessionsFromCrash];
     for (MPSession *session in sessions) {
-        if (![session isEqual:_session]) {
+        if (![session isEqual:self.session]) {
             crashSession = session;
             break;
         }

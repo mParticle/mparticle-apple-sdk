@@ -143,6 +143,37 @@
     [super tearDown];
 }
 
+- (void)testDefaultInitializerRetainsSession {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+    backend.session = session;
+    XCTAssertEqual(backend.session, session);
+}
+
+- (void)testSessionOwnershipDoesNotPublishStateMachineMirror {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.currentSession = nil;
+    __weak MPSession *weakSession;
+    @autoreleasepool {
+        MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+        self.backendController.session = session;
+        XCTAssertEqual(self.backendController.session, session);
+        XCTAssertNil(stateMachine.currentSession);
+
+        stateMachine.currentSession = session;
+        weakSession = session;
+        session = nil;
+        XCTAssertNotNil(weakSession);
+        XCTAssertEqual(self.backendController.session, stateMachine.currentSession);
+        self.backendController.session.userId = @2;
+        XCTAssertEqualObjects(stateMachine.currentSession.userId, @2);
+    }
+    XCTAssertNotNil(weakSession);
+    self.backendController.session = nil;
+    XCTAssertNil(weakSession);
+    XCTAssertNil(stateMachine.currentSession);
+}
+
 - (void)forwardLogInstall {}
 
 - (void)forwardLogUpdate {}

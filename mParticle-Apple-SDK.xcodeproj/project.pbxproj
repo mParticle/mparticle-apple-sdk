@@ -500,6 +500,7 @@
 		35C3DC422F2402BF0077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Test/Backend/MPBackendSessionStateTests.swift,
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
 				Test/Kits/MPDataPlanFilterPolicyTests.swift,
@@ -593,6 +594,7 @@
 		35C3DC442F2402C20077C0FD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Test/Backend/MPBackendSessionStateTests.swift,
 				Test/Identity/MPIdentityDTOTests.swift,
 				Test/Identity/MPUserIdentityChangeTests.m,
 				Test/Kits/MPDataPlanFilterPolicyTests.swift,
