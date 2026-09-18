@@ -6,8 +6,6 @@
 static NSString * const kMPRoktKitVersion = @"9.5.1";
 
 // Constants for kit configuration keys
-static NSString * const kMPKitConfigurationIdKey = @"id";
-static NSString * const kMPRemoteConfigKitConfigurationKey = @"as";
 static NSString * const kMPAttributeMappingSourceKey = @"map";
 static NSString * const kMPAttributeMappingDestinationKey = @"value";
 
@@ -76,13 +74,16 @@ static NSString *MPGetRoktSessionId(void) {
 
 #pragma mark Kit instance and lifecycle
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
-    NSString *partnerId = configuration[@"accountId"];
-
-    if (!partnerId) {
+    if (![configuration isKindOfClass:[NSDictionary class]]) {
+        [MPKitRokt MPLog:@"Ignoring launch configuration: expected a dictionary"];
+        return [self execStatus:MPKitReturnCodeRequirementsNotMet];
+    }
+    id partnerId = configuration[@"accountId"];
+    if (![partnerId isKindOfClass:[NSString class]] || [partnerId length] == 0) {
         return [self execStatus:MPKitReturnCodeRequirementsNotMet];
     }
 
-    _configuration = configuration;
+    _configuration = [configuration copy];
     roktKit = self;
     
     NSString *sdkVersion = [MParticle sharedInstance].version;
@@ -357,72 +358,37 @@ static NSString *MPGetRoktSessionId(void) {
 /// @param filteredUser The current mParticle user
 /// @return A dictionary with mapped attributes according to dashboard configuration
 + (NSDictionary<NSString *, NSString *> *)mapAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser {
-    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
-    
-    // Get the kit configuration
     NSDictionary *roktKitConfig = [MPKitRokt getKitConfig];
-    
-    // Return original attributes if no Rokt Kit configuration found
     if (!roktKitConfig) {
         return attributes;
     }
-    
-    // Get the placement attributes map
-    NSString *strAttributeMap;
-    NSData *dataAttributeMap;
-    // Rokt Kit is available though there may not be an attribute map
-    attributeMap = @[];
-    id configJSONString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPPlacementAttributesMapping];
-    if (configJSONString != nil && configJSONString != [NSNull null]) {
-        strAttributeMap = [configJSONString stringByRemovingPercentEncoding];
-        dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
-    }
-    
-    if (dataAttributeMap != nil) {
-        // Convert it to an array of dictionaries
-        NSError *error = nil;
-        
-        @try {
-            attributeMap = [NSJSONSerialization JSONObjectWithData:dataAttributeMap options:kNilOptions error:&error];
-        } @catch (NSException *exception) {
-            [MPKitRokt MPLog:[NSString stringWithFormat:@"Exception parsing placement attribute map: %@", exception]];
-        }
-        
-        if (attributeMap && !error) {
-            [MPKitRokt MPLog:[NSString stringWithFormat:@"Successfully parsed placement attribute map with %lu entries", (unsigned long)attributeMap.count]];
-        } else {
-            [MPKitRokt MPLog:[NSString stringWithFormat:@"Failed to parse placement attribute map: %@", error]];
+
+    NSArray *attributeMap = [MPKitRokt placementMappingsFromSettings:roktKitConfig];
+    NSMutableDictionary *mappedAttributes = attributes.mutableCopy ?: [NSMutableDictionary dictionary];
+    for (NSDictionary *map in attributeMap) {
+        NSString *mapFrom = map[kMPAttributeMappingSourceKey];
+        NSString *mapTo = map[kMPAttributeMappingDestinationKey];
+        if (mappedAttributes[mapFrom]) {
+            id value = mappedAttributes[mapFrom];
+            [mappedAttributes removeObjectForKey:mapFrom];
+            mappedAttributes[mapTo] = value;
         }
     }
-    
-    if (attributeMap) {
-        NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
-        for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
-            NSString *mapFrom = map[kMPAttributeMappingSourceKey];
-            NSString *mapTo = map[kMPAttributeMappingDestinationKey];
-            if (mappedAttributes[mapFrom]) {
-                NSString * value = mappedAttributes[mapFrom];
-                [mappedAttributes removeObjectForKey:mapFrom];
-                mappedAttributes[mapTo] = value;
-            }
+    for (id key in mappedAttributes) {
+        if ([key isKindOfClass:[NSString class]] && [key length] > 0 &&
+            ![key isEqual:kMPRoktAttributeKeySandbox]) {
+            [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
         }
-        for (NSString *key in mappedAttributes) {
-            if (![key isEqual:kMPRoktAttributeKeySandbox]) {
-                [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
-            }
-        }
-        
-        // Add userAttributes to the attributes sent to Rokt
-        for (NSString *uaKey in filteredUser.userAttributes) {
-            if (![mappedAttributes.allKeys containsObject:uaKey]) {
-                mappedAttributes[uaKey] = filteredUser.userAttributes[uaKey];
-            }
-        }
-        
-        return [MPKitRokt transformValuesToString:mappedAttributes];
-    } else {
-        return attributes;
     }
+
+    // Add user attributes allowed for Rokt, without overwriting placement attributes.
+    NSDictionary *userAttributes = filteredUser.userAttributes;
+    for (NSString *key in userAttributes) {
+        if (!mappedAttributes[key]) {
+            mappedAttributes[key] = userAttributes[key];
+        }
+    }
+    return [MPKitRokt transformValuesToString:mappedAttributes];
 }
 
 + (void)addIdentityAttributes:(NSMutableDictionary<NSString *, NSString *> * _Nullable)attributes filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser {
@@ -529,30 +495,76 @@ static NSString *MPGetRoktSessionId(void) {
 
 #pragma mark - Private Helper Methods
 
-/// Retrieves the Rokt Kit configuration from the kit container.
-/// @return The Rokt Kit configuration dictionary, or nil if Rokt Kit is not configured.
+/// Retrieves settings supplied at launch and updated by the container on configuration refresh.
 + (NSDictionary * _Nullable)getKitConfig {
-    NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
-    for (NSDictionary *kitConfig in kitConfigs) {
-        if ([kitConfig[kMPKitConfigurationIdKey] integerValue] == kMPRoktKitCode) {
-            return kitConfig;
+    id configuration = roktKit.configuration;
+    if (![configuration isKindOfClass:[NSDictionary class]]) {
+        if (configuration && configuration != [NSNull null]) {
+            [MPKitRokt MPLog:@"Ignoring kit settings: expected a dictionary"];
         }
+        return nil;
     }
-   [MPKitRokt MPLog:@"Rokt Kit is not configured in kit container"];
-    return nil;
+    return [configuration copy];
 }
 
-/// Retrieves the configured identity type to use for hashed email from the Rokt Kit configuration.
-/// The hashed email identity type is determined by dashboard settings and may vary (e.g., CustomerId, Other, etc.).
-/// @return The NSNumber representing the MPIdentity type for hashed email, or nil if not configured.
++ (NSArray<NSDictionary *> *)placementMappingsFromSettings:(NSDictionary *)settings {
+    id mapping = settings[kMPPlacementAttributesMapping];
+    if (!mapping || mapping == [NSNull null]) {
+        return @[];
+    }
+    if (![mapping isKindOfClass:[NSString class]]) {
+        [MPKitRokt MPLog:@"Ignoring placement mapping: expected a string"];
+        return @[];
+    }
+    NSData *data = [[mapping stringByRemovingPercentEncoding] dataUsingEncoding:NSUTF8StringEncoding];
+    if (!data) {
+        [MPKitRokt MPLog:@"Ignoring placement mapping: invalid percent encoding"];
+        return @[];
+    }
+    NSError *error = nil;
+    id parsed = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    if (error) {
+        [MPKitRokt MPLog:@"Ignoring placement mapping: invalid JSON"];
+        return @[];
+    }
+    if (![parsed isKindOfClass:[NSArray class]]) {
+        [MPKitRokt MPLog:@"Ignoring placement mapping: expected an array"];
+        return @[];
+    }
+    NSMutableArray *validMappings = [NSMutableArray array];
+    for (id entry in parsed) {
+        if (![entry isKindOfClass:[NSDictionary class]]) {
+            [MPKitRokt MPLog:@"Ignoring placement mapping entry: expected a dictionary"];
+            continue;
+        }
+        id source = entry[kMPAttributeMappingSourceKey];
+        id destination = entry[kMPAttributeMappingDestinationKey];
+        if (![source isKindOfClass:[NSString class]] || [source length] == 0 ||
+            ![destination isKindOfClass:[NSString class]] || [destination length] == 0) {
+            [MPKitRokt MPLog:@"Ignoring placement mapping entry: expected nonempty string map and value"];
+            continue;
+        }
+        [validMappings addObject:entry];
+    }
+    return validMappings;
+}
+
+/// Retrieves the configured identity type to use for hashed email, or nil if unconfigured.
 + (NSNumber * _Nullable)getRoktHashedEmailUserIdentityType {
     NSDictionary *roktKitConfig = [MPKitRokt getKitConfig];
-    
-    // Get the string representing which identity to use and convert it to the key (NSNumber)
-    NSString *hashedIdentityTypeString = roktKitConfig[kMPRemoteConfigKitConfigurationKey][kMPHashedEmailUserIdentityType];
-    NSNumber *hashedIdentityTypeNumber = [MPKitRokt identityTypeForString:hashedIdentityTypeString.lowercaseString];
-    
-    return hashedIdentityTypeNumber;
+    id identityType = roktKitConfig[kMPHashedEmailUserIdentityType];
+    if (!identityType || identityType == [NSNull null]) {
+        return nil;
+    }
+    if (![identityType isKindOfClass:[NSString class]] || [identityType length] == 0) {
+        [MPKitRokt MPLog:@"Ignoring hashed email identity type: expected a nonempty string"];
+        return nil;
+    }
+    NSNumber *identity = [MPKitRokt identityTypeForString:[identityType lowercaseString]];
+    if (identity == nil) {
+        [MPKitRokt MPLog:@"Ignoring unknown hashed email identity type"];
+    }
+    return identity;
 }
 
 /// Notifies Rokt that a purchase from a placement offer has been finalized.
@@ -698,16 +710,16 @@ static NSString *MPGetRoktSessionId(void) {
 
 + (void)logSelectPlacementEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes {
     MPEvent *event = [[MPEvent alloc] initWithName:kMPEventNameSelectPlacements type:MPEventTypeOther];
-    event.customAttributes = attributes;
+    // Rokt-filtered data must not be broadcast to other kits as event attributes.
     [[MParticle sharedInstance] logEvent:event];
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Logged selectplacements custom event with attributes: %@", attributes]];
+    [MPKitRokt MPLog:@"Logged selectPlacements custom event"];
 }
 
 + (void)logSelectShoppableAdsEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes {
     MPEvent *event = [[MPEvent alloc] initWithName:kMPEventNameSelectShoppableAds type:MPEventTypeOther];
-    event.customAttributes = attributes;
+    // Rokt-filtered data must not be broadcast to other kits as event attributes.
     [[MParticle sharedInstance] logEvent:event];
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Logged selectShoppableAds custom event with attributes: %@", attributes]];
+    [MPKitRokt MPLog:@"Logged selectShoppableAds custom event"];
 }
 
 @end

@@ -48,6 +48,19 @@ MParticle.sharedInstance().rokt.selectPlacements("checkout",
 }
 ```
 
+### Placement analytics
+
+Placement requests log `selectPlacements` or `selectShoppableAds` events with type
+`Other`. These events contain no custom attributes, so Rokt-visible identities,
+user attributes, and caller-supplied placement attributes are not copied into
+analytics events forwarded to other kits. The attributes sent directly to Rokt
+are unaffected. This also applies to `MPRoktLayout`.
+
+The kit reads settings supplied at launch and through configuration updates.
+Malformed dashboard attribute mappings are ignored, while valid mapping entries
+continue to apply. Invalid hashed-email identity settings are treated as
+unconfigured, allowing placement requests to continue.
+
 ### Shoppable Ads
 
 Shoppable Ads enable in-placement purchases via Apple Pay (or another registered payment extension). Currently we support Stripe as a payment extension, however, if you need support for a different payment provider please reach out to your dedicated account team. The `stripePublishableKey` configured in the mParticle dashboard is automatically forwarded to Rokt — no manual key management needed in code.
