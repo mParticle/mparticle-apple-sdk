@@ -315,28 +315,30 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (MPBackendLifecycleCoordinator *)lifecycleCoordinator {
-    if (!_lifecycleCoordinator) {
-        __weak MPBackendController_PRIVATE *weakSelf = self;
-        MPBackendLifecycleDependencies *dependencies = [[MPBackendLifecycleDependencies alloc]
-            initWithSessionTimeout:^{ return weakSelf.sessionTimeout; }
-            persistenceMaxAge:^{ return MParticle.sharedInstance.persistenceMaxAgeSeconds; }
-            setRunningInBackground:^(BOOL background) { [MPStateMachine_PRIVATE setRunningInBackground:background]; }
-            clearIdentityCache:^{
-                MPIdentityCaching *cache = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
-                    logger:[MParticle.sharedInstance getLogger]];
-                [cache clearExpiredCache];
-            }
-            requestConfig:^{ [weakSelf requestConfig:nil]; }
-            beginBackgroundTask:^{ [weakSelf beginBackgroundTask]; }
-            endBackgroundTask:^{ [weakSelf endBackgroundTask]; }
-            beginUploadTimer:^{ [weakSelf beginUploadTimer]; }
-            beginBackgroundTimeCheckLoop:^{ [weakSelf beginBackgroundTimeCheckLoop]; }
-            cancelBackgroundTimeCheckLoop:^{ [weakSelf cancelBackgroundTimeCheckLoop]; }];
-        _lifecycleCoordinator = [[MPBackendLifecycleCoordinator alloc] initWithState:self.sessionState
-            dependencies:self.sessionDependencies sessionDependencies:self.sessionLifecycleDependencies
-            lifecycle:dependencies sessions:self.sessionCoordinator writer:self.messageWriter];
+    @synchronized (self) {
+        if (!_lifecycleCoordinator) {
+            __weak MPBackendController_PRIVATE *weakSelf = self;
+            MPBackendLifecycleDependencies *dependencies = [[MPBackendLifecycleDependencies alloc]
+                initWithSessionTimeout:^{ return weakSelf.sessionTimeout; }
+                persistenceMaxAge:^{ return MParticle.sharedInstance.persistenceMaxAgeSeconds; }
+                setRunningInBackground:^(BOOL background) { [MPStateMachine_PRIVATE setRunningInBackground:background]; }
+                clearIdentityCache:^{
+                    MPIdentityCaching *cache = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                        logger:[MParticle.sharedInstance getLogger]];
+                    [cache clearExpiredCache];
+                }
+                requestConfig:^{ [weakSelf requestConfig:nil]; }
+                beginBackgroundTask:^{ [weakSelf beginBackgroundTask]; }
+                endBackgroundTask:^{ [weakSelf endBackgroundTask]; }
+                beginUploadTimer:^{ [weakSelf beginUploadTimer]; }
+                beginBackgroundTimeCheckLoop:^{ [weakSelf beginBackgroundTimeCheckLoop]; }
+                cancelBackgroundTimeCheckLoop:^{ [weakSelf cancelBackgroundTimeCheckLoop]; }];
+            _lifecycleCoordinator = [[MPBackendLifecycleCoordinator alloc] initWithState:self.sessionState
+                dependencies:self.sessionDependencies sessionDependencies:self.sessionLifecycleDependencies
+                lifecycle:dependencies sessions:self.sessionCoordinator writer:self.messageWriter];
+        }
+        return _lifecycleCoordinator;
     }
-    return _lifecycleCoordinator;
 }
 
 - (NSMutableSet<MPEvent *> *)eventSet {
