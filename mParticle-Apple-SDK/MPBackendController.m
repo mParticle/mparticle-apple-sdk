@@ -85,6 +85,14 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @synthesize notificationController = _notificationController;
 #endif
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _sessionState = [[MPBackendSessionState alloc] init];
+    }
+    return self;
+}
+
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
     [[MParticle sharedInstance] initializePersistence];
     return [self initWithDelegate:delegate
@@ -93,10 +101,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
                      persistence:(id<MPBackendPersistence>)persistence {
-    self = [super init];
+    self = [self init];
     if (self) {
         _persistence = persistence;
-        _sessionState = [[MPBackendSessionState alloc] init];
         _networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
 #if TARGET_OS_IOS == 1
         _notificationController = [[MPNotificationController_PRIVATE alloc] init];

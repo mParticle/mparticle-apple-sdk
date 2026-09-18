@@ -143,6 +143,13 @@
     [super tearDown];
 }
 
+- (void)testDefaultInitializerRetainsSession {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+    backend.session = session;
+    XCTAssertEqual(backend.session, session);
+}
+
 - (void)testSessionOwnershipDoesNotPublishStateMachineMirror {
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = nil;
