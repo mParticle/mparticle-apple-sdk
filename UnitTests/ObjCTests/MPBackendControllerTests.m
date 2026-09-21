@@ -220,18 +220,26 @@
 }
 
 - (void)testConcurrentFirstSessionAccessSharesOneCoordinator {
+    [self assertConcurrentFirstAccessUsesOneObjectForKey:@"sessionCoordinator"];
+}
+
+- (void)testConcurrentFirstLifecycleAccessSharesOneCoordinator {
+    [self assertConcurrentFirstAccessUsesOneObjectForKey:@"lifecycleCoordinator"];
+}
+
+- (void)assertConcurrentFirstAccessUsesOneObjectForKey:(NSString *)key {
     MPBackendPausedConstruction *backend = [[MPBackendPausedConstruction alloc] init];
     dispatch_queue_t queue = dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0);
     dispatch_group_t group = dispatch_group_create();
-    __block MPBackendSessionCoordinator *first;
-    __block MPBackendSessionCoordinator *second;
-    dispatch_group_async(group, queue, ^{ first = [backend sessionCoordinator]; });
+    __block id first;
+    __block id second;
+    dispatch_group_async(group, queue, ^{ first = [backend valueForKey:key]; });
     XCTAssertEqual(dispatch_semaphore_wait(backend.constructionEntered, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
     dispatch_semaphore_t secondStarted = dispatch_semaphore_create(0);
     dispatch_semaphore_t secondFinished = dispatch_semaphore_create(0);
     dispatch_group_async(group, queue, ^{
         dispatch_semaphore_signal(secondStarted);
-        second = [backend sessionCoordinator];
+        second = [backend valueForKey:key];
         dispatch_semaphore_signal(secondFinished);
     });
     XCTAssertEqual(dispatch_semaphore_wait(secondStarted, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
@@ -244,7 +252,7 @@
 
 - (void)testConcurrentFirstAccessSharesEntireSessionGraph {
     MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
-    NSArray<NSString *> *keys = @[@"sessionDependencies", @"messageWriter", @"sessionLifecycleDependencies", @"sessionCoordinator"];
+    NSArray<NSString *> *keys = @[@"sessionDependencies", @"messageWriter", @"sessionLifecycleDependencies", @"sessionCoordinator", @"lifecycleCoordinator"];
     NSMutableArray<NSDictionary *> *graphs = [[NSMutableArray alloc] init];
     NSLock *resultsLock = [[NSLock alloc] init];
     dispatch_group_t group = dispatch_group_create();
