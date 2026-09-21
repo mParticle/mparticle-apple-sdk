@@ -3,39 +3,21 @@ import Foundation
 /// Application and scheduling capabilities used by lifecycle decisions.
 @objc(MPBackendLifecycleDependencies)
 public final class MPBackendLifecycleDependencies: NSObject {
-    let sessionTimeout: () -> TimeInterval
     let persistenceMaxAge: () -> NSNumber?
     let setRunningInBackground: (Bool) -> Void
     let clearIdentityCache: () -> Void
     let requestConfig: () -> Void
-    let beginBackgroundTask: () -> Void
-    let endBackgroundTask: () -> Void
-    let beginUploadTimer: () -> Void
-    let beginBackgroundTimeCheckLoop: () -> Void
-    let cancelBackgroundTimeCheckLoop: () -> Void
 
     @objc public init(
-        sessionTimeout: @escaping () -> TimeInterval,
         persistenceMaxAge: @escaping () -> NSNumber?,
         setRunningInBackground: @escaping (Bool) -> Void,
         clearIdentityCache: @escaping () -> Void,
-        requestConfig: @escaping () -> Void,
-        beginBackgroundTask: @escaping () -> Void,
-        endBackgroundTask: @escaping () -> Void,
-        beginUploadTimer: @escaping () -> Void,
-        beginBackgroundTimeCheckLoop: @escaping () -> Void,
-        cancelBackgroundTimeCheckLoop: @escaping () -> Void
+        requestConfig: @escaping () -> Void
     ) {
-        self.sessionTimeout = sessionTimeout
         self.persistenceMaxAge = persistenceMaxAge
         self.setRunningInBackground = setRunningInBackground
         self.clearIdentityCache = clearIdentityCache
         self.requestConfig = requestConfig
-        self.beginBackgroundTask = beginBackgroundTask
-        self.endBackgroundTask = endBackgroundTask
-        self.beginUploadTimer = beginUploadTimer
-        self.beginBackgroundTimeCheckLoop = beginBackgroundTimeCheckLoop
-        self.cancelBackgroundTimeCheckLoop = cancelBackgroundTimeCheckLoop
         super.init()
     }
 }
@@ -49,11 +31,20 @@ public final class MPBackendLifecycleCoordinator: NSObject {
     let lifecycle: MPBackendLifecycleDependencies
     let sessions: MPBackendSessionCoordinator
     let writer: MPBackendMessageWriter
+    let scheduling: MPBackendLifecycleSchedulingDependencies
+    // Protect only timer configuration here. Production timer creation/cancellation does not
+    // acquire the session lock; upload callbacks execute later on the message queue.
+    let timerLock = NSRecursiveLock()
+    var uploadTimer: MPBackendLifecycleTimer?
+    var storedUploadInterval: TimeInterval = 0
+    @objc public var backgroundCheckQueue: OperationQueue?
+    @objc public var backgroundTaskIdentifier: UInt = 0
 
     @objc public init(
         state: MPBackendSessionState, dependencies: MPBackendSessionDependencies,
         sessionDependencies: MPBackendSessionLifecycleDependencies, lifecycle: MPBackendLifecycleDependencies,
-        sessions: MPBackendSessionCoordinator, writer: MPBackendMessageWriter
+        sessions: MPBackendSessionCoordinator, writer: MPBackendMessageWriter,
+        scheduling: MPBackendLifecycleSchedulingDependencies
     ) {
         self.state = state
         self.dependencies = dependencies
@@ -61,7 +52,19 @@ public final class MPBackendLifecycleCoordinator: NSObject {
         self.lifecycle = lifecycle
         self.sessions = sessions
         self.writer = writer
+        self.scheduling = scheduling
+        backgroundTaskIdentifier = scheduling.invalidBackgroundTask
         super.init()
+    }
+
+    deinit {
+        uploadTimer?.cancel()
+        backgroundCheckQueue?.cancelAllOperations()
+        let identifier = backgroundTaskIdentifier
+        let scheduling = scheduling
+        if !scheduling.isAppExtension(), identifier != scheduling.invalidBackgroundTask {
+            scheduling.executeOnMain { scheduling.endBackgroundTask(identifier) }
+        }
     }
 
     @objc public func updateSessionBackgroundTime() {
@@ -73,7 +76,7 @@ public final class MPBackendLifecycleCoordinator: NSObject {
     @objc public func shouldEndSession() -> Bool {
         MPSessionTimingPolicy.shouldEndSession(
             now: dependencies.now(), lastEventInBackground: state.timeOfLastEventInBackground,
-            sessionTimeout: lifecycle.sessionTimeout()
+            sessionTimeout: sessionTimeout
         )
     }
 
@@ -119,7 +122,7 @@ public final class MPBackendLifecycleCoordinator: NSObject {
         dependencies.logger()?.verbose("Application Did Enter Background")
         let currentTime = dependencies.now()
         lifecycle.setRunningInBackground(true)
-        lifecycle.beginBackgroundTask()
+        beginBackgroundTask()
         sessionDependencies.executeOnMessage { [self] in
             state.timeAppWentToBackground = currentTime
             state.timeAppWentToBackgroundInCurrentSession = currentTime
@@ -132,14 +135,14 @@ public final class MPBackendLifecycleCoordinator: NSObject {
             let message = builder?.build()
             state.session?.suspendSession()
             writer.saveMessage(message, updateSession: true)
-            lifecycle.beginBackgroundTimeCheckLoop()
+            beginBackgroundTimeCheckLoop()
         }
     }
 
     @objc public func applicationWillEnterForeground() {
         lifecycle.setRunningInBackground(false)
-        lifecycle.cancelBackgroundTimeCheckLoop()
-        lifecycle.endBackgroundTask()
+        cancelBackgroundTimeCheckLoop()
+        endBackgroundTask()
         sessionDependencies.executeOnMessage { [self] in
             endSessionIfTimedOut()
             if state.timeAppWentToBackground == state.timeAppWentToBackgroundInCurrentSession {
@@ -152,7 +155,7 @@ public final class MPBackendLifecycleCoordinator: NSObject {
 
     @objc public func applicationDidBecomeActive() {
         guard !dependencies.stateMachine().optOut else { return }
-        lifecycle.beginUploadTimer()
+        beginUploadTimer()
         sessionDependencies.executeOnMessage { [self] in
             state.timeAppWentToBackgroundInCurrentSession = 0
             state.timeOfLastEventInBackground = 0
