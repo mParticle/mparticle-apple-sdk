@@ -67,6 +67,95 @@ final class MPKitAppsFlyerTests: XCTestCase {
         XCTAssertNil(result)
     }
 
+    // MARK: - Malformed server configuration
+
+    // The configuration is server-supplied JSON, so a field the mParticle UI presents as a string
+    // can arrive as any other type. None of these shapes may raise; each degrades to no mapping.
+
+    func test_mappingForKey_withNonArrayRoot_returnsNil() {
+        for json in ["{}", "{\"a\": 1}"] {
+            kit.configuration["consentMappingSDK"] = json
+            XCTAssertNil(kit.mapping(forKey: "consentMappingSDK"), "expected nil for root \(json)")
+        }
+    }
+
+    func test_mappingForKey_withNonStringConfigurationValue_returnsNil() {
+        kit.configuration["consentMappingSDK"] = 42
+        XCTAssertNil(kit.mapping(forKey: "consentMappingSDK"))
+
+        kit.configuration["consentMappingSDK"] = ["not", "a", "string"]
+        XCTAssertNil(kit.mapping(forKey: "consentMappingSDK"))
+    }
+
+    func test_mappingForKey_dropsNonDictionaryElements() {
+        kit.configuration["consentMappingSDK"] = "[1, \"x\", null, []]"
+
+        let result = kit.mapping(forKey: "consentMappingSDK")
+
+        XCTAssertEqual(result?.count, 0)
+    }
+
+    func test_mappingForKey_keepsValidEntriesAlongsideMalformedOnes() {
+        kit.configuration["consentMappingSDK"] =
+            "[1, {\"value\": \"ad_storage\", \"map\": \"Advertising\"}, null]"
+
+        let result = kit.mapping(forKey: "consentMappingSDK")
+
+        XCTAssertEqual(result?.count, 1)
+    }
+
+    func test_convertToKeyValuePairs_skipsEntriesWithNonStringMembers() {
+        let mappings: [[AnyHashable: Any]] = [
+            ["value": "ad_storage", "map": 5],
+            ["value": 1, "map": "advertising"],
+            ["value": "analytics_storage", "map": NSNull()],
+            ["value": "ad_user_data", "map": "Advertising"]
+        ]
+
+        let result = kit.convert(toKeyValuePairs: mappings)
+
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result["ad_user_data"] as? String, "advertising")
+    }
+
+    func test_resolvedConsentForMappingKey_withNonStringDefault_returnsNil() {
+        kit.configuration["defaultAdStorageConsentSDK"] = ["unexpected"]
+
+        let result = kit.resolvedConsent(
+            forMappingKey: "ad_storage",
+            defaultKey: "defaultAdStorageConsentSDK",
+            gdprConsents: [:],
+            mapping: [:]
+        )
+
+        XCTAssertNil(result)
+    }
+
+    func test_didFinishLaunching_withNonStringCredentials_returnsRequirementsNotMet() {
+        let status = kit.didFinishLaunching(withConfiguration: ["appleAppId": 123, "devKey": "a-dev-key"])
+
+        XCTAssertEqual(status.returnCode, .requirementsNotMet)
+    }
+
+    func test_didBecomeActive_manualStartContainer_treatedAsNotManual() {
+        kit.configuration = ["manualStart": ["unexpected"]]
+        kit.providerKitInstance = mock
+
+        _ = kit.didBecomeActive()
+
+        XCTAssertEqual(mock.startCallCount, 1)
+    }
+
+    func test_setUserIdentity_withContainerUserIdentificationType_behavesAsLegacy() {
+        kit.configuration = ["userIdentificationType": ["unexpected"]]
+        kit.providerKitInstance = mock
+
+        let status = kit.setUserIdentity("ext-cust-3", identityType: .customerId)
+
+        XCTAssertEqual(status.returnCode, .success)
+        XCTAssertEqual(mock.setCustomerUserIDCallCount, 1)
+    }
+
     // MARK: - didBecomeActive / manualStart
 
     func test_didBecomeActive_manualStartTrue_doesNotCallAppsFlyerStart() {
