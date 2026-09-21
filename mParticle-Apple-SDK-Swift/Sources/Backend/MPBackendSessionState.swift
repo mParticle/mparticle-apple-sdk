@@ -20,6 +20,7 @@ public final class MPBackendSessionState: NSObject {
         }
     }
 
+    // Access pending state only inside withSessionLock so creation and adoption stay atomic.
     var pendingSessionUUID: String?
     var pendingSessionStartTime: TimeInterval?
 

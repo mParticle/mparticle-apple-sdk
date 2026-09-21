@@ -184,6 +184,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     self.sessionState.timeOfLastEventInBackground = timestamp;
 }
 
+// This monitor protects graph construction only. Constructors store dependencies without
+// running callbacks or acquiring the session lock; callers invoke workflows after the getter returns.
 - (MPBackendSessionDependencies * _Nonnull)sessionDependencies {
     @synchronized (self) {
         if (!_sessionDependencies) {

@@ -248,18 +248,21 @@
     NSMutableArray<NSDictionary *> *graphs = [[NSMutableArray alloc] init];
     NSLock *resultsLock = [[NSLock alloc] init];
     dispatch_group_t group = dispatch_group_create();
-    for (NSUInteger iteration = 0; iteration < 32; iteration++) {
-        dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-            NSMutableDictionary *graph = [[NSMutableDictionary alloc] init];
-            for (NSUInteger offset = 0; offset < keys.count; offset++) {
-                NSString *key = keys[(iteration + offset) % keys.count];
-                graph[key] = [backend valueForKey:key];
-            }
-            [resultsLock lock];
-            [graphs addObject:graph];
-            [resultsLock unlock];
-        });
-    }
+    [backend.sessionState withSessionLock:^{
+        for (NSUInteger iteration = 0; iteration < 32; iteration++) {
+            dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+                NSMutableDictionary *graph = [[NSMutableDictionary alloc] init];
+                for (NSUInteger offset = 0; offset < keys.count; offset++) {
+                    NSString *key = keys[(iteration + offset) % keys.count];
+                    graph[key] = [backend valueForKey:key];
+                }
+                [resultsLock lock];
+                [graphs addObject:graph];
+                [resultsLock unlock];
+            });
+        }
+        XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    }];
     XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
     XCTAssertEqual(graphs.count, 32);
     for (NSDictionary *graph in graphs) {
