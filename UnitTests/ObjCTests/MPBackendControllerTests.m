@@ -60,6 +60,9 @@
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
+@property (nonatomic, strong, readonly) MPBackendSessionState *sessionState;
+- (void)beginUploadTimer;
+- (void)endUploadTimer;
 
 - (NSString *)caseInsensitiveKeyInDictionary:(NSDictionary *)dictionary withKey:(NSString *)key;
 - (void)cleanUp;
@@ -141,6 +144,70 @@
 - (void)tearDown {
     [MParticle sharedInstance].stateMachine.launchInfo = nil;
     [super tearDown];
+}
+
+- (void)testDefaultInitializerRetainsSession {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+    backend.session = session;
+    XCTAssertEqual(backend.session, session);
+}
+
+- (void)testEveryInitializerCreatesStableSessionState {
+    NSArray<MPBackendController_PRIVATE *> *backends = @[
+        [[MPBackendController_PRIVATE alloc] init],
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:self],
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:self persistence:self.backendController.persistence]
+    ];
+    for (MPBackendController_PRIVATE *backend in backends) {
+        MPBackendSessionState *state = backend.sessionState;
+        XCTAssertNotNil(state);
+        XCTAssertEqual(state, backend.sessionState);
+        MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+        backend.session = session;
+        XCTAssertEqual(state.session, session);
+    }
+}
+
+- (void)testUploadTimerOperationsDoNotWaitForSessionTransition {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    backend.uploadInterval = 1;
+    dispatch_group_t timers = dispatch_group_create();
+    [backend.sessionState withSessionLock:^{
+        dispatch_group_async(timers, dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+            [backend beginUploadTimer];
+            [backend endUploadTimer];
+        });
+        XCTAssertEqual(dispatch_group_wait(timers, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+        // A callback that is already inside a session transition can also operate the timer.
+        [backend beginUploadTimer];
+        [backend endUploadTimer];
+    }];
+    XCTAssertEqual(dispatch_group_wait(timers, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+}
+
+- (void)testSessionOwnershipDoesNotPublishStateMachineMirror {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.currentSession = nil;
+    __weak MPSession *weakSession;
+    @autoreleasepool {
+        MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+        self.backendController.session = session;
+        XCTAssertEqual(self.backendController.session, session);
+        XCTAssertNil(stateMachine.currentSession);
+
+        stateMachine.currentSession = session;
+        weakSession = session;
+        session = nil;
+        XCTAssertNotNil(weakSession);
+        XCTAssertEqual(self.backendController.session, stateMachine.currentSession);
+        self.backendController.session.userId = @2;
+        XCTAssertEqualObjects(stateMachine.currentSession.userId, @2);
+    }
+    XCTAssertNotNil(weakSession);
+    self.backendController.session = nil;
+    XCTAssertNil(weakSession);
+    XCTAssertNil(stateMachine.currentSession);
 }
 
 - (void)forwardLogInstall {}
