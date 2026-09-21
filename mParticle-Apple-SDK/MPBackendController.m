@@ -72,6 +72,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
 @property (nonatomic, strong) MPBackendUploadCoordinator *uploadCoordinator;
 @property (nonatomic, strong, readonly, nonnull) MPBackendSessionState *sessionState;
+@property (nonatomic, strong) MPBackendSessionDependencies *sessionDependencies;
+@property (nonatomic, strong) MPBackendMessageWriter *messageWriter;
 - (MPUploadBuilderContext *)uploadBuilderContext;
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
@@ -170,6 +172,42 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 - (void)setSession:(MPSession *)session {
     self.sessionState.session = session;
+}
+
+- (NSTimeInterval)timeOfLastEventInBackground {
+    return self.sessionState.timeOfLastEventInBackground;
+}
+
+- (void)setTimeOfLastEventInBackground:(NSTimeInterval)timestamp {
+    self.sessionState.timeOfLastEventInBackground = timestamp;
+}
+
+- (MPBackendSessionDependencies *)sessionDependencies {
+    if (!_sessionDependencies) {
+        __weak MPBackendController_PRIVATE *weakSelf = self;
+        _sessionDependencies = [[MPBackendSessionDependencies alloc]
+            initWithPersistence:^{ return weakSelf.persistence; }
+            stateMachine:^{ return MParticle.sharedInstance.stateMachine; }
+            makeMessageContext:^{
+                return [weakSelf messageBuilderContext] ?: [[MPMessageBuilderContext alloc]
+                    initWithDataPlanId:nil dataPlanVersion:nil logger:nil];
+            }
+            runningInBackground:^{ return MPStateMachine_PRIVATE.runningInBackground; }
+            enqueueOnMessage:^(dispatch_block_t block) {
+                MPBackendController_PRIVATE *backend = weakSelf;
+                dispatch_async([MParticle messageQueue], ^{ if (backend) { block(); } });
+            }
+            upload:^(dispatch_block_t completion) { [weakSelf waitForKitsAndUploadWithCompletionHandler:completion]; }
+            logger:^{ return [MParticle.sharedInstance getLogger]; }];
+    }
+    return _sessionDependencies;
+}
+
+- (MPBackendMessageWriter *)messageWriter {
+    if (!_messageWriter) {
+        _messageWriter = [[MPBackendMessageWriter alloc] initWithState:self.sessionState dependencies:self.sessionDependencies];
+    }
+    return _messageWriter;
 }
 
 - (NSMutableSet<MPEvent *> *)eventSet {
@@ -326,26 +364,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)confirmEndSessionMessage:(MPSession *)session {
-    id<MPBackendPersistence> persistence = self.persistence;
-    
-    MPMessage *message = [persistence fetchSessionEndMessageInSession:session];
-    if (!message) {
-        NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(session.foregroundTime), kMPSessionTotalLengthKey:MPMilliseconds(session.length), kMPEventCounterKey:@(session.eventCounter)}
-                                            mutableCopy];
-        
-        NSDictionary *sessionAttributesDictionary = [session.attributesDictionary transformValuesToString];
-        if (sessionAttributesDictionary) {
-            messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
-        }
-        
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo context:self.messageBuilderContext];
-
-        [messageBuilder timestamp:session.endTime];
-        message = [messageBuilder build];
-        
-        [self saveMessage:message updateSession:NO];
-        MPILogVerbose(@"Session Ended: %@", session.uuid);
-    }
+    [self.messageWriter confirmEndSessionMessage:session];
 }
 
 - (void)broadcastSessionDidBegin:(MPSession *)session {
@@ -1370,52 +1389,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession {
-    NSTimeInterval lastEventTimestamp = message.timestamp ?: [[NSDate date] timeIntervalSince1970];
-    if (MPStateMachine_PRIVATE.runningInBackground) {
-        self.timeOfLastEventInBackground = lastEventTimestamp;
-    }
-    
-    id<MPBackendPersistence> persistence = self.persistence;
-    
-    MPMessageType messageTypeCode = (MPMessageType)[MPMessageBuilder messageTypeForString:message.messageType logger:[[MParticle sharedInstance] getLogger]];
-    
-    if ([MParticle sharedInstance].stateMachine.optOut && (messageTypeCode != MPMessageTypeOptOut)) {
-        return;
-    }
-    
-    [persistence saveMessage:message];
-    
-    if (messageTypeCode == MPMessageTypeBreadcrumb) {
-        [persistence saveBreadcrumb:message];
-    }
-    
-    MPILogVerbose(@"Source Event Id: %@", message.uuid);
-    
-    MPSession *session = self.session;
-    if (updateSession && session) {
-        
-        session.endTime = lastEventTimestamp;
-        
-        if (session.persisted) {
-            [persistence updateSession:session];
-        } else {
-            [persistence saveSession:session];
-        }
-    }
-    
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:[[MParticle sharedInstance] getLogger]];
-    BOOL shouldUpload = [MPBackendMessageInfo shouldUploadMessageOfType:message.messageType
-                                                      messageDictionary:[message dictionaryRepresentation]
-                                                    triggerMessageTypes:stateMachine.triggerMessageTypes
-                                                      triggerEventTypes:stateMachine.triggerEventTypes
-                                                                 hasher:hasher];
-
-    if (shouldUpload) {
-        dispatch_async([MParticle messageQueue], ^{
-            [self waitForKitsAndUploadWithCompletionHandler:nil];
-        });
-    }
+    [self.messageWriter saveMessage:message updateSession:updateSession];
 }
 
 - (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler {
