@@ -71,7 +71,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property NSNumber *previousForegroundTime;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
 @property (nonatomic, strong) MPBackendUploadCoordinator *uploadCoordinator;
-@property (nonatomic, strong) MPBackendSessionState *sessionState;
+@property (nonatomic, strong, readonly, nonnull) MPBackendSessionState *sessionState;
 - (MPUploadBuilderContext *)uploadBuilderContext;
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
@@ -80,6 +80,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @implementation MPBackendController_PRIVATE
 @synthesize uploadInterval = _uploadInterval;
+@synthesize sessionState = _sessionState;
 
 #if TARGET_OS_IOS == 1
 @synthesize notificationController = _notificationController;
@@ -157,6 +158,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 #pragma mark Accessors
+
+- (MPBackendSessionState *)sessionState {
+    NSAssert(_sessionState != nil, @"Backend initializers must create session state before use");
+    return _sessionState;
+}
 
 - (MPSession *)session {
     return self.sessionState.session;
@@ -595,6 +601,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 #pragma mark Timers
 
+// Timer creation/cancellation has its own boundary. It never enters a session transition:
+// timer callbacks and message-triggered uploads execute later on the message queue.
 // Timer blocks fire on message queue
 - (dispatch_source_t)createSourceTimer:(uint64_t)interval eventHandler:(dispatch_block_t)eventHandler cancelHandler:(dispatch_block_t)cancelHandler {
     dispatch_source_t sourceTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, [MParticle messageQueue]);
