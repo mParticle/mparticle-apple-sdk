@@ -97,7 +97,40 @@
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSTimeInterval timeOfLastEventInBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
+- (MPBackendSessionDependencies *)sessionDependencies;
+- (MPBackendSessionCoordinator *)sessionCoordinator;
 
+@end
+
+@interface MPBackendPausedConstruction : MPBackendController_PRIVATE
+@property (nonatomic, strong) NSLock *constructionLock;
+@property (nonatomic) BOOL didPauseConstruction;
+@property (nonatomic, strong) dispatch_semaphore_t constructionEntered;
+@property (nonatomic, strong) dispatch_semaphore_t continueConstruction;
+@end
+
+@implementation MPBackendPausedConstruction
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _constructionLock = [[NSLock alloc] init];
+        _constructionEntered = dispatch_semaphore_create(0);
+        _continueConstruction = dispatch_semaphore_create(0);
+    }
+    return self;
+}
+
+- (MPBackendSessionDependencies *)sessionDependencies {
+    [self.constructionLock lock];
+    BOOL pause = !self.didPauseConstruction;
+    self.didPauseConstruction = YES;
+    [self.constructionLock unlock];
+    if (pause) {
+        dispatch_semaphore_signal(self.constructionEntered);
+        dispatch_semaphore_wait(self.continueConstruction, DISPATCH_TIME_FOREVER);
+    }
+    return [super sessionDependencies];
+}
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
@@ -184,6 +217,59 @@
         [backend endUploadTimer];
     }];
     XCTAssertEqual(dispatch_group_wait(timers, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+}
+
+- (void)testConcurrentFirstSessionAccessSharesOneCoordinator {
+    MPBackendPausedConstruction *backend = [[MPBackendPausedConstruction alloc] init];
+    dispatch_queue_t queue = dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0);
+    dispatch_group_t group = dispatch_group_create();
+    __block MPBackendSessionCoordinator *first;
+    __block MPBackendSessionCoordinator *second;
+    dispatch_group_async(group, queue, ^{ first = [backend sessionCoordinator]; });
+    XCTAssertEqual(dispatch_semaphore_wait(backend.constructionEntered, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    dispatch_semaphore_t secondStarted = dispatch_semaphore_create(0);
+    dispatch_semaphore_t secondFinished = dispatch_semaphore_create(0);
+    dispatch_group_async(group, queue, ^{
+        dispatch_semaphore_signal(secondStarted);
+        second = [backend sessionCoordinator];
+        dispatch_semaphore_signal(secondFinished);
+    });
+    XCTAssertEqual(dispatch_semaphore_wait(secondStarted, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    XCTAssertNotEqual(dispatch_semaphore_wait(secondFinished, dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC)), 0);
+    dispatch_semaphore_signal(backend.continueConstruction);
+    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    XCTAssertNotNil(first);
+    XCTAssertEqual(first, second);
+}
+
+- (void)testConcurrentFirstAccessSharesEntireSessionGraph {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    NSArray<NSString *> *keys = @[@"sessionDependencies", @"messageWriter", @"sessionLifecycleDependencies", @"sessionCoordinator"];
+    NSMutableArray<NSDictionary *> *graphs = [[NSMutableArray alloc] init];
+    NSLock *resultsLock = [[NSLock alloc] init];
+    dispatch_group_t group = dispatch_group_create();
+    [backend.sessionState withSessionLock:^{
+        for (NSUInteger iteration = 0; iteration < 32; iteration++) {
+            dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+                NSMutableDictionary *graph = [[NSMutableDictionary alloc] init];
+                for (NSUInteger offset = 0; offset < keys.count; offset++) {
+                    NSString *key = keys[(iteration + offset) % keys.count];
+                    graph[key] = [backend valueForKey:key];
+                }
+                [resultsLock lock];
+                [graphs addObject:graph];
+                [resultsLock unlock];
+            });
+        }
+        XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    }];
+    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    XCTAssertEqual(graphs.count, 32);
+    for (NSDictionary *graph in graphs) {
+        for (NSString *key in keys) {
+            XCTAssertEqual(graph[key], [backend valueForKey:key]);
+        }
+    }
 }
 
 - (void)testSessionOwnershipDoesNotPublishStateMachineMirror {
@@ -395,7 +481,7 @@
         
         XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
         
-        [[mockBackendController expect] uploadOpenSessions:sessions completionHandler:OCMOCK_ANY];
+        [(MPBackendController_PRIVATE *)[mockBackendController expect] waitForKitsAndUploadWithCompletionHandler:OCMOCK_ANY];
         
         [self.backendController processOpenSessionsEndingCurrent:YES completionHandler:nil];
         
