@@ -44,9 +44,12 @@ measures the binary-xcframework path, which is the worst case.
 ## Size budget
 
 The migration from Objective-C to Swift raised the SDK's app-bundle impact from
-**1,852 KB on `main` to 2,496 KB on `workstation/swift-migration`** (+652 KB, +35%).
+**1,840 KB on `main` to 2,840 KB on `workstation/swift-migration`** (+1,000 KB, +54%).
+Measured 2026-09-21 on `main` at `13f53dcf` and `workstation/swift-migration` at `656d3349`,
+same machine and toolchain. `main` has measured 1,840 KB on every run since 2026-09-02 and
+across two Xcode versions, so it is a stable reference point.
 
-Target: **app-bundle impact must not exceed `main`'s 1,852 KB once the migration is
+Target: **app-bundle impact must not exceed `main`'s 1,840 KB once the migration is
 complete.** Until then, treat every increase as debt that has to be paid down before the
 migration branch merges.
 
@@ -60,20 +63,30 @@ app-bundle impact. Two things to know about that gate:
 
 ## What drives the size
 
-Attribution of the +652 KB regression, from `analyze_binary.sh`:
+Attribution of the +1,000 KB regression, from `analyze_binary.sh`:
 
-| Component             | Share | What moves it                                                           |
-| --------------------- | ----- | ----------------------------------------------------------------------- |
-| `__text` (code)       | 57%   | Amount of compiled code; `SWIFT_OPTIMIZATION_LEVEL`                     |
-| `__LINKEDIT`          | 22%   | Number of exported symbols - Swift `public` symbols are `no_dead_strip` |
-| `__objc_*` metadata   | 14%   | Every `@objc` declaration, including those on Swift types               |
-| `__swift5_*` metadata | 3%    | Type metadata and reflection                                            |
+| Component                    | `main`   | `workstation` | Delta     | Share | What moves it                                                           |
+| ---------------------------- | -------- | ------------- | --------- | ----- | ----------------------------------------------------------------------- |
+| `__text` (code)              | 757.9 KB | 1,332.9 KB    | +575.0 KB | 58%   | Amount of compiled code; `SWIFT_OPTIMIZATION_LEVEL`                     |
+| `__LINKEDIT`                 | 528.0 KB | 720.0 KB      | +192.0 KB | 19%   | Number of exported symbols - Swift `public` symbols are `no_dead_strip` |
+| `__objc_*` metadata          | 339.6 KB | 459.1 KB      | +119.5 KB | 12%   | Every `@objc` declaration, including those on Swift types               |
+| `__swift5_*` metadata        | 12.2 KB  | 56.1 KB       | +43.9 KB  | 4%    | Type metadata and reflection                                            |
+| headers, padding, signatures | -        | -             | ~+70 KB   | 7%    | Number of Mach-O images                                                 |
 
 The framework ships as **two** Mach-O images: `mParticle_Apple_SDK.framework` and, nested
 inside it, `mParticle_Apple_SDK_Swift.framework`. The second one exists because SwiftPM
 cannot mix Objective-C and Swift in one target; it costs a second set of symbol tables and
 prevents dead-stripping across the boundary. It collapses on its own once the migration
 removes the last `.m` file.
+
+Splitting the regression by image shows how lopsided the trade is. Deleting 11,151 lines of
+Objective-C shrank the outer image by 411 KB; adding 16,263 lines of Swift grew the inner one
+by 1,409 KB.
+
+| Image                       | `main`     | `workstation` | Delta       | Exported symbols |
+| --------------------------- | ---------- | ------------- | ----------- | ---------------- |
+| `mParticle_Apple_SDK`       | 1,495.8 KB | 1,085.1 KB    | -410.7 KB   | 1,676 -> 1,532   |
+| `mParticle_Apple_SDK_Swift` | 329.9 KB   | 1,738.9 KB    | +1,409.0 KB | 865 -> 4,983     |
 
 ## CI Integration
 
