@@ -10,6 +10,7 @@ final class MPBackendSessionFixture {
     var background = false
     var enqueued: [() -> Void] = []
     var uploads = 0
+    var onUpload: (() -> Void)?
     var contextReads = 0
     lazy var dependencies = MPBackendSessionDependencies(
         persistence: { [unowned self] in persistence },
@@ -20,7 +21,7 @@ final class MPBackendSessionFixture {
         },
         runningInBackground: { [unowned self] in background },
         enqueueOnMessage: { [unowned self] action in persistence.calls.append("enqueue"); enqueued.append(action) },
-        upload: { [unowned self] completion in uploads += 1; persistence.calls.append("upload"); completion?() },
+        upload: { [unowned self] completion in uploads += 1; persistence.calls.append("upload"); onUpload?(); completion?() },
         logger: { nil }
     )
     lazy var writer = MPBackendMessageWriter(state: state, dependencies: dependencies)

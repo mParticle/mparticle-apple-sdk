@@ -32,6 +32,8 @@ public final class MPBackendLifecycleCoordinator: NSObject {
     let sessions: MPBackendSessionCoordinator
     let writer: MPBackendMessageWriter
     let scheduling: MPBackendLifecycleSchedulingDependencies
+    // Protect only timer configuration here. Production timer creation/cancellation does not
+    // acquire the session lock; upload callbacks execute later on the message queue.
     let timerLock = NSRecursiveLock()
     var uploadTimer: MPBackendLifecycleTimer?
     var storedUploadInterval: TimeInterval = 0

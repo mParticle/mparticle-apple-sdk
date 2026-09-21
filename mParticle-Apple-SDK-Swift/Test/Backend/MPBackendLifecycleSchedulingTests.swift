@@ -127,6 +127,47 @@ final class MPBackendLifecycleSchedulingTests: MPBackendWorkflowTestCase {
         }
     }
 
+    func testTimerOperationsRemainIndependentOfSessionTransition() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let owner = fixture.application
+            let timers = DispatchGroup()
+            fixture.state.withSessionLock {
+                DispatchQueue.global().async(group: timers) {
+                    owner.beginUploadTimer()
+                    owner.endUploadTimer()
+                }
+                XCTAssertEqual(timers.wait(timeout: .now() + 2), .success)
+                owner.beginUploadTimer()
+                owner.endUploadTimer()
+            }
+            XCTAssertEqual(timers.wait(timeout: .now() + 2), .success)
+            XCTAssertEqual(fixture.scheduling.timers.count, 2)
+            XCTAssertTrue(fixture.scheduling.timers.allSatisfy(\.cancelled))
+        }
+    }
+
+    func testTimerUploadCanReenterSessionAndCancelTimer() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let owner = fixture.application
+            fixture.state.session = MPSessionPRIVATE(startTime: 100, userId: 1)
+            fixture.onUpload = { [weak owner, weak fixture] in
+                fixture?.state.withSessionLock {
+                    fixture?.state.session = nil
+                    owner?.endUploadTimer()
+                }
+            }
+            owner.beginUploadTimer()
+            let timer = fixture.scheduling.timers[0]
+            fixture.state.withSessionLock { timer.activateAndFire() }
+            timer.activateAndFire()
+            XCTAssertNil(fixture.state.session)
+            XCTAssertTrue(timer.cancelled)
+            XCTAssertEqual(fixture.uploads, 1)
+        }
+    }
+
     func testUploadDefaultsClampingAndRestartOnlyForChangedActiveTimer() {
         onMessageQueue {
             let fixture = MPBackendSessionFixture()
