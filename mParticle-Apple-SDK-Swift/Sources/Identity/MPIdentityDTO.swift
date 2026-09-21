@@ -269,8 +269,15 @@ enum IdentityHTTPKeys {
     @objc public static func successFields(from dictionary: NSDictionary?) -> NSDictionary {
         let result = NSMutableDictionary()
         result[IdentityHTTPKeys.context] = dictionary?[IdentityHTTPKeys.context]
-        if let mpidValue = dictionary?[IdentityHTTPKeys.mpid], !(mpidValue is NSNull) {
-            result[IdentityHTTPKeys.mpid] = NSNumber(value: (mpidValue as AnyObject).longLongValue)
+        // A container here answers neither longLongValue nor the NSString overload, and the
+        // resulting raise cannot be caught from a Swift frame, so the shape is checked rather
+        // than assumed. This matches the isEphemeral and isLoggedIn reads below.
+        if let mpidValue = dictionary?[IdentityHTTPKeys.mpid] {
+            if let number = mpidValue as? NSNumber {
+                result[IdentityHTTPKeys.mpid] = NSNumber(value: number.int64Value)
+            } else if let string = mpidValue as? NSString {
+                result[IdentityHTTPKeys.mpid] = NSNumber(value: string.longLongValue)
+            }
         }
         result[IdentityHTTPKeys.isEphemeral] = NSNumber(
             value: (dictionary?[IdentityHTTPKeys.isEphemeral] as? NSNumber)?.boolValue ?? false
