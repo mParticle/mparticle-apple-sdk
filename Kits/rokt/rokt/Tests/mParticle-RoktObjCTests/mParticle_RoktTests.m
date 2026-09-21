@@ -54,6 +54,20 @@
     XCTAssertNil(kit.configuration);
 }
 
+// accountId arrives from the server, so an empty string or any non-string shape has to be refused
+// rather than handed to the provider SDK as a tag id.
+- (void)testWrongTypedAccountIdReturnsRequirementsNotMet {
+    for (id accountId in @[@"", @1, @[], @{}, [NSNull null]]) {
+        MPKitRokt *kit = [[MPKitRokt alloc] init];
+        MPKitExecStatus *status = nil;
+        XCTAssertNoThrow(status = [kit didFinishLaunchingWithConfiguration:@{@"accountId": accountId}],
+                         @"Threw on accountId %@.", accountId);
+        XCTAssertEqual(status.returnCode, MPKitReturnCodeRequirementsNotMet,
+                       @"Should have refused accountId %@.", accountId);
+        XCTAssertNil(kit.configuration, @"Should not have retained settings for accountId %@.", accountId);
+    }
+}
+
 - (void)testConfigurationIsForwardedToSwiftImplementation {
     MPKitRokt *kit = [[MPKitRokt alloc] init];
     NSDictionary *configuration = @{@"accountId": @"test-account", @"stripePublishableKey": @"pk_test"};

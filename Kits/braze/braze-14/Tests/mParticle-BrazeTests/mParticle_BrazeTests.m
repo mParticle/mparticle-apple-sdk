@@ -24,6 +24,9 @@
 - (MPKitExecStatus *)updateUser:(FilteredMParticleUser *)user request:(NSDictionary<NSNumber *,NSString *> *)userIdentities;
 - (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value;
 
+- (NSMutableDictionary *)getSubscriptionGroupIds:(id)value;
+- (NSString *)mappedUserAttributeForKey:(NSString *)key hash:(NSString *)hash;
+
 @end
 
 // Keys matching MPKitBraze optionsDictionary
@@ -1059,6 +1062,176 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     [mockClient verify];
 
     [mockClient stopMocking];
+}
+
+
+- (void)testMalformedConfigurationAcrossLaunchAndIdentityCallbacks {
+    NSArray *keys = @[@"enableTypeDetection", @"forwardScreenViews", @"ABKCollectIDFA",
+        @"ABKDisableAutomaticLocationCollectionKey", @"userIdentificationType", @"emailIdentificationType",
+        @"subscriptionGroupMapping", @"consentMappingSDK", @"ABKFlushIntervalOptionKey",
+        @"ABKRequestProcessingPolicyOptionKey", @"ABKSessionTimeoutKey", @"ABKMinimumTriggerTimeIntervalKey",
+        @"bundleCommerceEventData", @"replaceSkuWithProductName", @"useEcommerceRecommendedEvents",
+        @"ear", @"eaa", @"eas"];
+    NSArray *values = @[[NSNull null], @42, @YES, @[], @{}];
+    id client = OCMClassMock([Braze class]);
+    id request = OCMClassMock([FilteredMPIdentityApiRequest class]);
+    NSDictionary *identities = @{@(MPUserIdentityCustomerId): @"customer", @(MPUserIdentityEmail): @"test@example.com"};
+    OCMStub([request userIdentities]).andReturn(identities);
+    id user = OCMClassMock([FilteredMParticleUser class]);
+    OCMStub([user userId]).andReturn(@42);
+    OCMStub([user userIdentities]).andReturn(identities);
+    id api = OCMClassMock([MPKitAPI class]);
+    OCMStub([api getCurrentUserWithKit:[OCMArg any]]).andReturn(user);
+
+    for (NSNumber *preinitialized in @[@NO, @YES]) {
+        [MPKitBraze setBrazeInstance:preinitialized.boolValue ? client : nil];
+        for (NSString *key in keys) {
+            for (id value in values) {
+                MPKitBraze *kit = [[MPKitBraze alloc] init];
+                kit.kitApi = api;
+                NSDictionary *configuration = @{@"apiKey": @"test-key", key: value};
+                XCTAssertNoThrow([kit didFinishLaunchingWithConfiguration:configuration], @"%@ = %@", key, value);
+                [kit setBrazeInstanceLocal:client];
+                XCTAssertNoThrow([kit start]);
+                XCTAssertTrue(kit.started);
+                // Exercise the setter used when a running kit receives new configuration.
+                kit.configuration = configuration;
+                XCTAssertNoThrow([kit onIdentifyComplete:user request:request]);
+                XCTAssertNoThrow([kit onLoginComplete:user request:request]);
+                XCTAssertNoThrow([kit onLogoutComplete:user request:request]);
+                XCTAssertNoThrow([kit onModifyComplete:user request:request]);
+                XCTAssertNoThrow([kit setConsentState:nil]);
+                XCTAssertNoThrow([kit optionsDictionary]);
+                MPEvent *event = [[MPEvent alloc] initWithName:@"test" type:MPEventTypeOther];
+                event.customAttributes = @{@"attribute": @"value"};
+                XCTAssertNoThrow([kit logBaseEvent:event]);
+            }
+        }
+    }
+    [MPKitBraze setBrazeInstance:nil];
+}
+
+- (void)testInvalidRequiredConfigurationDoesNotStartBraze {
+    for (id value in @[[NSNull null], @42, @YES, @[], @{}, @""]) {
+        MPKitBraze *kit = [[MPKitBraze alloc] init];
+        MPKitExecStatus *status = [kit didFinishLaunchingWithConfiguration:@{@"apiKey": value}];
+        XCTAssertEqual(status.returnCode, MPKitReturnCodeRequirementsNotMet);
+        XCTAssertNoThrow([kit start]);
+        XCTAssertFalse(kit.started);
+        [kit didFinishLaunchingWithConfiguration:@{@"apiKey": @"test-key", @"host": value}];
+        XCTAssertNoThrow([kit start]);
+        XCTAssertFalse(kit.started);
+    }
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    XCTAssertEqual([kit didFinishLaunchingWithConfiguration:@{}].returnCode, MPKitReturnCodeRequirementsNotMet);
+    XCTAssertNoThrow([kit didFinishLaunchingWithConfiguration:(id)@[]]);
+    XCTAssertFalse(kit.started);
+}
+
+- (void)testMalformedIdentitySelectorsDoNotFallBackToCustomerId {
+    id client = OCMClassMock([Braze class]);
+    BRZUser *brazeUser = OCMClassMock([BRZUser class]);
+    OCMStub([client user]).andReturn(brazeUser);
+    OCMReject([client changeUser:[OCMArg any]]);
+    OCMReject([brazeUser setEmail:[OCMArg any]]);
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    [kit setBrazeInstanceLocal:client];
+    for (id value in @[[NSNull null], @42, @YES, @[], @{}, @"", @"unknown"]) {
+        kit.configuration = @{@"userIdentificationType": value, @"emailIdentificationType": value};
+        NSDictionary *identities = @{@(MPUserIdentityCustomerId): @"customer", @(MPUserIdentityEmail): @"test@example.com"};
+        XCTAssertNoThrow([kit updateUser:nil request:identities]);
+    }
+}
+
+- (void)testMappingValidationRetainsOnlyValidEntries {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    for (id value in @[[NSNull null], @42, @YES, @[], @{}, @"", @"invalid", @"{}", @"[1]", @"[{\"value\":\"x\"}]"]) {
+        XCTAssertEqualObjects([kit getSubscriptionGroupIds:value], @{});
+    }
+    NSString *mapping = @"[null,1,{}, {\"map\":1,\"value\":\"x\"}, {\"map\":\"bad\",\"value\":false}, {\"map\":\"\",\"value\":\"x\"}, {\"map\":\"group\",\"value\":\"group-id\"}]";
+    XCTAssertEqualObjects([kit getSubscriptionGroupIds:mapping], (@{@"group": @"group-id"}));
+    kit.configuration = @{@"ear": @{@"valid": @"name", @"empty": @"", @"invalid": @42}};
+    XCTAssertEqualObjects([kit mappedUserAttributeForKey:@"ear" hash:@"valid"], @"name");
+    XCTAssertNil([kit mappedUserAttributeForKey:@"ear" hash:@"empty"]);
+    XCTAssertNil([kit mappedUserAttributeForKey:@"ear" hash:@"invalid"]);
+}
+
+- (void)testInvalidDateOfBirthDoesNotWriteToBraze {
+    id client = OCMClassMock([Braze class]);
+    BRZUser *user = OCMClassMock([BRZUser class]);
+    OCMStub([client user]).andReturn(user);
+    OCMReject([user setDateOfBirth:[OCMArg any]]);
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    [kit setBrazeInstanceLocal:client];
+    for (id value in @[@"", @"1", @"null", @"2020-1", @1, @[], @{}, [NSNull null],
+        @"2020/01/01", @"2020-01-01extra", @"abcdefghij", @"2023-02-29", @"1500-02-29", @"1900-02-29", @"2020-13-01", @"2020-04-31", @"0000-01-01"]) {
+        MPKitExecStatus *status;
+        XCTAssertNoThrow(status = [kit setUserAttribute:@"dob" value:value]);
+        XCTAssertEqual(status.returnCode, MPKitReturnCodeFail, @"%@", value);
+    }
+}
+
+- (void)testValidDateOfBirthAndRemoval {
+    id client = OCMClassMock([Braze class]);
+    BRZUser *user = OCMClassMock([BRZUser class]);
+    OCMStub([client user]).andReturn(user);
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    [kit setBrazeInstanceLocal:client];
+    for (NSString *value in @[@"0001-01-01", @"1582-10-10", @"2000-02-29", @"2020-02-29", @"2400-02-29"]) {
+        OCMExpect([user setDateOfBirth:[OCMArg checkWithBlock:^BOOL(NSDate *date) {
+            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+            formatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
+            formatter.calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+            formatter.gregorianStartDate = [NSDate distantPast];
+            formatter.dateFormat = @"yyyy-MM-dd";
+            return [[formatter stringFromDate:date] isEqualToString:value];
+        }]]);
+        XCTAssertEqual([kit setUserAttribute:@"dob" value:value].returnCode, MPKitReturnCodeSuccess);
+    }
+    OCMExpect([user unsetCustomAttributeWithKey:@"dob"]);
+    XCTAssertEqual([kit setUserAttribute:@"dob" value:nil].returnCode, MPKitReturnCodeSuccess);
+    OCMVerifyAll(user);
+}
+
+- (void)testOptOutUnsubscribesWithoutAutomaticResubscription {
+    id client = OCMClassMock([Braze class]);
+    BRZUser *user = OCMClassMock([BRZUser class]);
+    OCMStub([client user]).andReturn(user);
+    OCMReject([user setEmailSubscriptionState:BRZUserSubscriptionStateSubscribed]);
+    OCMReject([user setEmailSubscriptionState:BRZUserSubscriptionStateOptedIn]);
+    OCMExpect([user setEmailSubscriptionState:BRZUserSubscriptionStateUnsubscribed]);
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    [kit setBrazeInstanceLocal:client];
+    XCTAssertEqual([kit setOptOut:YES].returnCode, MPKitReturnCodeSuccess);
+    XCTAssertEqual([kit setOptOut:NO].returnCode, MPKitReturnCodeCannotExecute);
+    OCMVerifyAll(user);
+    OCMVerify(times(1), [user setEmailSubscriptionState:BRZUserSubscriptionStateUnsubscribed]);
+}
+
+- (void)testConsentUsesOnlySuppliedStateAndValidMappings {
+    id client = OCMClassMock([Braze class]);
+    BRZUser *user = OCMClassMock([BRZUser class]);
+    OCMStub([client user]).andReturn(user);
+    OCMReject([user setCustomAttributeWithKey:@"$google_ad_user_data" boolValue:YES]);
+    OCMExpect([user setCustomAttributeWithKey:@"$google_ad_user_data" boolValue:NO]);
+    OCMExpect([user setCustomAttributeWithKey:@"$google_ad_personalization" boolValue:NO]);
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"consentMappingSDK": @"[null,1,{\"map\":true,\"value\":\"google_ad_user_data\"},{\"map\":\"Marketing\",\"value\":\"google_ad_user_data\"},{\"map\":\"marketing\",\"value\":\"google_ad_personalization\"}]"};
+    [kit setBrazeInstanceLocal:client];
+    MPGDPRConsent *denial = [[MPGDPRConsent alloc] init];
+    denial.consented = NO;
+    MPConsentState *state = [[MPConsentState alloc] init];
+    [state addGDPRConsentState:denial purpose:@"marketing"];
+    XCTAssertNoThrow([kit setConsentState:state]);
+    OCMVerifyAll(user);
+    [kit setConsentState:nil];
+    [kit setConsentState:[[MPConsentState alloc] init]];
+    OCMVerify(times(1), [user setCustomAttributeWithKey:@"$google_ad_user_data" boolValue:NO]);
+    OCMVerify(times(1), [user setCustomAttributeWithKey:@"$google_ad_personalization" boolValue:NO]);
+}
+
+- (void)testOptsIntoFilteredConsentReplay {
+    XCTAssertTrue([[[MPKitBraze alloc] init] supportsConsentStateReplay]);
 }
 
 @end

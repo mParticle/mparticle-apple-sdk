@@ -468,10 +468,14 @@ public final class MPStateMachinePRIVATE: NSObject,
         }
 
         let eventTypes = (dictionary as? NSDictionary)?[RemoteConfig.kMPRemoteConfigTriggerEventsKey]
-        if MPSwiftIsNull(eventTypes) {
+        if let eventTypes = eventTypes as? NSArray {
+            if triggerEventTypes?.isEqual(eventTypes) != true {
+                triggerEventTypes = eventTypes
+            }
+        } else {
+            // A missing key, NSNull, or a server-sent scalar all clear the list. Leaving the
+            // previous one in place would let a stale trigger reach containsObject: later.
             triggerEventTypes = nil
-        } else if let eventTypes = eventTypes as? NSArray, triggerEventTypes?.isEqual(eventTypes) != true {
-            triggerEventTypes = eventTypes
         }
 
         let messageTypes = NSMutableArray(object: MessageKeys.kMPMessageTypeStringCommerceEvent)
@@ -501,12 +505,17 @@ public final class MPStateMachinePRIVATE: NSObject,
     /// the stored preferences and the object `MPCustomModule` needs, so it is passed straight in.
     @objc(configureCustomModules:)
     public func configureCustomModules(_ customModuleSettings: Any?) {
-        guard let customModuleSettings = customModuleSettings as? [[AnyHashable: Any]] else {
+        // Cast the array without its element type: `as? [[AnyHashable: Any]]` bridges eagerly, so a
+        // single malformed entry would discard every well-formed module alongside it.
+        guard let customModuleSettings = customModuleSettings as? [Any] else {
             return
         }
 
-        let modules = customModuleSettings.compactMap {
-            CustomModule(dictionary: $0, connector: connector)
+        let modules = customModuleSettings.compactMap { setting -> CustomModule? in
+            guard let setting = setting as? [AnyHashable: Any] else {
+                return nil
+            }
+            return CustomModule(dictionary: setting, connector: connector)
         }
         customModules = modules.isEmpty ? nil : modules
     }

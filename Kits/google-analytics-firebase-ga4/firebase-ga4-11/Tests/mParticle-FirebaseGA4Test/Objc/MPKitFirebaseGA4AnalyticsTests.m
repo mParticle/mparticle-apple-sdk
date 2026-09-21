@@ -15,6 +15,7 @@
 - (NSMutableDictionary *)getParametersForScreen:(MPEvent *)screenEvent;
 - (NSMutableArray *)getParametersForProducts:(id)products;
 - (void)limitDictionary:(NSMutableDictionary *)dictionary maxCount:(int)maxCount;
+- (NSString *)userIdForFirebase:(FilteredMParticleUser *)currentUser;
 @end
 
 static BOOL sFirebaseConfigured = NO;
@@ -341,6 +342,115 @@ static BOOL sFirebaseConfigured = NO;
 
     XCTAssertNotNil(screenNameParameter);
     XCTAssertEqualObjects(screenNameParameter, standardizedScreenName);
+}
+
+#pragma mark - Malformed server configuration
+
+// Server configuration reaches the kit as parsed JSON, so any value can arrive as a number,
+// boolean or container regardless of the type the mParticle UI collects.
+
+- (void)testStartWithNonStringConfigurationValuesDoesNotThrow {
+    if (!sFirebaseConfigured) { return; }
+    MPKitFirebaseGA4Analytics *exampleKit = [[MPKitFirebaseGA4Analytics alloc] init];
+
+    NSDictionary *configuration = @{
+        kMPFIRGA4ForwardRequestsServerSide: @YES,
+        @"consentMappingSDK": @{@"ad_storage": @"advertising"},
+        @"defaultAdStorageConsentSDK": @5,
+        @"defaultAdUserDataConsentSDK": @[],
+        @"defaultAnalyticsStorageConsentSDK": @{},
+        @"defaultAdPersonalizationConsentSDK": @YES
+    };
+
+    XCTAssertNoThrow([exampleKit didFinishLaunchingWithConfiguration:configuration]);
+    XCTAssertTrue(exampleKit.started);
+}
+
+- (void)testStartWithWrongShapedConsentMappingDoesNotThrow {
+    if (!sFirebaseConfigured) { return; }
+
+    NSArray<NSString *> *malformedMappings = @[
+        @"{\"ad_storage\":1}",
+        @"[1]",
+        @"[\"ad_storage\"]",
+        @"[null]",
+        @"[[]]",
+        @"[{\"value\":\"ad_storage\",\"map\":5}]",
+        @"[{\"value\":5,\"map\":\"advertising\"}]"
+    ];
+
+    for (NSString *mapping in malformedMappings) {
+        MPKitFirebaseGA4Analytics *exampleKit = [[MPKitFirebaseGA4Analytics alloc] init];
+
+        XCTAssertNoThrow([exampleKit didFinishLaunchingWithConfiguration:@{@"consentMappingSDK": mapping}],
+                         @"consentMappingSDK %@ should not throw", mapping);
+        XCTAssertTrue(exampleKit.started);
+    }
+}
+
+- (void)testConsentMappingOfWrongShapeYieldsNoMapping {
+    MPKitFirebaseGA4Analytics *exampleKit = [[MPKitFirebaseGA4Analytics alloc] init];
+    exampleKit.configuration = @{@"consentMappingSDK": @"{\"ad_storage\":\"advertising\"}"};
+
+    XCTAssertNil([exampleKit mappingForKey:@"consentMappingSDK"]);
+}
+
+- (void)testConsentMappingSkipsEntriesWithNonStringMembers {
+    MPKitFirebaseGA4Analytics *exampleKit = [[MPKitFirebaseGA4Analytics alloc] init];
+
+    NSArray *mappings = @[
+        @5,
+        @"ad_storage",
+        [NSNull null],
+        @[],
+        @{@"value": @"ad_storage", @"map": @5},
+        @{@"value": @5, @"map": @"advertising"},
+        @{@"value": @"analytics_storage", @"map": @"Analytics"}
+    ];
+
+    NSDictionary *pairs = [exampleKit convertToKeyValuePairs:mappings];
+
+    XCTAssertEqualObjects(pairs, @{@"analytics_storage": @"analytics"});
+}
+
+- (void)testDefaultConsentOfNonStringTypeResolvesToNil {
+    MPKitFirebaseGA4Analytics *exampleKit = [[MPKitFirebaseGA4Analytics alloc] init];
+    exampleKit.configuration = @{@"defaultAdStorageConsentSDK": @YES};
+
+    XCTAssertNil([exampleKit resolvedConsentForMappingKey:@"ad_storage"
+                                               defaultKey:@"defaultAdStorageConsentSDK"
+                                             gdprConsents:@{}
+                                                  mapping:@{}]);
+}
+
+- (void)testIdentityCompletionWithNonStringIdentityTypeDoesNotThrow {
+    if (!sFirebaseConfigured) { return; }
+    MPKitFirebaseGA4Analytics *exampleKit = [[MPKitFirebaseGA4Analytics alloc] init];
+    [exampleKit didFinishLaunchingWithConfiguration:@{kMPFIRGA4ExternalUserIdentityType: @5}];
+
+    FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
+
+    XCTAssertNoThrow([exampleKit onIdentifyComplete:user request:nil]);
+    XCTAssertNoThrow([exampleKit onLoginComplete:user request:nil]);
+    XCTAssertNoThrow([exampleKit onModifyComplete:user request:nil]);
+    XCTAssertNoThrow([exampleKit onLogoutComplete:user request:nil]);
+}
+
+- (void)testNonStringHashUserIdLeavesUserIdUnhashed {
+    MPKitFirebaseGA4Analytics *exampleKit = [[MPKitFirebaseGA4Analytics alloc] init];
+    exampleKit.configuration = @{
+        kMPFIRGA4ExternalUserIdentityType: @"mpid",
+        kMPFIRGA4ShouldHashUserId: @YES
+    };
+
+    MParticleUser *testUser = [[MParticleUser alloc] init];
+    [testUser setValue:@(12345) forKey:@"userId"];
+    FilteredMParticleUser *user = [[FilteredMParticleUser alloc] init];
+    [user setValue:testUser forKey:@"user"];
+
+    __block NSString *userId = nil;
+    XCTAssertNoThrow(userId = [exampleKit userIdForFirebase:user]);
+    XCTAssertEqualObjects(userId, @"12345");
 }
 
 @end
