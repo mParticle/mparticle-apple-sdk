@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <objc/runtime.h>
 @import mParticle_Rokt;
 @import mParticle_Apple_SDK;
 @import RoktContracts;
@@ -81,6 +82,48 @@
                                          performMapping:NO];
     XCTAssertEqualObjects(result[@"sandbox"], @"true");
     XCTAssertEqualObjects(result[@"key"], @"value");
+}
+
+// The kit's settings must come from the dictionary handed to it at launch and stay usable before
+// it reports started, because a placement call can arrive in that window. Objective-C callers hand
+// over an NSMutableDictionary they may keep mutating, so the kit has to hold a copy: a later edit
+// to the caller's dictionary must not silently retarget which identity the hashed email is read
+// from. Only an explicit refresh may change it, and stop must clear it.
+- (void)testLaunchConfigurationIsCopiedAndOnlyChangesOnAnExplicitRefresh {
+    // A successful launch initializes the real provider SDK, which this target cannot inject a
+    // client into. Stubbing the initializer is how the Swift suite isolates the same path.
+    // Rokt is a Swift class without an explicit ObjC name, so the runtime knows it module-qualified.
+    Class roktClass = NSClassFromString(@"Rokt_Widget.Rokt") ?: NSClassFromString(@"Rokt");
+    Method initialize = class_getClassMethod(roktClass,
+                                             NSSelectorFromString(@"initWithRoktTagId:mParticleSdkVersion:mParticleKitVersion:"));
+    XCTAssertTrue(initialize != NULL, @"Rokt initializer not found; the stub below would not apply.");
+    void (^skipInitialization)(id, id, id, id) = ^(id _self, id tagId, id sdkVersion, id kitVersion) {};
+    IMP initializationStub = imp_implementationWithBlock(skipInitialization);
+    IMP originalInitialization = method_setImplementation(initialize, initializationStub);
+
+    MPKitRokt *kit = [[MPKitRokt alloc] init];
+    NSMutableDictionary *launched = [@{@"accountId": @"test_account_id",
+                                       @"hashedEmailUserIdentityType": @"OTHER4"} mutableCopy];
+
+    MPKitExecStatus *status = [kit didFinishLaunchingWithConfiguration:launched];
+    XCTAssertEqual(status.returnCode, MPKitReturnCodeSuccess);
+
+    XCTAssertFalse(kit.started, @"Settings must be readable before the provider reports started.");
+    XCTAssertEqualObjects([MPKitRokt getRoktHashedEmailUserIdentityType], @(MPIdentityOther4));
+
+    launched[@"hashedEmailUserIdentityType"] = @"other2";
+    XCTAssertEqualObjects([MPKitRokt getRoktHashedEmailUserIdentityType], @(MPIdentityOther4),
+                          @"Mutating the caller's dictionary must not retarget the identity.");
+
+    kit.configuration = @{@"accountId": @"test_account_id", @"hashedEmailUserIdentityType": @"other3"};
+    XCTAssertEqualObjects([MPKitRokt getRoktHashedEmailUserIdentityType], @(MPIdentityOther3),
+                          @"An explicit refresh must take effect.");
+
+    [kit stop];
+    XCTAssertNil([MPKitRokt getRoktHashedEmailUserIdentityType], @"stop must clear the settings.");
+
+    method_setImplementation(initialize, originalInitialization);
+    imp_removeBlock(initializationStub);
 }
 
 - (void)testMalformedEmbeddedViewsAreDiscardedAtObjectiveCBoundary {
