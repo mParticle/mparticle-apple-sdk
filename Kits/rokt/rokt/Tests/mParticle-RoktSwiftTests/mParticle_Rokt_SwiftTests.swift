@@ -8,13 +8,82 @@
 
 import Testing
 import SwiftUI
+import ObjectiveC.runtime
 @testable import mParticle_Rokt
 import Rokt_Widget
 import RoktContracts
 import mParticle_Rokt_Swift
 
+@Suite(.serialized)
 // swiftlint:disable:next type_name
 struct mParticle_Rokt_SwiftTests {
+
+    @MainActor @available(iOS 15, *)
+    @Test func testLayoutWithMalformedRoktConfiguration() throws {
+        let initialize = try #require(class_getClassMethod(
+            Rokt.self,
+            NSSelectorFromString("initWithRoktTagId:mParticleSdkVersion:mParticleKitVersion:")
+        ))
+        let skipInitialization: @convention(block) (AnyObject, AnyObject?, AnyObject?, AnyObject?) -> Void = { _, _, _, _ in }
+        let initializationStub = imp_implementationWithBlock(skipInitialization)
+        let originalInitialization = method_setImplementation(initialize, initializationStub)
+        defer {
+            method_setImplementation(initialize, originalInitialization)
+            imp_removeBlock(initializationStub)
+        }
+
+        var events: [MPBaseEvent] = []
+        let logEvent = try #require(class_getInstanceMethod(MParticle.self, NSSelectorFromString("logEvent:")))
+        let captureEvent: @convention(block) (AnyObject, MPBaseEvent) -> Void = { _, event in events.append(event) }
+        let eventStub = imp_implementationWithBlock(captureEvent)
+        let originalLogEvent = method_setImplementation(logEvent, eventStub)
+        defer {
+            method_setImplementation(logEvent, originalLogEvent)
+            imp_removeBlock(eventStub)
+        }
+
+        let kit = MPKitRokt()
+        defer { (kit as MPKitProtocol).stop?() }
+
+        let mappings: [Any] = [1, NSNull(), "{\"x\":1}", "[1,null]", "[{\"map\":\"source\",\"value\":7}]"]
+        for mapping in mappings {
+            let status = kit.didFinishLaunching(withConfiguration: [
+                "accountId": "test_account_id",
+                "placementAttributesMapping": mapping,
+                "hashedEmailUserIdentityType": NSNull()
+            ])
+            #expect(status.returnCode == .success)
+            let layout = MPRoktLayout(
+                sdkTriggered: .constant(false),
+                identifier: "",
+                attributes: ["source": "kept", "sandbox": "true"]
+            )
+            #expect(layout.roktLayout != nil)
+            let prepared = MPKitRokt.prepareAttributes(
+                ["source": "kept", "sandbox": "true"],
+                filteredUser: nil,
+                performMapping: true
+            )
+            #expect(prepared["source"] == "kept")
+            #expect(prepared["sandbox"] == "true")
+        }
+        // MPRoktLayout logs its placement event from the asynchronous attribute-preparation
+        // completion, so by this point neither the number of events nor their arrival order has
+        // settled, and the attributes they carry are the prepared ones rather than empty. What
+        // must hold regardless of timing is that no malformed mapping reached an event: each one
+        // is a known placement event carrying only caller-supplied keys, never a key lifted out
+        // of the mapping payloads above.
+        for event in events {
+            let name = (event as? MPEvent)?.name
+            #expect(name == "selectPlacements" || name == "selectShoppableAds")
+            #expect(event.type == .other)
+            for key in event.customAttributes?.keys ?? [:].keys {
+                #expect(key as? String != "x")
+                #expect(key as? String != "map")
+                #expect(key as? String != "value")
+            }
+        }
+    }
 
     // MARK: - Initialization Tests
 

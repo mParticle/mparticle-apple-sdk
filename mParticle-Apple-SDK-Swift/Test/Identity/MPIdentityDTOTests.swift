@@ -82,6 +82,28 @@ final class MPIdentityDTOTests: XCTestCase {
         XCTAssertEqual((fields["change_results"] as? NSArray)?.count, 1)
     }
 
+    // The identity response is parsed at every SDK start. A container where the mpid belongs used
+    // to reach -longLongValue, and that raise is not catchable from a Swift frame.
+    func testSuccessFieldsIgnoresWrongTypedMPID() {
+        for malformed in [[:] as [AnyHashable: Any], [] as [Any], NSNull()] as [Any] {
+            let fields = MPIdentityHTTPRequestBuilderPRIVATE.successFields(from: [
+                "mpid": malformed,
+                "context": "ctx"
+            ])
+            XCTAssertNil(fields["mpid"], "A \(type(of: malformed)) must not be read as an mpid.")
+            XCTAssertEqual(fields["context"] as? String, "ctx", "The rest of the response survives.")
+        }
+    }
+
+    func testSuccessFieldsParsesNumericAndStringMPID() {
+        XCTAssertEqual(
+            MPIdentityHTTPRequestBuilderPRIVATE.successFields(from: ["mpid": 42])["mpid"] as? NSNumber, 42
+        )
+        XCTAssertEqual(
+            MPIdentityHTTPRequestBuilderPRIVATE.successFields(from: ["mpid": "42"])["mpid"] as? NSNumber, 42
+        )
+    }
+
     func testClientSDKPlatform() {
         let dictionary = MPIdentityHTTPRequestBuilderPRIVATE.clientSDKDictionary(withVersion: "9.4.0")
         XCTAssertEqual(dictionary["sdk_vendor"] as? String, "mparticle")

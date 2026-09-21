@@ -41,6 +41,73 @@
     additionalAttrsAdapter = [[MPDataPlanFilter alloc] initWithDataPlanOptions:addAttrsDataplanOptions];
 }
 
+#pragma mark - Malformed data plan documents
+
+// Every one of these shapes reaches a subscript or a boolValue/length send in the document
+// traversal, so each has to be skipped rather than messaged.
+- (NSArray *)malformedDataPlans {
+    return @[
+             @"Not a dictionary.",
+             @5,
+             @{@"version_document":@"Not a dictionary."},
+             @{@"version_document":@[]},
+             @{@"version_document":@{@"data_points":@"Not an array."}},
+             @{@"version_document":@{@"data_points":@{@"a":@"b"}}},
+             @{@"version_document":@{@"data_points":@[@1, @"Not a dictionary.", [NSNull null], @[]]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@"Not a dictionary."}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@[]}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"custom_event", @"criteria":@"Not a dictionary."}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"custom_event", @"criteria":@{@"event_name":@5, @"custom_event_type":@7}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"screen_view", @"criteria":@{@"screen_name":@5}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"product_action", @"criteria":@{@"action":@[]}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"promotion_action", @"criteria":@{@"action":[NSNull null]}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"user_attributes"}, @"validator":@"Not a dictionary."}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"user_attributes"}, @"validator":@{@"definition":@"Not a dictionary."}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"user_identities"}, @"validator":@{@"definition":@"Not a dictionary."}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"user_identities"}, @"validator":@{@"definition":@{@"properties":@"Not a dictionary."}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"user_attributes"}, @"validator":@{@"definition":@{@"additionalProperties":@[], @"properties":@{@"a":@{}}}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"user_attributes"}, @"validator":@{@"definition":@{@"additionalProperties":[NSNull null], @"properties":@{@"a":@{}}}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"custom_event", @"criteria":@{@"event_name":@"Email Bounces", @"custom_event_type":@"other"}}, @"validator":@{@"definition":@{@"properties":@{@"data":@"Not a dictionary."}}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"product_impression"}, @"validator":@{@"definition":@{@"properties":@{@"data":@{@"properties":@{@"product_impressions":@{@"items":@"Not a dictionary."}}}}}}}]}},
+             @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"product_action"}, @"validator":@{@"definition":@{@"properties":@{@"data":@{@"properties":@{@"product_action":@{@"properties":@{@"products":@{@"items":@5}}}}}}}}}]}}
+             ];
+}
+
+- (MPDataPlanFilter *)blockingFilterForDataPlan:(id)plan {
+    MPDataPlanOptions *options = [[MPDataPlanOptions alloc] init];
+    options.dataPlan = plan;
+    options.blockEvents = YES;
+    options.blockEventAttributes = YES;
+    options.blockUserAttributes = YES;
+    options.blockUserIdentities = YES;
+    return [[MPDataPlanFilter alloc] initWithDataPlanOptions:options];
+}
+
+- (void)testMalformedDataPlanDoesNotThrowWhileParsing {
+    for (id plan in [self malformedDataPlans]) {
+        MPDataPlanFilter *filter = nil;
+        XCTAssertNoThrow(filter = [self blockingFilterForDataPlan:plan], @"Threw while parsing %@.", plan);
+        XCTAssertNotNil(filter, @"Should not have been nil.");
+    }
+}
+
+// A shape skipped during parsing must not leave a sentinel behind that raises on first use.
+- (void)testMalformedDataPlanDoesNotThrowWhileFiltering {
+    for (id plan in [self malformedDataPlans]) {
+        MPDataPlanFilter *filter = [self blockingFilterForDataPlan:plan];
+        
+        XCTAssertNoThrow([filter isBlockedUserAttributeKey:@"Campaign Name"], @"Threw for %@.", plan);
+        XCTAssertNoThrow([filter isBlockedUserIdentityType:MPIdentityCustomerId], @"Threw for %@.", plan);
+        
+        MPEvent *event = [[MPEvent alloc] initWithName:@"Email Bounces" type:MPEventTypeOther];
+        event.customAttributes = @{@"Campaign Name":@"Test"};
+        XCTAssertNoThrow([filter transformEventForEvent:event], @"Threw for %@.", plan);
+        
+        MPEvent *screenEvent = [[MPEvent alloc] initWithName:@"Screen" type:MPEventTypeNavigation];
+        XCTAssertNoThrow([filter transformEventForScreenEvent:screenEvent], @"Threw for %@.", plan);
+    }
+}
+
 // No attribute custom event tests
 - (void)testNoBlockPlannedCustomEventNameType {
     MPEvent *plannedEvent = [[MPEvent alloc] initWithName:@"Email Bounces" type:MPEventTypeOther];

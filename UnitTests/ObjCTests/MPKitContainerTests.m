@@ -13,6 +13,8 @@
 #import "MPKitFilter.h"
 #import "MPEvent.h"
 #import "MPKitTestClass.h"
+#import "FilteredMParticleUser.h"
+#import "FilteredMPIdentityApiRequest.h"
 #import "MPKitSecondTestClass.h"
 #import "MPKitAppsFlyerTest.h"
 #import "MPKitRegister.h"
@@ -68,9 +70,13 @@ static NSDictionary<NSString *, NSString *> *MPOptionalMethodTypes(Protocol *pro
 @property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
 @property (nonatomic, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentState *)state;
+- (void)scheduleConsentReplayForKit:(id<MPExtensionKitProtocol>)kitRegister;
+- (void)launchKitRegister:(id<MPExtensionKitProtocol>)kitRegister withConfiguration:(NSDictionary *)configuration;
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration;
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter;
 - (void)replayQueuedItems;
+- (id)transformValue:(id)originalValue dataType:(MPDataType)dataType;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)integrationId;
@@ -101,10 +107,65 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 @end
 
 
+@interface MPConsentReplayTestKit : MPKitTestClass
+@property (nonatomic, strong) NSMutableArray<MPConsentState *> *receivedConsent;
+@property (nonatomic) BOOL identityCompleted;
+@property (nonatomic) BOOL receivedConsentAfterIdentity;
+@end
+
+@implementation MPConsentReplayTestKit
++ (NSNumber *)kitCode {
+    return @123456;
+}
+- (BOOL)supportsConsentStateReplay {
+    return YES;
+}
+- (MPKitExecStatus *)setConsentState:(MPConsentState *)state {
+    if (!self.receivedConsent) {
+        self.receivedConsent = [NSMutableArray array];
+    }
+    if (state) {
+        [self.receivedConsent addObject:state];
+    }
+    self.receivedConsentAfterIdentity = self.identityCompleted;
+    // Reentry must not deadlock on the container's semaphore.
+    [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+    return [[MPKitExecStatus alloc] initWithSDKCode:@123456 returnCode:MPKitReturnCodeSuccess];
+}
+- (MPKitExecStatus *)onLoginComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
+    self.identityCompleted = YES;
+    return [[MPKitExecStatus alloc] initWithSDKCode:@123456 returnCode:MPKitReturnCodeSuccess];
+}
+@end
+
+@interface MPLegacyConsentTestKit : MPKitTestClass
+@property (nonatomic) NSUInteger consentCalls;
+@end
+@implementation MPLegacyConsentTestKit
++ (NSNumber *)kitCode {
+    return @123457;
+}
+- (MPKitExecStatus *)setConsentState:(MPConsentState *)state {
+    self.consentCalls++;
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+@end
+
+@interface MPDelayedConsentReplayTestKit : MPConsentReplayTestKit
+@end
+@implementation MPDelayedConsentReplayTestKit
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    MPKitExecStatus *status = [super didFinishLaunchingWithConfiguration:configuration];
+    [self setValue:@NO forKey:@"started"];
+    return status;
+}
+@end
+
 #pragma mark - MPKitContainerTests
 @interface MPKitContainerTests : MPBaseTestCase {
     MPKitContainer_PRIVATE *kitContainer;
 }
+@property (nonatomic, strong) MPKitRegister *consentTestRegister;
 
 @end
 
@@ -156,6 +217,11 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     for (MPKitRegister *kitRegister in [MPKitContainer_PRIVATE registeredKits]) {
         kitRegister.wrapperInstance = nil;
     }
+    if (self.consentTestRegister) {
+        [MPKitContainer_PRIVATE removeRegisteredKit:self.consentTestRegister];
+        self.consentTestRegister = nil;
+    }
+    [MPPersistenceUtilities setDeviceConsentState:nil];
     kitContainer = nil;
 
     [super tearDown];
@@ -2418,6 +2484,253 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     XCTAssertEqualObjects(forwardEvent.customAttributes[@"af_description"], @"this is a description");
 }
 
+// The projections above carry data_type as a name ("String", "Bool"), which parses to 0 and
+// clamps to MPDataTypeString. Only a numeric code reaches the typed branches of
+// transformValue:dataType:, so the tests below configure data_type that way.
+- (void)configureKitWithTypedAttributeProjections {
+    NSString *configurationStr = @"{ \
+                                     \"id\": 92, \
+                                     \"as\": { \
+                                       \"devKey\": \"INVALID_DEV_KEY\", \
+                                       \"appleAppId\": \"INVALID_APPLE_APP_ID\" \
+                                     }, \
+                                     \"hs\": {}, \
+                                     \"pr\": [ \
+                                       { \
+                                         \"id\": 180, \
+                                         \"pmid\": 360, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"typed_projection\", \
+                                           \"attribute_maps\": [ \
+                                             { \
+                                               \"projected_attribute_name\": \"p_count\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"count\", \
+                                               \"data_type\": 2 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_flag\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"flag\", \
+                                               \"data_type\": 3 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_ratio\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"ratio\", \
+                                               \"data_type\": 4 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_total\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"total\", \
+                                               \"data_type\": 5 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_when\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"when\", \
+                                               \"data_type\": 2 \
+                                             }, \
+                                             { \
+                                               \"projected_attribute_name\": \"p_items\", \
+                                               \"match_type\": \"String\", \
+                                               \"value\": \"items\", \
+                                               \"data_type\": 3 \
+                                             } \
+                                           ], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"typed_event\" \
+                                           } \
+                                         ] \
+                                       } \
+                                     ] \
+                                   }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[configurationDictionary]];
+}
+
+- (void)testValueTransformationOfNonStringValues {
+    id transformedValue;
+    
+    // A zero NSNumber reaches isEqualToString: in the Int, Long and Float branches, and any
+    // NSNumber at all reaches caseInsensitiveCompare: in the Bool branch.
+    transformedValue = [kitContainer transformValue:@0 dataType:MPDataTypeInt];
+    XCTAssertEqualObjects(transformedValue, @0);
+    
+    transformedValue = [kitContainer transformValue:@0 dataType:MPDataTypeLong];
+    XCTAssertEqualObjects(transformedValue, @0);
+    
+    transformedValue = [kitContainer transformValue:@0.0 dataType:MPDataTypeFloat];
+    XCTAssertNotNil(transformedValue);
+    XCTAssertEqual([transformedValue floatValue], 0.0);
+    
+    transformedValue = [kitContainer transformValue:@25 dataType:MPDataTypeInt];
+    XCTAssertEqualObjects(transformedValue, @25);
+    
+    transformedValue = [kitContainer transformValue:@YES dataType:MPDataTypeBool];
+    XCTAssertEqualObjects(transformedValue, @YES);
+    
+    transformedValue = [kitContainer transformValue:@NO dataType:MPDataTypeBool];
+    XCTAssertEqualObjects(transformedValue, @NO);
+    
+    // Classes with no numeric or boolean reading take the same path an unparseable string does.
+    transformedValue = [kitContainer transformValue:@[@"a"] dataType:MPDataTypeInt];
+    XCTAssertNil(transformedValue);
+    
+    transformedValue = [kitContainer transformValue:@{@"a":@"b"} dataType:MPDataTypeFloat];
+    XCTAssertEqualObjects(transformedValue, [NSNull null]);
+    
+    transformedValue = [kitContainer transformValue:[NSDate date] dataType:MPDataTypeBool];
+    XCTAssertEqualObjects(transformedValue, @NO);
+    
+    // A String projection messages no selector, so it keeps passing the value through as-is.
+    transformedValue = [kitContainer transformValue:@25 dataType:MPDataTypeString];
+    XCTAssertEqualObjects(transformedValue, @25);
+}
+
+- (void)testTypedProjectionOfNonStringAttributeValues {
+    [self setUserAttributesAndIdentities];
+    [self configureKitWithTypedAttributeProjections];
+    
+    NSDate *when = [NSDate dateWithTimeIntervalSince1970:0];
+    MPEvent *event = [[MPEvent alloc] initWithName:@"typed_event" type:MPEventTypeOther];
+    event.customAttributes = @{@"count":@0,
+                               @"flag":@NO,
+                               @"ratio":@0.0,
+                               @"total":@25,
+                               @"when":when,
+                               @"items":@[@"a", @"b"]};
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = nil;
+    XCTAssertNoThrow((kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)]));
+    
+    MPEvent *forwardEvent = (MPEvent *)kitFilter.forwardEvent;
+    XCTAssertEqualObjects(forwardEvent.name, @"typed_projection");
+    
+    NSDictionary *projected = forwardEvent.customAttributes;
+    XCTAssertEqualObjects(projected[@"p_count"], @0);
+    XCTAssertEqualObjects(projected[@"p_flag"], @NO);
+    XCTAssertEqualObjects(projected[@"p_total"], @25);
+    XCTAssertEqualObjects(projected[@"p_items"], @NO);
+    XCTAssertNotNil(projected[@"p_ratio"]);
+    XCTAssertEqual([projected[@"p_ratio"] floatValue], 0.0);
+    
+    // A date has no numeric reading, so the Int projection declines it and the original
+    // attribute is left in place rather than a wrong value being projected.
+    XCTAssertNil(projected[@"p_when"]);
+    XCTAssertEqualObjects(projected[@"when"], when);
+}
+
+- (void)testProjectionMatchWithNullAttributeValue {
+    [self setUserAttributesAndIdentities];
+    
+    NSString *configurationStr = @"{ \
+                                     \"id\": 92, \
+                                     \"as\": { \
+                                       \"devKey\": \"INVALID_DEV_KEY\", \
+                                       \"appleAppId\": \"INVALID_APPLE_APP_ID\" \
+                                     }, \
+                                     \"hs\": {}, \
+                                     \"pr\": [ \
+                                       { \
+                                         \"id\": 181, \
+                                         \"pmid\": 361, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"X_NEW_SUBSCRIPTION\", \
+                                           \"attribute_maps\": [], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"outcome\", \
+                                             \"attribute_values\": [ \
+                                               \"new_subscription\" \
+                                             ] \
+                                           } \
+                                         ] \
+                                       } \
+                                     ] \
+                                   }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[configurationDictionary]];
+    
+    // transformValuesToString keeps an NSNull as NSNull, so the match below compares the
+    // configured values against an NSNull rather than a string.
+    MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
+    event.customAttributes = @{@"outcome":[NSNull null], @"plan_id":@"3"};
+    XCTAssertEqualObjects(event.customAttributes[@"outcome"], [NSNull null]);
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = nil;
+    XCTAssertNoThrow((kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)]));
+    
+    // An NSNull matches no configured value, so the projection does not apply and the event is
+    // forwarded under its original name.
+    MPEvent *forwardEvent = (MPEvent *)kitFilter.forwardEvent;
+    XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+}
+
+- (void)testProjectionExceptionReleasesTheKitsLock {
+    [self setUserAttributesAndIdentities];
+    [self configureKitWithTypedAttributeProjections];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"typed_event" type:MPEventTypeOther];
+    event.customAttributes = @{@"count":@0};
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    
+    // Projecting holds the container's kit lock, so the boundary has to release it on the way
+    // out. Nothing in the projection engine raises on real input any more, so the only way to
+    // reach that path is to make the transform raise. The projection engine calls the value
+    // transformer directly, so the raise has to be installed on MPKitValueTransformer rather
+    // than on the container method that forwards to it.
+    Method method = class_getInstanceMethod([MPKitValueTransformer class], @selector(transformValue:dataType:));
+    IMP originalImplementation = method_getImplementation(method);
+    IMP raisingImplementation = imp_implementationWithBlock(^id (id transformer, id value, NSInteger dataType) {
+        [NSException raise:NSInvalidArgumentException format:@"forced projection failure"];
+        return nil;
+    });
+    
+    @try {
+        method_setImplementation(method, raisingImplementation);
+        XCTAssertNoThrow([kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)]);
+    } @finally {
+        method_setImplementation(method, originalImplementation);
+    }
+    
+    // This second projection has to take the same semaphore, so it would never complete if the
+    // exception had escaped while holding it.
+    XCTestExpectation *expectation = [self expectationWithDescription:@"a later projection still completes"];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+        [expectation fulfill];
+    });
+    [self waitForExpectations:@[expectation] timeout:5.0];
+}
+
 - (void)testAllocation {    
     MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     XCTAssertNotNil(localKitContainer);
@@ -3750,6 +4063,277 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     });
     
     [self waitForExpectationsWithTimeout:30 handler:nil];
+}
+
+
+- (MPConsentState *)consentStateWithMarketing:(BOOL)consented includeCCPA:(BOOL)includeCCPA {
+    MPConsentState *state = [[MPConsentState alloc] init];
+    MPGDPRConsent *gdpr = [[MPGDPRConsent alloc] init];
+    gdpr.consented = consented;
+    [state addGDPRConsentState:gdpr purpose:@"marketing"];
+    if (includeCCPA) {
+        MPCCPAConsent *ccpa = [[MPCCPAConsent alloc] init];
+        ccpa.consented = YES;
+        [state setCCPAConsentState:ccpa];
+    }
+    return state;
+}
+
+- (MPKitRegister *)registerConsentReplayTestKit {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"ConsentReplayTest" className:@"MPConsentReplayTestKit"];
+    self.consentTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+    return registration;
+}
+
+- (void)drainConsentReplayQueue {
+    XCTestExpectation *drained = [self expectationWithDescription:@"Consent replay queue drained"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{ [drained fulfill]; });
+        });
+    });
+    [self waitForExpectations:@[drained] timeout:5];
+}
+
+- (void)testConsentFilterKeepsBothRegulationsWithoutPurposeFilters {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"ConsentReplayTest" className:@"MPConsentReplayTestKit"];
+    for (NSDictionary *hashes in @[@{}, @{@"pur": @{}}]) {
+        kitContainer.kitConfigurations[@123456] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @123456, @"as": @{}, @"hs": hashes}];
+        MPConsentState *state = [self consentStateWithMarketing:NO includeCCPA:YES];
+        MPKitFilter *filter = [kitContainer filter:registration forConsentState:state];
+        XCTAssertFalse(filter.shouldFilter);
+        XCTAssertNotNil(filter.forwardConsentState.ccpaConsentState);
+        XCTAssertNotNil(filter.forwardConsentState.gdprConsentState[@"marketing"]);
+        XCTAssertFalse(filter.forwardConsentState.gdprConsentState[@"marketing"].consented);
+    }
+}
+
+- (void)testConsentRegulationAndPurposeFiltersAreIndependent {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"ConsentReplayTest" className:@"MPConsentReplayTestKit"];
+    MPIHasher *hasher = [[kitContainer valueForKey:@"executionAdapter"] valueForKey:@"hasher"];
+    NSString *gdpr = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
+    NSString *ccpa = [hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
+    NSString *marketing = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"marketing"];
+    NSArray *cases = @[
+        @{@"hs": @{@"reg": @{ccpa: @0}}, @"gdpr": @YES, @"ccpa": @NO},
+        @{@"hs": @{@"reg": @{gdpr: @0}}, @"gdpr": @NO, @"ccpa": @YES},
+        @{@"hs": @{@"pur": @{marketing: @0}}, @"gdpr": @NO, @"ccpa": @YES},
+        @{@"hs": @{@"reg": @{ccpa: @0}, @"pur": @{marketing: @0}}, @"gdpr": @NO, @"ccpa": @NO}
+    ];
+    for (NSDictionary *testCase in cases) {
+        kitContainer.kitConfigurations[@123456] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @123456, @"as": @{}, @"hs": testCase[@"hs"]}];
+        MPConsentState *state = [self consentStateWithMarketing:NO includeCCPA:YES];
+        MPKitFilter *filter = [kitContainer filter:registration forConsentState:state];
+        BOOL expectsGDPR = [testCase[@"gdpr"] boolValue];
+        BOOL expectsCCPA = [testCase[@"ccpa"] boolValue];
+        XCTAssertEqual(filter.forwardConsentState.gdprConsentState.count > 0, expectsGDPR);
+        XCTAssertEqual(filter.forwardConsentState.ccpaConsentState != nil, expectsCCPA);
+        XCTAssertEqual(filter.shouldFilter, !expectsGDPR && !expectsCCPA);
+        XCTAssertEqual(state.gdprConsentState.count, 1U);
+        XCTAssertNotNil(state.ccpaConsentState);
+    }
+}
+
+- (void)testConsentReplayOnConfigurationAndIdentityUsesDeviceState {
+    MPKitRegister *registration = [self registerConsentReplayTestKit];
+    MPConsentState *userState = [self consentStateWithMarketing:YES includeCCPA:NO];
+    MPConsentState *deviceState = [self consentStateWithMarketing:NO includeCCPA:NO];
+    NSNumber *userId = [MParticle sharedInstance].identity.currentUser.userId;
+    [MPPersistenceUtilities setConsentState:userState forMpid:userId];
+    [MPPersistenceUtilities setDeviceConsentState:deviceState];
+    NSArray *configuration = @[@{@"id": @123456, @"as": @{@"test": @YES}}];
+    [kitContainer configureKits:configuration];
+    MPConsentReplayTestKit *kit = (id)registration.wrapperInstance;
+    XCTAssertNotNil(kit);
+    [kitContainer forwardIdentitySDKCall:@selector(onLoginComplete:request:) kitHandler:^(id<MPKitProtocol> wrapper, MPKitConfiguration *config) {
+        FilteredMParticleUser *user = [[FilteredMParticleUser alloc] initWithMParticleUser:[MParticle sharedInstance].identity.currentUser kitConfiguration:config];
+        FilteredMPIdentityApiRequest *request = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:[MPIdentityApiRequest requestWithEmptyUser] kitConfiguration:config];
+        [wrapper onLoginComplete:user request:request];
+    }];
+    [self drainConsentReplayQueue];
+    XCTAssertGreaterThan(kit.receivedConsent.count, 0U);
+    XCTAssertFalse(kit.receivedConsent.lastObject.gdprConsentState[@"marketing"].consented);
+    XCTAssertTrue(kit.receivedConsentAfterIdentity);
+    [kit.receivedConsent removeAllObjects];
+    [MPPersistenceUtilities setDeviceConsentState:nil];
+    [kitContainer configureKits:configuration];
+    [self drainConsentReplayQueue];
+    XCTAssertTrue(kit.receivedConsent.lastObject.gdprConsentState[@"marketing"].consented);
+}
+
+- (void)testOptedInActivationReplaysFilteredConsent {
+    MPKitRegister *registration = [self registerConsentReplayTestKit];
+    MPConsentReplayTestKit *kit = [[MPConsentReplayTestKit alloc] init];
+    registration.wrapperInstance = kit;
+    [kit didFinishLaunchingWithConfiguration:@{}];
+    MPIHasher *hasher = [[kitContainer valueForKey:@"executionAdapter"] valueForKey:@"hasher"];
+    NSString *hash = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"marketing"];
+    kitContainer.kitConfigurations[@123456] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @123456, @"hs": @{@"pur": @{hash: @0}}}];
+    [MPPersistenceUtilities setDeviceConsentState:[self consentStateWithMarketing:NO includeCCPA:NO]];
+    [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification object:nil userInfo:@{mParticleKitInstanceKey: @123456}];
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(kit.receivedConsent.count, 0U);
+    kitContainer.kitConfigurations[@123456] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @123456}];
+    [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification object:nil userInfo:@{mParticleKitInstanceKey: @123456}];
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(kit.receivedConsent.count, 1U);
+}
+
+- (void)testConsentReplaySkipsFailedLaunch {
+    MPKitRegister *registration = [self registerConsentReplayTestKit];
+    MPConsentReplayTestKit *kit = [[MPConsentReplayTestKit alloc] init];
+    registration.wrapperInstance = kit;
+    [kit didFinishLaunchingWithConfiguration:@{}];
+    kitContainer.kitConfigurations[@123456] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @123456}];
+    [MPPersistenceUtilities setDeviceConsentState:[self consentStateWithMarketing:NO includeCCPA:NO]];
+    id mock = OCMPartialMock(kit);
+    NSException *exception = [NSException exceptionWithName:NSInvalidArgumentException reason:@"Invalid launch configuration" userInfo:nil];
+    OCMStub([mock didFinishLaunchingWithConfiguration:[OCMArg any]]).andThrow(exception);
+    XCTAssertNoThrow([kitContainer launchKitRegister:registration withConfiguration:@{}]);
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(kit.receivedConsent.count, 0U);
+    [mock stopMocking];
+
+    [kitContainer launchKitRegister:registration withConfiguration:@{}];
+    [self drainConsentReplayQueue];
+    XCTAssertGreaterThan(kit.receivedConsent.count, 0U);
+}
+
+- (void)testConsentReplaySkipsFailedIdentityCallback {
+    MPKitRegister *registration = [self registerConsentReplayTestKit];
+    [kitContainer configureKits:@[@{@"id": @123456, @"as": @{@"test": @YES}}]];
+    [self drainConsentReplayQueue];
+    MPConsentReplayTestKit *kit = (id)registration.wrapperInstance;
+    [kit.receivedConsent removeAllObjects];
+    [MPPersistenceUtilities setDeviceConsentState:[self consentStateWithMarketing:NO includeCCPA:NO]];
+    __block NSUInteger calls = 0;
+    XCTAssertNoThrow([kitContainer forwardIdentitySDKCall:@selector(onLoginComplete:request:) kitHandler:^(id<MPKitProtocol> wrapper, MPKitConfiguration *configuration) {
+        calls++;
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Invalid identity configuration" userInfo:nil];
+    }]);
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(calls, 1U);
+    XCTAssertEqual(kit.receivedConsent.count, 0U);
+
+    [kitContainer forwardIdentitySDKCall:@selector(onLoginComplete:request:) kitHandler:^(id<MPKitProtocol> wrapper, MPKitConfiguration *configuration) {
+        kit.identityCompleted = YES;
+    }];
+    [self drainConsentReplayQueue];
+    XCTAssertGreaterThan(kit.receivedConsent.count, 0U);
+    XCTAssertTrue(kit.receivedConsentAfterIdentity);
+}
+
+- (void)testConsentReplayYieldsToConfigurationWaitingForMainQueue {
+    MPKitRegister *registration = [self registerConsentReplayTestKit];
+    NSArray *configuration = @[@{@"id": @123456, @"as": @{@"test": @YES}}];
+    [kitContainer configureKits:configuration];
+    [self drainConsentReplayQueue];
+    MPConsentReplayTestKit *kit = (id)registration.wrapperInstance;
+    id mock = OCMPartialMock(kit);
+    dispatch_semaphore_t mainQueueContinued = dispatch_semaphore_create(0);
+    __block long waitResult = -1;
+    OCMStub([mock setConfiguration:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
+        // configureKits holds kitsSemaphore here. Make a replay run before
+        // the main-queue work that this background configuration needs.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self->kitContainer scheduleConsentReplayForKit:registration];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_semaphore_signal(mainQueueContinued);
+            });
+        });
+        waitResult = dispatch_semaphore_wait(mainQueueContinued, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC));
+    });
+    XCTestExpectation *configured = [self expectationWithDescription:@"Background configuration completed"];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        [self->kitContainer configureKits:configuration];
+        dispatch_async(dispatch_get_main_queue(), ^{ [configured fulfill]; });
+    });
+    [self waitForExpectations:@[configured] timeout:5];
+    XCTAssertEqual(waitResult, 0L, @"Consent replay must not block the main queue on kitsSemaphore");
+    [mock stopMocking];
+}
+
+- (void)testConsentReplayDropsStaleWrappersUsersAndDisabledKits {
+    MPKitRegister *registration = [self registerConsentReplayTestKit];
+    MPConsentReplayTestKit *kit = [[MPConsentReplayTestKit alloc] init];
+    [kit didFinishLaunchingWithConfiguration:@{}];
+    registration.wrapperInstance = kit;
+    kitContainer.kitConfigurations[@123456] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @123456}];
+    [MPPersistenceUtilities setDeviceConsentState:[self consentStateWithMarketing:NO includeCCPA:NO]];
+    [kitContainer scheduleConsentReplayForKit:registration];
+    registration.wrapperInstance = [[MPConsentReplayTestKit alloc] init];
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(kit.receivedConsent.count, 0U);
+    registration.wrapperInstance = kit;
+    [kitContainer scheduleConsentReplayForKit:registration];
+    MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+    NSNumber *originalId = user.userId;
+    [user setValue:@(originalId.longLongValue + 1) forKey:@"userId"];
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(kit.receivedConsent.count, 0U);
+    [user setValue:originalId forKey:@"userId"];
+    [kitContainer scheduleConsentReplayForKit:registration];
+    kitContainer.disabledKits = @[@123456];
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(kit.receivedConsent.count, 0U);
+}
+
+- (void)testConsentReplayRequiresExplicitOptIn {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"OtherKit" className:@"MPLegacyConsentTestKit"];
+    MPLegacyConsentTestKit *legacy = [[MPLegacyConsentTestKit alloc] init];
+    registration.wrapperInstance = legacy;
+    self.consentTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+    [legacy didFinishLaunchingWithConfiguration:@{}];
+    kitContainer.kitConfigurations[@123457] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @123457}];
+    [MPPersistenceUtilities setDeviceConsentState:[self consentStateWithMarketing:YES includeCCPA:NO]];
+    [kitContainer scheduleConsentReplayForKit:registration];
+    [self drainConsentReplayQueue];
+    XCTAssertEqual(legacy.consentCalls, 0U);
+
+    id wrapper = OCMProtocolMock(@protocol(MPKitProtocol));
+    OCMStub([wrapper supportsConsentStateReplay]).andReturn(NO);
+    OCMStub([wrapper started]).andReturn(YES);
+    registration.wrapperInstance = wrapper;
+    OCMReject([(id<MPKitProtocol>)wrapper setConsentState:[OCMArg any]]);
+    [kitContainer scheduleConsentReplayForKit:registration];
+    [self drainConsentReplayQueue];
+}
+
+
+- (void)testCachedConfigurationAndDelayedActivationReplayConsent {
+    for (NSString *className in @[@"MPConsentReplayTestKit", @"MPDelayedConsentReplayTestKit"]) {
+        MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"ConsentReplayTest" className:className];
+        self.consentTestRegister = registration;
+        [MPKitContainer_PRIVATE registerKit:registration];
+        [MPPersistenceUtilities setDeviceConsentState:[self consentStateWithMarketing:NO includeCCPA:NO]];
+        id defaults = OCMPartialMock(MPUserDefaultsConnector.userDefaults);
+        NSArray *cachedConfiguration = @[@{@"id": @123456, @"as": @{@"test": @YES}}];
+        OCMStub([defaults getKitConfigurations]).andReturn(cachedConfiguration);
+        kitContainer.kitsInitialized = NO;
+        [kitContainer initializeKits];
+        [self drainConsentReplayQueue];
+        MPConsentReplayTestKit *kit = (id)registration.wrapperInstance;
+        XCTAssertNotNil(kit);
+        if ([className isEqualToString:@"MPDelayedConsentReplayTestKit"]) {
+            XCTAssertEqual(kit.receivedConsent.count, 0U);
+            [kit start];
+            [self drainConsentReplayQueue];
+        }
+        XCTAssertGreaterThan(kit.receivedConsent.count, 0U);
+        XCTAssertFalse(kit.receivedConsent.lastObject.gdprConsentState[@"marketing"].consented);
+        [defaults stopMocking];
+        [MPKitContainer_PRIVATE removeRegisteredKit:registration];
+    }
+}
+
+
+- (void)testUnconfiguredKitDoesNotReceiveUnfilteredConsent {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"Unconfigured" className:@"MPConsentReplayTestKit"];
+    MPKitFilter *filter = [kitContainer filter:registration forConsentState:[self consentStateWithMarketing:YES includeCCPA:YES]];
+    XCTAssertTrue(filter.shouldFilter);
+    XCTAssertNil(filter.forwardConsentState);
 }
 
 @end

@@ -11,6 +11,13 @@
 #endif
 @import mParticle_Apple_SDK_Swift;
 
+// Redeclared rather than imported from MParticle+PrivateMethods.h: that header is written for the
+// Swift bridging header and its other declarations do not resolve from an ObjC translation unit.
+// Typed id to avoid pulling in the filter protocol for what is only a nil check.
+@interface MParticle (MPStateMachineTests)
+@property (nonatomic, strong, nullable) id dataPlanFilter;
+@end
+
 // -requestAttributionDetailsWithBlock:requestsCompleted: has no public declaration; it moved to
 // MPBackendController_PRIVATE with the state machine wrapper's deletion.
 @interface MPBackendController_PRIVATE(Tests)
@@ -133,6 +140,108 @@
     
     XCTAssertNil(stateMachine.triggerEventTypes, @"Trigger event types are being set from a null value.");
     XCTAssertEqual(stateMachine.triggerMessageTypes.count, 1, @"Incorrect count.");
+}
+
+#pragma mark - Malformed server configuration
+
+- (void)testConfigureCustomModulesSkipsMalformedEntries {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    
+    NSArray *customModuleSettings = @[
+                                      @1,
+                                      @"Not a dictionary.",
+                                      [NSNull null],
+                                      @{@"id":@22,
+                                        @"pr":@[
+                                                @{@"f":@"NSUserDefaults",
+                                                  @"m":@0,
+                                                  @"ps":@[
+                                                          @1,
+                                                          @"Not a dictionary.",
+                                                          [NSNull null],
+                                                          @{@"k":@"WELL_FORMED_KEY", @"t":@1, @"n":@"vid", @"d":@"0"}
+                                                          ]
+                                                  }
+                                                ]
+                                        }
+                                      ];
+    
+    XCTAssertNoThrow([stateMachine configureCustomModules:customModuleSettings]);
+    XCTAssertEqual(stateMachine.customModules.count, 1, @"Only the well-formed module should have been configured.");
+    
+    MPCustomModule *customModule = stateMachine.customModules.firstObject;
+    XCTAssertEqualObjects(customModule.customModuleId, @22, @"Should have been equal.");
+    XCTAssertEqual(customModule.preferences.count, 1, @"The malformed preference settings should have been skipped.");
+}
+
+- (void)testConfigureCustomModulesWithNonArrayIsIgnored {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    
+    for (id malformed in @[@1, @"Not an array.", @{@"a":@"b"}]) {
+        XCTAssertNoThrow([stateMachine configureCustomModules:malformed], @"Threw on cms %@.", malformed);
+    }
+}
+
+// configureTriggers: and configureDataBlocking: moved off the state machine and onto the
+// connector, which now applies every configuration section inside an exception boundary. Driving
+// them through the connector exercises the same path the configuration response takes.
+- (void)testConfigureTriggersIgnoresWrongTypedValues {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    
+    for (id malformed in @[@"Not an array.", @5, @{@"a":@"b"}, @[@[]]]) {
+        XCTAssertNoThrow(([connector configureTriggers:@{@"evts":malformed, @"dts":malformed}]), @"Threw on %@.", malformed);
+        
+        if ([malformed isKindOfClass:[NSArray class]]) {
+            continue;
+        }
+        XCTAssertNil(stateMachine.triggerEventTypes, @"A non-array evts must not be stored (%@).", malformed);
+        XCTAssertEqual(stateMachine.triggerMessageTypes.count, 1, @"A non-array dts must be ignored (%@).", malformed);
+    }
+    
+    XCTAssertNoThrow([connector configureTriggers:(NSDictionary *)@"Not a dictionary."]);
+    
+    [stateMachine resetTriggers];
+}
+
+- (void)testConfigureTriggersRecoversFromWrongTypedEventTypes {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    
+    [connector configureTriggers:@{@"evts":@"Not an array."}];
+    XCTAssertNil(stateMachine.triggerEventTypes, @"A non-array evts must not be stored.");
+    
+    NSArray *eventTypes = @[@"3941658766", @"1560839252"];
+    XCTAssertNoThrow(([connector configureTriggers:@{@"evts":eventTypes, @"dts":@[@"e"]}]), @"A well-formed configuration must be able to follow a malformed one.");
+    XCTAssertEqualObjects(stateMachine.triggerEventTypes, eventTypes, @"Should have been equal.");
+    
+    [stateMachine resetTriggers];
+}
+
+- (void)testConfigureDataBlockingIgnoresWrongTypedValues {
+    id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+    
+    NSArray<NSDictionary *> *malformedSettings = @[
+                                                   @{@"dtpn":@"Not a dictionary."},
+                                                   @{@"dtpn":@5},
+                                                   @{@"dtpn":[NSNull null]},
+                                                   @{@"dtpn":@[]},
+                                                   @{@"dtpn":@{@"blok":@"Not a dictionary."}},
+                                                   @{@"dtpn":@{@"blok":@[]}},
+                                                   @{@"dtpn":@{@"blok":[NSNull null]}},
+                                                   @{@"dtpn":@{@"blok":@{@"ev":[NSNull null], @"ea":@[], @"ua":@{}, @"id":@"true"}}},
+                                                   @{@"dtpn":@{@"vers":@"Not a dictionary."}},
+                                                   @{@"dtpn":@{@"vers":@[]}},
+                                                   @{@"dtpn":@{@"vers":[NSNull null]}}
+                                                   ];
+    
+    for (NSDictionary *malformed in malformedSettings) {
+        XCTAssertNoThrow([connector configureDataBlocking:malformed], @"Threw on dpr %@.", malformed);
+    }
+    
+    XCTAssertNoThrow([connector configureDataBlocking:(NSDictionary *)@"Not a dictionary."]);
+    
+    [connector configureDataBlocking:@{}];
 }
 
 - (void)testStateTransitions {
@@ -386,6 +495,31 @@
     XCTAssertNoThrow([connector configureDataBlocking:arrayPlan]);
     XCTAssertNoThrow([connector configureDataBlocking:stringBlock]);
     XCTAssertNoThrow([connector configureDataBlocking:arrayBlock]);
+}
+
+// The tolerance tests above are satisfied by the exception boundary alone, so they stay green even
+// with the per-flag guard removed. This one binds to the guard: a malformed flag must be treated
+// as absent rather than raising, because a raise aborts the whole section and takes the
+// well-formed flags and the data plan down with it.
+- (void)testMalformedBlockFlagDoesNotDiscardTheRestOfTheDataPlan {
+    MParticle.sharedInstance.dataPlanFilter = nil;
+
+    id<MPUserDefaultsConnectorProtocol> connector =
+        (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+
+    NSDictionary *settings = @{kMPRemoteConfigDataPlanning: @{
+                                   kMPRemoteConfigDataPlanningBlock: @{
+                                       kMPRemoteConfigDataPlanningBlockUnplannedEvents: @[],
+                                       kMPRemoteConfigDataPlanningBlockUnplannedEventAttributes: @YES
+                                   },
+                                   kMPRemoteConfigDataPlanningDataPlanVersionValue: @{@"version_document": @{}}
+                               }};
+
+    XCTAssertNoThrow([connector configureDataBlocking:settings]);
+    XCTAssertNotNil(MParticle.sharedInstance.dataPlanFilter,
+                    @"An array where a block flag belongs must not abort the data plan section.");
+
+    MParticle.sharedInstance.dataPlanFilter = nil;
 }
 
 #pragma mark - Search Ads completion

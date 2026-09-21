@@ -8,9 +8,13 @@ import Foundation
     /// goes to NSUserDefaults. Matches the ObjC property this replaced.
     private var memoisedDictionary: [String: Any]?
 
-    @objc public init?(dictionary: [AnyHashable: Any],
+    // Takes Any rather than a dictionary type: these entries come straight off the configuration
+    // response, and a typed parameter would be bridged before this initialiser ran, raising on a
+    // non-dictionary instead of rejecting it.
+    @objc public init?(dictionary: Any,
                        connector: MPUserDefaultsConnectorProtocol) {
-        guard let customModuleId = dictionary[CustomModuleConfigKey.moduleId] as? NSNumber,
+        guard let dictionary = dictionary as? [AnyHashable: Any],
+              let customModuleId = dictionary[CustomModuleConfigKey.moduleId] as? NSNumber,
               let preferenceGroups = dictionary[CustomModuleConfigKey.preferences] as? [Any]
         else {
             return nil

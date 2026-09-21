@@ -35,6 +35,7 @@ NSString *const kitFileExtension = @"eks";
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
@@ -70,6 +71,7 @@ NSString *const kitFileExtension = @"eks";
 - (BOOL)hasKitBatchingKits;
 - (NSDictionary *)launchConfigurationForKitCode:(NSNumber *)kitCode;
 - (void)reconfigureKits;
+- (id)transformValue:(id)originalValue dataType:(MPDataType)dataType;
 @end
 
 #pragma mark - Swift container Objective-C execution boundary
@@ -78,6 +80,12 @@ NSString *const kitFileExtension = @"eks";
 
 - (MPKitContainerExecutionAdapter *)mp_executionAdapter {
     return (MPKitContainerExecutionAdapter *)self.executionAdapter;
+}
+
+// The coercion itself lives in MPKitValueTransformer now. This stays so the container keeps the
+// one entry point callers and tests already knew it by.
+- (id)transformValue:(id)originalValue dataType:(MPDataType)dataType {
+    return [self.mp_executionAdapter transformValue:originalValue dataType:dataType];
 }
 
 - (void (^)(MPAttributionResult *, NSError *))attributionCompletionHandler {
@@ -327,9 +335,94 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                                selector:@selector(handleApplicationDidFinishLaunching:)
                                    name:UIApplicationDidFinishLaunchingNotification
                                  object:nil];
+        [notificationCenter addObserver:self
+                               selector:@selector(handleKitDidBecomeActive:)
+                                   name:mParticleKitDidBecomeActiveNotification
+                                 object:nil];
     }
     
     return self;
+}
+
+#pragma mark Consent replay
+
+// A kit that is configured or activated after a consent state was recorded never sees that state,
+// because the forward happened before the kit existed. Replaying it on activation is what keeps a
+// user's opt-in or opt-out from being silently dropped.
+- (void)scheduleConsentReplayForKit:(id<MPExtensionKitProtocol>)kitRegister {
+    id<MPKitProtocol> wrapper = kitRegister.wrapperInstance;
+    if (!wrapper) {
+        return;
+    }
+    NSNumber *userId = [[MParticle sharedInstance].identity.currentUser.userId copy];
+    // Callbacks may reenter the container, so always leave kitsSemaphore first.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self replayConsentForKit:kitRegister wrapper:wrapper userId:userId];
+    });
+}
+
+- (void)replayConsentForKit:(id<MPExtensionKitProtocol>)kitRegister wrapper:(id<MPKitProtocol>)wrapper userId:(NSNumber *)userId {
+    if (self != [MParticle sharedInstance].kitContainer_PRIVATE.executionAdapter ||
+        wrapper != kitRegister.wrapperInstance ||
+        ![userId isEqual:[MParticle sharedInstance].identity.currentUser.userId] ||
+        ![wrapper respondsToSelector:@selector(supportsConsentStateReplay)] ||
+        ![wrapper supportsConsentStateReplay] ||
+        ![wrapper respondsToSelector:@selector(setConsentState:)]) {
+        return;
+    }
+    // Configuration can hold the semaphore while a kit waits for the main queue.
+    // Yield instead of blocking that queue, preserving the original replay target.
+    if (dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW) != 0) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+            [self replayConsentForKit:kitRegister wrapper:wrapper userId:userId];
+        });
+        return;
+    }
+    BOOL eligible = wrapper == kitRegister.wrapperInstance &&
+        [userId isEqual:[MParticle sharedInstance].identity.currentUser.userId] &&
+        [[MPKitContainer_PRIVATE registeredKits] containsObject:kitRegister] &&
+        [self isActiveAndNotDisabled:kitRegister];
+    MPConsentState *state = eligible ? [MPPersistenceUtilities effectiveConsentStateForMpid:userId] : nil;
+    MPKitFilter *filter = state ? [self filter:kitRegister forConsentState:state] : nil;
+    dispatch_semaphore_signal(kitsSemaphore);
+    if (!filter || filter.shouldFilter) {
+        return;
+    }
+    @try {
+        MPKitExecStatus *status = [wrapper setConsentState:filter.forwardConsentState];
+        if (!status.success) {
+            MPILogError(@"Failed to replay consent state for kit=%@", kitRegister.code);
+        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Kit consent handler threw an exception: %@", exception);
+    }
+}
+
+- (void)handleKitDidBecomeActive:(NSNotification *)notification {
+    NSNumber *kitCode = notification.userInfo[mParticleKitInstanceKey];
+    // Some kits post synchronously while configureKits holds kitsSemaphore.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (self != [MParticle sharedInstance].kitContainer_PRIVATE.executionAdapter) {
+            return;
+        }
+        if (dispatch_semaphore_wait(self->kitsSemaphore, DISPATCH_TIME_NOW) != 0) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
+                [self handleKitDidBecomeActive:notification];
+            });
+            return;
+        }
+        id<MPExtensionKitProtocol> activatedKit = nil;
+        for (id<MPExtensionKitProtocol> kitRegister in [MPKitContainer_PRIVATE registeredKits]) {
+            if ([kitRegister.code isEqual:kitCode]) {
+                activatedKit = kitRegister;
+                break;
+            }
+        }
+        dispatch_semaphore_signal(self->kitsSemaphore);
+        if (activatedKit) {
+            [self scheduleConsentReplayForKit:activatedKit];
+        }
+    });
 }
 
 #pragma mark Notification handlers
@@ -364,6 +457,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 if ([kitInstance respondsToSelector:startSelector]) {
                     @try {
                         [kitInstance start];
+                        [self scheduleConsentReplayForKit:kitRegister];
                     }
                     @catch (NSException *exception) {
                         MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
@@ -402,6 +496,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 #pragma mark Private methods
+
+- (id)transformValue:(id)originalValue dataType:(MPDataType)dataType {
+    return [self.valueTransformer transformValue:originalValue dataType:(NSInteger)dataType];
+}
 
 - (NSDictionary *)launchConfigurationForKitCode:(NSNumber *)kitCode {
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
@@ -785,13 +883,24 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
             MPILogDebug(@"startKitRegister - launching kit %@ with configuration", kitRegister.code);
             if ([NSThread isMainThread]) {
-                [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+                [self launchKitRegister:kitRegister withConfiguration:configuration];
             } else {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+                    [self launchKitRegister:kitRegister withConfiguration:configuration];
                 });
             }
         }
+    }
+}
+
+// A kit that throws while reading its server configuration must not take the host app down with it,
+// and must not stop the remaining kits from launching.
+- (void)launchKitRegister:(id<MPExtensionKitProtocol>)kitRegister withConfiguration:(NSDictionary *)configuration {
+    @try {
+        [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+        [self scheduleConsentReplayForKit:kitRegister];
+    } @catch (NSException *e) {
+        MPILogError(@"Kit %@ threw an exception while launching with its configuration: %@", kitRegister.code, e);
     }
 }
 
@@ -1067,38 +1176,42 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     return shouldFilter ? [[MPKitFilter alloc] initWithFilter:YES] : nil;
 }
 
+// CCPA and GDPR are filtered independently and both can survive, so the result is one combined
+// state rather than a choice between the two regulations. A kit with no configuration at all is
+// filtered outright: forwarding unfiltered consent to it would disclose more than the dashboard
+// ever allowed.
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentState *)state {
     if (!state) {
         return nil;
     }
-    
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    MPKitConsentDecision *decision = [self.filterEngine
-        filterConsent:[self consentSnapshotForState:state]
-        configuration:[self filterSnapshotForConfiguration:kitConfiguration]];
-    switch (decision.action) {
-        case MPKitConsentActionFilterAll:
-            return [[MPKitFilter alloc] initWithFilter:YES];
 
-        case MPKitConsentActionForwardCCPA: {
-            MPConsentState *filteredState = [[MPConsentState alloc] init];
-            [filteredState setCCPAConsentState:state.ccpaConsentState];
-            return [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
-        }
-
-        case MPKitConsentActionForwardGDPR: {
-            NSMutableDictionary<NSString *, MPGDPRConsent *> *filteredGDPRState = [NSMutableDictionary dictionary];
-            for (NSString *purpose in decision.allowedGDPRPurposes) {
-                filteredGDPRState[purpose] = state.gdprConsentState[purpose];
-            }
-            MPConsentState *filteredState = [[MPConsentState alloc] init];
-            [filteredState setGDPRConsentState:filteredGDPRState];
-            return [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
-        }
-
-        case MPKitConsentActionNoFilter:
-            return nil;
+    MPKitConfiguration *configuration = self.kitConfigurations[kitRegister.code];
+    if (!configuration) {
+        return [[MPKitFilter alloc] initWithFilter:YES];
     }
+
+    MPConsentState *filteredState = [[MPConsentState alloc] init];
+    BOOL hadConsent = state.ccpaConsentState != nil || state.gdprConsentState.count > 0;
+
+    if (state.ccpaConsentState) {
+        NSString *hash = [self.hasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
+        if (![configuration.consentRegulationFilters[hash] isEqual:@0]) {
+            [filteredState setCCPAConsentState:state.ccpaConsentState];
+        }
+    }
+
+    NSString *gdprHash = [self.hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
+    if (![configuration.consentRegulationFilters[gdprHash] isEqual:@0]) {
+        for (NSString *purpose in state.gdprConsentState) {
+            NSString *hash = [self.hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
+            if (![configuration.consentPurposeFilters[hash] isEqual:@0]) {
+                [filteredState addGDPRConsentState:state.gdprConsentState[purpose] purpose:purpose];
+            }
+        }
+    }
+
+    BOOL hasConsent = filteredState.ccpaConsentState != nil || filteredState.gdprConsentState.count > 0;
+    return [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:hadConsent && !hasConsent];
 }
 
 #pragma mark Projection methods
@@ -1180,51 +1293,64 @@ originalCustomAttributes:commerceEvent.customAttributes
         return;
     }
 
-    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
-    NSArray<MPKitProjectionOutput *> *outputs = [self.projectionEngine
-        projectCommerceEvent:[self projectionSourceForCommerceEvent:commerceEvent]
-        projections:kitConfiguration.projections ?: @[]];
-    NSDictionary<NSNumber *, MPKitProjectionSnapshot *> *projectionsById =
-        [self projectionsByIdForConfiguration:kitConfiguration];
     NSMutableArray<MPCommerceEvent *> *projectedCommerceEvents = [NSMutableArray array];
     NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
     NSMutableArray<MPKitProjectionSnapshot *> *appliedProjections = [NSMutableArray array];
 
-    for (MPKitProjectionOutput *output in outputs) {
-        switch (output.kind) {
-            case MPKitProjectionOutputKindOriginalCommerceEvent:
-                [projectedCommerceEvents addObject:commerceEvent];
-                break;
+    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
 
-            case MPKitProjectionOutputKindProjectedCommerceEvent: {
-                MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
-                if (output.attributes) {
-                    projectedCommerceEvent.customAttributes = output.attributes;
+    // A raise anywhere between the wait and the signal would leak the lock and deadlock every
+    // later kit call, so the projection runs inside a boundary that always signals. The
+    // completion handler stays outside it, because kits reenter the container from there.
+    @try {
+        NSArray<MPKitProjectionOutput *> *outputs = [self.projectionEngine
+            projectCommerceEvent:[self projectionSourceForCommerceEvent:commerceEvent]
+            projections:kitConfiguration.projections ?: @[]];
+        NSDictionary<NSNumber *, MPKitProjectionSnapshot *> *projectionsById =
+            [self projectionsByIdForConfiguration:kitConfiguration];
+
+        for (MPKitProjectionOutput *output in outputs) {
+            switch (output.kind) {
+                case MPKitProjectionOutputKindOriginalCommerceEvent:
+                    [projectedCommerceEvents addObject:commerceEvent];
+                    break;
+
+                case MPKitProjectionOutputKindProjectedCommerceEvent: {
+                    MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
+                    if (output.attributes) {
+                        projectedCommerceEvent.customAttributes = output.attributes;
+                    }
+                    [projectedCommerceEvents addObject:projectedCommerceEvent];
                 }
-                [projectedCommerceEvents addObject:projectedCommerceEvent];
-            }
-                break;
+                    break;
 
-            case MPKitProjectionOutputKindProjectedEvent: {
-                MPEvent *projectedEvent = [[MPEvent alloc] initWithName:output.projectedName type:MPEventTypeTransaction];
-                projectedEvent.customAttributes = output.attributes;
-                [projectedEvents addObject:projectedEvent];
-            }
-                break;
+                case MPKitProjectionOutputKindProjectedEvent: {
+                    MPEvent *projectedEvent = [[MPEvent alloc] initWithName:output.projectedName type:MPEventTypeTransaction];
+                    projectedEvent.customAttributes = output.attributes;
+                    [projectedEvents addObject:projectedEvent];
+                }
+                    break;
 
-            case MPKitProjectionOutputKindOriginalEvent:
-                break;
+                case MPKitProjectionOutputKindOriginalEvent:
+                    break;
+            }
+
+            if (output.projectionId != nil) {
+                MPKitProjectionSnapshot *appliedProjection = projectionsById[output.projectionId];
+                if (appliedProjection) {
+                    [appliedProjections addObject:appliedProjection];
+                }
+            }
         }
-
-        if (output.projectionId != nil) {
-            MPKitProjectionSnapshot *appliedProjection = projectionsById[output.projectionId];
-            if (appliedProjection) {
-                [appliedProjections addObject:appliedProjection];
-            }
-        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception projecting a commerce event for kit %@: %@", kitRegister.code, exception);
+        [projectedCommerceEvents removeAllObjects];
+        [projectedEvents removeAllObjects];
+        [appliedProjections removeAllObjects];
+    } @finally {
+        dispatch_semaphore_signal(kitsSemaphore);
     }
 
-    dispatch_semaphore_signal(kitsSemaphore);
     completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
 }
 
@@ -1250,43 +1376,56 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         return;
     }
 
+    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray array];
+    NSMutableArray<MPKitProjectionSnapshot *> *appliedProjections = [NSMutableArray array];
+
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
-    MPKitEventProjectionSource *source = [[MPKitEventProjectionSource alloc]
-        initWithType:event.type
-                name:event.name
-          attributes:event.customAttributes
-       attributeKeys:event.customAttributes.allKeys ?: @[]
-  matchingAttributes:[event.customAttributes transformValuesToString]
-         messageType:messageType];
-    id defaultProjection = kitConfiguration.defaultProjections[messageType];
-    MPKitProjectionSnapshot *defaultSnapshot = MPIsNull(defaultProjection) ? nil : defaultProjection;
-    NSArray<MPKitProjectionOutput *> *outputs = [self.projectionEngine
-        projectEvent:source
-        projections:kitConfiguration.projections ?: @[]
-        defaultProjection:defaultSnapshot];
-    NSDictionary<NSNumber *, MPKitProjectionSnapshot *> *projectionsById =
-        [self projectionsByIdForConfiguration:kitConfiguration];
-    NSMutableArray<MPEvent *> *projectedEvents = [NSMutableArray arrayWithCapacity:outputs.count];
-    NSMutableArray<MPKitProjectionSnapshot *> *appliedProjections = [NSMutableArray arrayWithCapacity:outputs.count];
 
-    for (MPKitProjectionOutput *output in outputs) {
-        if (output.kind == MPKitProjectionOutputKindOriginalEvent) {
-            [projectedEvents addObject:event];
-            continue;
+    // Projecting reads server-supplied projection rules against caller-supplied attributes. A
+    // raise here used to escape while holding kitsSemaphore, which deadlocked every later kit
+    // call rather than dropping one event. The completion handler runs after the signal because
+    // kits reenter the container from it.
+    @try {
+        MPKitEventProjectionSource *source = [[MPKitEventProjectionSource alloc]
+            initWithType:event.type
+                    name:event.name
+              attributes:event.customAttributes
+           attributeKeys:event.customAttributes.allKeys ?: @[]
+      matchingAttributes:[event.customAttributes transformValuesToString]
+             messageType:messageType];
+        id defaultProjection = kitConfiguration.defaultProjections[messageType];
+        MPKitProjectionSnapshot *defaultSnapshot = MPIsNull(defaultProjection) ? nil : defaultProjection;
+        NSArray<MPKitProjectionOutput *> *outputs = [self.projectionEngine
+            projectEvent:source
+            projections:kitConfiguration.projections ?: @[]
+            defaultProjection:defaultSnapshot];
+        NSDictionary<NSNumber *, MPKitProjectionSnapshot *> *projectionsById =
+            [self projectionsByIdForConfiguration:kitConfiguration];
+
+        for (MPKitProjectionOutput *output in outputs) {
+            if (output.kind == MPKitProjectionOutputKindOriginalEvent) {
+                [projectedEvents addObject:event];
+                continue;
+            }
+
+            MPEvent *projectedEvent = [event copy];
+            projectedEvent.name = output.projectedName;
+            projectedEvent.customAttributes = output.attributes;
+            [projectedEvents addObject:projectedEvent];
+
+            MPKitProjectionSnapshot *appliedProjection = projectionsById[output.projectionId];
+            if (appliedProjection) {
+                [appliedProjections addObject:appliedProjection];
+            }
         }
-
-        MPEvent *projectedEvent = [event copy];
-        projectedEvent.name = output.projectedName;
-        projectedEvent.customAttributes = output.attributes;
-        [projectedEvents addObject:projectedEvent];
-
-        MPKitProjectionSnapshot *appliedProjection = projectionsById[output.projectionId];
-        if (appliedProjection) {
-            [appliedProjections addObject:appliedProjection];
-        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception projecting an event for kit %@: %@", kitRegister.code, exception);
+        [projectedEvents removeAllObjects];
+        [appliedProjections removeAllObjects];
+    } @finally {
+        dispatch_semaphore_signal(kitsSemaphore);
     }
 
-    dispatch_semaphore_signal(kitsSemaphore);
     completionHandler(projectedEvents, appliedProjections);
 }
 
@@ -1518,6 +1657,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                         }
                     }
                 }
+                [self scheduleConsentReplayForKit:kitRegister];
             }
         } else {
             MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", integrationId);
@@ -1952,7 +2092,12 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
             
             MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
-            kitHandler(kitRegister.wrapperInstance, kitConfiguration);
+            @try {
+                kitHandler(kitRegister.wrapperInstance, kitConfiguration);
+                [self scheduleConsentReplayForKit:kitRegister];
+            } @catch (NSException *e) {
+                MPILogError(@"Kit handler threw an exception: %@", e);
+            }
         }
     }
 }

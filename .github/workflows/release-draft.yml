@@ -23,11 +23,9 @@ jobs:
     name: Create release PR
     runs-on: macOS-latest
     needs: confirm-main-branch
-    env:
-      GITHUB_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
@@ -41,10 +39,37 @@ jobs:
 
       - name: Bump version
         id: bump-version
-        uses: actions-ecosystem/action-bump-semver@v1
-        with:
-          current_version: ${{ steps.current-version.outputs.version }}
-          level: ${{ github.event.inputs.bump-type }}
+        env:
+          CURRENT_VERSION: ${{ steps.current-version.outputs.version }}
+          LEVEL: ${{ github.event.inputs.bump-type }}
+        run: |
+          set -euo pipefail
+          if [[ ! "${CURRENT_VERSION#v}" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
+            echo "::error::Unexpected current version: ${CURRENT_VERSION}"
+            exit 1
+          fi
+          MAJOR="${BASH_REMATCH[1]}"
+          MINOR="${BASH_REMATCH[2]}"
+          PATCH="${BASH_REMATCH[3]}"
+          case "${LEVEL}" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+            *)
+              echo "::error::Unknown bump level: ${LEVEL}"
+              exit 1
+              ;;
+          esac
+          echo "new_version=${MAJOR}.${MINOR}.${PATCH}" >>"$GITHUB_OUTPUT"
 
       - name: Set version environment variables
         run: |

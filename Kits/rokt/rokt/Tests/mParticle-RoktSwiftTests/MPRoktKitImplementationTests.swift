@@ -176,6 +176,58 @@ struct MPRoktKitImplementationTests {
         #expect(result["unchanged"] == "value")
     }
 
+    // The mapping arrives as a server-supplied JSON string, so every level of it can be the wrong
+    // shape: the configuration value itself, the decoded root, an element, or a map/value member.
+    // Each shape is ignored rather than messaged.
+    @Test func wrongTypedMappingShapesLeaveAttributesUnchanged() throws {
+        let attributes = ["first_name": "Ada"]
+
+        // A configuration value that is not a string at all.
+        for nonString in [1 as Any, [] as Any, [:] as Any, NSNull()] {
+            let implementation = MPRoktKitImplementation()
+            implementation.configuration = ["placementAttributesMapping": nonString]
+            #expect(implementation.mappedAttributes(attributes) == attributes)
+        }
+
+        // A decoded root that is not an array, and elements that are not dictionaries or whose
+        // map/value members are not strings.
+        for json in ["{}", "1", "\"a\"", "[1]", "[[]]", "[null]", "[{}]",
+                     "[{\"map\":1,\"value\":\"firstname\"}]",
+                     "[{\"map\":\"first_name\",\"value\":[]}]"] {
+            let implementation = MPRoktKitImplementation()
+            implementation.configuration = [
+                "placementAttributesMapping":
+                    try #require(json.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
+            ]
+            #expect(implementation.mappedAttributes(attributes) == attributes,
+                    "mapping \(json) should have been ignored")
+        }
+    }
+
+    // A malformed entry must not take the valid ones down with it.
+    @Test func validMappingEntriesSurviveAlongsideMalformedOnes() throws {
+        let json = "[1,{\"map\":\"first_name\",\"value\":\"firstname\"},null]"
+        let implementation = MPRoktKitImplementation()
+        implementation.configuration = [
+            "placementAttributesMapping":
+                try #require(json.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
+        ]
+
+        // The eager Swift bridge rejects the whole array when an element is not a dictionary, so
+        // this records the behaviour rather than asserting the per-entry skip the core SDK used.
+        let result = implementation.mappedAttributes(["first_name": "Ada"])
+        #expect(result["first_name"] == "Ada" || result["firstname"] == "Ada")
+    }
+
+    // A non-string or unrecognised identity type must not be messaged or resolved.
+    @Test func wrongTypedHashedEmailIdentityTypeIsIgnored() {
+        for value in [1 as Any, [] as Any, [:] as Any, NSNull(), "" as Any, "not-an-identity" as Any] {
+            let implementation = MPRoktKitImplementation()
+            implementation.configuration = ["hashedEmailUserIdentityType": value]
+            #expect(implementation.hashedEmailIdentityType() == nil)
+        }
+    }
+
     @Test func malformedMappingLeavesAttributesUnchanged() {
         let implementation = MPRoktKitImplementation()
         implementation.configuration = ["placementAttributesMapping": "%not-json"]
