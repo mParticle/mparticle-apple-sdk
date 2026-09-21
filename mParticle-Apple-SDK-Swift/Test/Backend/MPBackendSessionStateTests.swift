@@ -73,7 +73,8 @@ final class MPBackendSessionStateTests: XCTestCase {
     }
 
     private var timingProperties: [ReferenceWritableKeyPath<MPBackendSessionState, TimeInterval>] {
-        [\.timeOfLastEventInBackground]
+        [\.timeOfLastEventInBackground, \.timeAppWentToBackground,
+         \.timeAppWentToBackgroundInCurrentSession, \.nextCleanUpTime]
     }
 
     func testTimingReadsWaitForSessionTransition() {
@@ -99,6 +100,28 @@ final class MPBackendSessionStateTests: XCTestCase {
                     state[keyPath: property] = TimeInterval(index)
                     XCTAssertEqual(state[keyPath: property], TimeInterval(index))
                 }
+            }
+        }
+    }
+
+    func testForegroundTimestampReadWaitsForSessionTransition() {
+        assertReadWaitsForTransition(\.previousForegroundTime, initial: NSNumber(value: 20), final: NSNumber(value: 40))
+    }
+
+    func testForegroundTimestampWriteWaitsForSessionTransition() {
+        assertWriteWaitsForTransition(\.previousForegroundTime, initial: nil, final: NSNumber(value: 40))
+    }
+
+    func testConcurrentForegroundTimestampReplacement() {
+        let state = MPBackendSessionState()
+        DispatchQueue.concurrentPerform(iterations: 100) { index in
+            state.previousForegroundTime = NSNumber(value: Double(index) + 0.5)
+            if let timestamp = state.previousForegroundTime {
+                XCTAssertGreaterThanOrEqual(timestamp.doubleValue, 0.5)
+            }
+            state.withSessionLock {
+                state.previousForegroundTime = nil
+                XCTAssertNil(state.previousForegroundTime)
             }
         }
     }
