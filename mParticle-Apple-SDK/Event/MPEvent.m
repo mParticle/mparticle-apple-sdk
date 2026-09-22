@@ -1,6 +1,5 @@
 #import "MPEvent.h"
 #import "MPIConstants.h"
-#import "MPSession.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "mParticle.h"

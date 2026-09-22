@@ -10,6 +10,7 @@
 #import "MPIdentityApiRequest.h"
 #import "MPDataPlanFilter.h"
 #import "mParticle.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
@@ -37,30 +38,19 @@
 }
 
 - (NSDictionary<NSNumber *,NSString *> *)userIdentities {
-    NSDictionary<NSNumber *, NSObject *> *unfilteredUserIdentities = self.request.identities;
-    NSMutableDictionary *filteredUserIdentities = [NSMutableDictionary dictionary];
-    
-    for (NSNumber* key in unfilteredUserIdentities) {
-        id value = [unfilteredUserIdentities objectForKey:key];
-        BOOL shouldFilter = NO;
-        
-        if (self.kitConfiguration) {
-            NSString *identityTypeString = [[NSString alloc] initWithFormat:@"%lu", key.unsignedLongValue];
-            shouldFilter = self.kitConfiguration.userIdentityFilters[identityTypeString] && [self.kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
-        }
-        
-        if (key.integerValue >= MPIdentityIOSAdvertiserId) {
-            shouldFilter = YES;
-        }
-        
-        if (!shouldFilter) {
-            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.integerValue]) {
-                [filteredUserIdentities setObject:value forKey:key];
-            }
-        }
+    NSDictionary<NSNumber *, NSObject *> *identities = self.request.identities;
+    // Nothing to filter: return before reading kitConfiguration, which some kit callers pass as a raw NSDictionary.
+    if (identities.count == 0) {
+        return [NSMutableDictionary dictionary];
     }
-    
-    return filteredUserIdentities;
+    MPDataPlanFilter *dataPlanFilter = MParticle.sharedInstance.dataPlanFilter;
+    NSDictionary<NSNumber *, NSString *> *filtered = [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:identities
+                                                      userIdentityFilters:self.kitConfiguration.userIdentityFilters
+                                                                isBlocked:^BOOL(NSNumber * _Nonnull key) {
+        return [dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.integerValue];
+    }];
+    // Preserve the pre-migration NSMutableDictionary return type.
+    return filtered.mutableCopy;
 }
 
 - (NSString *)email {

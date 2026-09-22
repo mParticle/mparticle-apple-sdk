@@ -2,6 +2,7 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "mParticle.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MPKitExecStatus
 
@@ -16,11 +17,11 @@
 }
 
 - (instancetype)initWithSDKCode:(NSNumber *)integrationId returnCode:(MPKitReturnCode)returnCode {
-    return [self initWithSDKCode:integrationId returnCode:returnCode forwardCount:(returnCode == MPKitReturnCodeSuccess ? 1 : 0)];
+    return [self initWithSDKCode:integrationId returnCode:returnCode forwardCount:[MPKitExecStatusPRIVATE defaultForwardCountForReturnCode:(NSUInteger)returnCode]];
 }
 
 - (instancetype)initWithSDKCode:(NSNumber *)integrationId returnCode:(MPKitReturnCode)returnCode forwardCount:(NSUInteger)forwardCount {
-    BOOL validReturnCode = returnCode >= MPKitReturnCodeSuccess && returnCode <= MPKitReturnCodeRequirementsNotMet;
+    BOOL validReturnCode = [MPKitExecStatusPRIVATE isValidReturnCode:(NSUInteger)returnCode];
     if (!validReturnCode) {
         MPILogDebug(@"The 'returnCode': %lu variable is not valid.", (unsigned long)returnCode);
         return nil;
@@ -38,7 +39,7 @@
 
 #pragma mark Public accessors
 - (BOOL)success {
-    return _returnCode == MPKitReturnCodeSuccess;
+    return [MPKitExecStatusPRIVATE isSuccess:(NSUInteger)_returnCode];
 }
 
 #pragma mark Public methods

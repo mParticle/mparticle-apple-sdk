@@ -1,8 +1,8 @@
 #import "SettingsProvider.h"
 #import "MPDataPlanFilter.h"
-#import "AppEnvironmentProvider.h"
 #import "MPAppNotificationHandler.h"
-#import "SceneDelegateHandler.h"
+#import "MPPersistenceAdapter.h"
+@import mParticle_Apple_SDK_Swift;
 
 @protocol MPUserDefaultsProtocol;
 
@@ -28,7 +28,7 @@
 - (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message;
 - (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus;
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent;
-- (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
+- (void)logLTVIncreaseCallback:(MPEvent *)event increaseAmount:(double)increaseAmount execStatus:(MPExecStatus)execStatus;
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus;
 + (void)setSharedInstance:(MParticle *)instance;
 - (void)executeKitsInitializedBlocks;
@@ -42,7 +42,7 @@
 - (void)sessionDidEnd:(nonnull MPSession *)session;
 - (void)setExecutor: (id<ExecutorProtocol>)newExecutor;
 - (void)setBackendController: (id<MPBackendControllerProtocol>)backendController;
-- (void)setKitContainer:(id<MPKitContainerProtocol>) kitContainer;
+- (void)setKitContainer:(id)kitContainer;
 - (void)forwardLogInstall;
 - (void)forwardLogUpdate;
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval;
@@ -57,7 +57,8 @@
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
-@property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
+@property (nonatomic, strong) id<MPPersistenceAdapting> persistenceAdapter;
 @property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
 @property (nonatomic, strong, nonnull) id<AppEnvironmentProviderProtocol> appEnvironmentProvider;
 @end

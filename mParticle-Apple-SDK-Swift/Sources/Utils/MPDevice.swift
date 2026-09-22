@@ -178,11 +178,11 @@ public class MPDevice: NSObject, NSCopying {
         }
     }
 
-    @objc open var name: String {
+    @objc public var name: String {
         return UIDevice.current.name
     }
 
-    @objc open var platform: String {
+    @objc public var platform: String {
         switch UIDevice.current.userInterfaceIdiom {
         case .phone, .pad:
             return "iOS"

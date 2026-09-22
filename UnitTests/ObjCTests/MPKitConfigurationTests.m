@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "MPKitConfiguration.h"
 #import "MPBaseTestCase.h"
+#import "MPEnums.h"
 
 @interface MPKitConfigurationTests : MPBaseTestCase {
     MPKitConfiguration *kitConfiguration;
@@ -235,6 +236,80 @@
     XCTAssertEqualObjects(config[@"foo"], @"bar");
     NSString *value = config[@"appId"];
     XCTAssertNil(value);
+}
+
+// message_type indexes two arrays holding +[MPEnum messageTypeSize] (20) entries.
+// -setObject:atIndexedSubscript: allows index == count and appends, so
+// MPMessageTypeMedia (20) has always been registered into a 21st slot. This
+// pins that, so the out-of-range guard cannot regress it.
+- (void)testMediaMessageTypeProjectionIsStillConfigured {
+    NSDictionary *configuration = @{
+        @"id":@42,
+        @"pr":@[@{
+            @"id":@1,
+            @"action":@{@"projected_event_name":@"Media Event"},
+            @"matches":@[@{@"message_type":@(MPMessageTypeMedia)}]
+        }]
+    };
+
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+
+    XCTAssertNotNil(kitConfiguration);
+    XCTAssertEqual(kitConfiguration.configuredMessageTypeProjections.count, (NSUInteger)(MPMessageTypeMedia + 1));
+    XCTAssertTrue([kitConfiguration.configuredMessageTypeProjections[MPMessageTypeMedia] boolValue]);
+}
+
+// Beyond index == count the subscript assignment really does raise
+// NSRangeException, and message_type is unvalidated remote configuration.
+- (void)testOutOfRangeMessageTypeProjectionIsIgnored {
+    NSDictionary *configuration = @{
+        @"id":@42,
+        @"pr":@[@{
+            @"id":@1,
+            @"action":@{@"projected_event_name":@"Bogus Event"},
+            @"matches":@[@{@"message_type":@99}]
+        }]
+    };
+
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+
+    XCTAssertNotNil(kitConfiguration);
+    XCTAssertEqual(kitConfiguration.configuredMessageTypeProjections.count, [MPEnum messageTypeSize]);
+    for (NSNumber *configured in kitConfiguration.configuredMessageTypeProjections) {
+        XCTAssertFalse([configured boolValue], @"No message type slot should have been configured.");
+    }
+}
+
+// A negative message_type wraps to a huge NSUInteger on the way through.
+- (void)testNegativeMessageTypeProjectionIsIgnored {
+    NSDictionary *configuration = @{
+        @"id":@42,
+        @"pr":@[@{
+            @"id":@1,
+            @"action":@{@"projected_event_name":@"Negative Event"},
+            @"matches":@[@{@"message_type":@"-1"}]
+        }]
+    };
+
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+
+    XCTAssertNotNil(kitConfiguration);
+    XCTAssertNil(kitConfiguration.projections);
+}
+
+- (void)testInRangeMessageTypeProjectionIsStillConfigured {
+    NSDictionary *configuration = @{
+        @"id":@42,
+        @"pr":@[@{
+            @"id":@1,
+            @"action":@{@"projected_event_name":@"Renamed Event"},
+            @"matches":@[@{@"message_type":@(MPMessageTypeEvent)}]
+        }]
+    };
+
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+
+    XCTAssertTrue([kitConfiguration.configuredMessageTypeProjections[MPMessageTypeEvent] boolValue]);
 }
 
 @end

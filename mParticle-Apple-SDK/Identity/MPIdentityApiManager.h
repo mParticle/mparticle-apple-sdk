@@ -4,7 +4,9 @@
 
 #import <Foundation/Foundation.h>
 #import "MPIdentityApiRequest.h"
-#import "MPIdentityDTO.h"
+
+@class MPIdentityHTTPBaseSuccessResponse;
+@class MPIdentityHTTPModifySuccessResponse;
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -1,0 +1,388 @@
+import XCTest
+@testable import mParticle_Apple_SDK_Swift
+
+final class MPDataModelTests: XCTestCase {
+    func testJSONCopyCopiesNestedContainers() {
+        let nested = NSMutableDictionary(dictionary: ["inner": "value"])
+        let original = NSMutableDictionary(dictionary: ["outer": nested, "count": 1])
+
+        let copied = MPJSONCopyPRIVATE.deepCopyJSONObject(original) as? NSDictionary
+        XCTAssertEqual(copied?["count"] as? Int, 1)
+        XCTAssertEqual((copied?["outer"] as? NSDictionary)?["inner"] as? String, "value")
+
+        nested["inner"] = "changed"
+        XCTAssertEqual((copied?["outer"] as? NSDictionary)?["inner"] as? String, "value")
+    }
+
+    func testJSONCopyDropsNonJSONValues() {
+        let original = ["ok": "yes", "bad": Date()] as NSDictionary
+        let copied = MPJSONCopyPRIVATE.deepCopyJSONObject(original) as? NSDictionary
+        XCTAssertEqual(copied?["ok"] as? String, "yes")
+        XCTAssertNil(copied?["bad"])
+    }
+
+    func testFixInvalidKeysRemovesNonFiniteNumbers() {
+        let inf = NSNumber(value: Double.infinity)
+        let messageInfo: NSDictionary = [
+            "ok": "keep",
+            "bad": inf,
+            "nested": ["child": inf, "ok": "nested"]
+        ]
+        let dictionary = NSMutableDictionary(dictionary: messageInfo)
+
+        MPMessagePRIVATE.fixInvalidKeys(dictionary, messageInfo: messageInfo)
+
+        XCTAssertEqual(dictionary["ok"] as? String, "keep")
+        XCTAssertNil(dictionary["bad"])
+        XCTAssertEqual((dictionary["nested"] as? NSDictionary)?["ok"] as? String, "nested")
+        XCTAssertNil((dictionary["nested"] as? NSDictionary)?["child"])
+    }
+
+    func testTruncateDoesNotApplyNegativeLength() {
+        guard let payload = try? JSONSerialization.data(
+            withJSONObject: ["hardwareId": "IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"],
+            options: []
+        ) else {
+            XCTFail("Expected hardwareId payload to serialize")
+            return
+        }
+        let message = MPMessagePRIVATE(
+            sessionId: 17,
+            messageId: 1,
+            uuid: "uuid",
+            messageType: "test",
+            messageData: payload,
+            timestamp: 1,
+            uploadStatus: 0,
+            userId: 1,
+            dataPlanId: nil,
+            dataPlanVersion: nil
+        )
+
+        message.truncateMessageDataProperty("hardwareId", toLength: -1)
+        guard let messageData = message.messageData,
+              let json = try? JSONSerialization.jsonObject(with: messageData, options: []) as? NSDictionary else {
+            XCTFail("Expected message data to deserialize after negative-length truncate")
+            return
+        }
+        XCTAssertEqual((json["hardwareId"] as? String)?.count, 41)
+
+        message.truncateMessageDataProperty("hardwareId", toLength: 5)
+        guard let truncatedData = message.messageData,
+              let truncated = try? JSONSerialization.jsonObject(with: truncatedData, options: []) as? NSDictionary else {
+            XCTFail("Expected message data to deserialize after truncate")
+            return
+        }
+        XCTAssertEqual((truncated["hardwareId"] as? String)?.count, 5)
+    }
+
+    func testDefaultSessionInitUsesStoredMpId() {
+        let defaults = MPUserDefaults.standardUserDefaults(connector: MPUserDefaultsConnectorMock())
+        let previous = defaults["mpid"]
+        defaults["mpid"] = 99
+        defer {
+            if let previous {
+                defaults["mpid"] = previous
+            } else {
+                defaults.setMPObject(nil, forKey: "mpid", userId: 0)
+            }
+        }
+
+        let session = MPSessionPRIVATE()
+        XCTAssertEqual(session.userId, 99)
+        XCTAssertEqual(session.sessionUserIds, "99")
+    }
+
+    func testSessionCounterAndSuspend() {
+        let session = MPSessionPRIVATE(
+            sessionId: 0,
+            uuid: "uuid",
+            backgroundTime: 0,
+            startTime: 1,
+            endTime: 1,
+            attributes: nil,
+            numberOfInterruptions: 0,
+            eventCounter: 0,
+            suspendTime: 0,
+            userId: 1,
+            sessionUserIds: "1",
+            applicationInfo: nil,
+            deviceInfo: nil
+        )
+        XCTAssertFalse(session.persisted)
+        session.incrementCounter()
+        XCTAssertEqual(session.eventCounter, 1)
+        session.suspendSession()
+        XCTAssertEqual(session.numberOfInterruptions, 1)
+        XCTAssertGreaterThan(session.suspendTime, 0)
+    }
+
+    func testCookieExpiredWithoutExpiration() {
+        let cookie = MPCookiePRIVATE(name: "uid", configuration: ["c": "g=abc"])
+        XCTAssertNotNil(cookie)
+        XCTAssertTrue(cookie?.expired ?? false)
+    }
+
+    func testCookieNotExpiredWithUnparseableDate() {
+        let cookie = MPCookiePRIVATE(name: "uid", configuration: ["e": "not-a-date"])
+        XCTAssertNotNil(cookie)
+        XCTAssertFalse(cookie?.expired ?? true)
+    }
+
+    func testIntegrationAttributesRejectsEmptyOrNonStringValues() {
+        XCTAssertNil(MPIntegrationAttributesPRIVATE(integrationId: 42, attributes: [:]))
+        XCTAssertNil(MPIntegrationAttributesPRIVATE(integrationId: 42, attributes: ["a": 1]))
+        let valid = MPIntegrationAttributesPRIVATE(integrationId: 42, attributes: ["a": "b"])
+        XCTAssertEqual(valid?.dictionaryRepresentation() as? [String: [String: String]], ["42": ["a": "b"]])
+    }
+
+    func testUploadSerializationUsesJSONCopy() {
+        let dictionary: NSDictionary = ["id": "upload-id", "ct": 1]
+        guard let data = MPUploadPRIVATE.serializedUpload(from: dictionary) else {
+            XCTFail("Expected upload dictionary to serialize")
+            return
+        }
+        guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary else {
+            XCTFail("Expected serialized upload to deserialize")
+            return
+        }
+        XCTAssertEqual(json["id"] as? String, "upload-id")
+    }
+
+    func testForwardRecordNilDictionaryIsNotEqual() {
+        let left = MPForwardRecordPRIVATE(recordId: 1, dataDictionary: nil, mpid: 7)
+        let right = MPForwardRecordPRIVATE(recordId: 1, dataDictionary: nil, mpid: 7)
+        XCTAssertFalse(left.isEqual(toRecord: right))
+        XCTAssertNil(left.dataRepresentation())
+    }
+
+    func testUploadInitAcceptsNilUUID() {
+        let upload = MPUploadPRIVATE(
+            sessionId: nil,
+            uploadId: 0,
+            uuid: nil,
+            uploadData: Data(),
+            timestamp: 1,
+            uploadType: 0,
+            dataPlanId: nil,
+            dataPlanVersion: nil,
+            uploadSettings: NSObject()
+        )
+        XCTAssertNil(upload.uuid)
+    }
+
+    func testNilMessagePayloadStaysNil() {
+        let message = MPMessagePRIVATE(
+            sessionId: nil,
+            messageId: 1,
+            uuid: nil,
+            messageType: "e",
+            messageData: nil,
+            timestamp: 1,
+            uploadStatus: 0,
+            userId: 1,
+            dataPlanId: nil,
+            dataPlanVersion: nil
+        )
+        XCTAssertNil(message.uuid)
+        XCTAssertNil(message.messageData)
+        XCTAssertNil(message.serializedString())
+        XCTAssertNil(message.dictionaryRepresentation())
+
+        let other = MPMessagePRIVATE(
+            sessionId: nil,
+            messageId: 1,
+            uuid: nil,
+            messageType: "e",
+            messageData: nil,
+            timestamp: 1,
+            uploadStatus: 0,
+            userId: 1,
+            dataPlanId: nil,
+            dataPlanVersion: nil
+        )
+        XCTAssertFalse(message.isEqual(toMessage: other))
+    }
+
+    func testNilBreadcrumbPayloadStaysNil() {
+        let breadcrumb = MPBreadcrumbPRIVATE(
+            sessionUUID: nil,
+            breadcrumbId: 1,
+            uuid: nil,
+            breadcrumbData: nil,
+            timestamp: 1
+        )
+        XCTAssertNil(breadcrumb.uuid)
+        XCTAssertNil(breadcrumb.sessionUUID)
+        XCTAssertNil(breadcrumb.breadcrumbData)
+        XCTAssertNil(breadcrumb.content)
+        XCTAssertNil(breadcrumb.serializedString())
+
+        let other = MPBreadcrumbPRIVATE(
+            sessionUUID: nil,
+            breadcrumbId: 1,
+            uuid: nil,
+            breadcrumbData: nil,
+            timestamp: 1
+        )
+        XCTAssertFalse(breadcrumb.isEqual(toBreadcrumb: other))
+    }
+
+    // MARK: - MPCookie as the Objective-C MPCookie
+
+    func testCookieKeepsTheObjectiveCRuntimeName() {
+        XCTAssertEqual(NSStringFromClass(MPCookiePRIVATE.self), "MPCookie")
+    }
+
+    func testCookieEqualityIsByNameAndRejectsForeignTypes() {
+        let cookie = MPCookiePRIVATE(name: "uid", configuration: ["c": "g=abc"])
+        let sameName = MPCookiePRIVATE(name: "uid", configuration: ["c": "different"])
+        let otherName = MPCookiePRIVATE(name: "rpl", configuration: ["c": "g=abc"])
+
+        XCTAssertEqual(cookie, sameName)
+        XCTAssertNotEqual(cookie, otherName)
+        XCTAssertFalse(cookie?.isEqual("a string is not a cookie") ?? true)
+        XCTAssertFalse(cookie?.isEqual(NSNull()) ?? true)
+        XCTAssertFalse(cookie?.isEqual(nil) ?? true)
+    }
+
+    func testCookieDictionaryRepresentationIsNilWhenNothingIsSet() {
+        let cookie = MPCookiePRIVATE(name: "uid", configuration: [:])
+        XCTAssertNotNil(cookie)
+        XCTAssertNil(cookie?.dictionaryRepresentation())
+    }
+
+    /// The wrapper decoded these three expecting `NSDictionary`, which never matches the `NSString`
+    /// that was encoded, so a restored cookie used to carry only its name.
+    func testCookieArchiveRoundTripPreservesEveryField() throws {
+        let cookie = try XCTUnwrap(MPCookiePRIVATE(name: "uid",
+                                                   configuration: ["c": "g=abc", "d": "example.com",
+                                                                   "e": "2035-05-26T22:43:31.505262Z"]))
+
+        let data = try NSKeyedArchiver.archivedData(withRootObject: cookie, requiringSecureCoding: false)
+        let restored = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: MPCookiePRIVATE.self, from: data))
+
+        XCTAssertEqual(restored.name, "uid")
+        XCTAssertEqual(restored.content, cookie.content)
+        XCTAssertEqual(restored.domain, cookie.domain)
+        XCTAssertEqual(restored.expiration, cookie.expiration)
+        XCTAssertFalse(restored.expired, "a restored future expiration must still read as unexpired")
+    }
+
+    /// A cookie that never had the optional fields still restores, and stays "expired" because an
+    /// absent expiration means expired.
+    func testCookieArchiveRoundTripWithOnlyANameStillRestores() throws {
+        let cookie = try XCTUnwrap(MPCookiePRIVATE(name: "uid", configuration: [:]))
+
+        let data = try NSKeyedArchiver.archivedData(withRootObject: cookie, requiringSecureCoding: false)
+        let restored = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: MPCookiePRIVATE.self, from: data))
+
+        XCTAssertEqual(restored.name, "uid")
+        XCTAssertNil(restored.content)
+        XCTAssertNil(restored.domain)
+        XCTAssertNil(restored.expiration)
+        XCTAssertTrue(restored.expired)
+    }
+
+    // MARK: - MPConsumerInfo
+
+    /// The Swift class must answer to the Objective-C name the deleted wrapper had, or the
+    /// @class forward declarations in Include/ and the archived class name both break.
+    func testConsumerInfoKeepsTheObjectiveCRuntimeName() {
+        XCTAssertEqual(NSStringFromClass(MPConsumerInfoPRIVATE.self), "MPConsumerInfo")
+    }
+
+    func testConsumerInfoBuildsOneCookiePerConfiguredEntry() {
+        let info = MPConsumerInfoPRIVATE()
+        info.update(withConfiguration: ["ck": ["uid": ["c": "g=abc", "e": "2035-05-26T22:43:31.505262Z"],
+                                               "rpl": ["c": "x=1"]]],
+                    existingCookies: nil)
+
+        XCTAssertEqual(info.cookies?.count, 2)
+        let representation = info.cookiesDictionaryRepresentation()
+        XCTAssertNotNil(representation?["uid"])
+        XCTAssertNotNil(representation?["rpl"])
+    }
+
+    /// A configured cookie whose name matches one already persisted updates that cookie in place
+    /// rather than adding a duplicate — the reason existingCookies is passed in at all.
+    func testConsumerInfoUpdatesAMatchingExistingCookieInPlace() throws {
+        let existing = try XCTUnwrap(MPCookiePRIVATE(name: "uid", configuration: ["c": "g=old"]))
+        let info = MPConsumerInfoPRIVATE()
+
+        info.update(withConfiguration: ["ck": ["uid": ["c": "g=new", "d": "example.com"]]],
+                    existingCookies: [existing])
+
+        XCTAssertEqual(info.cookies?.count, 1)
+        XCTAssertIdentical(info.cookies?.first, existing)
+        XCTAssertEqual(existing.content, "g=new")
+        XCTAssertEqual(existing.domain, "example.com")
+    }
+
+    func testConsumerInfoKeepsExistingCookiesThatTheResponseDoesNotName() throws {
+        let other = try XCTUnwrap(MPCookiePRIVATE(name: "rpl", configuration: ["c": "x=1"]))
+        let info = MPConsumerInfoPRIVATE()
+
+        info.update(withConfiguration: ["ck": ["uid": ["c": "g=abc"]]], existingCookies: [other])
+
+        XCTAssertEqual(info.cookies?.count, 2)
+        XCTAssertEqual(Set(info.cookies?.map(\.name) ?? []), ["uid", "rpl"])
+    }
+
+    /// Every shape the remote config can arrive in as NSNull or empty has to leave the instance
+    /// untouched rather than throw or clear cookies.
+    func testConsumerInfoIgnoresNullAndEmptyConfigurations() {
+        for configuration in [NSNull() as Any, [:] as Any, ["ck": NSNull()] as Any] {
+            let info = MPConsumerInfoPRIVATE()
+            info.update(withConfiguration: configuration, existingCookies: nil)
+            XCTAssertNil(info.cookiesDictionaryRepresentation())
+        }
+    }
+
+    func testConsumerInfoSkipsNullCookieNamesAndNullEntries() {
+        let info = MPConsumerInfoPRIVATE()
+        let configuration: NSDictionary = ["ck": [NSNull(): ["c": "x=1"],
+                                                  "uid": NSNull(),
+                                                  "rpl": ["c": "x=1"]]]
+
+        info.update(withConfiguration: configuration, existingCookies: nil)
+
+        XCTAssertEqual(info.cookies?.map(\.name), ["rpl"])
+    }
+
+    /// The allowed-class set names MPCookiePRIVATE as well as NSArray, so a secure unarchive
+    /// restores the cookies instead of failing outright.
+    func testConsumerInfoArchiveRoundTripRestoresCookiesUnderSecureCoding() throws {
+        let info = MPConsumerInfoPRIVATE()
+        info.update(withConfiguration: ["ck": ["uid": ["c": "g=abc"]]], existingCookies: nil)
+        info.uniqueIdentifier = "7754fbee-1b83-4cab-9b59-34518c14ae85"
+
+        let data = try NSKeyedArchiver.archivedData(withRootObject: info, requiringSecureCoding: true)
+        let restored = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: MPConsumerInfoPRIVATE.self,
+                                                                        from: data))
+
+        XCTAssertEqual(restored.cookies?.map(\.name), ["uid"])
+        XCTAssertEqual(restored.uniqueIdentifier, info.uniqueIdentifier)
+    }
+
+    /// The setter escapes; the decoder must not escape again, or a restored identifier drifts on
+    /// every round trip.
+    func testConsumerInfoDoesNotReEscapeADecodedUniqueIdentifier() throws {
+        let info = MPConsumerInfoPRIVATE()
+        info.uniqueIdentifier = "has space;and semicolon"
+        let escaped = try XCTUnwrap(info.uniqueIdentifier)
+
+        let data = try NSKeyedArchiver.archivedData(withRootObject: info, requiringSecureCoding: true)
+        let restored = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: MPConsumerInfoPRIVATE.self,
+                                                                        from: data))
+
+        XCTAssertEqual(restored.uniqueIdentifier, escaped)
+    }
+
+    func testConsumerInfoUniqueIdentifierSetterIgnoresNil() {
+        let info = MPConsumerInfoPRIVATE()
+        info.uniqueIdentifier = "kept"
+        info.uniqueIdentifier = nil
+        XCTAssertEqual(info.uniqueIdentifier, "kept")
+    }
+}

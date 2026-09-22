@@ -1,64 +1,42 @@
 #import "MPKitRokt.h"
-@import Rokt_Widget;
-@import RoktContracts;
 
-// Kit version
-static NSString * const kMPRoktKitVersion = @"9.5.1";
+#if SWIFT_PACKAGE
+@import mParticle_Rokt_Internal;
+#else
+#import <mParticle_Rokt/mParticle_Rokt-Swift.h>
+#endif
 
-// Constants for kit configuration keys
-static NSString * const kMPAttributeMappingSourceKey = @"map";
-static NSString * const kMPAttributeMappingDestinationKey = @"value";
-
-// Rokt attribute keys
-static NSString * const kMPRoktAttributeKeySandbox = @"sandbox";
-
-// Rokt kit constants
-static NSString * const kMPRoktRemoteConfigKitHashesKey = @"hs";
-static NSString * const kMPRemoteConfigUserAttributeFilter = @"ua";
-static NSString * const MPKitRoktErrorDomain = @"com.mparticle.kits.rokt";
-static NSString * const MPKitRoktErrorMessageKey = @"mParticle-Rokt Error";
-static NSString * const kMPPlacementAttributesMapping = @"placementAttributesMapping";
-static NSString * const kMPHashedEmailUserIdentityType = @"hashedEmailUserIdentityType";
-static NSString * const kMPEventNameSelectPlacements = @"selectPlacements";
-static NSString * const kMPEventNameSelectShoppableAds = @"selectShoppableAds";
-static NSString * const kMPRoktConfigStripePublishableKey = @"stripePublishableKey";
-static NSString * const kMPRoktIdentityTypeEmailSha256 = @"emailsha256";
-static NSString * const kMPRoktIdentityTypeMpid = @"mpid";
-
-// Rokt kit identifier
-static NSInteger const kMPRoktKitCode = 181;
-
-static __weak MPKitRokt *roktKit = nil;
-
-// Rokt 5.4 deprecates the id-only APIs, but mParticle must retain them for existing callers.
-// Keep the suppression scoped to these adapters.
-static void MPSetRoktSessionId(NSString *sessionId) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [Rokt setSessionIdWithSessionId:sessionId];
-#pragma clang diagnostic pop
-}
-
-static NSString *MPGetRoktSessionId(void) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    return [Rokt getSessionId];
-#pragma clang diagnostic pop
-}
-
-@interface MPKitRokt () <MPKitProtocol>
-
-@property (nonatomic, unsafe_unretained) BOOL started;
-
+@interface MParticle (MPRoktKitPrivate)
++ (dispatch_queue_t)messageQueue;
 @end
+
+@interface FilteredMParticleUser (MPRoktKitPrivate)
+- (NSDictionary<NSString *, id> *)mp_filteredUserAttributesByMergingAttributes:(NSDictionary<NSString *, id> *)attributes;
+@end
+
+@interface MPKitRokt () {
+    MPKitAPI *_kitApi;
+}
+@property (nonatomic, strong) MPRoktKitImplementation *implementation;
+@end
+
+static NSDictionary<NSString *, RoktEmbeddedView *> *MPRoktValidEmbeddedViews(NSDictionary *embeddedViews) {
+    NSMutableDictionary<NSString *, RoktEmbeddedView *> *validViews = [NSMutableDictionary dictionary];
+    Class embeddedViewClass = NSClassFromString(@"RoktEmbeddedView");
+    [embeddedViews enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+        if ([key isKindOfClass:[NSString class]] &&
+            embeddedViewClass != Nil &&
+            [value isKindOfClass:embeddedViewClass]) {
+            validViews[key] = value;
+        }
+    }];
+    return validViews;
+}
 
 @implementation MPKitRokt
 
-/*
-    mParticle will supply a unique kit code for you. Please contact our team
-*/
 + (NSNumber *)kitCode {
-    return @(kMPRoktKitCode); // Replace with the actual kit code assigned by mParticle
+    return @181;
 }
 
 + (void)load {
@@ -66,660 +44,179 @@ static NSString *MPGetRoktSessionId(void) {
     [MParticle registerExtension:kitRegister];
 }
 
-- (MPKitExecStatus *)execStatus:(MPKitReturnCode)returnCode {
-    return [[MPKitExecStatus alloc] initWithSDKCode:self.class.kitCode returnCode:returnCode];
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _implementation = [[MPRoktKitImplementation alloc] init];
+        __weak typeof(self) weakSelf = self;
+        _implementation.warningHandler = ^(NSString *message) {
+            [weakSelf.kitApi logWarning:@"%@", message];
+        };
+        _implementation.afterPendingAttributeWrites = ^(dispatch_block_t completion) {
+            dispatch_async([MParticle messageQueue], ^{
+                dispatch_async(dispatch_get_main_queue(), completion);
+            });
+        };
+        _implementation.filterUserAttributes = ^NSDictionary<NSString *, id> *(
+            NSDictionary<NSString *, id> *attributes,
+            FilteredMParticleUser *filteredUser
+        ) {
+            if (![filteredUser respondsToSelector:@selector(mp_filteredUserAttributesByMergingAttributes:)]) {
+                return nil;
+            }
+            return [filteredUser mp_filteredUserAttributesByMergingAttributes:attributes];
+        };
+    }
+    return self;
 }
 
-#pragma mark - MPKitInstanceProtocol methods
+- (NSDictionary *)configuration {
+    return self.implementation.configuration;
+}
 
-#pragma mark Kit instance and lifecycle
+- (void)setConfiguration:(NSDictionary *)configuration {
+    self.implementation.configuration = configuration ?: @{};
+}
+
+- (BOOL)started {
+    return self.implementation.started;
+}
+
+- (void)setKitApi:(MPKitAPI *)kitApi {
+    _kitApi = kitApi;
+    [self.implementation setContextWithOwner:self kitAPI:kitApi];
+}
+
+- (MPKitAPI *)kitApi {
+    return _kitApi;
+}
+
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
-    if (![configuration isKindOfClass:[NSDictionary class]]) {
-        [MPKitRokt MPLog:@"Ignoring launch configuration: expected a dictionary"];
-        return [self execStatus:MPKitReturnCodeRequirementsNotMet];
-    }
-    id partnerId = configuration[@"accountId"];
-    if (![partnerId isKindOfClass:[NSString class]] || [partnerId length] == 0) {
-        return [self execStatus:MPKitReturnCodeRequirementsNotMet];
-    }
-
-    _configuration = [configuration copy];
-    roktKit = self;
-    
-    NSString *sdkVersion = [MParticle sharedInstance].version;
-
-    // Initialize Rokt SDK here
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Attempting to initialize Rokt with Kit Version: %@", kMPRoktKitVersion]];
-    
-    [MPKitRokt applyMParticleLogLevel];
-    
-    static dispatch_once_t globalEventsOnceToken;
-    dispatch_once(&globalEventsOnceToken, ^{
-        [Rokt globalEventsOnEvent:^(RoktEvent * _Nonnull event) {
-            if ([event isKindOfClass:[RoktInitComplete class]]) {
-                RoktInitComplete *initComplete = (RoktInitComplete *)event;
-                MPKitRokt *kit = roktKit;
-                if (initComplete.success && kit) {
-                    [kit start];
-                    [MPKitRokt MPLog:@"Rokt Init Complete"];
-                    NSDictionary *userInfo = @{mParticleKitInstanceKey:[[kit class] kitCode]};
-                    [[NSNotificationCenter defaultCenter] postNotificationName:@"mParticle.Rokt.Initialized"
-                                                                        object:nil
-                                                                      userInfo:userInfo];
-                }
-            }
-        }];
-    });
-
-    NSURL *customBaseURL = [MParticle sharedInstance].networkOptions.customBaseURL;
-    if (customBaseURL) {
-        [Rokt setCustomBaseURL:customBaseURL];
-    }
-
-    [Rokt initWithRoktTagId:partnerId mParticleSdkVersion:sdkVersion mParticleKitVersion:kMPRoktKitVersion];
-    
-    return [self execStatus:MPKitReturnCodeSuccess];
+    [self.implementation setContextWithOwner:self kitAPI:self.kitApi];
+    return [self.implementation didFinishLaunchingWithConfiguration:configuration];
 }
 
 - (void)start {
-    if (_started) {
-        return;
-    }
-
-    _started = YES;
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
-
-        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
-                                                            object:nil
-                                                          userInfo:userInfo];
-    });
+    [self.implementation start];
 }
 
 - (void)stop {
-    [MPKitRokt MPLog:@"Stopping Rokt Kit for workspace switch"];
-    [Rokt close];
-    if (roktKit == self) {
-        roktKit = nil;
-    }
-    _started = NO;
-    _configuration = nil;
+    [self.implementation stop];
 }
 
-/// Displays a Rokt ad placement with full configuration options.
-/// This method handles user identity synchronization, attribute mapping, and forwards the request to the Rokt SDK.
-/// Device identifiers (IDFA/IDFV) are automatically added if available.
-/// @param identifier The Rokt placement identifier configured in the Rokt dashboard
-/// @param attributes Dictionary of user attributes (email, firstName, etc.). Attributes will be mapped according to dashboard configuration.
-/// @param embeddedViews Optional dictionary mapping placement identifiers to embedded view containers for inline placements
-/// @param config Optional Rokt configuration from RoktContracts (shared with mParticle core).
-/// @param onEvent Optional callback for RoktContracts `RoktEvent` values from the Rokt SDK.
-/// @param filteredUser The current user when this placement was requested. Filtered for the kit as per settings in the mParticle UI
-/// @return MPKitExecStatus indicating success or failure of the operation
-- (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString * _Nullable)identifier
-                                attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                             embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews
-                                    config:(RoktConfig * _Nullable)config
-                                   onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
-                              filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser
-                                   options:(RoktPlacementOptions * _Nullable)options {
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit recieved `selectPlacementsWithIdentifier` method with the following arguments: \n identifier: %@ \n attributes: %@ \n embeddedViews: %@ \n config: %@ \n onEvent: %@ \n filteredUser identities: %@ \n options: %@", identifier, attributes, embeddedViews, config, onEvent, filteredUser.userIdentities, options]];
-    NSDictionary<NSString *, NSString *> *finalAtt = [MPKitRokt prepareAttributes:attributes filteredUser:filteredUser performMapping:NO];
-    
-    // Log custom event for selectPlacements call
-    [MPKitRokt logSelectPlacementEvent:finalAtt];
-
-    NSDictionary<NSString *, RoktEmbeddedView *> *confirmedViews = [self confirmEmbeddedViews:embeddedViews];
-
-    RoktPlacementOptions *placementOptions = options ?: [[RoktPlacementOptions alloc] initWithTimestamp:0];
-
-    [Rokt selectPlacementsWithIdentifier:identifier
-                              attributes:finalAtt
-                              placements:confirmedViews
-                                  config:config
-                        placementOptions:placementOptions
-                                onEvent:onEvent];
-
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+- (MPKitExecStatus *)selectPlacementsWithIdentifier:(NSString *)identifier
+                                         attributes:(NSDictionary<NSString *, NSString *> *)attributes
+                                      embeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> *)embeddedViews
+                                             config:(RoktConfig *)config
+                                            onEvent:(void (^)(RoktEvent *))onEvent
+                                       filteredUser:(FilteredMParticleUser *)filteredUser
+                                            options:(RoktPlacementOptions *)options {
+    return [self.implementation selectPlacementsWithIdentifier:identifier
+                                                    attributes:attributes
+                                                 embeddedViews:[self confirmEmbeddedViews:embeddedViews]
+                                                        config:config
+                                                       onEvent:onEvent
+                                                  filteredUser:filteredUser
+                                                       options:options];
 }
 
-/// Forwards a redirect URL to the Rokt SDK so registered payment extensions (Afterpay, PayPal) can claim it.
-/// - Parameter url: The URL received by the host app's URL handler.
-/// - Returns: YES if a registered payment extension claimed the URL.
-- (BOOL)handleURLCallback:(NSURL * _Nonnull)url {
-    if (!url) {
-        return NO;
-    }
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit handleURLCallback: %@", url]];
-    return [Rokt handleURLCallbackWith:url];
+- (NSDictionary<NSString *, RoktEmbeddedView *> *)confirmEmbeddedViews:(NSDictionary *)embeddedViews {
+    return MPRoktValidEmbeddedViews(embeddedViews);
 }
 
-/// Forwards to Rokt Shoppable payment registration. When kit \c configuration includes \c stripePublishableKey (mParticle kit settings), it is passed to Rokt as \c stripeKey in the registration config.
-- (MPKitExecStatus *)registerPaymentExtension:(id<RoktPaymentExtension> _Nonnull)paymentExtension {
-    if (!paymentExtension) {
-        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeFail];
-    }
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit registerPaymentExtension: %@", paymentExtension]];
-    id rawStripeKey = _configuration[kMPRoktConfigStripePublishableKey];
-    NSDictionary<NSString *, NSString *> *paymentConfig = @{};
-    if ([rawStripeKey isKindOfClass:[NSString class]] && [(NSString *)rawStripeKey length] > 0) {
-        paymentConfig = @{@"stripeKey": (NSString *)rawStripeKey};
-    }
-    [Rokt registerPaymentExtension:paymentExtension config:paymentConfig];
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+- (MPKitExecStatus *)selectShoppableAdsWithIdentifier:(NSString *)identifier
+                                            attributes:(NSDictionary<NSString *, NSString *> *)attributes
+                                                config:(RoktConfig *)config
+                                               onEvent:(void (^)(RoktEvent *))onEvent
+                                          filteredUser:(FilteredMParticleUser *)filteredUser {
+    return [self.implementation selectShoppableAdsWithIdentifier:identifier
+                                                       attributes:attributes
+                                                           config:config
+                                                          onEvent:onEvent
+                                                     filteredUser:filteredUser];
 }
 
-- (MPKitExecStatus *)selectShoppableAdsWithIdentifier:(NSString * _Nonnull)identifier
-                                            attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                                                config:(RoktConfig * _Nullable)config
-                                               onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent
-                                          filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser {
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt Kit selectShoppableAds identifier: %@ attributes: %@ config: %@ onEvent: %@ filteredUser identities: %@",
-                      identifier, attributes, config, onEvent, filteredUser.userIdentities]];
-    NSDictionary<NSString *, NSString *> *finalAtt = [MPKitRokt prepareAttributes:attributes filteredUser:filteredUser performMapping:NO];
-    [MPKitRokt logSelectShoppableAdsEvent:finalAtt];
-    NSString *viewName = (identifier.length > 0) ? identifier : nil;
-    [Rokt selectShoppableAdsWithIdentifier:viewName attributes:finalAtt config:config onEvent:onEvent];
-    
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+- (MPKitExecStatus *)registerPaymentExtension:(id<RoktPaymentExtension>)paymentExtension {
+    return [self.implementation registerPaymentExtension:paymentExtension];
 }
 
-/// \param wrapperSdk The type of wrapper SDK
-///
-/// \param wrapperSdkVersion A string representing the wrapper SDK version
-///
-- (nonnull MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion {
-    RoktFrameworkType roktFrameworkType = [self mapMPWrapperSdkToRoktFrameworkType:wrapperSdk];
-    [Rokt setFrameworkTypeWithFrameworkType:roktFrameworkType];
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+- (MPKitExecStatus *)purchaseFinalized:(NSString *)identifier
+                         catalogItemId:(NSString *)catalogItemId
+                               success:(NSNumber *)success {
+    return [self.implementation purchaseFinalized:identifier catalogItemId:catalogItemId success:success];
 }
 
-- (RoktFrameworkType)mapMPWrapperSdkToRoktFrameworkType:(MPWrapperSdk)wrapperSdk {
-    switch (wrapperSdk) {
-        case MPWrapperSdkCordova:
-            return RoktFrameworkTypeCordova;
-        case MPWrapperSdkReactNative:
-            return RoktFrameworkTypeReactNative;
-        case MPWrapperSdkFlutter:
-            return RoktFrameworkTypeFlutter;
-        default:
-            return RoktFrameworkTypeIOS;
-    }
+- (MPKitExecStatus *)events:(NSString *)identifier onEvent:(void (^)(RoktEvent *))onEvent {
+    return [self.implementation events:identifier onEvent:onEvent];
 }
 
-- (NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)confirmEmbeddedViews:(NSDictionary<NSString *, RoktEmbeddedView *> * _Nullable)embeddedViews {
-    if (!embeddedViews || embeddedViews.count == 0) {
-        return @{};
-    }
-
-    NSMutableDictionary<NSString *, RoktEmbeddedView *> *safePlacements = [NSMutableDictionary dictionary];
-    for (NSString *key in embeddedViews) {
-        RoktEmbeddedView *view = embeddedViews[key];
-        if ([view isKindOfClass:[UIView class]]) {
-            safePlacements[key] = view;
-        } else {
-            [MPKitRokt MPLog:[NSString stringWithFormat:@"Rokt embedded view is incorrect type. Found: %@ but required: UIView subclass", NSStringFromClass([view class])]];
-        }
-    }
-    return safePlacements;
-}
-
-/// Ensures the "sandbox" attribute is present in the attributes dictionary.
-/// If not already set by the caller, the sandbox value is automatically determined based on the current mParticle environment
-/// (MPEnvironmentDevelopment → "true", production → "false"). This tells Rokt whether to show test or production ads.
-/// @param attributes The input attributes dictionary to validate
-/// @return A dictionary with the sandbox attribute guaranteed to be present
-+ (NSDictionary<NSString *, NSString *> *)confirmSandboxAttribute:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    NSMutableDictionary<NSString *, NSString *> *finalAttributes = attributes.mutableCopy;
-    
-    // Determine the value of the sandbox attribute based off the current environment
-    NSString *sandboxValue = ([[MParticle sharedInstance] environment] == MPEnvironmentDevelopment) ? @"true" : @"false";
-    
-    if (finalAttributes != nil) {
-        // Only set sandbox if it's not set by the client
-        if (![finalAttributes.allKeys containsObject:kMPRoktAttributeKeySandbox]) {
-            finalAttributes[kMPRoktAttributeKeySandbox] = sandboxValue;
-        }
-    } else {
-        finalAttributes = [[NSMutableDictionary alloc] initWithDictionary:@{kMPRoktAttributeKeySandbox: sandboxValue}];
-    }
-    
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Sandbox value: %@", finalAttributes[kMPRoktAttributeKeySandbox]]];
-    return finalAttributes;
-}
-
-+ (NSDictionary<NSString *, NSString *> * _Nonnull)prepareAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes filteredUser:(FilteredMParticleUser * _Nullable)filteredUser performMapping:(BOOL)performMapping {
-    if (filteredUser == nil && roktKit != nil) {
-        filteredUser = [[[MPKitAPI alloc] init] getCurrentUserWithKit:roktKit];
-    }
-    NSDictionary<NSString *, NSString *> *mappedAttributes = attributes;
-    if (performMapping) {
-        mappedAttributes = [MPKitRokt mapAttributes:attributes filteredUser:filteredUser];
-    }
-    
-    NSMutableDictionary<NSString *, NSString *> *finalAtt = [[NSMutableDictionary alloc] init];
-    [finalAtt addEntriesFromDictionary:mappedAttributes];
-    
-    // Add all known user identities to the attributes being passed to the Rokt SDK
-    [self addIdentityAttributes:finalAtt filteredUser:filteredUser];
-    
-    // Handle hashed email use case
-    [self handleHashedEmail:finalAtt];
-    
-    // The core SDK does not set sandbox on the user, but we must pass it to Rokt if provided
-    if (attributes[kMPRoktAttributeKeySandbox] != nil) {
-        [finalAtt addEntriesFromDictionary:@{kMPRoktAttributeKeySandbox: attributes[kMPRoktAttributeKeySandbox]}];
-    }
-    
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Attributes updated with mapped user Attributes and Identities: %@", finalAtt]];
-    return [MPKitRokt confirmSandboxAttribute:finalAtt];
-}
-
-+ (NSDictionary<NSString *, NSString *> *)transformValuesToString:(NSDictionary<NSString *, id> * _Nullable)originalDictionary {
-    __block NSMutableDictionary<NSString *, NSString *> *transformedDictionary = [[NSMutableDictionary alloc] initWithCapacity:originalDictionary.count];
-    Class NSStringClass = [NSString class];
-    Class NSNumberClass = [NSNumber class];
-    
-    [originalDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        if ([obj isKindOfClass:NSStringClass]) {
-            transformedDictionary[key] = obj;
-        } else if ([obj isKindOfClass:NSNumberClass]) {
-            NSNumber *numberAttribute = (NSNumber *)obj;
-            
-            if (numberAttribute == (void *)kCFBooleanFalse || numberAttribute == (void *)kCFBooleanTrue) {
-                transformedDictionary[key] = [numberAttribute boolValue] ? @"true" : @"false";
-            } else {
-                transformedDictionary[key] = [numberAttribute stringValue];
-            }
-        } else if ([obj isKindOfClass:[NSDate class]]) {
-            transformedDictionary[key] = [MPKitAPI stringFromDateRFC3339:obj];
-        } else if ([obj isKindOfClass:[NSData class]] && [(NSData *)obj length] > 0) {
-            transformedDictionary[key] = [[NSString alloc] initWithData:obj encoding:NSUTF8StringEncoding];
-        } else if ([obj isKindOfClass:[NSDictionary class]]) {
-            transformedDictionary[key] = [obj description];
-        } else if ([obj isKindOfClass:[NSMutableDictionary class]]) {
-            transformedDictionary[key] = [obj description];
-        } else if ([obj isKindOfClass:[NSArray class]]) {
-            transformedDictionary[key] = [obj description];
-        } else if ([obj isKindOfClass:[NSMutableArray class]]) {
-            transformedDictionary[key] = [obj description];
-        } else if ([obj isKindOfClass:[NSNull class]]) {
-            transformedDictionary[key] = @"null";
-        }
-    }];
-    
-    return transformedDictionary;
-}
-
-/// Retrieves the attribute mapping configuration for the Rokt Kit from the mParticle dashboard settings.
-/// The mapping defines how attribute keys should be renamed before being sent to Rokt (e.g., "userEmail" → "email").
-/// @param attributes The input attributes dictionary
-/// @param filteredUser The current mParticle user
-/// @return A dictionary with mapped attributes according to dashboard configuration
-+ (NSDictionary<NSString *, NSString *> *)mapAttributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser {
-    NSDictionary *roktKitConfig = [MPKitRokt getKitConfig];
-    if (!roktKitConfig) {
-        return attributes;
-    }
-
-    NSArray *attributeMap = [MPKitRokt placementMappingsFromSettings:roktKitConfig];
-    NSMutableDictionary *mappedAttributes = attributes.mutableCopy ?: [NSMutableDictionary dictionary];
-    for (NSDictionary *map in attributeMap) {
-        NSString *mapFrom = map[kMPAttributeMappingSourceKey];
-        NSString *mapTo = map[kMPAttributeMappingDestinationKey];
-        if (mappedAttributes[mapFrom]) {
-            id value = mappedAttributes[mapFrom];
-            [mappedAttributes removeObjectForKey:mapFrom];
-            mappedAttributes[mapTo] = value;
-        }
-    }
-    for (id key in mappedAttributes) {
-        if ([key isKindOfClass:[NSString class]] && [key length] > 0 &&
-            ![key isEqual:kMPRoktAttributeKeySandbox]) {
-            [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
-        }
-    }
-
-    // Add user attributes allowed for Rokt, without overwriting placement attributes.
-    NSDictionary *userAttributes = filteredUser.userAttributes;
-    for (NSString *key in userAttributes) {
-        if (!mappedAttributes[key]) {
-            mappedAttributes[key] = userAttributes[key];
-        }
-    }
-    return [MPKitRokt transformValuesToString:mappedAttributes];
-}
-
-+ (void)addIdentityAttributes:(NSMutableDictionary<NSString *, NSString *> * _Nullable)attributes filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser {
-    NSMutableDictionary<NSString *, NSString *> *identityAttributes = [[NSMutableDictionary alloc] init];
-    for (NSNumber *identityNumberKey in filteredUser.userIdentities) {
-        NSString *identityStringKey = [MPKitRokt stringForIdentityType:identityNumberKey.unsignedIntegerValue];
-        if (identityStringKey == nil) {
-            [MPKitRokt MPLog:[NSString stringWithFormat:@"Skipping user identity with no Rokt attribute mapping, type: %@", identityNumberKey]];
-            continue;
-        }
-        [identityAttributes setObject:filteredUser.userIdentities[identityNumberKey] forKey:identityStringKey];
-    }
-    
-    if (attributes != nil) {
-        [attributes addEntriesFromDictionary:identityAttributes];
-    } else {
-        attributes = identityAttributes;
-    }
-    
-    // Add MPID to the attributes being passed to the Rokt SDK
-    attributes[kMPRoktIdentityTypeMpid] = filteredUser.userId.stringValue;
-}
-
-+ (void)handleHashedEmail:(NSMutableDictionary<NSString *, NSString *> * _Nullable)attributes {
-    NSString *emailKey = [MPKitRokt stringForIdentityType:MPIdentityEmail];
-    NSString *hashedEmailValue = attributes[kMPRoktIdentityTypeEmailSha256];
-    
-    // Remove email if hashed value set
-    if (emailKey != kMPRoktIdentityTypeEmailSha256 && hashedEmailValue != nil) {
-        [attributes removeObjectForKey:emailKey];
-    }
-}
-
-+ (NSString *)stringForIdentityType:(MPIdentity)identityType {
-    NSNumber *hashedEmailIdentity = [MPKitRokt getRoktHashedEmailUserIdentityType];
-    
-    if (hashedEmailIdentity && hashedEmailIdentity.unsignedIntValue == identityType) {
-        return kMPRoktIdentityTypeEmailSha256;
-    }
-    
-    NSDictionary<NSNumber *, NSString *> *identityStrings = @{@(MPIdentityAlias): @"alias",
-                                                             @(MPIdentityCustomerId): @"customerid",
-                                                             @(MPIdentityEmail): @"email",
-                                                             @(MPIdentityFacebook): @"facebook",
-                                                             @(MPIdentityFacebookCustomAudienceId): @"facebookcustomaudienceid",
-                                                             @(MPIdentityGoogle): @"google",
-                                                             @(MPIdentityMicrosoft): @"microsoft",
-                                                             @(MPIdentityOther): @"other",
-                                                             @(MPIdentityTwitter): @"twitter",
-                                                             @(MPIdentityYahoo): @"yahoo",
-                                                             @(MPIdentityOther2): @"other2",
-                                                             @(MPIdentityOther3): @"other3",
-                                                             @(MPIdentityOther4): @"other4",
-                                                             @(MPIdentityOther5): @"other5",
-                                                             @(MPIdentityOther6): @"other6",
-                                                             @(MPIdentityOther7): @"other7",
-                                                             @(MPIdentityOther8): @"other8",
-                                                             @(MPIdentityOther9): @"other9",
-                                                             @(MPIdentityOther10): @"other10",
-                                                             @(MPIdentityMobileNumber): @"mobile_number",
-                                                             @(MPIdentityPhoneNumber2): @"phone_number_2",
-                                                             @(MPIdentityPhoneNumber3): @"phone_number_3",
-                                                             @(MPIdentityIOSAdvertiserId): @"ios_idfa",
-                                                             @(MPIdentityIOSVendorId): @"ios_idfv",
-                                                             @(MPIdentityPushToken): @"push_token",
-                                                             @(MPIdentityDeviceApplicationStamp): @"device_application_stamp"};
-
-    return identityStrings[@(identityType)];
-}
-
-+ (NSNumber *)identityTypeForString:(NSString *)identityString {
-    if (identityString == nil) {
-        return nil;
-    }
-    NSDictionary<NSString *, NSNumber *> *identityNumbers = @{@"alias": @(MPIdentityAlias),
-                                                             @"customerid": @(MPIdentityCustomerId),
-                                                             @"email": @(MPIdentityEmail),
-                                                             @"facebook": @(MPIdentityFacebook),
-                                                             @"facebookcustomaudienceid": @(MPIdentityFacebookCustomAudienceId),
-                                                             @"google": @(MPIdentityGoogle),
-                                                             @"microsoft": @(MPIdentityMicrosoft),
-                                                             @"other": @(MPIdentityOther),
-                                                             @"twitter": @(MPIdentityTwitter),
-                                                             @"yahoo": @(MPIdentityYahoo),
-                                                             @"other2": @(MPIdentityOther2),
-                                                             @"other3": @(MPIdentityOther3),
-                                                             @"other4": @(MPIdentityOther4),
-                                                             @"other5": @(MPIdentityOther5),
-                                                             @"other6": @(MPIdentityOther6),
-                                                             @"other7": @(MPIdentityOther7),
-                                                             @"other8": @(MPIdentityOther8),
-                                                             @"other9": @(MPIdentityOther9),
-                                                             @"other10": @(MPIdentityOther10),
-                                                             @"mobile_number": @(MPIdentityMobileNumber),
-                                                             @"phone_number_2": @(MPIdentityPhoneNumber2),
-                                                             @"phone_number_3": @(MPIdentityPhoneNumber3),
-                                                             @"ios_idfa": @(MPIdentityIOSAdvertiserId),
-                                                             @"ios_idfv": @(MPIdentityIOSVendorId),
-                                                             @"push_token": @(MPIdentityPushToken),
-                                                             @"device_application_stamp": @(MPIdentityDeviceApplicationStamp)};
-    
-    return identityNumbers[identityString];
-}
-
-#pragma mark - Private Helper Methods
-
-/// Retrieves settings supplied at launch and updated by the container on configuration refresh.
-+ (NSDictionary * _Nullable)getKitConfig {
-    id configuration = roktKit.configuration;
-    if (![configuration isKindOfClass:[NSDictionary class]]) {
-        if (configuration && configuration != [NSNull null]) {
-            [MPKitRokt MPLog:@"Ignoring kit settings: expected a dictionary"];
-        }
-        return nil;
-    }
-    return [configuration copy];
-}
-
-+ (NSArray<NSDictionary *> *)placementMappingsFromSettings:(NSDictionary *)settings {
-    id mapping = settings[kMPPlacementAttributesMapping];
-    if (!mapping || mapping == [NSNull null]) {
-        return @[];
-    }
-    if (![mapping isKindOfClass:[NSString class]]) {
-        [MPKitRokt MPLog:@"Ignoring placement mapping: expected a string"];
-        return @[];
-    }
-    NSData *data = [[mapping stringByRemovingPercentEncoding] dataUsingEncoding:NSUTF8StringEncoding];
-    if (!data) {
-        [MPKitRokt MPLog:@"Ignoring placement mapping: invalid percent encoding"];
-        return @[];
-    }
-    NSError *error = nil;
-    id parsed = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-    if (error) {
-        [MPKitRokt MPLog:@"Ignoring placement mapping: invalid JSON"];
-        return @[];
-    }
-    if (![parsed isKindOfClass:[NSArray class]]) {
-        [MPKitRokt MPLog:@"Ignoring placement mapping: expected an array"];
-        return @[];
-    }
-    NSMutableArray *validMappings = [NSMutableArray array];
-    for (id entry in parsed) {
-        if (![entry isKindOfClass:[NSDictionary class]]) {
-            [MPKitRokt MPLog:@"Ignoring placement mapping entry: expected a dictionary"];
-            continue;
-        }
-        id source = entry[kMPAttributeMappingSourceKey];
-        id destination = entry[kMPAttributeMappingDestinationKey];
-        if (![source isKindOfClass:[NSString class]] || [source length] == 0 ||
-            ![destination isKindOfClass:[NSString class]] || [destination length] == 0) {
-            [MPKitRokt MPLog:@"Ignoring placement mapping entry: expected nonempty string map and value"];
-            continue;
-        }
-        [validMappings addObject:entry];
-    }
-    return validMappings;
-}
-
-/// Retrieves the configured identity type to use for hashed email, or nil if unconfigured.
-+ (NSNumber * _Nullable)getRoktHashedEmailUserIdentityType {
-    NSDictionary *roktKitConfig = [MPKitRokt getKitConfig];
-    id identityType = roktKitConfig[kMPHashedEmailUserIdentityType];
-    if (!identityType || identityType == [NSNull null]) {
-        return nil;
-    }
-    if (![identityType isKindOfClass:[NSString class]] || [identityType length] == 0) {
-        [MPKitRokt MPLog:@"Ignoring hashed email identity type: expected a nonempty string"];
-        return nil;
-    }
-    NSNumber *identity = [MPKitRokt identityTypeForString:[identityType lowercaseString]];
-    if (identity == nil) {
-        [MPKitRokt MPLog:@"Ignoring unknown hashed email identity type"];
-    }
-    return identity;
-}
-
-/// Notifies Rokt that a purchase from a placement offer has been finalized.
-/// Call this method to inform Rokt about the completion status of an offer purchase initiated from a placement.
-/// @param placementId The identifier of the placement where the offer was displayed
-/// @param catalogItemId The identifier of the catalog item that was purchased
-/// @param success Whether the purchase was successful (YES) or failed (NO)
-/// @return MPKitExecStatus indicating success or failure of the operation
-- (MPKitExecStatus *)purchaseFinalized:(NSString *)identifier catalogItemId:(NSString *)catalogItemId success:(NSNumber *)success {
-    if (identifier != nil && catalogItemId != nil && success != nil) {
-        [Rokt purchaseFinalizedWithIdentifier:identifier catalogItemId:catalogItemId success:success.boolValue];
-        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
-    }
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeFail];
-}
-
-- (MPKitExecStatus *)events:(NSString *)identifier onEvent:(void (^ _Nullable)(RoktEvent * _Nonnull))onEvent {
-    [Rokt eventsWithIdentifier:identifier onEvent:onEvent];
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
-}
-
-- (MPKitExecStatus *)globalEvents:(void (^)(RoktEvent * _Nonnull))onEvent {
-    [Rokt globalEventsOnEvent:onEvent];
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+- (MPKitExecStatus *)globalEvents:(void (^)(RoktEvent *))onEvent {
+    return [self.implementation globalEvents:onEvent];
 }
 
 - (MPKitExecStatus *)close {
-    [Rokt close];
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    return [self.implementation close];
 }
 
-- (void)applyRoktSession:(RoktSession *)session {
-    [Rokt setSession:session];
-}
-
-/// Set the session to use for the next execute call.
-/// A non-empty id and token plus an expiry are required. Incomplete sessions are ignored;
-/// the separate `setSessionId` method remains the legacy id-only path.
-/// Requires Rokt iOS SDK 5.4.0+ (`+[Rokt setSession:]`).
+/// The class is confirmed here because the Swift implementation cannot do it: an Objective-C
+/// object parameter crosses into Swift unchecked, so the first property read on the wrong class
+/// raises rather than returns. The session reaches this method as an untyped forwarded argument,
+/// which is the only reason the wrong class can arrive at all.
 ///
-/// @param session The mParticle session handoff value (id + JWT + expiry).
+/// Whether the three fields are actually present is left to Swift, which takes them individually
+/// so that it can express their absence and be tested on it.
 - (MPKitExecStatus *)setSession:(MPRoktSession *)session {
-    NSString *sessionId = [session.sessionId stringByTrimmingCharactersInSet:
-                           [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    NSString *sessionToken = [session.sessionToken stringByTrimmingCharactersInSet:
-                              [NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    if (sessionId.length == 0 || sessionToken.length == 0 || session.expiresAt == nil) {
-        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    if (![session isKindOfClass:[MPRoktSession class]]) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode]
+                                             returnCode:MPKitReturnCodeSuccess];
     }
-
-    RoktSession *roktSession = [[RoktSession alloc] initWithSessionId:sessionId
-                                                         sessionToken:sessionToken
-                                                            expiresAt:session.expiresAt];
-    [self applyRoktSession:roktSession];
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    return [self.implementation setSessionWithSessionId:session.sessionId
+                                           sessionToken:session.sessionToken
+                                              expiresAt:session.expiresAt];
 }
 
-/// Get the current session (id + token) for WebView / non-native handoff.
 - (MPRoktSession *)getSession {
-    RoktSession *session = [Rokt getSession];
-    if (session.sessionId.length == 0 ||
-        session.sessionToken.length == 0 ||
-        session.expiresAt == nil) {
-        return nil;
-    }
-    return [[MPRoktSession alloc] initWithSessionId:session.sessionId
-                                       sessionToken:session.sessionToken
-                                          expiresAt:session.expiresAt];
+    return [self.implementation getSession];
 }
 
-/// Set the session id to use for the next execute call.
-/// This is useful for cases where you have a session id from a non-native integration,
-/// e.g. WebView, and you want the session to be consistent across integrations.
-/// Prefer `-setSession:` so the session token is also applied for offers and events.
-///
-/// @param sessionId The session id to be set. Must be a non-empty string.
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId {
-    MPSetRoktSessionId(sessionId);
-    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    return [self.implementation setSessionId:sessionId];
 }
 
-/// Get the session id to use within a non-native integration e.g. WebView.
-/// Prefer `-getSession` to also read the session token.
-///
-/// @return The session id or nil if no session is present.
 - (NSString *)getSessionId {
-    return MPGetRoktSessionId();
+    return [self.implementation getSessionId];
 }
 
-/// End the current Rokt session so the next selectPlacements call starts a new one.
-///
-/// Reached only from MPRokt.clearSession — the host names the transaction boundary itself. The
-/// kit deliberately does not infer boundaries from identity or session callbacks: those fire for
-/// every partner on this kit, and a login or logout is not reliably a change of person.
-///
-/// Fire-and-forget, mirroring close: the Rokt SDK performs the reset (flush buffered events,
-/// then drop the session) synchronously on its side, so there is nothing to return here.
 - (MPKitExecStatus *)clearSession {
-    [MPKitRokt MPLog:@"Rokt Kit clearing the Rokt session"];
-    [Rokt clearSession];
-    return [self execStatus:MPKitReturnCodeSuccess];
+    return [self.implementation clearSession];
 }
 
-/// Forwards a bounded public-API-usage diagnostic code from mParticle core into the Rokt SDK.
+- (BOOL)handleURLCallback:(NSURL *)url {
+    return [self.implementation handleURLCallback:url];
+}
+
 - (void)logMParticleApiDiagnostic:(NSString *)code {
-    [Rokt logMParticleApiCall:code additionalInfo:@{}];
+    [self.implementation logMParticleApiDiagnostic:code];
 }
 
-+ (void)MPLog:(NSString *)string {
-    NSString *msg = [NSString stringWithFormat:@"%@%@", @"MPRokt -> ", string];
-    if ([[MParticle sharedInstance] environment] == MPEnvironmentDevelopment) {
-        NSLog(@"%@", msg);
-    }
+- (MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk version:(NSString *)wrapperSdkVersion {
+    return [self.implementation setWrapperSdk:wrapperSdk version:wrapperSdkVersion];
 }
 
-#pragma mark - Log Level Mapping
-
-/// Maps mParticle log level to Rokt SDK log level
-+ (RoktLogLevel)roktLogLevelFromMParticleLogLevel:(MPILogLevel)mpLogLevel {
-    switch (mpLogLevel) {
-        case MPILogLevelVerbose:
-            return RoktLogLevelVerbose;
-        case MPILogLevelDebug:
-            return RoktLogLevelDebug;
-        case MPILogLevelWarning:
-            return RoktLogLevelWarning;
-        case MPILogLevelError:
-            return RoktLogLevelError;
-        case MPILogLevelNone:
-        default:
-            return RoktLogLevelNone;
-    }
++ (NSDictionary<NSString *, NSString *> *)prepareAttributes:(NSDictionary<NSString *, NSString *> *)attributes
+                                                filteredUser:(FilteredMParticleUser *)filteredUser
+                                              performMapping:(BOOL)performMapping {
+    return [MPRoktKitImplementation prepareAttributes:attributes
+                                         filteredUser:filteredUser
+                                       performMapping:performMapping];
 }
 
-/// Applies mParticle's current log level to the Rokt SDK
-+ (void)applyMParticleLogLevel {
-    MPILogLevel mpLogLevel = [MParticle sharedInstance].logLevel;
-    RoktLogLevel roktLogLevel = [MPKitRokt roktLogLevelFromMParticleLogLevel:mpLogLevel];
-    [Rokt setLogLevel:roktLogLevel];
-    [MPKitRokt MPLog:[NSString stringWithFormat:@"Applied log level mapping: mParticle %lu -> Rokt %ld",
-                      (unsigned long)mpLogLevel, (long)roktLogLevel]];
++ (NSNumber *)getRoktHashedEmailUserIdentityType {
+    return [MPRoktKitImplementation getRoktHashedEmailUserIdentityType];
 }
 
-+ (void)logSelectPlacementEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes {
-    MPEvent *event = [[MPEvent alloc] initWithName:kMPEventNameSelectPlacements type:MPEventTypeOther];
-    // Rokt-filtered data must not be broadcast to other kits as event attributes.
-    [[MParticle sharedInstance] logEvent:event];
-    [MPKitRokt MPLog:@"Logged selectPlacements custom event"];
-}
-
-+ (void)logSelectShoppableAdsEvent:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes {
-    MPEvent *event = [[MPEvent alloc] initWithName:kMPEventNameSelectShoppableAds type:MPEventTypeOther];
-    // Rokt-filtered data must not be broadcast to other kits as event attributes.
-    [[MParticle sharedInstance] logEvent:event];
-    [MPKitRokt MPLog:@"Logged selectShoppableAds custom event"];
++ (void)logSelectPlacementEvent:(NSDictionary<NSString *, NSString *> *)attributes {
+    [MPRoktKitImplementation logSelectPlacementEvent:attributes];
 }
 
 @end

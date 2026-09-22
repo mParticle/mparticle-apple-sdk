@@ -105,6 +105,31 @@
     XCTAssertNotNil(state);
 }
 
+- (void)testSetGDPRConsentStateSkipsNullValues {
+    [_globalState addGDPRConsentState:_state purpose:@"existing"];
+    NSDictionary *replacement = @{
+        @"valid": _state,
+        @"null": [NSNull null]
+    };
+    [_globalState setGDPRConsentState:(NSDictionary<NSString *, MPGDPRConsent *> *)replacement];
+
+    NSDictionary<NSString *, MPGDPRConsent *> *stateDictionary = [_globalState gdprConsentState];
+    XCTAssertEqual(stateDictionary.count, 1);
+    XCTAssertNotNil(stateDictionary[@"valid"]);
+    XCTAssertNil(stateDictionary[@"null"]);
+    XCTAssertNil(stateDictionary[@"existing"]);
+}
+
+- (void)testMutatingRetrievedGDPRStateDoesNotAffectStoredState {
+    _state.document = @"original";
+    [_globalState addGDPRConsentState:_state purpose:@"test purpose"];
+
+    MPGDPRConsent *retrieved = [_globalState gdprConsentState][@"test purpose"];
+    retrieved.document = @"mutated";
+
+    XCTAssertEqualObjects([_globalState gdprConsentState][@"test purpose"].document, @"original");
+}
+
 - (void)testGetSetCCPAState {
     XCTAssertNil([_globalState ccpaConsentState]);
     [_globalState setCCPAConsentState:_ccpaState];

@@ -61,7 +61,7 @@ final class MParticleLTVTests: MParticleTestBase {
     func test_logLTVIncreaseCallback_blocksEvent_whenFilterReturnsNil() {
         dataPlanFilter.transformEventReturnValue = nil
         
-        mparticle.logLTVIncreaseCallback(event, execStatus: .success)
+        mparticle.logLTVIncreaseCallback(event, increaseAmount: 12.5, execStatus: .success)
         
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
@@ -72,7 +72,7 @@ final class MParticleLTVTests: MParticleTestBase {
     func test_logLTVIncreaseCallback_forwardsTransformedEvent_whenFilterReturnsEvent() {
         dataPlanFilter.transformEventReturnValue = transformedEvent
         
-        mparticle.logLTVIncreaseCallback(event, execStatus: .success)
+        mparticle.logLTVIncreaseCallback(event, increaseAmount: 12.5, execStatus: .success)
         
         // Verify filter transformed event
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
@@ -85,6 +85,7 @@ final class MParticleLTVTests: MParticleTestBase {
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
         XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logLTVIncrease:event:")
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
-        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
+        XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedEvent)
+        XCTAssertEqual(kitContainer.forwardSDKCallParametersParam?[0] as? Double, 12.5)
     }
 }

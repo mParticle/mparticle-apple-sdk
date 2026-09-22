@@ -1,7 +1,10 @@
 #ifndef MPConnectorFactoryProtocol_h
 #define MPConnectorFactoryProtocol_h
 
-#import "MPConnectorProtocol.h"
+#import <Foundation/Foundation.h>
+
+@protocol MPConnectorProtocol;
+
 @protocol MPConnectorFactoryProtocol
 - (NSObject<MPConnectorProtocol> * _Nonnull)createConnector;
 @end

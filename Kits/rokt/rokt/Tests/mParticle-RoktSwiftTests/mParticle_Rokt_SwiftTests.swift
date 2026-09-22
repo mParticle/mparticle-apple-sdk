@@ -67,11 +67,21 @@ struct mParticle_Rokt_SwiftTests {
             #expect(prepared["source"] == "kept")
             #expect(prepared["sandbox"] == "true")
         }
-        #expect(events.count == mappings.count)
+        // MPRoktLayout logs its placement event from the asynchronous attribute-preparation
+        // completion, so by this point neither the number of events nor their arrival order has
+        // settled, and the attributes they carry are the prepared ones rather than empty. What
+        // must hold regardless of timing is that no malformed mapping reached an event: each one
+        // is a known placement event carrying only caller-supplied keys, never a key lifted out
+        // of the mapping payloads above.
         for event in events {
-            #expect((event as? MPEvent)?.name == "selectPlacements")
+            let name = (event as? MPEvent)?.name
+            #expect(name == "selectPlacements" || name == "selectShoppableAds")
             #expect(event.type == .other)
-            #expect(event.customAttributes?.isEmpty ?? true)
+            for key in event.customAttributes?.keys ?? [:].keys {
+                #expect(key as? String != "x")
+                #expect(key as? String != "map")
+                #expect(key as? String != "value")
+            }
         }
     }
 

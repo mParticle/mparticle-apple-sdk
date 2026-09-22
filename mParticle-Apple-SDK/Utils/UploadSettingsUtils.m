@@ -3,6 +3,8 @@
 
 @implementation UploadSettingsUtils
 
+// Non-extractable: archives/unarchives the ObjC `MPUploadSettings` class and logs via the `MParticle.sharedInstance` singleton — both ObjC-module types the Swift module cannot import; persistence already routes through the Swift `MPUserDefaults`. Per docs/swift-migration/CONVERSION-RECIPE.md hard constraint.
+
 + (void)setLastUploadSettings:(nullable MPUploadSettings *)lastUploadSettings userDefaults:(MPUserDefaults*)userDefaults {
     if (lastUploadSettings) {
         NSError *error = nil;

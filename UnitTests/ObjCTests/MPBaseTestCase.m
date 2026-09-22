@@ -2,19 +2,22 @@
 #import <OCMock/OCMock.h>
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
-#import "MPPersistenceController.h"
-#import "MPStateMachine.h"
-#import "MPKitContainer.h"
+#import "MPPersistenceUtilities.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPAppNotificationHandler.h"
-#import "MPConnector.h"
 #import "MPNetworkCommunication.h"
-#import "MPConnectorProtocol.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIConstants.h"
+#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle (Tests)
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
++ (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
+- (MPLog *)getLogger;
+- (void)initializePersistence;
 @end
 
 @interface MPTestConnectorFactory : NSObject <MPConnectorFactoryProtocol>
@@ -33,15 +36,23 @@
 
 @end
 
+@interface MPBackendController_PRIVATE (UploadBuilderTesting)
++ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
+@end
+
 @implementation MPBaseTestCase
+
+- (MPUploadBuilderContext *)uploadBuilderContext {
+    return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{
+        return [MParticle sharedInstance].persistenceStore;
+    }];
+}
+
 
 - (void)setUpWithCompletionHandler:(void (^)(NSError * _Nullable))completion {
     [super setUp];
     MParticle *instance = [MParticle sharedInstance];
-    if (!instance.persistenceController) {
-        // Ensure we have a persistence controller to reset the db etc
-        instance.persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
-    }
+    [instance initializePersistence];
     
     [instance reset:^{
         MPNetworkCommunication_PRIVATE.connectorFactory = [[MPTestConnectorFactory alloc] init];
@@ -52,6 +63,13 @@
 - (void)tearDown {
     MPNetworkCommunication_PRIVATE.connectorFactory = nil;
     [super tearDown];
+}
+
+- (MPMessageBuilderContext *)messageBuilderContext {
+    MParticle *mparticle = [MParticle sharedInstance];
+    return [[MPMessageBuilderContext alloc] initWithDataPlanId:mparticle.dataPlanId
+                                               dataPlanVersion:mparticle.dataPlanVersion
+                                                        logger:[mparticle getLogger]];
 }
 
 - (id)attemptSecureEncodingwithClass:(Class)class Object:(id)object {
@@ -86,6 +104,15 @@
     }
     
     return returnedObject;
+}
+
+- (MPStateMachine_PRIVATE *)freshStateMachine {
+    return [[MPStateMachine_PRIVATE alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                      connector:(id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init]
+                                                   messageQueue:[MParticle messageQueue]
+                                                     sdkVersion:kMParticleSDKVersion
+                                               deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                       buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
 }
 
 @end

@@ -3,11 +3,12 @@
 //
 
 #import "MPAliasResponse.h"
+@import mParticle_Apple_SDK_Swift;
 
 @implementation MPAliasResponse
 
 - (BOOL)isSuccessful {
-    return _responseCode >= 200 && _responseCode < 300;
+    return [MPAliasResponsePlanPRIVATE isSuccessCode:_responseCode];
 }
 
 @end

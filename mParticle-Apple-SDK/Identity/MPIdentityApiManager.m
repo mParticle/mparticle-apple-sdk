@@ -3,7 +3,6 @@
 //
 
 #import "MPIdentityApiManager.h"
-#import "MPConnector.h"
 #import "MPIConstants.h"
 #import "MPNetworkCommunication.h"
 #import "MPBackendController.h"

@@ -1,0 +1,79 @@
+name: Swift Migration Progress
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  CLOC_SHA256: bf59272455172108072a0a106379f7509fd4349bdcfd85203bac038ccd286d83
+  CLOC_URL: https://github.com/AlDanial/cloc/releases/download/v2.10/cloc-2.10.pl
+  COMMENT_IDENTIFIER: <!-- swift-migration-progress -->
+
+jobs:
+  report:
+    name: Report migration progress
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install cloc
+        run: |
+          CLOC_PATH="${RUNNER_TEMP}/cloc-2.10.pl"
+          curl --fail --location --retry 3 --silent --show-error \
+            "${CLOC_URL}" \
+            --output "${CLOC_PATH}"
+          printf '%s  %s\n' "${CLOC_SHA256}" "${CLOC_PATH}" | sha256sum --check --strict -
+          chmod +x "${CLOC_PATH}"
+
+      - name: Self-test migration report
+        run: |
+          Tools/swift-migration-progress.sh selftest \
+            --cloc "${RUNNER_TEMP}/cloc-2.10.pl"
+
+      - name: Generate migration report
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          Tools/swift-migration-progress.sh report \
+            --repo "${GITHUB_WORKSPACE}" \
+            --base "${BASE_SHA}" \
+            --head "${HEAD_SHA}" \
+            --cloc "${RUNNER_TEMP}/cloc-2.10.pl" \
+            --output "${RUNNER_TEMP}/swift-migration-progress.md"
+
+      - name: Publish job summary
+        if: ${{ always() }}
+        run: |
+          REPORT_PATH="${RUNNER_TEMP}/swift-migration-progress.md"
+          if [[ -f "${REPORT_PATH}" ]]; then
+            cat "${REPORT_PATH}" >>"${GITHUB_STEP_SUMMARY}"
+          else
+            printf '%s\n' '## 🐦 Swift Migration Progress' >>"${GITHUB_STEP_SUMMARY}"
+            printf '%s\n' 'The migration report could not be generated. See the failed step above.' >>"${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Find migration progress comment
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: peter-evans/find-comment@v4
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: github-actions[bot]
+          body-includes: ${{ env.COMMENT_IDENTIFIER }}
+
+      - name: Create or update migration progress comment
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          edit-mode: replace
+          body-path: ${{ runner.temp }}/swift-migration-progress.md

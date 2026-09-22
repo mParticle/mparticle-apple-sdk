@@ -1,10 +1,14 @@
 #import "MPKitActivity.h"
 #import "MPEnums.h"
 #import "MPExtensionProtocol.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitProtocol.h"
 #import "MPKitRegister.h"
 #import "mParticle.h"
+
+@interface MParticle ()
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
+@end
 
 #pragma mark - MPKitActivityMapping
 @interface MPKitActivityMapping : NSObject
