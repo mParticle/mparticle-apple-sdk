@@ -14,10 +14,9 @@
 #import "MPExtensionProtocol.h"
 #import "Kits/MPKitContainer+MParticlePrivate.h"
 
-// Rokt kit identifier. The placement-attribute mapping and hashed-email identity constants that
-// used to live here moved into the kit alongside the logic that reads them, in
-// MPRoktKitImplementation.swift.
-static const NSInteger kMPRoktKitId = 181;
+// The placement-attribute mapping and hashed-email identity constants that used to live here
+// moved into the kit alongside the logic that reads them, in MPRoktKitImplementation.swift. The
+// kit identifier is kMPRoktKitCode, declared below next to the dispatch-target helper.
 
 @interface MParticle ()
 
@@ -228,17 +227,14 @@ static NSInteger const kMPRoktKitCode = 181;
     }
 
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
-        if ([kitRegister.code integerValue] == kMPRoktKitId) {
-            id kitInstance = kitRegister.wrapperInstance;
-            if (kitInstance && [kitInstance respondsToSelector:@selector(getSession)]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-                result = [kitInstance performSelector:@selector(getSession)];
-#pragma clang diagnostic pop
+        if ([kitRegister.code integerValue] == kMPRoktKitCode) {
+            id<MPRoktKitDispatchTarget> target = MPRoktKitAsDispatchTarget(kitRegister.wrapperInstance);
+            if (target && [target respondsToSelector:@selector(getSession)]) {
+                result = [target getSession];
                 MPILogDebug(@"MPRokt getSession returning: %@", result ? @"session present" : @"nil");
                 break;
             } else {
-                MPILogDebug(@"MPRokt getSession - kit found but doesn't respond to getSession");
+                MPILogDebug(@"MPRokt getSession - kit found but doesn't adopt MPRoktKitDispatchTarget or getSession");
             }
         }
     }

@@ -3,6 +3,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class MPRoktSession;
+
 /**
  Selectors implemented by the Rokt kit and invoked synchronously by `MPRokt`.
 
@@ -12,6 +14,14 @@
 @protocol MPRoktKitDispatchTarget <NSObject>
 
 @optional
+
+/**
+ Returns the current Rokt session for WebView hand-off, carrying the session token and its expiry
+ as well as the identifier. Prefer this to `getSessionId`, which returns the identifier alone.
+
+ @return The session, or `nil` if no session is present or it is incomplete.
+ */
+- (MPRoktSession * _Nullable)getSession;
 
 /**
  Returns the current Rokt session identifier for WebView hand-off.
