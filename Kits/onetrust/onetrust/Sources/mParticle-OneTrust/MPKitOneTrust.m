@@ -50,17 +50,10 @@
     dispatch_once(&kitPredicate, ^{
         
         // Save Purpose mapping for use by OneTrust Mobile SDK
-        NSString* purposeMappingDict = [self->_configuration valueForKey:@"mobileConsentGroups"];
-        [[NSUserDefaults standardUserDefaults] setObject:purposeMappingDict forKey:@"OT_mP_Mapping"];
-        
-        NSString* vendorIABMappingDict = [self->_configuration valueForKey:@"vendorIABConsentGroups"];
-        [[NSUserDefaults standardUserDefaults] setObject:vendorIABMappingDict forKey:@"OT_Vendor_IAB_mP_Mapping"];
-        
-        NSString* vendorGoogleMappingDict = [self->_configuration valueForKey:@"vendorGoogleConsentGroups"];
-        [[NSUserDefaults standardUserDefaults] setObject:vendorGoogleMappingDict forKey:@"OT_Vendor_Google_mP_Mapping"];
-        
-        NSString* vendorGeneralMappingDict = [self->_configuration valueForKey:@"vendorGeneralConsentGroups"];
-        [[NSUserDefaults standardUserDefaults] setObject:vendorGeneralMappingDict forKey:@"OT_Vendor_General_mP_Mapping"];
+        [self persistConfigurationKey:@"mobileConsentGroups" asDefaultsKey:@"OT_mP_Mapping"];
+        [self persistConfigurationKey:@"vendorIABConsentGroups" asDefaultsKey:@"OT_Vendor_IAB_mP_Mapping"];
+        [self persistConfigurationKey:@"vendorGoogleConsentGroups" asDefaultsKey:@"OT_Vendor_Google_mP_Mapping"];
+        [self persistConfigurationKey:@"vendorGeneralConsentGroups" asDefaultsKey:@"OT_Vendor_General_mP_Mapping"];
         
         self->_started = YES;
         NSLog(@"mParticle -> OneTrust configured");
@@ -96,6 +89,31 @@
     [self updateAllConsentStates];
 }
 
+// Server configuration values arrive as parsed JSON, so a value the mParticle UI describes as a
+// string may reach the kit as a number, boolean or container. Read them through this accessor so a
+// malformed value is ignored rather than sent a selector it does not respond to.
+- (NSString * _Nullable)configurationStringForKey:(NSString *)key {
+    id value = self.configuration[key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"mParticle -> OneTrust ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+// The mapping values are handed to the OneTrust SDK through NSUserDefaults, which only accepts
+// property list objects - a JSON container holding a null is not one, and setObject:forKey: raises
+// on it. Removing on a missing or malformed value keeps the stored mapping consistent with the
+// configuration that was applied, which is what passing nil straight through used to do.
+- (void)persistConfigurationKey:(NSString *)key asDefaultsKey:(NSString *)defaultsKey {
+    NSString *value = [self configurationStringForKey:key];
+    if (value != nil) {
+        [[NSUserDefaults standardUserDefaults] setObject:value forKey:defaultsKey];
+    } else {
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:defaultsKey];
+    }
+}
+
 // Parses the raw consent mapping from the mParticle UI into simple map
 - (NSDictionary*)parseConsentMapping:(NSString*)rawConsentMapping {
     NSMutableDictionary *consentMapping = [[NSMutableDictionary alloc] init];
@@ -116,19 +134,29 @@
         {
             if ([jsonObject isKindOfClass:[NSArray class]])
             {
-                for (NSDictionary *element in jsonObject) {
-                    if (element[@"value"] != nil && element[@"map"] != nil) {
-                        NSString *purpose = element[@"map"];
-                        NSString *regulation = @"gdpr";
-
-                        if ([purpose isEqualToString: @"data_sale_opt_out"]) {
-                            regulation = @"ccpa";
-                        }
-
-                        consentMapping[element[@"value"]] = @{ @"purpose": purpose, @"regulation": regulation};
-                    } else {
+                // Only the root array is guaranteed by the check above. The elements and their
+                // fields come from the same server document, so each one has to be checked before
+                // it is subscripted, messaged, or used as a dictionary key.
+                for (id element in jsonObject) {
+                    if (![element isKindOfClass:[NSDictionary class]]) {
                         NSLog(@"Warning: Invalid consent mapping - %@", element);
+                        continue;
                     }
+
+                    id value = element[@"value"];
+                    id purpose = element[@"map"];
+                    if (![value isKindOfClass:[NSString class]] || ![purpose isKindOfClass:[NSString class]]) {
+                        NSLog(@"Warning: Invalid consent mapping - %@", element);
+                        continue;
+                    }
+
+                    NSString *regulation = @"gdpr";
+
+                    if ([(NSString *)purpose isEqualToString: @"data_sale_opt_out"]) {
+                        regulation = @"ccpa";
+                    }
+
+                    consentMapping[value] = @{ @"purpose": purpose, @"regulation": regulation};
                 }
             } else {
                 NSLog(@"Warning: One Trust Integration initialized with invalid Consent Mapping.\n jsonDictionary - %@", jsonObject);
