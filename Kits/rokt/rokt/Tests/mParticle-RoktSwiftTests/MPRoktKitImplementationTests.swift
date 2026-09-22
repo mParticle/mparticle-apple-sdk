@@ -19,6 +19,7 @@ private final class MockRoktSDKClient: MPRoktSDKClient {
     var closed = false
     var clearedSession = false
     var sessionID: String?
+    var session: RoktSession?
     var handledURL = false
     var diagnosticCode: String?
     var purchase: Purchase?
@@ -65,6 +66,11 @@ private final class MockRoktSDKClient: MPRoktSDKClient {
         calls.append("close")
         closed = true
     }
+    func setSession(_ session: RoktSession) {
+        calls.append("setSession:\(session.sessionId)")
+        self.session = session
+    }
+    func getSession() -> RoktSession? { session }
     func setSessionID(_ sessionID: String) {
         calls.append("setSessionID:\(sessionID)")
         self.sessionID = sessionID
@@ -605,6 +611,89 @@ struct MPRoktKitImplementationTests {
         #expect(client.purchase?.success == true)
         _ = implementation.close()
         #expect(client.closed)
+    }
+
+    @Test func tokenBearingSessionReachesRoktClientIntact() {
+        let client = MockRoktSDKClient()
+        let implementation = MPRoktKitImplementation(roktClient: client)
+        let expiry = NSNumber(value: 1_750_000_000_000)
+
+        _ = implementation.setSession(sessionID: "  session-1  ",
+                                      sessionToken: "  jwt-token  ",
+                                      expiresAt: expiry)
+
+        // The token is the part the legacy id-only path cannot carry, so it is what makes the
+        // hand-off authorize rather than merely identify.
+        #expect(client.session?.sessionId == "session-1")
+        #expect(client.session?.sessionToken == "jwt-token")
+        #expect(client.session?.expiresAt == expiry)
+    }
+
+    private struct Fields {
+        let sessionID: String?
+        let sessionToken: String?
+        let expiresAt: NSNumber?
+    }
+
+    @Test func incompleteSessionIsIgnoredRatherThanPartiallyApplied() {
+        let expiry = NSNumber(value: 1_750_000_000_000)
+        // Each field absent, blank and whitespace-only in turn. The nil cases are why this method
+        // takes the fields instead of MPRoktSession, whose nonnull declarations would hide them.
+        let incomplete = [
+            Fields(sessionID: nil, sessionToken: "jwt-token", expiresAt: expiry),
+            Fields(sessionID: "", sessionToken: "jwt-token", expiresAt: expiry),
+            Fields(sessionID: "   ", sessionToken: "jwt-token", expiresAt: expiry),
+            Fields(sessionID: "session-1", sessionToken: nil, expiresAt: expiry),
+            Fields(sessionID: "session-1", sessionToken: "", expiresAt: expiry),
+            Fields(sessionID: "session-1", sessionToken: "   ", expiresAt: expiry),
+            Fields(sessionID: "session-1", sessionToken: "jwt-token", expiresAt: nil)
+        ]
+
+        for fields in incomplete {
+            let client = MockRoktSDKClient()
+            let implementation = MPRoktKitImplementation(roktClient: client)
+
+            let status = implementation.setSession(sessionID: fields.sessionID,
+                                                   sessionToken: fields.sessionToken,
+                                                   expiresAt: fields.expiresAt)
+
+            // Seeding an id without its token would leave offers unauthorized while the call
+            // still reported success, so nothing is applied at all.
+            #expect(client.session == nil)
+            #expect(client.calls.isEmpty)
+            #expect(status.returnCode == .success)
+        }
+    }
+
+    @Test func getSessionReturnsNilUnlessTheSessionIsComplete() {
+        let expiry = NSNumber(value: 1_750_000_000_000)
+        let incomplete = [
+            RoktSession(sessionId: "", sessionToken: "jwt-token", expiresAt: expiry),
+            RoktSession(sessionId: "session-1", sessionToken: "", expiresAt: expiry),
+            RoktSession(sessionId: "session-1", sessionToken: "jwt-token", expiresAt: nil)
+        ]
+
+        let empty = MPRoktKitImplementation(roktClient: MockRoktSDKClient())
+        #expect(empty.getSession() == nil)
+
+        for session in incomplete {
+            let client = MockRoktSDKClient()
+            client.session = session
+            let implementation = MPRoktKitImplementation(roktClient: client)
+
+            // Handing a WebView an id whose token is missing moves the failure to the next
+            // authorized request, where it is far harder to attribute.
+            #expect(implementation.getSession() == nil)
+        }
+
+        let client = MockRoktSDKClient()
+        client.session = RoktSession(sessionId: "session-1", sessionToken: "jwt-token", expiresAt: expiry)
+        let implementation = MPRoktKitImplementation(roktClient: client)
+
+        let read = implementation.getSession()
+        #expect(read?.sessionId == "session-1")
+        #expect(read?.sessionToken == "jwt-token")
+        #expect(read?.expiresAt == expiry)
     }
 
     @Test func stopClearsWorkspaceStateAndClosesRokt() {

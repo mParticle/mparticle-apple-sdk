@@ -74,6 +74,7 @@ import Foundation
                                     success: NSNumber) -> AnyObject?
 
     @objc(close) optional func close() -> AnyObject?
+    @objc(setSession:) optional func setSession(_ session: AnyObject) -> AnyObject?
     @objc(setSessionId:) optional func setSessionId(_ sessionId: String) -> AnyObject?
     @objc(clearSession) optional func clearSession() -> AnyObject?
 }

@@ -15,14 +15,11 @@ target 'mParticleExample' do
   # Media SDK 1.7.x requires mParticle-Apple-SDK/mParticleNoLocation ~> 8.37 and cannot resolve against SDK 9.
   # pod 'mParticle-Apple-Media-SDK/mParticleMediaNoLocation', '~> 1.7.0'
 
-  # Rokt-Widget 5.4.0 requires RoktUXHelper 2.x.
-  pod 'RoktUXHelper', :git => 'https://github.com/ROKT/rokt-ux-helper-ios.git', :tag => '2.0.0'
-
-  # Rokt iOS SDK 5.4.0 (session id + token handoff). Use Git tag; not on CocoaPods trunk.
-  pod 'Rokt-Widget', :git => 'https://github.com/ROKT/rokt-sdk-ios.git', :tag => '5.4.0'
+  # Rokt iOS SDK (session id + token handoff). RoktUXHelper, RoktContracts and
+  # DcuiSchema resolve transitively from this podspec.
+  pod 'Rokt-Widget', '~> 5.5'
 
   # Local Rokt kit — uses the same local mParticle-Apple-SDK above (single resolved copy via :path).
-  # RoktContracts resolves from CocoaPods trunk per podspecs (~> 2.0).
   pod 'mParticle-Rokt', :path => '../Kits/rokt/rokt'
   #pod 'PLCrashReporter', '~> 1.11.1'
   #pod 'mParticle-UrbanAirship', :path => '../../mparticle-apple-integration-urbanairship'

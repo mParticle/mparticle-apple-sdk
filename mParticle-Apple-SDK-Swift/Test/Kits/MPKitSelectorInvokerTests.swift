@@ -6,6 +6,7 @@ private final class KitDispatchTargetStub: NSObject, MPKitDispatchTarget {
     var ltvAmount: Double?
     var optOut: Bool?
     var sessionId: String?
+    var session: AnyObject?
     var wrapperSDK: UInt?
 
     @objc func logLTVIncrease(_ increaseAmount: Double, event: Any) -> AnyObject? {
@@ -31,6 +32,11 @@ private final class KitDispatchTargetStub: NSObject, MPKitDispatchTarget {
 
     @objc func setSessionId(_ sessionId: String) -> AnyObject? {
         self.sessionId = sessionId
+        return NSObject()
+    }
+
+    @objc func setSession(_ session: AnyObject) -> AnyObject? {
+        self.session = session
         return NSObject()
     }
 
@@ -161,6 +167,22 @@ final class MPKitSelectorInvokerTests: XCTestCase {
         XCTAssertEqual(invoke(kit, "globalEvents:", parameters: globalParameters).outcome, .returnedStatus)
 
         XCTAssertEqual(callbacks, ["restoration", "placements", "shoppable", "events", "global"])
+    }
+
+    func testSetSessionForwardsTheSessionObject() {
+        let kit = KitDispatchTargetStub()
+        let session = NSObject()
+
+        // The dispatcher enumerates the selectors it supports, so a selector it does not name is
+        // dropped with only a log line. That is why forwarding is asserted here and not left to
+        // the kit's own tests, which can pass while nothing ever reaches the kit.
+        let result = invoke(kit, "setSession:", parameters: MPForwardQueueParameters(parameters: [session]))
+
+        XCTAssertEqual(result.outcome, .returnedStatus)
+        XCTAssertIdentical(kit.session, session)
+        XCTAssertEqual(invoke(EmptyKitDispatchTarget(), "setSession:",
+                              parameters: MPForwardQueueParameters(parameters: [session])).outcome,
+                       .notImplemented)
     }
 
     func testExplicitFailureOutcomes() {

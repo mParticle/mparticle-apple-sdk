@@ -158,6 +158,27 @@ static NSDictionary<NSString *, RoktEmbeddedView *> *MPRoktValidEmbeddedViews(NS
     return [self.implementation close];
 }
 
+/// The class is confirmed here because the Swift implementation cannot do it: an Objective-C
+/// object parameter crosses into Swift unchecked, so the first property read on the wrong class
+/// raises rather than returns. The session reaches this method as an untyped forwarded argument,
+/// which is the only reason the wrong class can arrive at all.
+///
+/// Whether the three fields are actually present is left to Swift, which takes them individually
+/// so that it can express their absence and be tested on it.
+- (MPKitExecStatus *)setSession:(MPRoktSession *)session {
+    if (![session isKindOfClass:[MPRoktSession class]]) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode]
+                                             returnCode:MPKitReturnCodeSuccess];
+    }
+    return [self.implementation setSessionWithSessionId:session.sessionId
+                                           sessionToken:session.sessionToken
+                                              expiresAt:session.expiresAt];
+}
+
+- (MPRoktSession *)getSession {
+    return [self.implementation getSession];
+}
+
 - (MPKitExecStatus *)setSessionId:(NSString *)sessionId {
     return [self.implementation setSessionId:sessionId];
 }

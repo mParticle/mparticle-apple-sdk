@@ -19,6 +19,7 @@
 @class MPKitExecStatus;
 @class MPKitAPI;
 @class MPConsentState;
+@class MPRoktSession;
 @class FilteredMParticleUser;
 @class FilteredMPIdentityApiRequest;
 
@@ -84,6 +85,16 @@
 
 /** Closes any active experience presented by the kit. */
 - (nonnull MPKitExecStatus *)close;
+
+/**
+ Sets the session used by the kit, carrying the token that authorizes offers and events as well
+ as the identifier. Prefer this to setSessionId:, which can only hand over the identifier.
+
+ An incomplete session is ignored rather than partially applied.
+
+ @param session The session identifier, session token, and token expiry to apply.
+ */
+- (nonnull MPKitExecStatus *)setSession:(nonnull MPRoktSession *)session;
 
 /**
  Sets the session identifier used by the kit.
