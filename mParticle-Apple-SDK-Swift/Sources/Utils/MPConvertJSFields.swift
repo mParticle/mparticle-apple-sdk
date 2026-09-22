@@ -45,9 +45,10 @@ public final class MPTransactionAttributesFieldsJS: NSObject {
     }
 }
 
-/// Reads the webview bridge's JSON payloads. Building the SDK types themselves
-/// stays in MPConvertJS.m: this module cannot see MPPromotion, MPCommerceEvent
-/// or the rest, per docs/swift-migration/CONVERSION-RECIPE.md.
+/// Reads the webview bridge's JSON payloads into Foundation values. MPConvertJS.m
+/// constructs SDK types such as MPPromotion and MPCommerceEvent on the ObjC side;
+/// importing those types here would create a dependency cycle with the ObjC module.
+/// See docs/swift-migration/CONVERSION-RECIPE.md for the boundary constraints.
 @objc(MPConvertJSFields)
 public final class MPConvertJSFields: NSObject {
     /// Mirrors MPJSCommerceEventAction (MPConvertJS.h) on the way in and

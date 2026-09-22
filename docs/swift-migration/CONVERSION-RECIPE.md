@@ -1,8 +1,9 @@
 # Conversion Recipe
 
 How to move one Objective-C type's implementation to Swift without breaking the
-public ObjC API or the kit integration contract. Follow this end-to-end for any
-type on the tracking sheet — no clarifying questions should be needed.
+public ObjC API or the kit integration contract. Apply this recipe to each
+conversion PR against `main`, where the migration continues after the
+integration branch merge.
 
 ## Classify the compatibility contract first
 
@@ -39,9 +40,10 @@ Record the evidence in any PR that removes an exported declaration. If the
 audit finds a supported external dependency, classify the declaration as a
 contract and keep its wrapper.
 
-Classifications 1, 3, and 4 keep an Objective-C implementation permanently, so
-they are also the migration's scope boundary. When a conversion settles one of
-those classifications, add the implementation path to
+Classifications 1, 3, and 4 retain an Objective-C implementation while their
+compatibility or dependency constraints apply, so they define the current
+migration's scope boundary. When a conversion settles one of those
+classifications, add the implementation path to
 `Tools/swift-migration-retained-objc.txt` with the audit evidence in the PR;
 that file is what separates the progress report's short-term goal from its
 long-term one, and `PR-GATE.md`'s "What \"done\" means" section governs it. Classification 2 files
@@ -111,13 +113,14 @@ since the ObjC module already imports the Swift module. This means:
 - If a conversion seems to need the Swift side to know about an SDK type, that's
   a sign the boundary is drawn wrong — push the marshaling back into the `.m`.
 
-## Dual-test convention (FOUND-03)
+## Dual-test convention
 
 - Keep the existing ObjC test in `UnitTests/ObjCTests/` as the behavior contract
   — it does not get deleted just because logic moved to Swift.
-- Add a mirroring Swift test in `mParticle-Apple-SDK-Swift/Test/Utils/` for each extracted slice
-  (round-trip JSON, consent blobs, identity DTO fields, etc.) that exercises the
-  new Swift type directly.
+- Add a mirroring Swift test under `mParticle-Apple-SDK-Swift/Test/` alongside
+  tests for the relevant component. Each extracted slice (round-trip JSON,
+  consent blobs, identity DTO fields, etc.) must exercise the new Swift type
+  directly through the `mParticle-Apple-SDK-Swift` scheme.
 - Retire the ObjC duplicate only after sustained confidence in the Swift
   mirror — not automatically on merge.
 

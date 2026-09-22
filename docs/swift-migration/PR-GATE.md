@@ -1,8 +1,8 @@
 # PR Gate
 
-The standing gate every migration PR must pass, unchanged, for the duration of
-this project. Established in Phase 1; applies to every conversion PR in every
-phase after it without exception.
+The standing validation requirements for Objective-C-to-Swift conversion PRs
+against `main`. The integration branch has merged, and these requirements
+continue to apply as implementation logic moves to Swift.
 
 ## The five items
 
@@ -43,10 +43,14 @@ phase after it without exception.
 4. **`trunk check` clean.** The primary lint/format enforcement tool must pass
    with no outstanding issues.
 
-5. **ObjC + Swift unit test suites green.** Both `UnitTests/ObjCTests/` and
-   `UnitTests/SwiftTests/` must pass. Any conversion PR that extracts logic to
-   Swift must add a Swift mirror test for that extracted logic (see
-   `CONVERSION-RECIPE.md`'s dual-test convention).
+5. **ObjC + Swift unit test suites green.** Run both Xcode schemes:
+   `mParticle-Apple-SDK` for the SDK contract tests under `UnitTests/`, and
+   `mParticle-Apple-SDK-Swift` for the internal Swift tests under
+   `mParticle-Apple-SDK-Swift/Test/`. Each scheme has its own test target; run
+   both on iOS and tvOS. Use the project and commands in
+   [CONTRIBUTING.md](../../CONTRIBUTING.md#testing). Any conversion PR that
+   extracts logic to Swift must add a Swift mirror test for that extracted
+   logic (see `CONVERSION-RECIPE.md`'s dual-test convention).
 
 ## What "done" means
 
@@ -55,14 +59,15 @@ kit and wrapper-SDK contract surface, runtime-identity-pinned classes, and the
 boundary glue in `CONVERSION-RECIPE.md`'s classifications 1, 3, and 4 stay
 Objective-C by design — that is the intended end state, not unfinished work.
 
-This project is complete when every **in-scope** Objective-C implementation is
-gone: the classification 2 wrappers and the internal types behind them. The
+The in-scope conversion goal is complete when every **in-scope** Objective-C
+implementation is gone: the classification 2 wrappers and the internal types
+behind them. Merging an integration branch does not satisfy that goal. The
 retained boundary is enumerated in `Tools/swift-migration-retained-objc.txt`.
 
 The progress report on each PR therefore carries two goal rows per area:
 
 - **Short term — in scope** excludes the retained boundary, so 100% is
-  reachable and marks the end of this project.
+  reachable and marks completion of the in-scope conversions.
 - **Long term — all Objective-C** keeps the full denominator. 100% there
   requires taking the public API itself to Swift — a breaking change reserved
   for a future major release, tracked rather than redefined away.
@@ -84,12 +89,8 @@ retained column rather than in the percentage.
 
 ## Scope note
 
-This gate applies to every migration PR and is not re-specified per phase.
-The ABI item was refined after the first conversion series demonstrated that
-some internal implementation types had been accidentally exported through
-`Include/`. Wiring the guard into CI (`.github/`) remains a separate,
-explicitly-requested step; until then, run the five items locally before
-opening or updating a PR.
-
-Source for the validation sequence: `AGENTS.md` ("Code style, quality, and
-validation" — strict post-change validation rule).
+This gate applies to every conversion PR against `main`. The ABI check
+distinguishes supported contracts from accidentally exported internal types
+through item 1's review process. It remains a local check; adding it to CI is
+a separate change. Run all five items before opening or updating a conversion
+PR.

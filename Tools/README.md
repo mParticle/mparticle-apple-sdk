@@ -1,6 +1,6 @@
 # Tools/
 
-Migration tooling for the Objective-C -> Swift conversion.
+Tooling for the ongoing Objective-C -> Swift conversion on `main`.
 
 ## abi-guard.sh
 
@@ -51,11 +51,27 @@ contract still requires explicit compatibility coordination. An unexplained
 baseline diff is a **gate failure**, not something to fix by blindly running
 `update`.
 
-### CI wiring — deferred
+### Local validation
 
-Wiring `abi-guard.sh check` into CI (`.github/`) is a separate, explicitly
-requested step and is **not** done here. Today it is run manually / locally
-as part of the standing PR gate (see `docs/swift-migration/PR-GATE.md`).
+Run `abi-guard.sh check` locally as part of the standing conversion PR gate
+(see `docs/swift-migration/PR-GATE.md`). Adding CI enforcement is a separate
+change.
+
+### Baseline reconciliation after the integration merge
+
+The baseline was reconciled with the reviewed API already merged into `main`
+in these PRs:
+
+- [#816](https://github.com/mParticle/mparticle-apple-sdk/pull/816):
+  `MPRoktSession`, the `MPRokt` session accessors, and deprecations on the
+  session-ID-only accessors.
+- [#1009](https://github.com/mParticle/mparticle-apple-sdk/pull/1009):
+  the optional `MPKitProtocol.supportsConsentStateReplay` method.
+- [#1032](https://github.com/mParticle/mparticle-apple-sdk/pull/1032):
+  session handoff methods on `MPKitProtocol` and `MPRoktKitDispatchTarget`.
+
+This snapshot update records existing declarations; it adds or removes no
+SDK API. Future baseline changes still require the review described above.
 
 ## swift-migration-progress.sh
 
@@ -66,7 +82,7 @@ working tree:
 ```bash
 Tools/swift-migration-progress.sh report \
   --repo . \
-  --base origin/workstation/swift-migration \
+  --base origin/main \
   --head HEAD \
   --cloc /path/to/cloc-2.10.pl \
   --output /tmp/swift-migration-progress.md
@@ -98,8 +114,8 @@ Every bucket reports two goal rows, because the migration has two horizons:
   In-scope excludes the implementations listed in
   `Tools/swift-migration-retained-objc.txt` — the public/kit contract,
   runtime-identity, and boundary-glue files that stay Objective-C by design.
-  **100% here is the end of this project**: every Objective-C implementation the
-  migration intends to delete is gone.
+  **100% here completes the in-scope conversions**: every Objective-C
+  implementation the migration intends to delete is gone.
 - **Long term — all Objective-C.** Swift SLOC / (Swift SLOC + all Objective-C),
   the original full-denominator number. **100% here means the public API itself
   becomes Swift**, which is a breaking change reserved for a future major
@@ -156,9 +172,9 @@ can differ from the SLOC change because Git includes comments and blank lines.
 ### Retained Objective-C manifest
 
 `Tools/swift-migration-retained-objc.txt` is the reviewed list of Objective-C
-implementations this phase of the migration will not delete. It is the boundary
-between the two goal rows, so it is committed and changed deliberately — never
-edited to make a number look better.
+implementations the current migration will retain for compatibility or module
+boundaries. It defines the boundary between the two goal rows, so it is
+committed and changed deliberately — never edited to make a number look better.
 
 ```text
 # one repository-relative path per line; `#` comments and blanks ignored
@@ -201,7 +217,9 @@ summary because their `pull_request` token is read-only. Flat or negative
 migration movement remains informational; installation, self-test, counting,
 and same-repository comment failures fail the job.
 
-When the migration is complete, remove:
+The report continues to track migration on `main`. Merging the integration
+branch does not retire the report or change its goals. Once the in-scope
+conversions are complete and tracking is deliberately retired, remove:
 
 - `.github/workflows/swift-migration-progress.yml`;
 - the `swift-migration-progress` job and notification dependency in

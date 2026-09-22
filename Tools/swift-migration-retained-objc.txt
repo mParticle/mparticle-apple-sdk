@@ -1,15 +1,16 @@
 # Objective-C retained by design — the migration's out-of-scope boundary.
 #
-# Every path below is an Objective-C implementation this phase of the migration
-# will NOT delete, because CONVERSION-RECIPE.md classifies its declaration as a
+# Every path below is an Objective-C implementation the ongoing migration on
+# main retains, because CONVERSION-RECIPE.md classifies its declaration as a
 # supported contract, a runtime-identity-pinned type, or unavoidable boundary
 # glue.
 #
 # Tools/swift-migration-progress.sh reports two goals per area. The short-term
-# goal excludes these files, so its 100% is the end of this project. The
+# goal excludes these files, so its 100% completes the in-scope conversions. The
 # long-term goal keeps the full denominator; its 100% means the public API
 # itself becomes Swift, which is a breaking change for a future major release.
-# This manifest is the gap between the two.
+# This manifest is the gap between the two. The integration branch merge does
+# not complete either goal or change the retained boundary.
 #
 # Listing a file here does not freeze its contents. A contract wrapper keeps
 # its @interface, class name, selectors, and nullability, but its logic still

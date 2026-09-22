@@ -18,6 +18,10 @@ Thanks for contributing! Please read this document to follow our conventions for
 5. Update the documentation
 6. Create a Pull Request
 
+Objective-C-to-Swift migration continues through PRs against `main`. Follow the
+[conversion recipe](docs/swift-migration/CONVERSION-RECIPE.md) and
+[migration PR gate](docs/swift-migration/PR-GATE.md) to preserve compatibility.
+
 ### Pull Requests
 
 - Fill in the required template
@@ -31,7 +35,7 @@ PR titles should follow conventional commit standards. This helps automate the r
 
 The standard format for commit messages is as follows:
 
-```
+```text
 <type>[optional scope]: <description>
 
 [optional body]
@@ -60,14 +64,34 @@ We use XCTest framework for our testing. Please write tests for new code you cre
 #### Build and Test
 
 ```bash
-xcodebuild -workspace mParticle-Apple-SDK.xcworkspace -scheme mParticle-Apple-SDK-iOS test
+xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination 'generic/platform=iOS' build
 ```
 
-#### SwiftLint
+Builds can use a generic destination. Running tests requires an available simulator
+instance, but no specific model is required. List supported destinations and choose
+an iOS simulator ID:
 
 ```bash
-swiftlint
+xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -showdestinations
+SIMULATOR_UDID="<iOS simulator ID from the list>"
+xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "id=$SIMULATOR_UDID" test
+xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-Swift -destination "id=$SIMULATOR_UDID" test
 ```
+
+Each scheme has a separate test target. Run both: `mParticle-Apple-SDKTests`
+covers the SDK contract tests under `UnitTests/`, while
+`mParticle-Apple-SDK-SwiftTests` covers the internal Swift components under
+`mParticle-Apple-SDK-Swift/Test/`. CI runs both schemes on iOS and tvOS. To run
+the tvOS suites locally, set `SIMULATOR_UDID` to an available tvOS simulator ID
+and run both test commands again.
+
+#### Lint and format checks
+
+```bash
+trunk check
+```
+
+Trunk uses the repository's lint and formatting configuration under `.trunk/`.
 
 Make sure all tests pass successfully before submitting your PR. If you encounter any test failures, investigate and fix the issues before proceeding.
 

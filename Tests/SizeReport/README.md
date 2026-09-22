@@ -43,15 +43,16 @@ measures the binary-xcframework path, which is the worst case.
 
 ## Size budget
 
-The migration from Objective-C to Swift raised the SDK's app-bundle impact from
-**1,840 KB on `main` to 2,840 KB on `workstation/swift-migration`** (+1,000 KB, +54%).
-Measured 2026-09-21 on `main` at `13f53dcf` and `workstation/swift-migration` at `656d3349`,
-same machine and toolchain. `main` has measured 1,840 KB on every run since 2026-09-02 and
-across two Xcode versions, so it is a stable reference point.
+Historical measurements on 2026-09-21 recorded an app-bundle impact of
+**1,840 KB at `13f53dcf` and 2,840 KB at `656d3349`** (+1,000 KB, +54%), using
+the same machine and toolchain. The first snapshot is the pre-integration baseline;
+the second captures migration work before subsequent size optimizations. Neither
+number describes current `main`; measure the current revision for its size.
 
-Target: **app-bundle impact must not exceed `main`'s 1,840 KB once the migration is
-complete.** Until then, treat every increase as debt that has to be paid down before the
-migration branch merges.
+Recovery target: **reduce app-bundle impact to at most the historical 1,840 KB
+baseline as migration work continues on `main`.** Treat increases as debt to pay down
+through subsequent conversions and size optimizations. The integration branch merge
+does not reset this target. This recovery target is separate from the per-PR CI check.
 
 `size-report.yml` fails when a PR adds more than `SIZE_DELTA_THRESHOLD_KB` (50 KB) to the
 app-bundle impact. Two things to know about that gate:
@@ -63,30 +64,35 @@ app-bundle impact. Two things to know about that gate:
 
 ## What drives the size
 
-Attribution of the +1,000 KB regression, from `analyze_binary.sh`:
+Historical attribution of the +1,000 KB increase between the two snapshots above,
+from `analyze_binary.sh`:
 
-| Component                    | `main`   | `workstation` | Delta     | Share | What moves it                                                           |
-| ---------------------------- | -------- | ------------- | --------- | ----- | ----------------------------------------------------------------------- |
-| `__text` (code)              | 757.9 KB | 1,332.9 KB    | +575.0 KB | 58%   | Amount of compiled code; `SWIFT_OPTIMIZATION_LEVEL`                     |
-| `__LINKEDIT`                 | 528.0 KB | 720.0 KB      | +192.0 KB | 19%   | Number of exported symbols - Swift `public` symbols are `no_dead_strip` |
-| `__objc_*` metadata          | 339.6 KB | 459.1 KB      | +119.5 KB | 12%   | Every `@objc` declaration, including those on Swift types               |
-| `__swift5_*` metadata        | 12.2 KB  | 56.1 KB       | +43.9 KB  | 4%    | Type metadata and reflection                                            |
-| headers, padding, signatures | -        | -             | ~+70 KB   | 7%    | Number of Mach-O images                                                 |
+| Component                    | `13f53dcf` | `656d3349` | Delta     | Share | What moves it                                                           |
+| ---------------------------- | ---------- | ---------- | --------- | ----- | ----------------------------------------------------------------------- |
+| `__text` (code)              | 757.9 KB   | 1,332.9 KB | +575.0 KB | 58%   | Amount of compiled code; `SWIFT_OPTIMIZATION_LEVEL`                     |
+| `__LINKEDIT`                 | 528.0 KB   | 720.0 KB   | +192.0 KB | 19%   | Number of exported symbols - Swift `public` symbols are `no_dead_strip` |
+| `__objc_*` metadata          | 339.6 KB   | 459.1 KB   | +119.5 KB | 12%   | Every `@objc` declaration, including those on Swift types               |
+| `__swift5_*` metadata        | 12.2 KB    | 56.1 KB    | +43.9 KB  | 4%    | Type metadata and reflection                                            |
+| headers, padding, signatures | -          | -          | ~+70 KB   | 7%    | Number of Mach-O images                                                 |
 
-The framework ships as **two** Mach-O images: `mParticle_Apple_SDK.framework` and, nested
-inside it, `mParticle_Apple_SDK_Swift.framework`. The second one exists because SwiftPM
-cannot mix Objective-C and Swift in one target; it costs a second set of symbol tables and
-prevents dead-stripping across the boundary. It collapses on its own once the migration
-removes the last `.m` file.
+The framework build packages **two** Mach-O images: `mParticle_Apple_SDK.framework`
+and, nested inside it, `mParticle_Apple_SDK_Swift.framework`. The SDK keeps separate
+Objective-C and Swift modules, also required by the SwiftPM source layout. The framework
+build therefore carries a second set of symbol tables and cannot dead-strip across
+that dynamic framework boundary. Completing the in-scope conversions still leaves
+Objective-C compatibility and module boundaries (see
+[the migration PR gate](../../docs/swift-migration/PR-GATE.md#what-done-means)).
+Consolidating the modules requires a separate architectural change that preserves
+those contracts; it does not happen automatically when conversions finish.
 
 Splitting the regression by image shows how lopsided the trade is. Deleting 11,151 lines of
 Objective-C shrank the outer image by 411 KB; adding 16,263 lines of Swift grew the inner one
 by 1,409 KB.
 
-| Image                       | `main`     | `workstation` | Delta       | Exported symbols |
-| --------------------------- | ---------- | ------------- | ----------- | ---------------- |
-| `mParticle_Apple_SDK`       | 1,495.8 KB | 1,085.1 KB    | -410.7 KB   | 1,398 -> 1,259   |
-| `mParticle_Apple_SDK_Swift` | 329.9 KB   | 1,738.9 KB    | +1,409.0 KB | 720 -> 4,730     |
+| Image                       | `13f53dcf` | `656d3349` | Delta       | Exported symbols |
+| --------------------------- | ---------- | ---------- | ----------- | ---------------- |
+| `mParticle_Apple_SDK`       | 1,495.8 KB | 1,085.1 KB | -410.7 KB   | 1,398 -> 1,259   |
+| `mParticle_Apple_SDK_Swift` | 329.9 KB   | 1,738.9 KB | +1,409.0 KB | 720 -> 4,730     |
 
 ## CI Integration
 

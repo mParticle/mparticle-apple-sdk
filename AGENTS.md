@@ -29,7 +29,8 @@ mistake to make.
 - `MParticle/Sources/` is the small Swift umbrella that _is_ the consumer-facing SwiftPM product and
   the pod named `mParticle-Apple-SDK`.
 - `mParticle-Apple-SDK-Swift/Sources/` is internal Swift components: pod
-  `mParticle-Apple-SDK-Swift`, which release does not publish automatically (see `RELEASE.md`).
+  `mParticle-Apple-SDK-Swift`. Release publishes it before the Objective-C core and Swift umbrella
+  pods so their exact-version dependencies can resolve (see `RELEASE.md`).
 - `mParticle-Apple-SDK.xcodeproj` is the Xcode framework build, and the one CI compiles in the
   build, analyze and unit-test jobs.
 
@@ -38,8 +39,12 @@ mistake to make.
 - Lint and format: `trunk check`
 - Build for iOS:
   `xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination 'generic/platform=iOS' build`
+- Before running tests, list destinations with
+  `xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -showdestinations`
+  and set `SIMULATOR_UDID` to an available iOS or tvOS simulator ID. Builds can use a generic
+  destination; tests need a runnable simulator instance, with no specific model required.
 - Objective-C unit tests:
-  `xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination 'platform=iOS Simulator,name=iPhone 16 Pro' test`
+  `xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "id=$SIMULATOR_UDID" test`
 - Swift unit tests: the same, with `-scheme mParticle-Apple-SDK-Swift`
 - Podspec lint:
   `pod lib lint mParticle-Apple-SDK.podspec --include-podspecs="{mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}"`
@@ -48,8 +53,9 @@ mistake to make.
 ### Command traps
 
 1. **There are two test schemes, and each has exactly one testable.** `-scheme mParticle-Apple-SDK`
-   runs only `mParticle-Apple-SDKTests` (`UnitTests/ObjCTests`); the Swift suite is reachable only
-   through `-scheme mParticle-Apple-SDK-Swift`. Run one and you have tested half the SDK. CI runs
+   runs only `mParticle-Apple-SDKTests`; the internal Swift suite in
+   `mParticle-Apple-SDK-Swift/Test/` is reachable only through `-scheme mParticle-Apple-SDK-Swift`.
+   Run one and you have tested half the SDK. CI runs
    both schemes against both iOS and tvOS (`.github/workflows/native-tests.yml`).
 2. **The lint configs are not at the repo root.** `.swiftlint.yml` and `.swiftformat` live in
    `.trunk/configs/`, where a bare `swiftlint` or `swiftformat .` invoked from the root will not
@@ -67,8 +73,6 @@ mistake to make.
    `native-tests` and `size-report` pin one; `integration-tests`, `build-kits` and
    `verify-kit-xcframework-import` pin a newer one. Read `XCODE_VERSION` (or `xcode-version`) in the
    workflow you care about rather than assuming a single toolchain covers the repo.
-6. **`CONTRIBUTING.md`'s test command does not work.** It names an `.xcworkspace` and an
-   `mParticle-Apple-SDK-iOS` scheme, neither of which exists. Use the commands above.
 
 ## Conventions that no config enforces
 
@@ -89,32 +93,29 @@ mistake to make.
 - Objective-C follows Apple's Cocoa coding guidelines. Swift prefers `let` and value types and
   avoids force-unwraps. Public API needs HeaderDoc (Objective-C) or `///` (Swift). Add a comment
   only where the code cannot be made clear instead.
-- **The migration is net-additive to binary size, so Swift you add costs more than the ObjC you
-  delete.** Measured `main` vs `workstation/swift-migration`: 11,151 lines of ObjC removed bought back
-  411 KB from the Objective-C image, and 16,263 lines of Swift added cost 1,409 KB in the Swift one.
-  Source volume grew 18 %, the shipped binary grew 54 %. Four rules follow from the attribution
-  (`Tests/SizeReport/README.md` has the breakdown, run `Tests/SizeReport/analyze_binary.sh` for a
-  fresh one):
-  - **Delete the ObjC original in the same PR that adds the Swift replacement**, for every leaf class.
-    Copying logic into Swift while leaving the ObjC method as a delegating wrapper ships both. Twenty
-    `.m` files currently sit beside a Swift counterpart covering the same concern;
-    `Identity/MPIdentityDTO.m` is the clearest, 256 lines of which 56 are one-line accessors
-    forwarding to `MPIdentityHTTPIdentitiesPRIVATE`, whose 25 fields are declared again in
-    `Identity/MPIdentityDTO.swift`. Two-stage really is forced for base classes (ObjC cannot subclass
-    Swift) - say so in the PR when it applies, so the debt stays visible.
+- **Swift conversions can increase binary size even as Objective-C shrinks.** The historical
+  comparison of `13f53dcf` with `656d3349`, measured 2026-09-21, removed 11,151 lines of ObjC and
+  saved 411 KB in the Objective-C image, while 16,263 added Swift lines cost 1,409 KB in the Swift
+  image. Source volume grew 18 %, and shipped size grew 54 %. These are historical snapshots,
+  not measurements of current `main`. `Tests/SizeReport/README.md` records the breakdown and
+  1,840 KB recovery target; run `Tests/SizeReport/analyze_binary.sh` for fresh attribution.
+  Four rules follow:
+  - **Delete eligible internal ObjC leaf wrappers in the same PR as their Swift replacement** once
+    callers have migrated. Keep the public, kit, runtime-identity, and module boundaries required
+    by `docs/swift-migration/CONVERSION-RECIPE.md`, moving their logic into Swift where possible.
+    Base classes may need a staged conversion because ObjC cannot subclass Swift; explain any
+    remaining wrapper and its compatibility or dependency constraint in the PR.
   - **`@objc` per member, never `@objcMembers` per type, and delete the annotation with its last ObjC
-    caller.** Swift's `@objc` declarations generate 226 KB of Objective-C metadata today, none of it
-    strippable, from 1,489 annotations - roughly one per 13 lines of Swift. The Objective-C image's
-    own metadata is 233 KB, so most of the SDK's Objective-C metadata is now emitted by Swift.
-  - **`internal` and `final` by default.** 236 of 306 Swift type declarations are `public` or `open`,
-    almost all of them only so the ObjC core can reach them across the module boundary. Swift emits
-    `public` symbols as `no_dead_strip`, so they can never be removed; the Swift image exports 4,730
-    symbols where `main` exported 720, and the symbol tables describing them are 19 % of the
-    regression. `public` is a size decision, not just an API decision.
+    caller when no compatibility or runtime requirement remains.** In the measured snapshot,
+    1,489 Swift annotations generated 226 KB of Objective-C metadata, alongside 233 KB from the
+    Objective-C image itself.
+  - **`internal` and `final` by default.** In the measured snapshot, 236 of 306 Swift types were
+    `public` or `open`, mostly for access from the ObjC module. The Swift image exported 4,730
+    symbols, up from 720 at `13f53dcf`; symbol tables accounted for 19 % of the size increase.
+    Cross-module access can require `public`, but it is a size decision as well as an API decision.
   - **Don't introduce `Codable`, generic helpers, `Mirror`, or Swift Concurrency into the core without
-    measuring.** The core currently uses none of them, which is why `-Osize` is safe and why the Swift
-    metadata sections are only 55 KB. `SWIFT_REFLECTION_METADATA_LEVEL` is left at its default today,
-    but adding runtime reflection would foreclose that option.
+    measuring.** The measured snapshot used none of them and had only 55 KB of Swift metadata.
+    Adding runtime reflection can also constrain future reflection-metadata build settings.
 - **Test code can reach the shipped framework through the synchronized group.** The
   `mParticle-Apple-SDK-Swift` target draws its files from a `PBXFileSystemSynchronizedRootGroup` over
   the whole `mParticle-Apple-SDK-Swift/` directory, which holds `Sources/` _and_ `Test/`. Test code is
@@ -133,9 +134,9 @@ nothing else discovers it.
 
 ## Pull requests
 
-- Base off `main`. `workstation/*` are long-lived integration branches covered by the same ruleset,
-  and stacks of migration PRs often target one of them instead - check what the work you are
-  following up on is based on rather than assuming `main`.
+- Base ongoing Swift migration work off `main` and target conversion PRs there. The integration
+  branch has merged; the migration continues on `main`. `workstation/*` branches still support
+  maintenance releases and other integration work; use one only when that is the task's target.
 - Branch name _and_ PR title are both checked against the semantic-commit convention by
   `.github/workflows/reusable-workflows.yml`; the allowed types are listed in `CONTRIBUTING.md`.
 - **CI is not the merge gate.** The ruleset covering `main` and `workstation/*` requires no status
@@ -170,10 +171,8 @@ nothing else discovers it.
    break survives every other check.
 5. Integration tests fail on an unmatched request but only _warn_ on a recorded WireMock mapping
    the app never calls (`IntegrationTests/run_integration_tests_ci.sh`).
-6. **The workflow list and the tree disagree, in both directions.** `cross-platform-tests.yml` is in
-   the tree but `disabled_manually` in repository settings, so it never runs; and
-   `gh workflow list --all` reports a `release-ecosystem-from-main.yml` whose file is not on `main`
-   at all, only on unmerged branches. Separately, `RNExample` is not built on PRs because
-   `build-secondary-platforms` is commented out of `.github/workflows/pull-request.yml`. Neither the
-   tree nor the workflow list is sufficient alone; check the caller too.
+6. **Check workflow settings and callers as well as the tree.** `cross-platform-tests.yml` is in
+   the tree but disabled in repository settings, and GitHub may list workflows whose files are
+   absent from the checkout. The PR workflow calls `build-secondary-platforms`, which builds
+   `RNExample`; the disabled cross-platform workflow does not imply those builds are disabled.
 7. `ARCHITECTURE.md` is two diagram images and no prose. There is no written architecture document.
