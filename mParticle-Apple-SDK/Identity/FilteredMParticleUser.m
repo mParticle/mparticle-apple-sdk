@@ -1,7 +1,6 @@
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
 #import "MParticleUser.h"
-#import "MPStateMachine.h"
 #import "MPKitConfiguration.h"
 #import "MPDataPlanFilter.h"
 @import mParticle_Apple_SDK_Swift;
@@ -18,6 +17,8 @@
 @property (nonatomic, strong) MParticleUser *user;
 
 @property (nonatomic, strong) MPKitConfiguration *kitConfiguration;
+
+- (NSDictionary<NSString *, id> *)filteredUserAttributes:(NSDictionary<NSString *, id> *)attributes;
 
 @end
 
@@ -54,59 +55,51 @@
 }
 
 -(NSDictionary<NSNumber *, NSString *> *) userIdentities {
-    NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.user.identities;
-    NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
-    
-    for (NSNumber* key in unfilteredUserIdentities) {
-        id value = [unfilteredUserIdentities objectForKey:key];
-        BOOL shouldFilter = NO;
-        
-        if (self.kitConfiguration) {
-            NSString *identityTypeString = [key stringValue];
-            shouldFilter = self.kitConfiguration.userIdentityFilters[identityTypeString] && [self.kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
-        }
-        
-        if (key.integerValue >= MPIdentityIOSAdvertiserId) {
-            shouldFilter = YES;
-        }
-        
-        if (!shouldFilter) {
-            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.intValue]) {
-                [userIdentities setObject:value forKey:key];
-            }
-        }
+    NSDictionary<NSNumber *, NSString *> *identities = self.user.identities;
+    // Nothing to filter: return before reading kitConfiguration, which some kit callers pass as a raw NSDictionary.
+    if (identities.count == 0) {
+        return [NSMutableDictionary dictionary];
     }
-    
-    return userIdentities;
+    id<MPDataPlanFilterProtocol> dataPlanFilter = MParticle.sharedInstance.dataPlanFilter;
+    NSDictionary<NSNumber *, NSString *> *filtered = [[[MPIdentityFilteringPRIVATE alloc] init] filterUserIdentities:identities
+                                                      userIdentityFilters:self.kitConfiguration.userIdentityFilters
+                                                                isBlocked:^BOOL(NSNumber * _Nonnull key) {
+        return [dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.intValue];
+    }];
+    // Preserve the pre-migration NSMutableDictionary return type.
+    return filtered.mutableCopy;
 }
 
 -(NSDictionary<NSString *, id> *) userAttributes {
-    NSDictionary<NSString *, id> *unfilteredUserAttributes = self.user.userAttributes;
-    NSMutableDictionary *userAttributes = [NSMutableDictionary dictionary];
-    
-    MParticle* mparticle = MParticle.sharedInstance;
-    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-    logger.customLogger = mparticle.customLogger;
-    MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
-    
-    for (NSString* key in unfilteredUserAttributes) {
-        id value = [unfilteredUserAttributes objectForKey:key];
-        
-        NSString *hashKey = [hasher hashString:key];
-        BOOL shouldFilter = NO;
-        
-        if (self.kitConfiguration) {
-            shouldFilter = self.kitConfiguration.userAttributeFilters[hashKey] && [self.kitConfiguration.userAttributeFilters[hashKey] isEqualToNumber:@0];
-        }
-        
-        if (!shouldFilter) {
-            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
-                [userAttributes setObject:value forKey:key];
-            }
-        }
+    return [self filteredUserAttributes:self.user.userAttributes];
+}
+
+- (NSDictionary<NSString *, id> *)mp_filteredUserAttributesByMergingAttributes:(NSDictionary<NSString *, id> *)attributes {
+    NSMutableDictionary<NSString *, id> *mergedAttributes =
+        [NSMutableDictionary dictionaryWithDictionary:self.user.userAttributes ?: @{}];
+    [mergedAttributes addEntriesFromDictionary:attributes];
+    return [self filteredUserAttributes:mergedAttributes];
+}
+
+- (NSDictionary<NSString *, id> *)filteredUserAttributes:(NSDictionary<NSString *, id> *)attributes {
+    // Nothing to filter: return before reading kitConfiguration, which some kit callers pass as a raw NSDictionary.
+    if (attributes.count == 0) {
+        return [NSMutableDictionary dictionary];
     }
-    
-    return userAttributes;
+    MParticle *mparticle = MParticle.sharedInstance;
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    logger.customLogger = mparticle.customLogger;
+    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:logger];
+    id<MPDataPlanFilterProtocol> dataPlanFilter = mparticle.dataPlanFilter;
+
+    NSDictionary<NSString *, id> *filtered = [[[MPIdentityFilteringPRIVATE alloc] init] filterUserAttributes:attributes
+                                                      userAttributeFilters:self.kitConfiguration.userAttributeFilters
+                                                                    hasher:hasher
+                                                                 isBlocked:^BOOL(NSString * _Nonnull key) {
+        return [dataPlanFilter isBlockedUserAttributeKey:key];
+    }];
+    // Preserve the pre-migration NSMutableDictionary return type.
+    return filtered.mutableCopy;
 }
 
 @end

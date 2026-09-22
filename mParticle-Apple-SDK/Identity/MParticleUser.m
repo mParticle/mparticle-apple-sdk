@@ -6,10 +6,10 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPAudience.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
-#import "MPKitContainer.h"
+#import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
@@ -24,9 +24,9 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 
@@ -50,8 +50,7 @@
 
 - (NSDate *)firstSeen {
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *firstSeenMs = [userDefaults mpObjectForKey:kMPFirstSeenUser userId:self.userId];
-    return [NSDate dateWithTimeIntervalSince1970:firstSeenMs.doubleValue/1000.0];
+    return [MPIdentityUserStoragePRIVATE dateFromMilliseconds:[userDefaults mpObjectForKey:kMPFirstSeenUser userId:self.userId]];
 }
 
 - (NSDate *)lastSeen {
@@ -59,21 +58,15 @@
         return [NSDate date];
     }
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *lastSeenMs = [userDefaults mpObjectForKey:kMPLastSeenUser userId:self.userId];
-    return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
+    return [MPIdentityUserStoragePRIVATE dateFromMilliseconds:[userDefaults mpObjectForKey:kMPLastSeenUser userId:self.userId]];
 }
 
 - (NSDictionary*)identities {
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
-    
-    NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
-    [userIdentityArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSString *identity = obj[@"i"];
-        NSNumber *type = obj[@"n"];
-        [userIdentities setObject:identity forKey:type];
-    }];
-    
+
+    NSMutableDictionary *userIdentities = [[[MPIdentityFilteringPRIVATE alloc] init] userIdentitiesFromStoredArray:userIdentityArray].mutableCopy;
+
     //Remove IDFA if ATT status demands
     NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
     if (userIdentities[@(MPIdentityIOSAdvertiserId)] && currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized) {
@@ -128,7 +121,7 @@
 }
 
 - (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType timestamp:(NSDate *)timestamp {
-    if ([MPEnum isUserIdentity:identityType]) {
+    if ([MPIdentityUserStoragePRIVATE isUserIdentity:(NSInteger)identityType]) {
         __weak MParticleUser *weakSelf = self;
         [self.backendController setUserIdentity:identityString
                                    identityType:(MPUserIdentity)identityType
@@ -147,51 +140,12 @@
                               }];
     }
     
-    NSNumber *identityTypeNumber = @(identityType);
-    BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
-        NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
-        BOOL foundMatch = [currentIdentityType isEqualToNumber:identityTypeNumber];
-        
-        if (foundMatch) {
-            *stop = YES;
-        }
-        
-        return foundMatch;
-    };
-    
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController_PRIVATE mpId]] mutableCopy];
-    if (!identities) {
-        identities = [[NSMutableArray alloc] init];
-    }
-    NSUInteger existingEntryIndex;
-    
-    if (identityString == nil || (NSNull *)identityString == [NSNull null] || [identityString isEqualToString:@""]) {
-        existingEntryIndex = [identities indexOfObjectPassingTest:objectTester];
-        
-        if (existingEntryIndex != NSNotFound) {
-            [identities removeObjectAtIndex:existingEntryIndex];
-        }
-    } else {
-        existingEntryIndex = [identities indexOfObjectPassingTest:objectTester];
-        
-        if (existingEntryIndex == NSNotFound) {
-            NSMutableDictionary *newIdentityDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
-            newIdentityDictionary[kMPUserIdentityTypeKey] = identityTypeNumber;
-            newIdentityDictionary[kMPUserIdentityIdKey] = identityString;
-                        
-            [identities addObject:newIdentityDictionary];
-        } else {
-            NSMutableDictionary *newIdentityDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
-            
-            newIdentityDictionary[kMPUserIdentityTypeKey] = identityTypeNumber;
-            newIdentityDictionary[kMPUserIdentityIdKey] = identityString;
-            
-            [identities replaceObjectAtIndex:existingEntryIndex withObject:newIdentityDictionary];
-        }
-    }
-        
+    NSArray *storedIdentities = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceUtilities mpId]];
+    NSArray *identities = [MPIdentityUserStoragePRIVATE applyingIdentity:identityString
+                                                                    type:(NSInteger)identityType
+                                                          toStoredArray:storedIdentities];
+
     [userDefaults setObject:identities forKeyedSubscript:kMPUserIdentityArrayKey];
     [userDefaults synchronize];
 }
@@ -268,7 +222,7 @@
 }
 
 - (void)setUserAttribute:(nonnull NSString *)key value:(nonnull id)value {
-    if ([value isKindOfClass:[NSString class]] && (((NSString *)value).length <= 0)) {
+    if ([MPIdentityUserStoragePRIVATE shouldSkipEmptyAttributeValue:value]) {
         MPILogDebug(@"User attribute not updated. Please use removeUserAttribute.");
         
         return;
@@ -447,9 +401,7 @@
             [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
         });
     } else {
-        NSError *audienceError = [NSError errorWithDomain:@"mParticle Audience"
-                                                     code:202
-                                                 userInfo:@{@"message":@"Your workspace is not enabled to retrieve user audiences."}];
+        NSError *audienceError = [MPIdentityUserStoragePRIVATE audienceDisabledError];
         completionHandler(nil, audienceError);
     }
 }
@@ -459,17 +411,12 @@
 - (void)setConsentState:(MPConsentState *)state {
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"SET_CONSENT_STATE"];
 
-    [MPPersistenceController_PRIVATE setConsentState:state forMpid:self.userId];
+    [MPPersistenceUtilities setConsentState:state forMpid:self.userId];
     
-    NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer_PRIVATE.originalConfig copy];
-    if (kitConfig) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfig];
-        });
-    }
+    [[MParticle sharedInstance].kitContainer_PRIVATE reconfigureKits];
     
     // Device-level consent supersedes user-level, so forward the effective consent to kits.
-    MPConsentState *effectiveConsentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:self.userId];
+    MPConsentState *effectiveConsentState = [MPPersistenceUtilities effectiveConsentStateForMpid:self.userId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setConsentState:) consentState:effectiveConsentState kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
             MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
@@ -482,7 +429,7 @@
 
 - (nullable MPConsentState *)consentState {
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"GET_CONSENT_STATE"];
-    return [MPPersistenceController_PRIVATE consentStateForMpid:self.userId];
+    return [MPPersistenceUtilities consentStateForMpid:self.userId];
 }
 
 

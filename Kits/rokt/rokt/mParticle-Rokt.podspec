@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
     s.source           = { :git => "https://github.com/mparticle-integrations/mp-apple-integration-rokt.git", :tag => "v" + s.version.to_s }
     s.swift_version = "5.5"
     s.ios.deployment_target = "15.0"
-    s.ios.source_files      = 'Sources/mParticle-Rokt/**/*.{h,m}', 'Sources/mParticle-Rokt-Swift/**/*.swift'
+    s.ios.source_files      = 'Sources/mParticle-Rokt/**/*.{h,m}', 'Sources/mParticle-Rokt-Internal/**/*.swift', 'Sources/mParticle-Rokt-Swift/**/*.swift'
     s.ios.resource_bundles  = { 'mParticle-Rokt-Privacy' => ['Sources/mParticle-Rokt/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.1'
     s.ios.dependency 'RoktContracts', '~> 2.0'

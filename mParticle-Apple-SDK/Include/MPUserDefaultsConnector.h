@@ -1,9 +1,9 @@
 #import "MPBackendController.h"
-#import "MPStateMachine.h"
 #import "MPIdentityApi.h"
 
 @class MPUserDefaults;
 @class MParticle;
+@class MPStateMachine_PRIVATE;
 
 @interface MPUserDefaultsConnector: NSObject
 

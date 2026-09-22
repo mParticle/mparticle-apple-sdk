@@ -1,6 +1,5 @@
 import Foundation
 
-@objcMembers
 public class Miscellaneous: NSObject {
     public static let kMPFirstSeenUser = "fsu"
     public static let kMPLastSeenUser = "lsu"
@@ -15,6 +14,9 @@ public class Miscellaneous: NSObject {
     public static let CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0 * 60
     public static let CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60 * 60 * 24.0
     public static let kMPDeviceTokenTypeKey = "tot"
+    public static let kMPDeviceTokenTypeDevelopment = "appleSandbox"
+    public static let kMPDeviceTokenTypeProduction = "appleProduction"
+    public static let kMPOptOutStatus = "s"
     public static let kMPATT = "atts"
     public static let kMPATTTimestamp = "attt"
     public static let kMPDeviceCydiaJailbrokenKey = "cydia"

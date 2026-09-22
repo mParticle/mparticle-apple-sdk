@@ -1,11 +1,8 @@
 #import <XCTest/XCTest.h>
-#import "MPSession.h"
-#import "MPMessage.h"
-#import "MPMessageBuilder.h"
-#import "MPUpload.h"
-#import "MPBreadcrumb.h"
-#import "MPStateMachine.h"
-#import "MPPersistenceController.h"
+@import mParticle_Apple_SDK_Swift;
+#import "MPIConstants.h"
+#import "MPPersistenceUploadSettingsCodec.h"
+#import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 
@@ -29,7 +26,7 @@
 }
 
 - (void)testSessionInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     XCTAssertNotNil(session, @"Should not have been nil");
     
     MPSession *sessionCopy = [session copy];
@@ -62,12 +59,25 @@
     XCTAssertNotEqualObjects(sessionCopy, session, @"Should not have been equal.");
 }
 
+- (void)testSessionCounterIsThreadSafe {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]
+                                                     userId:[MPPersistenceUtilities mpId]];
+    const size_t iterationCount = 1000;
+
+    dispatch_apply(iterationCount, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^(size_t index) {
+        (void)index;
+        [session incrementCounter];
+    });
+
+    XCTAssertEqual(session.eventCounter, iterationCount);
+}
+
 - (void)testMessageInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     XCTAssertNotNil(messageBuilder, @"Should not have been nil.");
     
     MPMessage *message = [messageBuilder build];
@@ -149,13 +159,13 @@
 }
 
 - (void)testMessageInstanceWithInfinite {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     double four = 4.0;
     double zed = 0.0;
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@(four/zed)}];
+                                                                         messageInfo:@{@"MessageKey1":@(four/zed)} context:self.messageBuilderContext];
     XCTAssertNotNil(messageBuilder, @"Should not have been nil.");
     
     MPMessage *message = [messageBuilder build];
@@ -185,11 +195,11 @@
 }
 
 - (void)testUploadInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
@@ -308,11 +318,11 @@
 }
 
 - (void)testBreadcrumbInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:session.uuid
@@ -356,11 +366,11 @@
 }
 
 - (void)testMessageEncoding {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     XCTAssertNotNil(message, @"Should not have been nil.");
@@ -371,11 +381,11 @@
 }
 
 - (void)testBreadcrumbEncoding {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:session.uuid
@@ -388,6 +398,47 @@
     
     MPBreadcrumb *persistedBreadcrumb = [self attemptSecureEncodingwithClass:[MPBreadcrumb class] Object:breadcrumb];
     XCTAssertEqualObjects(breadcrumb, persistedBreadcrumb, @"Breadcrumb should have been a match.");
+}
+
+- (void)testPersistenceUploadSettingsCodecRoundTrip {
+    MPUploadSettings *settings = [[MPUploadSettings alloc] initWithApiKey:@"api-key"
+                                                                  secret:@"secret"
+                                                              eventsHost:@"events.example.com"
+                                                       eventsTrackingHost:@"tracking.example.com"
+                                            overridesEventsSubdirectory:YES
+                                                               aliasHost:@"alias.example.com"
+                                                        aliasTrackingHost:@"alias-tracking.example.com"
+                                             overridesAliasSubdirectory:YES
+                                                              eventsOnly:YES];
+    MPPersistenceUploadSettingsCodec *codec = [[MPPersistenceUploadSettingsCodec alloc] init];
+
+    NSData *data = [codec archiveUploadSettings:settings];
+    MPUploadSettings *restored = (MPUploadSettings *)[codec unarchiveUploadSettings:data];
+
+    XCTAssertNotNil(data);
+    XCTAssertTrue([restored isKindOfClass:[MPUploadSettings class]]);
+    XCTAssertEqualObjects(restored.apiKey, settings.apiKey);
+    XCTAssertEqualObjects(restored.secret, settings.secret);
+    XCTAssertEqualObjects(restored.eventsHost, settings.eventsHost);
+    XCTAssertEqualObjects(restored.eventsTrackingHost, settings.eventsTrackingHost);
+    XCTAssertEqual(restored.overridesEventsSubdirectory, settings.overridesEventsSubdirectory);
+    XCTAssertEqualObjects(restored.aliasHost, settings.aliasHost);
+    XCTAssertEqualObjects(restored.aliasTrackingHost, settings.aliasTrackingHost);
+    XCTAssertEqual(restored.overridesAliasSubdirectory, settings.overridesAliasSubdirectory);
+    XCTAssertEqual(restored.eventsOnly, settings.eventsOnly);
+}
+
+- (void)testPersistenceUploadSettingsCodecRejectsUnsupportedInput {
+    MPPersistenceUploadSettingsCodec *codec = [[MPPersistenceUploadSettingsCodec alloc] init];
+
+    XCTAssertNil([codec archiveUploadSettings:@"not upload settings"]);
+}
+
+- (void)testPersistenceUploadSettingsCodecRejectsCorruptArchive {
+    MPPersistenceUploadSettingsCodec *codec = [[MPPersistenceUploadSettingsCodec alloc] init];
+    NSData *data = [@"not an archive" dataUsingEncoding:NSUTF8StringEncoding];
+
+    XCTAssertNil([codec unarchiveUploadSettings:data]);
 }
 
 @end

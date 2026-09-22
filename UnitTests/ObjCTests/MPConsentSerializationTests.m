@@ -4,7 +4,7 @@
 #import "MPConsentState.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
-#import "MPConsentKitFilter.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPBaseTestCase.h"
 
 static NSTimeInterval epsilon = 0.05;
@@ -229,6 +229,21 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertEqualObjects(ccpaState.hardwareId, @"foo-hardware-id-1");
 }
 
+
+- (void)testFromStringWithEmptyContainers {
+    MPConsentState *gdprState = [MPConsentSerialization consentStateFromString:@"{\"gdpr\":{}}"];
+    XCTAssertNotNil(gdprState);
+    XCTAssertEqual([gdprState gdprConsentState].count, 0);
+    XCTAssertNil([gdprState ccpaConsentState]);
+
+    MPConsentState *ccpaState = [MPConsentSerialization consentStateFromString:@"{\"ccpa\":{}}"];
+    XCTAssertNotNil(ccpaState);
+    XCTAssertEqual([ccpaState gdprConsentState].count, 0);
+    XCTAssertNil([ccpaState ccpaConsentState]);
+
+    XCTAssertNil([MPConsentSerialization consentStateFromString:@"{}"]);
+    XCTAssertNil([MPConsentSerialization consentStateFromString:@"{\"other\":{}}"]);
+}
 
 - (void)testFilterFromDictionary {
     NSDictionary *configDictionary = @{@"i":@YES, @"v":@[@{@"c":@YES,@"h":@48278946},@{@"c":@YES,@"h":@1556641}]};

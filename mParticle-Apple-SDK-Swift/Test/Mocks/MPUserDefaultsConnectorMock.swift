@@ -1,4 +1,5 @@
 import Foundation
+@testable import mParticle_Apple_SDK_Swift
 
 class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     var logger = MPLog(logLevel: .warning)
@@ -65,6 +66,18 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
 
     func mpId() -> NSNumber {
         1
+    }
+
+    var consumerInfo = MPConsumerInfoPRIVATE()
+
+    func fetchOrCreateConsumerInfo() -> MPConsumerInfoPRIVATE {
+        consumerInfo
+    }
+
+    var clearAdvertiserIdForAllUsersCalled = false
+
+    func clearAdvertiserIdForAllUsers() {
+        clearAdvertiserIdForAllUsersCalled = true
     }
 
     var configMaxAgeSecondsReturnValue: NSNumber?

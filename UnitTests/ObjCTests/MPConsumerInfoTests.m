@@ -1,15 +1,7 @@
 #import <XCTest/XCTest.h>
-#import "MPConsumerInfo.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPIConstants.h"
 #import "MPBaseTestCase.h"
-
-#pragma mark - MPConsumerInfo(Tests)
-@interface MPConsumerInfo(Tests)
-
-- (NSNumber *)generateMpId;
-
-@end
-
 
 #pragma mark - MPConsumerInfoTests
 @interface MPConsumerInfoTests : MPBaseTestCase {
@@ -59,7 +51,7 @@
 - (void)testInstance {
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
     
-    [consumerInfo updateWithConfiguration:consumerInfoDictionary];
+    [consumerInfo updateWithConfiguration:consumerInfoDictionary existingCookies:nil];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     NSData *consumerInfoData = [NSKeyedArchiver archivedDataWithRootObject:consumerInfo];
@@ -68,22 +60,22 @@
     XCTAssertNotNil(deserializedConsumerInfo, @"Should not have been nil.");
     
     consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:@{}];
+    [consumerInfo updateWithConfiguration:@{} existingCookies:nil];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     consumerInfo = [[MPConsumerInfo alloc] init];
     NSDictionary *nilDictionary = nil;
-    [consumerInfo updateWithConfiguration:nilDictionary];
+    [consumerInfo updateWithConfiguration:nilDictionary existingCookies:nil];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:(NSDictionary *)[NSNull null]];
+    [consumerInfo updateWithConfiguration:(NSDictionary *)[NSNull null] existingCookies:nil];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
 }
 
 - (void)testCookiesDictionary {
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:consumerInfoDictionary];
+    [consumerInfo updateWithConfiguration:consumerInfoDictionary existingCookies:nil];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     NSDictionary *cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
@@ -123,7 +115,7 @@
     NSDictionary *localConsumerInfoDictionary = localResponseDictionary[kMPRemoteConfigConsumerInfoKey];
     
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:localConsumerInfoDictionary];
+    [consumerInfo updateWithConfiguration:localConsumerInfoDictionary existingCookies:nil];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     NSDictionary *cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
@@ -143,7 +135,7 @@
     localConsumerInfoDictionary = localResponseDictionary[kMPRemoteConfigConsumerInfoKey];
     
     consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:localConsumerInfoDictionary];
+    [consumerInfo updateWithConfiguration:localConsumerInfoDictionary existingCookies:nil];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     localResponseDictionary = @{@"ci":[NSNull null],
@@ -156,7 +148,7 @@
     localConsumerInfoDictionary = localResponseDictionary[kMPRemoteConfigConsumerInfoKey];
     
     consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:localConsumerInfoDictionary];
+    [consumerInfo updateWithConfiguration:localConsumerInfoDictionary existingCookies:nil];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
@@ -218,7 +210,7 @@
 
 - (void)testConsumerInfoEncoding {
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:consumerInfoDictionary];
+    [consumerInfo updateWithConfiguration:consumerInfoDictionary existingCookies:nil];
     
     MPConsumerInfo *persistedConsumerInfo = [self attemptSecureEncodingwithClass:[MPConsumerInfo class] Object:consumerInfo];
     XCTAssertEqualObjects(consumerInfo.uniqueIdentifier, persistedConsumerInfo.uniqueIdentifier, @"Consumer Info should have been a match.");
