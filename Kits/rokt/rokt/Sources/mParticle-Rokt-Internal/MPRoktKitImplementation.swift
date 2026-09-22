@@ -139,7 +139,7 @@ private final class DefaultMPRoktSDKClient: MPRoktSDKClient {
 public final class MPRoktKitImplementation: NSObject {
     private enum Constants {
         static let kitCode = 181
-        static let kitVersion = "9.5.1"
+        static let kitVersion = "9.6.0"
         static let sandbox = "sandbox"
         static let mapping = "placementAttributesMapping"
         static let mappingSource = "map"
