@@ -85,8 +85,8 @@ by 1,409 KB.
 
 | Image                       | `main`     | `workstation` | Delta       | Exported symbols |
 | --------------------------- | ---------- | ------------- | ----------- | ---------------- |
-| `mParticle_Apple_SDK`       | 1,495.8 KB | 1,085.1 KB    | -410.7 KB   | 1,676 -> 1,532   |
-| `mParticle_Apple_SDK_Swift` | 329.9 KB   | 1,738.9 KB    | +1,409.0 KB | 865 -> 4,983     |
+| `mParticle_Apple_SDK`       | 1,495.8 KB | 1,085.1 KB    | -410.7 KB   | 1,398 -> 1,259   |
+| `mParticle_Apple_SDK_Swift` | 329.9 KB   | 1,738.9 KB    | +1,409.0 KB | 720 -> 4,730     |
 
 ## CI Integration
 

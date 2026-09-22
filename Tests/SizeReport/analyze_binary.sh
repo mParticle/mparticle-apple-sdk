@@ -172,7 +172,10 @@ for image in ${IMAGES}; do
 	swift_meta=$(sum_sections "${layout}" "${SWIFT_SECTIONS}")
 	objc_meta=$(sum_sections "${layout}" "${OBJC_SECTIONS}")
 	linkedit=$(segment_bytes "${layout}" "__LINKEDIT")
-	exports=$(nm -g "${image}" 2>/dev/null | grep -c . || true)
+	# -U suppresses undefined symbols. Without it, nm -g also lists what the image
+	# *imports*, which inflated this count by 8-17% and made it move when a dependency
+	# changed. -gU matches dyld_info -exports exactly.
+	exports=$(nm -gU "${image}" 2>/dev/null | grep -c . || true)
 	archs=$(lipo -archs "${image}" 2>/dev/null || echo "unknown")
 
 	TOTAL_FILE=$((TOTAL_FILE + file_size))

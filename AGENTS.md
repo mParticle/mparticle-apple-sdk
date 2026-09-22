@@ -108,8 +108,8 @@ mistake to make.
     own metadata is 233 KB, so most of the SDK's Objective-C metadata is now emitted by Swift.
   - **`internal` and `final` by default.** 236 of 306 Swift type declarations are `public` or `open`,
     almost all of them only so the ObjC core can reach them across the module boundary. Swift emits
-    `public` symbols as `no_dead_strip`, so they can never be removed; the Swift image exports 4,983
-    symbols where `main` exported 865, and the symbol tables describing them are 19 % of the
+    `public` symbols as `no_dead_strip`, so they can never be removed; the Swift image exports 4,730
+    symbols where `main` exported 720, and the symbol tables describing them are 19 % of the
     regression. `public` is a size decision, not just an API decision.
   - **Don't introduce `Codable`, generic helpers, `Mirror`, or Swift Concurrency into the core without
     measuring.** The core currently uses none of them, which is why `-Osize` is safe and why the Swift
