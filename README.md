@@ -45,6 +45,8 @@ https://github.com/mparticle-integrations/mparticle-apple-integration-braze-14
 
 Then add the `mParticle-BranchMetrics` and `mParticle-Braze` products to your app target.
 
+> **Resolving via a package registry instead of GitHub?** SwiftPM supports resolving dependencies through a package registry via client-side [dependency mirroring](https://github.com/swiftlang/swift-package-manager/blob/main/Documentation/PackageRegistry/Registry.md). If Xcode doesn't seem to pick up your mirror/registry config, note that it reads this config once at project-open time and caches it for the session, so a restart is often required after adding or changing it.
+
 #### CocoaPods
 
 To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guides.cocoapods.org/syntax/podfile.html):
