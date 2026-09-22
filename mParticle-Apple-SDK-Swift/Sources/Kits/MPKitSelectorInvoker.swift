@@ -298,6 +298,13 @@ import Foundation
             guard let call = kit.close else { return MPKitInvocationResult(.notImplemented) }
             return returned(call())
 
+        case "setSession:":
+            guard let session = argument(0) as AnyObject? else {
+                return MPKitInvocationResult(.missingArguments)
+            }
+            guard let call = kit.setSession else { return MPKitInvocationResult(.notImplemented) }
+            return returned(call(session))
+
         case "setSessionId:":
             guard let sessionId = argument(0) as? String else {
                 return MPKitInvocationResult(.missingArguments)

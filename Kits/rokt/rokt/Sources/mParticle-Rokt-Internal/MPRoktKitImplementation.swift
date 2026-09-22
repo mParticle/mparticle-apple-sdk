@@ -31,6 +31,8 @@ protocol MPRoktSDKClient {
     func events(identifier: String, onEvent: ((RoktEvent) -> Void)?)
     func globalEvents(onEvent: @escaping (RoktEvent) -> Void)
     func close()
+    func setSession(_ session: RoktSession)
+    func getSession() -> RoktSession?
     func setSessionID(_ sessionID: String)
     func getSessionID() -> String?
     func clearSession()
@@ -117,6 +119,8 @@ private final class DefaultMPRoktSDKClient: MPRoktSDKClient {
 
     func globalEvents(onEvent: @escaping (RoktEvent) -> Void) { Rokt.globalEvents(onEvent: onEvent) }
     func close() { Rokt.close() }
+    func setSession(_ session: RoktSession) { Rokt.setSession(session) }
+    func getSession() -> RoktSession? { Rokt.getSession() }
     @available(*, deprecated)
     func setSessionID(_ sessionID: String) { Rokt.setSessionId(sessionId: sessionID) }
     @available(*, deprecated)
@@ -367,6 +371,56 @@ public final class MPRoktKitImplementation: NSObject {
             }
         }
         return status(.success)
+    }
+
+    /// Sets the session (id + token) applied to the next execute call.
+    ///
+    /// Takes the fields rather than the `MPRoktSession` that carries them because that object
+    /// declares all three nonnull. Swift imports them as values that cannot be absent, so the
+    /// checks below could not be written against the object, let alone tested.
+    ///
+    /// An incomplete session is ignored rather than partially applied: seeding an id without its
+    /// token would leave offers and events unauthorized while looking like a successful handoff.
+    /// `setSessionId` remains the legacy id-only path.
+    ///
+    /// Queued behind preparation for the same reason as the other execute-affecting calls, so a
+    /// caller that sets a session and then selects placements cannot have the placement overtake
+    /// the token it handed off.
+    @objc(setSessionWithSessionId:sessionToken:expiresAt:)
+    public func setSession(sessionID: String?,
+                           sessionToken: String?,
+                           expiresAt: NSNumber?) -> MPKitExecStatus {
+        let sessionID = sessionID?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let sessionToken = sessionToken?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !sessionID.isEmpty, !sessionToken.isEmpty, let expiresAt else {
+            return status(.success)
+        }
+
+        let roktSession = RoktSession(sessionId: sessionID,
+                                      sessionToken: sessionToken,
+                                      expiresAt: expiresAt)
+        enqueuePreparation { [weak self] generation in
+            self?.completePreparation(generation: generation) {
+                self?.roktClient.setSession(roktSession)
+            }
+        }
+        return status(.success)
+    }
+
+    /// Reads the current session (id + token) for handoff to a non-native integration.
+    ///
+    /// Returns nil unless the session is complete, so a caller cannot hand a WebView an id whose
+    /// token is missing and have it fail authorization later instead of here.
+    @objc public func getSession() -> MPRoktSession? {
+        guard let session = roktClient.getSession(),
+              !session.sessionId.isEmpty,
+              !session.sessionToken.isEmpty,
+              let expiresAt = session.expiresAt
+        else { return nil }
+
+        return MPRoktSession(sessionId: session.sessionId,
+                             sessionToken: session.sessionToken,
+                             expiresAt: expiresAt)
     }
 
     @objc(setSessionId:)

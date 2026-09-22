@@ -6,6 +6,10 @@
 
 @interface MPKitRokt (Testing)
 - (NSDictionary<NSString *, RoktEmbeddedView *> *)confirmEmbeddedViews:(NSDictionary *)embeddedViews;
+// Redeclared rather than added to MPKitRokt.h: the core reaches both through the runtime, so the
+// kit deliberately does not publish them, and the selector test below is what holds them in place.
+- (MPKitExecStatus *)setSession:(id)session;
+- (MPRoktSession *)getSession;
 @end
 
 @interface mParticle_RoktTests : XCTestCase
@@ -36,6 +40,8 @@
         NSStringFromSelector(@selector(events:onEvent:)),
         NSStringFromSelector(@selector(globalEvents:)),
         NSStringFromSelector(@selector(close)),
+        NSStringFromSelector(@selector(setSession:)),
+        NSStringFromSelector(@selector(getSession)),
         NSStringFromSelector(@selector(setSessionId:)),
         NSStringFromSelector(@selector(getSessionId)),
         NSStringFromSelector(@selector(clearSession)),
@@ -136,6 +142,16 @@
     }];
 
     XCTAssertEqualObjects(result, @{@"valid": validView});
+}
+
+- (void)testMalformedSessionIsDiscardedAtObjectiveCBoundary {
+    MPKitRokt *kit = [[MPKitRokt alloc] init];
+
+    // The session reaches the kit as an untyped forwarded argument, so the wrong class can arrive
+    // here. Swift will not catch it: an Objective-C object parameter crosses into Swift
+    // unchecked, and the first property read raises -[NSString sessionId] instead of returning.
+    id notASession = @"session-1";
+    XCTAssertEqual([kit setSession:notASession].returnCode, MPKitReturnCodeSuccess);
 }
 
 @end
