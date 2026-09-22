@@ -551,7 +551,7 @@ write_report() {
 		printf '%s\n\n' '<details>'
 		printf '%s\n\n' '<summary>How this is measured</summary>'
 		printf '%s\n' '- Current composition uses production source lines of code (SLOC) from `cloc`; comments and blank lines are excluded.'
-		printf '%s\n' '- **Short term — in scope** excludes the Objective-C the migration will not delete, so 100% is the end of this project: every in-scope implementation gone.'
+		printf '%s\n' '- **Short term — in scope** excludes the Objective-C the migration will not delete, so 100% completes the in-scope conversions: every in-scope implementation gone. Migration continues on main after the integration branch merge.'
 		printf '%s\n' '- **Long term — all Objective-C** keeps the full denominator. Reaching 100% there means the public API itself becomes Swift, which is a breaking change reserved for a future major release.'
 		printf '%s\n' '- The gap between the two rows is the retained public/kit contract, runtime-identity, and boundary-glue surface listed in `Tools/swift-migration-retained-objc.txt`.'
 		printf '%s\n' '- Retained wrappers keep their Objective-C interface but still shed logic to Swift. That thinning moves the long-term row and the retained figure, not the short-term row.'

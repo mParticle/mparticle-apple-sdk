@@ -99,7 +99,9 @@
 
 @implementation MPUserDefaultsConnector
 
-// Non-extractable: the ObjC implementation of the already-Swift `MPUserDefaultsConnectorProtocol` — every method is pure glue to `MParticle.sharedInstance` ObjC-module internals the Swift module cannot import. The Swift-facing boundary is the protocol itself. Per docs/swift-migration/CONVERSION-RECIPE.md hard constraint.
+// Implement MPUserDefaultsConnectorProtocol on the ObjC side to bridge MParticle's
+// internals to Swift. Importing the ObjC module from Swift would create a dependency
+// cycle. See docs/swift-migration/CONVERSION-RECIPE.md for the boundary constraints.
 
 - (MPStateMachine_PRIVATE*)stateMachine {
     return MParticle.sharedInstance.stateMachine;
