@@ -29,20 +29,16 @@ Review and merge the PR. On merge, the **Release – Publish** workflow runs aut
 - Builds xcframeworks for every kit
 - Mirrors each kit subtree to its own repo under `mparticle-integrations/` (and **RoktSDKPlus** to `ROKT/rokt-sdk-plus-ios`)
 - Creates GitHub releases and tags (used by SPM consumers)
-- Publishes the core SDK and all kit podspecs to CocoaPods trunk
+- Publishes the core SDK podspecs to CocoaPods trunk in dependency order:
+  `mParticle-Apple-SDK-Swift`, `mParticle-Apple-SDK-ObjC`, then `mParticle-Apple-SDK`
+- Publishes kit podspecs after the core SDK pods are available
 
 > [!NOTE]
 > The release GitHub App must be installed on **ROKT** with access to `rokt-sdk-plus-ios` for that mirror push to succeed (same app credentials as `mparticle-integrations` mirrors).
 
-> [!NOTE]
-> The Swift SDK podspec (`mParticle-Apple-SDK-Swift`) is not yet published automatically — push it manually before the core SDK if required:
->
-> ```bash
-> pod trunk push mParticle-Apple-SDK-Swift.podspec --allow-warnings
-> ```
-
 ## Post-release verification
 
 - New `v<version>` tag exists on the main repo and all kit mirror repos
-- New version is available on [CocoaPods](https://cocoapods.org/pods/mParticle-Apple-SDK)
+- The same new version is available for all three core SDK pods on
+  [CocoaPods](https://cocoapods.org/pods/mParticle-Apple-SDK), followed by the kit pods
 - SPM resolves the new version

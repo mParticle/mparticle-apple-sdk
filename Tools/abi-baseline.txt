@@ -255,6 +255,7 @@ IFACE|@interface MPProduct(Dictionary)
 IFACE|@interface MPPromotion : NSObject <NSCopying, NSSecureCoding>
 IFACE|@interface MPPromotionContainer : NSObject <NSCopying, NSSecureCoding>
 IFACE|@interface MPRokt : NSObject
+IFACE|@interface MPRoktSession : NSObject
 IFACE|@interface MPSideloadedKit : NSObject
 IFACE|@interface MPTransactionAttributes : NSObject <NSCopying, NSSecureCoding>
 IFACE|@interface MPTransactionAttributes(Dictionary)
@@ -303,6 +304,7 @@ METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url NS_SWIFT_NAME(handleURLCa
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url;
 METHOD|- (BOOL)isKitActive:(NSNumber *)integrationId;
+METHOD|- (BOOL)supportsConsentStateReplay;
 METHOD|- (FilteredMParticleUser *_Nonnull)getCurrentUserWithKit:(id<MPKitProtocol> _Nonnull)kit;
 METHOD|- (MPBackendController_PRIVATE*)backendController;
 METHOD|- (MPCommerceEventAction)actionWithName:(NSString *)actionName;
@@ -316,6 +318,8 @@ METHOD|- (MPIdentityApi*)identity;
 METHOD|- (MPKitExecStatus *)clearIntegrationAttributesForKit:(NSNumber *)integrationId;
 METHOD|- (MPKitExecStatus *)setIntegrationAttributes:(NSDictionary<NSString *, NSString *> *)attributes forKit:(NSNumber *)integrationId;
 METHOD|- (MPProduct *)copyMatchingHashedProperties:(NSDictionary *)hashedMap;
+METHOD|- (MPRoktSession * _Nullable)getSession;
+METHOD|- (MPRoktSession * _Nullable)getSession;
 METHOD|- (MPStateMachine_PRIVATE*)stateMachine;
 METHOD|- (MParticleSession* _Nullable)tempSession;
 METHOD|- (NSArray<MPCommerceEventInstruction *> *)expandedInstructions;
@@ -336,7 +340,7 @@ METHOD|- (NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)copyI
 METHOD|- (NSMutableDictionary<NSString *, id> *)beautifiedAttributes;
 METHOD|- (NSMutableDictionary<NSString *, id> *)userDefinedAttributes;
 METHOD|- (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector;
-METHOD|- (NSString * _Nullable)getSessionId;
+METHOD|- (NSString * _Nullable)getSessionId __attribute__((deprecated("Use getSession to read session id and session token.")));
 METHOD|- (NSString * _Nullable)getSessionId;
 METHOD|- (NSString *) print;
 METHOD|- (NSString *)actionNameForAction:(MPCommerceEventAction)action;
@@ -345,12 +349,14 @@ METHOD|- (NSUInteger)count;
 METHOD|- (instancetype _Nonnull )initWithMParticleUser:(MParticleUser *_Nonnull)user kitConfiguration:(MPKitConfiguration *_Nonnull)kitConfiguration;
 METHOD|- (instancetype)init NS_UNAVAILABLE;
 METHOD|- (instancetype)init NS_UNAVAILABLE;
+METHOD|- (instancetype)init NS_UNAVAILABLE;
 METHOD|- (instancetype)initWithAction:(MPCommerceEventAction)action;
 METHOD|- (instancetype)initWithAudienceId:(NSNumber *)audienceId;
 METHOD|- (instancetype)initWithIdentityRequest:(MPIdentityApiRequest *)request kitConfiguration:(MPKitConfiguration *)kitConfiguration;
 METHOD|- (instancetype)initWithInstruction:(MPCommerceInstruction)instruction event:(MPEvent *)event product:(MPProduct *)product __attribute__((objc_designated_initializer));
 METHOD|- (instancetype)initWithInstruction:(MPCommerceInstruction)instruction event:(MPEvent *)event;
 METHOD|- (instancetype)initWithKitInstance:(id<MPKitProtocol>)kitInstance;
+METHOD|- (instancetype)initWithSessionId:(NSString *)sessionId sessionToken:(NSString *)sessionToken expiresAt:(NSNumber *)expiresAt NS_DESIGNATED_INITIALIZER;
 METHOD|- (instancetype)initWithStore:(MPPersistenceStorePRIVATE *)store NS_DESIGNATED_INITIALIZER;
 METHOD|- (nonnull MPKitExecStatus *)beginLocationTracking:(MPLocationAccuracy)accuracy minDistance:(MPLocationDistance)distanceFilter;
 METHOD|- (nonnull MPKitExecStatus *)beginSession;
@@ -403,6 +409,7 @@ METHOD|- (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken
 METHOD|- (nonnull MPKitExecStatus *)setKitAttribute:(nonnull NSString *)key value:(nullable id)value;
 METHOD|- (nonnull MPKitExecStatus *)setLocation:(nonnull MPLocation *)location;
 METHOD|- (nonnull MPKitExecStatus *)setOptOut:(BOOL)optOut;
+METHOD|- (nonnull MPKitExecStatus *)setSession:(nonnull MPRoktSession *)session;
 METHOD|- (nonnull MPKitExecStatus *)setSessionId:(nonnull NSString *)sessionId;
 METHOD|- (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key value:(nonnull id)value;
 METHOD|- (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key values:(nonnull NSArray *)values;
@@ -624,8 +631,9 @@ METHOD|- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)k
 METHOD|- (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
 METHOD|- (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
 METHOD|- (void)setProducts:(NSArray<MPProduct *> *)products;
+METHOD|- (void)setSession:(MPRoktSession * _Nonnull)session;
 METHOD|- (void)setSessionAttribute:(NSString *)key value:(nullable id)value;
-METHOD|- (void)setSessionId:(NSString * _Nonnull)sessionId;
+METHOD|- (void)setSessionId:(NSString * _Nonnull)sessionId __attribute__((deprecated("Use setSession: to set session id and session token.")));
 METHOD|- (void)setTimeAddedToCart:(NSDate *)date;
 METHOD|- (void)setTimestamp:(NSDate *)timestamp;
 METHOD|- (void)setUserAttribute:(NSString *)key value:(id)value;
@@ -700,6 +708,8 @@ PROP|@property (nonatomic, copy, nullable) NSString *aliasTrackingHost;
 PROP|@property (nonatomic, copy, nullable) NSString *eventsHost;
 PROP|@property (nonatomic, copy, nullable) NSString *eventsTrackingHost;
 PROP|@property (nonatomic, copy, nullable, readwrite) void (^customLogger)(NSString *message);
+PROP|@property (nonatomic, copy, readonly) NSString *sessionId;
+PROP|@property (nonatomic, copy, readonly) NSString *sessionToken;
 PROP|@property (nonatomic, copy, readwrite) NSString *defaultAgent;
 PROP|@property (nonatomic, copy, readwrite) void (^customLogger)(NSString *message);
 PROP|@property (nonatomic, nullable) NSError *innerError;
@@ -847,6 +857,7 @@ PROP|@property (nonatomic, strong, readonly) NSDate *endTime;
 PROP|@property (nonatomic, strong, readonly) NSDate *startTime;
 PROP|@property (nonatomic, strong, readonly) NSNumber *dataPlanVersion;
 PROP|@property (nonatomic, strong, readonly) NSNumber *destinationMPID;
+PROP|@property (nonatomic, strong, readonly) NSNumber *expiresAt;
 PROP|@property (nonatomic, strong, readonly) NSNumber *sourceMPID;
 PROP|@property (nonatomic, strong, readonly) NSString *dataPlanId;
 PROP|@property (nonatomic, strong, readonly) NSString *version;

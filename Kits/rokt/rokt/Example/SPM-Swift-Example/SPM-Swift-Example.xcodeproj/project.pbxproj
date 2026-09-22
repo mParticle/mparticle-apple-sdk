@@ -118,6 +118,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				AA000002000000000000002A /* XCLocalSwiftPackageReference "../../" */,
+				AA000003000000000000003A /* XCLocalSwiftPackageReference "../../../../.." */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 891CF8052F68C57C0063792A /* Products */;
@@ -361,6 +362,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../;
 		};
+		AA000003000000000000003A /* XCLocalSwiftPackageReference "../../../../.." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../../../../..";
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -371,6 +376,7 @@
 		};
 		B34E89952F8087DA003A0ADE /* mParticle-Apple-SDK */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = AA000003000000000000003A /* XCLocalSwiftPackageReference "../../../../.." */;
 			productName = "mParticle-Apple-SDK";
 		};
 /* End XCSwiftPackageProductDependency section */
