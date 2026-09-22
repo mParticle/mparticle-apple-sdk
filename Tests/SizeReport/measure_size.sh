@@ -156,6 +156,28 @@ if [[ -d ${XCFRAMEWORK_PATH} ]]; then
 	XCFRAMEWORK_SIZE_KB=$(get_dir_size_kb "${XCFRAMEWORK_PATH}")
 fi
 
+# Split the xcframework into what ships and what does not. -create-xcframework folds
+# the dSYM in alongside the framework, and Release builds with dwarf-with-dsym, so
+# most of the xcframework is debug symbols that never reach a user's device. Reporting
+# the two separately keeps the shipped number honest.
+FRAMEWORK_SIZE_KB=0
+DSYM_SIZE_KB=0
+if [[ -d ${XCFRAMEWORK_PATH} ]]; then
+	for slice in "${XCFRAMEWORK_PATH}"/*/; do
+		[[ -d ${slice} ]] || continue
+		for fw in "${slice}"*.framework; do
+			if [[ -d ${fw} ]]; then
+				# shellcheck disable=SC2311
+				FRAMEWORK_SIZE_KB=$((FRAMEWORK_SIZE_KB + $(get_dir_size_kb "${fw}")))
+			fi
+		done
+		if [[ -d "${slice}dSYMs" ]]; then
+			# shellcheck disable=SC2311
+			DSYM_SIZE_KB=$((DSYM_SIZE_KB + $(get_dir_size_kb "${slice}dSYMs")))
+		fi
+	done
+fi
+
 # Build baseline app (if not with-sdk-only)
 BASELINE_SIZE_KB=0
 BASELINE_EXECUTABLE_SIZE=0
@@ -209,13 +231,15 @@ SDK_EXECUTABLE_SIZE=$((WITHSDK_EXECUTABLE_SIZE - BASELINE_EXECUTABLE_SIZE))
 # Output results
 if [[ ${OUTPUT_JSON} == "true" ]]; then
 	# Output compact single-line JSON for CI compatibility
-	echo "{\"baseline_app_size_kb\":${BASELINE_SIZE_KB},\"baseline_executable_size_bytes\":${BASELINE_EXECUTABLE_SIZE},\"with_sdk_app_size_kb\":${WITHSDK_SIZE_KB},\"with_sdk_executable_size_bytes\":${WITHSDK_EXECUTABLE_SIZE},\"sdk_impact_kb\":${SDK_SIZE_KB},\"sdk_executable_impact_bytes\":${SDK_EXECUTABLE_SIZE},\"xcframework_size_kb\":${XCFRAMEWORK_SIZE_KB}}"
+	echo "{\"baseline_app_size_kb\":${BASELINE_SIZE_KB},\"baseline_executable_size_bytes\":${BASELINE_EXECUTABLE_SIZE},\"with_sdk_app_size_kb\":${WITHSDK_SIZE_KB},\"with_sdk_executable_size_bytes\":${WITHSDK_EXECUTABLE_SIZE},\"sdk_impact_kb\":${SDK_SIZE_KB},\"sdk_executable_impact_bytes\":${SDK_EXECUTABLE_SIZE},\"xcframework_size_kb\":${XCFRAMEWORK_SIZE_KB},\"framework_size_kb\":${FRAMEWORK_SIZE_KB},\"dsym_size_kb\":${DSYM_SIZE_KB}}"
 else
 	echo ""
 	echo "=== SDK Size Measurement Results ==="
 	echo ""
 	echo "XCFramework:"
-	echo "  Size: ${XCFRAMEWORK_SIZE_KB} KB"
+	echo "  Total size:       ${XCFRAMEWORK_SIZE_KB} KB"
+	echo "  Framework (ships): ${FRAMEWORK_SIZE_KB} KB"
+	echo "  dSYMs (not shipped): ${DSYM_SIZE_KB} KB"
 	echo ""
 	if [[ ${WITH_SDK_ONLY} == "false" ]]; then
 		echo "Baseline App (no SDK):"

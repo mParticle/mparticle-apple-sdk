@@ -521,6 +521,7 @@
 				Test/Kits/MPKitProjectionSnapshotFactoryTests.swift,
 				Test/Kits/MPKitSelectorInvokerTests.swift,
 				Test/Kits/MPProjectionFieldParserTests.swift,
+				Test/Mocks/MPUserDefaultsConnectorMock.swift,
 				Test/Network/MParticleReachabilityTests.swift,
 				Test/Network/MPDataPlanQueryTests.swift,
 				Test/Network/MPEndpointHostResolverTests.swift,
@@ -620,6 +621,7 @@
 				Test/Kits/MPKitProjectionSnapshotFactoryTests.swift,
 				Test/Kits/MPKitSelectorInvokerTests.swift,
 				Test/Kits/MPProjectionFieldParserTests.swift,
+				Test/Mocks/MPUserDefaultsConnectorMock.swift,
 				Test/Network/MParticleReachabilityTests.swift,
 				Test/Network/MPDataPlanQueryTests.swift,
 				Test/Network/MPEndpointHostResolverTests.swift,
@@ -1926,7 +1928,7 @@
 					"-Wpartial-availability",
 				);
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
 				TVOS_DEPLOYMENT_TARGET = 15.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
