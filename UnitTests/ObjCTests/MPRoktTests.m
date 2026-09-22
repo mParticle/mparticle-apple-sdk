@@ -26,10 +26,12 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 // Test helper class that simulates a kit with getSessionId and handleURLCallback methods
 @interface MPRoktTestKitInstance : NSObject <MPRoktKitDispatchTarget>
 @property (nonatomic, copy) NSString *sessionIdToReturn;
+@property (nonatomic, strong) MPRoktSession *sessionToReturn;
 @property (nonatomic, copy) NSString *lastDiagnosticCode;
 @property (nonatomic, assign) BOOL handleURLCallbackReturn;
 @property (nonatomic, strong) NSURL *lastHandleURLCallbackURL;
 - (NSString *)getSessionId;
+- (MPRoktSession *)getSession;
 - (void)logMParticleApiDiagnostic:(NSString *)code;
 - (BOOL)handleURLCallback:(NSURL *)url;
 @end
@@ -37,6 +39,9 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 @implementation MPRoktTestKitInstance
 - (NSString *)getSessionId {
     return self.sessionIdToReturn;
+}
+- (MPRoktSession *)getSession {
+    return self.sessionToReturn;
 }
 - (void)logMParticleApiDiagnostic:(NSString *)code {
     self.lastDiagnosticCode = code;
@@ -49,9 +54,11 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
 @interface MPRoktNonconformingKitInstance : NSObject
 @property (nonatomic, copy) NSString *sessionIdToReturn;
+@property (nonatomic, strong) MPRoktSession *sessionToReturn;
 @property (nonatomic, copy) NSString *lastDiagnosticCode;
 @property (nonatomic, assign) BOOL handleURLCallbackReturn;
 - (NSString *)getSessionId;
+- (MPRoktSession *)getSession;
 - (void)logMParticleApiDiagnostic:(NSString *)code;
 - (BOOL)handleURLCallback:(NSURL *)url;
 @end
@@ -59,6 +66,9 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 @implementation MPRoktNonconformingKitInstance
 - (NSString *)getSessionId {
     return self.sessionIdToReturn;
+}
+- (MPRoktSession *)getSession {
+    return self.sessionToReturn;
 }
 - (void)logMParticleApiDiagnostic:(NSString *)code {
     self.lastDiagnosticCode = code;
@@ -1191,6 +1201,75 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
 
     // Verify
     XCTAssertNil(result, @"Should return nil when kit wrapper instance is nil");
+}
+
+#pragma mark - getSession Tests
+
+- (void)testGetSessionReturnsTokenBearingSessionFromKit {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+
+    // The token and its expiry are what getSessionId cannot carry, so they are what this asserts:
+    // a session that arrives without them identifies the customer but authorizes nothing.
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+    kitInstance.sessionToReturn = [[MPRoktSession alloc] initWithSessionId:@"sid"
+                                                             sessionToken:@"jwt"
+                                                                expiresAt:@(123)];
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    MPRoktSession *result = [self.rokt getSession];
+
+    XCTAssertEqualObjects(result.sessionId, @"sid");
+    XCTAssertEqualObjects(result.sessionToken, @"jwt");
+    XCTAssertEqualObjects(result.expiresAt, @(123));
+}
+
+- (void)testGetSessionReturnsNilWhenTheKitDoesNotImplementIt {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+
+    // An older kit predating the token-bearing session. It must read as absent rather than
+    // raising, because the core asks every registered Rokt kit without knowing its version.
+    OCMStub([mockKitRegister wrapperInstance]).andReturn([[NSObject alloc] init]);
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    XCTAssertNil([self.rokt getSession]);
+}
+
+- (void)testGetSessionRejectsAKitThatDoesNotAdoptTheDispatchProtocol {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+
+    // Implements the selector but does not adopt the protocol. The header promises such a kit is
+    // rejected without being invoked, which getSessionId has always honoured and getSession did
+    // not: it was reached by selector alone, so any object answering the name would be called.
+    MPRoktNonconformingKitInstance *kitInstance = [[MPRoktNonconformingKitInstance alloc] init];
+    kitInstance.sessionToReturn = [[MPRoktSession alloc] initWithSessionId:@"sid"
+                                                             sessionToken:@"jwt"
+                                                                expiresAt:@(123)];
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+
+    XCTAssertNil([self.rokt getSession]);
 }
 
 #pragma mark - handleURLCallback Tests

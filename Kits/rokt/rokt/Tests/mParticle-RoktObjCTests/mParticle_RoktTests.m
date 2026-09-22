@@ -6,10 +6,6 @@
 
 @interface MPKitRokt (Testing)
 - (NSDictionary<NSString *, RoktEmbeddedView *> *)confirmEmbeddedViews:(NSDictionary *)embeddedViews;
-// Redeclared rather than added to MPKitRokt.h: the core reaches both through the runtime, so the
-// kit deliberately does not publish them, and the selector test below is what holds them in place.
-- (MPKitExecStatus *)setSession:(id)session;
-- (MPRoktSession *)getSession;
 @end
 
 @interface mParticle_RoktTests : XCTestCase
