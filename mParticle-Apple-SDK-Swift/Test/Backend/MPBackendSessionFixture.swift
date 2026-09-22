@@ -25,6 +25,20 @@ final class MPBackendSessionFixture {
         logger: { nil }
     )
     lazy var writer = MPBackendMessageWriter(state: state, dependencies: dependencies)
+    var maxBytesPerEvent = 1_000_000
+    var crashMaxPLReportLength: NSNumber?
+    var appImage: [AnyHashable: Any] = [:]
+    lazy var errors: MPBackendErrorDependencies = {
+        let bag = MPBackendErrorDependencies(
+            maxBytesPerEvent: { [unowned self] _ in maxBytesPerEvent },
+            crashMaxPLReportLength: { [unowned self] in crashMaxPLReportLength }
+        )
+        bag.appImageInfo = { [unowned self] in appImage }
+        return bag
+    }()
+    lazy var reporter = MPBackendErrorReporter(
+        state: state, dependencies: dependencies, writer: writer, errors: errors
+    )
     var automaticTracking = true
     var replacementStateMachine: MPStateMachinePRIVATE?
     var onAutomaticSessionTrackingRead: (() -> Void)?
@@ -148,6 +162,9 @@ final class MPBackendRecordingPersistence: NSObject, MPBackendPersistence {
     var previousSession: MPSessionPRIVATE?
     var archived: [MPSessionPRIVATE] = []
     var onSaveMessage: (() -> Void)?
+    // nil is the "no array at all" case the reporter distinguishes from an empty one.
+    var breadcrumbs: NSArray?
+    var crashSessions: NSArray?
 
     func objectiveCSaveMessage(_ message: MPMessagePRIVATE) {
         calls.append("message")
@@ -174,7 +191,10 @@ final class MPBackendRecordingPersistence: NSObject, MPBackendPersistence {
     func objectiveCPurgeMemory() { calls.append("purge") }
     func objectiveCDeleteRecords(olderThan time: TimeInterval) { calls.append("deleteRecords"); cutoffs.append(time) }
     func objectiveCFetchSessions() -> NSMutableArray? { calls.append("fetchSessions"); return NSMutableArray(array: sessions) }
-    func objectiveCFetchPossibleSessionsFromCrash() -> NSArray? { nil }
+    func objectiveCFetchPossibleSessionsFromCrash() -> NSArray? {
+        calls.append("crashSessions")
+        return crashSessions
+    }
     func objectiveCArchiveSession(_ session: MPSessionPRIVATE) -> MPSessionPRIVATE? {
         calls.append("archive")
         archived.append(session)
@@ -189,7 +209,10 @@ final class MPBackendRecordingPersistence: NSObject, MPBackendPersistence {
     func objectiveCDeleteNetworkPerformanceMessages() {}
     func objectiveCFetchMessagesForUploading() -> NSMutableDictionary? { nil }
     func objectiveCFetchUploadedMessages(in _: MPSessionPRIVATE) -> NSArray? { nil }
-    func objectiveCFetchBreadcrumbs() -> NSArray? { nil }
+    func objectiveCFetchBreadcrumbs() -> NSArray? {
+        calls.append("breadcrumbs")
+        return breadcrumbs
+    }
     func objectiveCSaveUpload(_: MPUploadPRIVATE, optedOut _: Bool) {}
     func objectiveCFetchUploads() -> NSArray? { nil }
     func objectiveCDeleteUpload(_: MPUploadPRIVATE) {}
