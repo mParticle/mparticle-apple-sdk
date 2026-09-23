@@ -2987,6 +2987,35 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     XCTAssertFalse(kitContainer.kitsInitialized);
 }
 
+- (void)testInitializeKitsSkipsUnusableCachedConfigurations {
+    // The cached eks array is replayed on the message queue at every start, before any refresh can
+    // replace it, so an entry the parser rejects has to be skipped. Keying kitConfigurations by a
+    // nil integrationId would raise here and make the crash recur at every launch.
+    NSArray *kitConfigs = @[
+        @"not-an-object",
+        @{@"as": @{@"appId": @"entry carrying no id"}}
+    ];
+    NSDictionary *configuration = @{kMPRemoteConfigKitsKey: kitConfigs,
+                                    kMPRemoteConfigRampKey: @100,
+                                    kMPRemoteConfigSessionTimeoutKey: @112};
+    [MPUserDefaultsConnector.userDefaults setConfiguration:configuration
+                                                      eTag:@"unusable-kit-entries"
+                                          requestTimestamp:[[NSDate date] timeIntervalSince1970]
+                                                currentAge:0
+                                                    maxAge:nil];
+
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    id mockAdapter = OCMPartialMock(localKitContainer.executionAdapter);
+    [[[mockAdapter stub] andReturn:@[@42]] supportedKits];
+
+    XCTAssertNoThrow([localKitContainer initializeKits]);
+    XCTAssertEqual(localKitContainer.kitConfigurations.count, 0);
+
+    // The configuration above is persisted, so leaving it in place would hand the poisoned eks
+    // array to every later test in this process.
+    [MPUserDefaultsConnector.userDefaults deleteConfiguration];
+}
+
 #if TARGET_OS_IOS == 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

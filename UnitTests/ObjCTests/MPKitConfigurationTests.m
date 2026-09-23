@@ -214,6 +214,89 @@
     XCTAssertFalse(kitConfig.excludeAnonymousUsers);
 }
 
+- (void)testNonDictionaryConfigurationIsRejected {
+    // A kit entry that is not an object survives the outer `eks` cast on the cached path, so the
+    // parser is the first place its type is known. Indexing it, or handing it to
+    // NSJSONSerialization for the configuration hash, raises.
+    NSArray *nonDictionaries = @[@"kit", @[@"kit"], @37];
+
+    for (id notADictionary in nonDictionaries) {
+        MPKitConfiguration *kitConfig = nil;
+        XCTAssertNoThrow(kitConfig = [[MPKitConfiguration alloc] initWithDictionary:notADictionary],
+                         @"A %@ configuration must be rejected, not raise", [notADictionary class]);
+        XCTAssertNil(kitConfig);
+    }
+}
+
+- (void)testWrongTypedExcludeAnonymousUsersIsIgnored {
+    NSArray *notBooleans = @[[NSNull null], @{@"a": @1}, @[@1]];
+
+    for (id notABoolean in notBooleans) {
+        NSDictionary *configuration = @{@"id": @80, @"eau": notABoolean};
+        MPKitConfiguration *kitConfig = nil;
+
+        XCTAssertNoThrow(kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration],
+                         @"An `eau` of %@ must be ignored, not raise", [notABoolean class]);
+        XCTAssertNotNil(kitConfig, @"The rest of the entry is still usable");
+        XCTAssertFalse(kitConfig.excludeAnonymousUsers);
+    }
+}
+
+- (void)testWrongTypedBracketConfigurationIsIgnored {
+    // bracketConfiguration is subscripted for `lo` and `hi` by the container, which is why a
+    // non-object value must not reach the property.
+    NSArray *notDictionaries = @[@"bracket", @[@10, @20], @10];
+
+    for (id notADictionary in notDictionaries) {
+        NSDictionary *configuration = @{@"id": @80, @"bk": notADictionary};
+        MPKitConfiguration *kitConfig = nil;
+
+        XCTAssertNoThrow(kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration],
+                         @"A `bk` of %@ must be ignored, not raise", [notADictionary class]);
+        XCTAssertNotNil(kitConfig);
+        XCTAssertNil(kitConfig.bracketConfiguration);
+    }
+}
+
+- (void)testWrongTypedIntegrationIdIsRejected {
+    // integrationId keys a dictionary declared NSNumber-keyed and is compared with
+    // isEqualToNumber:, so an entry carrying anything else is unusable rather than partly usable.
+    NSArray *notNumbers = @[@"80", @[@80], @{@"id": @80}];
+
+    for (id notANumber in notNumbers) {
+        NSDictionary *configuration = @{@"id": notANumber};
+        MPKitConfiguration *kitConfig = nil;
+
+        XCTAssertNoThrow(kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration],
+                         @"An `id` of %@ must be rejected, not raise", [notANumber class]);
+        XCTAssertNil(kitConfig);
+    }
+}
+
+- (void)testWrongTypedSubFiltersAreDropped {
+    // The container subscripts these by hash, so a member that is not an object must not be
+    // published under a property declared NSDictionary.
+    NSDictionary *configuration = @{
+                                    @"id": @80,
+                                    @"hs": @{
+                                            @"et": @"not-a-filter",
+                                            @"uid": @[@0],
+                                            @"reg": @1,
+                                            @"ua": @{@"1217787541": @0}
+                                            }
+                                    };
+
+    MPKitConfiguration *kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+    XCTAssertNotNil(kitConfig);
+
+    XCTAssertNil(kitConfig.eventTypeFilters);
+    XCTAssertNil(kitConfig.userIdentityFilters);
+    XCTAssertNil(kitConfig.consentRegulationFilters);
+
+    // A well-formed sibling in the same `hs` is still honoured.
+    XCTAssertEqualObjects(kitConfig.userAttributeFilters, @{@"1217787541": @0});
+}
+
 - (void)testKitConfigurationEncoding {
     MPKitConfiguration *persistedKitConfiguration = [self attemptSecureEncodingwithClass:[MPKitConfiguration class] Object:kitConfiguration];
     XCTAssertEqualObjects(kitConfiguration, persistedKitConfiguration);
