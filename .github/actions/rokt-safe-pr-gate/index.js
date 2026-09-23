@@ -344,9 +344,10 @@ async function getTeamReviewState(
   pr,
   membershipLookupBudget,
 ) {
+  const effectiveReviews = getEffectiveReviews(reviews);
   const reviewerLogins = [
     ...new Set(
-      getEffectiveReviews(reviews)
+      effectiveReviews
         .map((review) => review.user?.login)
         .filter(
           (login) =>
@@ -373,7 +374,7 @@ async function getTeamReviewState(
   );
 
   return evaluateTeamReviewState(
-    reviews,
+    effectiveReviews,
     teamLogins,
     pr.user.login,
     pr.head.sha,
@@ -707,6 +708,24 @@ async function evaluatePullRequest(context, prNumber) {
   }
 }
 
+async function evaluatePullRequests(context, prNumbers) {
+  let succeeded = true;
+
+  for (const prNumber of prNumbers) {
+    try {
+      succeeded = (await evaluatePullRequest(context, prNumber)) && succeeded;
+    } catch (error) {
+      console.error(
+        `Rokt Safe PR Gate could not evaluate PR #${prNumber}.`,
+        error,
+      );
+      succeeded = false;
+    }
+  }
+
+  return succeeded;
+}
+
 async function main() {
   const apiUrl = requiredInput("api-url");
   const policy = validatePolicy(
@@ -755,13 +774,7 @@ async function main() {
     repository,
     optionalPullRequestNumber(),
   );
-  let succeeded = true;
-
-  for (const prNumber of prNumbers) {
-    succeeded = (await evaluatePullRequest(context, prNumber)) && succeeded;
-  }
-
-  if (!succeeded) {
+  if (!(await evaluatePullRequests(context, prNumbers))) {
     process.exitCode = 1;
   }
 }
@@ -777,6 +790,7 @@ module.exports = {
   createApi,
   ensureGatePending,
   evaluatePullRequest,
+  evaluatePullRequests,
   getInput,
   resolvePullRequestNumbers,
   upsertGateCheck,

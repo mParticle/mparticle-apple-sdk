@@ -10,7 +10,6 @@ const {
   getEffectiveReviews,
   getIneligibleFileConclusion,
   getPaginatedItems,
-  getPullRequestNumber,
   getPullRequestNumbers,
   hasSharedOpenHead,
   validatePolicy,
@@ -19,6 +18,7 @@ const {
   createApi,
   ensureGatePending,
   evaluatePullRequest,
+  evaluatePullRequests,
   getInput,
   resolvePullRequestNumbers,
   upsertGateCheck,
@@ -187,12 +187,16 @@ test("waits for a cancelled workflow to be re-run", () => {
 });
 
 test("resolves pull request numbers from both supported events", () => {
-  assert.equal(getPullRequestNumber({ pull_request: { number: 42 } }), 42);
-  assert.equal(
-    getPullRequestNumber({ workflow_run: { pull_requests: [{ number: 43 }] } }),
-    43,
+  assert.deepEqual(getPullRequestNumbers({ pull_request: { number: 42 } }), [
+    42,
+  ]);
+  assert.deepEqual(
+    getPullRequestNumbers({
+      workflow_run: { pull_requests: [{ number: 43 }] },
+    }),
+    [43],
   );
-  assert.equal(getPullRequestNumber({}), null);
+  assert.deepEqual(getPullRequestNumbers({}), []);
   assert.deepEqual(
     getPullRequestNumbers({
       workflow_run: { pull_requests: [{ number: 43 }, { number: 44 }] },
@@ -301,6 +305,27 @@ test("bounds scheduled rechecks to recently updated open pull requests", async (
   assert.match(calls[0], /direction=desc/);
 });
 
+test("continues evaluating pull requests after one fetch fails", async (t) => {
+  const requested = [];
+  const errors = [];
+  const api = {
+    request: async (path) => {
+      requested.push(path);
+      if (path.endsWith("/pulls/7")) throw new Error("Request failed.");
+      if (path.endsWith("/pulls/8")) return { data: { state: "closed" } };
+      throw new Error(`Unexpected request: ${path}`);
+    },
+  };
+  t.mock.method(console, "error", (message) => errors.push(message));
+
+  assert.equal(await evaluatePullRequests(gateContext(api), [7, 8]), false);
+  assert.deepEqual(requested, [
+    "/repos/mParticle/mparticle-apple-sdk/pulls/7",
+    "/repos/mParticle/mparticle-apple-sdk/pulls/8",
+  ]);
+  assert.match(errors[0], /PR #7/);
+});
+
 test("requires a fresh non-author SDK-team approval on the current head SHA", () => {
   const reviews = [
     {
@@ -321,7 +346,7 @@ test("requires a fresh non-author SDK-team approval on the current head SHA", ()
 
   assert.deepEqual(
     evaluateTeamReviewState(
-      reviews,
+      getEffectiveReviews(reviews),
       new Set(["SDK-REVIEWER"]),
       "author",
       "current",
@@ -368,7 +393,7 @@ test("uses each reviewer's latest substantive review state", () => {
   );
   assert.deepEqual(
     evaluateTeamReviewState(
-      reviews,
+      getEffectiveReviews(reviews),
       new Set(["sdk-reviewer", "author"]),
       "AUTHOR",
       "current",

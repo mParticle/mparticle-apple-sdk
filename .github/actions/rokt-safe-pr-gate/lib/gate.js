@@ -166,10 +166,6 @@ function evaluateWorkflows(runs, requirements) {
   return { state: "success" };
 }
 
-function getPullRequestNumber(event) {
-  return getPullRequestNumbers(event)[0] || null;
-}
-
 function getPullRequestNumbers(event) {
   if (Number.isInteger(event?.pull_request?.number)) {
     return [event.pull_request.number];
@@ -243,12 +239,17 @@ function getEffectiveReviews(reviews) {
   return [...effectiveReviews.values()];
 }
 
-function evaluateTeamReviewState(reviews, teamLogins, authorLogin, headSha) {
+function evaluateTeamReviewState(
+  effectiveReviews,
+  teamLogins,
+  authorLogin,
+  headSha,
+) {
   const normalizedTeamLogins = new Set(
     [...teamLogins].map((login) => login.toLowerCase()),
   );
   const normalizedAuthorLogin = authorLogin.toLowerCase();
-  const teamReviews = getEffectiveReviews(reviews).filter((review) => {
+  const teamReviews = effectiveReviews.filter((review) => {
     const login = review.user?.login?.toLowerCase();
 
     return (
@@ -275,7 +276,6 @@ module.exports = {
   getEffectiveReviews,
   getIneligibleFileConclusion,
   getPaginatedItems,
-  getPullRequestNumber,
   getPullRequestNumbers,
   hasSharedOpenHead,
   validatePolicy,
