@@ -19,6 +19,7 @@
 @class MPKitExecStatus;
 @class MPKitAPI;
 @class MPConsentState;
+@class MPRoktSession;
 @class FilteredMParticleUser;
 @class FilteredMPIdentityApiRequest;
 
@@ -81,6 +82,36 @@
 #pragma mark Session management
 - (nonnull MPKitExecStatus *)beginSession;
 - (nonnull MPKitExecStatus *)endSession;
+
+/** Closes any active experience presented by the kit. */
+- (nonnull MPKitExecStatus *)close;
+
+/**
+ Sets the session used by the kit, carrying the token that authorizes offers and events as well
+ as the identifier. Prefer this to setSessionId:, which can only hand over the identifier.
+
+ An incomplete session is ignored rather than partially applied.
+
+ @param session The session identifier, session token, and token expiry to apply.
+ */
+- (nonnull MPKitExecStatus *)setSession:(nonnull MPRoktSession *)session;
+
+/**
+ Sets the session identifier used by the kit.
+
+ @param sessionId A non-empty session identifier.
+ */
+- (nonnull MPKitExecStatus *)setSessionId:(nonnull NSString *)sessionId;
+
+/**
+ Clears session state maintained by the kit without ending the mParticle SDK session. This method
+ is dispatched only in response to an explicit clearSession call; session, login, logout, and
+ identity callbacks do not clear the kit session.
+
+ For Rokt, the host app calls MPRokt.clearSession at a shared-device transaction boundary to flush
+ and end the current Rokt session. The next placement request starts a new Rokt session.
+ */
+- (nonnull MPKitExecStatus *)clearSession;
 
 #pragma mark User attributes and identities
 - (nonnull MPKitExecStatus *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;

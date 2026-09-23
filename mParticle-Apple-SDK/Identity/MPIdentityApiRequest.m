@@ -3,100 +3,78 @@
 //
 
 #import "MPIdentityApiRequest.h"
-#import "MPNotificationController.h"
-#import "MPIConstants.h"
-#import "MPStateMachine.h"
-#import "MPIdentityDTO.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPIdentityApiRequest ()
-@property (nonatomic) NSMutableDictionary<NSNumber*, NSObject*> *mutableIdentities;
+@property (nonatomic, strong) MPIdentityApiRequestStoragePRIVATE *storage;
 @end
 
 @implementation MPIdentityApiRequest
 
-- (instancetype)init
-{
+- (instancetype)init {
     self = [super init];
     if (self) {
-        _mutableIdentities = [NSMutableDictionary dictionary];
+        _storage = [[MPIdentityApiRequestStoragePRIVATE alloc] init];
     }
     return self;
 }
 
+// Exposed for the ObjC contract test, which inspects the raw identity map.
+- (NSMutableDictionary<NSNumber *, NSObject *> *)mutableIdentities {
+    return self.storage.mutableIdentities;
+}
+
 - (void)setIdentity:(NSString *)identityString identityType:(MPIdentity)identityType {
-    if (MPIsNull(identityString)) {
-        [_mutableIdentities setObject:(NSString *)[NSNull null]
-                            forKey:@(identityType)];
-    } else if ([identityString length] > 0) {
-        [_mutableIdentities setObject:identityString
-                            forKey:@(identityType)];
-    }
+    [self.storage setIdentity:identityString identityType:identityType];
 }
 
 + (MPIdentityApiRequest *)requestWithEmptyUser {
     return [[self alloc] init];
 }
 
-+ (MPIdentityApiRequest *)requestWithUser:(MParticleUser *) user {
++ (MPIdentityApiRequest *)requestWithUser:(MParticleUser *)user {
     MPIdentityApiRequest *request = [[self alloc] init];
     [user.identities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-        MPIdentity identityType = [key intValue];
-        [request setIdentity:obj identityType:identityType];
+        [request setIdentity:obj identityType:(MPIdentity)key.intValue];
     }];
 
     return request;
 }
 
 - (NSString *)email {
-    NSObject *result = _mutableIdentities[@(MPIdentityEmail)];
-    if ([result isKindOfClass:[NSString class]]) {
-        return (NSString *)result;
-    }
-    return nil;
+    return self.storage.email;
 }
 
 - (void)setEmail:(NSString *)email {
-    [self setIdentity:email identityType:MPIdentityEmail];
+    self.storage.email = email;
 }
 
 - (NSString *)customerId {
-    NSObject *result = _mutableIdentities[@(MPIdentityCustomerId)];
-    if ([result isKindOfClass:[NSString class]]) {
-        return (NSString *)result;
-    }
-    return nil;
+    return self.storage.customerId;
 }
 
 - (void)setCustomerId:(NSString *)customerId {
-    [self setIdentity:customerId identityType:MPIdentityCustomerId];
+    self.storage.customerId = customerId;
 }
 
 - (NSString *)emailSha256 {
-    NSObject *result = _mutableIdentities[@(MPIdentityOther)];
-    if ([result isKindOfClass:[NSString class]]) {
-        return (NSString *)result;
-    }
-    return nil;
+    return self.storage.emailSha256;
 }
 
 - (void)setEmailSha256:(NSString *)emailSha256 {
-    [self setIdentity:emailSha256 identityType:MPIdentityOther];
+    self.storage.emailSha256 = emailSha256;
 }
 
 - (NSString *)mobileSha256 {
-    NSObject *result = _mutableIdentities[@(MPIdentityOther2)];
-    if ([result isKindOfClass:[NSString class]]) {
-        return (NSString *)result;
-    }
-    return nil;
+    return self.storage.mobileSha256;
 }
 
 - (void)setMobileSha256:(NSString *)mobileSha256 {
-    [self setIdentity:mobileSha256 identityType:MPIdentityOther2];
+    self.storage.mobileSha256 = mobileSha256;
 }
 
-- (NSDictionary<NSNumber*, NSObject*> *)identities {
-    return [_mutableIdentities copy];
+- (NSDictionary<NSNumber *, NSObject *> *)identities {
+    return self.storage.identities;
 }
 
 @end

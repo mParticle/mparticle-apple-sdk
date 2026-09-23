@@ -7,7 +7,15 @@
 #import <mParticle_Apple_SDK/mParticle.h>
 #endif
 
-@interface MPKitRokt : NSObject <MPKitProtocol>
+#if defined(__has_include) && __has_include(<mParticle_Apple_SDK/MPRoktKitDispatchTarget.h>)
+#import <mParticle_Apple_SDK/MPRoktKitDispatchTarget.h>
+#elif defined(__has_include) && __has_include(<mParticle_Apple_SDK_ObjC/MPRoktKitDispatchTarget.h>)
+#import <mParticle_Apple_SDK_ObjC/MPRoktKitDispatchTarget.h>
+#else
+@protocol MPRoktKitDispatchTarget;
+#endif
+
+@interface MPKitRokt : NSObject <MPKitProtocol, MPRoktKitDispatchTarget>
 
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;

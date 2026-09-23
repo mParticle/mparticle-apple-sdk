@@ -1,6 +1,5 @@
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
-#import "MPEventProjection.h"
 #import "MPILogger.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
@@ -35,52 +34,26 @@
     _configurationHash = @([[hasher hashString:ekConfigString] intValue]);
     
     // Attribute value filtering
-    NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];
-    if (!MPIsNull(attributeValueFiltering)) {
-        NSNumber *shouldIncludeMatches = !MPIsNull(attributeValueFiltering[@"i"]) ? attributeValueFiltering[@"i"] : nil;
-        NSNumber *hashedAttribute = attributeValueFiltering[@"a"];
-        NSNumber *hashedValue = attributeValueFiltering[@"v"];
-        
-        if (shouldIncludeMatches && hashedAttribute && hashedValue) {
-            _attributeValueFilteringIsActive = YES;
-            _attributeValueFilteringShouldIncludeMatches = [shouldIncludeMatches boolValue];
-            _attributeValueFilteringHashedAttribute = [NSString stringWithFormat:@"%@", hashedAttribute];
-            _attributeValueFilteringHashedValue = [NSString stringWithFormat:@"%@", hashedValue];
-        }
+    MPAttributeValueFilterConfig *attributeValueFilter = [MPKitConfigurationParser attributeValueFilterFromConfiguration:configurationDictionary];
+    if (attributeValueFilter.isActive) {
+        _attributeValueFilteringIsActive = YES;
+        _attributeValueFilteringShouldIncludeMatches = attributeValueFilter.shouldIncludeMatches;
+        _attributeValueFilteringHashedAttribute = attributeValueFilter.hashedAttribute;
+        _attributeValueFilteringHashedValue = attributeValueFilter.hashedValue;
     }
     
     // Filters
     [self setFilters:configurationDictionary[kMPRemoteConfigKitHashesKey]];
     
     // Configuration
-    _configuration = configurationDictionary[@"as"];
-    if (_configuration) {
-        NSMutableDictionary *configDictionary = [_configuration mutableCopy];
-        
-        if (_addEventAttributeList) {
-            configDictionary[@"eaa"] = _addEventAttributeList;
-        }
-        
-        if (_removeEventAttributeList) {
-            configDictionary[@"ear"] = _removeEventAttributeList;
-        }
-        
-        if (_singleItemEventAttributeList) {
-            configDictionary[@"eas"] = _singleItemEventAttributeList;
-        }
-        
-        for (NSString *key in configDictionary.allKeys) {
-            id value = configDictionary[key];
-            if ((NSNull *)value == [NSNull null]) {
-                [configDictionary removeObjectForKey:key];
-            }
-        }
-        
-        _configuration = [configDictionary copy];
-    }
+    _configuration = [MPKitConfigurationParser mergedConfigurationFrom:configurationDictionary[@"as"]
+                                                 addEventAttributeList:_addEventAttributeList
+                                              removeEventAttributeList:_removeEventAttributeList
+                                          singleItemEventAttributeList:_singleItemEventAttributeList];
     
     // Projections
-    [self configureProjections:configurationDictionary[@"pr"]];
+    [self configureProjections:configurationDictionary[@"pr"]
+                       factory:[[MPKitProjectionSnapshotFactory alloc] initWithHasher:hasher logger:logger]];
     
     // Consent kit filter
     if (configurationDictionary[kMPConsentKitFilter]) {
@@ -151,20 +124,7 @@
         return;
     }
     
-    if (!MPIsNull(filters)) {
-        NSMutableDictionary *sanitizedFilters = [[NSMutableDictionary alloc] initWithCapacity:filters.count];
-        [filters enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-            if (!MPIsNull(obj)) {
-                sanitizedFilters[key] = obj;
-            }
-        }];
-        
-        filters = sanitizedFilters.count > 0 ? [sanitizedFilters copy] : nil;
-    } else {
-        filters = nil;
-    }
-    
-    _filters = filters;
+    _filters = [MPKitConfigurationParser sanitizedFiltersFrom:filters];
     
     _eventTypeFilters = _filters[@"et"];
     _eventNameFilters = _filters[@"ec"];
@@ -186,41 +146,14 @@
 
 #pragma mark Public methods
 
-- (void)configureProjections:(NSArray *)projections {
-    _defaultProjections = nil;
-    
-    if (MPIsNull(projections) || projections.count == 0) {
-        _projections = nil;
-        return;
-    }
-    
-    NSUInteger numberOfMessageTypes = [MPEnum messageTypeSize];
-    NSMutableArray<NSNumber *> *configuredMessageTypeProjectionsArray = [[NSMutableArray alloc] initWithCapacity:numberOfMessageTypes];
-    NSMutableArray *defaultProjectionsArray = [[NSMutableArray alloc] initWithCapacity:numberOfMessageTypes];
-    NSMutableArray<MPEventProjection *> *projectionsArray = [[NSMutableArray alloc] initWithCapacity:projections.count];
-    
-    for (NSUInteger i = 0; i < numberOfMessageTypes; ++i) {
-        [configuredMessageTypeProjectionsArray addObject:@NO];
-        [defaultProjectionsArray addObject:[NSNull null]];
-    }
-    
-    for (NSDictionary *projectionDictionary in projections) {
-        MPEventProjection *eventProjection = [[MPEventProjection alloc] initWithConfiguration:projectionDictionary];
-        
-        if (eventProjection) {
-            configuredMessageTypeProjectionsArray[eventProjection.messageType] = @YES;
-            
-            if (eventProjection.isDefault) {
-                defaultProjectionsArray[eventProjection.messageType] = eventProjection;
-            } else {
-                [projectionsArray addObject:eventProjection];
-            }
-        }
-    }
-    
-    _configuredMessageTypeProjections = configuredMessageTypeProjectionsArray;
-    _defaultProjections = defaultProjectionsArray;
-    _projections = projectionsArray.count > 0 ? projectionsArray : nil;
+- (void)configureProjections:(NSArray *)projections factory:(MPKitProjectionSnapshotFactory *)factory {
+    MPKitProjectionSet *projectionSet =
+        [factory projectionSetFromConfigurations:(!MPIsNull(projections) ? projections : nil)
+                                messageTypeCount:[MPEnum messageTypeSize]];
+
+    _configuredMessageTypeProjections = projectionSet.configuredMessageTypeProjections;
+    _defaultProjections = projectionSet.defaultProjections;
+    _projections = projectionSet.projections;
 }
 
 @end

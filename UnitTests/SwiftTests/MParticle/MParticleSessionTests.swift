@@ -2,6 +2,7 @@ import Foundation
 
 import XCTest
 import mParticle_Apple_SDK
+internal import mParticle_Apple_SDK_Swift
 
 final class MParticleSessionTests: MParticleTestBase {
     
@@ -13,7 +14,7 @@ final class MParticleSessionTests: MParticleTestBase {
     }
     
     func test_beginSession_doesNotCreateTempSession_whenSessionExists() {
-        backendController.session = MPSession()
+        backendController.session = MPSessionPRIVATE()
         backendController.tempSessionReturnValue = nil
         mparticle.beginSession()
         XCTAssertFalse(backendController.createTempSessionCalled)
@@ -38,7 +39,7 @@ final class MParticleSessionTests: MParticleTestBase {
     }
     
     func test_endSession_endsActiveSession_whenSessionExists() {
-        backendController.session = MPSession()
+        backendController.session = MPSessionPRIVATE()
         mparticle.endSession()
         XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
         XCTAssertTrue(backendController.endSessionWithIsManualCalled)
@@ -47,7 +48,7 @@ final class MParticleSessionTests: MParticleTestBase {
     
     func test_sessionDidBegin_forwardsCall_toKitContainer() {
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
-        mparticle.sessionDidBegin(MPSession())
+        mparticle.sessionDidBegin(MPSessionPRIVATE())
         
         wait(for: [kitContainer.forwardSDKCallExpectation!], timeout: 1.0)
         
@@ -61,7 +62,7 @@ final class MParticleSessionTests: MParticleTestBase {
     
     func test_sessionDidEnd_forwardsCall_toKitContainer() {
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
-        mparticle.sessionDidEnd(MPSession())
+        mparticle.sessionDidEnd(MPSessionPRIVATE())
         
         wait(for: [kitContainer.forwardSDKCallExpectation!], timeout: 1.0)
         

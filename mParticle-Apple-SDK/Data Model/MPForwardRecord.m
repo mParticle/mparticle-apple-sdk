@@ -5,10 +5,10 @@
 #import "MPEvent.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPEventProjection.h"
 #import "MPKitExecStatus.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "mParticle.h"
+@import mParticle_Apple_SDK_Swift;
 
 NSString *const kMPFRModuleId = @"mid";
 NSString *const kMPFRProjections = @"proj";
@@ -17,6 +17,10 @@ NSString *const kMPFRProjectionName = @"name";
 NSString *const kMPFRPushRegistrationState = @"r";
 NSString *const kMPFROptOutState = @"s";
 
+@interface MPForwardRecord ()
+@property (nonatomic, strong) MPForwardRecordPRIVATE *implementation;
+@end
+
 @implementation MPForwardRecord
 
 - (instancetype)initWithId:(int64_t)forwardRecordId dataDictionary:(NSDictionary *)dataDictionary mpid:(NSNumber *)mpid {
@@ -24,27 +28,24 @@ NSString *const kMPFROptOutState = @"s";
     if (!self) {
         return nil;
     }
-    
-    _forwardRecordId = forwardRecordId;
-    _mpid = mpid;
-    
-    if (!MPIsNull(dataDictionary)) {
-        _dataDictionary = [NSMutableDictionary dictionaryWithDictionary:dataDictionary];
-    }
-    
+
+    _implementation = [[MPForwardRecordPRIVATE alloc] initWithId:forwardRecordId dataDictionary:dataDictionary mpid:mpid];
     return self;
 }
 
 - (instancetype)initWithId:(int64_t)forwardRecordId data:(NSData *)data mpid:(NSNumber *)mpid {
-    NSError *error = nil;
-    NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-    
-    if (!error) {
-        return [self initWithId:forwardRecordId dataDictionary:jsonDictionary mpid:mpid];
-    } else {
-        MPILogError(@"Error deserializing the data into a dictionary representation: %@", [error localizedDescription]);
+    MPForwardRecordPRIVATE *implementation = [[MPForwardRecordPRIVATE alloc] initWithId:forwardRecordId data:data mpid:mpid];
+    if (!implementation) {
         return nil;
     }
+
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+
+    _implementation = implementation;
+    return self;
 }
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus {
@@ -55,9 +56,9 @@ NSString *const kMPFROptOutState = @"s";
     self = [self initWithMessageType:messageType execStatus:execStatus kitFilter:nil originalEvent:nil];
     
     if (messageType == MPMessageTypePushRegistration) {
-        _dataDictionary[kMPFRPushRegistrationState] = @(stateFlag);
+        self.dataDictionary[kMPFRPushRegistrationState] = @(stateFlag);
     } else if (messageType == MPMessageTypeOptOut) {
-        _dataDictionary[kMPFROptOutState] = @(stateFlag);
+        self.dataDictionary[kMPFROptOutState] = @(stateFlag);
     }
     
     return self;
@@ -82,14 +83,14 @@ NSString *const kMPFROptOutState = @"s";
         return nil;
     }
     
-    _forwardRecordId = 0;
-    _mpid = [MPPersistenceController_PRIVATE mpId];
-    _dataDictionary = [[NSMutableDictionary alloc] init];
-    _dataDictionary[kMPFRModuleId] = execStatus.integrationId;
-    _dataDictionary[kMPTimestampKey] = MPCurrentEpochInMilliseconds;
-    _dataDictionary[kMPMessageTypeKey] = NSStringFromMessageType(messageType);
+    NSNumber *mpid = [MPPersistenceUtilities mpId];
+    NSMutableDictionary *dataDictionary = [[NSMutableDictionary alloc] init];
+    dataDictionary[kMPFRModuleId] = execStatus.integrationId;
+    dataDictionary[kMPTimestampKey] = MPCurrentEpochInMilliseconds;
+    dataDictionary[kMPMessageTypeKey] = NSStringFromMessageType(messageType);
 
     if (!kitFilter) {
+        _implementation = [[MPForwardRecordPRIVATE alloc] initWithId:0 dataDictionary:dataDictionary mpid:mpid];
         return self;
     }
     
@@ -102,11 +103,11 @@ NSString *const kMPFROptOutState = @"s";
         }
         
         if (eventTypeString) {
-            _dataDictionary[kMPEventTypeKey] = eventTypeString;
+            dataDictionary[kMPEventTypeKey] = eventTypeString;
         }
     }
     if ([originalEvent isKindOfClass:[MPEvent class]] && (messageType == MPMessageTypeScreenView || messageType == MPMessageTypeEvent)) {
-        _dataDictionary[kMPEventNameKey] = ((MPEvent *)originalEvent).name;
+        dataDictionary[kMPEventNameKey] = ((MPEvent *)originalEvent).name;
     }
     
     if (kitFilter.appliedProjections.count > 0) {
@@ -117,7 +118,7 @@ NSString *const kMPFROptOutState = @"s";
             currentProjectionName = ((MPEvent *)kitFilter.originalEvent).name;
         }
         
-        for (MPEventProjection *eventProjection in kitFilter.appliedProjections) {
+        for (MPKitProjectionSnapshot *eventProjection in kitFilter.appliedProjections) {
             if ([eventProjection.projectedName isEqual:currentProjectionName]) {
                 projectionDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
                 projectionDictionary[kMPFRProjectionId] = @(eventProjection.projectionId);
@@ -133,27 +134,50 @@ NSString *const kMPFROptOutState = @"s";
             }
         }
         
-        _dataDictionary[kMPFRProjections] = projections;
+        dataDictionary[kMPFRProjections] = projections;
     }
 
+    _implementation = [[MPForwardRecordPRIVATE alloc] initWithId:0 dataDictionary:dataDictionary mpid:mpid];
     return self;
 }
 
+- (uint64_t)forwardRecordId {
+    return self.implementation.forwardRecordId;
+}
+
+- (void)setForwardRecordId:(uint64_t)forwardRecordId {
+    self.implementation.forwardRecordId = forwardRecordId;
+}
+
+- (NSMutableDictionary *)dataDictionary {
+    return self.implementation.dataDictionary;
+}
+
+- (void)setDataDictionary:(NSMutableDictionary *)dataDictionary {
+    self.implementation.dataDictionary = dataDictionary;
+}
+
+- (NSNumber *)mpid {
+    return self.implementation.mpid;
+}
+
+- (void)setMpid:(NSNumber *)mpid {
+    self.implementation.mpid = mpid;
+}
+
 - (NSNumber *)timestamp {
-    return _dataDictionary[kMPTimestampKey];
+    return self.implementation.timestamp;
 }
 
 - (void)setTimestamp:(NSNumber *)timestamp {
-    if (timestamp != nil) {
-        _dataDictionary[kMPTimestampKey] = timestamp;
-    }
+    self.implementation.timestamp = timestamp;
 }
 
 - (NSString *)description {
     NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPForwardRecord {\n"];
-    [description appendFormat:@"  forwardRecordId: %llu\n", _forwardRecordId];
-    [description appendFormat:@"  dataDictionary: %@\n", _dataDictionary];
-    [description appendFormat:@"  mpid: %@\n", _mpid];
+    [description appendFormat:@"  forwardRecordId: %llu\n", self.forwardRecordId];
+    [description appendFormat:@"  dataDictionary: %@\n", self.dataDictionary];
+    [description appendFormat:@"  mpid: %@\n", self.mpid];
     [description appendString:@"}"];
     
     return description;
@@ -163,42 +187,16 @@ NSString *const kMPFROptOutState = @"s";
     if (MPIsNull(object) || ![object isKindOfClass:[MPForwardRecord class]]) {
         return NO;
     }
-    
-    MPForwardRecord *objectForwardRecord = (MPForwardRecord *)object;
-    
-    BOOL isEqual = [_dataDictionary isEqualToDictionary:objectForwardRecord.dataDictionary];
-    
-    if (isEqual && _forwardRecordId > 0 && objectForwardRecord.forwardRecordId > 0) {
-        isEqual = _forwardRecordId == objectForwardRecord.forwardRecordId;
-    }
-    
-    if (isEqual) {
-        isEqual = [_mpid isEqual:objectForwardRecord.mpid];
-    }
-    
-    return isEqual;
+    return [self.implementation isEqualToRecord:((MPForwardRecord *)object).implementation];
 }
 
 - (NSUInteger)hash {
-    return [self.dataDictionary hash] ^ self.forwardRecordId ^ [self.mpid hash];
+    return (NSUInteger)self.implementation.hash;
 }
 
 #pragma mark Public methods
 - (NSData *)dataRepresentation {
-    if (MPIsNull(_dataDictionary) || ![_dataDictionary isKindOfClass:[NSDictionary class]]) {
-        MPILogWarning(@"Invalid Data dictionary.");
-        return nil;
-    }
-    
-    NSError *error = nil;
-    NSData *data = [NSJSONSerialization dataWithJSONObject:_dataDictionary options:0 error:&error];
-    
-    if (!error) {
-        return data;
-    } else {
-        MPILogError(@"Error serializing the dictionary into a data representation: %@", [error localizedDescription]);
-        return nil;
-    }
+    return [self.implementation dataRepresentation];
 }
 
 @end

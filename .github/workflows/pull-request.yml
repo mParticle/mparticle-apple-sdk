@@ -40,10 +40,9 @@ jobs:
     uses: ./.github/workflows/native-tests.yml
     secrets: inherit
 
-  # TODO: Re-enable after 9.0 release
-  # build-secondary-platforms:
-  #   uses: ./.github/workflows/build-secondary-platforms.yml
-  #   secrets: inherit
+  build-secondary-platforms:
+    uses: ./.github/workflows/build-secondary-platforms.yml
+    secrets: inherit
 
   integration-tests:
     uses: ./.github/workflows/integration-tests.yml
@@ -52,6 +51,10 @@ jobs:
   size-report:
     uses: ./.github/workflows/size-report.yml
     secrets: inherit
+
+  swift-migration-progress:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/swift-migration-progress.yml
 
   build-kits:
     uses: ./.github/workflows/build-kits.yml
@@ -65,9 +68,10 @@ jobs:
     needs:
       - build-and-lint
       - native-tests
-      # - build-secondary-platforms  # TODO: Re-enable after 9.0 release
+      - build-secondary-platforms
       - integration-tests
       - size-report
+      - swift-migration-progress
       - build-kits
     name: Notify GChat
     uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main

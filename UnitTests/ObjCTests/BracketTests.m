@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
-#import "MPBracket.h"
 #import "MPBaseTestCase.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface BracketTests : MPBaseTestCase
 

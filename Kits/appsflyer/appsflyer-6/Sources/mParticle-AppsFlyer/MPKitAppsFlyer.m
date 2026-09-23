@@ -94,12 +94,17 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
-    NSString *appleAppId = configuration[afAppleAppId];
-    NSString *devKey = configuration[afDevKey];
-    if (!appleAppId || !devKey) {
+    // Both are assigned to AppsFlyerLib's NSString properties, so a number or container here has
+    // to count as a missing credential rather than be stored and messaged later. isKindOfClass:
+    // is false for nil, so this also covers the absent case the kit already rejected.
+    id appleAppIdValue = configuration[afAppleAppId];
+    id devKeyValue = configuration[afDevKey];
+    if (![appleAppIdValue isKindOfClass:[NSString class]] || ![devKeyValue isKindOfClass:[NSString class]]) {
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
         return execStatus;
     }
+    NSString *appleAppId = appleAppIdValue;
+    NSString *devKey = devKeyValue;
     
     appsFlyerTracker = [AppsFlyerLib shared];
     appsFlyerTracker.appleAppID = appleAppId;
@@ -151,7 +156,7 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 }
 
 - (nonnull MPKitExecStatus *)didBecomeActive {
-    BOOL manualStart = [_configuration[afManualStart] boolValue];
+    BOOL manualStart = [self configurationBoolForKey:afManualStart];
     if (!manualStart) {
         [appsFlyerTracker start];
     }
@@ -547,6 +552,31 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 
 #pragma helper methods
 
+// Server configuration values arrive as parsed JSON, so a value the mParticle UI describes as a
+// string may reach the kit as a number, boolean or container. Read them through this accessor so a
+// malformed value is ignored rather than sent a selector it does not respond to.
+- (NSString * _Nullable)configurationStringForKey:(NSString *)key {
+    id value = self.configuration[key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+// Flags are authored as strings in the mParticle UI but can arrive as JSON booleans, so accept
+// both classes; anything else does not respond to boolValue.
+- (BOOL)configurationBoolForKey:(NSString *)key {
+    id value = self.configuration[key];
+    if ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]]) {
+        return [value boolValue];
+    }
+    if (value != nil) {
+        NSLog(@"Ignoring configuration value for %@: expected a boolean, got %@", key, [value class]);
+    }
+    return NO;
+}
+
 - (NSNumber * _Nullable)resolvedConsentForMappingKey:(NSString *)mappingKey
                                           defaultKey:(NSString *)defaultKey
                                         gdprConsents:(NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsents
@@ -562,36 +592,61 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
     }
 
     // Fallback to configuration defaults
-    NSString *value = self->_configuration[defaultKey];
+    NSString *value = [self configurationStringForKey:defaultKey];
     return [value isGranted];
 }
 
 - (NSArray<NSDictionary *>*)mappingForKey:(NSString*)key {
-    NSString *mappingJson = _configuration[key];
-    if (![mappingJson isKindOfClass:[NSString class]]) {
+    NSString *mappingJson = [self configurationStringForKey:key];
+    if (mappingJson == nil) {
         return nil;
     }
 
     NSData *jsonData = [mappingJson dataUsingEncoding:NSUTF8StringEncoding];
     NSError *error;
-    NSArray *result = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+    id result = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
 
     if (error) {
         NSLog(@"Failed to parse consent mapping JSON: %@", error.localizedDescription);
         return nil;
     }
 
-    return result;
+    if (![result isKindOfClass:[NSArray class]]) {
+        NSLog(@"Ignoring consent mapping for %@: expected an array, got %@", key, [result class]);
+        return nil;
+    }
+
+    // The declared NSArray<NSDictionary *> is a promise to callers, and a Swift one bridges the
+    // elements eagerly and traps if any is not a dictionary, so drop them here rather than
+    // returning a collection that does not match its own type.
+    NSMutableArray<NSDictionary *> *entries = [NSMutableArray array];
+    for (id entry in (NSArray *)result) {
+        if ([entry isKindOfClass:[NSDictionary class]]) {
+            [entries addObject:entry];
+        } else {
+            NSLog(@"Ignoring consent mapping entry: expected a dictionary, got %@", [entry class]);
+        }
+    }
+
+    return entries;
 }
 
 - (NSDictionary*)convertToKeyValuePairs: (NSArray<NSDictionary *>*) mappings {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    for (NSDictionary *entry in mappings) {
-        NSString *value = entry[@"value"];
-        NSString *purpose = [entry[@"map"] lowercaseString];
-        if (value && purpose) {
-            dict[value] = purpose;
+    for (id entry in mappings) {
+        if (![entry isKindOfClass:[NSDictionary class]]) {
+            NSLog(@"Ignoring consent mapping entry: expected a dictionary, got %@", [entry class]);
+            continue;
         }
+
+        id value = entry[@"value"];
+        id purpose = entry[@"map"];
+        if (![value isKindOfClass:[NSString class]] || ![purpose isKindOfClass:[NSString class]]) {
+            NSLog(@"Ignoring consent mapping entry: expected string value and map");
+            continue;
+        }
+
+        dict[value] = [(NSString *)purpose lowercaseString];
     }
     return dict;
 }
@@ -605,11 +660,11 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 }
 
 - (BOOL)isUserIdentificationMPID {
-    return [afUserIdentificationMPID isEqualToString:_configuration[afUserIdentificationType]];
+    return [afUserIdentificationMPID isEqualToString:[self configurationStringForKey:afUserIdentificationType]];
 }
 
 - (BOOL)isUserIdentificationCustomerId {
-    return [afUserIdentificationCustomerId isEqualToString:_configuration[afUserIdentificationType]];
+    return [afUserIdentificationCustomerId isEqualToString:[self configurationStringForKey:afUserIdentificationType]];
 }
 
 - (NSString *)customerIDForAppsFlyer:(FilteredMParticleUser *)user {

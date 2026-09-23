@@ -19,20 +19,16 @@
 #import "MPForwardRecord.h"
 #import "MPLocation.h"
 #import <UIKit/UIKit.h>
-#import "MPStateMachine.h"
-#import "MPKitContainer.h"
 #import "MPSideloadedKit.h"
 #import "MPBackendController.h"
-#import "MPApplication.h"
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 #import "MPRokt.h"
 #import "MPRoktSession.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
 #import "MPUserDefaultsConnector.h"
-#import "SceneDelegateHandler.h"
 
 #if TARGET_OS_IOS == 1
     #import <WebKit/WebKit.h>
@@ -689,7 +685,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  The instance which manages all initialized kits. For internal use only
  */
-@property (nonatomic, strong, readonly) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 /**
  The Kit Configuration needed should the initialization of kits need to be deferred until identity or consent is resolve. For internal use only

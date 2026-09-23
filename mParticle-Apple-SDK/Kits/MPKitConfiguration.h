@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
+@import mParticle_Apple_SDK_Swift;
 
-@class MPEventProjection;
 @class MPConsentKitFilter;
 
 @interface MPKitConfiguration : NSObject <NSSecureCoding, NSCopying>
@@ -10,8 +10,8 @@
 @property (nonatomic, strong, nullable) NSDictionary *filters;
 @property (nonatomic, strong, readonly, nullable) NSDictionary *bracketConfiguration;
 @property (nonatomic, strong, readonly, nullable) NSArray<NSNumber *> *configuredMessageTypeProjections;
-@property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *defaultProjections;
-@property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *projections;
+@property (nonatomic, strong, readonly, nullable) NSArray<MPKitProjectionSnapshot *> *defaultProjections;
+@property (nonatomic, strong, readonly, nullable) NSArray<MPKitProjectionSnapshot *> *projections;
 @property (nonatomic, strong, readonly, nullable) NSNumber *integrationId;
 
 @property (nonatomic) BOOL attributeValueFilteringIsActive;

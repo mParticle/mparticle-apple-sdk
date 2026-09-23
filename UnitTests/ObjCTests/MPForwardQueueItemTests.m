@@ -1,12 +1,11 @@
 #import <XCTest/XCTest.h>
-#import "MPForwardQueueItem.h"
 #import "MPCommerceEvent.h"
 #import "MPProduct.h"
 #import "MPKitProtocol.h"
 #import "MPKitExecStatus.h"
 #import "MPKitFilter.h"
 #import "MPEvent.h"
-#import "MPForwardQueueParameters.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPBaseTestCase.h"
 
 #pragma mark

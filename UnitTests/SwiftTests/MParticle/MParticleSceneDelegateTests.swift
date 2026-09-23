@@ -18,7 +18,7 @@ final class MParticleSceneDelegateTests: XCTestCase {
         testUserActivity.userInfo = ["key": "value"]
 
         sceneMock = OpenURLHandlerProtocolMock()
-        let sceneHandler = SceneDelegateHandler(appNotificationHandler: sceneMock)
+        let sceneHandler = SceneDelegateHandlerPRIVATE(appNotificationHandler: sceneMock)
         mparticle.sceneDelegateHandler = sceneHandler
     }
 
@@ -26,7 +26,7 @@ final class MParticleSceneDelegateTests: XCTestCase {
 
     func test_openURLHandlerProtocol_respondsToOpenURLSelector() {
         // This test verifies that the protocol method maps to the correct ObjC selector
-        let handler: OpenURLHandlerProtocol = sceneMock
+        let handler: OpenURLHandlerProtocolPRIVATE = sceneMock
         let selector = NSSelectorFromString("openURL:options:")
         XCTAssertTrue((handler as AnyObject).responds(to: selector),
                       "OpenURLHandlerProtocol should respond to openURL:options: selector")
@@ -34,7 +34,7 @@ final class MParticleSceneDelegateTests: XCTestCase {
 
     func test_openURLHandlerProtocol_respondsToContiuneUserActivitySelector() {
         // This test verifies that the protocol method maps to the correct ObjC selector
-        let handler: OpenURLHandlerProtocol = sceneMock
+        let handler: OpenURLHandlerProtocolPRIVATE = sceneMock
         let selector = NSSelectorFromString("continueUserActivity:restorationHandler:")
         XCTAssertTrue((handler as AnyObject).responds(to: selector),
                       "OpenURLHandlerProtocol should respond to continueUserActivity:restorationHandler: selector")

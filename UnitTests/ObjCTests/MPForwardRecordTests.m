@@ -2,15 +2,14 @@
 #import "MPForwardRecord.h"
 #import "MPKitFilter.h"
 #import "MPEnums.h"
-#import "MPStateMachine.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPEvent.h"
 #import "MPKitExecStatus.h"
-#import "MPKitContainer.h"
 #import "MPKitFilter.h"
 #import "MPProduct.h"
 #import "MPCommerceEvent.h"
 #import "MPBaseTestCase.h"
-#import "MPPersistenceController.h"
+#import "MPPersistenceUtilities.h"
 
 @interface MPForwardRecord ()
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;

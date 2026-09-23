@@ -4,6 +4,7 @@
 #import "MPCommerceEvent.h"
 #import "MPIConstants.h"
 #import "MPCommerceEvent+Dictionary.h"
+@import mParticle_Apple_SDK_Swift;
 
 @interface MPDataPlanFilter ()
 @property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSArray<NSString *> *> *pointInfo;
@@ -70,34 +71,25 @@
     return (MPEvent *)[self mutateEvent:screenEvent isScreenEvent:true];
 }
 
+// An unconstrained point is stored as the NSNull sentinel rather than an array,
+// and NSNull cannot cross into a Swift [Any]? parameter. Unconstrained means
+// every key is planned, which is the same "block nothing" that filterProducts:
+// already reads the sentinel as.
+- (NSArray *)plannedKeysForPointInfoKey:(NSString *)pointInfoKey {
+    id planned = self.pointInfo[pointInfoKey];
+    return [planned isKindOfClass:[NSArray class]] ? planned : nil;
+}
+
 - (BOOL)isBlockedUserAttributeKey:(NSString *)userAttributeKey {
-    if (!_blockUserAttributes) {
-        return NO;
-    }
-    
-    // A missing point, or the NSNull "unconstrained" sentinel, means nothing is blocked.
-    NSArray *info = self.pointInfo[@"user_attributes"];
-    if (!MPIsArray(info)) {
-        return NO;
-    }
-    if ([info containsObject:userAttributeKey]) {
-        return NO;
-    }
-    return YES;
+    return [MPDataPlanFilterPolicy isBlockedUserAttributeKey:userAttributeKey
+                                           plannedAttributes:[self plannedKeysForPointInfoKey:@"user_attributes"]
+                                         blockUserAttributes:_blockUserAttributes];
 }
 
 - (BOOL)isBlockedUserIdentityType:(MPIdentity)userIdentityType {
-    if (!_blockUserIdentities) {
-        return NO;
-    }
-    NSArray *info = self.pointInfo[@"user_identities"];
-    if (!MPIsArray(info)) {
-        return NO;
-    }
-    if ([info containsObject:@(userIdentityType)]) {
-        return NO;
-    }
-    return YES;
+    return [MPDataPlanFilterPolicy isBlockedUserIdentityType:userIdentityType
+                                           plannedIdentities:[self plannedKeysForPointInfoKey:@"user_identities"]
+                                         blockUserIdentities:_blockUserIdentities];
 }
 
 - (NSDictionary<NSString *, NSArray<NSString *> *> *)getPointInfo {
@@ -208,52 +200,19 @@
 }
 
 - (NSString *)matchKeyForScreenName:(NSString *)screenName {
-    return [self matchKeyForMatchType:@"screen_view" key:screenName];
+    return [MPDataPlanFilterPolicy matchKeyForScreenName:screenName];
 }
 
 - (NSString *)matchKeyForEventType:(NSString *)eventType eventName:(NSString *)eventName {
-    NSString *mutatedType = [[eventType stringByReplacingOccurrencesOfString:@"_" withString:@""] lowercaseString];
-    return [self matchKeyForMatchType:@"custom_event" type:mutatedType name:eventName];
-}
-
-- (NSString *)matchKeyForMatchType:(NSString *)matchType type:(NSString *)type name:(NSString *)name {
-    return [NSString stringWithFormat:@"%@.%@.%@", matchType, name, type];
+    return [MPDataPlanFilterPolicy matchKeyForEventType:eventType eventName:eventName];
 }
 
 - (NSString *)matchKeyForMatchType:(NSString *)matchType key:(NSString *)key {
-    NSString *mutatedKey = [key stringByReplacingOccurrencesOfString:@"_" withString:@""];
-    return [NSString stringWithFormat:@"%@.%@", matchType, mutatedKey];
+    return [MPDataPlanFilterPolicy matchKeyForMatchType:matchType key:key];
 }
 
 - (NSString *)keyForMatch:(NSDictionary *)match {
-    NSDictionary *criteria = MPIsDictionary(match[@"criteria"]) ? match[@"criteria"] : nil;
-    NSString *matchType = match[@"type"];
-    if ([matchType isEqual:@"custom_event"]) {
-        NSString *eventName = criteria[@"event_name"];
-        NSString *eventType = criteria[@"custom_event_type"];
-        
-        NSString *key = nil;
-        if (MPIsString(eventName) && MPIsString(eventType)) {
-            key = [self matchKeyForEventType:eventType eventName:eventName];
-        }
-        return key;
-    } else if ([matchType isEqual:@"screen_view"]) {
-        NSString *screenName = criteria[@"screen_name"];
-        return MPIsString(screenName) ? [self matchKeyForScreenName:screenName] : nil;
-    } else if ([matchType isEqual:@"product_action"]) {
-        NSString *action = criteria[@"action"];
-        return MPIsString(action) ? [self matchKeyForMatchType:matchType key:action] : nil;
-    } else if ([matchType isEqual:@"promotion_action"]) {//
-        NSString *action = criteria[@"action"];
-        return MPIsString(action) ? [self matchKeyForMatchType:matchType key:action] : nil;
-    } else if ([matchType isEqual:@"product_impression"]) {//
-        return matchType;
-    } else if ([matchType isEqual:@"user_attributes"]) {
-        return matchType;
-    } else if ([matchType isEqual:@"user_identities"]) {
-        return matchType;
-    }
-    return nil;
+    return [MPDataPlanFilterPolicy keyForMatch:match];
 }
 
 - (NSString *)matchKeyFromBaseEvent:(MPBaseEvent *)event isScreenEvent:(BOOL)isScreenEvent {

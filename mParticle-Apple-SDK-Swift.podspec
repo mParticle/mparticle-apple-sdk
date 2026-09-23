@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK-Swift"
-    s.version          = "9.5.1"
+    s.version          = "9.6.0"
     s.summary          = "mParticle Apple SDK Swift components."
     
     s.description      = <<-DESC
@@ -20,4 +20,6 @@ Pod::Spec.new do |s|
     s.swift_versions = ["5.0"]
     
     s.source_files = 'mParticle-Apple-SDK-Swift/Sources/**/*.swift'
+    s.frameworks = 'SystemConfiguration'
+    s.libraries = 'sqlite3'
 end

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK-ObjC"
-    s.version          = "9.5.1"
+    s.version          = "9.6.0"
     s.summary          = "mParticle Apple SDK."
 
     s.description      = <<-DESC

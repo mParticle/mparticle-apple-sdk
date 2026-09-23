@@ -20,6 +20,36 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.6.0] - 2026-09-22
+
+### Core
+
+#### Fixed
+
+- Prevent kit event projection crashes on non-string attribute values ([#1011](https://github.com/mParticle/mparticle-apple-sdk/pull/1011))
+- Validate custom-module and data-plan server configuration types ([#1010](https://github.com/mParticle/mparticle-apple-sdk/pull/1010))
+
+### Kits
+
+#### Braze
+
+##### Fixed
+
+- Prevent Braze crashes and preserve consent choices ([#1009](https://github.com/mParticle/mparticle-apple-sdk/pull/1009))
+
+#### Google-analytics-firebase-ga4
+
+##### Fixed
+
+- Validate server configuration types in Firebase and GA4 kits ([#1008](https://github.com/mParticle/mparticle-apple-sdk/pull/1008))
+
+#### Rokt
+
+##### Fixed
+
+- Resolve the SDK from this checkout in the Rokt Swift example ([#1035](https://github.com/mParticle/mparticle-apple-sdk/pull/1035))
+- Prevent configuration crashes and identity disclosure ([#1012](https://github.com/mParticle/mparticle-apple-sdk/pull/1012))
+
 ## [9.5.1] - 2026-09-14
 
 ### Kits
@@ -2564,7 +2594,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.1...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.0...HEAD
+[9.6.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.1...v9.6.0
 [9.5.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.0...v9.5.1
 [9.5.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.3...v9.5.0
 [9.4.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.2...v9.4.3

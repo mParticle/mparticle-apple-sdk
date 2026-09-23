@@ -3,6 +3,10 @@
 
 @implementation UploadSettingsUtils
 
+// Archive the runtime-identity-pinned MPUploadSettings class and obtain the SDK logger
+// on the ObjC side. The Swift module cannot import these ObjC types without a dependency
+// cycle; MPUserDefaults handles storage in Swift. See docs/swift-migration/CONVERSION-RECIPE.md.
+
 + (void)setLastUploadSettings:(nullable MPUploadSettings *)lastUploadSettings userDefaults:(MPUserDefaults*)userDefaults {
     if (lastUploadSettings) {
         NSError *error = nil;

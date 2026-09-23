@@ -43,6 +43,25 @@ public protocol MPUserDefaultsProtocol {
         }
     }
 
+    // The instance a previous standardUserDefaults(connector:) call created, or nil before the
+    // first one. Types inside this module cannot build the connector themselves, since it lives in
+    // the Objective-C module, so this is how they reach the same instance the SDK is already using.
+    @objc public class func cached() -> MPUserDefaults? {
+        userDefaultsQueue.sync { userDefaults }
+    }
+
+    @objc public class func storedMpId() -> NSNumber {
+        userDefaultsQueue.sync {
+            if let mpId = userDefaults?["mpid"] as? NSNumber {
+                return mpId
+            }
+            if let mpId = UserDefaults.standard.object(forKey: globalKeyForKey("mpid")) as? NSNumber {
+                return mpId
+            }
+            return 0
+        }
+    }
+
     @objc public func mpObject(forKey key: String, userId: NSNumber) -> Any? {
         let prefixedKey = MPUserDefaults.prefixedKey(key, userId: userId)
 
@@ -557,3 +576,7 @@ public protocol MPUserDefaultsProtocol {
         return compressedData
     }
 }
+
+// MPUserDefaults already satisfies this protocol member for member; declaring the conformance lets
+// Swift callers pass it directly instead of forcing the Objective-C boundary to cast.
+extension MPUserDefaults: MPApplicationMPUserDefaultsProtocol {}

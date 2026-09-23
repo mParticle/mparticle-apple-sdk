@@ -1,28 +1,23 @@
 #import "mParticle.h"
 #import "MPILogger.h"
 #import "MPAppNotificationHandler.h"
-#import "MPConsumerInfo.h"
-#import "MPForwardQueueParameters.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
-#import "MPIntegrationAttributes.h"
 #import "MPKitActivity.h"
 #import "MPKitFilter.h"
 #import "MPNetworkPerformance.h"
-#import "MPSession.h"
 #import "MPIdentityApi.h"
 #import "MPDataPlanFilter.h"
-#import "MPUpload.h"
-#import "MPKitContainer.h"
+#import "Kits/MPKitContainer+MParticlePrivate.h"
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"
 #import "Executor.h"
-#import "AppEnvironmentProvider.h"
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
-#import "SceneDelegateHandler.h"
 #import "MPRokt+MParticlePrivate.h"
+#import "MPPersistenceAdapter.h"
+#import "Persistence/MPPersistenceUploadSettingsCodec.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -43,8 +38,39 @@ static NSString *const kMPStateKey = @"state";
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
 @end
 
+@interface MPBackendController_PRIVATE (PersistenceInjection)
+- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
+                     persistence:(id<MPBackendPersistence>)persistence;
+@end
+
 @interface MPKitContainer_PRIVATE ()
 - (BOOL)kitsInitialized;
+@end
+
+@interface MPPersistenceUploadSettingsProvider : NSObject <MPUploadSettingsProviding>
+- (instancetype)initWithStateMachine:(id<MPStateMachineProtocol>)stateMachine
+                      networkOptions:(nullable MPNetworkOptions *)networkOptions;
+@property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
+@property (nonatomic, strong, nullable) MPNetworkOptions *networkOptions;
+@end
+
+@implementation MPPersistenceUploadSettingsProvider
+
+- (instancetype)initWithStateMachine:(id<MPStateMachineProtocol>)stateMachine
+                      networkOptions:(MPNetworkOptions *)networkOptions {
+    self = [super init];
+    if (self) {
+        _stateMachine = stateMachine;
+        _networkOptions = networkOptions;
+    }
+    return self;
+}
+
+- (NSObject *)currentUploadSettings {
+    return [MPUploadSettings currentUploadSettingsWithStateMachine:self.stateMachine
+                                                    networkOptions:self.networkOptions];
+}
+
 @end
 
 @interface MParticle() <MPBackendControllerDelegate
@@ -55,11 +81,12 @@ static NSString *const kMPStateKey = @"state";
     BOOL sdkInitialized;
 }
 
-@property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
+@property (nonatomic, strong) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
+@property (nonatomic, strong) id kitContainer;
 @property (nonatomic, strong) id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol> appNotificationHandler;
 @property (nonatomic, strong) SceneDelegateHandler *sceneDelegateHandler;
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
@@ -95,7 +122,6 @@ static NSString *const kMPStateKey = @"state";
 @synthesize identity = _identity;
 @synthesize rokt = _rokt;
 @synthesize optOut = _optOut;
-@synthesize persistenceController = _persistenceController;
 @synthesize stateMachine = _stateMachine;
 @synthesize kitContainer_PRIVATE = _kitContainer_PRIVATE;
 @synthesize kitContainer = _kitContainer;
@@ -145,10 +171,11 @@ MPLog* logger;
         return nil;
     }
 
-    executor = [[Executor alloc] init];
+    executor = (id<ExecutorProtocol>)[[MPExecutorPRIVATE alloc] init];
     sdkInitialized = NO;
     _initialized = NO;
-    _settingsProvider = [[SettingsProvider alloc] init];
+    _settingsProvider = (id<SettingsProviderProtocol>)[[MPSettingsProviderPRIVATE alloc] initWithBundle:NSBundle.mainBundle
+                                                                                          resourceName:kMPConfigPlist];
     _kitActivity = [[MPKitActivity alloc] init];
     _kitsInitializedBlocks = [NSMutableArray array];
     _collectUserAgent = YES;
@@ -156,14 +183,56 @@ MPLog* logger;
     _trackNotifications = YES;
     _automaticSessionTracking = YES;
     _appNotificationHandler = (id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol>)[[MPAppNotificationHandler alloc] init];
-    _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
+    _stateMachine = [[MPStateMachine_PRIVATE alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                               connector:(id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init]
+                                                            messageQueue:executor.messageQueue
+                                                              sdkVersion:kMParticleSDKVersion
+                                                        deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
     _notificationController = [[MPNotificationController_PRIVATE alloc] init];
     logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
+    _sceneDelegateHandler.logger = logger;
 
     _webView = [[MParticleWebViewPRIVATE alloc] initWithMessageQueue:executor.messageQueue logger:logger sdkVersion:kMParticleSDKVersion];
     return self;
+}
+
+- (void)initializePersistence {
+    if (_persistenceStore || _persistenceAdapter) {
+        return;
+    }
+    MPPersistenceFileSystemPRIVATE *fileSystem =
+        [[MPPersistenceFileSystemPRIVATE alloc] initWithLogger:logger];
+    [fileSystem migrateLegacyDatabaseDirectoryIfNeeded];
+    [fileSystem removeLegacySessionNumberFileIfNeeded];
+    MPPersistenceUploadSettingsCodec *codec = [[MPPersistenceUploadSettingsCodec alloc] init];
+    MPDatabaseMigratorPRIVATE *migrator =
+        [[MPDatabaseMigratorPRIVATE alloc] initWithDatabaseVersions:MPPersistenceSchemaPRIVATE.databaseVersions
+                                                         fileSystem:fileSystem
+                                                             logger:logger
+                                             uploadSettingsProvider:[[MPPersistenceUploadSettingsProvider alloc] initWithStateMachine:_stateMachine
+                                                                                                                   networkOptions:_networkOptions]
+                                               uploadSettingsCodec:codec];
+    NSNumber *version = migrator.versionNeedingMigration;
+    if (version != nil) {
+        (void)[migrator migrateFromVersion:version];
+    }
+    _persistenceStore = [[MPPersistenceStorePRIVATE alloc] initWithFileSystem:fileSystem
+                                                                       logger:logger
+                                                          uploadSettingsCodec:codec];
+    _persistenceAdapter = [[MPPersistenceAdapter alloc] initWithStore:_persistenceStore];
+}
+
+- (MPPersistenceStorePRIVATE *)persistenceStore {
+    [self initializePersistence];
+    return _persistenceStore;
+}
+
+- (MPPersistenceAdapter *)persistenceAdapter {
+    [self initializePersistence];
+    return _persistenceAdapter;
 }
 
 - (void)setExecutor: (id<ExecutorProtocol>)newExecutor {
@@ -302,21 +371,16 @@ MPLog* logger;
 }
 
 - (MPConsentState *)deviceConsentState {
-    return [MPPersistenceController_PRIVATE deviceConsentState];
+    return [MPPersistenceUtilities deviceConsentState];
 }
 
 - (void)setDeviceConsentState:(MPConsentState *)deviceConsentState {
     [self.rokt logRoktApiDiagnostic:@"SET_DEVICE_CONSENT_STATE"];
-    [MPPersistenceController_PRIVATE setDeviceConsentState:deviceConsentState];
+    [MPPersistenceUtilities setDeviceConsentState:deviceConsentState];
 
-    NSArray<NSDictionary *> *kitConfig = [self.kitContainer_PRIVATE.originalConfig copy];
-    if (kitConfig) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.kitContainer_PRIVATE configureKits:kitConfig];
-        });
-    }
+    [self.kitContainer_PRIVATE reconfigureKits];
 
-    MPConsentState *effectiveConsentState = [MPPersistenceController_PRIVATE effectiveConsentStateForMpid:self.identity.currentUser.userId];
+    MPConsentState *effectiveConsentState = [MPPersistenceUtilities effectiveConsentStateForMpid:self.identity.currentUser.userId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.kitContainer_PRIVATE forwardSDKCall:@selector(setConsentState:) consentState:effectiveConsentState kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
             MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
@@ -455,7 +519,7 @@ MPLog* logger;
     }];
     
     if (firstRun) {
-        [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]];
+        [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceUtilities mpId]];
         [userDefaults synchronize];
     }
     
@@ -483,9 +547,7 @@ MPLog* logger;
     MPILogDebug(@"SDK initialization starting - environment: %ld, logLevel: %lu",
                 (long)options.environment, (unsigned long)options.logLevel);
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultUserAgentOverride:options.defaultAgent];
-    
-    _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self];
-    
+
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;
         MPILogDebug(@"Network options configured - pinningDisabled: %@, pinningDisabledInDevelopment: %@, configHost: %@",
@@ -503,6 +565,10 @@ MPLog* logger;
     NSAssert((NSNull *)apiKey != [NSNull null] && (NSNull *)secret != [NSNull null], @"mParticle SDK apiKey and secret cannot be null.");
     
     self.options = options;
+    self.stateMachine.apiKey = apiKey;
+    self.stateMachine.secret = secret;
+    _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self
+                                                                   persistence:self.persistenceStore];
     
     self.dataPlanId = options.dataPlanId;
     if (self.dataPlanId != nil) {
@@ -520,11 +586,11 @@ MPLog* logger;
     
     __weak MParticle *weakSelf = self;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]] == nil;
+    BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceUtilities mpId]] == nil;
     if (firstRun) {
         NSDate *firstSeen = [NSDate date];
         NSNumber *firstSeenMs = @([firstSeen timeIntervalSince1970] * 1000.0);
-        [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceController_PRIVATE mpId]];
+        [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceUtilities mpId]];
     }
     
     _automaticSessionTracking = self.options.automaticSessionTracking;
@@ -613,7 +679,7 @@ MPLog* logger;
         
         // Clean up persistence
         [MPUserDefaultsConnector.userDefaults resetDefaults];
-        [self.persistenceController resetDatabaseForWorkspaceSwitching];
+        [self.persistenceAdapter resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
         //
@@ -732,7 +798,7 @@ MPLog* logger;
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
         [MPUserDefaultsConnector.userDefaults resetDefaults];
-        [self.persistenceController resetDatabase];
+        [self.persistenceAdapter resetDatabase];
         // See the matching comment in resetForSwitchingWorkspaces: - flushSerializedKits/
         // removeAllSideloadedKits only schedule each kit's stop() and teardown on the main
         // queue rather than completing it here, so waiting on notifyWhenKitTeardownComplete:
@@ -752,7 +818,7 @@ MPLog* logger;
     [self.rokt logRoktApiDiagnostic:@"RESET"];
     [executor executeOnMessageSync:^{
         [MPUserDefaultsConnector.userDefaults resetDefaults];
-        [[MParticle sharedInstance].persistenceController resetDatabase];
+        [[MParticle sharedInstance].persistenceAdapter resetDatabase];
         [MParticle setSharedInstance:nil];
     }];
 }
@@ -923,7 +989,7 @@ MPLog* logger;
                             if ([forwardRecords isKindOfClass:[NSArray class]]) {
                                 for (MPForwardRecord *forwardRecord in forwardRecords) {
                                     [executor executeOnMessage: ^{
-                                        [self.persistenceController saveForwardRecord:forwardRecord];
+                                        [self.persistenceAdapter saveForwardRecord:forwardRecord];
                                     }];
                                 }
                             }
@@ -933,7 +999,7 @@ MPLog* logger;
             }
         };
         
-        BOOL kitsInitialized = self.kitContainer.kitsInitialized;
+        BOOL kitsInitialized = [(MPKitContainer_PRIVATE *)self.kitContainer kitsInitialized];
         if (kitsInitialized) {
             block();
         } else {
@@ -1039,7 +1105,7 @@ MPLog* logger;
 #pragma mark Attribution
 - (nullable NSDictionary<NSNumber *, MPAttributionResult *> *)attributionInfo {
     [self.rokt logRoktApiDiagnostic:@"GET_ATTRIBUTION_INFO"];
-    return [self.kitContainer.attributionInfo copy];
+    return [[(MPKitContainer_PRIVATE *)self.kitContainer attributionInfo] copy];
 }
 
 #pragma mark Error, Exception, and Crash Handling
@@ -1241,15 +1307,17 @@ MPLog* logger;
     [self logLTVIncrease:increaseAmount eventName:eventName eventInfo:nil];
 }
 
-- (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
+- (void)logLTVIncreaseCallback:(MPEvent *)event increaseAmount:(double)increaseAmount execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
         if (kitEvent) {
             [executor executeOnMain: ^{
                 // Forwarding calls to kits
+                MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
+                [parameters addParameter:@(increaseAmount)];
                 [self.kitContainer forwardSDKCall:@selector(logLTVIncrease:event:)
-                                                                     event:nil
-                                                                parameters:nil
+                                                                     event:kitEvent
+                                                                parameters:parameters
                                                                messageType:MPMessageTypeUnknown
                                                                   userInfo:nil
                 ];
@@ -1276,7 +1344,7 @@ MPLog* logger;
     
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-        [self logLTVIncreaseCallback:event execStatus:execStatus];
+        [self logLTVIncreaseCallback:event increaseAmount:increaseAmount execStatus:execStatus];
     }];
 }
 
@@ -1301,7 +1369,7 @@ MPLog* logger;
     
     if (integrationAttributes) {
         [executor executeOnMessage: ^{
-            [[MParticle sharedInstance].persistenceController saveIntegrationAttributes:integrationAttributes];
+        [[MParticle sharedInstance].persistenceAdapter saveIntegrationAttributes:integrationAttributes];
         }];
         
     } else {
@@ -1314,7 +1382,7 @@ MPLog* logger;
 - (nonnull MPKitExecStatus *)clearIntegrationAttributesForKit:(nonnull NSNumber *)integrationId {
     [self.rokt logRoktApiDiagnostic:@"CLEAR_INTEGRATION_ATTRIBUTES"];
     [executor executeOnMessage: ^{
-        [[MParticle sharedInstance].persistenceController deleteIntegrationAttributesForIntegrationId:integrationId];
+        [[MParticle sharedInstance].persistenceAdapter deleteIntegrationAttributesForIntegrationId:integrationId];
     }];
 
     return [[MPKitExecStatus alloc] initWithSDKCode:integrationId returnCode:MPKitReturnCodeSuccess forwardCount:0];
@@ -1322,14 +1390,14 @@ MPLog* logger;
 
 - (nullable NSDictionary *)integrationAttributesForKit:(nonnull NSNumber *)integrationId {
     [self.rokt logRoktApiDiagnostic:@"GET_INTEGRATION_ATTRIBUTES"];
-    return [[MParticle sharedInstance].persistenceController fetchIntegrationAttributesForId:integrationId];
+    return [[MParticle sharedInstance].persistenceAdapter fetchIntegrationAttributesForId:integrationId];
 }
 
 #pragma mark Kits
 
 - (void)onKitsInitialized:(void(^)(void))block {
     [self.rokt logRoktApiDiagnostic:@"ON_KITS_INITIALIZED"];
-    BOOL kitsInitialized = self.kitContainer.kitsInitialized;
+    BOOL kitsInitialized = [(MPKitContainer_PRIVATE *)self.kitContainer kitsInitialized];
     if (kitsInitialized) {
         block();
     } else {

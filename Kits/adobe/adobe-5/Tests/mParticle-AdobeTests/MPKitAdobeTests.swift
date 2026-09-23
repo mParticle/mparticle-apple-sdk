@@ -191,4 +191,57 @@ final class MPKitAdobeTests: XCTestCase {
         let data = try JSONSerialization.data(withJSONObject: json, options: [])
         session.dataTaskCompletionHandlerParam?(data, URLResponse(), nil)
     }
+
+    func testCompletionCallback_topLevelEmptyArray_reportsSerializationError() throws {
+        assertSerializationError(forTopLevelJSONObject: [])
+    }
+
+    func testCompletionCallback_topLevelPopulatedArray_reportsSerializationError() throws {
+        assertSerializationError(forTopLevelJSONObject: [1, 2])
+    }
+
+    func testCompletionCallback_invalidJSON_reportsSerializationError() {
+        assertSerializationError(forResponseData: Data("not json".utf8))
+    }
+
+    /// The completion runs on a queue NSURLSession owns, where nothing catches an Objective-C
+    /// exception, so a response whose top-level value is not an object has to be reported rather
+    /// than messaged. The mock invokes the completion synchronously, so a regression terminates
+    /// the test runner instead of failing this assertion.
+    private func assertSerializationError(forTopLevelJSONObject object: Any,
+                                          line: UInt = #line) {
+        guard let data = try? JSONSerialization.data(withJSONObject: object, options: []) else {
+            XCTFail("Could not encode the response body", line: line)
+            return
+        }
+        assertSerializationError(forResponseData: data, line: line)
+    }
+
+    private func assertSerializationError(forResponseData data: Data,
+                                          line: UInt = #line) {
+        let sut = MPIAdobe(session: session)!
+        var completionCalled = false
+        var completionError: NSError?
+
+        sut.sendRequest(
+            withMarketingCloudId: "",
+            advertiserId: "",
+            pushToken: "",
+            organizationId: "",
+            userIdentities: [:],
+            audienceManagerServer: ""
+        ) { marketingCloudId, locationHint, blob, error in
+            completionCalled = true
+            completionError = error as NSError?
+            XCTAssertNil(marketingCloudId, line: line)
+            XCTAssertNil(locationHint, line: line)
+            XCTAssertNil(blob, line: line)
+        }
+
+        session.dataTaskCompletionHandlerParam?(data, URLResponse(), nil)
+
+        XCTAssertTrue(completionCalled, "The completion must be invoked", line: line)
+        let adobeError = completionError?.userInfo[MPIAdobeErrorKey] as? MPIAdobeError
+        XCTAssertEqual(adobeError?.code, .clientSerializationError, line: line)
+    }
 }

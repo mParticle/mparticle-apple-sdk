@@ -1,5 +1,9 @@
 public enum MessageKeys {
     public static let kMPMessagesKey = "msgs"
+    public static let kMPMessageTypeKey = "dt"
+    public static let kMPMessageTypeStringCommerceEvent = "cm"
+    public static let kMPMessageTypeStringCrashReport = "x"
+    public static let kMPMessageTypeLeaveBreadcrumbs = "bc"
     public static let kMPMessageIdKey = "id"
     public static let kMPMessageUserIdKey = "mpid"
     public static let kMPTimestampKey = "ct"

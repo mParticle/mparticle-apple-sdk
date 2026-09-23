@@ -2,33 +2,20 @@
 #import <OCMock/OCMock.h>
 #import "MPBackendController.h"
 #import "MPIConstants.h"
-#import "MPSession.h"
-#import "MPStateMachine.h"
-#import "MPPersistenceController.h"
-#import "MPMessage.h"
-#import "MPUpload.h"
+#import "MPPersistenceUtilities.h"
 #import "MPNotificationController.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
-#import "MPUploadBuilder.h"
-#import "MPMessageBuilder.h"
 #import "mParticle.h"
-#import "MPKitContainer.h"
+#import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitConfiguration.h"
 #import "MPBaseTestCase.h"
 #import "MPUserDefaultsConnector.h"
-#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
 #endif
 @import mParticle_Apple_SDK_Swift;
-
-@interface MPMessage ()
-
-@property (nonatomic, strong, readwrite, nonnull) NSData *messageData;
-
-@end
 
 @interface MParticleUser ()
 
@@ -48,12 +35,13 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
+- (void)initializePersistence;
 
 @end
 
@@ -68,8 +56,13 @@
 @interface MPBackendController_PRIVATE(Tests)
 
 @property (nonatomic, strong) MPNetworkCommunication_PRIVATE *networkCommunication;
+- (MPUploadBuilderContext *)uploadBuilderContext;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
+@property (nonatomic, strong) id<MPBackendPersistence> persistence;
+@property (nonatomic, strong, readonly) MPBackendSessionState *sessionState;
+- (void)beginUploadTimer;
+- (void)endUploadTimer;
 
 - (NSString *)caseInsensitiveKeyInDictionary:(NSDictionary *)dictionary withKey:(NSString *)key;
 - (void)cleanUp;
@@ -95,6 +88,8 @@
 - (void)processDidFinishLaunching:(NSNotification *)notification;
 - (void)beginBackgroundTask;
 - (void)endBackgroundTask;
+- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
+                     persistence:(id<MPBackendPersistence>)persistence;
 - (void)beginBackgroundTimeCheckLoop;
 - (void)cancelBackgroundTimeCheckLoop;
 - (void)endSessionIfTimedOut;
@@ -102,11 +97,40 @@
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSTimeInterval timeOfLastEventInBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
+- (MPBackendSessionDependencies *)sessionDependencies;
+- (MPBackendSessionCoordinator *)sessionCoordinator;
 
 @end
 
-@interface MPApplication_PRIVATE(Tests)
-+ (void)setMockApplication:(id)mockApplication;
+@interface MPBackendPausedConstruction : MPBackendController_PRIVATE
+@property (nonatomic, strong) NSLock *constructionLock;
+@property (nonatomic) BOOL didPauseConstruction;
+@property (nonatomic, strong) dispatch_semaphore_t constructionEntered;
+@property (nonatomic, strong) dispatch_semaphore_t continueConstruction;
+@end
+
+@implementation MPBackendPausedConstruction
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _constructionLock = [[NSLock alloc] init];
+        _constructionEntered = dispatch_semaphore_create(0);
+        _continueConstruction = dispatch_semaphore_create(0);
+    }
+    return self;
+}
+
+- (MPBackendSessionDependencies *)sessionDependencies {
+    [self.constructionLock lock];
+    BOOL pause = !self.didPauseConstruction;
+    self.didPauseConstruction = YES;
+    [self.constructionLock unlock];
+    if (pause) {
+        dispatch_semaphore_signal(self.constructionEntered);
+        dispatch_semaphore_wait(self.continueConstruction, DISPATCH_TIME_FOREVER);
+    }
+    return [super sessionDependencies];
+}
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
@@ -122,12 +146,14 @@
 
 @implementation MPBackendControllerTests
 
+- (MPUploadBuilderContext *)uploadBuilderContext {
+    return [self.backendController uploadBuilderContext];
+}
+
 - (void)setUp {
     [super setUp];
 
-    [MPPersistenceController_PRIVATE setMpid:@1];
-    [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
-
+    [MPPersistenceUtilities setMpid:@1];
     // Must read messageQueue AFTER [MParticle sharedInstance] triggers singleton
     // recreation, otherwise we get the old executor's queue.
     messageQueue = [MParticle messageQueue];
@@ -137,7 +163,11 @@
     
     [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     
-    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    [[MParticle sharedInstance] initializePersistence];
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
+    [MParticle sharedInstance].backendController =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]
+                                                 persistence:persistence];
     self.backendController = [MParticle sharedInstance].backendController;
     messageQueue = [MParticle messageQueue];
     
@@ -147,6 +177,131 @@
 - (void)tearDown {
     [MParticle sharedInstance].stateMachine.launchInfo = nil;
     [super tearDown];
+}
+
+- (void)testDefaultInitializerRetainsSession {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+    backend.session = session;
+    XCTAssertEqual(backend.session, session);
+}
+
+- (void)testEveryInitializerCreatesStableSessionState {
+    NSArray<MPBackendController_PRIVATE *> *backends = @[
+        [[MPBackendController_PRIVATE alloc] init],
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:self],
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:self persistence:self.backendController.persistence]
+    ];
+    for (MPBackendController_PRIVATE *backend in backends) {
+        MPBackendSessionState *state = backend.sessionState;
+        XCTAssertNotNil(state);
+        XCTAssertEqual(state, backend.sessionState);
+        MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+        backend.session = session;
+        XCTAssertEqual(state.session, session);
+    }
+}
+
+- (void)testUploadTimerOperationsDoNotWaitForSessionTransition {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    backend.uploadInterval = 1;
+    dispatch_group_t timers = dispatch_group_create();
+    [backend.sessionState withSessionLock:^{
+        dispatch_group_async(timers, dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+            [backend beginUploadTimer];
+            [backend endUploadTimer];
+        });
+        XCTAssertEqual(dispatch_group_wait(timers, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+        // A callback that is already inside a session transition can also operate the timer.
+        [backend beginUploadTimer];
+        [backend endUploadTimer];
+    }];
+    XCTAssertEqual(dispatch_group_wait(timers, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+}
+
+- (void)testConcurrentFirstSessionAccessSharesOneCoordinator {
+    [self assertConcurrentFirstAccessUsesOneObjectForKey:@"sessionCoordinator"];
+}
+
+- (void)testConcurrentFirstLifecycleAccessSharesOneCoordinator {
+    [self assertConcurrentFirstAccessUsesOneObjectForKey:@"lifecycleCoordinator"];
+}
+
+- (void)assertConcurrentFirstAccessUsesOneObjectForKey:(NSString *)key {
+    MPBackendPausedConstruction *backend = [[MPBackendPausedConstruction alloc] init];
+    dispatch_queue_t queue = dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0);
+    dispatch_group_t group = dispatch_group_create();
+    __block id first;
+    __block id second;
+    dispatch_group_async(group, queue, ^{ first = [backend valueForKey:key]; });
+    XCTAssertEqual(dispatch_semaphore_wait(backend.constructionEntered, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    dispatch_semaphore_t secondStarted = dispatch_semaphore_create(0);
+    dispatch_semaphore_t secondFinished = dispatch_semaphore_create(0);
+    dispatch_group_async(group, queue, ^{
+        dispatch_semaphore_signal(secondStarted);
+        second = [backend valueForKey:key];
+        dispatch_semaphore_signal(secondFinished);
+    });
+    XCTAssertEqual(dispatch_semaphore_wait(secondStarted, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    XCTAssertNotEqual(dispatch_semaphore_wait(secondFinished, dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC)), 0);
+    dispatch_semaphore_signal(backend.continueConstruction);
+    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    XCTAssertNotNil(first);
+    XCTAssertEqual(first, second);
+}
+
+- (void)testConcurrentFirstAccessSharesEntireSessionGraph {
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
+    NSArray<NSString *> *keys = @[@"sessionDependencies", @"messageWriter", @"sessionLifecycleDependencies", @"sessionCoordinator", @"lifecycleCoordinator"];
+    NSMutableArray<NSDictionary *> *graphs = [[NSMutableArray alloc] init];
+    NSLock *resultsLock = [[NSLock alloc] init];
+    dispatch_group_t group = dispatch_group_create();
+    [backend.sessionState withSessionLock:^{
+        for (NSUInteger iteration = 0; iteration < 32; iteration++) {
+            dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+                NSMutableDictionary *graph = [[NSMutableDictionary alloc] init];
+                for (NSUInteger offset = 0; offset < keys.count; offset++) {
+                    NSString *key = keys[(iteration + offset) % keys.count];
+                    graph[key] = [backend valueForKey:key];
+                }
+                [resultsLock lock];
+                [graphs addObject:graph];
+                [resultsLock unlock];
+            });
+        }
+        XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    }];
+    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
+    XCTAssertEqual(graphs.count, 32);
+    for (NSDictionary *graph in graphs) {
+        for (NSString *key in keys) {
+            XCTAssertEqual(graph[key], [backend valueForKey:key]);
+        }
+    }
+}
+
+- (void)testSessionOwnershipDoesNotPublishStateMachineMirror {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.currentSession = nil;
+    __weak MPSession *weakSession;
+    @autoreleasepool {
+        MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+        self.backendController.session = session;
+        XCTAssertEqual(self.backendController.session, session);
+        XCTAssertNil(stateMachine.currentSession);
+
+        stateMachine.currentSession = session;
+        weakSession = session;
+        session = nil;
+        XCTAssertNotNil(weakSession);
+        XCTAssertEqual(self.backendController.session, stateMachine.currentSession);
+        self.backendController.session.userId = @2;
+        XCTAssertEqualObjects(stateMachine.currentSession.userId, @2);
+    }
+    XCTAssertNotNil(weakSession);
+    self.backendController.session = nil;
+    XCTAssertNil(weakSession);
+    XCTAssertNil(stateMachine.currentSession);
 }
 
 - (void)forwardLogInstall {}
@@ -219,7 +374,7 @@
     dispatch_sync(messageQueue, ^{
         [self.backendController beginSession];
         self.session = self.backendController.session;
-        MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+        MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
         
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
@@ -227,7 +382,7 @@
         XCTAssertEqualObjects(session, self.session, @"Sessions are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -242,7 +397,7 @@
 }
 
 - (void)testEndSession {
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"End session test"];
     dispatch_sync(messageQueue, ^{
@@ -254,7 +409,7 @@
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -277,7 +432,7 @@
         [self.backendController endSession];
         
         messagesDictionary = [persistence fetchMessagesForUploading];
-        sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -302,13 +457,15 @@
 }
 
 - (void)testAutomaticSessionEnd {
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Automatic session end"];
     MParticle *mParticle = [MParticle sharedInstance];
     id mockBackendController = OCMPartialMock(self.backendController);
     mParticle.backendController = mockBackendController;
     self.backendController = [MParticle sharedInstance].backendController;
     
-    dispatch_sync(messageQueue, ^{
+    // Keep the main run loop available while session work runs on the SDK queue.
+    dispatch_async(messageQueue, ^{
         [self.backendController beginSession];
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
@@ -317,7 +474,7 @@
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -332,19 +489,22 @@
         
         XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
         
-        [[mockBackendController expect] uploadOpenSessions:sessions completionHandler:OCMOCK_ANY];
+        [(MPBackendController_PRIVATE *)[mockBackendController expect] waitForKitsAndUploadWithCompletionHandler:OCMOCK_ANY];
         
         [self.backendController processOpenSessionsEndingCurrent:YES completionHandler:nil];
         
-        [mockBackendController verifyWithDelay:5.0];
+        [mockBackendController verify];
+        [expectation fulfill];
     });
+
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testBackgroundBlock {
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Begin background block test"];
     
-    dispatch_sync(messageQueue, ^{
+    dispatch_async(messageQueue, ^{
         [self.backendController beginSession];
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
@@ -353,7 +513,7 @@
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -439,13 +599,51 @@
 
 - (void)testCheckAttributeArrayValueInvalidLongAttribute {
     NSError *error = nil;
-    id mockValue = [OCMockObject mockForClass:[NSString class]];
-    OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH);
     NSArray *arrayValue = @[@"foo", @10.0];
+
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPILogLevel previousLogLevel = mParticle.logLevel;
+    void (^previousCustomLogger)(NSString *) = [mParticle.customLogger copy];
+    __block NSString *logMessage = nil;
+    mParticle.logLevel = MPILogLevelError;
+    mParticle.customLogger = ^(NSString *message) {
+        logMessage = message;
+    };
+
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+
+    mParticle.customLogger = previousCustomLogger;
+    mParticle.logLevel = previousLogLevel;
+
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kInvalidDataType, error.code);
+    XCTAssertEqualObjects(logMessage, @"mParticle -> Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: 10");
+}
+
+- (void)testCheckAttributeArrayValuesTooLongLog {
+    NSError *error = nil;
+    NSString *longValue = [@"a" stringByPaddingToLength:LIMIT_ATTR_VALUE_LENGTH withString:@"a" startingAtIndex:0];
+    NSArray *arrayValue = @[@"foo", longValue];
+
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPILogLevel previousLogLevel = mParticle.logLevel;
+    void (^previousCustomLogger)(NSString *) = [mParticle.customLogger copy];
+    __block NSString *logMessage = nil;
+    mParticle.logLevel = MPILogLevelError;
+    mParticle.customLogger = ^(NSString *message) {
+        logMessage = message;
+    };
+
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+
+    mParticle.customLogger = previousCustomLogger;
+    mParticle.logLevel = previousLogLevel;
+
+    XCTAssertFalse(success);
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+    XCTAssertEqualObjects(logMessage, @"mParticle -> Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
 }
 
 
@@ -516,13 +714,13 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     event.customAttributes = @{@"key":@"value"};
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
@@ -538,16 +736,16 @@
     XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
     
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
     
-    [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] deletedUserAttributes:nil];
-    [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]]];
+    [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]] deletedUserAttributes:nil];
+    [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceUtilities mpId]]];
     [uploadBuilder build:^(MPUpload *upload) {
-        [persistence saveUpload:upload];
+        [persistence saveUpload:upload optedOut:NO];
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
         NSArray *messageArray =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
@@ -564,6 +762,89 @@
         uploads = [persistence fetchUploads];
         XCTAssertNil(uploads, @"Uploads are not being deleted.");
     }];
+}
+
+- (void)testPrepareBatchesUsesInjectedPersistenceForEnrichment {
+    MPPersistenceStorePRIVATE *sharedStore = MParticle.sharedInstance.persistenceStore;
+    MPForwardRecordPRIVATE *sharedRecord = [[MPForwardRecordPRIVATE alloc]
+        initWithId:0 dataDictionary:@{@"source": @"shared"} mpid:@1];
+    [sharedStore saveForwardRecord:sharedRecord];
+    NSArray *sharedRecordsBefore = [sharedStore fetchForwardRecords];
+    NSUInteger sharedUploadCount = [sharedStore fetchUploads].count;
+
+    id injectedStore = OCMClassMock([MPPersistenceStorePRIVATE class]);
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc]
+        initWithDelegate:nil persistence:injectedStore];
+    MPSession *session = [[MPSession alloc] initWithStartTime:100 userId:@1];
+    NSNumber *sessionId = @(session.sessionId);
+    MPMessage *message = [[[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+        session:session messageInfo:@{@"n": @"injected-store-event"} context:self.messageBuilderContext] build];
+    NSMutableDictionary *groups = [@{@1: @{sessionId: @{@"0": @{@0: @[message]}}}} mutableCopy];
+    OCMStub([injectedStore fetchMessagesForUploading]).andReturn(groups);
+
+    NSDictionary *applicationInfo = @{@"an": @"injected-app"};
+    NSDictionary *deviceInfo = @{@"dmdl": @"injected-device"};
+    NSDictionary *storedInfo = @{MPApplicationKeys.kMPApplicationInformationKey: applicationInfo,
+                                 kMPDeviceInformationKey: deviceInfo};
+    OCMExpect([injectedStore appAndDeviceInfoForSessionId:sessionId]).andReturn(storedInfo);
+    MPForwardRecordPRIVATE *injectedRecord = [[MPForwardRecordPRIVATE alloc]
+        initWithId:1234 dataDictionary:@{@"source": @"injected"} mpid:@1];
+    OCMExpect([injectedStore fetchForwardRecords]).andReturn(@[injectedRecord]);
+    OCMExpect([injectedStore deleteForwardRecordsIds:@[@1234]]);
+    MPIntegrationAttributes *attributes = [[MPIntegrationAttributes alloc]
+        initWithIntegrationId:@77 attributes:@{@"source": @"injected"}];
+    OCMExpect([injectedStore fetchIntegrationAttributes]).andReturn(@[attributes]);
+    OCMExpect([injectedStore saveUploads:[OCMArg checkWithBlock:^BOOL(NSArray<MPUpload *> *uploads) {
+        XCTAssertEqual(uploads.count, 1);
+        NSDictionary *batch = [uploads.firstObject dictionaryRepresentation];
+        XCTAssertEqualObjects(batch[MPApplicationKeys.kMPApplicationInformationKey], applicationInfo);
+        XCTAssertEqualObjects(batch[kMPDeviceInformationKey], deviceInfo);
+        XCTAssertEqualObjects(batch[kMPForwardStatsRecord], @[injectedRecord.dataDictionary]);
+        XCTAssertEqualObjects(batch[MPIntegrationAttributesKey], [attributes dictionaryRepresentation]);
+        return YES;
+    }] deleteMessages:@[message] optedOut:NO]).andReturn(YES);
+    OCMExpect([injectedStore deleteAllSessionsExcept:[OCMArg any]]);
+
+    [backend prepareBatchesForUpload:[[MPUploadSettings alloc] init]];
+
+    OCMVerifyAll(injectedStore);
+    NSArray<MPForwardRecordPRIVATE *> *sharedRecordsAfter = [sharedStore fetchForwardRecords];
+    XCTAssertEqual(sharedRecordsAfter.count, sharedRecordsBefore.count);
+    XCTAssertEqualObjects(sharedRecordsAfter.firstObject.dataDictionary, sharedRecord.dataDictionary);
+    XCTAssertEqual([sharedStore fetchUploads].count, sharedUploadCount);
+}
+
+- (void)testUploadBuilderReadsBackendPersistenceAtBuildTime {
+    id originalStore = OCMProtocolMock(@protocol(MPBackendPersistence));
+    id replacementStore = OCMProtocolMock(@protocol(MPBackendPersistence));
+    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc]
+        initWithDelegate:nil persistence:originalStore];
+    MPMessage *message = [[[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+        session:nil messageInfo:@{@"n": @"replacement-store-event"} context:self.messageBuilderContext] build];
+    MPUploadBuilder *builder = [[MPUploadBuilder alloc] initWithMpid:@1 sessionId:@42 messages:@[message]
+        sessionTimeout:60 uploadInterval:30 dataPlanId:nil dataPlanVersion:nil
+        uploadSettings:[[MPUploadSettings alloc] init] context:[backend uploadBuilderContext]];
+
+    OCMReject([originalStore appAndDeviceInfoForSessionId:[OCMArg any]]);
+    OCMReject([originalStore fetchForwardRecords]);
+    OCMReject([originalStore fetchIntegrationAttributes]);
+    NSDictionary *applicationInfo = @{@"an": @"replacement-app"};
+    NSDictionary *storedInfo = @{MPApplicationKeys.kMPApplicationInformationKey: applicationInfo,
+                                 kMPDeviceInformationKey: @{@"dmdl": @"replacement-device"}};
+    OCMExpect([replacementStore appAndDeviceInfoForSessionId:@42]).andReturn(storedInfo);
+    OCMExpect([replacementStore fetchForwardRecords]).andReturn(nil);
+    OCMExpect([replacementStore fetchIntegrationAttributes]).andReturn(nil);
+    backend.persistence = replacementStore;
+
+    __block BOOL completed = NO;
+    [builder build:^(MPUpload *upload) {
+        completed = YES;
+        XCTAssertEqualObjects([upload dictionaryRepresentation][MPApplicationKeys.kMPApplicationInformationKey], applicationInfo);
+    }];
+
+    XCTAssertTrue(completed);
+    OCMVerifyAll(originalStore);
+    OCMVerifyAll(replacementStore);
 }
 
 - (void)testUploadWithDifferentUser {
@@ -584,13 +865,13 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     event.customAttributes = @{@"key":@"value"};
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
@@ -607,7 +888,7 @@
     }
     XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
     
-    [MPPersistenceController_PRIVATE setMpid:@8];
+    [MPPersistenceUtilities setMpid:@8];
     [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:@8];
     MParticleUser *newUser = [[MParticleUser alloc] init];
     newUser.userId = @8;
@@ -616,13 +897,13 @@
     XCTAssertNil([MParticle sharedInstance].identity.currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
     
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
     
     [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:mpid] deletedUserAttributes:nil];
     [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:mpid]];
     [uploadBuilder build:^(MPUpload *upload) {
-        [persistence saveUpload:upload];
+        [persistence saveUpload:upload optedOut:NO];
         NSDictionary *uploadDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
         XCTAssertEqualObjects(uploadDictionary[kMPDeviceInformationKey][kMPDeviceAdvertiserIdKey], @"bar-id");
     }];
@@ -636,13 +917,13 @@
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionClick];
     commerceEvent.customAttributes = @{@"key":@"value"};
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     
     [self.backendController logBaseEvent:commerceEvent
                        completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -660,9 +941,13 @@
 
 - (void)testLoggingCommerceEventToUpload {
     // Ensure upgrade date is set by simulating an app upgrade BEFORE session begins
-    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] initWithStateMachine:(id<MPApplicationStateMachineProtocol>)MParticle.sharedInstance.stateMachine
+                                                                               userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                                                environment:[MPStateMachine_PRIVATE environment]
+                                                                           deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+                                                                                   buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
     application.storedVersion = @"1.0.0"; // Set a different version to trigger upgrade detection
-    [MPApplication_PRIVATE updateLaunchCountsAndDates]; // This will set the upgrade date
+    [MPApplication_PRIVATE updateLaunchCountsAndDatesWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults]; // This will set the upgrade date
     
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
@@ -672,7 +957,7 @@
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionClick];
     commerceEvent.customAttributes = @{@"key":@"value"};
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     
     [self.backendController logBaseEvent:commerceEvent
                        completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
@@ -685,7 +970,7 @@
     dispatch_async(messageQueue, ^{
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -700,17 +985,17 @@
         }
         XCTAssertTrue(testCommerce, @"MPCommerceEvent messages are not being saved.");
         
-        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
         XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
         
         if (!uploadBuilder) {
             return;
         }
         
-        [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] deletedUserAttributes:nil];
-        [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]]];
+        [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]] deletedUserAttributes:nil];
+        [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceUtilities mpId]]];
         [uploadBuilder build:^(MPUpload *upload) {
-            [persistence saveUpload:upload];
+            [persistence saveUpload:upload optedOut:NO];
             
             NSArray *uploads = [persistence fetchUploads];
             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
@@ -724,7 +1009,7 @@
                 XCTAssert([uploadJSON[kMPApplicationKey] isKindOfClass:[NSString class]], @"Application key should be a NSString.");
                 XCTAssertEqualObjects(uploadJSON[kMPApplicationKey], @"unit_test_app_key", @"Application key should match expected value.");
                 
-                XCTAssert([uploadJSON[kMPApplicationInformationKey] isKindOfClass:[NSDictionary class]], @"Application Information should be a NSDictionary.");
+                XCTAssert([uploadJSON[MPApplicationKeys.kMPApplicationInformationKey] isKindOfClass:[NSDictionary class]], @"Application Information should be a NSDictionary.");
                 XCTAssert([uploadJSON[kMPTimestampKey] isKindOfClass:[NSNumber class]], @"Creation timestamp should be a NSNumber.");
                 XCTAssert([uploadJSON[kMPContextKey] isKindOfClass:[NSDictionary class]], @"Context should be a NSDictionary.");
                 XCTAssert([uploadJSON[kMPDeviceApplicationStampKey] isKindOfClass:[NSString class]], @"Device application stamp should be a NSString.");
@@ -741,21 +1026,21 @@
                 XCTAssert([uploadJSON[kMPUploadIntervalKey] isKindOfClass:[NSNumber class]], @"Upload interval should be a NSNumber.");
                 
                 // Verify application information structure
-                NSDictionary *applicationInfo = uploadJSON[kMPApplicationInformationKey];
-                XCTAssert([applicationInfo[kMPAppBuildNumberKey] integerValue] != 0, @"App build number should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppPackageNameKey] isKindOfClass:[NSString class]], @"App package name should be a NSString.");
-                XCTAssert([applicationInfo[kMPAppArchitectureKey] isKindOfClass:[NSString class]], @"Architecture should be a NSString.");
-                XCTAssert([applicationInfo[kMPApplicationVersionKey] isKindOfClass:[NSString class]], @"App version should be a NSString.");
-                XCTAssert([applicationInfo[kMPAppBuildUUIDKey] isKindOfClass:[NSString class]], @"Build UUID should be a NSString.");
-                XCTAssert([applicationInfo[kMPAppBuildSDKKey] integerValue] != 0, @"Build SDK should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppEnvironmentKey] isKindOfClass:[NSNumber class]], @"Environment should be a NSNumber.");
+                NSDictionary *applicationInfo = uploadJSON[MPApplicationKeys.kMPApplicationInformationKey];
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppBuildNumberKey] integerValue] != 0, @"App build number should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppPackageNameKey] isKindOfClass:[NSString class]], @"App package name should be a NSString.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppArchitectureKey] isKindOfClass:[NSString class]], @"Architecture should be a NSString.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPApplicationVersionKey] isKindOfClass:[NSString class]], @"App version should be a NSString.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppBuildUUIDKey] isKindOfClass:[NSString class]], @"Build UUID should be a NSString.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppBuildSDKKey] integerValue] != 0, @"Build SDK should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppEnvironmentKey] isKindOfClass:[NSNumber class]], @"Environment should be a NSNumber.");
                 XCTAssert([applicationInfo[kMPAppFirstSeenInstallationKey] isKindOfClass:[NSNumber class]], @"First install should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppInitialLaunchTimeKey] isKindOfClass:[NSNumber class]], @"Install creation timestamp should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppLastUseDateKey] isKindOfClass:[NSNumber class]], @"Last use date should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppPiratedKey] isKindOfClass:[NSNumber class]], @"Push integration result should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppSideloadKitsCountKey] isKindOfClass:[NSNumber class]], @"Sideloaded kits count should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppDeploymentTargetKey] integerValue] != 0, @"App DeploymentTarget should be a NSNumber.");
-                XCTAssert([applicationInfo[kMPAppUpgradeDateKey] isKindOfClass:[NSNumber class]], @"Upgrade date should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppInitialLaunchTimeKey] isKindOfClass:[NSNumber class]], @"Install creation timestamp should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppLastUseDateKey] isKindOfClass:[NSNumber class]], @"Last use date should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppPiratedKey] isKindOfClass:[NSNumber class]], @"Push integration result should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppSideloadKitsCountKey] isKindOfClass:[NSNumber class]], @"Sideloaded kits count should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppDeploymentTargetKey] integerValue] != 0, @"App DeploymentTarget should be a NSNumber.");
+                XCTAssert([applicationInfo[MPApplicationKeys.kMPAppUpgradeDateKey] isKindOfClass:[NSNumber class]], @"Upgrade date should be a NSNumber.");
                 
                 // Verify context structure
                 NSDictionary *context = uploadJSON[kMPContextKey];
@@ -839,13 +1124,13 @@
     MPBaseEvent *event = [[MPBaseEvent alloc] initWithEventType:MPEventTypeOther];
     event.customAttributes = @{@"key":@"value"};
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     
     [self.backendController logBaseEvent:event
                        completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -863,39 +1148,40 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Ramp upload test"];
     dispatch_async(messageQueue, ^{
-        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
         
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                                  session:session
-                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
         MPMessage *message = [messageBuilder build];
         
-        MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+        MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
         
         [persistence saveMessage:message];
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
         NSArray *persistedMessages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
-        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceUtilities mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions] context:self.uploadBuilderContext];
         XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
         
         if (!uploadBuilder) {
             return;
         }
         
-        [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] deletedUserAttributes:nil];
-        [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]]];
+        [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]] deletedUserAttributes:nil];
+        [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceUtilities mpId]]];
         [uploadBuilder build:^(MPUpload *upload) {
-            [persistence saveUpload:upload];
+            [persistence saveUpload:upload optedOut:NO];
             
             NSArray *uploads = [persistence fetchUploads];
             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
             
             MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-            [stateMachine configureRampPercentage:@100];
+            id<MPUserDefaultsConnectorProtocol> connector = (id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init];
+            [connector configureRampPercentage:@100];
             
             XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
             
@@ -917,15 +1203,15 @@
 // (same source_message_id, new batch_id); the atomic save+delete prevents it.
 - (void)testMessagesAreNotReBatchedIntoDuplicateUploadWhenDeleteFails {
     dispatch_sync(messageQueue, ^{
-        NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
-        MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+        NSNumber *mpid = [MPPersistenceUtilities mpId];
+        MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
 
         MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:mpid];
         [persistence saveSession:session];
         for (NSString *value in @[@"v1", @"v2"]) {
             MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                                      session:session
-                                                                                 messageInfo:@{@"MessageKey1":value}];
+                                                                                 messageInfo:@{@"MessageKey1":value} context:self.messageBuilderContext];
             [persistence saveMessage:[messageBuilder build]];
         }
 
@@ -968,8 +1254,8 @@
     [self.backendController handleApplicationDidBecomeActive:nil];
     
     dispatch_sync([MParticle messageQueue], ^{
-        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceStore fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1083,8 +1369,8 @@
     [self.backendController handleApplicationDidBecomeActive:nil];
     
     dispatch_sync([MParticle messageQueue], ^{
-        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceStore fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1136,8 +1422,8 @@
     [self.backendController handleApplicationDidBecomeActive:nil];
     
     dispatch_sync([MParticle messageQueue], ^{
-        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceStore fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1186,8 +1472,8 @@
     [self.backendController handleApplicationDidBecomeActive:nil];
     
     dispatch_sync([MParticle messageQueue], ^{
-        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceStore fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1215,7 +1501,7 @@
 
 - (void)testSetStringAttribute {
     [self.backendController setUserAttribute:@"foo attribute 1" value:@"foo value 1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     NSString *value = attributes[@"foo attribute 1"];
     XCTAssertEqualObjects(value, @"foo value 1");
 }
@@ -1223,14 +1509,14 @@
 - (void)testSetExistingStringAttribute {
     [self.backendController setUserAttribute:@"foo attribute 1" value:@"foo value 1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
     [self.backendController setUserAttribute:@"foo attribute 1" value:@"foo value 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     NSString *value = attributes[@"foo attribute 1"];
     XCTAssertEqualObjects(value, @"foo value 2");
 }
 
 - (void)testSetStringArrayAttribute {
     [self.backendController setUserAttribute:@"foo attribute 1" values:@[@"foo value 1", @"foo value 2"] timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     NSArray *array = attributes[@"foo attribute 1"];
     NSArray *result = @[@"foo value 1", @"foo value 2"];
     XCTAssertEqualObjects(array, result);
@@ -1238,7 +1524,7 @@
 
 - (void)testSetNumberAttribute {
     [self.backendController setUserAttribute:@"foo attribute 2" value:@12.34 timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     NSNumber *value = attributes[@"foo attribute 2"];
     XCTAssertEqualObjects(value, @12.34);
 }
@@ -1249,28 +1535,28 @@
         [longValue appendString:@"T"];
     }
     [self.backendController setUserAttribute:@"foo attribute 2" value:longValue timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     XCTAssertEqualObjects(attributes, @{});
 }
 
 - (void)testSetInvalidDateAttribute {
     NSDate *date = [NSDate date];
     [self.backendController setUserAttribute:@"foo attribute 2" value:date timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     XCTAssertEqualObjects(attributes, @{});
 }
 
 - (void)testSetInvalidNullAttribute {
     NSNull *nullObject = [NSNull null];
     [self.backendController setUserAttribute:@"foo attribute 2" value:nullObject timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     XCTAssertEqualObjects(attributes, @{});
 }
 
 - (void)testIncrementInvalidAttribute {
     [self.backendController setUserAttribute:@"foo attribute 2" value:@"foo value 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
     [self.backendController incrementUserAttribute:@"foo attribute 2" byValue:@1];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     NSString *value = attributes[@"foo attribute 2"];
     XCTAssertEqualObjects(value, @"foo value 2");
 }
@@ -1278,14 +1564,14 @@
 - (void)testRemoveNumberAttribute {
     [self.backendController setUserAttribute:@"foo attribute 2" value:@12.34 timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
     [self.backendController removeUserAttribute:@"foo attribute 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     XCTAssertEqualObjects(attributes, @{});
 }
 
 - (void)testRemoveStringAttribute {
     [self.backendController setUserAttribute:@"foo attribute 2" value:@"foo value 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
     [self.backendController removeUserAttribute:@"foo attribute 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     XCTAssertEqualObjects(attributes, @{});
 }
 
@@ -1297,7 +1583,7 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
-    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     XCTAssertEqual(attributes.count, 1);
     NSString *value = attributes[@"foo tag 1"];
     XCTAssertEqualObjects(value, [NSNull null]);
@@ -1308,7 +1594,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
     dispatch_async([MParticle messageQueue], ^{
-        NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+        NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
         XCTAssertEqual(attributes.count, 1);
         NSString *value = attributes[@"foo tag 1"];
         XCTAssertEqualObjects(value, [NSNull null]);
@@ -1354,7 +1640,7 @@
     
     [self.backendController setUserAttribute:@"foo attribute 3" value:@"foo value 3" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
     
-    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     XCTAssertEqualObjects(userAttributes, @{@"foo attribute 3":@"foo value 3"});
 }
 
@@ -1363,16 +1649,16 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     [persistence saveSession:self.backendController.session];
     
     [self.backendController setUserAttribute:@"TardisModel" value:@"Police Call Box" timestamp:[NSDate date] completionHandler:nil];
     
-    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
     XCTAssertEqualObjects(userAttributes[@"TardisModel"], @"Police Call Box");
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1392,7 +1678,7 @@
     [persistence deleteSession:self.backendController.session];
     
     messagesDictionary = [persistence fetchMessagesForUploading];
-    sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1402,7 +1688,7 @@
     [self.backendController removeUserAttribute:@"TardisModel" timestamp:[NSDate date] completionHandler:nil];
     
     messagesDictionary = [persistence fetchMessagesForUploading];
-    sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1421,11 +1707,11 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     [persistence saveSession:self.backendController.session];
     
     NSString *userAttributeKey = @"Number of time travels";
-    NSNumber *userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]][userAttributeKey];
+    NSNumber *userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]][userAttributeKey];
     XCTAssertNil(userAttributeValue);
     
     userAttributeValue = [self.backendController incrementUserAttribute:userAttributeKey byValue:@1];
@@ -1433,7 +1719,7 @@
     XCTAssertEqualObjects(userAttributeValue, @1);
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1454,7 +1740,7 @@
     [persistence deleteSession:self.backendController.session];
     
     messagesDictionary = [persistence fetchMessagesForUploading];
-    sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1466,7 +1752,7 @@
     XCTAssertEqualObjects(userAttributeValue, @3);
     
     messagesDictionary = [persistence fetchMessagesForUploading];
-    sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1487,20 +1773,20 @@
     self.session = self.backendController.session;
     XCTestExpectation *expectation = [self expectationWithDescription:@"User identity changed"];
     __weak MPBackendControllerTests *weakSelf = self;
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     [persistence saveSession:weakSelf.session];
     
     [weakSelf.backendController setUserIdentity:@"The Most Interesting Man in the World" identityType:MPUserIdentityCustomerId timestamp:[NSDate date] completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
     }];
     
     __block NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", @"n", @(MPUserIdentityCustomerId)];
-    __block NSDictionary *userIdentity = [[[self.backendController userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]] filteredArrayUsingPredicate:predicate] lastObject];
+    __block NSDictionary *userIdentity = [[[self.backendController userIdentitiesForUserId:[MPPersistenceUtilities mpId]] filteredArrayUsingPredicate:predicate] lastObject];
     XCTAssertNotNil(userIdentity);
     XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
     XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
     
     __block NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    __block NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    __block NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     __block NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     __block NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     __block NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1526,7 +1812,7 @@
         self.session = self.backendController.session;
         
         messagesDictionary = [persistence fetchMessagesForUploading];
-        sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1535,11 +1821,11 @@
     });
     
     [weakSelf.backendController setUserIdentity:nil identityType:MPUserIdentityCustomerId timestamp:[NSDate date] completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-        userIdentity = [[[weakSelf.backendController userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]] filteredArrayUsingPredicate:predicate] lastObject];
+        userIdentity = [[[weakSelf.backendController userIdentitiesForUserId:[MPPersistenceUtilities mpId]] filteredArrayUsingPredicate:predicate] lastObject];
         XCTAssertNil(userIdentity);
         
         messagesDictionary = [persistence fetchMessagesForUploading];
-        sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
         dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
         messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1566,19 +1852,19 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Increment user attribute"];
     dispatch_sync(messageQueue, ^{
         NSString *userAttributeKey = @"Number of time travels";
-        NSNumber *userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]][userAttributeKey];
+        NSNumber *userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]][userAttributeKey];
         XCTAssertNil(userAttributeValue);
         
         userAttributeValue = [self.backendController incrementUserAttribute:userAttributeKey byValue:@1];
         XCTAssertNotNil(userAttributeValue);
         XCTAssertEqualObjects(userAttributeValue, @1);
         
-        userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]][userAttributeKey];
+        userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]][userAttributeKey];
         XCTAssertNotNil(userAttributeValue);
         XCTAssertEqualObjects(userAttributeValue, @1);
         
         [self.backendController removeUserAttribute:userAttributeKey timestamp:[NSDate date] completionHandler:nil];
-        userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]][userAttributeKey];
+        userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]][userAttributeKey];
         XCTAssertNil(userAttributeValue);
         [expectation fulfill];
     });
@@ -1598,35 +1884,35 @@
 }
 
 - (void)testMessageWithOptOut {
-    [MPPersistenceController_PRIVATE setMpid:@2];
+    [MPPersistenceUtilities setMpid:@2];
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     [MParticle sharedInstance].stateMachine.optOut = YES;
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSArray<MPMessage *> *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
     
     XCTAssertEqual(messages.count, 0, @"No Messages should be saved.");
 }
 
 - (void)testMessageWithOptOutMessage {
-    [MPPersistenceController_PRIVATE setMpid:@2];
+    [MPPersistenceUtilities setMpid:@2];
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     [MParticle sharedInstance].stateMachine.optOut = YES;
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")} context:self.messageBuilderContext];
     
     MPMessage *message = [messageBuilder build];
     [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
@@ -1634,20 +1920,46 @@
     XCTAssertTrue(message.messageId > 0, @"Message id not greater than zero: %lld", message.messageId);
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSArray<MPMessage *> *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
     
     XCTAssertEqual(messages.count, 1, @"The Opt Out Message wasn't saved.");
 }
 
+- (void)testPrepareBatchesSuppressesMessagesQueuedBeforeOptOut {
+    [MPPersistenceUtilities setMpid:@2];
+    [MParticle sharedInstance].stateMachine.optOut = NO;
+
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]
+                                                      userId:[MPPersistenceUtilities mpId]];
+    MPMessageBuilder *messageBuilder =
+        [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                             session:session
+                                         messageInfo:@{@"MessageKey1": @"MessageValue1"}
+                                             context:self.messageBuilderContext];
+    MPMessage *message = [messageBuilder build];
+    [self.backendController saveMessage:message updateSession:NO];
+    XCTAssertGreaterThan(message.messageId, 0);
+
+    [MParticle sharedInstance].stateMachine.optOut = YES;
+    MPUploadSettings *uploadSettings =
+        [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine
+                                                 networkOptions:[MParticle sharedInstance].networkOptions];
+    [self.backendController prepareBatchesForUpload:uploadSettings];
+
+    XCTAssertEqual([persistence fetchUploads].count, 0);
+    XCTAssertEqual([persistence fetchMessagesForUploading].count, 0);
+}
+
 - (void)testBatchAndMessageLimitsMessagesPerBatch {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
     for (int i=0; i<10; i++) {
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                                  session:session
-                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
         MPMessage *message = [messageBuilder build];
         [unlimitedMessages addObject:message];
     }
@@ -1661,13 +1973,13 @@
 }
 
 - (void)testBatchAndMessageLimitsMultipleMessagesPerBatch {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
     for (int i=0; i<10; i++) {
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                                  session:session
-                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
         MPMessage *message = [messageBuilder build];
         [unlimitedMessages addObject:message];
     }
@@ -1681,10 +1993,10 @@
 }
 
 - (void)testBatchAndMessageLimitsBytesPerBatch {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
@@ -1706,14 +2018,14 @@
 }
 
 - (void)testBatchAndMessageLimitsBytesPerMessage {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     NSString *longString = @"a";
     while (longString.length < 1000) {
         longString = [NSString stringWithFormat:@"%@%@", longString, longString];
     }
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":longString}];
+                                                                         messageInfo:@{@"MessageKey1":longString} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
     for (int i=0; i<10; i++) {
@@ -1737,14 +2049,14 @@
 }
 
 - (MPMessage *)messageWithType:(MPMessageType)type andLength:(NSInteger)length {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     NSString *longString = @"a";
     while (longString.length < length) {
         longString = [NSString stringWithFormat:@"%@%@", longString, longString];
     }
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:type
                                                                              session:session
-                                                                         messageInfo:@{@"MessageKey1":longString}];
+                                                                         messageInfo:@{@"MessageKey1":longString} context:self.messageBuilderContext];
     MPMessage *message = [messageBuilder build];
     NSInteger bytesToTruncate = message.messageData.length - length;
     NSInteger bytesLongString = longString.length - bytesToTruncate;
@@ -1865,20 +2177,21 @@
 }
 
 - (void)testNoUploadOrRetryIfConfigFails {
-    id mockBackendController = OCMPartialMock(self.backendController);
-    [[mockBackendController reject] uploadBatchesWithCompletionHandler:[OCMArg any]];
-    
-    [OCMStub([mockBackendController requestConfig:[OCMArg any]]) andDo:^(NSInvocation *invocation) {
-        void (^handler)(BOOL uploadBatch);
-        [invocation getArgument:&handler atIndex:2];
+    id network = OCMPartialMock(self.backendController.networkCommunication);
+    [[network reject] upload:[OCMArg any] completionHandler:[OCMArg any]];
+    [OCMStub([network requestConfig:nil withCompletionHandler:[OCMArg any]]) andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(BOOL uploadBatch);
+        [invocation getArgument:&handler atIndex:3];
         handler(NO);
     }];
-    
-    [mockBackendController checkForKitsAndUploadWithCompletionHandler:^(BOOL didShortCircuit) {
+    __block BOOL completed = NO;
+    [self.backendController checkForKitsAndUploadWithCompletionHandler:^(BOOL didShortCircuit) {
         XCTAssertFalse(didShortCircuit);
+        completed = YES;
     }];
-    
-    [mockBackendController verifyWithDelay:5.0];
+    XCTAssertTrue(completed);
+    [network verifyWithDelay:5.0];
+    [network stopMocking];
 }
 
 #if TARGET_OS_IOS == 1
@@ -1922,9 +2235,8 @@
                        plCrashReport:plCrashReport
                    completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
-    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSDictionary *messagesDictionary = [self.backendController.persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -1963,9 +2275,9 @@
                        plCrashReport:plCrashReport
                    completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -2004,9 +2316,9 @@
                        plCrashReport:plCrashReport
                    completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -2035,7 +2347,7 @@
     });
     self.session = self.backendController.session;
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
@@ -2046,7 +2358,7 @@
                    completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -2075,12 +2387,12 @@
     });
     self.session = self.backendController.session;
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"a";
-    while (plCrashReport.length < [MPPersistenceController_PRIVATE maxBytesPerEvent:kMPMessageTypeStringCrashReport]) {
+    while (plCrashReport.length < [MPPersistenceUtilities maxBytesPerEvent:kMPMessageTypeStringCrashReport]) {
         plCrashReport = [NSString stringWithFormat:@"%@%@", plCrashReport, plCrashReport];
     }
     
@@ -2090,7 +2402,7 @@
                    completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -2119,7 +2431,7 @@
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"plcrash report test string";
-    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [self freshStateMachine];
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(@7)] crashMaxPLReportLength];
@@ -2137,9 +2449,9 @@
                        plCrashReport:plCrashReport
                    completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -2171,7 +2483,7 @@
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"plcrash report test string";
-    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [self freshStateMachine];
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[(id)mockStateMachine stub] andReturn:nil] crashMaxPLReportLength];
@@ -2188,9 +2500,9 @@
                        plCrashReport:plCrashReport
                    completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
-    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceUtilities mpId]];
     NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
     NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
     NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
@@ -2293,15 +2605,15 @@
     options.persistenceMaxAgeSeconds = @(maxAge); // 24 hours
     instance.options = options;
     
-    MPBackendController_PRIVATE *backendController = [[MPBackendController_PRIVATE alloc] init];
-    MPPersistenceController_PRIVATE *persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
-    id mockPersistenceController = OCMPartialMock(persistenceController);
+    id mockPersistenceController = OCMProtocolMock(@protocol(MPBackendPersistence));
+    MPBackendController_PRIVATE *backendController =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:nil
+                                                 persistence:mockPersistenceController];
     
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
     [[mockPersistenceController expect] deleteRecordsOlderThan:(currentTime - maxAge)];
     
     instance.backendController = backendController;
-    instance.persistenceController = mockPersistenceController;
     
     [instance.backendController cleanUp:currentTime];
     

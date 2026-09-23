@@ -1,0 +1,96 @@
+# PR Gate
+
+The standing validation requirements for Objective-C-to-Swift conversion PRs
+against `main`. The integration branch has merged, and these requirements
+continue to apply as implementation logic moves to Swift.
+
+## The five items
+
+1. **No unreviewed Objective-C contract diff.** Run:
+
+   ```bash
+   bash Tools/abi-guard.sh check
+   ```
+
+   The guard snapshots the exported ObjC header surface derived from
+   `Include/*.h` (class names, selectors, nullability, enum cases) and diffs
+   the current tree against the committed baseline. It is a review alarm, not
+   the authority on whether every exported declaration is a supported contract.
+
+   An ordinary migration leaves the baseline unchanged and this command must
+   exit 0. A migration may update the baseline only when it intentionally
+   removes an accidentally exported internal declaration. That PR must:
+   - audit customer, kit, wrapper-SDK, and runtime/persistence usage;
+   - show that the pre-update diff contains only the audited internal symbols;
+   - name those symbols and summarize the compatibility evidence in the PR;
+   - regenerate the baseline from the final tree; and
+   - rerun this command and get exit 0.
+
+   Do not refresh the baseline to conceal removal of a supported customer, kit,
+   wrapper-SDK, or persisted/runtime-identity contract. Supported API additions
+   require normal API review and an intentional baseline update outside a
+   behavior-preserving migration.
+
+2. **`pod lib lint` clean on all 3 podspecs.** Run:
+
+   ```bash
+   pod lib lint mParticle-Apple-SDK.podspec --include-podspecs="{mParticle-Apple-SDK-Swift.podspec,mParticle-Apple-SDK-ObjC.podspec,mParticle-Apple-SDK.podspec}"
+   ```
+
+3. **Build green on iOS + tvOS.** Both platform targets must build without
+   errors or new warnings introduced by the change.
+
+4. **`trunk check` clean.** The primary lint/format enforcement tool must pass
+   with no outstanding issues.
+
+5. **ObjC + Swift unit test suites green.** Run both Xcode schemes:
+   `mParticle-Apple-SDK` for the SDK contract tests under `UnitTests/`, and
+   `mParticle-Apple-SDK-Swift` for the internal Swift tests under
+   `mParticle-Apple-SDK-Swift/Test/`. Each scheme has its own test target; run
+   both on iOS and tvOS. Use the project and commands in
+   [CONTRIBUTING.md](../../CONTRIBUTING.md#testing). Any conversion PR that
+   extracts logic to Swift must add a Swift mirror test for that extracted
+   logic (see `CONVERSION-RECIPE.md`'s dual-test convention).
+
+## What "done" means
+
+The migration does not end at zero Objective-C. The public customer API, the
+kit and wrapper-SDK contract surface, runtime-identity-pinned classes, and the
+boundary glue in `CONVERSION-RECIPE.md`'s classifications 1, 3, and 4 stay
+Objective-C by design — that is the intended end state, not unfinished work.
+
+The in-scope conversion goal is complete when every **in-scope** Objective-C
+implementation is gone: the classification 2 wrappers and the internal types
+behind them. Merging an integration branch does not satisfy that goal. The
+retained boundary is enumerated in `Tools/swift-migration-retained-objc.txt`.
+
+The progress report on each PR therefore carries two goal rows per area:
+
+- **Short term — in scope** excludes the retained boundary, so 100% is
+  reachable and marks completion of the in-scope conversions.
+- **Long term — all Objective-C** keeps the full denominator. 100% there
+  requires taking the public API itself to Swift — a breaking change reserved
+  for a future major release, tracked rather than redefined away.
+
+Two consequences for a conversion PR:
+
+- Classifying a declaration as a retained contract means adding its
+  implementation to the manifest, with the audit evidence
+  `CONVERSION-RECIPE.md` requires recorded in the PR. Item 1's baseline-update
+  policy governs the other direction: an accidental export that gets removed is
+  **not** retained.
+- Deleting or renaming a retained implementation means updating the manifest in
+  the same PR. The report fails on a stale entry.
+
+Retaining a wrapper does not freeze it. A contract wrapper keeps its
+`@interface`, class name, selectors, and nullability while its logic moves to
+Swift, so the report tracks its remaining Objective-C SLOC in a separate
+retained column rather than in the percentage.
+
+## Scope note
+
+This gate applies to every conversion PR against `main`. The ABI check
+distinguishes supported contracts from accidentally exported internal types
+through item 1's review process. It remains a local check; adding it to CI is
+a separate change. Run all five items before opening or updating a conversion
+PR.
