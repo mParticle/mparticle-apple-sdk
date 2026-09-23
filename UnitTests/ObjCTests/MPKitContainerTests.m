@@ -2992,6 +2992,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     [kitContainer configureKits:nil];
     [kitContainer configureKits:@[usable]];
     XCTAssertNotNil(kitContainer.kitConfigurations[@42], @"Precondition: kit 42 is configured");
+    XCTAssertEqual([kitContainer activeKitsRegistry].count, 1, @"Precondition: kit 42 is running");
 
     // A supported, numerically identified entry whose contents are not JSON-representable. The
     // parser rejects it by returning nil rather than raising, so the id check that guards
@@ -3004,6 +3005,26 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 
     XCTAssertNotNil(kitContainer.kitConfigurations[@42],
                     @"An entry that cannot be parsed must not evict the configuration it would have replaced");
+    // Keeping the stored configuration is only half of it. The server did name this kit, so it is
+    // not one of the absent kits that the end of configureKits tears down.
+    XCTAssertEqual([kitContainer activeKitsRegistry].count, 1,
+                   @"An entry that cannot be parsed must not deactivate the kit it names");
+    XCTAssertEqualObjects([kitContainer activeKitsRegistry].firstObject.code, @42);
+}
+
+- (void)testConfigureKitsToleratesAWrongTypedIdWhileAKitIsRunning {
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[@{@"id": @42, @"as": @{@"secretKey": @"MySecretKey"}}]];
+    XCTAssertEqual([kitContainer activeKitsRegistry].count, 1, @"Precondition: kit 42 is running");
+
+    // Every entry is compared against the running kits so they are not torn down, and a malformed
+    // entry can carry an id of any type. The comparison is only reached when something is running,
+    // which is why this needs a configured kit first.
+    NSArray *stringIdentified = @[@{@"id": @"42", @"as": @{}}];
+    XCTAssertNoThrow([kitContainer configureKits:stringIdentified]);
+
+    // The entry names no numeric kit, so kit 42 is absent from these instructions and stops.
+    XCTAssertEqual([kitContainer activeKitsRegistry].count, 0);
 }
 
 - (void)testLaunchConfigurationToleratesANonObjectEntry {

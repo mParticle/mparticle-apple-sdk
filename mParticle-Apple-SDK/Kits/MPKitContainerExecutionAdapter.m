@@ -1599,6 +1599,23 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         
         NSNumber *integrationId = kitConfigurationDictionary[@"id"];
         
+        // deactivateKits holds the running kits the server did not mention, and everything left in
+        // it is torn down after the loop. This entry mentions integrationId, so it is spared here
+        // rather than at the end of the body: whether its replacement configuration can be parsed
+        // is a separate question, and skipping an unusable entry must not silently stop a kit the
+        // server still wants running. isEqual: rather than isEqualToNumber: because a malformed
+        // entry can carry an id of any type, and only NSNumber answers the latter: raising here
+        // unwinds past the signal below and leaves kitsSemaphore held, so every later kit call
+        // blocks forever rather than failing.
+        if (deactivateKits.count != 0) {
+            for (NSUInteger i = 0; i < deactivateKits.count; i++) {
+                if ([deactivateKits[i] isEqual:integrationId]) {
+                    [deactivateKits removeObjectAtIndex:i];
+                    break;
+                }
+            }
+        }
+
         predicate = [NSPredicate predicateWithFormat:@"SELF == %@", integrationId];
         BOOL isKitSupported = [supportedKits filteredArrayUsingPredicate:predicate].count > 0;
         
@@ -1713,15 +1730,6 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             }
         } else {
             MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", integrationId);
-        }
-        
-        if (deactivateKits.count != 0) {
-            for (NSUInteger i = 0; i < deactivateKits.count; i++) {
-                if ([deactivateKits[i] isEqualToNumber:integrationId]) {
-                    [deactivateKits removeObjectAtIndex:i];
-                    break;
-                }
-            }
         }
     }
     
