@@ -34,6 +34,8 @@ Add the **`RoktSDKPlus`** product to your app target, then import `RoktSDKPlus` 
 
 If you were integrating **without** this umbrella, the core SDK would be added from `https://github.com/mParticle/mparticle-apple-sdk` (product **`mParticle-Apple-SDK`**) and the kit from `https://github.com/mparticle-integrations/mp-apple-integration-rokt` (product **`mParticle-Rokt`**), per the [mParticle README](https://github.com/mParticle/mparticle-apple-sdk/blob/main/README.md) and [Rokt kit README](https://github.com/mparticle-integrations/mp-apple-integration-rokt/blob/main/README.md).
 
+> **Resolving via a package registry instead of GitHub?** SwiftPM supports resolving dependencies through a package registry via client-side [dependency mirroring](https://github.com/swiftlang/swift-package-manager/blob/main/Documentation/PackageRegistry/Registry.md). If Xcode doesn't seem to pick up your mirror/registry config, note that it reads this config once at project-open time and caches it for the session, so a restart is often required after adding or changing it.
+
 ## CocoaPods
 
 In your `Podfile`:
