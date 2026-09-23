@@ -2987,6 +2987,35 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     XCTAssertFalse(kitContainer.kitsInitialized);
 }
 
+- (void)testConfigureKitsKeepsAnExistingConfigurationWhenAnEntryCannotBeParsed {
+    NSDictionary *usable = @{@"id": @42, @"as": @{@"secretKey": @"MySecretKey"}};
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[usable]];
+    XCTAssertNotNil(kitContainer.kitConfigurations[@42], @"Precondition: kit 42 is configured");
+
+    // A supported, numerically identified entry whose contents are not JSON-representable. The
+    // parser rejects it by returning nil rather than raising, so the id check that guards
+    // initializeKits has to guard this loop too - storing nil here removes the live configuration.
+    NSDictionary *unparseable = @{@"id": @42, @"when": [NSDate date]};
+    XCTAssertNil([[MPKitConfiguration alloc] initWithDictionary:unparseable],
+                 @"Precondition: this entry parses to nil without raising");
+
+    [kitContainer configureKits:@[unparseable]];
+
+    XCTAssertNotNil(kitContainer.kitConfigurations[@42],
+                    @"An entry that cannot be parsed must not evict the configuration it would have replaced");
+}
+
+- (void)testLaunchConfigurationToleratesANonObjectEntry {
+    // configureKits publishes the array to originalConfig before it skips anything, and
+    // launchConfigurationForKitCode: subscripts every element of that array by key.
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[@"not-an-object", @{@"id": @42, @"as": @{@"secretKey": @"MySecretKey"}}]];
+
+    XCTAssertNoThrow([kitContainer launchConfigurationForKitCode:@42]);
+    XCTAssertEqualObjects([kitContainer launchConfigurationForKitCode:@42][@"id"], @42);
+}
+
 - (void)testInitializeKitsSkipsUnusableCachedConfigurations {
     // The cached eks array is replayed on the message queue at every start, before any refresh can
     // replace it, so an entry the parser rejects has to be skipped. Keying kitConfigurations by a

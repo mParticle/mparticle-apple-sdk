@@ -1560,7 +1560,20 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     
-    self.originalConfig = kitConfigurations;
+    // Reached from the server response, from replayed originalConfig and from a deferred
+    // configuration, so the element type is not guaranteed by the caller. originalConfig is
+    // declared as an array of dictionaries and every consumer subscripts its elements by key, so
+    // anything else is dropped once here rather than guarded at each read.
+    NSArray<NSDictionary *> *usableConfigurations =
+        [kitConfigurations filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id element, NSDictionary *bindings) {
+            return [element isKindOfClass:[NSDictionary class]];
+        }]];
+    if (usableConfigurations.count != kitConfigurations.count) {
+        MPILogError(@"configureKits - skipping %lu kit configuration(s) that are not objects",
+                    (unsigned long)(kitConfigurations.count - usableConfigurations.count));
+    }
+
+    self.originalConfig = usableConfigurations;
     
     NSPredicate *predicate;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
@@ -1581,16 +1594,9 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     }
     
     // Configure kits according to server instructions
-    for (id kitConfigurationDictionary in kitConfigurations) {
+    for (NSDictionary *kitConfigurationDictionary in usableConfigurations) {
         MPKitConfiguration *kitConfiguration = nil;
         
-        // Reached from the server response, from replayed originalConfig and from a deferred
-        // configuration, so the element type is not guaranteed by the caller.
-        if (![kitConfigurationDictionary isKindOfClass:[NSDictionary class]]) {
-            MPILogError(@"configureKits - skipping a kit configuration that is not an object");
-            continue;
-        }
-
         NSNumber *integrationId = kitConfigurationDictionary[@"id"];
         
         predicate = [NSPredicate predicateWithFormat:@"SELF == %@", integrationId];
@@ -1606,6 +1612,16 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                 MPILogError(@"configureKits - could not parse the configuration for kit %@: %@", integrationId, exception.reason);
                 continue;
             }
+
+            // The parser rejects an entry by returning nil rather than raising, so this needs the
+            // same guard as initializeKits. Storing nil under a live key removes the configuration
+            // this entry was meant to replace, and everything below would then configure the kit
+            // from nothing.
+            if (kitConfiguration == nil) {
+                MPILogError(@"configureKits - skipping an unusable configuration for kit %@", integrationId);
+                continue;
+            }
+
             self.kitConfigurations[integrationId] = kitConfiguration;
             
             MPILogDebug(@"configureKits - configuring kit %@ (existing instance: %@)", integrationId, kitInstance ? @"YES" : @"NO");
