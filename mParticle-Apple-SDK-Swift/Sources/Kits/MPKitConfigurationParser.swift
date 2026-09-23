@@ -51,6 +51,36 @@ public final class MPKitConfigurationParser: NSObject {
         )
     }
 
+    /// Drops the `eks` entries `MPKitConfiguration` would refuse, so an entry that can never
+    /// configure a kit is not written to the cache and replayed at every launch. The two
+    /// conditions here are exactly what makes that parser return nil: an entry has to be an
+    /// object, and its integration id has to be a number, because the id keys the kit
+    /// configuration dictionary and is compared with `isEqualToNumber:`.
+    ///
+    /// Returns the configuration unchanged when every entry is usable, so a well-formed response
+    /// is stored byte for byte as it arrived.
+    @objc(configurationDroppingUnusableKitsFrom:)
+    public static func configurationDroppingUnusableKits(
+        from configuration: [AnyHashable: Any]
+    ) -> [AnyHashable: Any] {
+        guard let kits = configuration[RemoteConfig.kMPRemoteConfigKitsKey] as? [Any] else {
+            return configuration
+        }
+
+        let usableKits = kits.filter { kit in
+            guard let kit = kit as? [AnyHashable: Any] else { return false }
+            return kit["id"] is NSNumber
+        }
+
+        guard usableKits.count != kits.count else {
+            return configuration
+        }
+
+        var sanitized = configuration
+        sanitized[RemoteConfig.kMPRemoteConfigKitsKey] = usableKits
+        return sanitized
+    }
+
     @objc(sanitizedFiltersFrom:)
     public static func sanitizedFilters(from filters: Any?) -> NSDictionary? {
         guard let filters = filters as? [AnyHashable: Any] else {
