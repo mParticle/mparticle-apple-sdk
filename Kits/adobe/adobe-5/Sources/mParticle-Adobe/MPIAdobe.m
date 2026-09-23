@@ -178,6 +178,13 @@ id<SessionProtocol> _session;
             return callbackWithCode(MPIAdobeErrorCodeClientSerializationError, @"Deserializing the response failed", nil);
         }
         
+        // This block runs on a queue NSURLSession owns, where an Objective-C exception is fatal to
+        // the host app, so the response shape is checked before it is messaged. A top-level JSON
+        // array deserializes successfully and then raises on objectForKeyedSubscript:.
+        if (![dictionary isKindOfClass:[NSDictionary class]]) {
+            return callbackWithCode(MPIAdobeErrorCodeClientSerializationError, @"Deserializing the response failed", nil);
+        }
+
         NSDictionary *errorDictionary = dictionary[errorResponseKey];
         if (errorDictionary) {
             if ([errorDictionary isKindOfClass:[NSDictionary class]]) {
