@@ -469,6 +469,139 @@
     [attribution stopMocking];
 }
 
+// Apple answers 404 while a freshly minted token becomes resolvable, and documents a re-poll. The
+// body is a well-formed JSON object on purpose: the later "not an object" guard cannot catch this
+// one, so only the status check keeps an error body from being mapped as attribution data.
+- (void)testAttributionRetriesOnA404CarryingAJSONObject {
+    [self assertAttributionRetriesForStatusCode:404
+                                           body:[@"{\"error\":\"not found\"}" dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+- (void)testAttributionRetriesWhenTheBodyIsEmpty {
+    [self assertAttributionRetriesForStatusCode:200 body:nil];
+}
+
+// A 200 whose body is not a JSON object. The old code subscripted it for nine keys, so an array
+// root raised on objectForKeyedSubscript: and a non-object parse result reached the literal as nil.
+- (void)testAttributionRetriesWhenTheBodyIsNotAJSONObject {
+    [self assertAttributionRetriesForStatusCode:200 body:[@"[1,2]" dataUsingEncoding:NSUTF8StringEncoding]];
+}
+
+- (void)assertAttributionRetriesForStatusCode:(NSInteger)statusCode body:(NSData *)body {
+    id attribution = OCMClassMock([AAAttribution class]);
+    [[[attribution stub] andReturn:@"attribution-token"] attributionTokenWithError:[OCMArg anyObjectRef]];
+
+    __block void (^capturedHandler)(NSData *, NSURLResponse *, NSError *) = nil;
+    id dataTask = OCMClassMock([NSURLSessionDataTask class]);
+    id session = OCMClassMock([NSURLSession class]);
+    [[[[session stub] andReturn:dataTask] andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(NSData *, NSURLResponse *, NSError *) = nil;
+        [invocation getArgument:&handler atIndex:3];
+        capturedHandler = [handler copy];
+    }] dataTaskWithRequest:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    id controllerMock = OCMPartialMock(controller);
+    [[[controllerMock stub] andReturn:session] attributionURLSession];
+
+    XCTestExpectation *built = [self expectationWithDescription:@"data task built"];
+    [[[dataTask stub] andDo:^(NSInvocation *invocation) {
+        [built fulfill];
+    }] resume];
+
+    XCTestExpectation *completed = [self expectationWithDescription:@"completion must not run"];
+    completed.inverted = YES;
+    [controller requestAttributionDetailsWithBlock:^{
+        [completed fulfill];
+    } requestsCompleted:0];
+
+    [self waitForExpectations:@[built] timeout:DEFAULT_TIMEOUT];
+    XCTAssertNotNil(capturedHandler);
+
+    NSHTTPURLResponse *response = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]
+                                                              statusCode:statusCode
+                                                             HTTPVersion:@"HTTP/1.1"
+                                                            headerFields:nil];
+    XCTAssertNoThrow(capturedHandler(body, response, nil));
+
+    // Shorter than SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY, so this proves a retry was scheduled
+    // rather than the flow being finished on the spot.
+    [self waitForExpectations:@[completed] timeout:1.0];
+
+    [controllerMock stopMocking];
+    [session stopMocking];
+    [dataTask stopMocking];
+    [attribution stopMocking];
+}
+
+// The finding's stated verification for the retry criterion: a 404 followed by a 200 must retry,
+// then record attribution, and run the completion exactly once.
+- (void)testAttributionRecordsTheResultAfterRetryingA404 {
+    id attribution = OCMClassMock([AAAttribution class]);
+    [[[attribution stub] andReturn:@"attribution-token"] attributionTokenWithError:[OCMArg anyObjectRef]];
+
+    __block void (^capturedHandler)(NSData *, NSURLResponse *, NSError *) = nil;
+    id dataTask = OCMClassMock([NSURLSessionDataTask class]);
+    id session = OCMClassMock([NSURLSession class]);
+    [[[[session stub] andReturn:dataTask] andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(NSData *, NSURLResponse *, NSError *) = nil;
+        [invocation getArgument:&handler atIndex:3];
+        capturedHandler = [handler copy];
+    }] dataTaskWithRequest:OCMOCK_ANY completionHandler:OCMOCK_ANY];
+
+    MPBackendController_PRIVATE *controller =
+        [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    id controllerMock = OCMPartialMock(controller);
+    [[[controllerMock stub] andReturn:session] attributionURLSession];
+
+    // The retry builds a second task from the same stubbed session, replacing capturedHandler.
+    XCTestExpectation *firstAttempt = [self expectationWithDescription:@"first data task built"];
+    XCTestExpectation *retryAttempt = [self expectationWithDescription:@"retry data task built"];
+    __block NSUInteger resumeCount = 0;
+    [[[dataTask stub] andDo:^(NSInvocation *invocation) {
+        resumeCount += 1;
+        [(resumeCount == 1 ? firstAttempt : retryAttempt) fulfill];
+    }] resume];
+
+    [MParticle sharedInstance].stateMachine.searchAdsInfo = @{};
+
+    XCTestExpectation *completed = [self expectationWithDescription:@"attribution completion ran"];
+    __block NSUInteger completionCount = 0;
+    [controller requestAttributionDetailsWithBlock:^{
+        completionCount += 1;
+        [completed fulfill];
+    } requestsCompleted:0];
+
+    [self waitForExpectations:@[firstAttempt] timeout:DEFAULT_TIMEOUT];
+    NSHTTPURLResponse *notFound = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]
+                                                              statusCode:404
+                                                             HTTPVersion:@"HTTP/1.1"
+                                                            headerFields:nil];
+    // A parseable body, so only the status check can send this down the retry path.
+    capturedHandler([@"{\"error\":\"not found\"}" dataUsingEncoding:NSUTF8StringEncoding], notFound, nil);
+
+    [self waitForExpectations:@[retryAttempt] timeout:DEFAULT_TIMEOUT];
+    NSHTTPURLResponse *success = [[NSHTTPURLResponse alloc] initWithURL:[NSURL URLWithString:@"https://api-adservices.apple.com/api/v1/"]
+                                                             statusCode:200
+                                                            HTTPVersion:@"HTTP/1.1"
+                                                           headerFields:nil];
+    NSData *payload = [@"{\"attribution\":true,\"orgId\":12,\"campaignId\":34}" dataUsingEncoding:NSUTF8StringEncoding];
+    capturedHandler(payload, success, nil);
+
+    [self waitForExpectations:@[completed] timeout:DEFAULT_TIMEOUT];
+
+    NSDictionary *recorded = [MParticle sharedInstance].stateMachine.searchAdsInfo[@"Version4.0"];
+    XCTAssertEqualObjects(recorded[@"iad-org-id"], @"12");
+    XCTAssertEqualObjects(recorded[@"iad-campaign-id"], @"34");
+    XCTAssertEqual(completionCount, 1, @"The completion must run once across both attempts");
+
+    [controllerMock stopMocking];
+    [session stopMocking];
+    [dataTask stopMocking];
+    [attribution stopMocking];
+}
+
 #endif
 
 #pragma mark - Data blocking configuration
