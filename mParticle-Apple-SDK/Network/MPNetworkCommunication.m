@@ -833,6 +833,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSDictionary *responseDictionary = nil;
     NSString *responseString = nil;
     NSInteger responseCode = 0;
+    BOOL bodyWasNotAnObject = NO;
 
     BOOL enableIdentityCaching = MParticle.sharedInstance.stateMachine.enableIdentityCaching;
     BOOL usedCachedResponse = NO;
@@ -849,11 +850,16 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                 responseString = [[NSString alloc] initWithData:cachedResponse.bodyData encoding:NSUTF8StringEncoding];
                 responseDictionary = [NSJSONSerialization JSONObjectWithData:cachedResponse.bodyData options:0 error:&serializationError];
 
-                if (serializationError) {
+                // An entry that is not an object is as unusable as one that will not parse, and is
+                // treated the same way: as a miss, so the request falls through to the network
+                // rather than failing for as long as the entry has left to live. An entry written
+                // before this was checked on the way in heals itself that way.
+                if (serializationError || ![responseDictionary isKindOfClass:[NSDictionary class]]) {
                     responseDictionary = nil;
                     success = NO;
                     usedCachedResponse = NO;
-                    MPILogError(@"Identity response serialization error: %@", [serializationError localizedDescription]);
+                    MPILogError(@"Cached identity response was unusable: %@",
+                                serializationError ? serializationError.localizedDescription : @"body was not a JSON object");
                 } else {
                     responseCode = cachedResponse.statusCode;
                     success = YES;
@@ -899,8 +905,17 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                 responseDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&serializationError];
 
                 if (responseDictionary && !serializationError) {
-                    // Cache response if it contains the custom max age header and the feature is enabled
-                    if (enableIdentityCaching) {
+                    // A JSON body is as legitimately an array, string or number as it is an object,
+                    // and every reader below subscripts it by key. This has to be settled before
+                    // the cache below rather than after it: caching a body that is then rejected
+                    // would hand it back on every request until it expired, turning one bad
+                    // response into a window of failing ones.
+                    if (![responseDictionary isKindOfClass:[NSDictionary class]]) {
+                        bodyWasNotAnObject = YES;
+                        responseDictionary = nil;
+                        success = NO;
+                    } else if (enableIdentityCaching) {
+                        // Cache response if it contains the custom max age header and the feature is enabled
                         NSInteger maxAgeSeconds = [response.httpResponse.allHeaderFields[kMPIdentityCachingMaxAgeHeader] integerValue];
                         MPILogVerbose(@"Identity Caching - max age header value (in seconds): %li", (long)maxAgeSeconds);
                         if (maxAgeSeconds > 0) {
@@ -929,17 +944,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPILogVerbose(@"Identity execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
 
     self.identifying = NO;
-
-    // Both the cached and the network branch above assign whatever JSONObjectWithData returned, and
-    // a JSON body is as legitimately an array, string or number as it is an object. Every reader
-    // below subscripts this by key, including the error branch, and the responders are Swift, so a
-    // non-object arrives as an unrecognized selector that no @catch here is positioned to take.
-    // Narrowing it once, where both branches meet, keeps that out of all of them.
-    BOOL bodyWasNotAnObject = responseDictionary != nil && ![responseDictionary isKindOfClass:[NSDictionary class]];
-    if (bodyWasNotAnObject) {
-        responseDictionary = nil;
-        success = NO;
-    }
 
     if (success) {
         if (responseString) {
