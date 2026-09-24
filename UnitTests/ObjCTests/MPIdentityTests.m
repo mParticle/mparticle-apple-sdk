@@ -602,6 +602,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     NSError *error;
     MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    // A login response the server would actually send. Without an mpid there is no user to sync
+    // the identities onto, and the request is rejected before reaching them.
+    httpResponse.mpid = @892;
     
     [mockUser setExpectationOrderMatters:YES];
     [[mockUser expect] setIdentitySync:@"1234" identityType:MPIdentityCustomerId];
@@ -1128,6 +1131,101 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     NSDictionary *dictionary = [identities dictionaryRepresentation];
     XCTAssertEqualObjects(dictionary[@"google"], @12345);
     XCTAssertEqualObjects(dictionary[@"other"], [NSNull null]);
+}
+
+#pragma mark - Malformed identity responses
+
+// The response objects are Swift, and their initialiser takes a dictionary. Objective-C does not
+// check that argument, so a non-object body reaches a keyed subscript on an array, string or
+// number. Nothing on the identity path is positioned to catch it, which is why the network layer
+// has to reject the body before it gets here rather than guarding this initialiser.
+- (void)testSuccessResponseInitialiserRaisesOnANonObjectRoot {
+    for (id root in @[@[@1, @2], @"a string", @42]) {
+        XCTAssertThrows([[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:root],
+                        @"A %@ root must not be silently accepted here", [root class]);
+    }
+}
+
+- (void)testSuccessResponseToleratesWrongTypedValues {
+    NSArray<NSDictionary *> *bodies = @[
+        @{@"mpid": [NSNull null]},
+        @{@"mpid": @{}},
+        @{@"mpid": @[]},
+        @{@"is_logged_in": @{}},
+        @{@"is_ephemeral": @[]},
+        @{},
+    ];
+    for (NSDictionary *body in bodies) {
+        MPIdentityHTTPSuccessResponse *response = nil;
+        XCTAssertNoThrow(response = [[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:body],
+                         @"Body %@ must not raise", body);
+        XCTAssertNil(response.mpid, @"Body %@ must yield no mpid", body);
+        XCTAssertFalse(response.isEphemeral);
+        XCTAssertFalse(response.isLoggedIn);
+    }
+}
+
+// A string mpid is the one non-numeric form the server legitimately sends.
+- (void)testSuccessResponseAcceptsAStringMpid {
+    MPIdentityHTTPSuccessResponse *response =
+        [[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:@{@"mpid": @"12345", @"is_logged_in": @YES}];
+    XCTAssertEqualObjects(response.mpid, @12345);
+    XCTAssertTrue(response.isLoggedIn);
+}
+
+- (void)testModifyResponseToleratesWrongTypedChangeResults {
+    for (id changeResults in @[@"s", @7, @{@"k": @"v"}, @[@1], @[[NSNull null]], [NSNull null]]) {
+        MPIdentityHTTPModifySuccessResponse *response = nil;
+        NSDictionary *body = @{@"change_results": changeResults};
+        XCTAssertNoThrow(response = [[MPIdentityHTTPModifySuccessResponse alloc] initWithJsonObject:body],
+                         @"change_results %@ must not raise", changeResults);
+        XCTAssertNoThrow([MPIdentityApiLogicPRIVATE parsedModifyChanges:response.changeResults]);
+        XCTAssertEqual([MPIdentityApiLogicPRIVATE parsedModifyChanges:response.changeResults].count, 0);
+    }
+}
+
+// The persisted mpid and the signed-in user are the two things a malformed response must not be
+// able to take away. Without an mpid there is no user to install, so the request has to fail.
+- (void)testResponseWithoutAnMpidKeepsTheCurrentUserAndReportsAnError {
+    [self assertIdentityResponseIsRejectedForMpid:nil];
+}
+
+// Zero is the SDK's own "no user" sentinel, so accepting it from the server has the same effect as
+// accepting no mpid at all.
+- (void)testResponseWithAZeroMpidKeepsTheCurrentUserAndReportsAnError {
+    [self assertIdentityResponseIsRejectedForMpid:@0];
+}
+
+- (void)assertIdentityResponseIsRejectedForMpid:(NSNumber *)mpid {
+    [MPPersistenceUtilities setMpid:@8675309];
+
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id mockUser = OCMClassMock([MParticleUser class]);
+    id identityMock = OCMPartialMock(identity);
+    [[[identityMock stub] andReturn:mockUser] currentUser];
+
+    MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    httpResponse.mpid = mpid;
+
+    __block BOOL completed = NO;
+    __block MPIdentityApiResult *result = nil;
+    __block NSError *error = nil;
+    XCTAssertNoThrow([identityMock onIdentityRequestComplete:[[MPIdentityApiRequest alloc] init]
+                                         identityRequestType:MPIdentityRequestIdentify
+                                                httpResponse:httpResponse
+                                                  completion:^(MPIdentityApiResult *r, NSError *e) {
+        completed = YES;
+        result = r;
+        error = e;
+    }
+                                                       error:nil]);
+
+    XCTAssertTrue(completed, @"The request must still complete");
+    XCTAssertNil(result);
+    XCTAssertNotNil(error, @"A response with no usable mpid is a failed request");
+    XCTAssertEqualObjects(error.domain, mParticleIdentityErrorDomain);
+    XCTAssertEqualObjects([MPPersistenceUtilities mpId], @8675309,
+                          @"The persisted mpid must survive a response that carries no usable one");
 }
 
 @end

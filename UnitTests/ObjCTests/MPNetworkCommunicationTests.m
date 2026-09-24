@@ -9,6 +9,8 @@
 #import "MPPersistenceAdapter.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPIdentityDTO.h"
+#import "MPIdentityApiManager.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -29,6 +31,7 @@
 - (BOOL)performAliasUpload:(MPUpload *)upload;
 - (UIBackgroundTaskIdentifier)beginSafeBackgroundTaskWithExpirationHandler:(void(^_Nullable)(void))handler;
 - (void)endSafeBackgroundTask:(UIBackgroundTaskIdentifier)taskId;
+- (void)identityApiRequestWithURL:(NSURL *)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
 @property (nonatomic) BOOL identifying;
 
 @end
@@ -841,6 +844,115 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self shouldStopAlias:429 shouldStop:YES];
     [self shouldStopAlias:500 shouldStop:YES];
     [self shouldStopAlias:503 shouldStop:YES];
+}
+
+#pragma mark - Malformed identity response bodies
+
+// A JSON body is as legitimately an array, string or number as it is an object, and identify runs
+// at every SDK start. Reaching the response objects with one of those raises on a keyed subscript
+// with nothing on the path to catch it, so the request has to fail here instead.
+- (void)testIdentityRequestFailsWhenTheBodyIsNotAJSONObject {
+    for (NSString *body in @[@"[1,2]", @"\"a string\"", @"42"]) {
+        NSError *error = [self errorFromIdentityRequestWithStatusCode:200
+                                                                 body:[body dataUsingEncoding:NSUTF8StringEncoding]];
+        XCTAssertNotNil(error, @"Body %@ must be reported as a failed request", body);
+        XCTAssertEqualObjects(error.domain, mParticleIdentityErrorDomain);
+    }
+}
+
+- (void)testIdentityRequestStillSucceedsOnAJSONObjectBody {
+    XCTAssertNil([self errorFromIdentityRequestWithStatusCode:200
+                                                         body:[@"{\"mpid\":\"42\"}" dataUsingEncoding:NSUTF8StringEncoding]]);
+}
+
+// A body is cached before it is read, so the check has to come first. Caching a body that is then
+// rejected would serve it back on every request until it expired, turning one bad response into a
+// window of failing ones.
+- (void)testANonObjectBodyIsNotCached {
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:0]];
+    MPIdentityCaching *identityCaching = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                                                  logger:logger];
+    [identityCaching clearAllCache];
+    [MParticle sharedInstance].stateMachine.enableIdentityCaching = YES;
+
+    NSError *error = [self errorFromIdentityRequestWithStatusCode:200
+                                                             body:[@"[1,2]" dataUsingEncoding:NSUTF8StringEncoding]
+                                                    maxAgeSeconds:@"3600"];
+    XCTAssertNotNil(error, @"Precondition: the malformed body is rejected");
+
+    NSDictionary *cache = [MPUserDefaultsConnector.userDefaults mpObjectForKey:@"kMPIdentityCachingCachedIdentityCallsKey" userId:@0];
+    XCTAssertEqual(cache.count, 0, @"A body that is rejected must never reach the cache");
+
+    // And the next request is answered from the network rather than from a poisoned entry, for the
+    // whole hour the max age asked for.
+    XCTAssertNil([self errorFromIdentityRequestWithStatusCode:200
+                                                         body:[@"{\"mpid\":\"42\"}" dataUsingEncoding:NSUTF8StringEncoding]
+                                                maxAgeSeconds:@"3600"],
+                 @"A rejected body must not be served back from the cache");
+
+    [MParticle sharedInstance].stateMachine.enableIdentityCaching = NO;
+    [identityCaching clearAllCache];
+}
+
+// An entry written before the check above existed is still on disk after an upgrade. Reading one
+// must behave as a miss so the request goes to the network, rather than failing until it expires.
+- (void)testAPoisonedCacheEntryIsTreatedAsAMiss {
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:0]];
+    MPIdentityCaching *identityCaching = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                                                  logger:logger];
+    [identityCaching clearAllCache];
+    [MParticle sharedInstance].stateMachine.enableIdentityCaching = YES;
+
+    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:[[MPIdentityApiRequest alloc] init]];
+    MPIdentityCachedResponse *poisoned =
+        [[MPIdentityCachedResponse alloc] initWithBodyData:[@"[1,2]" dataUsingEncoding:NSUTF8StringEncoding]
+                                                statusCode:200
+                                                   expires:[NSDate dateWithTimeIntervalSinceNow:3600]];
+    [identityCaching cacheIdentityResponse:poisoned
+                                  endpoint:MPEndpointIdentityIdentify
+                         requestDictionary:[request dictionaryRepresentation]];
+
+    XCTAssertNil([self errorFromIdentityRequestWithStatusCode:200
+                                                         body:[@"{\"mpid\":\"42\"}" dataUsingEncoding:NSUTF8StringEncoding]
+                                                maxAgeSeconds:nil],
+                 @"An unusable cached entry must fall through to the network");
+
+    [MParticle sharedInstance].stateMachine.enableIdentityCaching = NO;
+    [identityCaching clearAllCache];
+}
+
+- (NSError *)errorFromIdentityRequestWithStatusCode:(int)statusCode body:(NSData *)body {
+    return [self errorFromIdentityRequestWithStatusCode:statusCode body:body maxAgeSeconds:nil];
+}
+
+- (NSError *)errorFromIdentityRequestWithStatusCode:(int)statusCode body:(NSData *)body maxAgeSeconds:(NSString *)maxAgeSeconds {
+    id urlResponseMock = OCMClassMock([NSHTTPURLResponse class]);
+    [[[urlResponseMock stub] andReturnValue:OCMOCK_VALUE(statusCode)] statusCode];
+    [[[urlResponseMock stub] andReturn:(maxAgeSeconds ? @{@"X-MP-Max-Age": maxAgeSeconds} : @{})] allHeaderFields];
+
+    MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    response.httpResponse = urlResponseMock;
+    response.data = body;
+
+    id mockConnector = OCMClassMock([MPConnector class]);
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
+
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    id mockNetworkCommunication = OCMPartialMock(networkCommunication);
+    [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
+
+    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:[[MPIdentityApiRequest alloc] init]];
+    __block NSError *capturedError = nil;
+    __block BOOL completed = NO;
+    XCTAssertNoThrow([mockNetworkCommunication identityApiRequestWithURL:[networkCommunication identifyURL].url
+                                                        identityRequest:request
+                                                     blockOtherRequests:NO
+                                                             completion:^(MPIdentityHTTPBaseSuccessResponse *httpResponse, NSError *error) {
+        completed = YES;
+        capturedError = error;
+    }]);
+    XCTAssertTrue(completed, @"The completion must run whatever the body is");
+    return capturedError;
 }
 
 - (void)shouldStopAlias:(int)returnCode shouldStop:(BOOL)shouldStop {
