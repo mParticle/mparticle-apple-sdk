@@ -312,4 +312,16 @@
     XCTAssertTrue([kitConfiguration.configuredMessageTypeProjections[MPMessageTypeEvent] boolValue]);
 }
 
+// `as` is server-supplied parsed JSON, so it need not be a dictionary at all.
+- (void)testNonDictionaryConfigurationBlockIsIgnored {
+    for (id value in @[@[], @42, @"as", [NSNull null]]) {
+        NSDictionary *configuration = @{@"id": @80, @"as": value};
+
+        MPKitConfiguration *kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+
+        XCTAssertNotNil(kitConfig, @"`as` of %@ should not fail the whole kit configuration", [value class]);
+        XCTAssertEqual(kitConfig.configuration.count, 0, @"`as` of %@ should be ignored", [value class]);
+    }
+}
+
 @end

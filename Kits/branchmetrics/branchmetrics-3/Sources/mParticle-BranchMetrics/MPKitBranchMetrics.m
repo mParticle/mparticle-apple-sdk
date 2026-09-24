@@ -72,6 +72,32 @@ NSString *const userIdentificationType = @"userIdentificationType";
     return [[MPKitExecStatus alloc] initWithSDKCode:self.class.kitCode returnCode:returnCode];
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+- (BOOL)configurationBoolForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && !([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])) {
+        NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+        return NO;
+    }
+    return [value boolValue];
+}
+
 #pragma mark - MPKitInstanceProtocol Lifecycle Methods
 
 - (instancetype _Nonnull)init {
@@ -82,19 +108,30 @@ NSString *const userIdentificationType = @"userIdentificationType";
 }
 
 - (MPKitExecStatus *_Nonnull)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
-    self.configuration = configuration;
-    NSString *branchKey = configuration[ekBMAppKey];
-    if (!branchKey) {
+    if (![configuration isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"Ignoring launch configuration: expected a dictionary, got %@", [configuration class]);
+        self.configuration = @{};
         return [self execStatus:MPKitReturnCodeRequirementsNotMet];
     }
-    self.forwardScreenViews = [configuration[ekBMAForwardScreenViews] boolValue];
-    [self updateIdentityType:configuration];
+    self.configuration = [configuration copy];
+    NSString *branchKey = [self configurationStringForKey:ekBMAppKey];
+    if (branchKey.length == 0) {
+        return [self execStatus:MPKitReturnCodeRequirementsNotMet];
+    }
+    [self updateConfiguredSettings];
     [self start];
     return [self execStatus:MPKitReturnCodeSuccess];
 }
 
-- (void)updateIdentityType:(NSDictionary *)configuration {
-    NSString *identityString = configuration[userIdentificationType];
+- (void)updateConfiguredSettings {
+    self.forwardScreenViews = [self configurationBoolForKey:ekBMAForwardScreenViews];
+    [self updateIdentityType];
+}
+
+- (void)updateIdentityType {
+    // A wrong-typed value takes the "key absent" path, not the MPIdentityEmail fallback below,
+    // which is reserved for an unrecognised string.
+    NSString *identityString = [self configurationStringForKey:userIdentificationType];
     if (identityString != nil) {
         if ([identityString isEqualToString:@"MPID"]) {
             _isMpidIdentityType = true;
@@ -139,10 +176,10 @@ NSString *const userIdentificationType = @"userIdentificationType";
 }
 
 - (void)start {
-    if (self.configuration[ekBMAppKey] != nil) {
+    if ([self configurationStringForKey:ekBMAppKey].length > 0) {
         static dispatch_once_t branchMetricsPredicate = 0;
         dispatch_once(&branchMetricsPredicate, ^{
-            NSString *branchKey = [self.configuration[ekBMAppKey] copy];
+            NSString *branchKey = [[self configurationStringForKey:ekBMAppKey] copy];
             self.branchInstance = [Branch getInstance:branchKey];
 
             [self.branchInstance registerPluginName:@"mParticleKit" version:@"9.6.0"];
@@ -174,9 +211,10 @@ NSString *const userIdentificationType = @"userIdentificationType";
                     self.started = YES;
                 }
 
+                NSString *notificationBranchKey = [self configurationStringForKey:ekBMAppKey];
                 NSMutableDictionary *userInfo = [@{
                     mParticleKitInstanceKey: [[self class] kitCode],
-                    @"branchKey": (self.configuration[ekBMAppKey] != nil) ? self.configuration[ekBMAppKey] : @""
+                    @"branchKey": notificationBranchKey ?: @""
                 } mutableCopy];
 
                 [[NSNotificationCenter defaultCenter]
