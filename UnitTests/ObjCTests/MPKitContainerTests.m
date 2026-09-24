@@ -2987,6 +2987,85 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     XCTAssertFalse(kitContainer.kitsInitialized);
 }
 
+- (void)testConfigureKitsKeepsAnExistingConfigurationWhenAnEntryCannotBeParsed {
+    NSDictionary *usable = @{@"id": @42, @"as": @{@"secretKey": @"MySecretKey"}};
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[usable]];
+    XCTAssertNotNil(kitContainer.kitConfigurations[@42], @"Precondition: kit 42 is configured");
+    XCTAssertEqual([kitContainer activeKitsRegistry].count, 1, @"Precondition: kit 42 is running");
+
+    // A supported, numerically identified entry whose contents are not JSON-representable. The
+    // parser rejects it by returning nil rather than raising, so the id check that guards
+    // initializeKits has to guard this loop too - storing nil here removes the live configuration.
+    NSDictionary *unparseable = @{@"id": @42, @"when": [NSDate date]};
+    XCTAssertNil([[MPKitConfiguration alloc] initWithDictionary:unparseable],
+                 @"Precondition: this entry parses to nil without raising");
+
+    [kitContainer configureKits:@[unparseable]];
+
+    XCTAssertNotNil(kitContainer.kitConfigurations[@42],
+                    @"An entry that cannot be parsed must not evict the configuration it would have replaced");
+    // Keeping the stored configuration is only half of it. The server did name this kit, so it is
+    // not one of the absent kits that the end of configureKits tears down.
+    XCTAssertEqual([kitContainer activeKitsRegistry].count, 1,
+                   @"An entry that cannot be parsed must not deactivate the kit it names");
+    XCTAssertEqualObjects([kitContainer activeKitsRegistry].firstObject.code, @42);
+}
+
+- (void)testConfigureKitsToleratesAWrongTypedIdWhileAKitIsRunning {
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[@{@"id": @42, @"as": @{@"secretKey": @"MySecretKey"}}]];
+    XCTAssertEqual([kitContainer activeKitsRegistry].count, 1, @"Precondition: kit 42 is running");
+
+    // Every entry is compared against the running kits so they are not torn down, and a malformed
+    // entry can carry an id of any type. The comparison is only reached when something is running,
+    // which is why this needs a configured kit first.
+    NSArray *stringIdentified = @[@{@"id": @"42", @"as": @{}}];
+    XCTAssertNoThrow([kitContainer configureKits:stringIdentified]);
+
+    // The entry names no numeric kit, so kit 42 is absent from these instructions and stops.
+    XCTAssertEqual([kitContainer activeKitsRegistry].count, 0);
+}
+
+- (void)testLaunchConfigurationToleratesANonObjectEntry {
+    // configureKits publishes the array to originalConfig before it skips anything, and
+    // launchConfigurationForKitCode: subscripts every element of that array by key.
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[@"not-an-object", @{@"id": @42, @"as": @{@"secretKey": @"MySecretKey"}}]];
+
+    XCTAssertNoThrow([kitContainer launchConfigurationForKitCode:@42]);
+    XCTAssertEqualObjects([kitContainer launchConfigurationForKitCode:@42][@"id"], @42);
+}
+
+- (void)testInitializeKitsSkipsUnusableCachedConfigurations {
+    // The cached eks array is replayed on the message queue at every start, before any refresh can
+    // replace it, so an entry the parser rejects has to be skipped. Keying kitConfigurations by a
+    // nil integrationId would raise here and make the crash recur at every launch.
+    NSArray *kitConfigs = @[
+        @"not-an-object",
+        @{@"as": @{@"appId": @"entry carrying no id"}}
+    ];
+    NSDictionary *configuration = @{kMPRemoteConfigKitsKey: kitConfigs,
+                                    kMPRemoteConfigRampKey: @100,
+                                    kMPRemoteConfigSessionTimeoutKey: @112};
+    [MPUserDefaultsConnector.userDefaults setConfiguration:configuration
+                                                      eTag:@"unusable-kit-entries"
+                                          requestTimestamp:[[NSDate date] timeIntervalSince1970]
+                                                currentAge:0
+                                                    maxAge:nil];
+
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    id mockAdapter = OCMPartialMock(localKitContainer.executionAdapter);
+    [[[mockAdapter stub] andReturn:@[@42]] supportedKits];
+
+    XCTAssertNoThrow([localKitContainer initializeKits]);
+    XCTAssertEqual(localKitContainer.kitConfigurations.count, 0);
+
+    // The configuration above is persisted, so leaving it in place would hand the poisoned eks
+    // array to every later test in this process.
+    [MPUserDefaultsConnector.userDefaults deleteConfiguration];
+}
+
 #if TARGET_OS_IOS == 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

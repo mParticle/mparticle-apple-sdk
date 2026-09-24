@@ -17,7 +17,10 @@
 
 - (instancetype)initWithDictionary:(NSDictionary *)configurationDictionary {
     self = [super init];
-    if (!self || MPIsNull(configurationDictionary)) {
+    // A kit entry reaches here straight from parsed or unarchived configuration, so its type is
+    // only known now. Every read below, starting with the configuration hash, assumes an object.
+    if (!self || ![configurationDictionary isKindOfClass:[NSDictionary class]] ||
+        ![NSJSONSerialization isValidJSONObject:configurationDictionary]) {
         return nil;
     }
     
@@ -61,13 +64,23 @@
     }
     
     // Kit instance
-    _bracketConfiguration = !MPIsNull(configurationDictionary[kMPRemoteConfigBracketKey]) ? configurationDictionary[kMPRemoteConfigBracketKey] : nil;
+    // The container subscripts bracketConfiguration for lo/hi and keys kitConfigurations by
+    // integrationId, comparing it with isEqualToNumber:, so neither tolerates another type.
+    id bracketConfiguration = configurationDictionary[kMPRemoteConfigBracketKey];
+    _bracketConfiguration = [bracketConfiguration isKindOfClass:[NSDictionary class]] ? bracketConfiguration : nil;
     
-    _integrationId = !MPIsNull(configurationDictionary[@"id"]) ? configurationDictionary[@"id"] : nil;
+    id integrationId = configurationDictionary[@"id"];
+    _integrationId = [integrationId isKindOfClass:[NSNumber class]] ? integrationId : nil;
     
     if (_integrationId != nil) {
         _configurationDictionary = configurationDictionary;
-        _excludeAnonymousUsers = [configurationDictionary[kMPRemoteConfigExcludeAnonymousUsersKey] boolValue];
+        // NSNumber and NSString both answer boolValue and remote configuration uses either
+        // interchangeably; nothing else does, so reading it would raise rather than return.
+        id excludeAnonymousUsers = configurationDictionary[kMPRemoteConfigExcludeAnonymousUsersKey];
+        _excludeAnonymousUsers = ([excludeAnonymousUsers isKindOfClass:[NSNumber class]] ||
+                                  [excludeAnonymousUsers isKindOfClass:[NSString class]])
+            ? [excludeAnonymousUsers boolValue]
+            : NO;
     } else {
         return nil;
     }
@@ -126,22 +139,30 @@
     
     _filters = [MPKitConfigurationParser sanitizedFiltersFrom:filters];
     
-    _eventTypeFilters = _filters[@"et"];
-    _eventNameFilters = _filters[@"ec"];
-    _eventAttributeFilters = _filters[@"ea"];
-    _messageTypeFilters = _filters[@"mt"];
-    _screenNameFilters = _filters[@"svec"];
-    _screenAttributeFilters = _filters[@"svea"];
-    _userIdentityFilters = _filters[@"uid"];
-    _userAttributeFilters = _filters[@"ua"];
-    _commerceEventAttributeFilters = _filters[@"cea"];
-    _commerceEventEntityTypeFilters = _filters[@"ent"];
-    _commerceEventAppFamilyAttributeFilters = _filters[@"afa"];
-    _addEventAttributeList = _filters[@"eaa"];
-    _removeEventAttributeList = _filters[@"ear"];
-    _singleItemEventAttributeList = _filters[@"eas"];
-    _consentRegulationFilters = _filters[kMPConsentRegulationFilters];
-    _consentPurposeFilters = _filters[kMPConsentPurposeFilters];
+    _eventTypeFilters = [self subFilterForKey:@"et"];
+    _eventNameFilters = [self subFilterForKey:@"ec"];
+    _eventAttributeFilters = [self subFilterForKey:@"ea"];
+    _messageTypeFilters = [self subFilterForKey:@"mt"];
+    _screenNameFilters = [self subFilterForKey:@"svec"];
+    _screenAttributeFilters = [self subFilterForKey:@"svea"];
+    _userIdentityFilters = [self subFilterForKey:@"uid"];
+    _userAttributeFilters = [self subFilterForKey:@"ua"];
+    _commerceEventAttributeFilters = [self subFilterForKey:@"cea"];
+    _commerceEventEntityTypeFilters = [self subFilterForKey:@"ent"];
+    _commerceEventAppFamilyAttributeFilters = [self subFilterForKey:@"afa"];
+    _addEventAttributeList = [self subFilterForKey:@"eaa"];
+    _removeEventAttributeList = [self subFilterForKey:@"ear"];
+    _singleItemEventAttributeList = [self subFilterForKey:@"eas"];
+    _consentRegulationFilters = [self subFilterForKey:kMPConsentRegulationFilters];
+    _consentPurposeFilters = [self subFilterForKey:kMPConsentPurposeFilters];
+}
+
+/// sanitizedFiltersFrom: types the filter container but not its members, and every property above
+/// is declared NSDictionary and subscripted by its consumers, so a wrong-typed member is dropped
+/// rather than published under a type it does not have.
+- (NSDictionary *)subFilterForKey:(NSString *)key {
+    id subFilter = _filters[key];
+    return [subFilter isKindOfClass:[NSDictionary class]] ? subFilter : nil;
 }
 
 #pragma mark Public methods

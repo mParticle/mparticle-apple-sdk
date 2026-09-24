@@ -32,6 +32,16 @@
 
 NSString *const kitFileExtension = @"eks";
 
+/// Reads a numeric field out of a server-supplied configuration. NSNumber and NSString both answer
+/// integerValue and remote configuration uses either interchangeably; nothing else does, so any
+/// other type would raise here rather than return.
+static NSInteger MPConfigurationIntegerValue(id value) {
+    if ([value isKindOfClass:[NSNumber class]] || [value isKindOfClass:[NSString class]]) {
+        return [value integerValue];
+    }
+    return 0;
+}
+
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
@@ -684,8 +694,22 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     
     MPILogDebug(@"initializeKits - cached kit configurations: %lu", (unsigned long)directoryContents.count);
     
-    for (NSDictionary *kitConfigurationDictionary in directoryContents) {
-        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+    for (id kitConfigurationDictionary in directoryContents) {
+        // This runs on the message queue at every start, before any config refresh can replace the
+        // cache, so one unusable entry must not take the process down with it.
+        MPKitConfiguration *kitConfiguration = nil;
+        @try {
+            kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+        } @catch (NSException *exception) {
+            MPILogError(@"initializeKits - could not parse a cached kit configuration: %@", exception.reason);
+        }
+
+        // A rejected entry leaves integrationId nil, which cannot key kitConfigurations.
+        if (kitConfiguration.integrationId == nil) {
+            MPILogError(@"initializeKits - skipping an unusable cached kit configuration");
+            continue;
+        }
+
         BOOL shouldStartKit = ![self.filterEngine isKitDisabledWithIsDisabledKit:[_disabledKits containsObject:kitConfiguration.integrationId]
                                                                 consentFilter:nil
                                                                       consent:nil];
@@ -809,8 +833,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
     int64_t mpId = [[MPPersistenceUtilities mpId] longLongValue];
-    int16_t low = (int16_t)[bracketConfiguration[@"lo"] integerValue];
-    int16_t high = (int16_t)[bracketConfiguration[@"hi"] integerValue];
+    int16_t low = (int16_t)MPConfigurationIntegerValue(bracketConfiguration[@"lo"]);
+    int16_t high = (int16_t)MPConfigurationIntegerValue(bracketConfiguration[@"hi"]);
     return [self.filterEngine isDisabledByBracketWithMpId:mpId
                                                       low:low
                                                      high:high
@@ -915,8 +939,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     long mpId = [[MPPersistenceUtilities mpId] longValue];
-    short low = (short)[configuration[@"lo"] integerValue];
-    short high = (short)[configuration[@"hi"] integerValue];
+    short low = (short)MPConfigurationIntegerValue(configuration[@"lo"]);
+    short high = (short)MPConfigurationIntegerValue(configuration[@"hi"]);
 
     MPBracket *bracket = brackets[integrationId];
     if (bracket) {
@@ -1536,7 +1560,20 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     
-    self.originalConfig = kitConfigurations;
+    // Reached from the server response, from replayed originalConfig and from a deferred
+    // configuration, so the element type is not guaranteed by the caller. originalConfig is
+    // declared as an array of dictionaries and every consumer subscripts its elements by key, so
+    // anything else is dropped once here rather than guarded at each read.
+    NSArray<NSDictionary *> *usableConfigurations =
+        [kitConfigurations filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id element, NSDictionary *bindings) {
+            return [element isKindOfClass:[NSDictionary class]];
+        }]];
+    if (usableConfigurations.count != kitConfigurations.count) {
+        MPILogError(@"configureKits - skipping %lu kit configuration(s) that are not objects",
+                    (unsigned long)(kitConfigurations.count - usableConfigurations.count));
+    }
+
+    self.originalConfig = usableConfigurations;
     
     NSPredicate *predicate;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
@@ -1557,11 +1594,28 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     }
     
     // Configure kits according to server instructions
-    for (NSDictionary *kitConfigurationDictionary in kitConfigurations) {
+    for (NSDictionary *kitConfigurationDictionary in usableConfigurations) {
         MPKitConfiguration *kitConfiguration = nil;
         
         NSNumber *integrationId = kitConfigurationDictionary[@"id"];
         
+        // deactivateKits holds the running kits the server did not mention, and everything left in
+        // it is torn down after the loop. This entry mentions integrationId, so it is spared here
+        // rather than at the end of the body: whether its replacement configuration can be parsed
+        // is a separate question, and skipping an unusable entry must not silently stop a kit the
+        // server still wants running. isEqual: rather than isEqualToNumber: because a malformed
+        // entry can carry an id of any type, and only NSNumber answers the latter: raising here
+        // unwinds past the signal below and leaves kitsSemaphore held, so every later kit call
+        // blocks forever rather than failing.
+        if (deactivateKits.count != 0) {
+            for (NSUInteger i = 0; i < deactivateKits.count; i++) {
+                if ([deactivateKits[i] isEqual:integrationId]) {
+                    [deactivateKits removeObjectAtIndex:i];
+                    break;
+                }
+            }
+        }
+
         predicate = [NSPredicate predicateWithFormat:@"SELF == %@", integrationId];
         BOOL isKitSupported = [supportedKits filteredArrayUsingPredicate:predicate].count > 0;
         
@@ -1569,7 +1623,22 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
             kitRegister = [[[MPKitContainer_PRIVATE registeredKits] filteredSetUsingPredicate:predicate] anyObject];
             kitInstance = kitRegister.wrapperInstance;
-            kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            @try {
+                kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            } @catch (NSException *exception) {
+                MPILogError(@"configureKits - could not parse the configuration for kit %@: %@", integrationId, exception.reason);
+                continue;
+            }
+
+            // The parser rejects an entry by returning nil rather than raising, so this needs the
+            // same guard as initializeKits. Storing nil under a live key removes the configuration
+            // this entry was meant to replace, and everything below would then configure the kit
+            // from nothing.
+            if (kitConfiguration == nil) {
+                MPILogError(@"configureKits - skipping an unusable configuration for kit %@", integrationId);
+                continue;
+            }
+
             self.kitConfigurations[integrationId] = kitConfiguration;
             
             MPILogDebug(@"configureKits - configuring kit %@ (existing instance: %@)", integrationId, kitInstance ? @"YES" : @"NO");
@@ -1661,15 +1730,6 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             }
         } else {
             MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", integrationId);
-        }
-        
-        if (deactivateKits.count != 0) {
-            for (NSUInteger i = 0; i < deactivateKits.count; i++) {
-                if ([deactivateKits[i] isEqualToNumber:integrationId]) {
-                    [deactivateKits removeObjectAtIndex:i];
-                    break;
-                }
-            }
         }
     }
     
