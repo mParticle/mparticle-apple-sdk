@@ -622,6 +622,11 @@ MPLog* logger;
     
     [MPStateMachine_PRIVATE setEnvironment:environment];
     self.stateMachine.automaticSessionTracking = options.automaticSessionTracking;
+    // Ahead of the backend controller starting below, because that restores the persisted
+    // configuration, and a restored custom module array has to be held to the same bound as a
+    // freshly fetched one.
+    self.stateMachine.collectCustomModulePreferences = options.collectCustomModulePreferences;
+    self.stateMachine.customModulePreferenceKeys = options.customModulePreferenceKeys;
     if (options.attStatus != nil) {
         [self setATTStatus:(MPATTAuthorizationStatus)options.attStatus.integerValue withATTStatusTimestampMillis:options.attStatusTimestampMillis];
     }
