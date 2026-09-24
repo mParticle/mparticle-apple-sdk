@@ -3066,6 +3066,64 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     [MPUserDefaultsConnector.userDefaults deleteConfiguration];
 }
 
+// message_type is remote configuration indexing a fixed-length array, and both entry points parse
+// the same server payload. A value the array cannot hold has to be dropped rather than sizing the
+// index, on whichever path the configuration happens to arrive by.
+- (NSDictionary *)kitConfigurationSpanningTheMessageTypeRange {
+    return @{
+        @"id": @42,
+        @"as": @{@"secretKey": @"MySecretKey"},
+        @"pr": @[
+            @{@"id": @1, @"action": @{@"projected_event_name": @"Kept"}, @"matches": @[@{@"message_type": @(MPMessageTypeEvent)}]},
+            @{@"id": @2, @"action": @{@"projected_event_name": @"Media"}, @"matches": @[@{@"message_type": @20}]},
+            @{@"id": @3, @"action": @{@"projected_event_name": @"Over"}, @"matches": @[@{@"message_type": @21}]},
+            @{@"id": @4, @"action": @{@"projected_event_name": @"Way over"}, @"matches": @[@{@"message_type": @100}]},
+            @{@"id": @5, @"action": @{@"projected_event_name": @"Negative"}, @"matches": @[@{@"message_type": @"-1"}]},
+        ]
+    };
+}
+
+- (void)assertMessageTypeRangeIsRespectedFor:(MPKitContainer_PRIVATE *)container {
+    MPKitConfiguration *kitConfiguration = container.kitConfigurations[@42];
+    XCTAssertNotNil(kitConfiguration, @"The kit must still be configured");
+    XCTAssertTrue([kitConfiguration.configuredMessageTypeProjections[MPMessageTypeEvent] boolValue],
+                  @"The in-range projection must still be applied");
+    XCTAssertTrue([kitConfiguration.configuredMessageTypeProjections[20] boolValue],
+                  @"Media occupies the slot one past the nominal length and is still valid");
+    XCTAssertEqual(kitConfiguration.configuredMessageTypeProjections.count, (NSUInteger)21,
+                   @"Nothing beyond media may size the array");
+    XCTAssertEqual(kitConfiguration.defaultProjections.count,
+                   kitConfiguration.configuredMessageTypeProjections.count,
+                   @"The forwarding path indexes one array after measuring the other");
+    XCTAssertEqual(kitConfiguration.projections.count, 2, @"Only the two usable projections survive");
+}
+
+- (void)testOutOfRangeMessageTypesAreDroppedOnTheConfigureKitsPath {
+    [kitContainer configureKits:nil];
+    XCTAssertNoThrow([kitContainer configureKits:@[[self kitConfigurationSpanningTheMessageTypeRange]]]);
+    [self assertMessageTypeRangeIsRespectedFor:kitContainer];
+}
+
+- (void)testOutOfRangeMessageTypesAreDroppedOnTheInitializeKitsPath {
+    NSDictionary *configuration = @{kMPRemoteConfigKitsKey: @[[self kitConfigurationSpanningTheMessageTypeRange]],
+                                    kMPRemoteConfigRampKey: @100,
+                                    kMPRemoteConfigSessionTimeoutKey: @112};
+    [MPUserDefaultsConnector.userDefaults setConfiguration:configuration
+                                                      eTag:@"message-type-range"
+                                          requestTimestamp:[[NSDate date] timeIntervalSince1970]
+                                                currentAge:0
+                                                    maxAge:nil];
+
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    id mockAdapter = OCMPartialMock(localKitContainer.executionAdapter);
+    [[[mockAdapter stub] andReturn:@[@42]] supportedKits];
+
+    XCTAssertNoThrow([localKitContainer initializeKits]);
+    [self assertMessageTypeRangeIsRespectedFor:localKitContainer];
+
+    [MPUserDefaultsConnector.userDefaults deleteConfiguration];
+}
+
 #if TARGET_OS_IOS == 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
