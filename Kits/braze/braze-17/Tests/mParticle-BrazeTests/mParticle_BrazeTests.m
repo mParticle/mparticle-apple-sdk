@@ -1587,10 +1587,42 @@ static NSString *const kBrazeTestIdHash = @"3355";
     MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     event.currency = @"USD";
 
+    // Rejecting the legacy calls as well, because returning CannotExecute here
+    // would send the event through logCustomEvent: instead of dropping it.
     [[mockClient reject] logEcommerceCartUpdated:OCMOCK_ANY];
+    [[mockClient reject] logCustomEvent:OCMOCK_ANY properties:OCMOCK_ANY];
+    [[mockClient reject] logCustomEvent:OCMOCK_ANY];
 
-    [kit logBaseEvent:event];
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
 
+    XCTAssertEqual(execStatus.forwardCount, 0);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceTotalExcludesDroppedProducts {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *dropped = [self filteredProductWithHashes:@[kBrazeTestIdHash]];
+    MPProduct *forwarded = [[MPProduct alloc] initWithName:@"product2" sku:@"2242442454" quantity:@2 price:@10];
+
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:dropped];
+    [event addProduct:forwarded];
+    event.currency = @"USD";
+
+    [[mockClient expect] logEcommerceCartUpdated:[OCMArg checkWithBlock:^BOOL(BRZEcommerceCartUpdatedEvent *payload) {
+        return payload.products.count == 1
+            && [payload.products.firstObject.productId isEqualToString:@"2242442454"]
+            && [payload.totalValue doubleValue] == 20;
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
     [mockClient verify];
     [mockClient stopMocking];
 }

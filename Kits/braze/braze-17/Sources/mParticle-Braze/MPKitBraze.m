@@ -1618,14 +1618,15 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     return lineItems;
 }
 
-- (double)brazeTotalValueForProducts:(NSArray<MPProduct *> *)products transactionAttributes:(MPTransactionAttributes *)transactionAttributes {
+// Summed over the line items rather than the products they came from, so that a
+// product dropped for a filtered identifier cannot still count towards the total.
+- (double)brazeTotalValueForLineItems:(NSArray<BRZEcommerceLineItem *> *)lineItems transactionAttributes:(MPTransactionAttributes *)transactionAttributes {
     if (transactionAttributes.revenue != nil) {
         return transactionAttributes.revenue.doubleValue;
     }
     double total = 0;
-    for (MPProduct *product in products) {
-        NSInteger quantity = MAX([product.brazeFilteredQuantity integerValue], 1);
-        total += [product.brazeFilteredPrice doubleValue] * quantity;
+    for (BRZEcommerceLineItem *lineItem in lineItems) {
+        total += lineItem.price * lineItem.quantity;
     }
     return total;
 }
@@ -1677,10 +1678,13 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
     }
 
     // Products whose identifier the customer filtered have no line item, so an
-    // event left with none of them has nothing for Braze to record.
+    // event left with none of them has nothing for Braze to record. This reports
+    // success with nothing forwarded rather than MPKitReturnCodeCannotExecute,
+    // which the caller treats as "try the legacy path" and would send the event
+    // through logCustomEvent: instead.
     NSArray<BRZEcommerceLineItem *> *lineItems = [self brazeLineItemsFromProducts:products];
     if (lineItems.count == 0) {
-        return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeCannotExecute];
+        return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess forwardCount:0];
     }
 
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess forwardCount:0];
@@ -1699,7 +1703,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.currency = currency;
             payload.source = source;
             payload.products = lineItems;
-            payload.totalValue = @([self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes]);
+            payload.totalValue = @([self brazeTotalValueForLineItems:lineItems transactionAttributes:transactionAttributes]);
             if (subtotalValue != nil) {
                 payload.subtotalValue = subtotalValue;
             }
@@ -1721,7 +1725,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.currency = currency;
             payload.source = source;
             payload.products = lineItems;
-            payload.totalValue = [self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes];
+            payload.totalValue = [self brazeTotalValueForLineItems:lineItems transactionAttributes:transactionAttributes];
             if (subtotalValue != nil) {
                 payload.subtotalValue = subtotalValue;
             }
@@ -1769,7 +1773,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.currency = currency;
             payload.source = source;
             payload.products = lineItems;
-            payload.totalValue = [self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes];
+            payload.totalValue = [self brazeTotalValueForLineItems:lineItems transactionAttributes:transactionAttributes];
             if (subtotalValue != nil) {
                 payload.subtotalValue = subtotalValue;
             }
@@ -1791,7 +1795,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         case MPCommerceEventActionRefund: {
             NSMutableDictionary *properties = [@{
                 @"order_id": [self brazeOrderIdForCommerceEvent:commerceEvent],
-                @"total_value": @([self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes]),
+                @"total_value": @([self brazeTotalValueForLineItems:lineItems transactionAttributes:transactionAttributes]),
                 @"currency": currency,
                 @"source": source,
                 @"products": [self brazeProductDictionariesFromProducts:products]
