@@ -88,6 +88,71 @@ static Braze *brazeInstance = nil;
 static id brazeLocationProvider = nil;
 static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 
+/*
+ The core SDK applies this kit's app family attribute filters to a product's
+ beautified attributes and leaves the dictionary behind the typed accessors
+ untouched, so product.price still returns a price the customer disabled for this
+ kit. Every read of a built-in product field goes through these accessors, which
+ report a filtered field as nil.
+ */
+@interface MPProduct(MPKitBrazeFilteredAttributes)
+
+@property (nonatomic, readonly) NSString *brazeFilteredSku;
+@property (nonatomic, readonly) NSString *brazeFilteredName;
+@property (nonatomic, readonly) NSString *brazeFilteredBrand;
+@property (nonatomic, readonly) NSString *brazeFilteredCategory;
+@property (nonatomic, readonly) NSString *brazeFilteredCouponCode;
+@property (nonatomic, readonly) NSString *brazeFilteredVariant;
+@property (nonatomic, readonly) NSNumber *brazeFilteredPrice;
+@property (nonatomic, readonly) NSNumber *brazeFilteredQuantity;
+@property (nonatomic, readonly) NSNumber *brazeFilteredPosition;
+
+@end
+
+@implementation MPProduct(MPKitBrazeFilteredAttributes)
+
+- (id)brazeFilteredValue:(id)value forExpandedKey:(NSString *)expandedKey {
+    return self.beautifiedAttributes[expandedKey] != nil ? value : nil;
+}
+
+- (NSString *)brazeFilteredSku {
+    return [self brazeFilteredValue:self.sku forExpandedKey:kMPExpProductSKU];
+}
+
+- (NSString *)brazeFilteredName {
+    return [self brazeFilteredValue:self.name forExpandedKey:kMPExpProductName];
+}
+
+- (NSString *)brazeFilteredBrand {
+    return [self brazeFilteredValue:self.brand forExpandedKey:kMPExpProductBrand];
+}
+
+- (NSString *)brazeFilteredCategory {
+    return [self brazeFilteredValue:self.category forExpandedKey:kMPExpProductCategory];
+}
+
+- (NSString *)brazeFilteredCouponCode {
+    return [self brazeFilteredValue:self.couponCode forExpandedKey:kMPExpProductCouponCode];
+}
+
+- (NSString *)brazeFilteredVariant {
+    return [self brazeFilteredValue:self.variant forExpandedKey:kMPExpProductVariant];
+}
+
+- (NSNumber *)brazeFilteredPrice {
+    return [self brazeFilteredValue:self.price forExpandedKey:kMPExpProductUnitPrice];
+}
+
+- (NSNumber *)brazeFilteredQuantity {
+    return [self brazeFilteredValue:self.quantity forExpandedKey:kMPExpProductQuantity];
+}
+
+- (NSNumber *)brazeFilteredPosition {
+    return [self brazeFilteredValue:@(self.position) forExpandedKey:kMPExpProductPosition];
+}
+
+@end
+
 @interface MPKitBraze() {
     Braze *brazeInstanceLocal;
     BOOL collectIDFA;
@@ -668,9 +733,15 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                     [properties addEntriesFromDictionary:productDictionary];
                 }
                 
-                NSString *sanitizedProductName = product.sku;
+                NSString *sanitizedProductName = product.brazeFilteredSku;
                 if ([@"True" isEqualToString:[self configurationStringForKey:replaceSkuWithProductName]]) {
-                    sanitizedProductName = product.name;
+                    sanitizedProductName = product.brazeFilteredName;
+                }
+
+                // Braze identifies the purchase by this value, so a product whose
+                // identifier the customer filtered cannot be forwarded at all.
+                if (!sanitizedProductName) {
+                    continue;
                 }
                 
                 // Strips key/values already being passed to Braze, plus key/values initialized to default values
@@ -679,8 +750,8 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 
                 [brazeInstanceLocal logPurchase:sanitizedProductName
                                    currency:currency
-                                      price:[product.price doubleValue]
-                                   quantity:[product.quantity integerValue]
+                                      price:[product.brazeFilteredPrice doubleValue]
+                                   quantity:[product.brazeFilteredQuantity integerValue]
                                  properties:properties];
                 
                 [execStatus incrementForwardCount];
@@ -1418,10 +1489,11 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (NSString *)brazeVariantIdForProduct:(MPProduct *)product {
-    if (product.variant.length) {
-        return product.variant;
+    NSString *variant = product.brazeFilteredVariant;
+    if (variant.length) {
+        return variant;
     }
-    return product.sku;
+    return product.brazeFilteredSku;
 }
 
 - (NSString *)brazeProductImageURLForProduct:(MPProduct *)product {
@@ -1452,19 +1524,19 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 
 - (NSDictionary<NSString *, id> *)brazeProductMetadataFromProduct:(MPProduct *)product {
     NSMutableDictionary<NSString *, id> *metadata = [[NSMutableDictionary alloc] init];
-    if (product.brand.length) {
-        metadata[@"brand"] = product.brand;
+    if (product.brazeFilteredBrand.length) {
+        metadata[@"brand"] = product.brazeFilteredBrand;
     }
-    if (product.category.length) {
-        metadata[@"category"] = product.category;
+    if (product.brazeFilteredCategory.length) {
+        metadata[@"category"] = product.brazeFilteredCategory;
     }
-    if (product.couponCode.length) {
-        metadata[@"coupon_code"] = product.couponCode;
+    if (product.brazeFilteredCouponCode.length) {
+        metadata[@"coupon_code"] = product.brazeFilteredCouponCode;
     }
-    if (product.position > 0) {
-        metadata[@"position"] = @(product.position);
+    if (product.brazeFilteredPosition.integerValue > 0) {
+        metadata[@"position"] = product.brazeFilteredPosition;
     }
-    metadata[@"sku"] = product.sku;
+    metadata[@"sku"] = product.brazeFilteredSku;
 
     NSString *mappedImageURLKey = [self mappedAttributeNameForConfigKey:mappingImageUrlKey];
     NSString *mappedProductURLKey = [self mappedAttributeNameForConfigKey:mappingProductUrlKey];
@@ -1518,13 +1590,19 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 }
 
 - (BRZEcommerceLineItem *)brazeLineItemFromProduct:(MPProduct *)product {
-    BRZEcommerceLineItem *lineItem = [[BRZEcommerceLineItem alloc] initWithProductId:product.sku
-                                                                         productName:product.name
-                                                                           variantId:[self brazeVariantIdForProduct:product]
+    // Braze requires an identifier, so a product whose identifier the customer
+    // filtered has no line item. The other required fields take an empty string.
+    NSString *productId = product.brazeFilteredSku;
+    if (!productId) {
+        return nil;
+    }
+    BRZEcommerceLineItem *lineItem = [[BRZEcommerceLineItem alloc] initWithProductId:productId
+                                                                         productName:product.brazeFilteredName ? : @""
+                                                                           variantId:[self brazeVariantIdForProduct:product] ? : @""
                                                                             imageUrl:[self brazeProductImageURLForProduct:product]
                                                                            productUrl:[self brazeProductURLForProduct:product]
-                                                                             quantity:MAX([product.quantity integerValue], 1)
-                                                                                price:[product.price doubleValue]
+                                                                             quantity:MAX([product.brazeFilteredQuantity integerValue], 1)
+                                                                                price:[product.brazeFilteredPrice doubleValue]
                                                                              metadata:[self brazeProductMetadataFromProduct:product]];
     return lineItem;
 }
@@ -1532,19 +1610,23 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 - (NSArray<BRZEcommerceLineItem *> *)brazeLineItemsFromProducts:(NSArray<MPProduct *> *)products {
     NSMutableArray<BRZEcommerceLineItem *> *lineItems = [[NSMutableArray alloc] initWithCapacity:products.count];
     for (MPProduct *product in products) {
-        [lineItems addObject:[self brazeLineItemFromProduct:product]];
+        BRZEcommerceLineItem *lineItem = [self brazeLineItemFromProduct:product];
+        if (lineItem) {
+            [lineItems addObject:lineItem];
+        }
     }
     return lineItems;
 }
 
-- (double)brazeTotalValueForProducts:(NSArray<MPProduct *> *)products transactionAttributes:(MPTransactionAttributes *)transactionAttributes {
+// Summed over the line items rather than the products they came from, so that a
+// product dropped for a filtered identifier cannot still count towards the total.
+- (double)brazeTotalValueForLineItems:(NSArray<BRZEcommerceLineItem *> *)lineItems transactionAttributes:(MPTransactionAttributes *)transactionAttributes {
     if (transactionAttributes.revenue != nil) {
         return transactionAttributes.revenue.doubleValue;
     }
     double total = 0;
-    for (MPProduct *product in products) {
-        NSInteger quantity = MAX([product.quantity integerValue], 1);
-        total += [product.price doubleValue] * quantity;
+    for (BRZEcommerceLineItem *lineItem in lineItems) {
+        total += lineItem.price * lineItem.quantity;
     }
     return total;
 }
@@ -1561,12 +1643,16 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 - (NSArray<NSDictionary *> *)brazeProductDictionariesFromProducts:(NSArray<MPProduct *> *)products {
     NSMutableArray<NSDictionary *> *productDictionaries = [[NSMutableArray alloc] initWithCapacity:products.count];
     for (MPProduct *product in products) {
+        NSString *productId = product.brazeFilteredSku;
+        if (!productId) {
+            continue;
+        }
         NSMutableDictionary *productDictionary = [@{
-            @"product_id": product.sku,
-            @"product_name": product.name,
-            @"variant_id": [self brazeVariantIdForProduct:product],
-            @"quantity": @(MAX([product.quantity integerValue], 1)),
-            @"price": @([product.price doubleValue])
+            @"product_id": productId,
+            @"product_name": product.brazeFilteredName ? : @"",
+            @"variant_id": [self brazeVariantIdForProduct:product] ? : @"",
+            @"quantity": @(MAX([product.brazeFilteredQuantity integerValue], 1)),
+            @"price": @([product.brazeFilteredPrice doubleValue])
         } mutableCopy];
         NSString *imageURL = [self brazeProductImageURLForProduct:product];
         if (imageURL.length) {
@@ -1591,6 +1677,16 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeCannotExecute];
     }
 
+    // Products whose identifier the customer filtered have no line item, so an
+    // event left with none of them has nothing for Braze to record. This reports
+    // success with nothing forwarded rather than MPKitReturnCodeCannotExecute,
+    // which the caller treats as "try the legacy path" and would send the event
+    // through logCustomEvent: instead.
+    NSArray<BRZEcommerceLineItem *> *lineItems = [self brazeLineItemsFromProducts:products];
+    if (lineItems.count == 0) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess forwardCount:0];
+    }
+
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess forwardCount:0];
     NSString *currency = [self brazeCurrencyForCommerceEvent:commerceEvent];
     NSString *source = [self brazeSource];
@@ -1606,8 +1702,8 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.action = commerceEvent.action == MPCommerceEventActionAddToCart ? @"add" : @"remove";
             payload.currency = currency;
             payload.source = source;
-            payload.products = [self brazeLineItemsFromProducts:products];
-            payload.totalValue = @([self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes]);
+            payload.products = lineItems;
+            payload.totalValue = @([self brazeTotalValueForLineItems:lineItems transactionAttributes:transactionAttributes]);
             if (subtotalValue != nil) {
                 payload.subtotalValue = subtotalValue;
             }
@@ -1628,8 +1724,8 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.cartId = [self brazeCartIdForCommerceEvent:commerceEvent];
             payload.currency = currency;
             payload.source = source;
-            payload.products = [self brazeLineItemsFromProducts:products];
-            payload.totalValue = [self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes];
+            payload.products = lineItems;
+            payload.totalValue = [self brazeTotalValueForLineItems:lineItems transactionAttributes:transactionAttributes];
             if (subtotalValue != nil) {
                 payload.subtotalValue = subtotalValue;
             }
@@ -1646,13 +1742,17 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         }
         case MPCommerceEventActionViewDetail: {
             for (MPProduct *product in products) {
+                NSString *productId = product.brazeFilteredSku;
+                if (!productId) {
+                    continue;
+                }
                 BRZEcommerceProductViewedEvent *payload = [[BRZEcommerceProductViewedEvent alloc] init];
-                payload.productId = product.sku;
-                payload.productName = product.name;
-                payload.variantId = [self brazeVariantIdForProduct:product];
+                payload.productId = productId;
+                payload.productName = product.brazeFilteredName ? : @"";
+                payload.variantId = [self brazeVariantIdForProduct:product] ? : @"";
                 payload.imageUrl = [self brazeProductImageURLForProduct:product];
                 payload.productUrl = [self brazeProductURLForProduct:product];
-                payload.price = [product.price doubleValue];
+                payload.price = [product.brazeFilteredPrice doubleValue];
                 payload.currency = currency;
                 payload.source = source;
                 NSMutableDictionary *metadata = [[self brazeProductMetadataFromProduct:product] mutableCopy] ?: [NSMutableDictionary dictionary];
@@ -1672,8 +1772,8 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
             payload.cartId = [self brazeCartIdForCommerceEvent:commerceEvent];
             payload.currency = currency;
             payload.source = source;
-            payload.products = [self brazeLineItemsFromProducts:products];
-            payload.totalValue = [self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes];
+            payload.products = lineItems;
+            payload.totalValue = [self brazeTotalValueForLineItems:lineItems transactionAttributes:transactionAttributes];
             if (subtotalValue != nil) {
                 payload.subtotalValue = subtotalValue;
             }
@@ -1695,7 +1795,7 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
         case MPCommerceEventActionRefund: {
             NSMutableDictionary *properties = [@{
                 @"order_id": [self brazeOrderIdForCommerceEvent:commerceEvent],
-                @"total_value": @([self brazeTotalValueForProducts:products transactionAttributes:transactionAttributes]),
+                @"total_value": @([self brazeTotalValueForLineItems:lineItems transactionAttributes:transactionAttributes]),
                 @"currency": currency,
                 @"source": source,
                 @"products": [self brazeProductDictionariesFromProducts:products]

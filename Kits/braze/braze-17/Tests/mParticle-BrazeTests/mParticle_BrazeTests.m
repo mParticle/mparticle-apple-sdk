@@ -1492,4 +1492,139 @@ static NSString *const kMPBrazeConfigAutomaticLocationCollection = @"automaticLo
     XCTAssertTrue([[[MPKitBraze alloc] init] supportsConsentStateReplay]);
 }
 
+#pragma mark - App family attribute filtering
+
+/*
+ MPIHasher renders the Java String.hashCode polynomial over the lowercased
+ attribute name as a signed 32-bit decimal, and the core SDK filters a product's
+ built-in fields under the expanded names below. Filtering a real product through
+ copyMatchingHashedProperties: leaves the typed accessors returning the value, so
+ these cover the kit reading the field rather than the core removing it.
+ */
+static NSString *const kBrazeTestItemPriceHash = @"536503804";
+static NSString *const kBrazeTestIdHash = @"3355";
+
+- (MPProduct *)filteredProductWithHashes:(NSArray<NSString *> *)hashes {
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product1" sku:@"1131331343" quantity:@1 price:@13];
+    NSMutableDictionary *hashedMap = [[NSMutableDictionary alloc] init];
+    for (NSString *hash in hashes) {
+        hashedMap[hash] = @0;
+    }
+    return [product copyMatchingHashedProperties:hashedMap];
+}
+
+- (void)testPurchaseOmitsFilteredProductPrice {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"bundleCommerceEventData" : @0};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [self filteredProductWithHashes:@[kBrazeTestItemPriceHash]];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
+
+    [[mockClient expect] logPurchase:@"1131331343"
+                            currency:@"USD"
+                               price:0
+                            quantity:1
+                          properties:OCMOCK_ANY];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testPurchaseDropsProductWithFilteredIdentifier {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"bundleCommerceEventData" : @0};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [self filteredProductWithHashes:@[kBrazeTestIdHash]];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+
+    XCTAssertEqual(execStatus.forwardCount, 0);
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceOmitsFilteredProductPrice {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [self filteredProductWithHashes:@[kBrazeTestItemPriceHash]];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    event.currency = @"USD";
+
+    [[mockClient expect] logEcommerceCartUpdated:[OCMArg checkWithBlock:^BOOL(BRZEcommerceCartUpdatedEvent *payload) {
+        return payload.products.count == 1
+            && payload.products.firstObject.price == 0
+            && [payload.totalValue doubleValue] == 0;
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceDropsProductWithFilteredIdentifier {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *product = [self filteredProductWithHashes:@[kBrazeTestIdHash]];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    event.currency = @"USD";
+
+    // Rejecting the legacy calls as well, because returning CannotExecute here
+    // would send the event through logCustomEvent: instead of dropping it.
+    [[mockClient reject] logEcommerceCartUpdated:OCMOCK_ANY];
+    [[mockClient reject] logCustomEvent:OCMOCK_ANY properties:OCMOCK_ANY];
+    [[mockClient reject] logCustomEvent:OCMOCK_ANY];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+
+    XCTAssertEqual(execStatus.forwardCount, 0);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
+- (void)testRecommendedEcommerceTotalExcludesDroppedProducts {
+    MPKitBraze *kit = [[MPKitBraze alloc] init];
+    kit.configuration = @{@"useEcommerceRecommendedEvents": @YES};
+
+    id mockClient = OCMClassMock([Braze class]);
+    [kit setBrazeInstanceLocal:mockClient];
+
+    MPProduct *dropped = [self filteredProductWithHashes:@[kBrazeTestIdHash]];
+    MPProduct *forwarded = [[MPProduct alloc] initWithName:@"product2" sku:@"2242442454" quantity:@2 price:@10];
+
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:dropped];
+    [event addProduct:forwarded];
+    event.currency = @"USD";
+
+    [[mockClient expect] logEcommerceCartUpdated:[OCMArg checkWithBlock:^BOOL(BRZEcommerceCartUpdatedEvent *payload) {
+        return payload.products.count == 1
+            && [payload.products.firstObject.productId isEqualToString:@"2242442454"]
+            && [payload.totalValue doubleValue] == 20;
+    }]];
+
+    MPKitExecStatus *execStatus = [kit logBaseEvent:event];
+
+    XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+    [mockClient verify];
+    [mockClient stopMocking];
+}
+
 @end
