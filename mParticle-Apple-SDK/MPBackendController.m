@@ -73,6 +73,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property (nonatomic, strong, readonly, nonnull) MPBackendSessionState *sessionState;
 @property (nonatomic, strong, nonnull) MPBackendSessionDependencies *sessionDependencies;
 @property (nonatomic, strong) MPBackendMessageWriter *messageWriter;
+@property (nonatomic, strong) MPBackendErrorReporter *errorReporter;
 @property (nonatomic, strong) MPBackendSessionCoordinator *sessionCoordinator;
 @property (nonatomic, strong) MPBackendLifecycleCoordinator *lifecycleCoordinator;
 @property (nonatomic, strong, nonnull) MPBackendSessionLifecycleDependencies *sessionLifecycleDependencies;
@@ -214,6 +215,25 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
             _messageWriter = [[MPBackendMessageWriter alloc] initWithState:self.sessionState dependencies:self.sessionDependencies];
         }
         return _messageWriter;
+    }
+}
+
+- (MPBackendErrorReporter *)errorReporter {
+    @synchronized (self) {
+        if (!_errorReporter) {
+            MPBackendErrorDependencies *errors = [[MPBackendErrorDependencies alloc]
+                initWithMaxBytesPerEvent:^NSInteger(NSString *messageType) {
+                    return [MPPersistenceUtilities maxBytesPerEvent:messageType];
+                }
+                crashMaxPLReportLength:^NSNumber * {
+                    return MParticle.sharedInstance.stateMachine.crashMaxPLReportLength;
+                }];
+            _errorReporter = [[MPBackendErrorReporter alloc] initWithState:self.sessionState
+                                                             dependencies:self.sessionDependencies
+                                                                   writer:self.messageWriter
+                                                                   errors:errors];
+        }
+        return _errorReporter;
     }
 }
 
@@ -1002,113 +1022,20 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)logError:(NSString *)message exception:(NSException *)exception topmostContext:(id)topmostContext eventInfo:(NSDictionary *)eventInfo completionHandler:(void (^)(NSString *message, MPExecStatus execStatus))completionHandler {
-    NSString *execMessage = exception ? exception.name : message;
-    
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    NSMutableDictionary *messageInfo = [@{kMPCrashWasHandled:@"true", kMPCrashingSeverity:@"error"} mutableCopy];
-    if (exception) {
-        messageInfo[kMPErrorMessage] = exception.reason;
-        messageInfo[kMPCrashingClass] = exception.name;
-        
-        NSArray *callStack = [exception callStackSymbols];
-        if (callStack) {
-            messageInfo[kMPStackTrace] = [callStack componentsJoinedByString:@"\n"];
-        }
-        
-        NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [self.persistence fetchBreadcrumbs];
-        if (fetchedbreadcrumbs) {
-            NSMutableArray *breadcrumbs = [[NSMutableArray alloc] initWithCapacity:fetchedbreadcrumbs.count];
-            for (MPBreadcrumb *breadcrumb in fetchedbreadcrumbs) {
-                [breadcrumbs addObject:[breadcrumb dictionaryRepresentation]];
-            }
-            
-            NSString *messageTypeBreadcrumbKey = kMPMessageTypeStringBreadcrumb;
-            messageInfo[messageTypeBreadcrumbKey] = breadcrumbs;
-        }
-    } else {
-        messageInfo[kMPErrorMessage] = message;
-    }
-    
-    if (topmostContext) {
-        messageInfo[kMPTopmostContext] = [[topmostContext class] description];
-    }
-    
-    if (eventInfo.count > 0) {
-        messageInfo[kMPAttributesKey] = eventInfo;
-    }
-    
-    NSDictionary *appImageInfo = [MPApplication_PRIVATE appImageInfo];
-    if (appImageInfo) {
-        [messageInfo addEntriesFromDictionary:appImageInfo];
-    }
-    
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
-
-    MPMessage *errorMessage = [messageBuilder build];
-    
-    [self saveMessage:errorMessage updateSession:YES];
-    
-    execStatus = MPExecStatusSuccess;
-    
-    completionHandler(execMessage, execStatus);
+    NSString *topmostContextDescription = topmostContext ? [[topmostContext class] description] : nil;
+    NSString *execMessage = [self.errorReporter logErrorWithMessage:message
+                                                          exception:exception
+                                          topmostContextDescription:topmostContextDescription
+                                                          eventInfo:eventInfo];
+    completionHandler(execMessage, MPExecStatusSuccess);
 }
 
 -  (void)logCrash:(NSString *)message stackTrace:(NSString *)stackTrace plCrashReport:(NSString *)plCrashReport completionHandler:(void (^)(NSString *message, MPExecStatus execStatus)) completionHandler
 {
-    NSString *execMessage = message ? message : @"Crash Report";
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    NSMutableDictionary *messageInfo = [@{
-        kMPCrashingSeverity: @"fatal",
-        kMPCrashWasHandled: @"false"
-    } mutableCopy];
-    
-    if(message) {
-        messageInfo[kMPErrorMessage] = message;
-    }
-    
-    NSString *plCrashReportBase64 = [MPBackendMessageInfo base64CrashReport:plCrashReport maxBytes:[MParticle sharedInstance].stateMachine.crashMaxPLReportLength];
-    if(plCrashReportBase64) {
-        messageInfo[kMPPLCrashReport] = plCrashReportBase64;
-    }
-    
-    id<MPBackendPersistence> persistence = self.persistence;
-    NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [persistence fetchBreadcrumbs];
-    if (fetchedbreadcrumbs) {
-        NSMutableArray *breadcrumbs = [[NSMutableArray alloc] initWithCapacity:fetchedbreadcrumbs.count];
-        for (MPBreadcrumb *breadcrumb in fetchedbreadcrumbs) {
-            [breadcrumbs addObject:[breadcrumb dictionaryRepresentation]];
-        }
-        messageInfo[kMPMessageTypeLeaveBreadcrumbs] = breadcrumbs;
-    }
-    
-    if(stackTrace) {
-        messageInfo[kMPStackTrace] = stackTrace;
-    }
-
-    MPSession *crashSession = nil;
-    NSArray<MPSession *> *sessions = [persistence fetchPossibleSessionsFromCrash];
-    for (MPSession *session in sessions) {
-        if (![session isEqual:self.session]) {
-            crashSession = session;
-            break;
-        }
-    }
-    
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport session:crashSession messageInfo:messageInfo context:self.messageBuilderContext];
-    MPMessage *crashMessage = [messageBuilder build];
-    
-    NSNumber *bytesToRetain = [MPBackendMessageInfo crashReportBytesToRetainForMessageLength:crashMessage.messageData.length
-                                                                                    maxBytes:[MPPersistenceUtilities maxBytesPerEvent:crashMessage.messageType]
-                                                                          base64ReportLength:plCrashReportBase64.length];
-    if (bytesToRetain != nil) {
-        [crashMessage truncateMessageDataProperty:kMPPLCrashReport toLength:bytesToRetain.integerValue];
-    }
-    [persistence saveMessage:crashMessage];
-    
-    execStatus = MPExecStatusSuccess;
-    completionHandler(execMessage, execStatus);
+    NSString *execMessage = [self.errorReporter logCrashWithMessage:message
+                                                         stackTrace:stackTrace
+                                                      plCrashReport:plCrashReport];
+    completionHandler(execMessage, MPExecStatusSuccess);
 }
 
 - (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
