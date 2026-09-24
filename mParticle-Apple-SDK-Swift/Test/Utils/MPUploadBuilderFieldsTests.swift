@@ -49,7 +49,9 @@ final class MPUploadBuilderFieldsTests: XCTestCase {
         let group: [AnyHashable: Any] = ["ps": [["k": "r", "n": "w"]], "f": "NSUserDefaults"]
         let module = try XCTUnwrap(CustomModule(
             dictionary: ["id": 7, "pr": [group]],
-            connector: connector
+            connector: connector,
+            allowedPreferenceKeys: ["r"],
+            logger: MPLog(logLevel: .none)
         ))
 
         let dictionary = MPUploadBuilderFields.customModulesDictionary(from: [module])

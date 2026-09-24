@@ -14,6 +14,27 @@ enum CustomModuleConfigKey {
     static let preferenceSettings = "ps"
 }
 
+/// The keys a custom module preference may read out of the host application's standard
+/// preferences, independently of what the configuration response asks for.
+///
+/// Custom modules exist to forward a fixed set of Adobe Mobile Services identifiers that the Adobe
+/// SDK stores in those preferences. The response names the key, so without a bound held here the
+/// party that produces the configuration could name any preference the host application keeps —
+/// a session token, profile data, another SDK's identifiers — and receive it in the next upload.
+/// The host application can widen this set through `MParticleOptions`, which is the only way a key
+/// outside it is ever read.
+enum CustomModulePreferenceAllowList {
+    /// The Adobe Mobile Services identifiers the feature was built to carry.
+    static let defaultKeys: Set<String> = [
+        "ADB_LIFETIME_VALUE",
+        "ADOBEMOBILE_STOREDDEFAULTS_AID",
+        "APP_MEASUREMENT_VISITOR_ID",
+        "OMCK1",
+        "OMCK5",
+        "OMCK6"
+    ]
+}
+
 @objc(MPCustomModulePreference) public final class CustomModulePreference: NSObject, NSSecureCoding {
     @objc public let moduleId: NSNumber
     @objc public let readKey: String
@@ -33,13 +54,24 @@ enum CustomModuleConfigKey {
     private let connector: MPUserDefaultsConnectorProtocol?
     private let archivedValue: Any?
 
-    @objc public init?(dictionary: [AnyHashable: Any],
-                       location: String?,
-                       moduleId: NSNumber,
-                       connector: MPUserDefaultsConnectorProtocol) {
+    init?(dictionary: [AnyHashable: Any],
+          location: String?,
+          moduleId: NSNumber,
+          connector: MPUserDefaultsConnectorProtocol,
+          allowedPreferenceKeys: Set<String>,
+          logger: MPLog) {
         guard let readKey = dictionary[CustomModuleConfigKey.readKey] as? String,
               let writeKey = dictionary[CustomModuleConfigKey.writeKey] as? String
         else {
+            return nil
+        }
+
+        // Rejecting the preference outright, rather than reading it and discarding the value, is
+        // what keeps a disallowed key out of both the upload and the `cms::` cache the getter
+        // below writes: a preference that never exists is never resolved and never stored.
+        guard allowedPreferenceKeys.contains(readKey) else {
+            logger.error("Ignoring a custom module preference for '\(readKey)': not a key this SDK reads. "
+                + "Add it to customModulePreferenceKeys on MParticleOptions to share it deliberately.")
             return nil
         }
 

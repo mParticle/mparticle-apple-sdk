@@ -4,8 +4,22 @@ import XCTest
 final class MPCustomModuleSwiftTests: XCTestCase {
     private let connector = MPUserDefaultsConnectorMock()
 
-    private func makeModule(_ dictionary: [AnyHashable: Any]) -> CustomModule? {
-        return CustomModule(dictionary: dictionary, connector: connector)
+    /// Allows every read key the fixture names, so these tests stay about module parsing rather
+    /// than about the allow-list, which `testDisallowedReadKeyIsRejected` covers on its own.
+    private func makeModule(_ dictionary: [AnyHashable: Any],
+                            allowedPreferenceKeys: [String]? = nil) -> CustomModule? {
+        return CustomModule(dictionary: dictionary,
+                            connector: connector,
+                            allowedPreferenceKeys: allowedPreferenceKeys ?? Self.readKeys(in: dictionary),
+                            logger: MPLog(logLevel: .none))
+    }
+
+    private static func readKeys(in dictionary: [AnyHashable: Any]) -> [String] {
+        let groups = dictionary[CustomModuleConfigKey.preferences] as? [Any] ?? []
+        return groups.flatMap { group -> [String] in
+            let settings = (group as? [AnyHashable: Any])?[CustomModuleConfigKey.preferenceSettings] as? [Any] ?? []
+            return settings.compactMap { ($0 as? [AnyHashable: Any])?[CustomModuleConfigKey.readKey] as? String }
+        }
     }
 
     private func configuration(preferenceSettings: [[AnyHashable: Any]],

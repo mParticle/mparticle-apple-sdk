@@ -15,6 +15,8 @@ public protocol MPStateMachineProtocolPRIVATE: NSObjectProtocol {
     var logLevel: UInt { get set }
     var consumerInfo: MPConsumerInfoPRIVATE { get set }
     var automaticSessionTracking: Bool { get set }
+    var collectCustomModulePreferences: Bool { get set }
+    var customModulePreferenceKeys: [String]? { get set }
     var currentSession: MPSessionPRIVATE? { get set }
     var attAuthorizationStatus: NSNumber? { get set }
     var attAuthorizationTimestamp: NSNumber? { get set }
@@ -98,6 +100,14 @@ public final class MPStateMachinePRIVATE: NSObject,
     @objc public var launchDate: Date? = Date()
     @objc public var pushNotificationModeValue: String?
     @objc public var customModules: [CustomModule]?
+
+    /// Mirrors `MParticleOptions.collectCustomModulePreferences`. Set before the persisted
+    /// configuration is restored, so it governs a restored `cms` array as well as a live one.
+    @objc public var collectCustomModulePreferences = true
+
+    /// Mirrors `MParticleOptions.customModulePreferenceKeys`: host-application keys allowed on
+    /// top of the ones the SDK reads by default.
+    @objc public var customModulePreferenceKeys: [String]?
 
     // Held weakly, as the deleted wrapper's weak property did - the backend controller owns the
     // session and clears this when it ends.
@@ -505,17 +515,35 @@ public final class MPStateMachinePRIVATE: NSObject,
     /// the stored preferences and the object `MPCustomModule` needs, so it is passed straight in.
     @objc(configureCustomModules:)
     public func configureCustomModules(_ customModuleSettings: Any?) {
+        let logger = MPLog(logLevel: MPLog.from(rawValue: logLevel))
+
+        // Custom modules read the host application's own preferences, so an application that has
+        // switched them off must see no module built at all, whatever the configuration says.
+        guard collectCustomModulePreferences else {
+            if customModuleSettings != nil, !(customModuleSettings is NSNull) {
+                logger.debug("Ignoring the custom module settings in the configuration: collectCustomModulePreferences is off.")
+            }
+            customModules = nil
+            return
+        }
+
         // Cast the array without its element type: `as? [[AnyHashable: Any]]` bridges eagerly, so a
         // single malformed entry would discard every well-formed module alongside it.
         guard let customModuleSettings = customModuleSettings as? [Any] else {
             return
         }
 
+        let allowedPreferenceKeys = Array(CustomModulePreferenceAllowList.defaultKeys
+            .union(customModulePreferenceKeys ?? []))
+
         let modules = customModuleSettings.compactMap { setting -> CustomModule? in
             guard let setting = setting as? [AnyHashable: Any] else {
                 return nil
             }
-            return CustomModule(dictionary: setting, connector: connector)
+            return CustomModule(dictionary: setting,
+                                connector: connector,
+                                allowedPreferenceKeys: allowedPreferenceKeys,
+                                logger: logger)
         }
         customModules = modules.isEmpty ? nil : modules
     }

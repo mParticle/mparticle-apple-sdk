@@ -159,7 +159,10 @@
                                                           @1,
                                                           @"Not a dictionary.",
                                                           [NSNull null],
-                                                          @{@"k":@"WELL_FORMED_KEY", @"t":@1, @"n":@"vid", @"d":@"0"}
+                                                          // A key the SDK will actually read: this test is about
+                                                          // skipping malformed entries, and one the allow-list
+                                                          // rejected would be skipped for the other reason.
+                                                          @{@"k":@"APP_MEASUREMENT_VISITOR_ID", @"t":@1, @"n":@"vid", @"d":@"0"}
                                                           ]
                                                   }
                                                 ]
@@ -172,6 +175,111 @@
     MPCustomModule *customModule = stateMachine.customModules.firstObject;
     XCTAssertEqualObjects(customModule.customModuleId, @22, @"Should have been equal.");
     XCTAssertEqual(customModule.preferences.count, 1, @"The malformed preference settings should have been skipped.");
+}
+
+#pragma mark - Custom module preference allow-list
+
+// The configuration names the NSUserDefaults key to read, so the bound on what may be read has to
+// come from the SDK rather than from the response.
+- (NSArray *)customModuleSettingsReading:(NSString *)readKey as:(NSString *)writeKey {
+    return @[@{@"id":@22,
+               @"pr":@[@{@"f":@"NSUserDefaults",
+                         @"ps":@[@{@"k":readKey, @"n":writeKey, @"t":@1, @"d":@"default"}]}]}];
+}
+
+- (void)assertNothingWasHarvestedFor:(NSString *)writeKey stateMachine:(MPStateMachine_PRIVATE *)stateMachine {
+    for (MPCustomModule *customModule in stateMachine.customModules) {
+        XCTAssertNil([customModule dictionaryRepresentation][writeKey],
+                     @"A key outside the allow-list must not reach an upload");
+    }
+    NSString *cacheKey = [NSString stringWithFormat:@"cms::22::%@", writeKey];
+    id cached = [MPUserDefaultsConnector.userDefaults mpObjectForKey:cacheKey userId:[MPPersistenceUtilities mpId]];
+    XCTAssertNil(cached, @"A key outside the allow-list must not reach the cms:: cache either");
+}
+
+- (void)testConfigNamingAnArbitraryHostKeyHarvestsNothing {
+    NSString *hostKey = @"mp.test.session_token";
+    [[NSUserDefaults standardUserDefaults] setObject:@"a token the app never offered" forKey:hostKey];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+
+    [stateMachine configureCustomModules:[self customModuleSettingsReading:hostKey as:@"tok"]];
+
+    [self assertNothingWasHarvestedFor:@"tok" stateMachine:stateMachine];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:hostKey];
+    [stateMachine configureCustomModules:nil];
+}
+
+- (void)testKnownPartnerKeysAreStillRead {
+    NSString *partnerKey = @"ADOBEMOBILE_STOREDDEFAULTS_AID";
+    [[NSUserDefaults standardUserDefaults] setObject:@"an Adobe identifier" forKey:partnerKey];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+
+    [stateMachine configureCustomModules:[self customModuleSettingsReading:partnerKey as:@"aid"]];
+
+    XCTAssertEqual(stateMachine.customModules.count, 1);
+    XCTAssertEqualObjects([stateMachine.customModules.firstObject dictionaryRepresentation][@"aid"],
+                          @"an Adobe identifier",
+                          @"The keys custom modules exist to carry must keep working");
+
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:partnerKey];
+    [MPUserDefaultsConnector.userDefaults removeMPObjectForKey:@"cms::22::aid" userId:[MPPersistenceUtilities mpId]];
+    [stateMachine configureCustomModules:nil];
+}
+
+- (void)testHostApplicationCanAllowAnAdditionalKey {
+    NSString *hostKey = @"mp.test.opted_in";
+    [[NSUserDefaults standardUserDefaults] setObject:@"shared on purpose" forKey:hostKey];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.customModulePreferenceKeys = @[hostKey];
+
+    [stateMachine configureCustomModules:[self customModuleSettingsReading:hostKey as:@"opt"]];
+
+    XCTAssertEqualObjects([stateMachine.customModules.firstObject dictionaryRepresentation][@"opt"],
+                          @"shared on purpose",
+                          @"A key the app allowed must be read");
+
+    stateMachine.customModulePreferenceKeys = nil;
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:hostKey];
+    [MPUserDefaultsConnector.userDefaults removeMPObjectForKey:@"cms::22::opt" userId:[MPPersistenceUtilities mpId]];
+    [stateMachine configureCustomModules:nil];
+}
+
+- (void)testTurningCollectionOffBuildsNoModulesAtAll {
+    NSString *partnerKey = @"ADOBEMOBILE_STOREDDEFAULTS_AID";
+    [[NSUserDefaults standardUserDefaults] setObject:@"an Adobe identifier" forKey:partnerKey];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.collectCustomModulePreferences = NO;
+
+    [stateMachine configureCustomModules:[self customModuleSettingsReading:partnerKey as:@"aid"]];
+
+    XCTAssertNil(stateMachine.customModules, @"Switched off, not even an allowed key is read");
+    [self assertNothingWasHarvestedFor:@"aid" stateMachine:stateMachine];
+
+    stateMachine.collectCustomModulePreferences = YES;
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:partnerKey];
+    [stateMachine configureCustomModules:nil];
+}
+
+- (void)testAnAllowedPreferenceSurvivesAlongsideADisallowedOne {
+    [[NSUserDefaults standardUserDefaults] setObject:@"an Adobe identifier" forKey:@"OMCK1"];
+    [[NSUserDefaults standardUserDefaults] setObject:@"a token the app never offered" forKey:@"mp.test.mixed_token"];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+
+    NSArray *settings = @[@{@"id":@22,
+                            @"pr":@[@{@"f":@"NSUserDefaults",
+                                      @"ps":@[@{@"k":@"mp.test.mixed_token", @"n":@"tok", @"t":@1},
+                                              @{@"k":@"OMCK1", @"n":@"id", @"t":@1}]}]}];
+    [stateMachine configureCustomModules:settings];
+
+    MPCustomModule *customModule = stateMachine.customModules.firstObject;
+    XCTAssertEqual(customModule.preferences.count, 1, @"Only the allowed preference is kept");
+    XCTAssertEqualObjects([customModule dictionaryRepresentation][@"id"], @"an Adobe identifier");
+    [self assertNothingWasHarvestedFor:@"tok" stateMachine:stateMachine];
+
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"OMCK1"];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"mp.test.mixed_token"];
+    [MPUserDefaultsConnector.userDefaults removeMPObjectForKey:@"cms::22::id" userId:[MPPersistenceUtilities mpId]];
+    [stateMachine configureCustomModules:nil];
 }
 
 - (void)testConfigureCustomModulesWithNonArrayIsIgnored {
