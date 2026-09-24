@@ -930,6 +930,17 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
     self.identifying = NO;
 
+    // Both the cached and the network branch above assign whatever JSONObjectWithData returned, and
+    // a JSON body is as legitimately an array, string or number as it is an object. Every reader
+    // below subscripts this by key, including the error branch, and the responders are Swift, so a
+    // non-object arrives as an unrecognized selector that no @catch here is positioned to take.
+    // Narrowing it once, where both branches meet, keeps that out of all of them.
+    BOOL bodyWasNotAnObject = responseDictionary != nil && ![responseDictionary isKindOfClass:[NSDictionary class]];
+    if (bodyWasNotAnObject) {
+        responseDictionary = nil;
+        success = NO;
+    }
+
     if (success) {
         if (responseString) {
             MPILogVerbose(@"Identity response:\n%@", responseString);
@@ -961,6 +972,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                     MPILogError(@"Identity request failed - unknown error: %@ (domain: %@, code: %ld)", error.localizedDescription, error.domain, (long)error.code);
                     errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeUnknown message:@"An unknown client-side error has occured" error:error];
                 }
+            } else if (bodyWasNotAnObject) {
+                MPILogError(@"Identity request failed - response body was not a JSON object");
+                errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeUnknown message:@"Identity response body was not a JSON object." error:nil];
             } else {
                 MPILogError(@"Identity request failed - HTTP error (code: %ld)", (long)responseCode);
                 errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];

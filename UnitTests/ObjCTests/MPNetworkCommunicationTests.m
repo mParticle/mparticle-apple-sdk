@@ -9,6 +9,8 @@
 #import "MPPersistenceAdapter.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPIdentityDTO.h"
+#import "MPIdentityApiManager.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -29,6 +31,7 @@
 - (BOOL)performAliasUpload:(MPUpload *)upload;
 - (UIBackgroundTaskIdentifier)beginSafeBackgroundTaskWithExpirationHandler:(void(^_Nullable)(void))handler;
 - (void)endSafeBackgroundTask:(UIBackgroundTaskIdentifier)taskId;
+- (void)identityApiRequestWithURL:(NSURL *)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
 @property (nonatomic) BOOL identifying;
 
 @end
@@ -841,6 +844,54 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self shouldStopAlias:429 shouldStop:YES];
     [self shouldStopAlias:500 shouldStop:YES];
     [self shouldStopAlias:503 shouldStop:YES];
+}
+
+#pragma mark - Malformed identity response bodies
+
+// A JSON body is as legitimately an array, string or number as it is an object, and identify runs
+// at every SDK start. Reaching the response objects with one of those raises on a keyed subscript
+// with nothing on the path to catch it, so the request has to fail here instead.
+- (void)testIdentityRequestFailsWhenTheBodyIsNotAJSONObject {
+    for (NSString *body in @[@"[1,2]", @"\"a string\"", @"42"]) {
+        NSError *error = [self errorFromIdentityRequestWithStatusCode:200
+                                                                 body:[body dataUsingEncoding:NSUTF8StringEncoding]];
+        XCTAssertNotNil(error, @"Body %@ must be reported as a failed request", body);
+        XCTAssertEqualObjects(error.domain, mParticleIdentityErrorDomain);
+    }
+}
+
+- (void)testIdentityRequestStillSucceedsOnAJSONObjectBody {
+    XCTAssertNil([self errorFromIdentityRequestWithStatusCode:200
+                                                         body:[@"{\"mpid\":\"42\"}" dataUsingEncoding:NSUTF8StringEncoding]]);
+}
+
+- (NSError *)errorFromIdentityRequestWithStatusCode:(int)statusCode body:(NSData *)body {
+    id urlResponseMock = OCMClassMock([NSHTTPURLResponse class]);
+    [[[urlResponseMock stub] andReturnValue:OCMOCK_VALUE(statusCode)] statusCode];
+
+    MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    response.httpResponse = urlResponseMock;
+    response.data = body;
+
+    id mockConnector = OCMClassMock([MPConnector class]);
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
+
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    id mockNetworkCommunication = OCMPartialMock(networkCommunication);
+    [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
+
+    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:[[MPIdentityApiRequest alloc] init]];
+    __block NSError *capturedError = nil;
+    __block BOOL completed = NO;
+    XCTAssertNoThrow([mockNetworkCommunication identityApiRequestWithURL:[networkCommunication identifyURL].url
+                                                        identityRequest:request
+                                                     blockOtherRequests:NO
+                                                             completion:^(MPIdentityHTTPBaseSuccessResponse *httpResponse, NSError *error) {
+        completed = YES;
+        capturedError = error;
+    }]);
+    XCTAssertTrue(completed, @"The completion must run whatever the body is");
+    return capturedError;
 }
 
 - (void)shouldStopAlias:(int)returnCode shouldStop:(BOOL)shouldStop {
