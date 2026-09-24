@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import <objc/runtime.h>
+#import <stdatomic.h>
 #import "mParticle.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPIConstants.h"
@@ -158,6 +159,24 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     MPKitExecStatus *status = [super didFinishLaunchingWithConfiguration:configuration];
     [self setValue:@NO forKey:@"started"];
     return status;
+}
+@end
+
+// Reads consent synchronously while launching, as MPKitFirebaseGA4Analytics does.
+static atomic_bool gLaunchConsentEntered;
+static atomic_bool gLaunchConsentReturned;
+
+@interface MPLaunchConsentReaderTestKit : MPKitTestClass
+@end
+@implementation MPLaunchConsentReaderTestKit
++ (NSNumber *)kitCode {
+    return @123458;
+}
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    atomic_store(&gLaunchConsentEntered, true);
+    (void)[MParticle sharedInstance].identity.currentUser.consentState;
+    atomic_store(&gLaunchConsentReturned, true);
+    return [super didFinishLaunchingWithConfiguration:configuration];
 }
 @end
 
@@ -4414,6 +4433,54 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     MPKitFilter *filter = [kitContainer filter:registration forConsentState:[self consentStateWithMarketing:YES includeCCPA:YES]];
     XCTAssertTrue(filter.shouldFilter);
     XCTAssertNil(filter.forwardConsentState);
+}
+
+#pragma mark Kit launch reentry
+
+- (void)testConsentReadDuringKitLaunchFromServerConfigDoesNotBlockMainThread {
+    MPKitRegister *reader = [[MPKitRegister alloc] initWithName:@"LaunchConsentReader" className:@"MPLaunchConsentReaderTestKit"];
+    self.consentTestRegister = reader;
+    [MPKitContainer_PRIVATE registerKit:reader];
+    atomic_store(&gLaunchConsentEntered, false);
+    atomic_store(&gLaunchConsentReturned, false);
+    id adapter = kitContainer.executionAdapter;
+    dispatch_semaphore_t kitsSemaphore = (dispatch_semaphore_t)object_getIvar(adapter, class_getInstanceVariable([adapter class], "kitsSemaphore"));
+    XCTAssertNotNil(kitsSemaphore);
+
+    // On a regression the main thread never returns from configureKits:, so a watchdog releases
+    // kitsSemaphore once to turn the hang into a failure.
+    __block BOOL released = NO;
+    dispatch_semaphore_t configureReturned = dispatch_semaphore_create(0);
+    dispatch_semaphore_t watchdogFinished = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (dispatch_semaphore_wait(configureReturned, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)) != 0 &&
+            atomic_load(&gLaunchConsentEntered) && !atomic_load(&gLaunchConsentReturned)) {
+            released = YES;
+            dispatch_semaphore_signal(kitsSemaphore);
+        }
+        dispatch_semaphore_signal(watchdogFinished);
+    });
+
+    // A kit that is not running yet (e.g. on a fresh install) is launched inside configureKits:.
+    [kitContainer configureKits:@[@{@"id": @123458, @"as": @{@"key": @"value"}}]];
+    dispatch_semaphore_signal(configureReturned);
+    dispatch_semaphore_wait(watchdogFinished, DISPATCH_TIME_FOREVER);
+    if (released) {
+        dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW);
+    }
+
+    XCTAssertTrue(atomic_load(&gLaunchConsentEntered));
+    XCTAssertFalse(released, @"consentState blocked on kitsSemaphore held by configureKits:");
+}
+
+- (void)testActiveKitsRegistryWithoutWaitingReturnsRegistryWhenUnlocked {
+    [self registerConsentReplayTestKit];
+    [kitContainer configureKits:@[@{@"id": @123456, @"as": @{@"test": @YES}}]];
+
+    NSArray *activeKits = [kitContainer activeKitsRegistryWithoutWaiting];
+
+    XCTAssertGreaterThan(activeKits.count, 0);
+    XCTAssertEqualObjects(activeKits, [kitContainer activeKitsRegistry]);
 }
 
 @end
