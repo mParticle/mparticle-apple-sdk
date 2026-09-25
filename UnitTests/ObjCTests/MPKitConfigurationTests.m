@@ -395,4 +395,58 @@
     XCTAssertTrue([kitConfiguration.configuredMessageTypeProjections[MPMessageTypeEvent] boolValue]);
 }
 
+// One unusable message type must not cost the kit the projections either side of it.
+- (void)testValidProjectionsSurviveAlongsideOutOfRangeOnes {
+    NSDictionary *configuration = @{
+        @"id":@42,
+        @"pr":@[
+            @{@"id":@1, @"action":@{@"projected_event_name":@"A"}, @"matches":@[@{@"message_type":@(MPMessageTypeEvent)}]},
+            @{@"id":@2, @"action":@{@"projected_event_name":@"B"}, @"matches":@[@{@"message_type":@21}]},
+            @{@"id":@3, @"action":@{@"projected_event_name":@"C"}, @"matches":@[@{@"message_type":@100}]},
+            @{@"id":@4, @"action":@{@"projected_event_name":@"D"}, @"matches":@[@{@"message_type":@"-1"}]},
+            @{@"id":@5, @"action":@{@"projected_event_name":@"E"}, @"matches":@[@{@"message_type":@(MPMessageTypeScreenView)}]},
+        ]
+    };
+
+    MPKitConfiguration *kitConfiguration = nil;
+    XCTAssertNoThrow(kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration]);
+
+    XCTAssertTrue([kitConfiguration.configuredMessageTypeProjections[MPMessageTypeEvent] boolValue]);
+    XCTAssertTrue([kitConfiguration.configuredMessageTypeProjections[MPMessageTypeScreenView] boolValue]);
+    XCTAssertEqual(kitConfiguration.projections.count, 2, @"Only the two usable projections are kept");
+}
+
+// The two arrays are read as a pair: the forwarding path checks the length of the configured array
+// and then subscripts the defaults array with the same index. Registering a media projection grows
+// the configured array by one, so the defaults array has to grow with it or that pairing indexes
+// past the end of an array the guard never measured.
+- (void)testProjectionArraysStayTheSameLength {
+    NSDictionary *nonDefault = @{
+        @"id":@42,
+        @"pr":@[@{
+            @"id":@1,
+            @"action":@{@"projected_event_name":@"Media Event"},
+            @"matches":@[@{@"message_type":@(MPMessageTypeMedia)}]
+        }]
+    };
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:nonDefault];
+    XCTAssertEqual(kitConfiguration.defaultProjections.count,
+                   kitConfiguration.configuredMessageTypeProjections.count,
+                   @"A non-default media projection must grow both arrays");
+
+    NSDictionary *isDefault = @{
+        @"id":@42,
+        @"pr":@[@{
+            @"id":@1,
+            @"action":@{@"projected_event_name":@"Media Event"},
+            @"behavior":@{@"is_default":@YES},
+            @"matches":@[@{@"message_type":@(MPMessageTypeMedia)}]
+        }]
+    };
+    kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:isDefault];
+    XCTAssertEqual(kitConfiguration.defaultProjections.count,
+                   kitConfiguration.configuredMessageTypeProjections.count,
+                   @"A default media projection must grow both arrays");
+}
+
 @end
