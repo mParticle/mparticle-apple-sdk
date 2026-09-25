@@ -297,6 +297,45 @@
     XCTAssertEqualObjects(kitConfig.userAttributeFilters, @{@"1217787541": @0});
 }
 
+- (void)testWrongTypedProjectionsAreIgnored {
+    // `pr` crosses into Swift as an array, so a non-array is messaged with count or objectAtIndex:
+    // inside the bridge rather than being rejected by it.
+    NSArray *notArrays = @[@"pr", @{@"a": @1}, @7];
+
+    for (id notAnArray in notArrays) {
+        NSDictionary *configuration = @{@"id": @80, @"pr": notAnArray};
+        MPKitConfiguration *kitConfig = nil;
+
+        XCTAssertNoThrow(kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration],
+                         @"A `pr` of %@ must be ignored, not raise", [notAnArray class]);
+        XCTAssertNotNil(kitConfig, @"The rest of the entry is still usable");
+        XCTAssertNil(kitConfig.projections);
+    }
+}
+
+- (void)testWrongTypedProjectionElementsAreSkipped {
+    // A well-formed `pr` carrying junk alongside a real projection keeps the real one.
+    NSDictionary *configuration = @{
+                                    @"id": @80,
+                                    @"pr": @[
+                                            @"not-a-projection",
+                                            @[@1],
+                                            @{@"behavior": @{@"append_unmapped_as_is": @YES},
+                                              @"action": @{@"projected_event_name": @"Test",
+                                                           @"attribute_maps": @[]},
+                                              @"matches": @[@{@"message_type": @4,
+                                                              @"event_match_type": @"String",
+                                                              @"event": @"Test"}],
+                                              @"id": @97}
+                                            ]
+                                    };
+
+    MPKitConfiguration *kitConfig = nil;
+    XCTAssertNoThrow(kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration]);
+    XCTAssertNotNil(kitConfig);
+    XCTAssertEqual(kitConfig.projections.count, 1);
+}
+
 - (void)testKitConfigurationEncoding {
     MPKitConfiguration *persistedKitConfiguration = [self attemptSecureEncodingwithClass:[MPKitConfiguration class] Object:kitConfiguration];
     XCTAssertEqualObjects(kitConfiguration, persistedKitConfiguration);
