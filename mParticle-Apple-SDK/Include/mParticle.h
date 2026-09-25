@@ -303,7 +303,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, copy, readwrite) NSString *defaultAgent;
 
 /**
- Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to YES
+ Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to NO
  */
 @property (nonatomic, readwrite) BOOL collectSearchAdsAttribution;
 
@@ -600,7 +600,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (atomic, readonly) BOOL collectUserAgent;
 
 /**
- Determines whether the SDK will attempt to collect Apple Search Ads attribution information. Defaults to YES
+ Determines whether the SDK will attempt to collect Apple Search Ads attribution information. Defaults to NO
  */
 @property (atomic, readonly) BOOL collectSearchAdsAttribution;
 
