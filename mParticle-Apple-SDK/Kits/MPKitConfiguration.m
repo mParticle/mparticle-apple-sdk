@@ -167,9 +167,13 @@
 
 #pragma mark Public methods
 
-- (void)configureProjections:(NSArray *)projections factory:(MPKitProjectionSnapshotFactory *)factory {
+/// The factory takes a Swift array, so a non-array reaching the bridge is messaged with `count` or
+/// `objectAtIndex:` and raises. Individual elements need no check; the factory skips any that is
+/// not an object.
+- (void)configureProjections:(id)projections factory:(MPKitProjectionSnapshotFactory *)factory {
+    NSArray *projectionConfigurations = [projections isKindOfClass:[NSArray class]] ? projections : nil;
     MPKitProjectionSet *projectionSet =
-        [factory projectionSetFromConfigurations:(!MPIsNull(projections) ? projections : nil)
+        [factory projectionSetFromConfigurations:projectionConfigurations
                                 messageTypeCount:[MPEnum messageTypeSize]];
 
     _configuredMessageTypeProjections = projectionSet.configuredMessageTypeProjections;

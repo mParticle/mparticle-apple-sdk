@@ -87,6 +87,50 @@ final class MPKitConfigurationParserTests: XCTestCase {
         XCTAssertNil(MPKitConfigurationParser.sanitizedFilters(from: ["ec": NSNull()]))
     }
 
+    // MARK: - dropping unusable kits
+
+    func testUnusableKitEntriesAreDroppedBeforeStorage() {
+        let configuration: [AnyHashable: Any] = [
+            "dt": "ac",
+            "eks": [
+                "not-an-object",
+                ["as": ["appId": "entry carrying no id"]],
+                ["id": "80"],
+                ["id": 42, "as": ["appId": "usable"]]
+            ]
+        ]
+
+        let sanitized = MPKitConfigurationParser.configurationDroppingUnusableKits(from: configuration)
+        let kits = sanitized["eks"] as? [[AnyHashable: Any]]
+
+        XCTAssertEqual(kits?.count, 1)
+        XCTAssertEqual(kits?.first?["id"] as? Int, 42)
+        XCTAssertEqual(sanitized["dt"] as? String, "ac", "Unrelated settings are untouched")
+    }
+
+    func testWellFormedConfigurationIsStoredUnchanged() {
+        let configuration: [AnyHashable: Any] = [
+            "dt": "ac",
+            "eks": [["id": 42], ["id": 312]]
+        ]
+
+        let sanitized = MPKitConfigurationParser.configurationDroppingUnusableKits(from: configuration)
+
+        XCTAssertEqual((sanitized["eks"] as? [Any])?.count, 2)
+        XCTAssertTrue(NSDictionary(dictionary: sanitized).isEqual(to: configuration))
+    }
+
+    func testConfigurationWithoutKitsIsStoredUnchanged() {
+        XCTAssertTrue(NSDictionary(
+            dictionary: MPKitConfigurationParser.configurationDroppingUnusableKits(from: ["dt": "ac"])
+        ).isEqual(to: ["dt": "ac"]))
+
+        // A non-array `eks` is left alone; the consumers already cast it and get nil.
+        XCTAssertTrue(NSDictionary(
+            dictionary: MPKitConfigurationParser.configurationDroppingUnusableKits(from: ["eks": "nope"])
+        ).isEqual(to: ["eks": "nope"]))
+    }
+
     // MARK: - merged configuration
 
     func testMergedConfigurationIsNilWithoutAnASBlock() {
