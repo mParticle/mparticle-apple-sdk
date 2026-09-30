@@ -9,6 +9,7 @@ on:
     paths:
       - .github/workflows/**
       - .github/actions/**
+      - .github/dependabot.yml
   push:
     branches:
       - main
@@ -16,6 +17,7 @@ on:
     paths:
       - .github/workflows/**
       - .github/actions/**
+      - .github/dependabot.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}

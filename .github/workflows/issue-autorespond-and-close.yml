@@ -5,9 +5,12 @@ on:
     types:
       - opened
 
+permissions:
+  issues: write
+
 jobs:
   auto-respond-and-close-issue:
-    uses: mparticle/mparticle-workflows/.github/workflows/auto-respond-close-issue.yml@main
+    uses: mParticle/mparticle-workflows/.github/workflows/issue-autorespond-and-close.yml@a78c8b34f5811be7c046a27cae900a844094f1cf # main
     with:
       issue_number: ${{ github.event.issue.number }}
       repository: ${{ github.repository }}

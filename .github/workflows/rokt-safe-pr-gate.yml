@@ -9,6 +9,7 @@ on:
         description: Pull request number to re-evaluate
         required: false
         type: string
+  # zizmor: ignore[dangerous-triggers] The gate runs trusted code and evaluates PR metadata through the API.
   pull_request_target:
     types:
       [
@@ -19,6 +20,7 @@ on:
         synchronize,
         edited,
       ]
+  # zizmor: ignore[dangerous-triggers] This event carries only API metadata into the same trusted gate.
   workflow_run:
     workflows: [Pull request]
     types: [completed]
@@ -69,13 +71,14 @@ jobs:
       - name: Checkout trusted policy
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 1
           persist-credentials: false
+          fetch-depth: 1
           ref: ${{ github.event.repository.default_branch }}
           token: ${{ steps.mparticle-token.outputs.token }}
 
       - name: Evaluate pull request
-        uses: ./.github/actions/rokt-safe-pr-gate
+        # zizmor: ignore[self-repository] Checkout above selects the trusted default branch and persists no token.
+        uses: ./.github/actions/rokt-safe-pr-gate # zizmor: ignore[self-repository]
         with:
           api-url: ${{ github.api_url }}
           employee-team-slug: ${{ vars.ROKT_SAFE_PR_GATE_EMPLOYEE_TEAM_SLUG }}

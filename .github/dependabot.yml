@@ -9,6 +9,8 @@ updates:
       - dependabot
     commit-message:
       prefix: "chore"
+    cooldown:
+      default-days: 7
   - package-ecosystem: swift
     directories:
       - /
@@ -20,6 +22,8 @@ updates:
       - dependabot
     commit-message:
       prefix: "chore"
+    cooldown:
+      default-days: 7
   # RNExample only (Example/Podfile has no lockfile, so cocoapods isn't addable).
   - package-ecosystem: bundler
     directory: /RNExample
@@ -30,3 +34,5 @@ updates:
       - dependabot
     commit-message:
       prefix: "chore"
+    cooldown:
+      default-days: 7

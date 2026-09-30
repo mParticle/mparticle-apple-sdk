@@ -21,14 +21,16 @@ jobs:
     runs-on: macOS-15
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: pr-branch
 
       - name: Checkout target branch
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.base.sha || 'main' }}
           path: base-branch
 
@@ -175,16 +177,26 @@ jobs:
 
       - name: Calculate size delta
         id: delta
+        env:
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_SDK_IMPACT_KB: ${{ steps.base-size.outputs.sdk_impact_kb }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_SDK_IMPACT_KB: ${{ steps.pr-size.outputs.sdk_impact_kb }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_SDK_EXECUTABLE_IMPACT: ${{ steps.base-size.outputs.sdk_executable_impact }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_SDK_EXECUTABLE_IMPACT: ${{ steps.pr-size.outputs.sdk_executable_impact }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_XCFRAMEWORK_SIZE_KB: ${{ steps.base-size.outputs.xcframework_size_kb }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_XCFRAMEWORK_SIZE_KB: ${{ steps.pr-size.outputs.xcframework_size_kb }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_FRAMEWORK_SIZE_KB: ${{ steps.base-size.outputs.framework_size_kb }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_FRAMEWORK_SIZE_KB: ${{ steps.pr-size.outputs.framework_size_kb }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_EXISTS: ${{ steps.base-size.outputs.exists }}
         run: |
-          BASE_SDK_IMPACT=${{ steps.base-size.outputs.sdk_impact_kb }}
-          PR_SDK_IMPACT=${{ steps.pr-size.outputs.sdk_impact_kb }}
-          BASE_EXECUTABLE_IMPACT=${{ steps.base-size.outputs.sdk_executable_impact }}
-          PR_EXECUTABLE_IMPACT=${{ steps.pr-size.outputs.sdk_executable_impact }}
-          BASE_XCFRAMEWORK=${{ steps.base-size.outputs.xcframework_size_kb }}
-          PR_XCFRAMEWORK=${{ steps.pr-size.outputs.xcframework_size_kb }}
-          BASE_FRAMEWORK=${{ steps.base-size.outputs.framework_size_kb }}
-          PR_FRAMEWORK=${{ steps.pr-size.outputs.framework_size_kb }}
-          BASE_EXISTS=${{ steps.base-size.outputs.exists }}
+          BASE_SDK_IMPACT=${SAFE_STEPS_BASE_SIZE_OUTPUTS_SDK_IMPACT_KB}
+          PR_SDK_IMPACT=${SAFE_STEPS_PR_SIZE_OUTPUTS_SDK_IMPACT_KB}
+          BASE_EXECUTABLE_IMPACT=${SAFE_STEPS_BASE_SIZE_OUTPUTS_SDK_EXECUTABLE_IMPACT}
+          PR_EXECUTABLE_IMPACT=${SAFE_STEPS_PR_SIZE_OUTPUTS_SDK_EXECUTABLE_IMPACT}
+          BASE_XCFRAMEWORK=${SAFE_STEPS_BASE_SIZE_OUTPUTS_XCFRAMEWORK_SIZE_KB}
+          PR_XCFRAMEWORK=${SAFE_STEPS_PR_SIZE_OUTPUTS_XCFRAMEWORK_SIZE_KB}
+          BASE_FRAMEWORK=${SAFE_STEPS_BASE_SIZE_OUTPUTS_FRAMEWORK_SIZE_KB}
+          PR_FRAMEWORK=${SAFE_STEPS_PR_SIZE_OUTPUTS_FRAMEWORK_SIZE_KB}
+          BASE_EXISTS=${SAFE_STEPS_BASE_SIZE_OUTPUTS_EXISTS}
 
           # Handle case where base branch doesn't have the test app
           if [[ "$BASE_EXISTS" != "true" ]] || [[ "$BASE_SDK_IMPACT" == "0" ]]; then
@@ -229,8 +241,24 @@ jobs:
 
       - name: Format size for display
         id: format
+        env:
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_EXISTS: ${{ steps.base-size.outputs.exists }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_SDK_IMPACT_KB: ${{ steps.base-size.outputs.sdk_impact_kb }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_SDK_EXECUTABLE_IMPACT: ${{ steps.base-size.outputs.sdk_executable_impact }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_XCFRAMEWORK_SIZE_KB: ${{ steps.base-size.outputs.xcframework_size_kb }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_FRAMEWORK_SIZE_KB: ${{ steps.base-size.outputs.framework_size_kb }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_DSYM_SIZE_KB: ${{ steps.base-size.outputs.dsym_size_kb }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_SDK_IMPACT_KB: ${{ steps.pr-size.outputs.sdk_impact_kb }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_SDK_EXECUTABLE_IMPACT: ${{ steps.pr-size.outputs.sdk_executable_impact }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_XCFRAMEWORK_SIZE_KB: ${{ steps.pr-size.outputs.xcframework_size_kb }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_FRAMEWORK_SIZE_KB: ${{ steps.pr-size.outputs.framework_size_kb }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_DSYM_SIZE_KB: ${{ steps.pr-size.outputs.dsym_size_kb }}
+          SAFE_STEPS_DELTA_OUTPUTS_DELTA_KB: ${{ steps.delta.outputs.delta_kb }}
+          SAFE_STEPS_DELTA_OUTPUTS_DELTA_EXECUTABLE: ${{ steps.delta.outputs.delta_executable }}
+          SAFE_STEPS_DELTA_OUTPUTS_DELTA_XCFRAMEWORK: ${{ steps.delta.outputs.delta_xcframework }}
+          SAFE_STEPS_DELTA_OUTPUTS_DELTA_FRAMEWORK: ${{ steps.delta.outputs.delta_framework }}
         run: |
-          BASE_EXISTS=${{ steps.base-size.outputs.exists }}
+          BASE_EXISTS=${SAFE_STEPS_BASE_SIZE_OUTPUTS_EXISTS}
 
           # Format KB to human readable
           format_size() {
@@ -259,11 +287,11 @@ jobs:
 
           # Format SDK impact sizes - show N/A if base doesn't exist
           if [[ "$BASE_EXISTS" == "true" ]]; then
-            echo "base_impact_formatted=$(format_size ${{ steps.base-size.outputs.sdk_impact_kb }})" >> $GITHUB_OUTPUT
-            echo "base_executable_formatted=$(format_bytes ${{ steps.base-size.outputs.sdk_executable_impact }})" >> $GITHUB_OUTPUT
-            echo "base_xcframework_formatted=$(format_size ${{ steps.base-size.outputs.xcframework_size_kb }})" >> $GITHUB_OUTPUT
-            echo "base_framework_formatted=$(format_size ${{ steps.base-size.outputs.framework_size_kb }})" >> $GITHUB_OUTPUT
-            echo "base_dsym_formatted=$(format_size ${{ steps.base-size.outputs.dsym_size_kb }})" >> $GITHUB_OUTPUT
+            echo "base_impact_formatted=$(format_size ${SAFE_STEPS_BASE_SIZE_OUTPUTS_SDK_IMPACT_KB})" >> $GITHUB_OUTPUT
+            echo "base_executable_formatted=$(format_bytes ${SAFE_STEPS_BASE_SIZE_OUTPUTS_SDK_EXECUTABLE_IMPACT})" >> $GITHUB_OUTPUT
+            echo "base_xcframework_formatted=$(format_size ${SAFE_STEPS_BASE_SIZE_OUTPUTS_XCFRAMEWORK_SIZE_KB})" >> $GITHUB_OUTPUT
+            echo "base_framework_formatted=$(format_size ${SAFE_STEPS_BASE_SIZE_OUTPUTS_FRAMEWORK_SIZE_KB})" >> $GITHUB_OUTPUT
+            echo "base_dsym_formatted=$(format_size ${SAFE_STEPS_BASE_SIZE_OUTPUTS_DSYM_SIZE_KB})" >> $GITHUB_OUTPUT
           else
             echo "base_impact_formatted=N/A" >> $GITHUB_OUTPUT
             echo "base_executable_formatted=N/A" >> $GITHUB_OUTPUT
@@ -272,16 +300,16 @@ jobs:
             echo "base_dsym_formatted=N/A" >> $GITHUB_OUTPUT
           fi
 
-          echo "pr_impact_formatted=$(format_size ${{ steps.pr-size.outputs.sdk_impact_kb }})" >> $GITHUB_OUTPUT
-          echo "pr_executable_formatted=$(format_bytes ${{ steps.pr-size.outputs.sdk_executable_impact }})" >> $GITHUB_OUTPUT
-          echo "pr_xcframework_formatted=$(format_size ${{ steps.pr-size.outputs.xcframework_size_kb }})" >> $GITHUB_OUTPUT
-          echo "pr_framework_formatted=$(format_size ${{ steps.pr-size.outputs.framework_size_kb }})" >> $GITHUB_OUTPUT
-          echo "pr_dsym_formatted=$(format_size ${{ steps.pr-size.outputs.dsym_size_kb }})" >> $GITHUB_OUTPUT
+          echo "pr_impact_formatted=$(format_size ${SAFE_STEPS_PR_SIZE_OUTPUTS_SDK_IMPACT_KB})" >> $GITHUB_OUTPUT
+          echo "pr_executable_formatted=$(format_bytes ${SAFE_STEPS_PR_SIZE_OUTPUTS_SDK_EXECUTABLE_IMPACT})" >> $GITHUB_OUTPUT
+          echo "pr_xcframework_formatted=$(format_size ${SAFE_STEPS_PR_SIZE_OUTPUTS_XCFRAMEWORK_SIZE_KB})" >> $GITHUB_OUTPUT
+          echo "pr_framework_formatted=$(format_size ${SAFE_STEPS_PR_SIZE_OUTPUTS_FRAMEWORK_SIZE_KB})" >> $GITHUB_OUTPUT
+          echo "pr_dsym_formatted=$(format_size ${SAFE_STEPS_PR_SIZE_OUTPUTS_DSYM_SIZE_KB})" >> $GITHUB_OUTPUT
 
-          DELTA_KB="${{ steps.delta.outputs.delta_kb }}"
-          DELTA_EXECUTABLE="${{ steps.delta.outputs.delta_executable }}"
-          DELTA_XCFRAMEWORK="${{ steps.delta.outputs.delta_xcframework }}"
-          DELTA_FRAMEWORK="${{ steps.delta.outputs.delta_framework }}"
+          DELTA_KB="${SAFE_STEPS_DELTA_OUTPUTS_DELTA_KB}"
+          DELTA_EXECUTABLE="${SAFE_STEPS_DELTA_OUTPUTS_DELTA_EXECUTABLE}"
+          DELTA_XCFRAMEWORK="${SAFE_STEPS_DELTA_OUTPUTS_DELTA_XCFRAMEWORK}"
+          DELTA_FRAMEWORK="${SAFE_STEPS_DELTA_OUTPUTS_DELTA_FRAMEWORK}"
 
           if [[ "$DELTA_KB" != "N/A" ]]; then
             if [[ "$DELTA_KB" -ge 0 ]]; then
@@ -318,11 +346,30 @@ jobs:
 
       - name: Generate size report
         id: report
+        env:
+          SAFE_STEPS_DELTA_OUTPUTS_STATUS: ${{ steps.delta.outputs.status }}
+          SAFE_STEPS_FORMAT_OUTPUTS_BASE_IMPACT_FORMATTED: ${{ steps.format.outputs.base_impact_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_PR_IMPACT_FORMATTED: ${{ steps.format.outputs.pr_impact_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_DELTA_FORMATTED: ${{ steps.format.outputs.delta_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_BASE_EXECUTABLE_FORMATTED: ${{ steps.format.outputs.base_executable_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_PR_EXECUTABLE_FORMATTED: ${{ steps.format.outputs.pr_executable_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_DELTA_EXECUTABLE_FORMATTED: ${{ steps.format.outputs.delta_executable_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_BASE_FRAMEWORK_FORMATTED: ${{ steps.format.outputs.base_framework_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_PR_FRAMEWORK_FORMATTED: ${{ steps.format.outputs.pr_framework_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_DELTA_FRAMEWORK_FORMATTED: ${{ steps.format.outputs.delta_framework_formatted }}
+          SAFE_STEPS_COMPOSITION_OUTPUTS_PATH: ${{ steps.composition.outputs.path }}
+          SAFE_STEPS_FORMAT_OUTPUTS_BASE_DSYM_FORMATTED: ${{ steps.format.outputs.base_dsym_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_PR_DSYM_FORMATTED: ${{ steps.format.outputs.pr_dsym_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_BASE_XCFRAMEWORK_FORMATTED: ${{ steps.format.outputs.base_xcframework_formatted }}
+          SAFE_STEPS_FORMAT_OUTPUTS_PR_XCFRAMEWORK_FORMATTED: ${{ steps.format.outputs.pr_xcframework_formatted }}
+          SAFE_GITHUB_BASE_REF_MAIN: ${{ github.base_ref || 'main' }}
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_JSON: ${{ steps.base-size.outputs.json }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_JSON: ${{ steps.pr-size.outputs.json }}
         run: |
           REPORT_FILE="${RUNNER_TEMP}/size-report.md"
 
           # Determine status message
-          STATUS="${{ steps.delta.outputs.status }}"
+          STATUS="${SAFE_STEPS_DELTA_OUTPUTS_STATUS}"
           case "$STATUS" in
             increase) STATUS_MSG="⚠️ This change increases SDK size impact." ;;
             decrease) STATUS_MSG="✅ This change decreases SDK size impact." ;;
@@ -340,15 +387,15 @@ jobs:
 
           | Metric | Target Branch | This PR | Change |
           |--------|---------------|---------|--------|
-          | App Bundle Impact | ${{ steps.format.outputs.base_impact_formatted }} | ${{ steps.format.outputs.pr_impact_formatted }} | ${{ steps.format.outputs.delta_formatted }} |
-          | Executable Impact | ${{ steps.format.outputs.base_executable_formatted }} | ${{ steps.format.outputs.pr_executable_formatted }} | ${{ steps.format.outputs.delta_executable_formatted }} |
-          | Framework binary (ships) | ${{ steps.format.outputs.base_framework_formatted }} | ${{ steps.format.outputs.pr_framework_formatted }} | ${{ steps.format.outputs.delta_framework_formatted }} |
+          | App Bundle Impact | ${SAFE_STEPS_FORMAT_OUTPUTS_BASE_IMPACT_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_PR_IMPACT_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_DELTA_FORMATTED} |
+          | Executable Impact | ${SAFE_STEPS_FORMAT_OUTPUTS_BASE_EXECUTABLE_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_PR_EXECUTABLE_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_DELTA_EXECUTABLE_FORMATTED} |
+          | Framework binary (ships) | ${SAFE_STEPS_FORMAT_OUTPUTS_BASE_FRAMEWORK_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_PR_FRAMEWORK_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_DELTA_FRAMEWORK_FORMATTED} |
 
           ${STATUS_MSG}
 
           ### Where the bytes are
 
-          $(cat "${{ steps.composition.outputs.path }}" 2>/dev/null || echo "_Composition data unavailable._")
+          $(cat "${SAFE_STEPS_COMPOSITION_OUTPUTS_PATH}" 2>/dev/null || echo "_Composition data unavailable._")
 
           <details>
           <summary>Debug symbols (not shipped to users)</summary>
@@ -360,21 +407,21 @@ jobs:
 
           | | Target Branch | This PR |
           |---|---|---|
-          | dSYMs | ${{ steps.format.outputs.base_dsym_formatted }} | ${{ steps.format.outputs.pr_dsym_formatted }} |
-          | XCFramework total | ${{ steps.format.outputs.base_xcframework_formatted }} | ${{ steps.format.outputs.pr_xcframework_formatted }} |
+          | dSYMs | ${SAFE_STEPS_FORMAT_OUTPUTS_BASE_DSYM_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_PR_DSYM_FORMATTED} |
+          | XCFramework total | ${SAFE_STEPS_FORMAT_OUTPUTS_BASE_XCFRAMEWORK_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_PR_XCFRAMEWORK_FORMATTED} |
           </details>
 
           <details>
           <summary>Raw measurements</summary>
 
-          **Target branch (${{ github.base_ref || 'main' }}):**
+          **Target branch (${SAFE_GITHUB_BASE_REF_MAIN}):**
           \`\`\`json
-          ${{ steps.base-size.outputs.json }}
+          ${SAFE_STEPS_BASE_SIZE_OUTPUTS_JSON}
           \`\`\`
 
           **This PR:**
           \`\`\`json
-          ${{ steps.pr-size.outputs.json }}
+          ${SAFE_STEPS_PR_SIZE_OUTPUTS_JSON}
           \`\`\`
           </details>
           EOF
@@ -386,7 +433,7 @@ jobs:
 
       - name: Find Comment
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
-        uses: peter-evans/find-comment@v4
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -395,7 +442,7 @@ jobs:
 
       - name: Create or update PR comment
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
-        uses: peter-evans/create-or-update-comment@v5
+        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -403,11 +450,15 @@ jobs:
           body-path: ${{ steps.report.outputs.path }}
 
       - name: Write job summary
-        run: cat "${{ steps.report.outputs.path }}" >> $GITHUB_STEP_SUMMARY
+        env:
+          SAFE_STEPS_REPORT_OUTPUTS_PATH: ${{ steps.report.outputs.path }}
+        run: cat "${SAFE_STEPS_REPORT_OUTPUTS_PATH}" >> $GITHUB_STEP_SUMMARY
 
       - name: Enforce size budget
+        env:
+          SAFE_STEPS_DELTA_OUTPUTS_DELTA_KB: ${{ steps.delta.outputs.delta_kb }}
         run: |
-          DELTA="${{ steps.delta.outputs.delta_kb }}"
+          DELTA="${SAFE_STEPS_DELTA_OUTPUTS_DELTA_KB}"
           THRESHOLD="${SIZE_DELTA_THRESHOLD_KB}"
 
           # The base-branch measurement is continue-on-error and reports N/A when it

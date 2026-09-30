@@ -11,14 +11,13 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
-  checks: write
-  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Local reusable workflows resolve from the triggering ref without a runner
+# checkout. Actionlint 1.7.7 does not accept GitHub's newer $/ syntax.
 jobs:
   rokt-safe-pr-gate-tests:
     name: Rokt Safe PR gate tests
@@ -33,32 +32,36 @@ jobs:
         run: node --test .github/actions/rokt-safe-pr-gate/test/gate.test.js
 
   build-and-lint:
-    uses: ./.github/workflows/build-and-lint.yml
-    secrets: inherit
+    uses: ./.github/workflows/build-and-lint.yml # zizmor: ignore[self-repository]
+    permissions:
+      contents: read
+      checks: write
+      id-token: write
 
   native-tests:
-    uses: ./.github/workflows/native-tests.yml
-    secrets: inherit
+    uses: ./.github/workflows/native-tests.yml # zizmor: ignore[self-repository]
 
   build-secondary-platforms:
-    uses: ./.github/workflows/build-secondary-platforms.yml
-    secrets: inherit
+    uses: ./.github/workflows/build-secondary-platforms.yml # zizmor: ignore[self-repository]
 
   integration-tests:
-    uses: ./.github/workflows/integration-tests.yml
-    secrets: inherit
+    uses: ./.github/workflows/integration-tests.yml # zizmor: ignore[self-repository]
 
   size-report:
-    uses: ./.github/workflows/size-report.yml
-    secrets: inherit
+    uses: ./.github/workflows/size-report.yml # zizmor: ignore[self-repository]
+    permissions:
+      contents: read
+      pull-requests: write
 
   swift-migration-progress:
     if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/swift-migration-progress.yml
+    uses: ./.github/workflows/swift-migration-progress.yml # zizmor: ignore[self-repository]
+    permissions:
+      contents: read
+      pull-requests: write
 
   build-kits:
-    uses: ./.github/workflows/build-kits.yml
-    secrets: inherit
+    uses: ./.github/workflows/build-kits.yml # zizmor: ignore[self-repository]
 
   pr-notify:
     if: >-
@@ -74,6 +77,9 @@ jobs:
       - swift-migration-progress
       - build-kits
     name: Notify GChat
-    uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main
+    permissions:
+      contents: read
+      id-token: write
+    uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@06c7e7d32c3280a3cff72f45ba4304730a509050 # main
     secrets:
       gchat_webhook: ${{ secrets.GCHAT_PRS_WEBHOOK }}
