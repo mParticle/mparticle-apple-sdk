@@ -25,3 +25,23 @@ import Foundation
         return descriptions[execStatus]
     }
 }
+
+/// Mirrors the Objective-C `MPExecStatus`; raw values must stay in step.
+///
+/// The enum itself is declared in `Include/MPBackendController.h`, which the Swift module cannot
+/// import, so a Swift workflow returns one of these and the `.m` casts it back at the boundary.
+@objc public enum MPExecStatusSwift: Int {
+    case success = 0
+    case fail
+    case missingParam
+    case disabledRemotely
+    case enabledRemotely
+    case optOut
+    case dataBeingFetched
+    case invalidDataType
+    case dataBeingUploaded
+    case serverBusy
+    case itemNotFound
+    case disabledInSettings
+    case noConnectivity
+}
