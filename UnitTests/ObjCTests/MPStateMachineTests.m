@@ -204,6 +204,8 @@
 
     [stateMachine configureCustomModules:[self customModuleSettingsReading:hostKey as:@"tok"]];
 
+    XCTAssertNil(stateMachine.customModules,
+                 @"A module left with no allowed preferences must not survive as an empty entry");
     [self assertNothingWasHarvestedFor:@"tok" stateMachine:stateMachine];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:hostKey];
     [stateMachine configureCustomModules:nil];

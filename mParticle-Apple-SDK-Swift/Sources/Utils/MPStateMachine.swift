@@ -545,6 +545,11 @@ public final class MPStateMachinePRIVATE: NSObject,
                                 allowedPreferenceKeys: allowedPreferenceKeys,
                                 logger: logger)
         }
+        // A module every one of whose preferences was rejected by the allow-list (or otherwise
+        // failed to parse) has nothing left to report. Dropping it here, rather than keeping it
+        // with nil preferences, keeps it out of the upload entirely instead of surviving as an
+        // empty entry keyed by its module id.
+        .filter { $0.preferences != nil }
         customModules = modules.isEmpty ? nil : modules
     }
 
