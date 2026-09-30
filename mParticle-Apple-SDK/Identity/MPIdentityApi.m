@@ -38,6 +38,13 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @end
 
+// Implemented further down this file, but used above it.
+@interface MPIdentityHTTPErrorResponse ()
+
+- (instancetype)initWithCode:(MPIdentityErrorResponseCode)code message:(NSString *)message error:(NSError *)error;
+
+@end
+
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
@@ -148,6 +155,25 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
         return;
     }
+    // Every identity response the server is entitled to send carries an mpid. Without one there is
+    // no user to install, and the assignment below would take the whole path apart rather than
+    // leaving it alone: setMpid: is declared nonnull, and passing nil removes the stored key, so
+    // the mpid falls back to 0, the new user gets a nil userId despite its nonnull declaration,
+    // and that nil is handed on to the mpid-change bookkeeping. Refusing the response keeps the
+    // user who was already signed in.
+    if (httpResponse.mpid == nil || httpResponse.mpid.longLongValue == 0) {
+        MPILogError(@"Identity response carried no usable mpid - keeping the current user");
+        if (completion) {
+            MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeUnknown
+                                                                                                   message:@"Identity response carried no usable mpid."
+                                                                                                     error:nil];
+            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain
+                                                code:errorResponse.code
+                                            userInfo:@{mParticleIdentityErrorKey: errorResponse}]);
+        }
+        return;
+    }
+
     NSNumber *previousMPID = [MPPersistenceUtilities mpId];
     [MPPersistenceUtilities setMpid:httpResponse.mpid];
     MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
