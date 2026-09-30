@@ -16,7 +16,7 @@ on:
         default: true
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
@@ -28,6 +28,8 @@ jobs:
   release-core-sdk:
     name: Build & Release Core SDK
     runs-on: macOS-latest
+    permissions:
+      contents: write
     env:
       XCODE_VERSION: "26.2"
     outputs:
@@ -37,11 +39,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        env:
+          SAFE_ENV_XCODE_VERSION: ${{ env.XCODE_VERSION }}
+        run: sudo xcode-select -s /Applications/Xcode_${SAFE_ENV_XCODE_VERSION}.app
 
       - name: Get ecosystem version
         id: version
@@ -82,16 +86,22 @@ jobs:
 
       - name: Create GitHub release
         if: env.DRY_RUN != 'true'
-        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
-        with:
-          tag: ${{ steps.version.outputs.tag }}
-          commit: ${{ github.sha }}
-          name: ${{ steps.version.outputs.tag }}
-          artifacts: "mParticle_Apple_SDK.xcframework.zip"
-          body: |
-            ${{ steps.release-notes.outputs.release_notes }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_NOTES: ${{ steps.release-notes.outputs.release_notes }}
+        run: |
+          printf '%s\n' "$RELEASE_NOTES" > "$RUNNER_TEMP/release-notes.md"
+          gh release create "$RELEASE_TAG" mParticle_Apple_SDK.xcframework.zip \
+            --target "$GITHUB_SHA" \
+            --title "$RELEASE_TAG" \
+            --notes-file "$RUNNER_TEMP/release-notes.md"
 
       - name: Summary
+        env:
+          SAFE_STEPS_VERSION_OUTPUTS_VERSION: ${{ steps.version.outputs.version }}
+          SAFE_STEPS_VERSION_OUTPUTS_TAG: ${{ steps.version.outputs.tag }}
+          SAFE_ENV_DRY_RUN: ${{ env.DRY_RUN }}
         run: |
           ARTIFACTS=$(ls *.zip 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
           cat >> $GITHUB_STEP_SUMMARY <<EOF
@@ -99,9 +109,9 @@ jobs:
 
           | Property | Value |
           |----------|-------|
-          | **Version** | \`${{ steps.version.outputs.version }}\` |
-          | **Tag** | \`${{ steps.version.outputs.tag }}\` |
-          | **Dry Run** | \`${{ env.DRY_RUN }}\` |
+          | **Version** | \`${SAFE_STEPS_VERSION_OUTPUTS_VERSION}\` |
+          | **Tag** | \`${SAFE_STEPS_VERSION_OUTPUTS_TAG}\` |
+          | **Dry Run** | \`${SAFE_ENV_DRY_RUN}\` |
           | **Artifacts** | \`${ARTIFACTS}\` |
           EOF
 
@@ -116,6 +126,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           sparse-checkout: Kits/matrix.json
           sparse-checkout-cone-mode: false
       - id: set
@@ -139,10 +150,13 @@ jobs:
       - name: Checkout monorepo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        env:
+          SAFE_ENV_XCODE_VERSION: ${{ env.XCODE_VERSION }}
+        run: sudo xcode-select -s /Applications/Xcode_${SAFE_ENV_XCODE_VERSION}.app
 
       - name: Build kit xcframeworks
         shell: bash
@@ -244,9 +258,13 @@ jobs:
     steps:
       - name: Checkout monorepo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        env:
+          SAFE_ENV_XCODE_VERSION: ${{ env.XCODE_VERSION }}
+        run: sudo xcode-select -s /Applications/Xcode_${SAFE_ENV_XCODE_VERSION}.app
 
       - name: Verify kit headers compile against core SDK xcframework
         run: |
@@ -269,8 +287,8 @@ jobs:
       - name: Checkout monorepo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Download xcframework artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -310,8 +328,11 @@ jobs:
       - name: Push split to destination
         if: env.DRY_RUN != 'true'
         id: push
+        env:
+          SAFE_STEPS_GENERATE_TOKEN_OUTPUTS_TOKEN: ${{ steps.generate-token.outputs.token }}
+          SAFE_ENV_DEST_ORG: ${{ env.DEST_ORG }}
         run: |
-          DEST_URL="https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
+          DEST_URL="https://x-access-token:${SAFE_STEPS_GENERATE_TOKEN_OUTPUTS_TOKEN}@github.com/${SAFE_ENV_DEST_ORG}/${{ matrix.kit.dest_repo }}.git"
           if [ "${{ matrix.kit.mirror_force_push_main }}" = "true" ]; then
             git push --force "$DEST_URL" "split/${{ matrix.kit.name }}:main"
           else
@@ -321,19 +342,27 @@ jobs:
 
       - name: Create GitHub release on mirror
         if: env.DRY_RUN != 'true'
-        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
-        with:
-          tag: ${{ steps.version.outputs.tag }}
-          commit: ${{ steps.push.outputs.sha }}
-          owner: ${{ env.DEST_ORG }}
-          repo: ${{ matrix.kit.dest_repo }}
-          token: ${{ steps.generate-token.outputs.token }}
-          artifacts: "*.xcframework.zip"
-          body: |
-            ${{ steps.release-notes.outputs.release_notes }}
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_SHA: ${{ steps.push.outputs.sha }}
+          DEST_REPO: ${{ matrix.kit.dest_repo }}
+          RELEASE_NOTES: ${{ steps.release-notes.outputs.release_notes }}
+        run: |
+          printf '%s\n' "$RELEASE_NOTES" > "$RUNNER_TEMP/release-notes.md"
+          gh release create "$RELEASE_TAG" ./*.xcframework.zip \
+            --repo "$DEST_ORG/$DEST_REPO" \
+            --target "$RELEASE_SHA" \
+            --title "$RELEASE_TAG" \
+            --notes-file "$RUNNER_TEMP/release-notes.md"
 
       - name: Summary
         shell: bash
+        env:
+          SAFE_ENV_DEST_ORG: ${{ env.DEST_ORG }}
+          SAFE_STEPS_VERSION_OUTPUTS_TAG: ${{ steps.version.outputs.tag }}
+          SAFE_ENV_DRY_RUN: ${{ env.DRY_RUN }}
+          SAFE_STEPS_RELEASE_NOTES_OUTPUTS_RELEASE_NOTES: ${{ steps.release-notes.outputs.release_notes }}
         run: |
           COMMITS=$(git log "split/${{ matrix.kit.name }}" --oneline -5)
           ARTIFACTS=$(ls *.xcframework.zip 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
@@ -344,9 +373,9 @@ jobs:
           |----------|-------|
           | **Kit** | \`${{ matrix.kit.name }}\` |
           | **Source** | \`${{ matrix.kit.local_path }}\` |
-          | **Destination** | \`${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}\` |
-          | **Tag** | \`${{ steps.version.outputs.tag }}\` |
-          | **Dry Run** | \`${{ env.DRY_RUN }}\` |
+          | **Destination** | \`${SAFE_ENV_DEST_ORG}/${{ matrix.kit.dest_repo }}\` |
+          | **Tag** | \`${SAFE_STEPS_VERSION_OUTPUTS_TAG}\` |
+          | **Dry Run** | \`${SAFE_ENV_DRY_RUN}\` |
           | **Artifacts** | \`${ARTIFACTS}\` |
 
           ### Split branch commits
@@ -355,7 +384,7 @@ jobs:
           \`\`\`
 
           ### Release notes
-          ${{ steps.release-notes.outputs.release_notes }}
+          ${SAFE_STEPS_RELEASE_NOTES_OUTPUTS_RELEASE_NOTES}
           EOF
 
   # ──────────────────────────────────────────────
@@ -375,7 +404,9 @@ jobs:
           persist-credentials: false
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        env:
+          SAFE_ENV_XCODE_VERSION: ${{ env.XCODE_VERSION }}
+        run: sudo xcode-select -s /Applications/Xcode_${SAFE_ENV_XCODE_VERSION}.app
 
       - name: Publish core podspecs
         env:
@@ -410,7 +441,9 @@ jobs:
           persist-credentials: false
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+        env:
+          SAFE_ENV_XCODE_VERSION: ${{ env.XCODE_VERSION }}
+        run: sudo xcode-select -s /Applications/Xcode_${SAFE_ENV_XCODE_VERSION}.app
 
       - name: Wait for core SDK on CocoaPods CDN
         run: |
