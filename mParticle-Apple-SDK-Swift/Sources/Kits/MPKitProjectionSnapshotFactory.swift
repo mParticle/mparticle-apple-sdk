@@ -102,6 +102,13 @@ public final class MPKitProjectionSnapshotFactory: NSObject {
 
             let index = Int(messageType)
             assign(NSNumber(value: true), at: index, in: &configured)
+            // Callers measure the configured array and then subscript the defaults array with the
+            // same index, so the append above has to be mirrored here whether or not this
+            // projection is a default one. Left unmirrored, a non-default media projection grows
+            // only the configured array and that paired read runs off the end of the other.
+            if defaults.count < configured.count {
+                defaults.append(NSNull())
+            }
             if projection.isDefault {
                 assign(projection.snapshot, at: index, in: &defaults)
             } else {
