@@ -127,4 +127,59 @@ final class MPStateMachineTests: XCTestCase {
         XCTAssertEqual(version?["iad-conversion-type"] as? String, "Download")
         XCTAssertEqual(version?["iad-ad-id"] as? String, "90")
     }
+
+    /// Apple's documented payload for a non-attributed install carries only `attribution`. The
+    /// eight absent keys have to be omitted: the ObjC original put them straight into a dictionary
+    /// literal, which raises "attempt to insert nil object" on the first one.
+    func testSearchAdsInfoMappingOfANonAttributedInstall() {
+        let mapped = MPStateMachinePRIVATE.searchAdsInfo(fromAdAttribution: ["attribution": false])
+        let version = try? XCTUnwrap(mapped?["Version4.0"] as? NSDictionary)
+
+        XCTAssertEqual(version?.count, 1)
+        XCTAssertEqual(version?["iad-attribution"] as? Bool, false)
+    }
+
+    /// The five id keys were read with `-stringValue`, which NSString does not implement. They are
+    /// converted only when they arrive as numbers, and passed through otherwise.
+    func testSearchAdsInfoMappingOfStringTypedIdentifiers() {
+        let mapped = MPStateMachinePRIVATE.searchAdsInfo(fromAdAttribution: [
+            "attribution": true,
+            "orgId": "12",
+            "campaignId": "34",
+            "adGroupId": "56",
+            "keywordId": "78",
+            "adId": "90"
+        ])
+        let version = mapped?["Version4.0"] as? NSDictionary
+
+        XCTAssertEqual(version?["iad-org-id"] as? String, "12")
+        XCTAssertEqual(version?["iad-campaign-id"] as? String, "34")
+        XCTAssertEqual(version?["iad-adgroup-id"] as? String, "56")
+        XCTAssertEqual(version?["iad-keyword-id"] as? String, "78")
+        XCTAssertEqual(version?["iad-ad-id"] as? String, "90")
+    }
+
+    func testSearchAdsInfoMappingDropsNullValues() {
+        let mapped = MPStateMachinePRIVATE.searchAdsInfo(fromAdAttribution: [
+            "attribution": NSNull(),
+            "orgId": NSNull(),
+            "campaignId": NSNull(),
+            "conversionType": NSNull(),
+            "clickDate": NSNull(),
+            "adGroupId": NSNull(),
+            "countryOrRegion": NSNull(),
+            "keywordId": NSNull(),
+            "adId": NSNull()
+        ])
+
+        XCTAssertEqual((mapped?["Version4.0"] as? NSDictionary)?.count, 0)
+    }
+
+    func testSearchAdsInfoMappingRejectsANonObjectRoot() {
+        XCTAssertNil(MPStateMachinePRIVATE.searchAdsInfo(fromAdAttribution: nil))
+        XCTAssertNil(MPStateMachinePRIVATE.searchAdsInfo(fromAdAttribution: NSNull()))
+        XCTAssertNil(MPStateMachinePRIVATE.searchAdsInfo(fromAdAttribution: [1, 2]))
+        XCTAssertNil(MPStateMachinePRIVATE.searchAdsInfo(fromAdAttribution: "attribution"))
+        XCTAssertNil(MPStateMachinePRIVATE.searchAdsInfo(fromAdAttribution: 7))
+    }
 }
