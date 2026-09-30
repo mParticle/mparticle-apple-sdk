@@ -139,8 +139,18 @@ Defaults to false. If set true the aliasHost above with overwrite the subdirecto
 
 @property (nonatomic) NSArray<NSData *> *certificates;
 
+/**
+ Defaults to false. When true in a development environment, skips mParticle's own
+ certificate pinning check and falls back to the system's standard trust evaluation
+ for the server's certificate. This does not disable certificate validation itself.
+ */
 @property (nonatomic) BOOL pinningDisabledInDevelopment;
 
+/**
+ Defaults to false. When true, skips mParticle's own certificate pinning check and
+ falls back to the system's standard trust evaluation for the server's certificate.
+ This does not disable certificate validation itself.
+ */
 @property (nonatomic) BOOL pinningDisabled;
 /**
 Defaults to false. Prevents the eventsHost above from overwriting the alias endpoint.

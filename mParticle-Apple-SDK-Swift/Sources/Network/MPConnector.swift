@@ -115,15 +115,19 @@ public final class MPConnector: NSObject, MPConnectorProtocol, URLSessionDataDel
                 || (configuration.pinningDisabledInDevelopment
                     && configuration.isDevelopmentEnvironment)
 
-            if trustChallenge || shouldDisablePinning {
+            switch Self.challengeDisposition(trustChallenge: trustChallenge, shouldDisablePinning: shouldDisablePinning) {
+            case .useCredential:
                 configuration.logger.debug("SSL challenge accepted for host: \(host)")
                 completionHandler(.useCredential, URLCredential(trust: serverTrust))
-            } else {
+            case .performDefaultHandling:
                 configuration.logger.warning(
                     "SSL pinning disabled - pinningDisabledInDevelopment: "
                         + "\(configuration.pinningDisabledInDevelopment), "
-                        + "pinningDisabled: \(configuration.pinningDisabled)"
+                        + "pinningDisabled: \(configuration.pinningDisabled). "
+                        + "Deferring to the system's own trust evaluation for host: \(host)"
                 )
+                completionHandler(.performDefaultHandling, nil)
+            default:
                 configuration.logger.error(
                     "SSL certificate pinning rejected - host: \(host), trustChallenge: false, "
                         + "shouldDisablePinning: false"
@@ -325,6 +329,22 @@ public final class MPConnector: NSObject, MPConnectorProtocol, URLSessionDataDel
 
     private func isPinningHost(_ host: String) -> Bool {
         host.contains("mparticle.com") || configuration.pinnedHosts.contains(host)
+    }
+
+    /// Never grants `.useCredential` (accepting the server's certificate) unless the
+    /// certificate itself passed trust evaluation. Disabling pinning only widens the
+    /// `.performDefaultHandling` fallback, which still runs the system's own trust check.
+    static func challengeDisposition(
+        trustChallenge: Bool,
+        shouldDisablePinning: Bool
+    ) -> URLSession.AuthChallengeDisposition {
+        if trustChallenge {
+            return .useCredential
+        } else if shouldDisablePinning {
+            return .performDefaultHandling
+        } else {
+            return .cancelAuthenticationChallenge
+        }
     }
 
     private static func evaluate(
