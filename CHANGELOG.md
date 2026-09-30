@@ -20,6 +20,41 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.6.1] - 2026-09-24
+
+### Core
+
+#### Fixed
+
+- Prevent a first-launch hang when a kit reads consent while it starts ([#1051](https://github.com/mParticle/mparticle-apple-sdk/pull/1051))
+- Validate kit configuration value types before use ([#1039](https://github.com/mParticle/mparticle-apple-sdk/pull/1039))
+
+### Kits
+
+#### Adobe
+
+##### Fixed
+
+- Validate Audience Manager response shape in the Adobe kit ([#1033](https://github.com/mParticle/mparticle-apple-sdk/pull/1033))
+
+#### Appsflyer
+
+##### Fixed
+
+- Validate server consent mapping in OneTrust and AppsFlyer kits ([#1026](https://github.com/mParticle/mparticle-apple-sdk/pull/1026))
+
+#### Braze
+
+##### Fixed
+
+- Forward only filtered product attributes from the Braze kits ([#1048](https://github.com/mParticle/mparticle-apple-sdk/pull/1048))
+
+#### Rokt-sdk-plus
+
+##### Changed
+
+- Note Swift Package Registry alternative for dependency resolution ([#1037](https://github.com/mParticle/mparticle-apple-sdk/pull/1037))
+
 ## [9.6.0] - 2026-09-22
 
 ### Core
@@ -2594,7 +2629,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.0...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.1...HEAD
+[9.6.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.0...v9.6.1
 [9.6.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.1...v9.6.0
 [9.5.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.0...v9.5.1
 [9.5.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.4.3...v9.5.0

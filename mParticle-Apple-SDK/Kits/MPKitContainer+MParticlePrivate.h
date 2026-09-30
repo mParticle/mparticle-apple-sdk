@@ -25,6 +25,9 @@
 - (void)removeAllSideloadedKits;
 - (void)removeKitsFromRegistryInvalidForWorkspaceSwitch;
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry;
+/// Like `activeKitsRegistry`, but returns nil instead of waiting while the registry is locked,
+/// including by the calling thread.
+- (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWithoutWaiting;
 - (nullable NSArray<NSNumber *> *)configuredKitsRegistry;
 - (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
 - (nullable NSArray<NSNumber *> *)supportedKits;

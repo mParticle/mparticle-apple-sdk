@@ -64,6 +64,7 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 - (void)removeAllSideloadedKits;
 - (void)removeKitsFromRegistryInvalidForWorkspaceSwitch;
 - (NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry;
+- (NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWithoutWaiting;
 - (NSArray<NSNumber *> *)configuredKitsRegistry;
 - (void)configureKits:(NSArray<NSDictionary *> *)kitsConfiguration;
 - (NSArray<NSNumber *> *)supportedKits;
@@ -160,6 +161,10 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 
 - (NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry {
     return [self.mp_executionAdapter activeKitsRegistry];
+}
+
+- (NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWithoutWaiting {
+    return [self.mp_executionAdapter activeKitsRegistryWithoutWaiting];
 }
 
 - (NSArray<NSNumber *> *)configuredKitsRegistry {
@@ -1504,6 +1509,18 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry {
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    NSArray<id<MPExtensionKitProtocol>> *result = [self activeKitsRegistryWhenLocked];
+    dispatch_semaphore_signal(kitsSemaphore);
+    return result;
+}
+
+// configureKits: launches kits synchronously on the main thread while holding kitsSemaphore, and a
+// kit can call back into the SDK from that launch. dispatch_semaphore is not reentrant, so a caller
+// that can skip its work must not wait here.
+- (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWithoutWaiting {
+    if (dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW) != 0) {
+        return nil;
+    }
     NSArray<id<MPExtensionKitProtocol>> *result = [self activeKitsRegistryWhenLocked];
     dispatch_semaphore_signal(kitsSemaphore);
     return result;

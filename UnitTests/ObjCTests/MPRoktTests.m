@@ -1084,7 +1084,7 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
     MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
     OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
-    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+    OCMStub([self.mockContainer activeKitsRegistryWithoutWaiting]).andReturn(@[mockKitRegister]);
 
     [self.rokt clearSession];
 
@@ -1130,7 +1130,7 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
     MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
     OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
-    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+    OCMStub([self.mockContainer activeKitsRegistryWithoutWaiting]).andReturn(@[mockKitRegister]);
 
     [self.rokt logRoktApiDiagnostic:@"LOG_EVENT"];
 
@@ -1143,11 +1143,11 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-    OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[]);
+    OCMStub([self.mockContainer activeKitsRegistryWithoutWaiting]).andReturn(@[]);
 
     [self.rokt logRoktApiDiagnostic:@"LOG_EVENT"];
 
-    OCMVerify([self.mockContainer activeKitsRegistry]);
+    OCMVerify([self.mockContainer activeKitsRegistryWithoutWaiting]);
 }
 
 #pragma mark - getSessionId Tests
@@ -1375,6 +1375,7 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     kitInstance.handleURLCallbackReturn = YES;
     OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
     OCMStub([self.mockContainer activeKitsRegistry]).andReturn(@[mockKitRegister]);
+    OCMStub([self.mockContainer activeKitsRegistryWithoutWaiting]).andReturn(@[mockKitRegister]);
 
     XCTAssertNil([self.rokt getSessionId]);
     XCTAssertFalse([self.rokt handleURLCallback:[NSURL URLWithString:@"myapp://afterpay-redirect"]]);

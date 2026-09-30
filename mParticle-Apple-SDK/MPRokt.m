@@ -331,7 +331,9 @@ static NSInteger const kMPRoktKitCode = 181;
     if (code.length == 0) {
         return;
     }
-    NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+    // Diagnostics are best-effort. Most public APIs log one, including those a kit calls while it is
+    // being launched under the registry lock, so skip the diagnostic rather than wait for it.
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistryWithoutWaiting];
     for (id<MPExtensionKitProtocol> kitRegister in activeKits) {
         if ([kitRegister.code integerValue] == kMPRoktKitCode) {
             id<MPRoktKitDispatchTarget> target = MPRoktKitAsDispatchTarget(kitRegister.wrapperInstance);

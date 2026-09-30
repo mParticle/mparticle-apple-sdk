@@ -45,24 +45,58 @@ NSString *const KEY_RUN_AUTOMATICALLY = @"runAutomatically";
     }
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+- (BOOL)configurationBoolForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && !([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])) {
+        NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+        return NO;
+    }
+    return [value boolValue];
+}
+
 #pragma mark - MPKitInstanceProtocol methods
 
 #pragma mark Kit instance and lifecycle
 
+- (void)updateConfiguredSettings {
+    runAutomatically = [self configurationBoolForKey:KEY_RUN_AUTOMATICALLY];
+}
+
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
-    MPKitExecStatus *execStatus = nil;
-
-    NSString *publishableKey = configuration[KEY_PUBLISHABLE_KEY];
-    runAutomatically = [(NSNumber *)configuration[KEY_RUN_AUTOMATICALLY] boolValue];
-
-    if (!publishableKey) {
-        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
-        return execStatus;
+    if (![configuration isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"Ignoring launch configuration: expected a dictionary, got %@", [configuration class]);
+        _configuration = @{};
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
     }
 
-    [Radar initializeWithPublishableKey:publishableKey];
+    _configuration = [configuration copy];
 
-    _configuration = configuration;
+    NSString *publishableKey = [self configurationStringForKey:KEY_PUBLISHABLE_KEY];
+    if (publishableKey.length == 0) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
+    }
+
+    // After the requirements check, so a rejected configuration leaves no tracking state behind.
+    [self updateConfiguredSettings];
+
+    [Radar initializeWithPublishableKey:publishableKey];
 
     [self start];
 

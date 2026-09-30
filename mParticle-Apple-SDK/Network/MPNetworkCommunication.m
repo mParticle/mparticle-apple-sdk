@@ -555,7 +555,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             MPILogDebug(@"MPResponseConfig init: %@", responseConfig.description);
 
             MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-            [userDefaults setConfiguration:configurationDictionary eTag:eTag requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
+            // An entry no kit can be configured from is dropped here rather than written to the
+            // cache, where it would be re-read and re-rejected at every launch. The live
+            // MPResponseConfig above still sees the response as it arrived.
+            NSDictionary *storableConfiguration = [MPKitConfigurationParser configurationDroppingUnusableKitsFrom:configurationDictionary];
+            [userDefaults setConfiguration:storableConfiguration eTag:eTag requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
         }
 
         completionHandler(success);

@@ -75,6 +75,46 @@ static Braze *brazeInstance = nil;
 static id brazeLocationProvider = nil;
 static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
 
+/*
+ The core SDK applies this kit's app family attribute filters to a product's
+ beautified attributes and leaves the dictionary behind the typed accessors
+ untouched, so product.price still returns a price the customer disabled for this
+ kit. Every read of a built-in product field goes through these accessors, which
+ report a filtered field as nil.
+ */
+@interface MPProduct(MPKitBrazeFilteredAttributes)
+
+@property (nonatomic, readonly) NSString *brazeFilteredSku;
+@property (nonatomic, readonly) NSString *brazeFilteredName;
+@property (nonatomic, readonly) NSNumber *brazeFilteredPrice;
+@property (nonatomic, readonly) NSNumber *brazeFilteredQuantity;
+
+@end
+
+@implementation MPProduct(MPKitBrazeFilteredAttributes)
+
+- (id)brazeFilteredValue:(id)value forExpandedKey:(NSString *)expandedKey {
+    return self.beautifiedAttributes[expandedKey] != nil ? value : nil;
+}
+
+- (NSString *)brazeFilteredSku {
+    return [self brazeFilteredValue:self.sku forExpandedKey:kMPExpProductSKU];
+}
+
+- (NSString *)brazeFilteredName {
+    return [self brazeFilteredValue:self.name forExpandedKey:kMPExpProductName];
+}
+
+- (NSNumber *)brazeFilteredPrice {
+    return [self brazeFilteredValue:self.price forExpandedKey:kMPExpProductUnitPrice];
+}
+
+- (NSNumber *)brazeFilteredQuantity {
+    return [self brazeFilteredValue:self.quantity forExpandedKey:kMPExpProductQuantity];
+}
+
+@end
+
 @interface MPKitBraze() {
     Braze *brazeInstanceLocal;
     BOOL collectIDFA;
@@ -648,9 +688,15 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                     [properties addEntriesFromDictionary:productDictionary];
                 }
                 
-                NSString *sanitizedProductName = product.sku;
+                NSString *sanitizedProductName = product.brazeFilteredSku;
                 if ([@"True" isEqualToString:[self configurationStringForKey:replaceSkuWithProductName]]) {
-                    sanitizedProductName = product.name;
+                    sanitizedProductName = product.brazeFilteredName;
+                }
+
+                // Braze identifies the purchase by this value, so a product whose
+                // identifier the customer filtered cannot be forwarded at all.
+                if (!sanitizedProductName) {
+                    continue;
                 }
                 
                 // Strips key/values already being passed to Braze, plus key/values initialized to default values
@@ -659,8 +705,8 @@ static NSSet<BRZTrackingProperty*> *brazeTrackingPropertyAllowList;
                 
                 [brazeInstanceLocal logPurchase:sanitizedProductName
                                    currency:currency
-                                      price:[product.price doubleValue]
-                                   quantity:[product.quantity integerValue]
+                                      price:[product.brazeFilteredPrice doubleValue]
+                                   quantity:[product.brazeFilteredQuantity integerValue]
                                  properties:properties];
                 
                 [execStatus incrementForwardCount];
