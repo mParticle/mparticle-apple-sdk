@@ -402,6 +402,30 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber *> *disabledKits;
 
 /**
+ Whether the SDK may read custom module preferences out of the host app's standard NSUserDefaults.
+
+ Custom modules let the configuration forward a small, fixed set of Adobe Mobile Services
+ identifiers the Adobe SDK stores in NSUserDefaults. Set this to NO to stop the SDK reading
+ NSUserDefaults for custom modules entirely, whatever the configuration asks for.
+
+ Defaults to YES.
+ @see customModulePreferenceKeys
+ */
+@property (nonatomic, readwrite) BOOL collectCustomModulePreferences;
+
+/**
+ Additional NSUserDefaults keys the SDK may read for custom modules.
+
+ The SDK reads only the Adobe Mobile Services identifiers custom modules were built to carry, and
+ ignores any other key the configuration names. List a key here to allow it as well; keys outside
+ the default set and this list are never read, and each one ignored is logged.
+
+ Has no effect when collectCustomModulePreferences is NO.
+ @see collectCustomModulePreferences
+ */
+@property (nonatomic, strong, readwrite, nullable) NSArray<NSString *> *customModulePreferenceKeys;
+
+/**
  Set the App Tracking Transparency Authorization Status upon starting the SDK.
  Only sets a new state if it has changed.
  */

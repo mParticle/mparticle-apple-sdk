@@ -17,8 +17,45 @@
 /// MPCustomModule takes its MPUserDefaults connector by injection now that it is a Swift type:
 /// the Swift module cannot reach the ObjC singleton, so the call site supplies it.
 - (MPCustomModule *)customModuleWithDictionary:(NSDictionary *)dictionary {
+    return [self customModuleWithDictionary:dictionary allowedPreferenceKeys:[self readKeysInDictionary:dictionary]];
+}
+
+/// The allow-list is the subject of its own tests; everywhere else these tests are about parsing,
+/// so they allow exactly the keys the fixture names.
+- (NSArray<NSString *> *)readKeysInDictionary:(NSDictionary *)dictionary {
+    // Several tests hand this deliberately malformed configuration, so nothing here may assume a
+    // shape.
+    NSMutableArray<NSString *> *readKeys = [NSMutableArray array];
+    if (![dictionary isKindOfClass:[NSDictionary class]]) {
+        return readKeys;
+    }
+    id groups = dictionary[@"pr"];
+    if (![groups isKindOfClass:[NSArray class]]) {
+        return readKeys;
+    }
+    for (id group in (NSArray *)groups) {
+        if (![group isKindOfClass:[NSDictionary class]]) {
+            continue;
+        }
+        id settings = ((NSDictionary *)group)[@"ps"];
+        if (![settings isKindOfClass:[NSArray class]]) {
+            continue;
+        }
+        for (id setting in (NSArray *)settings) {
+            id readKey = [setting isKindOfClass:[NSDictionary class]] ? ((NSDictionary *)setting)[@"k"] : nil;
+            if ([readKey isKindOfClass:[NSString class]]) {
+                [readKeys addObject:readKey];
+            }
+        }
+    }
+    return readKeys;
+}
+
+- (MPCustomModule *)customModuleWithDictionary:(NSDictionary *)dictionary allowedPreferenceKeys:(NSArray<NSString *> *)allowedPreferenceKeys {
     return [[MPCustomModule alloc] initWithDictionary:dictionary
-                                            connector:[[MPUserDefaultsConnector alloc] init]];
+                                            connector:[[MPUserDefaultsConnector alloc] init]
+                                allowedPreferenceKeys:allowedPreferenceKeys
+                                               logger:[[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:0]]];
 }
 
 - (NSString *)customModulesString {

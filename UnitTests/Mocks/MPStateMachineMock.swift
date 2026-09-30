@@ -10,6 +10,8 @@ class MPStateMachineMock: NSObject, MPStateMachineProtocolPRIVATE {
     var consumerInfo: MPConsumerInfoPRIVATE = .init()
 
     var automaticSessionTracking: Bool = false
+    var collectCustomModulePreferences: Bool = true
+    var customModulePreferenceKeys: [String]?
 
     var currentSession: MPSessionPRIVATE? = nil
 

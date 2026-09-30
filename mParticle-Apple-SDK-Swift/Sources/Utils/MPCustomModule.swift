@@ -11,8 +11,12 @@ import Foundation
     // Takes Any rather than a dictionary type: these entries come straight off the configuration
     // response, and a typed parameter would be bridged before this initialiser ran, raising on a
     // non-dictionary instead of rejecting it.
+    /// `allowedPreferenceKeys` has no default: every caller states which of the host application's
+    /// preferences it is willing to read, so no path acquires a wider set by omission.
     @objc public init?(dictionary: Any,
-                       connector: MPUserDefaultsConnectorProtocol) {
+                       connector: MPUserDefaultsConnectorProtocol,
+                       allowedPreferenceKeys: [String],
+                       logger: MPLog) {
         guard let dictionary = dictionary as? [AnyHashable: Any],
               let customModuleId = dictionary[CustomModuleConfigKey.moduleId] as? NSNumber,
               let preferenceGroups = dictionary[CustomModuleConfigKey.preferences] as? [Any]
@@ -22,6 +26,7 @@ import Foundation
 
         self.customModuleId = customModuleId
 
+        let allowedPreferenceKeys = Set(allowedPreferenceKeys)
         var parsed: [CustomModulePreference] = []
         for group in preferenceGroups {
             guard let group = group as? [AnyHashable: Any] else {
@@ -38,7 +43,9 @@ import Foundation
                       let preference = CustomModulePreference(dictionary: setting,
                                                               location: location,
                                                               moduleId: customModuleId,
-                                                              connector: connector)
+                                                              connector: connector,
+                                                              allowedPreferenceKeys: allowedPreferenceKeys,
+                                                              logger: logger)
                 else {
                     continue
                 }

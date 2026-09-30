@@ -4,13 +4,42 @@ import XCTest
 final class MPCustomModulePreferenceTests: XCTestCase {
     private let connector = MPUserDefaultsConnectorMock()
 
+    /// The tests below name their own read keys, so they allow whatever key the dictionary asks
+    /// for unless a test is specifically about the allow-list.
     private func makePreference(_ dictionary: [AnyHashable: Any],
                                 location: String? = "NSUserDefaults",
-                                moduleId: NSNumber = 28) -> CustomModulePreference? {
+                                moduleId: NSNumber = 28,
+                                allowedPreferenceKeys: Set<String>? = nil) -> CustomModulePreference? {
+        let allowed = allowedPreferenceKeys
+            ?? Set([dictionary[CustomModuleConfigKey.readKey] as? String].compactMap { $0 })
         return CustomModulePreference(dictionary: dictionary,
                                       location: location,
                                       moduleId: moduleId,
-                                      connector: connector)
+                                      connector: connector,
+                                      allowedPreferenceKeys: allowed,
+                                      logger: MPLog(logLevel: .none))
+    }
+
+    // MARK: - Allow-list
+
+    func testReadKeyOutsideTheAllowListIsRejected() {
+        // Rejected at construction rather than at read time, so there is no object left to resolve
+        // the value or write it to the cache.
+        XCTAssertNil(makePreference(["k": "mp.test.session_token", "n": "tok"],
+                                    allowedPreferenceKeys: CustomModulePreferenceAllowList.defaultKeys))
+    }
+
+    func testReadKeyInsideTheAllowListIsAccepted() {
+        for key in CustomModulePreferenceAllowList.defaultKeys {
+            let preference = makePreference(["k": key, "n": "write"],
+                                            allowedPreferenceKeys: CustomModulePreferenceAllowList.defaultKeys)
+            XCTAssertEqual(preference?.readKey, key, "\(key) is one of the keys the feature exists to carry")
+        }
+    }
+
+    func testAnEmptyAllowListAcceptsNothing() {
+        XCTAssertNil(makePreference(["k": "ADOBEMOBILE_STOREDDEFAULTS_AID", "n": "aid"],
+                                    allowedPreferenceKeys: []))
     }
 
     // MARK: - Required keys

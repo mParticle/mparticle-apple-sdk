@@ -17,6 +17,10 @@ class MParticleOptionsMParticlePrivateTests: XCTestCase {
         XCTAssertTrue(sut.automaticSessionTracking)
         XCTAssertTrue(sut.shouldBeginSession)
         XCTAssertFalse(sut.startKitsAsync)
+        // On by default: the keys custom modules read are bounded by the SDK's own list, so
+        // leaving collection on does not expose an app-defined key.
+        XCTAssertTrue(sut.collectCustomModulePreferences)
+        XCTAssertNil(sut.customModulePreferenceKeys)
 
         XCTAssertEqual(sut.logLevel, .none)
         XCTAssertEqual(sut.uploadInterval, 0.0)

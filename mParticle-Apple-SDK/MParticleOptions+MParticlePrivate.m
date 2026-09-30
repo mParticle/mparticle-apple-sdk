@@ -11,6 +11,7 @@
     self = [super init];
     if (self) {
         _collectUserAgent = YES;
+        _collectCustomModulePreferences = YES;
         _collectSearchAdsAttribution = NO;
         _trackNotifications = YES;
         _automaticSessionTracking = YES;
