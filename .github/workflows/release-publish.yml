@@ -310,8 +310,10 @@ jobs:
       - name: Push split to destination
         if: env.DRY_RUN != 'true'
         id: push
+        env:
+          DEST_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
-          DEST_URL="https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
+          DEST_URL="https://x-access-token:${DEST_TOKEN}@github.com/${{ env.DEST_ORG }}/${{ matrix.kit.dest_repo }}.git"
           if [ "${{ matrix.kit.mirror_force_push_main }}" = "true" ]; then
             git push --force "$DEST_URL" "split/${{ matrix.kit.name }}:main"
           else
@@ -334,10 +336,12 @@ jobs:
 
       - name: Summary
         shell: bash
+        env:
+          RELEASE_NOTES: ${{ steps.release-notes.outputs.release_notes }}
         run: |
           COMMITS=$(git log "split/${{ matrix.kit.name }}" --oneline -5)
           ARTIFACTS=$(ls *.xcframework.zip 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
-          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          cat >> "$GITHUB_STEP_SUMMARY" <<EOF
           ## Kit Mirror: ${{ matrix.kit.name }}
 
           | Property | Value |
@@ -353,10 +357,10 @@ jobs:
           \`\`\`
           ${COMMITS}
           \`\`\`
-
-          ### Release notes
-          ${{ steps.release-notes.outputs.release_notes }}
           EOF
+
+          echo "### Release notes" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$RELEASE_NOTES" >> "$GITHUB_STEP_SUMMARY"
 
   # ──────────────────────────────────────────────
   # CocoaPods: publish core SDK + kits to trunk
