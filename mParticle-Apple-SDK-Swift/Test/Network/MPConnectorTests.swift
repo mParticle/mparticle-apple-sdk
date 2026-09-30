@@ -88,6 +88,31 @@ final class MPConnectorSwiftTests: XCTestCase {
         session.invalidateAndCancel()
     }
 
+    func testChallengeDispositionAcceptsOnlyAPassingTrustEvaluation() {
+        XCTAssertEqual(
+            MPConnector.challengeDisposition(trustChallenge: true, shouldDisablePinning: false),
+            .useCredential
+        )
+        XCTAssertEqual(
+            MPConnector.challengeDisposition(trustChallenge: true, shouldDisablePinning: true),
+            .useCredential
+        )
+    }
+
+    func testChallengeDispositionDefersToSystemTrustWhenPinningIsDisabled() {
+        XCTAssertEqual(
+            MPConnector.challengeDisposition(trustChallenge: false, shouldDisablePinning: true),
+            .performDefaultHandling
+        )
+    }
+
+    func testChallengeDispositionRejectsAFailedTrustEvaluationWhenPinningIsEnabled() {
+        XCTAssertEqual(
+            MPConnector.challengeDisposition(trustChallenge: false, shouldDisablePinning: false),
+            .cancelAuthenticationChallenge
+        )
+    }
+
     func testBundledCertificatesAreValidBase64() {
         let certificates = MPConnector.defaultPinnedCertificates()
 
