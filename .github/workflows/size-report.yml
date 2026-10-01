@@ -34,6 +34,14 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha || 'main' }}
           path: base-branch
 
+      - name: Pin the PR fixture into the target checkout
+        # Both sides are measured with the same fixture apps and scripts, against
+        # their own SDK and kit sources. The target branch may predate a fixture, and
+        # a fixture change would otherwise read as an SDK size change.
+        run: |
+          rm -rf base-branch/Tests/SizeReport
+          cp -R pr-branch/Tests/SizeReport base-branch/Tests/SizeReport
+
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
@@ -174,6 +182,75 @@ jobs:
           PYEOF
 
           echo "path=${RUNNER_TEMP}/composition.md" >> $GITHUB_OUTPUT
+
+      - name: Render the Core + Rokt kit section
+        id: kit
+        env:
+          SAFE_STEPS_BASE_SIZE_OUTPUTS_JSON: ${{ steps.base-size.outputs.json }}
+          SAFE_STEPS_PR_SIZE_OUTPUTS_JSON: ${{ steps.pr-size.outputs.json }}
+        run: |
+          python3 - "${RUNNER_TEMP}/kit.md" <<'PYEOF'
+          import json, os, sys
+
+          # Same threshold as the core status, in KB.
+          NEUTRAL_KB = 50
+
+          def load(name):
+              try:
+                  return json.loads(os.environ.get(name) or "{}")
+              except ValueError:
+                  return {}
+
+          base = load("SAFE_STEPS_BASE_SIZE_OUTPUTS_JSON")
+          pr = load("SAFE_STEPS_PR_SIZE_OUTPUTS_JSON")
+
+          def size(kb):
+              if kb is None:
+                  return "not measured"
+              sign = "-" if kb < 0 else ""
+              kb = abs(kb)
+              return f"{sign}{kb / 1024:.2f} MB" if kb >= 1024 else f"{sign}{kb} KB"
+
+          def change(b, p):
+              if b is None or p is None:
+                  return "not measured", None
+              d = p - b
+              return ("+" if d >= 0 else "") + size(d), d
+
+          rows, deltas = [], []
+          for label, key in (("App Bundle Impact", "kit_impact_kb"), ("Kit on top of the SDK", "kit_over_core_kb")):
+              text, d = change(base.get(key), pr.get(key))
+              rows.append(f"| {label} | {size(base.get(key))} | {size(pr.get(key))} | {text} |")
+              if key == "kit_impact_kb" and d is not None:
+                  deltas.append(d)
+
+          if not deltas:
+              status = "none"
+          elif deltas[0] > NEUTRAL_KB:
+              status = "increase"
+          elif deltas[0] < -NEUTRAL_KB:
+              status = "decrease"
+          else:
+              status = "neutral"
+
+          with open(sys.argv[1], "w") as out:
+              out.write("\n".join([
+                  "### mParticle Core + Rokt kit",
+                  "",
+                  "The SDK and the Rokt kit built from source by SwiftPM and linked statically, as a",
+                  "SwiftPM app takes them. `Kit on top of the SDK` is measured against the SDK built",
+                  "the same way. Rokt SDK versions are pinned in `Tests/SizeReport/RoktKitSDK`.",
+                  "Report-only: the size budget applies to the core number above.",
+                  "",
+                  "| Metric | Target Branch | This PR | Change |",
+                  "|--------|---------------|---------|--------|",
+                  *rows,
+                  "",
+              ]))
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"status={status}\n")
+          PYEOF
+          echo "path=${RUNNER_TEMP}/kit.md" >> "$GITHUB_OUTPUT"
 
       - name: Calculate size delta
         id: delta
@@ -348,6 +425,8 @@ jobs:
         id: report
         env:
           SAFE_STEPS_DELTA_OUTPUTS_STATUS: ${{ steps.delta.outputs.status }}
+          SAFE_STEPS_KIT_OUTPUTS_STATUS: ${{ steps.kit.outputs.status }}
+          SAFE_STEPS_KIT_OUTPUTS_PATH: ${{ steps.kit.outputs.path }}
           SAFE_STEPS_FORMAT_OUTPUTS_BASE_IMPACT_FORMATTED: ${{ steps.format.outputs.base_impact_formatted }}
           SAFE_STEPS_FORMAT_OUTPUTS_PR_IMPACT_FORMATTED: ${{ steps.format.outputs.pr_impact_formatted }}
           SAFE_STEPS_FORMAT_OUTPUTS_DELTA_FORMATTED: ${{ steps.format.outputs.delta_formatted }}
@@ -370,6 +449,13 @@ jobs:
 
           # Determine status message
           STATUS="${SAFE_STEPS_DELTA_OUTPUTS_STATUS}"
+          KIT_STATUS="${SAFE_STEPS_KIT_OUTPUTS_STATUS}"
+          # An increase in either stack wins, so a shrink in one cannot hide growth in the other.
+          if [[ "$STATUS" == "increase" || "$KIT_STATUS" == "increase" ]]; then
+            STATUS="increase"
+          elif [[ "$STATUS" == "neutral" && "$KIT_STATUS" == "decrease" ]]; then
+            STATUS="decrease"
+          fi
           case "$STATUS" in
             increase) STATUS_MSG="⚠️ This change increases SDK size impact." ;;
             decrease) STATUS_MSG="✅ This change decreases SDK size impact." ;;
@@ -390,6 +476,8 @@ jobs:
           | App Bundle Impact | ${SAFE_STEPS_FORMAT_OUTPUTS_BASE_IMPACT_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_PR_IMPACT_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_DELTA_FORMATTED} |
           | Executable Impact | ${SAFE_STEPS_FORMAT_OUTPUTS_BASE_EXECUTABLE_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_PR_EXECUTABLE_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_DELTA_EXECUTABLE_FORMATTED} |
           | Framework binary (ships) | ${SAFE_STEPS_FORMAT_OUTPUTS_BASE_FRAMEWORK_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_PR_FRAMEWORK_FORMATTED} | ${SAFE_STEPS_FORMAT_OUTPUTS_DELTA_FRAMEWORK_FORMATTED} |
+
+          $(cat "${SAFE_STEPS_KIT_OUTPUTS_PATH}" 2>/dev/null || echo "_Core + Rokt kit data unavailable._")
 
           ${STATUS_MSG}
 
