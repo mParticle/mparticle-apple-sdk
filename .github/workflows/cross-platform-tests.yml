@@ -49,7 +49,7 @@ jobs:
           key: gems-cocoapods-${{ runner.os }}-${{ hashFiles('**/Podfile.lock') }}
           restore-keys: gems-cocoapods-${{ runner.os }}
       - name: Install CocoaPods
-        run: |
+        run: | # zizmor: ignore[adhoc-packages] Avoid a CI-only lockfile.
           gem install cocoapods -v 1.16.2 --user-install
           gem install cocoapods-generate -v 2.2.5 --user-install
           echo "$(ruby -e 'puts Gem.user_dir')/bin" >> "$GITHUB_PATH"

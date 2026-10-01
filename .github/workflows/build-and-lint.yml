@@ -48,7 +48,7 @@ jobs:
           key: gems-xcodeproj-${{ runner.os }}
 
       - name: Update xcodeproj gem
-        run: gem install xcodeproj -v 1.28.1 --user-install
+        run: gem install xcodeproj -v 1.28.1 --user-install # zizmor: ignore[adhoc-packages] Avoid a CI-only lockfile.
 
       - name: Prevent social URL warnings if twitter is unreachable
         run: find . -path '*.podspec' -exec perl -pi -e 's/.+\.social_media_url.+//' {} \;
