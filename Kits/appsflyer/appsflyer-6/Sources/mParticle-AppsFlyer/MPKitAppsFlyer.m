@@ -83,6 +83,17 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
     }
 }
 
++ (BOOL)startAppsFlyer {
+    if (appsFlyerTracker == nil || appsFlyerTracker.appsFlyerDevKey.length == 0) {
+        NSLog(@"Warning: `startAppsFlyer` was called before AppsFlyer was initialized by mParticle. "
+              "Ensure the kit is configured and active before invoking manual start.");
+        return NO;
+    }
+
+    [appsFlyerTracker start];
+    return YES;
+}
+
 + (NSNumber *)kitCode {
     return @92;
 }
@@ -158,7 +169,7 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 - (nonnull MPKitExecStatus *)didBecomeActive {
     BOOL manualStart = [self configurationBoolForKey:afManualStart];
     if (!manualStart) {
-        [appsFlyerTracker start];
+        [[self class] startAppsFlyer];
     }
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
     return execStatus;

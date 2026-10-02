@@ -50,6 +50,24 @@ After installing, rebuild and launch your app. With the mParticle log level set 
 Included kits: { AppsFlyer }
 ```
 
+## Manual Start
+
+If this kit's "Require Manual Start" connection setting is enabled, AppsFlyer does not start automatically — attribution and event forwarding stay paused until your app tells it to go (for example, once a user accepts a consent prompt). Resume it by calling `startAppsFlyer`, which always operates on the same AppsFlyer instance this kit configured:
+
+```swift
+import mParticle_AppsFlyer
+
+MPKitAppsFlyer.startAppsFlyer()
+```
+
+```objc
+#import <mParticle_AppsFlyer/mParticle_AppsFlyer.h>
+
+[MPKitAppsFlyer startAppsFlyer];
+```
+
+Don't call `AppsFlyerLib.shared().start()` directly: if your app links the AppsFlyer SDK anywhere else, that call can resolve a different, unconfigured instance and fail with "No dev key".
+
 ## Platform Support
 
 | Platform | Minimum Version |
