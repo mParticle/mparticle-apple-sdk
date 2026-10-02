@@ -20,6 +20,36 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.7.0] - 2026-10-02
+
+### Core
+
+#### Fixed
+
+- Require system trust evaluation when certificate pinning is disabled ([#1057](https://github.com/mParticle/mparticle-apple-sdk/pull/1057))
+- Bound the preferences custom modules may read from the host app ([#1053](https://github.com/mParticle/mparticle-apple-sdk/pull/1053))
+- Keep kit projection arrays index-aligned across the message type range ([#1050](https://github.com/mParticle/mparticle-apple-sdk/pull/1050))
+- Reject malformed identity responses instead of crashing ([#1046](https://github.com/mParticle/mparticle-apple-sdk/pull/1046))
+- Drop unusable kit entries before caching configuration ([#1040](https://github.com/mParticle/mparticle-apple-sdk/pull/1040))
+
+#### Changed
+
+- Report backend errors and crashes in Swift ([#1038](https://github.com/mParticle/mparticle-apple-sdk/pull/1038))
+
+### Kits
+
+#### Appsflyer
+
+##### Added
+
+- Add startAppsFlyer to safely resume a withheld start() ([#1064](https://github.com/mParticle/mparticle-apple-sdk/pull/1064))
+
+#### Branchmetrics
+
+##### Fixed
+
+- Validate server configuration types in Branch, Radar and Singular kits ([#1024](https://github.com/mParticle/mparticle-apple-sdk/pull/1024))
+
 ## [9.6.1] - 2026-09-24
 
 ### Core
@@ -2629,7 +2659,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.1...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.0...HEAD
+[9.7.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.1...v9.7.0
 [9.6.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.0...v9.6.1
 [9.6.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.1...v9.6.0
 [9.5.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.0...v9.5.1
