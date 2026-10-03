@@ -4,6 +4,8 @@
 #
 # This script builds both the baseline and with-SDK test apps,
 # and measures their sizes to determine the SDK's size impact.
+# It also builds the SDK with the Rokt kit, both from source through SwiftPM,
+# and reports that stack as kit_* fields.
 #
 # The SDK is built FROM SOURCE using the main Xcode project to ensure
 # that source code changes in PRs are reflected in the size measurement.
@@ -224,6 +226,64 @@ if [[ -d ${WITHSDK_APP} ]]; then
 	WITHSDK_EXECUTABLE_SIZE=$(get_executable_size "${WITHSDK_APP}")
 fi
 
+# Core + Rokt kit, both compiled from source by SwiftPM and linked statically.
+# SizeTestAppCoreSource is the same SDK through the same path, so the kit's marginal
+# cost is not mixed up with the dynamic-framework vs static-link difference.
+# Find a built app in its archive, or in DerivedData if build_app fell back.
+find_app() {
+	local scheme="$1"
+	local archived="${BUILD_DIR}/${scheme}.xcarchive/Products/Applications/${scheme}.app"
+	if [[ -d ${archived} ]]; then
+		echo "${archived}"
+	else
+		find "${BUILD_DIR}/DerivedData/${scheme}" -name "${scheme}.app" -type d 2>/dev/null | head -1 || true
+	fi
+}
+
+# A fixture that silently stops linking the kit still builds, and would read as a
+# large saving. The kit and the Rokt SDK add ~5 MB, so 1 MB catches a collapse.
+MIN_KIT_OVER_CORE_KB=1024
+
+KIT_JSON=""
+if [[ ${WITH_SDK_ONLY} == "false" ]]; then
+	# The kit resolves the SDK from this checkout only with USE_LOCAL_VERSION set.
+	export USE_LOCAL_VERSION=1
+	KIT_BUILT=true
+	for scheme in SizeTestAppCoreSource SizeTestAppWithRoktKit; do
+		# shellcheck disable=SC2310
+		build_app \
+			"${SCRIPT_DIR}/${scheme}/${scheme}.xcodeproj" \
+			"${scheme}" \
+			"${BUILD_DIR}/${scheme}.xcarchive" || KIT_BUILT=false
+	done
+	unset USE_LOCAL_VERSION
+
+	if [[ ${KIT_BUILT} == "true" ]]; then
+		# shellcheck disable=SC2311
+		CORE_SOURCE_APP=$(find_app SizeTestAppCoreSource)
+		# shellcheck disable=SC2311
+		KIT_APP=$(find_app SizeTestAppWithRoktKit)
+	fi
+	if [[ -d ${CORE_SOURCE_APP-} ]] && [[ -d ${KIT_APP-} ]]; then
+		# shellcheck disable=SC2311
+		CORE_SOURCE_SIZE_KB=$(get_app_size "${CORE_SOURCE_APP}")
+		# shellcheck disable=SC2311
+		KIT_SIZE_KB=$(get_app_size "${KIT_APP}")
+		# shellcheck disable=SC2311
+		KIT_EXECUTABLE_SIZE=$(get_executable_size "${KIT_APP}")
+		KIT_IMPACT_KB=$((KIT_SIZE_KB - BASELINE_SIZE_KB))
+		KIT_OVER_CORE_KB=$((KIT_SIZE_KB - CORE_SOURCE_SIZE_KB))
+		if [[ ${KIT_OVER_CORE_KB} -ge ${MIN_KIT_OVER_CORE_KB} ]]; then
+			KIT_JSON=",\"core_source_app_size_kb\":${CORE_SOURCE_SIZE_KB},\"kit_app_size_kb\":${KIT_SIZE_KB},\"kit_executable_size_bytes\":${KIT_EXECUTABLE_SIZE},\"kit_impact_kb\":${KIT_IMPACT_KB},\"kit_over_core_kb\":${KIT_OVER_CORE_KB}"
+		else
+			echo "IMPLAUSIBLE: the Rokt kit adds ${KIT_OVER_CORE_KB} KB over the SDK, expected at least ${MIN_KIT_OVER_CORE_KB} KB." >&2
+			echo "  Check that SizeTestAppWithRoktKit still calls into the kit." >&2
+		fi
+	else
+		echo "Warning: Core + Rokt kit apps did not build; kit_* fields omitted." >&2
+	fi
+fi
+
 # Calculate SDK impact
 SDK_SIZE_KB=$((WITHSDK_SIZE_KB - BASELINE_SIZE_KB))
 SDK_EXECUTABLE_SIZE=$((WITHSDK_EXECUTABLE_SIZE - BASELINE_EXECUTABLE_SIZE))
@@ -231,7 +291,7 @@ SDK_EXECUTABLE_SIZE=$((WITHSDK_EXECUTABLE_SIZE - BASELINE_EXECUTABLE_SIZE))
 # Output results
 if [[ ${OUTPUT_JSON} == "true" ]]; then
 	# Output compact single-line JSON for CI compatibility
-	echo "{\"baseline_app_size_kb\":${BASELINE_SIZE_KB},\"baseline_executable_size_bytes\":${BASELINE_EXECUTABLE_SIZE},\"with_sdk_app_size_kb\":${WITHSDK_SIZE_KB},\"with_sdk_executable_size_bytes\":${WITHSDK_EXECUTABLE_SIZE},\"sdk_impact_kb\":${SDK_SIZE_KB},\"sdk_executable_impact_bytes\":${SDK_EXECUTABLE_SIZE},\"xcframework_size_kb\":${XCFRAMEWORK_SIZE_KB},\"framework_size_kb\":${FRAMEWORK_SIZE_KB},\"dsym_size_kb\":${DSYM_SIZE_KB}}"
+	echo "{\"baseline_app_size_kb\":${BASELINE_SIZE_KB},\"baseline_executable_size_bytes\":${BASELINE_EXECUTABLE_SIZE},\"with_sdk_app_size_kb\":${WITHSDK_SIZE_KB},\"with_sdk_executable_size_bytes\":${WITHSDK_EXECUTABLE_SIZE},\"sdk_impact_kb\":${SDK_SIZE_KB},\"sdk_executable_impact_bytes\":${SDK_EXECUTABLE_SIZE},\"xcframework_size_kb\":${XCFRAMEWORK_SIZE_KB},\"framework_size_kb\":${FRAMEWORK_SIZE_KB},\"dsym_size_kb\":${DSYM_SIZE_KB}${KIT_JSON}}"
 else
 	echo ""
 	echo "=== SDK Size Measurement Results ==="
@@ -255,6 +315,14 @@ else
 		echo "SDK Impact:"
 		echo "  App bundle delta: ${SDK_SIZE_KB} KB"
 		echo "  Executable delta: ${SDK_EXECUTABLE_SIZE} bytes"
+		echo ""
+		if [[ -n ${KIT_JSON} ]]; then
+			echo "Core + Rokt kit (SwiftPM, from source):"
+			echo "  App bundle delta:     ${KIT_IMPACT_KB} KB"
+			echo "  Kit on top of SDK:    ${KIT_OVER_CORE_KB} KB"
+		else
+			echo "Core + Rokt kit: not measured"
+		fi
 	fi
 	echo ""
 fi
