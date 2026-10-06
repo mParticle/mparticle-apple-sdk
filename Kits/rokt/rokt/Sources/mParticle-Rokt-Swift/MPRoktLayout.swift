@@ -11,6 +11,7 @@
 //
 //  You may obtain a copy of the License at https://rokt.com/sdk-license-2-0/
 
+import Foundation
 import SwiftUI
 import Rokt_Widget
 import RoktContracts
@@ -80,7 +81,7 @@ public class MPRoktLayout {
     static func mpLog(_ message: String) {
         let msg = "MPRokt -> \(message)"
         if MParticle.sharedInstance().environment == .development {
-            print(msg)
+            NSLog("%@", msg)
         }
     }
 }

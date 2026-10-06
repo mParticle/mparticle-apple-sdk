@@ -1009,7 +1009,7 @@ public final class MPRoktKitImplementation: NSObject {
 
     private static func log(_ message: String) {
         if MParticle.sharedInstance().environment == .development {
-            print("MPRokt -> \(message)")
+            NSLog("%@", "MPRokt -> \(message)")
         }
     }
 }
