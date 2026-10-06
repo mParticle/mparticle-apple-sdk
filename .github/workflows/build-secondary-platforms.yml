@@ -4,6 +4,9 @@ on:
   workflow_call:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   XCODE_VERSION: "16.4"
 
@@ -15,15 +18,17 @@ jobs:
         working-directory: ./RNExample/ios
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1
         with:
           xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Setup specified simulator
-        uses: futureware-tech/simulator-action@v5
+        uses: futureware-tech/simulator-action@e89aa8f93d3aec35083ff49d2854d07f7186f7f5 # v5
         id: simulator
         with:
           model: iPhone 16 Pro
@@ -33,8 +38,9 @@ jobs:
           wait_for_boot: true
           shutdown_after_job: true
 
-      - name: Add React Native cli
-        run: yarn add -D @react-native-community/cli
+      - name: Install React Native dependencies
+        working-directory: ./RNExample
+        run: npm ci
 
       - name: Update CocoaPods repo
         run: pod repo update
@@ -43,4 +49,6 @@ jobs:
         run: pod install
 
       - name: Build iOS extension scheme
-        run: xcodebuild -allowProvisioningUpdates -workspace RNExample.xcworkspace -scheme RNExample -destination 'id=${{ steps.simulator.outputs.udid }}'
+        env:
+          SAFE_STEPS_SIMULATOR_OUTPUTS_UDID: ${{ steps.simulator.outputs.udid }}
+        run: xcodebuild -allowProvisioningUpdates -workspace RNExample.xcworkspace -scheme RNExample -destination "id=${SAFE_STEPS_SIMULATOR_OUTPUTS_UDID}"

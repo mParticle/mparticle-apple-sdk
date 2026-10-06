@@ -11,6 +11,9 @@ on:
           - patch
           - minor
 
+permissions:
+  contents: read
+
 env:
   XCODE_VERSION: "26.2"
 
@@ -20,8 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate branch name
+        env:
+          SAFE_GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
-          REF_NAME="${{ github.ref_name }}"
+          REF_NAME="${SAFE_GITHUB_REF_NAME}"
           if [[ "$REF_NAME" != workstation/* ]]; then
             echo "::error::Dispatch this workflow from a branch named workstation/... (e.g. workstation/8.x-Maintenance). Current branch: $REF_NAME"
             exit 1
@@ -38,7 +43,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: ${{ github.repository }}
-          token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          persist-credentials: false
 
       - name: Get previous tag for changelog and bump baseline
         id: previous-tag
@@ -84,8 +89,10 @@ jobs:
           echo "new_version=${MAJOR}.${MINOR}.${PATCH}" >>"$GITHUB_OUTPUT"
 
       - name: Set VERSION environment variable
+        env:
+          SAFE_STEPS_BUMP_VERSION_OUTPUTS_NEW_VERSION: ${{ steps.bump-version.outputs.new_version }}
         run: |
-          VERSION=$(echo "${{ steps.bump-version.outputs.new_version }}" | sed 's/^v//')
+          VERSION=$(echo "${SAFE_STEPS_BUMP_VERSION_OUTPUTS_NEW_VERSION}" | sed 's/^v//')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "New version: $VERSION"
 
@@ -114,7 +121,10 @@ jobs:
           git config user.name "mParticle Automation"
 
       - name: Delete existing release branch if present
+        env:
+          GH_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
         run: |
+          gh auth setup-git
           # Delete remote branch if it exists (ignore errors if it doesn't)
           git push origin --delete chore/release-v${VERSION} 2>/dev/null || true
           # Delete local branch if it exists
@@ -149,8 +159,10 @@ jobs:
           rm -f $CERTIFICATE_PATH
 
       - name: Generate changelog entry
+        env:
+          SAFE_STEPS_PREVIOUS_TAG_OUTPUTS_VERSION: ${{ steps.previous-tag.outputs.version }}
         run: |
-          PREV_TAG="v${{ steps.previous-tag.outputs.version }}"
+          PREV_TAG="v${SAFE_STEPS_PREVIOUS_TAG_OUTPUTS_VERSION}"
           # Handle case where there's no previous version
           if [ "$PREV_TAG" = "v0.0.0" ]; then
             PREV_TAG=""
@@ -279,7 +291,10 @@ jobs:
           - IntegrationTests/wiremock-recordings/mappings/*.json"
 
       - name: Push release branch
+        env:
+          GH_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
         run: |
+          gh auth setup-git
           git push origin chore/release-v${VERSION}
 
       - name: Upload xcframeworks to S3
@@ -297,6 +312,7 @@ jobs:
 
       - name: Create Pull Request
         env:
+          SAFE_GITHUB_REF_NAME: ${{ github.ref_name }}
           GH_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
         run: |
           PR_BODY="## Release v${VERSION}
@@ -319,12 +335,12 @@ jobs:
 
           ## Post-Merge Instructions
 
-          After merging this PR to \`${{ github.ref_name }}\`, complete the release with these steps:
+          After merging this PR to \`${SAFE_GITHUB_REF_NAME}\`, complete the release with these steps:
 
           ### 1. Create and push the git tag
           \`\`\`bash
-          git checkout ${{ github.ref_name }}
-          git pull origin ${{ github.ref_name }}
+          git checkout ${SAFE_GITHUB_REF_NAME}
+          git pull origin ${SAFE_GITHUB_REF_NAME}
           git tag v${VERSION}
           git push origin v${VERSION}
           \`\`\`
@@ -364,7 +380,7 @@ jobs:
           **Note:** The xcframeworks have already been uploaded to S3 for SPM binary targets."
 
           gh pr create \
-            --base "${{ github.ref_name }}" \
+            --base "${SAFE_GITHUB_REF_NAME}" \
             --head chore/release-v${VERSION} \
             --title "chore: Release v${VERSION}" \
             --body "$PR_BODY"

@@ -9,6 +9,7 @@ on:
     paths:
       - .github/workflows/**
       - .github/actions/**
+      - .github/dependabot.yml
   push:
     branches:
       - main
@@ -16,6 +17,7 @@ on:
     paths:
       - .github/workflows/**
       - .github/actions/**
+      - .github/dependabot.yml
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -39,10 +41,6 @@ jobs:
           fetch-depth: 1 # zizmor only needs the tree at HEAD
       - name: Run zizmor
         uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
-        # Permanent advisory mode — zizmor is rolled out across Rokt repos as a
-        # reporter, not a gate. Findings surface as PR annotations so owners
-        # can triage incrementally without blocking unrelated changes.
-        continue-on-error: true
         with:
           advanced-security: false
           annotations: true

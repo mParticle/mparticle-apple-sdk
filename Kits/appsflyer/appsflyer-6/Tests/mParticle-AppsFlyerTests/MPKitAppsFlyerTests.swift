@@ -30,6 +30,7 @@ final class MPKitAppsFlyerTests: XCTestCase {
         kit = MPKitAppsFlyer()
         kit.configuration = [:]
         mock = AppsFlyerLibMock()
+        mock.appsFlyerDevKey = "test-dev-key"
     }
 
     // MARK: - convertToKeyValuePairs
@@ -183,6 +184,38 @@ final class MPKitAppsFlyerTests: XCTestCase {
         _ = kit.didBecomeActive()
 
         XCTAssertEqual(mock.startCallCount, 1)
+    }
+
+    // MARK: - startAppsFlyer
+
+    func test_startAppsFlyer_withConfiguredTracker_callsStartAndReturnsTrue() {
+        kit.providerKitInstance = mock
+
+        let result = MPKitAppsFlyer.startAppsFlyer()
+
+        XCTAssertTrue(result)
+        XCTAssertEqual(mock.startCallCount, 1)
+    }
+
+    func test_startAppsFlyer_withoutConfiguredTracker_returnsFalse() {
+        kit.providerKitInstance = nil
+
+        let result = MPKitAppsFlyer.startAppsFlyer()
+
+        XCTAssertFalse(result)
+    }
+
+    // Covers the window between `appsFlyerTracker = [AppsFlyerLib shared]` and the dev key
+    // actually being set in didFinishLaunchingWithConfiguration: the tracker exists but isn't
+    // configured yet, so starting it would behave as if mParticle never configured AppsFlyer.
+    func test_startAppsFlyer_withTrackerAssignedButNotYetConfigured_returnsFalse() {
+        let unconfiguredMock = AppsFlyerLibMock()
+        kit.providerKitInstance = unconfiguredMock
+
+        let result = MPKitAppsFlyer.startAppsFlyer()
+
+        XCTAssertFalse(result)
+        XCTAssertEqual(unconfiguredMock.startCallCount, 0)
     }
 
     // MARK: - setUserIdentity / userIdentificationType
