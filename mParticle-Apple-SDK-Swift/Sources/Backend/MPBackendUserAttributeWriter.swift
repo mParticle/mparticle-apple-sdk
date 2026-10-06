@@ -11,6 +11,9 @@ public final class MPBackendUserAttributeDependencies: NSObject {
     let userDefaults: () -> MPUserDefaults
     let currentUserId: () -> NSNumber
     let optOut: () -> Bool
+    /// The string stored in place of `NSNull`; the `.m` supplies `kMPNullUserAttributeString`, its
+    /// one definition.
+    let nullSentinel: String
     let validateAndLogAttribute: (String, Any?) -> MPAttributeValidationResult
     var now: () -> Date = { Date() }
 
@@ -18,11 +21,13 @@ public final class MPBackendUserAttributeDependencies: NSObject {
         userDefaults: @escaping () -> MPUserDefaults,
         currentUserId: @escaping () -> NSNumber,
         optOut: @escaping () -> Bool,
+        nullSentinel: String,
         validateAndLogAttribute: @escaping (String, Any?) -> MPAttributeValidationResult
     ) {
         self.userDefaults = userDefaults
         self.currentUserId = currentUserId
         self.optOut = optOut
+        self.nullSentinel = nullSentinel
         self.validateAndLogAttribute = validateAndLogAttribute
         super.init()
     }
@@ -39,6 +44,10 @@ public final class MPBackendUserAttributeWriter: NSObject {
 
     /// Keys removed since the last upload, which the upload builder sends as deletions.
     /// Cleared by the upload coordinator once a batch carries them.
+    ///
+    /// Unsynchronised by design: every writer and every reader runs on the serial message queue.
+    /// `MParticleUser` dispatches each attribute call there, and `prepareBatchesForUpload` is only
+    /// ever reached from it.
     @objc public private(set) var deletedUserAttributes: NSMutableSet?
 
     @objc public init(
@@ -65,7 +74,7 @@ public final class MPBackendUserAttributeWriter: NSObject {
     public func userAttributes(forUserId userId: NSNumber) -> NSMutableDictionary {
         let stored = attributes.userDefaults().mpObject(forKey: MessageKeys.kMPUserAttributeKey, userId: userId)
         guard let stored = stored as? [AnyHashable: Any] else { return NSMutableDictionary() }
-        let decoded = MPUserAttributeLogic.attributesFromStorage(stored, nullSentinel: kMPNullUserAttributeString)
+        let decoded = MPUserAttributeLogic.attributesFromStorage(stored, nullSentinel: attributes.nullSentinel)
         return NSMutableDictionary(dictionary: decoded)
     }
 
@@ -99,9 +108,11 @@ public final class MPBackendUserAttributeWriter: NSObject {
         return applyMutation(key: key, value: value, isArray: false, timestamp: timestamp)
     }
 
+    /// `values` is untyped because the Objective-C `NSArray<NSString *>` generic is not enforced:
+    /// a non-string entry has to reach the validator, which reports it, rather than the bridge.
     @objc(setUserAttribute:values:timestamp:)
     public func setUserAttribute(
-        _ key: Any?, values: [String]?, timestamp: Date?
+        _ key: Any?, values: Any?, timestamp: Date?
     ) -> MPBackendUserAttributeOutcome {
         guard let key = validKey(key) else {
             return MPBackendUserAttributeOutcome(key: key, value: values, status: .missingParam)
@@ -120,10 +131,12 @@ public final class MPBackendUserAttributeWriter: NSObject {
         return applyMutation(key: key, value: nil, isArray: false, timestamp: timestamp)
     }
 
-    /// Adds `value` to a numeric attribute, returning the new total, or `nil` when the stored
-    /// value is a non-number and cannot be incremented.
+    /// Adds `value` to a numeric attribute, returning the new total, or `nil` when it cannot be
+    /// incremented: the stored value is a non-number, or the key or value is unusable. Untyped for
+    /// the same reason as the other key-taking methods; the forwarder's `NSAssert`s are debug-only.
     @objc(incrementUserAttribute:byValue:)
-    public func incrementUserAttribute(_ key: String, byValue value: NSNumber) -> NSNumber? {
+    public func incrementUserAttribute(_ key: Any?, byValue value: Any?) -> NSNumber? {
+        guard let key = validKey(key), let value = value as? NSNumber else { return nil }
         let timestamp = attributes.now()
         let userId = attributes.currentUserId()
         let stored = userAttributes(forUserId: userId)
@@ -145,7 +158,7 @@ public final class MPBackendUserAttributeWriter: NSObject {
         )
         stored[localKey] = newValue
         let forStorage = MPUserAttributeLogic.attributesForStorage(
-            stored as? [AnyHashable: Any] ?? [:], nullSentinel: kMPNullUserAttributeString
+            stored as? [AnyHashable: Any] ?? [:], nullSentinel: attributes.nullSentinel
         )
 
         // The original re-read storage here to snapshot the change's `userAttributes`, which at
@@ -218,7 +231,7 @@ public final class MPBackendUserAttributeWriter: NSObject {
         }
 
         let forStorage = MPUserAttributeLogic.attributesForStorage(
-            stored as? [AnyHashable: Any] ?? [:], nullSentinel: kMPNullUserAttributeString
+            stored as? [AnyHashable: Any] ?? [:], nullSentinel: attributes.nullSentinel
         )
 
         if change.changed {
@@ -298,6 +311,3 @@ public final class MPBackendUserAttributeOutcome: NSObject {
         super.init()
     }
 }
-
-// Wire key mirrored from MPIConstants.m across the internal module boundary.
-private let kMPNullUserAttributeString = "null"

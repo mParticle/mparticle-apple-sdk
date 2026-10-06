@@ -183,4 +183,67 @@ final class MPBackendUserAttributeWriterTests: MPBackendWorkflowTestCase {
 
         XCTAssertTrue(stored().isEmpty)
     }
+
+    func testAValueListWithANonStringEntryReachesTheValidatorInsteadOfTrapping() throws {
+        // The Objective-C signature's NSArray<NSString *> is not enforced; the validator is what
+        // rejects a bad entry, so it has to be reached rather than tripped over at the bridge.
+        fixture.validationResult = .invalidArrayEntry
+        let mixed: [Any] = ["S", NSNumber(value: 7)]
+
+        try onMessageQueue { [self] in
+            let outcome = writer.setUserAttribute("Sizes", values: mixed, timestamp: nil)
+            XCTAssertEqual(outcome.status, .invalidDataType)
+            XCTAssertEqual((outcome.value as? [Any])?.count, 2)
+        }
+
+        XCTAssertEqual(fixture.validated.map(\.key), ["Sizes"])
+        XCTAssertTrue(stored().isEmpty)
+    }
+
+    func testIncrementMatchesTheStoredKeyIgnoringCase() throws {
+        try onMessageQueue { [self] in
+            _ = writer.setUserAttribute("Push ups", value: NSNumber(value: 10), timestamp: nil)
+            XCTAssertEqual(writer.incrementUserAttribute("PUSH UPS", byValue: NSNumber(value: 5)), NSNumber(value: 15))
+        }
+
+        XCTAssertEqual(stored().count, 1)
+        XCTAssertEqual(stored()["Push ups"] as? NSNumber, NSNumber(value: 15))
+    }
+
+    func testIncrementStampsTheChangeMessageWithItsOwnClock() throws {
+        fixture.attributeDependencies.now = { Date(timeIntervalSince1970: 500) }
+
+        try onMessageQueue { [self] in
+            _ = writer.incrementUserAttribute("Push ups", byValue: NSNumber(value: 5))
+        }
+
+        let change = try XCTUnwrap(fixture.persistence.savedMessages.last)
+        XCTAssertEqual(change.messageType, "uac")
+        XCTAssertEqual(change.timestamp, 500)
+    }
+
+    func testIncrementRefusesAnUnusableKeyOrValueWithoutWriting() throws {
+        try onMessageQueue { [self] in
+            XCTAssertNil(writer.incrementUserAttribute(NSNull(), byValue: NSNumber(value: 5)))
+            XCTAssertNil(writer.incrementUserAttribute(nil, byValue: NSNumber(value: 5)))
+            XCTAssertNil(writer.incrementUserAttribute("Push ups", byValue: "5"))
+            XCTAssertNil(writer.incrementUserAttribute("Push ups", byValue: NSNull()))
+        }
+
+        XCTAssertTrue(stored().isEmpty)
+        XCTAssertTrue(fixture.persistence.savedMessages.isEmpty)
+    }
+
+    func testTheNullSentinelComesFromTheInjectedValueNotAMirroredConstant() throws {
+        // Set before the dependency bag is first built, so the writer is constructed with it.
+        fixture.nullSentinel = "<absent>"
+
+        try onMessageQueue { [self] in
+            XCTAssertEqual(writer.setUserTag("Premium", timestamp: nil).status, .success)
+        }
+
+        let raw = fixture.defaults.mpObject(forKey: "ua", userId: fixture.userID) as? [String: Any]
+        XCTAssertEqual(raw?["Premium"] as? String, "<absent>")
+        XCTAssertTrue(stored()["Premium"] is NSNull)
+    }
 }

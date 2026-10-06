@@ -1520,6 +1520,19 @@
     NSArray *array = attributes[@"foo attribute 1"];
     NSArray *result = @[@"foo value 1", @"foo value 2"];
     XCTAssertEqualObjects(array, result);
+
+    // The NSArray<NSString *> generic is not enforced, so a non-string entry can arrive. It must
+    // be reported as an invalid data type by the validator, not trip the Objective-C to Swift
+    // bridge, and must leave the stored list untouched.
+    __block MPExecStatus mixedStatus = MPExecStatusSuccess;
+    NSArray *mixed = @[@"foo value 3", @7];
+    [self.backendController setUserAttribute:@"foo attribute 1" values:mixed timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {
+        mixedStatus = execStatus;
+        XCTAssertEqualObjects(values, mixed);
+    }];
+    XCTAssertEqual(mixedStatus, MPExecStatusInvalidDataType);
+    attributes = [self.backendController userAttributesForUserId:[MPPersistenceUtilities mpId]];
+    XCTAssertEqualObjects(attributes[@"foo attribute 1"], result);
 }
 
 - (void)testSetNumberAttribute {

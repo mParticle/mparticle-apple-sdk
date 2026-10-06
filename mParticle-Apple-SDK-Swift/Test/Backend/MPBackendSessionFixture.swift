@@ -40,12 +40,14 @@ final class MPBackendSessionFixture {
         state: state, dependencies: dependencies, writer: writer, errors: errors
     )
     var optOutValue = false
+    var nullSentinel = "null"
     var validationResult = MPAttributeValidationResult.valid
     var validated: [(key: String, value: Any?)] = []
     lazy var attributeDependencies = MPBackendUserAttributeDependencies(
         userDefaults: { [unowned self] in defaults },
         currentUserId: { [unowned self] in userID },
         optOut: { [unowned self] in optOutValue },
+        nullSentinel: nullSentinel,
         validateAndLogAttribute: { [unowned self] key, value in
             validated.append((key, value))
             return validationResult

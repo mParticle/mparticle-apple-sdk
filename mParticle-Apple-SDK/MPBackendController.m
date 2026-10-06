@@ -243,6 +243,7 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
                 initWithUserDefaults:^MPUserDefaults * { return MPUserDefaultsConnector.userDefaults; }
                 currentUserId:^NSNumber * { return [MPPersistenceUtilities mpId]; }
                 optOut:^BOOL { return MParticle.sharedInstance.stateMachine.optOut; }
+                nullSentinel:kMPNullUserAttributeString
                 validateAndLogAttribute:^MPAttributeValidationResult(NSString *key, id value) {
                     return [MPBackendController_PRIVATE validateAndLogAttributeKey:key value:value];
                 }];
