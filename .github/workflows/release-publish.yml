@@ -92,7 +92,7 @@ jobs:
           RELEASE_NOTES: ${{ steps.release-notes.outputs.release_notes }}
         run: |
           printf '%s\n' "$RELEASE_NOTES" > "$RUNNER_TEMP/release-notes.md"
-          gh release create "$RELEASE_TAG" mParticle_Apple_SDK.xcframework.zip \
+          gh release create "$RELEASE_TAG" mParticle_Apple_SDK.xcframework.zip mParticle_Apple_SDK_Swift.xcframework.zip \
             --target "$GITHUB_SHA" \
             --title "$RELEASE_TAG" \
             --notes-file "$RUNNER_TEMP/release-notes.md"

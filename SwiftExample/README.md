@@ -61,12 +61,13 @@ chmod +x ./Scripts/xcframework.sh
 This will generate:
 
 - `mParticle_Apple_SDK.xcframework.zip`
-- `mParticle_Apple_SDK_NoLocation.xcframework.zip`
+- `mParticle_Apple_SDK_Swift.xcframework.zip`
 
-### 2. Extract the XCFramework
+### 2. Extract the XCFrameworks
 
 ```bash
 unzip mParticle_Apple_SDK.xcframework.zip -d ./Frameworks
+unzip mParticle_Apple_SDK_Swift.xcframework.zip -d ./Frameworks
 ```
 
 ### 3. Configure the Xcode Project
@@ -76,10 +77,10 @@ unzip mParticle_Apple_SDK.xcframework.zip -d ./Frameworks
    - Go to "Package Dependencies" tab
    - Remove the mParticle-Apple-SDK package
 
-2. **Add the XCFramework:**
-   - Drag `Frameworks/mParticle_Apple_SDK.xcframework` into your project
+2. **Add the XCFrameworks:**
+   - Drag `Frameworks/mParticle_Apple_SDK.xcframework` and `Frameworks/mParticle_Apple_SDK_Swift.xcframework` into your project
    - In the dialog, ensure "Copy items if needed" is checked
-   - Select "Embed & Sign" for the framework in Target > General > Frameworks, Libraries, and Embedded Content
+   - Select "Embed & Sign" for both frameworks in Target > General > Frameworks, Libraries, and Embedded Content
 
 3. **Update Build Settings (if needed):**
    - Set **Framework Search Paths** to include `$(PROJECT_DIR)/Frameworks`
@@ -92,10 +93,6 @@ The import statement remains the same:
 ```swift
 import mParticle_Apple_SDK
 ```
-
-### Using NoLocation Variant
-
-If your app doesn't require location services, use `mParticle_Apple_SDK_NoLocation.xcframework` instead. This variant excludes CoreLocation dependencies.
 
 ## Project Structure
 

@@ -4,6 +4,14 @@
 
 This document provides migration guidance for breaking changes in the mParticle Apple SDK.
 
+## Pre-built XCFramework: embed two frameworks (releases after 9.7.0)
+
+SDK 9.x is built as two dynamic frameworks, `mParticle_Apple_SDK` and `mParticle_Apple_SDK_Swift`. Up to and including 9.7.0, the release's `mParticle_Apple_SDK.xcframework.zip` nested `mParticle_Apple_SDK_Swift.framework` inside `mParticle_Apple_SDK.framework`. iOS and tvOS do not support nested frameworks: Xcode's **Embed & Sign** does not re-sign the nested framework, so it fails to load on a device (`code signature invalid`), and App Store Connect rejects the bundle (ITMS-90206).
+
+Releases after 9.7.0 attach `mParticle_Apple_SDK_Swift.xcframework.zip` alongside `mParticle_Apple_SDK.xcframework.zip`. Add both xcframeworks to your app target and set both to **Embed & Sign**. If only `mParticle_Apple_SDK.xcframework` is embedded, the app fails at launch with `Library not loaded: @rpath/mParticle_Apple_SDK_Swift.framework/mParticle_Apple_SDK_Swift`.
+
+Swift Package Manager and CocoaPods integrations are unaffected.
+
 ## Migrating from 9.0.x to 9.1.0
 
 ### Rokt SDK 5.1.0 + RoktContracts 2.0.0
