@@ -11,6 +11,7 @@
 //
 //  You may obtain a copy of the License at https://rokt.com/sdk-license-2-0/
 
+import Foundation
 import SwiftUI
 import Rokt_Widget
 import RoktContracts
@@ -41,7 +42,7 @@ public class MPRoktLayout {
                     "sdkTriggered:\(sdkTriggered.wrappedValue), " +
                     "viewName:\(identifier), " +
                     "locationName:\(locationName), " +
-                    "attributes:\(attributes)"
+                    "attributeCount:\(attributes.count)"
             )
         MPRoktKitImplementation.prepareAttributesForLayout(attributes) { preparedAttributes, identifyCalled in
 
@@ -54,7 +55,7 @@ public class MPRoktLayout {
                         "sdkTriggered:\(sdkTriggered.wrappedValue), " +
                         "viewName: \(identifier), " +
                         "locationName:\(locationName), " +
-                        "attributes:\(preparedAttributes)"
+                        "attributeCount:\(preparedAttributes.count)"
                 )
 
             self.roktLayout = RoktLayout.init(
@@ -80,7 +81,7 @@ public class MPRoktLayout {
     static func mpLog(_ message: String) {
         let msg = "MPRokt -> \(message)"
         if MParticle.sharedInstance().environment == .development {
-            print(msg)
+            NSLog("%@", msg)
         }
     }
 }
