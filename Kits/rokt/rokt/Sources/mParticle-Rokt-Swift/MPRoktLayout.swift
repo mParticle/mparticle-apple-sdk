@@ -42,7 +42,7 @@ public class MPRoktLayout {
                     "sdkTriggered:\(sdkTriggered.wrappedValue), " +
                     "viewName:\(identifier), " +
                     "locationName:\(locationName), " +
-                    "attributeCount:\(attributes.count)"
+                    "attributes:\(attributes)"
             )
         MPRoktKitImplementation.prepareAttributesForLayout(attributes) { preparedAttributes, identifyCalled in
 
@@ -55,7 +55,7 @@ public class MPRoktLayout {
                         "sdkTriggered:\(sdkTriggered.wrappedValue), " +
                         "viewName: \(identifier), " +
                         "locationName:\(locationName), " +
-                        "attributeCount:\(preparedAttributes.count)"
+                        "attributes:\(preparedAttributes)"
                 )
 
             self.roktLayout = RoktLayout.init(
