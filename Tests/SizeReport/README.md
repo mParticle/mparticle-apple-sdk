@@ -50,10 +50,9 @@ the baseline app. `kit_over_core_kb` is the kit's share, measured against the SD
 same way. Both are SwiftPM source builds linked statically, so they are not comparable with
 the dynamic-framework `sdk_impact_kb`.
 
-The Rokt dependencies are pinned exactly in `RoktKitSDK/Package.swift`, so a Rokt release
-cannot move these numbers on an unrelated pull request. Bump the pins in their own pull
-request. If the kit's own version ranges stop admitting a pin, resolution fails and the
-report shows the section as not measured.
+The Rokt dependencies resolve to the latest versions the kit's ranges allow, as they would
+in an app. Both sides are measured in the same job, so they resolve the same versions and a
+Rokt release moves the absolute numbers but not the change column.
 
 The kit section is report-only; the size budget below applies to `sdk_impact_kb`.
 

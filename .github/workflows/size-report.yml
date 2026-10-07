@@ -185,6 +185,7 @@ jobs:
 
       - name: Render the Core + Rokt kit section
         id: kit
+        continue-on-error: true
         env:
           SAFE_STEPS_BASE_SIZE_OUTPUTS_JSON: ${{ steps.base-size.outputs.json }}
           SAFE_STEPS_PR_SIZE_OUTPUTS_JSON: ${{ steps.pr-size.outputs.json }}
@@ -239,7 +240,7 @@ jobs:
                   "",
                   "The SDK and the Rokt kit built from source by SwiftPM and linked statically, as a",
                   "SwiftPM app takes them. `Kit on top of the SDK` is measured against the SDK built",
-                  "the same way. Rokt SDK versions are pinned in `Tests/SizeReport/RoktKitSDK`.",
+                  "the same way. Both sides resolve the same Rokt SDK versions, the latest the kit allows.",
                   "Report-only: the size budget applies to the core number above.",
                   "",
                   "| Metric | Target Branch | This PR | Change |",
