@@ -22,13 +22,13 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ## [9.7.1] - 2026-10-07
 
-### Kits
+### Core
 
-#### Appsflyer
-
-##### Fixed
+#### Fixed
 
 - Ship mParticle_Apple_SDK_Swift as its own xcframework; embed both ([#1067](https://github.com/mParticle/mparticle-apple-sdk/pull/1067))
+
+### Kits
 
 #### Rokt
 
