@@ -10,8 +10,10 @@ Measures the mParticle SDK's impact on app size by comparing a baseline app (no 
 
 1. `measure_size.sh` builds the SDK **from source** into an xcframework
 2. Builds two test apps: baseline and with-SDK
-3. Reports the size delta
-4. `analyze_binary.sh` attributes those bytes to segments, sections and modules
+3. Builds `SizeTestAppCoreSource` and `SizeTestAppWithRoktKit`, which take the SDK and the
+   Rokt kit from this checkout through SwiftPM (`RoktKitSDK/`), and reports them as `kit_*`
+4. Reports the size delta
+5. `analyze_binary.sh` attributes those bytes to segments, sections and modules
 
 ## Usage
 
@@ -40,6 +42,19 @@ part; `dsym_size_kb` is not.
 **Consumers who take the SDK as source pay less.** SwiftPM and CocoaPods compile from
 source and link statically into the app, where dead-stripping does apply. This harness
 measures the binary-xcframework path, which is the worst case.
+
+## Core + Rokt kit
+
+`kit_impact_kb` is what the SDK and the Rokt kit, with the Rokt SDK they pull in, add over
+the baseline app. `kit_over_core_kb` is the kit's share, measured against the SDK built the
+same way. Both are SwiftPM source builds linked statically, so they are not comparable with
+the dynamic-framework `sdk_impact_kb`.
+
+The Rokt dependencies resolve to the latest versions the kit's ranges allow, as they would
+in an app. Both sides are measured in the same job, so they resolve the same versions and a
+Rokt release moves the absolute numbers but not the change column.
+
+The kit section is report-only; the size budget below applies to `sdk_impact_kb`.
 
 ## Size budget
 
