@@ -4,9 +4,16 @@
 # This script creates pre-built SDK artifacts that will be attached to the GitHub release.
 #
 
+# A signing, verification or zip failure must fail the release, not publish unsigned artifacts.
+set -euo pipefail
+
 # --- Functions ---
 
 function build_xcframework_artifacts() {
+	# Remove leftovers from an earlier run; zip -r adds to an existing archive.
+	rm -rf archives mParticle_Apple_SDK.xcframework mParticle_Apple_SDK_Swift.xcframework \
+		mParticle_Apple_SDK.xcframework.zip mParticle_Apple_SDK_Swift.xcframework.zip
+
 	# Build modern xcframeworks which work on M1 macs and include both platforms in one package
 	./Scripts/xcframework.sh mParticle-Apple-SDK mParticle_Apple_SDK
 
@@ -33,6 +40,3 @@ function build_xcframework_artifacts() {
 # --- Main ---
 
 build_xcframework_artifacts
-
-# Ensure the script always exits successfully for the release process
-exit 0
