@@ -73,6 +73,10 @@ end
 
 In the case above, the _Braze 14_, _Branch Metrics 3_, and _Localytics 7_ kits would be integrated together with the core SDK.
 
+#### Pre-built XCFramework
+
+Each [release](https://github.com/mParticle/mparticle-apple-sdk/releases) after 9.7.0 attaches `mParticle_Apple_SDK.xcframework.zip` and `mParticle_Apple_SDK_Swift.xcframework.zip`. Add both xcframeworks to your app target and set both to **Embed & Sign**; the SDK fails to load at launch if either is missing.
+
 #### Crash Reporter
 
 For iOS only, you can also choose to install the crash reporter by including it as a separate pod:

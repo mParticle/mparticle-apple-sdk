@@ -245,10 +245,10 @@ build_core_xcframework() {
 	(
 		cd "${ROOT}"
 		chmod +x ./Scripts/xcframework.sh
-		rm -rf archives "${CORE_MODULE}.xcframework"
+		rm -rf archives "${CORE_MODULE}.xcframework" "${CORE_MODULE}_Swift.xcframework"
 		./Scripts/xcframework.sh mParticle-Apple-SDK
 		mv "${CORE_MODULE}.xcframework" "${destination}"
-		rm -rf archives
+		rm -rf archives "${CORE_MODULE}_Swift.xcframework"
 	)
 }
 
