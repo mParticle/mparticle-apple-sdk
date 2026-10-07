@@ -20,6 +20,22 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.7.1] - 2026-10-07
+
+### Core
+
+#### Fixed
+
+- Ship mParticle_Apple_SDK_Swift as its own xcframework; embed both ([#1067](https://github.com/mParticle/mparticle-apple-sdk/pull/1067))
+
+### Kits
+
+#### Rokt
+
+##### Fixed
+
+- Route Rokt kit diagnostics to native logging ([#1066](https://github.com/mParticle/mparticle-apple-sdk/pull/1066))
+
 ## [9.7.0] - 2026-10-02
 
 ### Core
@@ -2659,7 +2675,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.0...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.1...HEAD
+[9.7.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.0...v9.7.1
 [9.7.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.1...v9.7.0
 [9.6.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.0...v9.6.1
 [9.6.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.5.1...v9.6.0
