@@ -31,6 +31,24 @@ const NSTimeInterval kMPMaximumKitWaitTimeSeconds = 5.0;
 const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
  
+// The Swift backend workflows report MPExecStatusSwift and the forwarders below cast it straight
+// to MPExecStatus. The two enums are hand-maintained in separate modules, because MPExecStatus is
+// declared in a header the Swift module cannot import, so pin every pair at compile time: a
+// reordered or inserted case becomes a build failure rather than a silently wrong status.
+_Static_assert((NSInteger)MPExecStatusSwiftSuccess == (NSInteger)MPExecStatusSuccess, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftFail == (NSInteger)MPExecStatusFail, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftMissingParam == (NSInteger)MPExecStatusMissingParam, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftDisabledRemotely == (NSInteger)MPExecStatusDisabledRemotely, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftEnabledRemotely == (NSInteger)MPExecStatusEnabledRemotely, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftOptOut == (NSInteger)MPExecStatusOptOut, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftDataBeingFetched == (NSInteger)MPExecStatusDataBeingFetched, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftInvalidDataType == (NSInteger)MPExecStatusInvalidDataType, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftDataBeingUploaded == (NSInteger)MPExecStatusDataBeingUploaded, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftServerBusy == (NSInteger)MPExecStatusServerBusy, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftItemNotFound == (NSInteger)MPExecStatusItemNotFound, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftDisabledInSettings == (NSInteger)MPExecStatusDisabledInSettings, "MPExecStatusSwift drifted from MPExecStatus");
+_Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecStatusNoConnectivity, "MPExecStatusSwift drifted from MPExecStatus");
+
 @interface MParticleSession ()
 
 @property (nonatomic, readwrite) NSNumber *startTime;
@@ -63,7 +81,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property NSTimeInterval timeAppWentToBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 @property NSTimeInterval timeOfLastEventInBackground;
-@property NSMutableSet<NSString *> *deletedUserAttributes;
 @property NSNotification *didFinishLaunchingNotification;
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSOperationQueue *backgroundCheckQueue;
@@ -74,6 +91,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property (nonatomic, strong, nonnull) MPBackendSessionDependencies *sessionDependencies;
 @property (nonatomic, strong) MPBackendMessageWriter *messageWriter;
 @property (nonatomic, strong) MPBackendErrorReporter *errorReporter;
+@property (nonatomic, strong) MPBackendUserAttributeWriter *userAttributeWriter;
 @property (nonatomic, strong) MPBackendSessionCoordinator *sessionCoordinator;
 @property (nonatomic, strong) MPBackendLifecycleCoordinator *lifecycleCoordinator;
 @property (nonatomic, strong, nonnull) MPBackendSessionLifecycleDependencies *sessionLifecycleDependencies;
@@ -215,6 +233,26 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
             _messageWriter = [[MPBackendMessageWriter alloc] initWithState:self.sessionState dependencies:self.sessionDependencies];
         }
         return _messageWriter;
+    }
+}
+
+- (MPBackendUserAttributeWriter *)userAttributeWriter {
+    @synchronized (self) {
+        if (!_userAttributeWriter) {
+            MPBackendUserAttributeDependencies *attributes = [[MPBackendUserAttributeDependencies alloc]
+                initWithUserDefaults:^MPUserDefaults * { return MPUserDefaultsConnector.userDefaults; }
+                currentUserId:^NSNumber * { return [MPPersistenceUtilities mpId]; }
+                optOut:^BOOL { return MParticle.sharedInstance.stateMachine.optOut; }
+                nullSentinel:kMPNullUserAttributeString
+                validateAndLogAttribute:^MPAttributeValidationResult(NSString *key, id value) {
+                    return [MPBackendController_PRIVATE validateAndLogAttributeKey:key value:value];
+                }];
+            _userAttributeWriter = [[MPBackendUserAttributeWriter alloc] initWithState:self.sessionState
+                                                                         dependencies:self.sessionDependencies
+                                                                               writer:self.messageWriter
+                                                                           attributes:attributes];
+        }
+        return _userAttributeWriter;
     }
 }
 
@@ -390,13 +428,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId {
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSMutableDictionary *userAttributes = [[userDefaults mpObjectForKey:kMPUserAttributeKey userId:userId] mutableCopy];
-    if (userAttributes) {
-        return [[MPUserAttributeLogic attributesFromStorage:userAttributes nullSentinel:kMPNullUserAttributeString] mutableCopy];
-    } else {
-        return [NSMutableDictionary dictionary];
-    }
+    return [self.userAttributeWriter userAttributesForUserId:userId];
 }
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)identitiesForUserId:(NSNumber *)userId {
@@ -455,11 +487,11 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
                     dataPlanId:group.dataPlanId dataPlanVersion:group.dataPlanVersion
                     uploadSettings:settings context:context];
                 [builder withUserAttributes:[backend userAttributesForUserId:group.mpid]
-                      deletedUserAttributes:backend.deletedUserAttributes];
+                      deletedUserAttributes:backend.userAttributeWriter.deletedUserAttributes];
                 [builder withUserIdentities:[backend userIdentitiesForUserId:group.mpid]];
                 return builder;
             }
-            clearDeletedAttributes:^{ weakSelf.deletedUserAttributes = nil; }
+            clearDeletedAttributes:^{ [weakSelf.userAttributeWriter clearDeletedUserAttributes]; }
             limits:limits
             dependencies:[self uploadDependencies]
             currentSettings:^{
@@ -564,20 +596,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
                    
 - (void)logUserAttributeChange:(MPUserAttributeChange *)userAttributeChange {
-    if (!userAttributeChange) {
-        return;
-    }
-    
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeUserAttributeChange
-                                                                             session:self.session
-                                                                 userAttributeChange:userAttributeChange context:self.messageBuilderContext];
-    if (userAttributeChange.timestamp) {
-        [messageBuilder timestamp:[userAttributeChange.timestamp timeIntervalSince1970]];
-    }
-    
-    MPMessage *message = [messageBuilder build];
-    
-    [self saveMessage:message updateSession:YES];
+    [self.userAttributeWriter logChange:userAttributeChange];
 }
 
 - (void)logUserIdentityChange:(MPUserIdentityChangePRIVATE *)userIdentityChange {
@@ -657,55 +676,19 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)setUserAttributeChange:(MPUserAttributeChange *)userAttributeChange completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    if ([MParticle sharedInstance].stateMachine.optOut) {
+    // A nil change reported success without storing anything. There are no callers left in the
+    // tree, but the Swift entry point takes a non-optional change, so keep the original outcome
+    // here rather than trapping if this selector is ever used again.
+    if (!userAttributeChange) {
         if (completionHandler) {
-            completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusOptOut);
+            completionHandler(nil, nil, MPExecStatusSuccess);
         }
-        
         return;
     }
-    
-    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceUtilities mpId]];
-    NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
 
-    MPAttributeValidationResult validation = [MPBackendController_PRIVATE validateAndLogAttributeKey:localKey
-                                                                                                value:userAttributeChange.value];
-
-    switch ([MPUserAttributeLogic mutationForValidationResult:validation keyExists:userAttributes[localKey] != nil]) {
-        case MPUserAttributeMutationStore:
-            userAttributes[localKey] = userAttributeChange.value;
-            break;
-
-        case MPUserAttributeMutationDelete:
-            userAttributeChange.deleted = YES;
-            [userAttributes removeObjectForKey:localKey];
-
-            if (!self.deletedUserAttributes) {
-                self.deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
-            }
-            [self.deletedUserAttributes addObject:userAttributeChange.key];
-            break;
-
-        case MPUserAttributeMutationReject:
-            if (completionHandler) {
-                completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
-            }
-            return;
-    }
-    
-    NSDictionary *userAttributesCopy = [MPUserAttributeLogic attributesForStorage:userAttributes nullSentinel:kMPNullUserAttributeString];
-
-    if (userAttributeChange.changed) {
-        userAttributeChange.valueToLog = [MPUserAttributeLogic valueToLogFor:userAttributeChange.value];
-        [self logUserAttributeChange:userAttributeChange];
-    }
-    
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    userDefaults[kMPUserAttributeKey] = userAttributesCopy;
-    [userDefaults synchronize];
-    
+    MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter applyChange:userAttributeChange];
     if (completionHandler) {
-        completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusSuccess);
+        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
     }
 }
 
@@ -963,37 +946,8 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 - (NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
     NSAssert([key isKindOfClass:[NSString class]], @"'key' must be a string.");
     NSAssert([value isKindOfClass:[NSNumber class]], @"'value' must be a number.");
-    
-    NSDate *timestamp = [NSDate date];
-    NSString *localKey = [[self userAttributesForUserId:[MPPersistenceUtilities mpId]] caseInsensitiveKey:key];
-    if (!localKey) {
-        [self setUserAttribute:key value:value timestamp:timestamp completionHandler:nil];
-        return value;
-    }
-    
-    id currentValue = [self userAttributesForUserId:[MPPersistenceUtilities mpId]][localKey];
-    if (currentValue && ![currentValue isKindOfClass:[NSNumber class]]) {
-        return nil;
-    } else if (MPIsNull(currentValue)) {
-        currentValue = @0;
-    }
-    
-    NSNumber *newValue = [MPUserAttributeLogic incrementedValueFrom:(NSNumber *)currentValue byValue:value];
 
-    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceUtilities mpId]];
-    userAttributes[localKey] = newValue;
-
-    NSDictionary *userAttributesCopy = [MPUserAttributeLogic attributesForStorage:userAttributes nullSentinel:kMPNullUserAttributeString];
-    
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:key value:newValue];
-    userAttributeChange.timestamp = timestamp;
-    [self setUserAttributeChange:userAttributeChange completionHandler:nil];
- 
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    userDefaults[kMPUserAttributeKey] = userAttributesCopy;
-    [userDefaults synchronize];
-    
-    return (NSNumber *)newValue;
+    return [self.userAttributeWriter incrementUserAttribute:key byValue:value];
 }
 
 - (void)leaveBreadcrumb:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
@@ -1297,87 +1251,31 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)setUserTag:(NSString *)key timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    NSString *keyCopy = [key mutableCopy];
-    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
-    if (!validKey) {
-        if (completionHandler) {
-            completionHandler(keyCopy, nil, MPExecStatusMissingParam);
-        }
-        
-        return;
+    MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter setUserTag:key timestamp:timestamp];
+    if (completionHandler) {
+        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
     }
-    
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:keyCopy value:[NSNull null]];
-    userAttributeChange.timestamp = timestamp;
-    [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
 }
 
 - (void)setUserAttribute:(NSString *)key value:(id)value timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    NSString *keyCopy = [key mutableCopy];
-    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
-    if (!validKey) {
-        if (completionHandler) {
-            completionHandler(keyCopy, value, MPExecStatusMissingParam);
-        }
-        
-        return;
+    MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter setUserAttribute:key value:value timestamp:timestamp];
+    if (completionHandler) {
+        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
     }
-    
-    if (![MPAttributeValidator isAcceptableScalarValue:value]) {
-        if (completionHandler) {
-            completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
-        }
-        
-        return;
-    }
-    
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:keyCopy value:value];
-    userAttributeChange.timestamp = timestamp;
-    [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
 }
 
 - (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values timestamp:(NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler {
-    NSString *keyCopy = [key mutableCopy];
-    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
-    
-    if (!validKey) {
-        if (completionHandler) {
-            completionHandler(keyCopy, values, MPExecStatusMissingParam);
-        }
-        
-        return;
+    MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter setUserAttribute:key values:values timestamp:timestamp];
+    if (completionHandler) {
+        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
     }
-    
-    if (![MPAttributeValidator isAcceptableValueList:values]) {
-        if (completionHandler) {
-            completionHandler(keyCopy, values, MPExecStatusInvalidDataType);
-        }
-        
-        return;
-    }
-    
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:keyCopy value:values];
-    userAttributeChange.isArray = YES;
-    
-    
-    userAttributeChange.timestamp = timestamp;
-    [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
 }
 
 - (void)removeUserAttribute:(NSString *)key timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    NSString *keyCopy = [key mutableCopy];
-    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
-    if (!validKey) {
-        if (completionHandler) {
-            completionHandler(keyCopy, nil, MPExecStatusMissingParam);
-        }
-        
-        return;
+    MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter removeUserAttribute:key timestamp:timestamp];
+    if (completionHandler) {
+        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
     }
-    
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceUtilities mpId]] copy] key:keyCopy value:nil];
-    userAttributeChange.timestamp = timestamp;
-    [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler {
@@ -1452,9 +1350,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)clearUserAttributes {
-    MPUserDefaults *defaults = MPUserDefaultsConnector.userDefaults;
-    [defaults removeMPObjectForKey:@"ua"];
-    [defaults synchronize];
+    [self.userAttributeWriter clearUserAttributes];
 }
 
 #if TARGET_OS_IOS == 1
