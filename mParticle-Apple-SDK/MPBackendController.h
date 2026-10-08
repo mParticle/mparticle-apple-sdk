@@ -20,14 +20,6 @@
 
 @protocol MPBackendControllerDelegate;
 
-typedef NS_ENUM(NSUInteger, MPProfileChange) {
-    MPProfileChangeSignup = 1,
-    MPProfileChangeLogin,
-    MPProfileChangeLogout,
-    MPProfileChangeUpdate,
-    MPProfileChangeDelete
-};
-
 typedef NS_ENUM(NSUInteger, MPExecStatus) {
     MPExecStatusSuccess = 0,
     MPExecStatusFail,

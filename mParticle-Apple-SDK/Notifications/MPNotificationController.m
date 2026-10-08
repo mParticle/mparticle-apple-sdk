@@ -1,6 +1,7 @@
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
 #import "mParticle.h"
+#import "MPBackendController.h"
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;

@@ -23,6 +23,7 @@
 #import "MPKitConfiguration.h"
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
+#import "MPBackendController.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
 #import "MPCCPAConsent.h"

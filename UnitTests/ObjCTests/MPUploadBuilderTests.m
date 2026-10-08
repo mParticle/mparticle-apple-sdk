@@ -5,6 +5,7 @@
 #import "MPPersistenceUtilities.h"
 #import "MPPersistenceAdapter.h"
 #import "MPBaseTestCase.h"
+#import "MPBackendController.h"
 #import "mParticle.h"
 #import "MPConsentState.h"
 #import "MPCCPAConsent.h"
