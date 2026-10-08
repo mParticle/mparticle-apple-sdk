@@ -28,7 +28,7 @@ import Foundation
 
 /// Mirrors the Objective-C `MPExecStatus`; raw values must stay in step.
 ///
-/// The enum itself is declared in `Include/MPBackendController.h`, which the Swift module cannot
+/// The enum itself is declared in the internal `MPBackendController.h`, which the Swift module cannot
 /// import, so a Swift workflow returns one of these and the `.m` casts it back at the boundary.
 @objc public enum MPExecStatusSwift: Int {
     case success = 0

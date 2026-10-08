@@ -2,6 +2,7 @@
 #import <OCMock/OCMock.h>
 @import RoktContracts;
 #import "MParticle.h"
+#import "MPBackendController.h"
 #import "MParticleUser.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"

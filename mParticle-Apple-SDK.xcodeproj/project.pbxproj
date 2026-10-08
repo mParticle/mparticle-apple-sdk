@@ -123,7 +123,7 @@
 		53A79D2229CE23F700E7489F /* MPCommerceEventInstruction.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C2F29CDFB4800E7489F /* MPCommerceEventInstruction.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D2329CE23F700E7489F /* MPTransactionAttributes+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79C4429CDFB4800E7489F /* MPTransactionAttributes+Dictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ACF29CDFB1F00E7489F /* MPIConstants.h */; };
-		53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA329CDFB1E00E7489F /* MPBackendController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA329CDFB1E00E7489F /* MPBackendController.h */; };
 		53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */; };
 		53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */; };
 		53A79D3329CE23F700E7489F /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -810,6 +810,7 @@
 				35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */,
 				7E0387802DB913D2003B7D5E /* MPRokt.m */,
 				A1B2C3D52DB913D2003B7D5E /* MPRoktSession.m */,
+				53A79AA329CDFB1E00E7489F /* MPBackendController.h */,
 				53A79AF429CDFB1F00E7489F /* MPBackendController.m */,
 				53A79AD029CDFB1F00E7489F /* MPEnums.m */,
 				53A79ACF29CDFB1F00E7489F /* MPIConstants.h */,
@@ -1011,7 +1012,6 @@
 				72E878592F2AB23600F355F2 /* MPSideloadedKit.h */,
 				53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */,
 				53A79B3429CDFB1F00E7489F /* MPNotificationController.h */,
-				53A79AA329CDFB1E00E7489F /* MPBackendController.h */,
 				B5A004042F8A000000000001 /* MPPersistenceUtilities.h */,
 				B5A006032F8A000000000001 /* MPPersistenceAdapter.h */,
 				7E03877F2DB913D2003B7D5E /* MPRokt.h */,
