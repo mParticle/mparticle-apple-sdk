@@ -1,4 +1,5 @@
 #import "mParticle.h"
+#import "MPBackendController.h"
 #import "MPILogger.h"
 #import "MPAppNotificationHandler.h"
 #import "MPForwardRecord.h"

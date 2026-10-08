@@ -2,6 +2,7 @@
 #import <OCMock/OCMock.h>
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
+#import "MPBackendController.h"
 #import "MPPersistenceUtilities.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPAppNotificationHandler.h"

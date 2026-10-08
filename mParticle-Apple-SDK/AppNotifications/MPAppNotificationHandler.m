@@ -18,7 +18,6 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;

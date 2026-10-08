@@ -12,7 +12,6 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 
