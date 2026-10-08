@@ -459,10 +459,10 @@
 - (void)testAutomaticSessionEnd {
     MPPersistenceStorePRIVATE *persistence = [MParticle sharedInstance].persistenceStore;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Automatic session end"];
-    MParticle *mParticle = [MParticle sharedInstance];
+    // Not installed on the SDK: the SDK would then hold the proxy, not the controller that begins
+    // the session, and only the SDK's own controller publishes its session.
     id mockBackendController = OCMPartialMock(self.backendController);
-    mParticle.backendController = mockBackendController;
-    self.backendController = [MParticle sharedInstance].backendController;
+    self.backendController = mockBackendController;
     
     // Keep the main run loop available while session work runs on the SDK queue.
     dispatch_async(messageQueue, ^{
@@ -2680,6 +2680,38 @@
     XCTAssertNil(instance.stateMachine.launchInfo.sourceApplication);
     XCTAssertNil(instance.stateMachine.launchInfo.annotation);
     XCTAssertEqual(instance.stateMachine.launchInfo.url, testURL);
+}
+
+- (void)testRetiredBackendControllerDoesNotPublishALaunchSessionOntoTheLiveStateMachine {
+    MParticle *instance = [MParticle sharedInstance];
+    MPBackendController_PRIVATE *retired = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)self];
+    XCTAssertNotEqual(instance.backendController, retired, @"Test needs a controller the SDK is not using");
+
+    instance.stateMachine.installationType = MPInstallationTypeKnownInstall;
+    instance.stateMachine.automaticSessionTracking = YES;
+    instance.stateMachine.currentSession = nil;
+
+    [retired processDidFinishLaunching:nil];
+    dispatch_sync([MParticle messageQueue], ^{});
+
+    XCTAssertNotNil(retired.session, @"A retired controller still tracks the session it began");
+    XCTAssertNil(instance.stateMachine.currentSession, @"A retired backend controller published its session onto the live state machine");
+    XCTAssertNil(instance.currentSession, @"The SDK reported a session owned by a retired backend controller");
+}
+
+- (void)testRetiredBackendControllerDoesNotPublishAStartUpSessionOntoTheLiveStateMachine {
+    MParticle *instance = [MParticle sharedInstance];
+    MPBackendController_PRIVATE *retired = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)self];
+    XCTAssertNotEqual(instance.backendController, retired, @"Test needs a controller the SDK is not using");
+    instance.stateMachine.currentSession = nil;
+
+    // The call -startWithKey:'s deferred body makes, so a fix covering only the launch path fails here.
+    dispatch_sync([MParticle messageQueue], ^{
+        [retired beginSessionWithIsManual:YES date:[NSDate date]];
+    });
+
+    XCTAssertNotNil(retired.session, @"A retired controller still tracks the session it began");
+    XCTAssertNil(instance.stateMachine.currentSession, @"A retired backend controller published its session onto the live state machine");
 }
 
 #pragma mark - Background Time Check Loop Tests

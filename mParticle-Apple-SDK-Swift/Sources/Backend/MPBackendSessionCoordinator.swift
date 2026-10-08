@@ -5,10 +5,16 @@ import Foundation
 public final class MPBackendSessionStartContext: NSObject {
     let automaticSessionTracking: () -> Bool
     let stateMachine: () -> MPStateMachinePRIVATE
+    /// False once that SDK instance has replaced the backend controller doing the start.
+    let isCurrentBackend: () -> Bool
 
-    @objc public init(automaticSessionTracking: @escaping () -> Bool, stateMachine: @escaping () -> MPStateMachinePRIVATE) {
+    @objc public init(
+        automaticSessionTracking: @escaping () -> Bool, stateMachine: @escaping () -> MPStateMachinePRIVATE,
+        isCurrentBackend: @escaping () -> Bool
+    ) {
         self.automaticSessionTracking = automaticSessionTracking
         self.stateMachine = stateMachine
+        self.isCurrentBackend = isCurrentBackend
         super.init()
     }
 }
@@ -134,7 +140,9 @@ public final class MPBackendSessionCoordinator: NSObject {
             )
             builder?.updateTimestamp(state.session?.startTime ?? 0)
             writer.saveMessage(builder?.build(), updateSession: true)
-            machine.currentSession = state.session
+            // A replaced controller finishing deferred start-up keeps its own session, but must not
+            // publish it onto the live instance, where only the owning controller's end clears it.
+            if context.isCurrentBackend() { machine.currentSession = state.session }
             if state.pendingSessionUUID != nil {
                 state.pendingSessionUUID = nil
                 state.pendingSessionStartTime = nil
