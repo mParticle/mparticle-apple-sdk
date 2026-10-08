@@ -80,6 +80,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@06c7e7d32c3280a3cff72f45ba4304730a509050 # main
+    uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@06c7e7d32c3280a3cff72f45ba4304730a509050 # untagged commit on main
     secrets:
       gchat_webhook: ${{ secrets.GCHAT_PRS_WEBHOOK }}

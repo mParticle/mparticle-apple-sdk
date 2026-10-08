@@ -151,7 +151,7 @@ jobs:
 
       - name: Generate changelog entry
         id: changelog
-        uses: ROKT/rokt-workflows/actions/generate-changelog@06c7e7d32c3280a3cff72f45ba4304730a509050 # main
+        uses: ROKT/rokt-workflows/actions/generate-changelog@06c7e7d32c3280a3cff72f45ba4304730a509050 # untagged commit on main
         with:
           version: ${{ env.VERSION }}
           repo-url: https://github.com/${{ github.repository }}
