@@ -285,7 +285,8 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
                     MParticle *mparticle = MParticle.sharedInstance;
                     return [[MPBackendSessionStartContext alloc]
                         initWithAutomaticSessionTracking:^{ return mparticle.automaticSessionTracking; }
-                        stateMachine:^{ return mparticle.stateMachine; }];
+                        stateMachine:^{ return mparticle.stateMachine; }
+                        isCurrentBackend:^{ return (BOOL)(mparticle.backendController == weakSelf); }];
                 }
                 currentUserID:^{ return [MPPersistenceUtilities mpId]; }
                 applicationInfo:^{
@@ -1169,15 +1170,22 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
         date = [NSDate date];
     }
     
+    // Weak, so that once nothing else holds a controller a reset or workspace switch replaced, it is
+    // released rather than starting up against the instance that replaced it.
+    __weak MPBackendController_PRIVATE *weakSelf = self;
     dispatch_async([MParticle messageQueue], ^{
+        MPBackendController_PRIVATE *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
         [[MParticle sharedInstance] initializePersistence];
-        self.persistence = [MParticle sharedInstance].persistenceStore;
+        strongSelf.persistence = [MParticle sharedInstance].persistenceStore;
 
         // Check if we've switched workspaces on startup
         MPUploadSettings *lastUploadSettings = [UploadSettingsUtils lastUploadSettingsWithUserDefaults: MPUserDefaultsConnector.userDefaults];
         if (![lastUploadSettings.apiKey isEqualToString:apiKey]) {
             // Different workspace, so batch previous messages under old upload settings before starting
-            [self prepareBatchesForUpload:lastUploadSettings];
+            [strongSelf prepareBatchesForUpload:lastUploadSettings];
             
             // Delete the cached config
             [MPUserDefaults deleteConfig];
@@ -1191,20 +1199,20 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
         (void)[MPUserDefaults restore];
 
         if (shouldBeginSession) {
-            [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
+            [strongSelf beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
         }
         
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil context:self.messageBuilderContext];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeFirstRun session:strongSelf.session messageInfo:nil context:strongSelf.messageBuilderContext];
                 
-        [self processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
+        [strongSelf processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
         
-        [self beginUploadTimer];
+        [strongSelf beginUploadTimer];
         
         if (firstRun) {
             MPMessage *message = [messageBuilder build];
             message.uploadStatus = MPUploadStatusBatch;
             
-            [self saveMessage:message updateSession:YES];
+            [strongSelf saveMessage:message updateSession:YES];
             
             MPILogDebug(@"Application First Run");
         }
@@ -1212,17 +1220,22 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
         // Single-shot: the attribution path and the global-timeout fallback below both hold this
         // block and the timeout is never cancelled, so whichever finishes first has to win.
         // -processDidFinishLaunching is not idempotent - running it twice forwards a second
-        // install/update and emits a second app-state-transition message.
-        void (^searchAdsCompletion)(void) = [self singleShotBlock:^{
-            [self processDidFinishLaunching:self.didFinishLaunchingNotification];
+        // install/update and emits a second app-state-transition message. The timeout holds the block
+        // for 30 seconds, so it captures the controller weakly.
+        void (^searchAdsCompletion)(void) = [strongSelf singleShotBlock:^{
+            MPBackendController_PRIVATE *backend = weakSelf;
+            if (!backend) {
+                return;
+            }
+            [backend processDidFinishLaunching:backend.didFinishLaunchingNotification];
             MPILogDebug(@"Initiating config request and upload cycle");
-            [self waitForKitsAndUploadWithCompletionHandler:nil];
+            [backend waitForKitsAndUploadWithCompletionHandler:nil];
         }];
         
 #if TARGET_OS_IOS == 1
         if (MParticle.sharedInstance.collectSearchAdsAttribution) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS * NSEC_PER_SEC)), [MParticle messageQueue], searchAdsCompletion);
-            [self requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
+            [strongSelf requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
         } else {
             searchAdsCompletion();
         }

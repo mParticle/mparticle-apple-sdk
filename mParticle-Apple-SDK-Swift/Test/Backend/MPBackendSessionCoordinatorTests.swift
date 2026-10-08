@@ -17,6 +17,17 @@ final class MPBackendSessionCoordinatorTests: MPBackendWorkflowTestCase {
         }
     }
 
+    func testRetiredBackendKeepsItsSessionWithoutPublishingIt() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            fixture.isCurrentBackend = false
+            fixture.coordinator.beginSession(isManual: true, date: Date(timeIntervalSince1970: 200))
+            XCTAssertNotNil(fixture.state.session)
+            XCTAssertEqual(fixture.began.count, 1)
+            XCTAssertNil(fixture.machine.currentSession)
+        }
+    }
+
     func testAutomaticTrackingGatesBeginAndEndButManualCallsWork() {
         onMessageQueue {
             let fixture = MPBackendSessionFixture()
