@@ -27,6 +27,7 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 #### Changed
 
 - Write backend user attributes in Swift ([#1060](https://github.com/mParticle/mparticle-apple-sdk/pull/1060))
+- Add public repository confidentiality rules for agents ([#1074](https://github.com/mParticle/mparticle-apple-sdk/pull/1074))
 
 ### Kits
 
