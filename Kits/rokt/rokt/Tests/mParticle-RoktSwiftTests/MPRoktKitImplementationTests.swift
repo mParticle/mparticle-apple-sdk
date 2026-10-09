@@ -102,28 +102,37 @@ private final class MockIdentityClient: MPRoktIdentityClient {
 
 private final class DeferredIdentityClient: MPRoktIdentityClient {
     var currentUser: MParticleUser?
-    private var completion: ((MPIdentityApiResult?, Error?) -> Void)?
+    var identifyCount = 0
+    var lastRequest: MPIdentityApiRequest?
+    private var completions: [(MPIdentityApiResult?, Error?) -> Void] = []
+
+    var hasPendingIdentify: Bool { !completions.isEmpty }
 
     func identify(
         _ request: MPIdentityApiRequest,
         completion: @escaping (MPIdentityApiResult?, Error?) -> Void
     ) {
-        self.completion = completion
+        identifyCount += 1
+        lastRequest = request
+        completions.append(completion)
     }
 
-    func complete() {
-        completion?(nil, nil)
-        completion = nil
+    func complete(error: Error? = nil) {
+        let pending = completions
+        completions = []
+        pending.forEach { $0(nil, error) }
+    }
+}
+
+private final class TestUser: MParticleUser {
+    let testIdentities: [NSNumber: String]
+
+    init(identities: [NSNumber: String]) {
+        testIdentities = identities
+        super.init()
     }
 
-    func completeAndWaitForMainQueue() async {
-        complete()
-        await withCheckedContinuation { continuation in
-            DispatchQueue.main.async {
-                continuation.resume()
-            }
-        }
-    }
+    override var identities: [NSNumber: String] { testIdentities }
 }
 
 private final class TestFilteredUser: FilteredMParticleUser {
@@ -154,6 +163,8 @@ private final class MockKitAPI: MPKitAPI {
     override func getCurrentUser(withKit kit: any MPKitProtocol) -> FilteredMParticleUser {
         filteredUser
     }
+
+    override func setUserAttribute(_ key: String, value: Any, for filteredUser: FilteredMParticleUser) {}
 }
 
 struct MPRoktKitImplementationTests {
@@ -398,7 +409,7 @@ struct MPRoktKitImplementationTests {
         #expect(identities?[NSNumber(value: MPIdentity.other4.rawValue)] == nil)
     }
 
-    @Test func identifyWaitDoesNotReorderOrMixPlacementAttributes() async {
+    @Test func placementPreparationDoesNotWaitForIdentify() {
         let identityClient = DeferredIdentityClient()
         let implementation = MPRoktKitImplementation(
             roktClient: MockRoktSDKClient(),
@@ -407,41 +418,112 @@ struct MPRoktKitImplementationTests {
         let user = TestFilteredUser()
         implementation.filterUserAttributes = { attributes, _ in attributes }
         var results: [[String: String]] = []
-        var allCompleted: CheckedContinuation<Void, Never>?
+        var identifiedFlags: [Bool] = []
 
         implementation.prepareAttributes(
-            ["email": "ada@example.com", "first": "one"],
+            ["email": "grace@example.com", "first": "one"],
             filteredUser: user
-        ) { attributes, _ in
+        ) { attributes, identified in
             results.append(attributes)
-            if results.count == 2 {
-                allCompleted?.resume()
-            }
+            identifiedFlags.append(identified)
         }
         implementation.prepareAttributes(
             ["second": "two"],
             filteredUser: user
-        ) { attributes, _ in
+        ) { attributes, identified in
             results.append(attributes)
-            if results.count == 2 {
-                allCompleted?.resume()
-            }
+            identifiedFlags.append(identified)
         }
 
-        #expect(results.isEmpty)
-        await withCheckedContinuation { continuation in
-            allCompleted = continuation
-            identityClient.complete()
-        }
-
+        #expect(identityClient.hasPendingIdentify)
         #expect(results.count == 2)
+        #expect(identifiedFlags == [true, false])
         #expect(results[0]["first"] == "one")
         #expect(results[0]["second"] == nil)
         #expect(results[1]["first"] == "one")
         #expect(results[1]["second"] == "two")
     }
 
-    @Test func sessionOperationsRemainOrderedBehindPlacementPreparation() async {
+    @Test func callerEmailValuesWinOverStaleIdentities() {
+        let identityClient = DeferredIdentityClient()
+        let implementation = MPRoktKitImplementation(
+            roktClient: MockRoktSDKClient(),
+            identityClient: identityClient
+        )
+        implementation.filterUserAttributes = { attributes, _ in attributes }
+
+        var prepared: [String: String] = [:]
+        implementation.prepareAttributes(
+            ["email": "grace@example.com"],
+            filteredUser: TestFilteredUser()
+        ) { attributes, _ in
+            prepared = attributes
+        }
+
+        #expect(identityClient.hasPendingIdentify)
+        #expect(prepared["email"] == "grace@example.com")
+    }
+
+    @Test func callerEmailValuesDoNotAddKeysTheFiltersRemoved() {
+        let implementation = MPRoktKitImplementation()
+
+        let result = implementation.enrichedAttributes(
+            ["allowed": "yes"],
+            filteredUser: nil,
+            callerIdentities: ["email": "grace@example.com", "emailsha256": "hash"]
+        )
+
+        #expect(result["email"] == nil)
+        #expect(result["emailsha256"] == nil)
+    }
+
+    @Test func identifyFiresOnlyOnMismatchUsingTheConfiguredHashedType() async {
+        let identityClient = MockIdentityClient()
+        let implementation = MPRoktKitImplementation(
+            roktClient: MockRoktSDKClient(),
+            identityClient: identityClient
+        )
+        implementation.configuration = ["hashedEmailUserIdentityType": "Other"]
+        let otherKey = NSNumber(value: MPIdentity.other.rawValue)
+        let user = TestUser(identities: [otherKey: "hash"])
+
+        let matched = await identifyDecision(
+            implementation,
+            attributes: ["emailsha256": "hash"],
+            user: user
+        )
+        #expect(!matched)
+        #expect(identityClient.identifyCount == 0)
+
+        let mismatched = await identifyDecision(
+            implementation,
+            attributes: ["emailsha256": "new-hash"],
+            user: user
+        )
+        #expect(mismatched)
+        #expect(identityClient.identifyCount == 1)
+        #expect(identityClient.lastRequest?.identities?[otherKey] as? String == "new-hash")
+    }
+
+    @Test func unrecognisedHashedEmailSettingDoesNotIdentify() async {
+        let identityClient = MockIdentityClient()
+        let implementation = MPRoktKitImplementation(
+            roktClient: MockRoktSDKClient(),
+            identityClient: identityClient
+        )
+        implementation.configuration = ["hashedEmailUserIdentityType": "Unknown"]
+
+        let identified = await identifyDecision(
+            implementation,
+            attributes: ["emailsha256": "hash"],
+            user: nil
+        )
+
+        #expect(!identified)
+        #expect(identityClient.identifyCount == 0)
+    }
+
+    @Test func identifyFailureDoesNotAffectThePlacement() {
         let client = MockRoktSDKClient()
         let identityClient = DeferredIdentityClient()
         let implementation = MPRoktKitImplementation(
@@ -452,11 +534,39 @@ struct MPRoktKitImplementationTests {
 
         _ = implementation.selectPlacements(
             identifier: "checkout",
-            attributes: ["email": "ada@example.com"],
+            attributes: ["email": "grace@example.com"],
             embeddedViews: nil,
             config: nil,
             onEvent: nil,
             filteredUser: TestFilteredUser(),
+            options: nil
+        )
+        identityClient.complete(error: NSError(domain: "test", code: 1))
+
+        #expect(client.calls == ["selectPlacements:checkout"])
+    }
+
+    @Test func sessionOperationsRemainOrderedBehindPlacementPreparation() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        let user = TestFilteredUser()
+        let owner = MPKitRokt()
+        let kitAPI = MockKitAPI(filteredUser: user)
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        var writeBarriers: [() -> Void] = []
+        implementation.afterPendingAttributeWrites = { writeBarriers.append($0) }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: ["email": "ada@example.com"],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: user,
             options: nil
         )
         _ = implementation.clearSession()
@@ -464,7 +574,7 @@ struct MPRoktKitImplementationTests {
         _ = implementation.close()
 
         #expect(client.calls.isEmpty)
-        await identityClient.completeAndWaitForMainQueue()
+        writeBarriers.removeFirst()()
 
         #expect(client.calls == [
             "selectPlacements:checkout",
@@ -476,28 +586,29 @@ struct MPRoktKitImplementationTests {
 
     @Test func stopInvalidatesInFlightPreparationAndAllowsLaterWork() {
         let client = MockRoktSDKClient()
-        let identityClient = DeferredIdentityClient()
-        let implementation = MPRoktKitImplementation(
-            roktClient: client,
-            identityClient: identityClient
-        )
-        implementation.filterUserAttributes = { attributes, _ in attributes }
+        let implementation = MPRoktKitImplementation(roktClient: client)
         let user = TestFilteredUser()
+        let owner = MPKitRokt()
+        let kitAPI = MockKitAPI(filteredUser: user)
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        var writeBarriers: [() -> Void] = []
+        implementation.afterPendingAttributeWrites = { writeBarriers.append($0) }
 
         _ = implementation.selectShoppableAds(
             identifier: "stale",
-            attributes: ["email": "ada@example.com"],
+            attributes: [:],
             config: nil,
             onEvent: nil,
             filteredUser: user
         )
         implementation.stop()
-        identityClient.complete()
+        writeBarriers.removeFirst()()
 
         #expect(client.calls == ["close"])
         #expect(client.selectedIdentifier == nil)
 
         implementation.start()
+        implementation.afterPendingAttributeWrites = nil
         _ = implementation.selectShoppableAds(
             identifier: "current",
             attributes: [:],
