@@ -248,12 +248,13 @@ public final class MPRoktKitImplementation: NSObject {
 
     /// Ends the current workspace and removes all workspace- and user-scoped state.
     @objc public func stop() {
-        Self.log("Stopping Rokt Kit for workspace switch")
+        Self.log("Stopping Rokt Kit for workspace switch and clearing the Rokt session")
         preparationQueueLock.lock()
         preparationGeneration &+= 1
         preparationQueue = []
         preparationInProgress = false
         roktClient.close()
+        roktClient.clearSession()
         preparationQueueLock.unlock()
         Self.activeInstanceLock.lock()
         if Self.activeInstance === self {
@@ -641,8 +642,8 @@ public final class MPRoktKitImplementation: NSObject {
     }
 
     /// Completes an operation only if it still belongs to the active workspace, then advances the
-    /// FIFO. Holding the recursive lock through `action` prevents `stop()` from closing Rokt between
-    /// the generation check and the SDK call.
+    /// FIFO. Holding the recursive lock through `action` prevents `stop()` from closing Rokt and
+    /// clearing its session between the generation check and the SDK call.
     private func completePreparation(generation: UInt, action: () -> Void) {
         preparationQueueLock.lock()
         guard generation == preparationGeneration, preparationInProgress else {
