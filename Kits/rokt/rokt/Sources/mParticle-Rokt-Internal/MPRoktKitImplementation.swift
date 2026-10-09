@@ -272,8 +272,8 @@ public final class MPRoktKitImplementation: NSObject {
 
     /// Prepares filtered attributes and then invokes Rokt's standard placement API.
     ///
-    /// Preparation may complete asynchronously when an identity update or legacy-core write
-    /// barrier is required. The call-time `RoktPlacementOptions` supplied by core is preserved.
+    /// Preparation may complete asynchronously when a legacy-core write barrier is required. The
+    /// call-time `RoktPlacementOptions` supplied by core is preserved.
     @objc(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:)
     public func selectPlacements(
         identifier: String?,
@@ -528,12 +528,12 @@ public final class MPRoktKitImplementation: NSObject {
     /// Produces the final dictionary sent to Rokt.
     ///
     /// Processing order is deliberately significant:
-    /// 1. synchronize mismatched email identities;
+    /// 1. fire identify for mismatched email identities without waiting for it;
     /// 2. apply dashboard key mapping;
     /// 3. persist non-empty caller attributes;
     /// 4. merge the profile and apply connection/data-plan filters;
     /// 5. warn for caller keys removed by those filters; and
-    /// 6. append identities, MPID, and sandbox after filtering.
+    /// 6. append identities, MPID, and sandbox after filtering, with caller email values winning.
     func prepareAttributes(
         _ attributes: [String: String],
         filteredUser: FilteredMParticleUser,
@@ -549,8 +549,8 @@ public final class MPRoktKitImplementation: NSObject {
         }
     }
 
-    /// Runs one placement preparation. `prepareAttributes` serializes calls to this method so an
-    /// asynchronous identify cannot let a later placement overtake or modify the earlier request.
+    /// Runs one placement preparation. `prepareAttributes` serializes calls to this method so a
+    /// pending-write barrier cannot let a later placement overtake or modify the earlier request.
     private func performAttributePreparation(
         _ attributes: [String: String],
         filteredUser: FilteredMParticleUser,
@@ -559,6 +559,10 @@ public final class MPRoktKitImplementation: NSObject {
         confirmUser(attributes: attributes, user: identityClient.currentUser) { _, identified in
             let currentFilteredUser = self.currentFilteredUser(fallback: filteredUser)
             let mapped = self.mappedAttributes(attributes)
+            // Identify is not awaited, so the user's identities may still hold the old values.
+            let callerIdentities = mapped.filter {
+                ($0.key == "email" || $0.key == Constants.emailSHA256) && !$0.value.isEmpty
+            }
             let persistableMapped = mapped.filter {
                 $0.key != Constants.sandbox && !$0.value.isEmpty
             }
@@ -578,7 +582,14 @@ public final class MPRoktKitImplementation: NSObject {
                 if let explicitSandbox = attributes[Constants.sandbox] {
                     stringProfile[Constants.sandbox] = explicitSandbox
                 }
-                completion(self.enrichedAttributes(stringProfile, filteredUser: refreshedUser), identified)
+                completion(
+                    self.enrichedAttributes(
+                        stringProfile,
+                        filteredUser: refreshedUser,
+                        callerIdentities: callerIdentities
+                    ),
+                    identified
+                )
             }
             if let currentFilteredUser, let filterUserAttributes = self.filterUserAttributes {
                 let pending = self.attributesByMergingPendingWrites(
@@ -682,8 +693,9 @@ public final class MPRoktKitImplementation: NSObject {
         return kitAPI.getCurrentUser(withKit: owner)
     }
 
-    /// Identifies only when a supplied email or configured hashed-email identity differs from the
-    /// current user. Failure intentionally falls back to the original user so placement continues.
+    /// Fires identify when a supplied email or configured hashed-email identity differs from the
+    /// current user, then completes at once without waiting for the response. `identified` reports
+    /// that an update is pending.
     func confirmUser(
         attributes: [String: String],
         user: MParticleUser?,
@@ -708,13 +720,13 @@ public final class MPRoktKitImplementation: NSObject {
             warning(
                 "The existing email on the user does not match the email passed in to " +
                     "`selectPlacements:`. Please sync the email identity to mParticle as soon " +
-                    "as you receive it. The placement will wait for identify to complete."
+                    "as you receive it. Identifying the user in the background."
             )
         } else if hashMismatch {
             warning(
                 "The existing hashed email on the user does not match the hashed email passed " +
                     "in to `selectPlacements:`. Please sync the hashed email identity to " +
-                    "mParticle as soon as you receive it. The placement will wait for identify."
+                    "mParticle as soon as you receive it. Identifying the user in the background."
             )
         }
 
@@ -727,16 +739,12 @@ public final class MPRoktKitImplementation: NSObject {
            let identity = MPIdentity(rawValue: hashedIdentity.uintValue) {
             request.setIdentity(hashedEmail, identityType: identity)
         }
-        identityClient.identify(request) { result, error in
-            DispatchQueue.main.async {
-                if let error {
-                    Self.log("Failed to sync email from selectPlacements to user: \(error)")
-                    completion(user, true)
-                } else {
-                    completion(result?.user, true)
-                }
+        identityClient.identify(request) { _, error in
+            if let error {
+                Self.log("Failed to sync email from selectPlacements to user: \(error)")
             }
         }
+        completion(user, true)
     }
 
     /// Applies the URL-encoded dashboard `placementAttributesMapping` configuration.
@@ -780,7 +788,8 @@ public final class MPRoktKitImplementation: NSObject {
     /// sandbox value. These values are appended after user-attribute filtering by design.
     func enrichedAttributes(
         _ attributes: [String: String],
-        filteredUser: FilteredMParticleUser?
+        filteredUser: FilteredMParticleUser?,
+        callerIdentities: [String: String] = [:]
     ) -> [String: String] {
         var result = attributes
         if let filteredUser {
@@ -790,6 +799,10 @@ public final class MPRoktKitImplementation: NSObject {
                 }
             }
             result[Constants.mpid] = filteredUser.userId.stringValue
+        }
+        // Only replaces keys already present, so filtering decisions are unchanged.
+        for (key, value) in callerIdentities where result[key] != nil {
+            result[key] = value
         }
 
         if result[Constants.emailSHA256] != nil {
