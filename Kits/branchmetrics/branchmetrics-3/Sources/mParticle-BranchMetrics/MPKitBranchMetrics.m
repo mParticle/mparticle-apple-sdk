@@ -187,7 +187,7 @@ NSString *const userIdentificationType = @"userIdentificationType";
             NSString *branchKey = [[self configurationStringForKey:ekBMAppKey] copy];
             self.branchInstance = [Branch getInstance:branchKey];
 
-            [self.branchInstance registerPluginName:@"mParticleKit" version:@"9.7.1"];
+            [self.branchInstance registerPluginName:@"mParticleKit" version:@"9.7.2"];
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
