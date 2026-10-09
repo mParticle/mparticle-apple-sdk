@@ -20,6 +20,23 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.7.2] - 2026-10-09
+
+### Core
+
+#### Changed
+
+- Write backend user attributes in Swift ([#1060](https://github.com/mParticle/mparticle-apple-sdk/pull/1060))
+- Add public repository confidentiality rules for agents ([#1074](https://github.com/mParticle/mparticle-apple-sdk/pull/1074))
+
+### Kits
+
+#### Rokt
+
+##### Fixed
+
+- Identify in the background instead of delaying placements ([#1080](https://github.com/mParticle/mparticle-apple-sdk/pull/1080))
+
 ## [9.7.1] - 2026-10-07
 
 ### Core
@@ -2675,7 +2692,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.1...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.2...HEAD
+[9.7.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.1...v9.7.2
 [9.7.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.0...v9.7.1
 [9.7.0]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.1...v9.7.0
 [9.6.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.6.0...v9.6.1
