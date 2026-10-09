@@ -33,7 +33,7 @@ let package = Package(
         mParticleAppleSDK,
         .package(
             url: "https://github.com/apptentive/apptentive-kit-ios",
-            .upToNextMajor(from: "6.0.0")
+            .upToNextMajor(from: "7.3.1")
         )
     ],
     targets: [
