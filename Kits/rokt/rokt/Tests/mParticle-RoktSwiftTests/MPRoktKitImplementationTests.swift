@@ -604,7 +604,7 @@ struct MPRoktKitImplementationTests {
         implementation.stop()
         writeBarriers.removeFirst()()
 
-        #expect(client.calls == ["close"])
+        #expect(client.calls == ["close", "clearSession"])
         #expect(client.selectedIdentifier == nil)
 
         implementation.start()
@@ -617,7 +617,7 @@ struct MPRoktKitImplementationTests {
             filteredUser: user
         )
 
-        #expect(client.calls == ["close", "selectShoppableAds:current"])
+        #expect(client.calls == ["close", "clearSession", "selectShoppableAds:current"])
     }
 
     @Test func placementForwardsPreparedAttributesAndOptionsToRoktClient() {
@@ -807,7 +807,8 @@ struct MPRoktKitImplementationTests {
         #expect(read?.expiresAt == expiry)
     }
 
-    @Test func stopClearsWorkspaceStateAndClosesRokt() {
+    // The Rokt session belongs to the workspace being left, so it must not carry over into the next.
+    @Test func stopClearsWorkspaceStateClosesRoktAndClearsSession() {
         let client = MockRoktSDKClient()
         let implementation = MPRoktKitImplementation(roktClient: client)
         implementation.configuration = ["accountId": "workspace"]
@@ -817,7 +818,7 @@ struct MPRoktKitImplementationTests {
 
         #expect(!implementation.started)
         #expect(implementation.configuration == nil)
-        #expect(client.closed)
+        #expect(client.calls == ["close", "clearSession"])
     }
 
     @Test func convertsProfileValuesAfterFiltering() {
