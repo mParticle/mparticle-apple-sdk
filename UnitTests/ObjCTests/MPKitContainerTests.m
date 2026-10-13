@@ -180,6 +180,17 @@ static atomic_bool gLaunchConsentReturned;
 }
 @end
 
+@interface MPRaisingConfigurationTestKit : MPKitTestClass
+@end
+@implementation MPRaisingConfigurationTestKit
++ (NSNumber *)kitCode {
+    return @123459;
+}
+- (void)setConfiguration:(NSDictionary *)configuration {
+    [NSException raise:NSInternalInconsistencyException format:@"unexpected configuration"];
+}
+@end
+
 #pragma mark - MPKitContainerTests
 @interface MPKitContainerTests : MPBaseTestCase {
     MPKitContainer_PRIVATE *kitContainer;
@@ -4539,6 +4550,28 @@ static atomic_bool gLaunchConsentReturned;
 
     XCTAssertGreaterThan(activeKits.count, 0);
     XCTAssertEqualObjects(activeKits, [kitContainer activeKitsRegistry]);
+}
+
+#pragma mark Kit exceptions during configuration
+
+- (void)testKitRaisingFromSetConfigurationDoesNotLeaveKitsSemaphoreHeld {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"RaisingConfiguration" className:@"MPRaisingConfigurationTestKit"];
+    self.consentTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+    id adapter = kitContainer.executionAdapter;
+    dispatch_semaphore_t kitsSemaphore = (dispatch_semaphore_t)object_getIvar(adapter, class_getInstanceVariable([adapter class], "kitsSemaphore"));
+    XCTAssertNotNil(kitsSemaphore);
+
+    // The first pass launches the kit; the second sends setConfiguration: to the running kit.
+    NSArray *configurations = @[@{@"id": @123459, @"as": @{@"key": @"value"}}];
+    [kitContainer configureKits:configurations];
+    XCTAssertNoThrow([kitContainer configureKits:configurations]);
+
+    BOOL acquired = dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW) == 0;
+    XCTAssertTrue(acquired, @"kitsSemaphore left held after a kit raised inside configureKits:");
+    if (acquired) {
+        dispatch_semaphore_signal(kitsSemaphore);
+    }
 }
 
 @end
