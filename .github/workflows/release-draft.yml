@@ -210,5 +210,4 @@ jobs:
 
           ---
 
-          **On merge:** The [Release – Publish](https://github.com/${{ github.repository }}/actions/workflows/release-publish.yml) workflow will automatically build, tag, and create GitHub releases for the core SDK and all mirrored kit repos." \
-            --reviewer mParticle/sdk-team
+          **On merge:** The [Release – Publish](https://github.com/${{ github.repository }}/actions/workflows/release-publish.yml) workflow will automatically build, tag, and create GitHub releases for the core SDK and all mirrored kit repos."
