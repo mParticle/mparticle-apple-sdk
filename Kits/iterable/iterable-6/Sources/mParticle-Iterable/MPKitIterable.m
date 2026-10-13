@@ -75,6 +75,27 @@ static BOOL _prefersUserId = NO;
     return result;
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+- (void)updateConfiguredSettings {
+    self.mpidEnabled = [[self configurationStringForKey:@"userIdField"] isEqualToString:@"mpid"];
+}
+
 #pragma mark - MPKitInstanceProtocol methods
 
 #pragma mark Kit instance and lifecycle
@@ -83,6 +104,7 @@ static BOOL _prefersUserId = NO;
 
     _configuration = configuration;
 
+    [self updateConfiguredSettings];
     [self start];
 
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
@@ -94,11 +116,9 @@ static BOOL _prefersUserId = NO;
 
     dispatch_once(&kitPredicate, ^{
 
-        NSString *apiKey = self.configuration[@"apiKey"];
-        NSString *apnsProdIntegrationName = self.configuration[@"apnsProdIntegrationName"];
-        NSString *apnsSandboxIntegrationName = self.configuration[@"apnsSandboxIntegrationName"];
-        NSString *userIdField = self.configuration[@"userIdField"];
-        self.mpidEnabled = [userIdField isEqualToString:@"mpid"];
+        NSString *apiKey = [self configurationStringForKey:@"apiKey"];
+        NSString *apnsProdIntegrationName = [self configurationStringForKey:@"apnsProdIntegrationName"];
+        NSString *apnsSandboxIntegrationName = [self configurationStringForKey:@"apnsSandboxIntegrationName"];
 
         IterableConfig *config = _customConfig;
         if (!config) {
