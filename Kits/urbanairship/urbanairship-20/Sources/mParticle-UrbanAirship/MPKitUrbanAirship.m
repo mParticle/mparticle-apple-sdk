@@ -66,6 +66,10 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
 @implementation MPUATagMapping
 
 - (instancetype)initWithConfiguration:(NSDictionary<NSString *, NSString *> *)configuration {
+    if (![configuration isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
     self = [super init];
     if (self) {
         _mapType = configuration[@"maptype"];
@@ -113,6 +117,37 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     return [UANotificationCategories defaultCategories];
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+- (BOOL)configurationBoolForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && !([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])) {
+        NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+        return NO;
+    }
+    return [value boolValue];
+}
+
+- (void)updateConfiguredSettings {
+    _enableTags = [self configurationBoolForKey:UAConfigEnableTags];
+    _includeUserAttributes = [self configurationBoolForKey:UAConfigIncludeUserAttributes];
+}
+
 #pragma mark - MPKitInstanceProtocol methods
 
 #pragma mark Kit instance and lifecycle
@@ -121,12 +156,7 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     MPKitExecStatus *execStatus = nil;
     
     self.configuration = configuration;
-    
-    NSString *auxString = configuration[UAConfigEnableTags];
-    _enableTags = auxString ? [auxString boolValue] : NO;
-    
-    auxString = configuration[UAConfigIncludeUserAttributes];
-    _includeUserAttributes = auxString ? [auxString boolValue] : NO;
+    [self updateConfiguredSettings];
     
     [self start];
     
@@ -159,18 +189,21 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
         config.requestAuthorizationToUseNotifications = NO;
 
         // Enable custom domain proxy if provided
-        if (self.configuration[UAConfigCustomDomainProxyUrl]) {
-            config.initialConfigURL = self.configuration[UAConfigCustomDomainProxyUrl];
-            config.URLAllowList = [config.URLAllowList arrayByAddingObject:self.configuration[UAConfigCustomDomainProxyUrl]];
+        NSString *customDomainProxyUrl = [self configurationStringForKey:UAConfigCustomDomainProxyUrl];
+        if (customDomainProxyUrl) {
+            config.initialConfigURL = customDomainProxyUrl;
+            config.URLAllowList = [config.URLAllowList arrayByAddingObject:customDomainProxyUrl];
         }
         
+        NSString *appKey = [self configurationStringForKey:UAConfigAppKey];
+        NSString *appSecret = [self configurationStringForKey:UAConfigAppSecret];
         if ([MParticle sharedInstance].environment == MPEnvironmentDevelopment) {
-            config.developmentAppKey = self.configuration[UAConfigAppKey];
-            config.developmentAppSecret = self.configuration[UAConfigAppSecret];
+            config.developmentAppKey = appKey;
+            config.developmentAppSecret = appSecret;
             config.inProduction = @NO;
         } else {
-            config.productionAppKey = self.configuration[UAConfigAppKey];
-            config.productionAppSecret = self.configuration[UAConfigAppSecret];
+            config.productionAppKey = appKey;
+            config.productionAppSecret = appSecret;
             config.inProduction = @YES;
         }
         
@@ -214,10 +247,8 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     NSString *tagMappingStr;
     NSData *tagMappingData;
     
-    if (configuration && configuration[kMPUAEventTagKey] != [NSNull null]) {
-        tagMappingStr = [configuration[kMPUAEventTagKey] stringByRemovingPercentEncoding];
-        tagMappingData = [tagMappingStr dataUsingEncoding:NSUTF8StringEncoding];
-    }
+    tagMappingStr = [[self configurationStringForKey:kMPUAEventTagKey] stringByRemovingPercentEncoding];
+    tagMappingData = [tagMappingStr dataUsingEncoding:NSUTF8StringEncoding];
     
     NSError *error = nil;
     NSArray<NSDictionary<NSString *, NSString *> *> *tagMappingConfig = nil;
@@ -227,15 +258,13 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     } @catch (NSException *exception) {
     }
     
-    if (tagMappingConfig && !error) {
+    if ([tagMappingConfig isKindOfClass:[NSArray class]] && !error) {
         [self configureEventTagsMapping:tagMappingConfig];
     }
     
     // Configure event attribute tags mapping
-    if (configuration && configuration[kMPUAEventAttributeTagKey] != [NSNull null]) {
-        tagMappingStr = [configuration[kMPUAEventAttributeTagKey] stringByRemovingPercentEncoding];
-        tagMappingData = [tagMappingStr dataUsingEncoding:NSUTF8StringEncoding];
-    }
+    tagMappingStr = [[self configurationStringForKey:kMPUAEventAttributeTagKey] stringByRemovingPercentEncoding];
+    tagMappingData = [tagMappingStr dataUsingEncoding:NSUTF8StringEncoding];
     error = nil;
     tagMappingConfig = nil;
     
@@ -244,7 +273,7 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
     } @catch (NSException *exception) {
     }
     
-    if (tagMappingConfig && !error) {
+    if ([tagMappingConfig isKindOfClass:[NSArray class]] && !error) {
         [self configureEventAttributeTagsMapping:tagMappingConfig];
     }
 }
@@ -471,7 +500,7 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
  * @return `YES` if the named user was set, otherwise `NO`.
  */
 - (BOOL)setNamedUser:(NSString *)identityString identityType:(MPUserIdentity)identityType {
-    NSString *namedUserConfig = self.configuration[UAConfigNamedUserId];
+    NSString *namedUserConfig = [self configurationStringForKey:UAConfigNamedUserId];
     if (!namedUserConfig || [namedUserConfig isEqualToString:UAConfigNamedUserIdNone]) {
         return NO;
     }
