@@ -529,16 +529,18 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     return nil;
 }
 
+// A kit can reach this from its own launch inside configureKits:, which holds kitsSemaphore on the
+// main thread, for example by setting consent state. Read originalConfig once that call has returned.
 - (void)reconfigureKits {
-    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
-    NSArray<NSDictionary *> *kitConfigurations = [self.originalConfig copy];
-    dispatch_semaphore_signal(kitsSemaphore);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_semaphore_wait(self->kitsSemaphore, DISPATCH_TIME_FOREVER);
+        NSArray<NSDictionary *> *kitConfigurations = [self.originalConfig copy];
+        dispatch_semaphore_signal(self->kitsSemaphore);
 
-    if (kitConfigurations) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+        if (kitConfigurations) {
             [self configureKits:kitConfigurations];
-        });
-    }
+        }
+    });
 }
 
 - (MPBracket *)bracketForKit:(NSNumber *)integrationId {
