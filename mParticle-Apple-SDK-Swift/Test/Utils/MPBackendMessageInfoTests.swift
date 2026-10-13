@@ -27,6 +27,11 @@ final class MPBackendMessageInfoTests: XCTestCase {
         XCTAssertEqual(MPBackendMessageInfo.base64CrashReport("ab", maxBytes: 100), expected)
     }
 
+    func testNegativeMaxBytesLeavesReportIntact() {
+        let expected = Data("abcdef".utf8).base64EncodedString()
+        XCTAssertEqual(MPBackendMessageInfo.base64CrashReport("abcdef", maxBytes: -1), expected)
+    }
+
     // MARK: - pushRegistration
 
     func testBothTokensNilIsNoChange() {

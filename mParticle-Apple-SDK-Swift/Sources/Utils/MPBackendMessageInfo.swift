@@ -18,12 +18,13 @@ import Foundation
 /// selection, and logging.
 @objc public final class MPBackendMessageInfo: NSObject {
     /// Encodes a PL crash report as base64, truncating the UTF-8 bytes to
-    /// `maxBytes` first when a limit is supplied. Returns `nil` for a nil report.
+    /// `maxBytes` first when a limit is supplied. A negative limit is ignored.
+    /// Returns `nil` for a nil report.
     @objc(base64CrashReport:maxBytes:)
     public static func base64CrashReport(_ plCrashReport: String?, maxBytes: NSNumber?) -> String? {
         guard let plCrashReport else { return nil }
         var data = Data(plCrashReport.utf8)
-        if let maxBytes, data.count > maxBytes.intValue {
+        if let maxBytes, maxBytes.intValue >= 0, data.count > maxBytes.intValue {
             data = data.prefix(maxBytes.intValue)
         }
         return data.base64EncodedString()
