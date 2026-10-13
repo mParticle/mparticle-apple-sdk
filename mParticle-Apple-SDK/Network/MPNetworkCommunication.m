@@ -423,8 +423,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         networkOptions.customBaseURL.host ?: @"",
         networkOptions.configHost.pathComponents.firstObject ?: @"",
         networkOptions.identityHost.pathComponents.firstObject ?: @"",
+        networkOptions.identityTrackingHost.pathComponents.firstObject ?: @"",
         networkOptions.eventsHost.pathComponents.firstObject ?: @"",
-        networkOptions.aliasHost.pathComponents.firstObject ?: @""
+        networkOptions.eventsTrackingHost.pathComponents.firstObject ?: @"",
+        networkOptions.aliasHost.pathComponents.firstObject ?: @"",
+        networkOptions.aliasTrackingHost.pathComponents.firstObject ?: @""
     ];
     for (NSString *host in candidateHosts) {
         if (host.length > 0 && ![pinnedHosts containsObject:host]) {
