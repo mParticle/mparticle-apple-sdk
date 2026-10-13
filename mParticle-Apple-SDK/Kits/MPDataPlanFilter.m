@@ -243,13 +243,13 @@
     NSString *infoKey = [self matchKeyFromBaseEvent:event isScreenEvent:isScreenEvent];
 
     NSArray *info = self.pointInfo[infoKey];
-    if (_blockEvents) {
-        if (info == nil) {
-            return nil;
-        }
-        if ((NSNull *)info == [NSNull null]) {
-            return event;
-        }
+    if (_blockEvents && info == nil) {
+        return nil;
+    }
+    // An unconstrained point is stored as NSNull: every attribute is planned, and NSNull cannot be
+    // enumerated by the attribute loop below.
+    if ((NSNull *)info == [NSNull null]) {
+        return event;
     }
     if (_blockEventAttributes) {
         NSMutableDictionary *updatedInfo = [NSMutableDictionary dictionary];
