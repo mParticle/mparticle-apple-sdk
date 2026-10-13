@@ -160,7 +160,8 @@ MPIHasher* _hasher;
         NSString *hashedKey = [[self hasher] hashString:key];
         id hashedValue = hashedMap[hashedKey];
         
-        if ([hashedValue isEqualToNumber:zero]) {
+        // isEqual: because hashedMap values can be of any type; see MPProduct copyMatchingHashedProperties:.
+        if ([hashedValue isEqual:zero]) {
             [copyPromotion->_beautifiedAttributes removeObjectForKey:key];
         }
     }];

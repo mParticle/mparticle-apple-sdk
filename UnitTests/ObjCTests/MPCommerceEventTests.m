@@ -114,6 +114,20 @@
     XCTAssertNil(productDictionary[@"Variant"], @"Should have been nil.");
 }
 
+- (void)testProductHashedFilterIgnoresNonNumericValues {
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product.variant = @"It depends";
+    product[@"Variant"] = @"Custom variant";
+
+    // 236785797 is the hash of "Variant"
+    for (id value in @[@"0", [NSNull null], @[], @{}]) {
+        MPProduct *filteredProduct = nil;
+        XCTAssertNoThrow(filteredProduct = [product copyMatchingHashedProperties:@{@"236785797":value}]);
+        XCTAssertEqualObjects([filteredProduct beautifiedAttributes][@"Variant"], @"It depends");
+        XCTAssertEqualObjects([filteredProduct userDefinedAttributes][@"Variant"], @"Custom variant");
+    }
+}
+
 - (void)testPromotion {
     MPPromotion *promotion = [[MPPromotion alloc] init];
     XCTAssertNotNil(promotion, @"Promotion should not have been nil.");
@@ -214,6 +228,19 @@
                                                  ]
                                          };
     XCTAssertEqualObjects(promotionContainerDictionary, expectedDictionary, @"Should have been equal.");
+}
+
+- (void)testPromotionHashedFilterIgnoresNonNumericValues {
+    MPPromotion *promotion = [[MPPromotion alloc] init];
+    promotion.position = @"bottom";
+
+    // 747804969 is the hash of "Position"
+    XCTAssertNil([[promotion copyMatchingHashedProperties:@{@"747804969":@0}] beautifiedDictionaryRepresentation][@"Position"]);
+    for (id value in @[@"0", [NSNull null], @[], @{}]) {
+        MPPromotion *filteredPromotion = nil;
+        XCTAssertNoThrow(filteredPromotion = [promotion copyMatchingHashedProperties:@{@"747804969":value}]);
+        XCTAssertEqualObjects([filteredPromotion beautifiedDictionaryRepresentation][@"Position"], @"bottom");
+    }
 }
 
 - (void)testTransactionAttributes {
