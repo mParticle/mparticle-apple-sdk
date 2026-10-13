@@ -20,6 +20,40 @@ final class MPKitAdobeTests: XCTestCase {
         XCTAssertEqual(actualKitCode, expectedKitCode, "Kit code should be 124")
     }
 
+    // MARK: - Malformed server configuration
+
+    // A raise is an Objective-C exception Swift cannot catch, so a regression here fails the run
+    // by terminating it rather than by a failed assertion.
+    private let nonStringValues: [Any] = [42, true, [Any](), [String: Any]()]
+
+    func testLaunchWithNonStringOrganizationIdReportsRequirementsNotMet() {
+        for value in nonStringValues {
+            let status = MPKitAdobe().didFinishLaunching(withConfiguration: ["organizationID": value])
+
+            XCTAssertEqual(status.returnCode, .requirementsNotMet,
+                           "organizationID of \(type(of: value)) should not start the kit")
+        }
+    }
+
+    func testLaunchWithNonStringAudienceManagerServerIgnoresTheValue() {
+        for value in nonStringValues {
+            let kit = MPKitAdobe()
+            let status = kit.didFinishLaunching(withConfiguration: ["organizationID": "organizationId",
+                                                                    "audienceManagerServer": value])
+            // The launch also schedules a request on the main queue; route it to the mock.
+            let session = SessionProtocolMock()
+            kit.setValue(MPIAdobe(session: session)!, forKey: "adobe")
+
+            XCTAssertEqual(status.returnCode, .success)
+            XCTAssertNil(kit.value(forKey: "audienceManagerServer"),
+                         "audienceManagerServer of \(type(of: value)) should be ignored")
+
+            kit.perform(Selector(("sendNetworkRequest")))
+
+            XCTAssertTrue(session.dataTaskCalled)
+        }
+    }
+
     func testSendRequestEncodeAllParametersIntoURL() {
         let sut = MPIAdobe(session: session)!
         sut.sendRequest(
