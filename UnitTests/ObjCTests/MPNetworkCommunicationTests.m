@@ -32,6 +32,7 @@
 - (UIBackgroundTaskIdentifier)beginSafeBackgroundTaskWithExpirationHandler:(void(^_Nullable)(void))handler;
 - (void)endSafeBackgroundTask:(UIBackgroundTaskIdentifier)taskId;
 - (void)identityApiRequestWithURL:(NSURL *)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
+- (MPConnectorConfiguration *)connectorConfiguration;
 @property (nonatomic) BOOL identifying;
 
 @end
@@ -288,6 +289,31 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self assertURL:[networkCommunication aliasURLForUpload:upload]
           requested:@"https://tracking-nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"
           canonical:@"https://tracking-nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
+
+    [self tearDownCharacterization];
+}
+
+- (void)testConnectorConfigurationPinsTrackingHosts {
+    [MParticle sharedInstance].networkOptions = [self characterizationOptionsWithHosts:NO trackingHosts:YES overrides:NO customBaseURL:NO];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+
+    NSArray<NSString *> *pinnedHosts = networkCommunication.connectorConfiguration.pinnedHosts;
+
+    XCTAssertTrue([pinnedHosts containsObject:@"tev.example.com"]);
+    XCTAssertTrue([pinnedHosts containsObject:@"tid.example.com"]);
+    XCTAssertTrue([pinnedHosts containsObject:@"tal.example.com"]);
+
+    [self tearDownCharacterization];
+}
+
+- (void)testConnectorConfigurationPinsOnlySetHostsWithoutTrackingHosts {
+    [MParticle sharedInstance].networkOptions = [self characterizationOptionsWithHosts:YES trackingHosts:NO overrides:NO customBaseURL:NO];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+
+    NSArray<NSString *> *pinnedHosts = networkCommunication.connectorConfiguration.pinnedHosts;
+
+    NSArray<NSString *> *expectedHosts = @[@"cfg.example.com", @"id.example.com", @"ev.example.com", @"al.example.com"];
+    XCTAssertEqualObjects(pinnedHosts, expectedHosts);
 
     [self tearDownCharacterization];
 }

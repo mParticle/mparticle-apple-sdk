@@ -104,6 +104,8 @@ Allows you to override the default event host.
 @property (nonatomic, nullable) NSString *eventsHost;
 /**
 Allows you to override the tracking event host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+Certificate pinning applies to this host: if pinning is enabled (the default), supply certificates
+for it via @c certificates, or disable pinning via @c pinningDisabled / @c pinningDisabledInDevelopment.
 */
 @property (nonatomic, nullable) NSString *eventsTrackingHost;
 /**
@@ -117,6 +119,8 @@ Allows you to override the default identity host.
 @property (nonatomic, nullable) NSString *identityHost;
 /**
 Allows you to override the tracking identity host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+Certificate pinning applies to this host: if pinning is enabled (the default), supply certificates
+for it via @c certificates, or disable pinning via @c pinningDisabled / @c pinningDisabledInDevelopment.
 */
 @property (nonatomic, nullable) NSString *identityTrackingHost;
 /**
@@ -130,6 +134,8 @@ Allows you to override the default alias host.
 @property (nonatomic, nullable) NSString *aliasHost;
 /**
 Allows you to override the tracking alias host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+Certificate pinning applies to this host: if pinning is enabled (the default), supply certificates
+for it via @c certificates, or disable pinning via @c pinningDisabled / @c pinningDisabledInDevelopment.
 */
 @property (nonatomic, nullable) NSString *aliasTrackingHost;
 /**
