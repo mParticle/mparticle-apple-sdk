@@ -756,6 +756,7 @@ PROP|@property (nonatomic, readwrite) BOOL blockEventAttributes;
 PROP|@property (nonatomic, readwrite) BOOL blockEvents;
 PROP|@property (nonatomic, readwrite) BOOL blockUserAttributes;
 PROP|@property (nonatomic, readwrite) BOOL blockUserIdentities;
+PROP|@property (nonatomic, readwrite) BOOL collectCustomModulePreferences;
 PROP|@property (nonatomic, readwrite) BOOL collectSearchAdsAttribution;
 PROP|@property (nonatomic, readwrite) BOOL collectUserAgent;
 PROP|@property (nonatomic, readwrite) BOOL compressConfigurationStorage;
@@ -884,6 +885,7 @@ PROP|@property (nonatomic, strong, readwrite, nullable) MPDataPlanOptions *dataP
 PROP|@property (nonatomic, strong, readwrite, nullable) MPNetworkOptions *networkOptions;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSArray<MPSideloadedKit*> *sideloadedKits;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber *> *disabledKits;
+PROP|@property (nonatomic, strong, readwrite, nullable) NSArray<NSString *> *customModulePreferenceKeys;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSDictionary *dataPlan;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSNumber *attStatus;
 PROP|@property (nonatomic, strong, readwrite, nullable) NSNumber *attStatusTimestampMillis;
