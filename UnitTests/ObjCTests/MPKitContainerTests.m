@@ -162,6 +162,24 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 @end
 
+// Reconfigures the kits synchronously while launching, as a kit does when it sets consent state from start.
+static atomic_bool gLaunchReconfigureEntered;
+static atomic_bool gLaunchReconfigureReturned;
+
+@interface MPLaunchReconfigureTestKit : MPKitTestClass
+@end
+@implementation MPLaunchReconfigureTestKit
++ (NSNumber *)kitCode {
+    return @123460;
+}
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    atomic_store(&gLaunchReconfigureEntered, true);
+    [[MParticle sharedInstance].kitContainer_PRIVATE reconfigureKits];
+    atomic_store(&gLaunchReconfigureReturned, true);
+    return [super didFinishLaunchingWithConfiguration:configuration];
+}
+@end
+
 // Reads consent synchronously while launching, as MPKitFirebaseGA4Analytics does.
 static atomic_bool gLaunchConsentEntered;
 static atomic_bool gLaunchConsentReturned;
@@ -177,6 +195,17 @@ static atomic_bool gLaunchConsentReturned;
     (void)[MParticle sharedInstance].identity.currentUser.consentState;
     atomic_store(&gLaunchConsentReturned, true);
     return [super didFinishLaunchingWithConfiguration:configuration];
+}
+@end
+
+@interface MPRaisingConfigurationTestKit : MPKitTestClass
+@end
+@implementation MPRaisingConfigurationTestKit
++ (NSNumber *)kitCode {
+    return @123459;
+}
+- (void)setConfiguration:(NSDictionary *)configuration {
+    [NSException raise:NSInternalInconsistencyException format:@"unexpected configuration"];
 }
 @end
 
@@ -4531,6 +4560,43 @@ static atomic_bool gLaunchConsentReturned;
     XCTAssertFalse(released, @"consentState blocked on kitsSemaphore held by configureKits:");
 }
 
+- (void)testReconfigureKitsDuringKitLaunchFromServerConfigDoesNotBlockMainThread {
+    MPKitRegister *reconfigurer = [[MPKitRegister alloc] initWithName:@"LaunchReconfigurer" className:@"MPLaunchReconfigureTestKit"];
+    self.consentTestRegister = reconfigurer;
+    [MPKitContainer_PRIVATE registerKit:reconfigurer];
+    atomic_store(&gLaunchReconfigureEntered, false);
+    atomic_store(&gLaunchReconfigureReturned, false);
+    id adapter = kitContainer.executionAdapter;
+    dispatch_semaphore_t kitsSemaphore = (dispatch_semaphore_t)object_getIvar(adapter, class_getInstanceVariable([adapter class], "kitsSemaphore"));
+    XCTAssertNotNil(kitsSemaphore);
+
+    // On a regression the main thread never returns from configureKits:, so a watchdog releases
+    // kitsSemaphore once to turn the hang into a failure.
+    __block BOOL released = NO;
+    dispatch_semaphore_t configureReturned = dispatch_semaphore_create(0);
+    dispatch_semaphore_t watchdogFinished = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (dispatch_semaphore_wait(configureReturned, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)) != 0 &&
+            atomic_load(&gLaunchReconfigureEntered) && !atomic_load(&gLaunchReconfigureReturned)) {
+            released = YES;
+            dispatch_semaphore_signal(kitsSemaphore);
+        }
+        dispatch_semaphore_signal(watchdogFinished);
+    });
+
+    [kitContainer configureKits:@[@{@"id": @123460, @"as": @{@"key": @"value"}}]];
+    dispatch_semaphore_signal(configureReturned);
+    dispatch_semaphore_wait(watchdogFinished, DISPATCH_TIME_FOREVER);
+    if (released) {
+        dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW);
+    }
+    // Let the deferred reconfigure run against this container rather than during a later test.
+    [self drainConsentReplayQueue];
+
+    XCTAssertTrue(atomic_load(&gLaunchReconfigureEntered));
+    XCTAssertFalse(released, @"reconfigureKits blocked on kitsSemaphore held by configureKits:");
+}
+
 - (void)testActiveKitsRegistryWithoutWaitingReturnsRegistryWhenUnlocked {
     [self registerConsentReplayTestKit];
     [kitContainer configureKits:@[@{@"id": @123456, @"as": @{@"test": @YES}}]];
@@ -4539,6 +4605,28 @@ static atomic_bool gLaunchConsentReturned;
 
     XCTAssertGreaterThan(activeKits.count, 0);
     XCTAssertEqualObjects(activeKits, [kitContainer activeKitsRegistry]);
+}
+
+#pragma mark Kit exceptions during configuration
+
+- (void)testKitRaisingFromSetConfigurationDoesNotLeaveKitsSemaphoreHeld {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"RaisingConfiguration" className:@"MPRaisingConfigurationTestKit"];
+    self.consentTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+    id adapter = kitContainer.executionAdapter;
+    dispatch_semaphore_t kitsSemaphore = (dispatch_semaphore_t)object_getIvar(adapter, class_getInstanceVariable([adapter class], "kitsSemaphore"));
+    XCTAssertNotNil(kitsSemaphore);
+
+    // The first pass launches the kit; the second sends setConfiguration: to the running kit.
+    NSArray *configurations = @[@{@"id": @123459, @"as": @{@"key": @"value"}}];
+    [kitContainer configureKits:configurations];
+    XCTAssertNoThrow([kitContainer configureKits:configurations]);
+
+    BOOL acquired = dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW) == 0;
+    XCTAssertTrue(acquired, @"kitsSemaphore left held after a kit raised inside configureKits:");
+    if (acquired) {
+        dispatch_semaphore_signal(kitsSemaphore);
+    }
 }
 
 @end

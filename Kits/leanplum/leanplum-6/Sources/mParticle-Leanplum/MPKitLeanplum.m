@@ -27,10 +27,11 @@ static NSString * const kMPLeanplumEmailUserAttributeKey = @"email";
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
     
-    NSString *appId = configuration[@"appId"];
-    NSString *clientKey = configuration[@"clientKey"];
+    // Server configuration is parsed JSON, so a value is not guaranteed to have the type the mParticle UI collects.
+    id appId = configuration[@"appId"];
+    id clientKey = configuration[@"clientKey"];
     NSString *userIdField = configuration[@"userIdField"];
-    if (!appId || !clientKey || !userIdField) {
+    if (![appId isKindOfClass:[NSString class]] || ![clientKey isKindOfClass:[NSString class]] || !userIdField) {
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
         return execStatus;
     }
@@ -89,7 +90,7 @@ static NSString * const kMPLeanplumEmailUserAttributeKey = @"email";
         }
         
         NSString *deviceIdType = self.configuration[@"iosDeviceId"];
-        if (deviceIdType == nil) {
+        if (![deviceIdType isKindOfClass:[NSString class]]) {
             deviceIdType = @"";
         }
         if ([deviceIdType isEqualToString:@"idfa"] && advertiserId != nil) {

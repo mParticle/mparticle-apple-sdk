@@ -207,6 +207,44 @@
     XCTAssertFalse([filter isBlockedUserIdentityType:MPIdentityEmail]);
 }
 
+#pragma mark Unconstrained event points
+
+- (MPDataPlanFilter *)filterWithUnconstrainedEventPointBlockingEvents:(BOOL)blockEvents {
+    NSDictionary *plan = @{@"version_document":@{@"data_points":@[
+        @{@"match":@{@"type":@"custom_event",
+                     @"criteria":@{@"event_name":@"Email Bounces", @"custom_event_type":@"other"}},
+          @"validator":@{@"definition":@{@"properties":@{@"data":@{@"properties":@{
+              @"custom_attributes":@{@"additionalProperties":@YES,
+                                     @"properties":@{@"Campaign Name":@{}}}}}}}}}
+    ]}};
+
+    MPDataPlanOptions *options = [[MPDataPlanOptions alloc] init];
+    options.dataPlan = plan;
+    options.blockEvents = blockEvents;
+    options.blockEventAttributes = YES;
+
+    return [[MPDataPlanFilter alloc] initWithDataPlanOptions:options];
+}
+
+- (void)testUnconstrainedEventPointIsStoredAsTheNullSentinel {
+    NSDictionary *pointInfo = [[self filterWithUnconstrainedEventPointBlockingEvents:NO] getPointInfo];
+
+    XCTAssertTrue((NSNull *)pointInfo[@"custom_event.Email Bounces.other"] == [NSNull null]);
+}
+
+- (void)testUnconstrainedEventPointKeepsEveryAttribute {
+    for (NSNumber *blockEvents in @[@NO, @YES]) {
+        MPDataPlanFilter *filter = [self filterWithUnconstrainedEventPointBlockingEvents:blockEvents.boolValue];
+        NSDictionary *attributes = @{@"Campaign Name":@"foo", @"Unplanned Attribute":@"bar"};
+        MPEvent *event = [[MPEvent alloc] initWithName:@"Email Bounces" type:MPEventTypeOther];
+        event.customAttributes = attributes;
+
+        MPEvent *result = nil;
+        XCTAssertNoThrow(result = [filter transformEventForEvent:event]);
+        XCTAssertEqualObjects(result.customAttributes, attributes);
+    }
+}
+
 @end
 
 

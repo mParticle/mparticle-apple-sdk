@@ -309,11 +309,13 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     logger.customLogger = mparticle.customLogger;
     MPIHasher* hasher = [[MPIHasher alloc] initWithLogger:logger];
     
+    // hashedMap comes from kit configuration, so its values can be of any type. isEqual: rather
+    // than isEqualToNumber:, which only NSNumber answers.
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
         hashedKey = [hasher hashString:key];
         hashedValue = hashedMap[hashedKey];
         
-        if ([hashedValue isEqualToNumber:zero]) {
+        if ([hashedValue isEqual:zero]) {
             [copyProduct->_beautifiedAttributes removeObjectForKey:key];
         }
     }];
@@ -322,7 +324,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
         hashedKey = [hasher hashString:key];
         hashedValue = hashedMap[hashedKey];
         
-        if ([hashedValue isEqualToNumber:zero]) {
+        if ([hashedValue isEqual:zero]) {
             [copyProduct->_userDefinedAttributes removeObjectForKey:key];
         }
     }];

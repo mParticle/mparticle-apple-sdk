@@ -94,19 +94,31 @@ static __weak MPKitAdobe *_sharedInstance = nil;
     MPKitAdobeSetWillOverrideMid(willOverrideMid);
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, so a value is not guaranteed to have the type the mParticle UI collects.
+- (NSString *)configurationString:(NSDictionary *)configuration forKey:(NSString *)key {
+    id value = configuration[key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
 #pragma mark MPKitInstanceProtocol methods
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     _sharedInstance = self;
     MPKitExecStatus *execStatus = nil;
     
-    _organizationId = [configuration[organizationIdConfigurationKey] copy];
+    _organizationId = [[self configurationString:configuration forKey:organizationIdConfigurationKey] copy];
     if (!_organizationId.length) {
         NSLog(@"mParticle -> Adobe config wasn't received yet.");
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
         return execStatus;
     }
-    _audienceManagerServer = [configuration[audienceManagerServerConfigurationKey] copy];
+    _audienceManagerServer = [[self configurationString:configuration forKey:audienceManagerServerConfigurationKey] copy];
     
     _configuration = configuration;
     _started       = YES;

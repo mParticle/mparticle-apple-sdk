@@ -529,16 +529,18 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     return nil;
 }
 
+// A kit can reach this from its own launch inside configureKits:, which holds kitsSemaphore on the
+// main thread, for example by setting consent state. Read originalConfig once that call has returned.
 - (void)reconfigureKits {
-    dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
-    NSArray<NSDictionary *> *kitConfigurations = [self.originalConfig copy];
-    dispatch_semaphore_signal(kitsSemaphore);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_semaphore_wait(self->kitsSemaphore, DISPATCH_TIME_FOREVER);
+        NSArray<NSDictionary *> *kitConfigurations = [self.originalConfig copy];
+        dispatch_semaphore_signal(self->kitsSemaphore);
 
-    if (kitConfigurations) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+        if (kitConfigurations) {
             [self configureKits:kitConfigurations];
-        });
-    }
+        }
+    });
 }
 
 - (MPBracket *)bracketForKit:(NSNumber *)integrationId {
@@ -1669,14 +1671,24 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                     [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration integrationId:integrationId];
                     
                     NSDictionary *configuration = kitConfiguration.configuration;
+                    // Kit callbacks in this loop run while kitsSemaphore is held, so a raise must not
+                    // unwind past the signal at the end of this method.
                     if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
-                        [kitInstance setConfiguration:configuration];
+                        @try {
+                            [kitInstance setConfiguration:configuration];
+                        } @catch (NSException *exception) {
+                            MPILogError(@"Exception thrown while configuring kit (%@): %@", kitInstance, exception);
+                        }
                     }
                 }
                 
             } else {
                 MPILogDebug(@"configureKits - starting new kit instance for kit %@", integrationId);
-                [self startKitRegister:kitRegister configuration:kitConfiguration];
+                @try {
+                    [self startKitRegister:kitRegister configuration:kitConfiguration];
+                } @catch (NSException *exception) {
+                    MPILogError(@"Exception thrown while creating kit %@: %@", integrationId, exception);
+                }
                 kitInstance = kitRegister.wrapperInstance;
                 
                 if (kitInstance) {
@@ -1689,7 +1701,11 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             if (kitInstance) {
                 if (![kitInstance started] && !disabled) {
                     if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
-                        [kitInstance setLaunchOptions:stateMachine.launchOptions];
+                        @try {
+                            [kitInstance setLaunchOptions:stateMachine.launchOptions];
+                        } @catch (NSException *exception) {
+                            MPILogError(@"Exception thrown while setting launch options on kit (%@): %@", kitInstance, exception);
+                        }
                     }
                     
                     if ([kitInstance respondsToSelector:@selector(start)]) {
@@ -1718,15 +1734,19 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                             MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributeKey:key value:value];
                             if (!kitFilter.shouldFilter) {
                                 FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:self.kitConfigurations[kitRegister.code]];
-                                if ([kitInstance respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
-                                    [kitInstance onSetUserAttribute:filteredUser];
-                                } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSStringClass]) {
-                                    [kitInstance setUserAttribute:key value:value];
-                                } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSNumberClass]) {
-                                    value = [value stringValue];
-                                    [kitInstance setUserAttribute:key value:value];
-                                } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:values:)] && [value isKindOfClass:NSArrayClass]) {
-                                    [kitInstance setUserAttribute:key values:value];
+                                @try {
+                                    if ([kitInstance respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
+                                        [kitInstance onSetUserAttribute:filteredUser];
+                                    } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSStringClass]) {
+                                        [kitInstance setUserAttribute:key value:value];
+                                    } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSNumberClass]) {
+                                        value = [value stringValue];
+                                        [kitInstance setUserAttribute:key value:value];
+                                    } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:values:)] && [value isKindOfClass:NSArrayClass]) {
+                                        [kitInstance setUserAttribute:key values:value];
+                                    }
+                                } @catch (NSException *exception) {
+                                    MPILogError(@"Exception thrown while forwarding a user attribute to kit (%@): %@", kitInstance, exception);
                                 }
                             }
                         }
@@ -1739,7 +1759,11 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                         if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)identityType]) {
                             NSString *identityString = userIdentity[kMPUserIdentityIdKey];
                             
-                            [kitInstance setUserIdentity:identityString identityType:identityType];
+                            @try {
+                                [kitInstance setUserIdentity:identityString identityType:identityType];
+                            } @catch (NSException *exception) {
+                                MPILogError(@"Exception thrown while forwarding a user identity to kit (%@): %@", kitInstance, exception);
+                            }
                         }
                     }
                 }
