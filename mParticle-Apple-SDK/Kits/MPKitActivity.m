@@ -115,6 +115,14 @@
 - (void)handleKitDidBecomeActive:(NSNotification *)notification {
     NSDictionary *userInfo = [notification userInfo];
     NSNumber *integrationId = userInfo[mParticleKitInstanceKey];
+    // Some kits post synchronously while configureKits holds kitsSemaphore, and resolving a pending
+    // handler's instance waits on it. Resolve once configuration has released it.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self runPendingHandlersForKit:integrationId];
+    });
+}
+
+- (void)runPendingHandlersForKit:(NSNumber *)integrationId {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"integrationId == %@", integrationId];
     NSArray *activities = [self.activityMappings filteredArrayUsingPredicate:predicate];
     

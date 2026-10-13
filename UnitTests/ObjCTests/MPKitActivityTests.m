@@ -109,4 +109,30 @@
     }];
 }
 
+- (void)testPendingHandlerRunsWhenKitStartsDuringConfiguration {
+    // Let the kit-active delivery queued by setUp's start run before a handler is pending.
+    XCTestExpectation *drained = [self expectationWithDescription:@"Main queue drained"];
+    dispatch_async(dispatch_get_main_queue(), ^{ [drained fulfill]; });
+    [self waitForExpectations:@[drained] timeout:DEFAULT_TIMEOUT];
+
+    // Registered but not started, so the handler stays pending.
+    [MPKitContainer_PRIVATE resetRegistry];
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
+    [MPKitContainer_PRIVATE registerKit:kitRegister];
+    XCTAssertFalse([self.kitActivity isKitActive:@42]);
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"KitActivity pending handler"];
+    [self.kitActivity kitInstance:@42 withHandler:^(id _Nullable kitInstance) {
+        XCTAssertTrue([kitInstance isKindOfClass:[MPKitTestClassNoStartImmediately class]]);
+        [expectation fulfill];
+    }];
+
+    // configureKits: starts the kit while it holds the container lock, and the test kit posts
+    // the kit-active notification synchronously from start.
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:@[@{@"id": @42, @"as": @{@"appId": @"MyAppId"}}]];
+
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
 @end
