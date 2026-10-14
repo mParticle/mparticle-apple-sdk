@@ -17,17 +17,16 @@
 #     "dependencies": [
 #       {
 #         "framework": "AppsFlyerLib",
-#         "package_identity": "appsflyerframework",
-#         "url": "https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases/download/{version}/AppsFlyerLib-Dynamic.xcframework.zip"
+#         "version": "<release tag>",
+#         "url": "https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases/download/{version}/AppsFlyerLib-Dynamic.xcframework.zip",
+#         "sha256": "<SHA-256 of that zip, 64 lowercase hex characters>"
 #       }
 #     ]
 #   }
 #
-# `{version}` in `url` is replaced with the version pinned in the kit project's
-# Package.resolved (matched by `package_identity`), so the binary links the same
-# partner release SwiftPM resolves. Package.resolved is gitignored, so the script
-# runs `xcodebuild -resolvePackageDependencies` to produce it when missing.
-# Set `version` on a dependency to pin an exact release and skip resolution.
+# `{version}` in `url` is replaced with `version`. The download must match
+# `sha256` or the build fails before the zip is unpacked, so bump `version` and
+# `sha256` together, taking the new hash from `shasum -a 256` on the new zip.
 #
 # Usage:
 #   Scripts/build_kit_xcframework.sh <kit-name>
@@ -123,73 +122,35 @@ find_kit_project() {
 	echo "${project}"
 }
 
-# Package.resolved is gitignored, so a fresh checkout has none. Generate it
-# before reading partner versions from it.
-ensure_package_resolution() {
-	local resolved="$1"
+# Exits unless the file's SHA-256 is the expected digest. A missing or malformed
+# digest exits too, so an unpinned dependency is never unpacked.
+verify_sha256() {
+	local file="$1" expected="$2" actual
 
-	if [[ -f ${resolved} ]]; then
-		return
+	if [[ ! ${expected} =~ ^[0-9a-f]{64}$ ]]; then
+		echo "::error::Expected a sha256 of 64 lowercase hex characters for $(basename "${file}")" >&2
+		exit 1
 	fi
-
-	# Runs inside a command substitution; keep stdout clean for the version.
-	echo "📦 Resolving SPM dependencies for $(basename "${KIT_PROJECT}")" >&2
-	xcodebuild -resolvePackageDependencies \
-		-project "${KIT_PROJECT}" \
-		-clonedSourcePackagesDirPath "${BUILD_DIR}/SourcePackages" >&2
-
-	if [[ ! -f ${resolved} ]]; then
-		echo "::error::xcodebuild did not produce ${resolved}. Set version in matrix.json." >&2
+	actual="$(shasum -a 256 "${file}" | cut -d ' ' -f 1)"
+	if [[ ${actual} != "${expected}" ]]; then
+		echo "::error::$(basename "${file}") has SHA-256 ${actual}, expected ${expected}" >&2
 		exit 1
 	fi
 }
 
-resolve_dependency_version() {
-	local index="$1" package_identity version resolved
-	package_identity="$(dependency_field "${index}" package_identity)"
-	version="$(dependency_field "${index}" version)"
-
-	if [[ -n ${version} ]]; then
-		echo "${version}"
-		return
-	fi
-
-	if [[ -z ${package_identity} ]]; then
-		echo "::error::Dependency is missing package_identity or version" >&2
-		exit 1
-	fi
-
-	resolved="${KIT_PROJECT}/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
-	ensure_package_resolution "${resolved}"
-
-	version="$(python3 -c '
-import json, sys
-identity = sys.argv[2]
-pins = json.load(open(sys.argv[1]))["pins"]
-for pin in pins:
-    if pin["identity"].startswith(identity):
-        print(pin["state"]["version"])
-        break
-' "${resolved}" "${package_identity}")"
-
-	if [[ -z ${version} ]]; then
-		echo "::error::No Package.resolved pin matching '${package_identity}'. Set version in matrix.json." >&2
-		exit 1
-	fi
-	echo "${version}"
-}
-
-# Downloads a partner xcframework zip and sets DEPENDENCY_XCFRAMEWORK_PATH.
+# Downloads a partner xcframework zip, checks it against its pinned sha256 and
+# sets DEPENDENCY_XCFRAMEWORK_PATH.
 fetch_dependency_xcframework() {
 	local index="$1"
-	local framework version url_template url destination staging unpacked
+	local framework version url_template sha256 url destination staging archive unpacked
 
 	framework="$(dependency_field "${index}" framework)"
-	version="$(resolve_dependency_version "${index}")"
+	version="$(dependency_field "${index}" version)"
 	url_template="$(dependency_field "${index}" url)"
+	sha256="$(dependency_field "${index}" sha256)"
 
-	if [[ -z ${framework} || -z ${url_template} ]]; then
-		echo "::error::Dependency is missing framework or url" >&2
+	if [[ -z ${framework} || -z ${version} || -z ${url_template} ]]; then
+		echo "::error::Dependency is missing framework, version or url" >&2
 		exit 1
 	fi
 
@@ -203,14 +164,16 @@ fetch_dependency_xcframework() {
 	fi
 
 	staging="${BUILD_DIR}/${framework}-download"
+	archive="${staging}/${framework}.xcframework.zip"
 	echo "⬇️  Fetching ${framework} ${version}"
 	rm -rf "${staging}"
 	mkdir -p "${staging}"
-	if ! curl -fsSL -o "${staging}/${framework}.xcframework.zip" "${url}"; then
+	if ! curl -fsSL -o "${archive}" "${url}"; then
 		echo "::error::Failed to download ${url}" >&2
 		exit 1
 	fi
-	unzip -q "${staging}/${framework}.xcframework.zip" -d "${staging}"
+	verify_sha256 "${archive}" "${sha256}"
+	unzip -q "${archive}" -d "${staging}"
 
 	unpacked="$(find "${staging}" -maxdepth 2 -name "${framework}.xcframework" -type d | head -1)"
 	if [[ -z ${unpacked} ]]; then
