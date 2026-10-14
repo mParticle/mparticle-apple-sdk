@@ -100,6 +100,31 @@ final class MPKitAdobeTests: XCTestCase {
         XCTAssertEqual(actualItems, expectedItems)
     }
 
+    // MARK: - Audience Manager host
+
+    func testSendRequestUsesAConfiguredHostname() {
+        XCTAssertEqual(requestedURL(forAudienceManagerServer: "partner.demdex.net")?.host, "partner.demdex.net")
+    }
+
+    func testSendRequestIgnoresAnAudienceManagerServerThatIsNotAHostname() {
+        let values = ["other.example/x?", "dpm.demdex.net@other.example", "other.example:8443", "other.example#",
+                      "https://other.example", "partner.demdex.net/", " partner.demdex.net", "oth%65r.example",
+                      "ex\u{E4}mple.com"]
+        for value in values {
+            let url = requestedURL(forAudienceManagerServer: value)
+
+            XCTAssertEqual(url?.host, "dpm.demdex.net", "\(value) should fall back to the default host")
+            XCTAssertEqual(url?.path, "/id", "\(value) should not change the path")
+        }
+    }
+
+    // A configured server must not outlive the request it was passed to.
+    func testSendRequestDoesNotReuseAnEarlierAudienceManagerServer() {
+        _ = requestedURL(forAudienceManagerServer: "partner.demdex.net")
+
+        XCTAssertEqual(requestedURL(forAudienceManagerServer: "")?.host, "dpm.demdex.net")
+    }
+
     func testCompletionCallback_success() throws {
         let sut = MPIAdobe(session: session)!
         sut.sendRequest(
@@ -277,5 +302,12 @@ final class MPKitAdobeTests: XCTestCase {
         XCTAssertTrue(completionCalled, "The completion must be invoked", line: line)
         let adobeError = completionError?.userInfo[MPIAdobeErrorKey] as? MPIAdobeError
         XCTAssertEqual(adobeError?.code, .clientSerializationError, line: line)
+    }
+
+    private func requestedURL(forAudienceManagerServer server: String) -> URLComponents? {
+        let sut = MPIAdobe(session: session)!
+        sut.sendRequest(withMarketingCloudId: "", advertiserId: "", pushToken: "", organizationId: "",
+                        userIdentities: [:], audienceManagerServer: server) { _, _, _, _ in }
+        return session.dataTaskRequestParam?.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }
     }
 }
