@@ -174,7 +174,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPNetworkOptions *networkOptions = mParticle.networkOptions;
 
     return [[MPEndpointRouting alloc] initWithApiKey:mParticle.stateMachine.apiKey
-                                   customBaseURLHost:networkOptions.customBaseURL.host
+                                   customBaseURLHost:[MPEndpointHostResolver customBaseURLHostWithURL:networkOptions.customBaseURL]
                                     hasCustomBaseURL:networkOptions.customBaseURL != nil
                                           configHost:networkOptions.configHost
                                           eventsHost:networkOptions.eventsHost
@@ -198,7 +198,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPNetworkOptions *networkOptions = [MParticle sharedInstance].networkOptions;
 
     return [[MPEndpointRouting alloc] initWithApiKey:uploadSettings.apiKey
-                                   customBaseURLHost:networkOptions.customBaseURL.host
+                                   customBaseURLHost:[MPEndpointHostResolver customBaseURLHostWithURL:networkOptions.customBaseURL]
                                     hasCustomBaseURL:networkOptions.customBaseURL != nil
                                           configHost:nil
                                           eventsHost:uploadSettings.eventsHost

@@ -167,6 +167,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Routes all mParticle endpoint traffic (config, events, identity, alias) through
  a single CNAME domain. Must be an HTTPS URL, e.g. https://rkt.example.com.
  Non-HTTPS values are rejected with a warning log and the property is left unchanged.
+ A port in the URL is used, e.g. https://rkt.example.com:8443; a path is not.
 
  When set, this property takes priority over all individual host properties
  (configHost, eventsHost, eventsTrackingHost, identityHost, identityTrackingHost,

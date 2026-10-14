@@ -85,7 +85,7 @@
 - (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey
                                  secret:(nonnull NSString *)secret
                          networkOptions:(nonnull MPNetworkOptions *)networkOptions {
-    NSString *customHost = networkOptions.customBaseURL ? networkOptions.customBaseURL.host : nil;
+    NSString *customHost = [MPEndpointHostResolver customBaseURLHostWithURL:networkOptions.customBaseURL];
     if (customHost) {
         if (networkOptions.eventsHost) {
             MPILogWarning(@"MPNetworkOptions: customBaseURL is set; eventsHost is ignored.");

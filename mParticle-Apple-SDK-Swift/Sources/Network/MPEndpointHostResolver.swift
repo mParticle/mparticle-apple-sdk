@@ -10,6 +10,19 @@ import Foundation
         return "\(subdomain).\(podPrefix[0]).mparticle.com"
     }
 
+    /// The host `customBaseURL` routes to, with its port when it has one: the Rokt kit hands the
+    /// same URL to its SDK, which keeps the port. A path in the URL is not used.
+    @objc(customBaseURLHostWithURL:)
+    public static func customBaseURLHost(url: URL?) -> String? {
+        guard let host = url?.host else {
+            return nil
+        }
+        guard let port = url?.port else {
+            return host
+        }
+        return "\(host):\(port)"
+    }
+
     @objc(resolvedHostWithCustomBaseURLHost:trackingHost:host:defaultHost:attAuthorized:)
     public static func resolvedHost(
         customBaseURLHost: String?,
