@@ -952,6 +952,41 @@ class MPUserDefaultsTests: XCTestCase {
         )
     }
 
+    func testUnusableAgeLeavesProvisionedTimeAtRequestTime() {
+        let requestTimestamp = Date().timeIntervalSince1970
+
+        for currentAge in [-4000, -Double.infinity, Double.infinity] {
+            userDefaults.setConfiguration(
+                responseConfiguration,
+                eTag: eTag,
+                requestTimestamp: requestTimestamp,
+                currentAge: currentAge,
+                maxAge: nil
+            )
+
+            XCTAssertEqual(
+                userDefaults[Miscellaneous.kMPConfigProvisionedTimestampKey] as? NSNumber,
+                NSNumber(value: requestTimestamp),
+                "\(currentAge)"
+            )
+        }
+    }
+
+    func testConfigurationProvisionedInTheFutureIsExpired() {
+        let now = Date().timeIntervalSince1970
+        userDefaults.setConfiguration(
+            responseConfiguration,
+            eTag: eTag,
+            requestTimestamp: now,
+            currentAge: 0,
+            maxAge: nil
+        )
+        XCTAssertFalse(userDefaults.isConfigurationExpired())
+
+        userDefaults[Miscellaneous.kMPConfigProvisionedTimestampKey] = now + 86400
+        XCTAssertTrue(userDefaults.isConfigurationExpired())
+    }
+
     func testUpdateConfigurations() {
         let responseConfiguration: [String: Any] = buildResponseConfiguration(for: [configuration1])
         let requestTimestamp = Date().timeIntervalSince1970
