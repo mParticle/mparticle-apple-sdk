@@ -59,12 +59,47 @@ static NSString * _apptentiveSignature = nil;
     return [[MPKitExecStatus alloc] initWithSDKCode:self.class.kitCode returnCode:returnCode];
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+// An absent value and one that is neither a string nor a number both take the default.
+- (BOOL)configurationBoolForKey:(NSString *)key defaultValue:(BOOL)defaultValue {
+    id value = [self configurationValueForKey:key];
+    if (value == nil) {
+        return defaultValue;
+    }
+    if (!([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])) {
+        NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+        return defaultValue;
+    }
+    return [value boolValue];
+}
+
+- (void)updateConfiguredSettings {
+    self.enableTypeDetection = [self configurationBoolForKey:apptentiveEnableTypeDetectionKey defaultValue:YES];
+}
+
 #pragma mark - MPKitInstanceProtocol methods
 
 #pragma mark Kit instance and lifecycle
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
-    NSString *appKey = configuration[apptentiveAppKeyKey];
-    NSString *appSignature = configuration[apptentiveAppSignatureKey];
+    // Server configuration is parsed JSON, so a credential that is not a string is treated as missing.
+    NSString *appKey = [configuration[apptentiveAppKeyKey] isKindOfClass:[NSString class]] ? configuration[apptentiveAppKeyKey] : nil;
+    NSString *appSignature = [configuration[apptentiveAppSignatureKey] isKindOfClass:[NSString class]] ? configuration[apptentiveAppSignatureKey] : nil;
 
     if (appKey == nil || appSignature == nil) {
         if (appKey == nil) {
@@ -82,9 +117,8 @@ static NSString * _apptentiveSignature = nil;
         return [self execStatus:MPKitReturnCodeRequirementsNotMet];
     }
     
-    self.enableTypeDetection = [configuration objectForKey:apptentiveEnableTypeDetectionKey] != nil ? [configuration[apptentiveEnableTypeDetectionKey] boolValue] : YES;
-
     _configuration = configuration;
+    [self updateConfiguredSettings];
 
     [self start];
 
@@ -92,15 +126,22 @@ static NSString * _apptentiveSignature = nil;
 }
 
 - (void)start {
+    // The core also calls -start after a launch that reported RequirementsNotMet. Registration runs
+    // once per process, so it must not be spent before there are credentials to register with.
+    if ([self configurationStringForKey:apptentiveAppKeyKey].length == 0 ||
+        [self configurationStringForKey:apptentiveAppSignatureKey].length == 0) {
+        NSLog(@"mParticle -> Not starting Apptentive: the configuration has no app key or signature");
+        return;
+    }
+
     static dispatch_once_t kitPredicate;
 
     dispatch_once(&kitPredicate, ^{
-        _apptentiveKey = self.configuration[apptentiveAppKeyKey];
-        _apptentiveSignature = self.configuration[apptentiveAppSignatureKey];
+        _apptentiveKey = [self configurationStringForKey:apptentiveAppKeyKey];
+        _apptentiveSignature = [self configurationStringForKey:apptentiveAppSignatureKey];
 
         // do we need to init the SDK while the Kit starts
-        BOOL initOnStart = self.configuration[apptentiveInitOnStart] == nil ||   // if flag is missing
-        [self.configuration[apptentiveInitOnStart] boolValue]; // or set to 'YES'
+        BOOL initOnStart = [self configurationBoolForKey:apptentiveInitOnStart defaultValue:YES];
 
         if (initOnStart) {
             [[self class] registerSDK];
