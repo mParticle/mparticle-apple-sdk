@@ -22,6 +22,28 @@ public protocol MPBackendHost: NSObjectProtocol {
     /// Runs the app's batch-creation callback, if it set one; otherwise returns `batch`.
     @objc(transformBatch:) func transformBatch(_ batch: NSDictionary) -> Any?
     @objc(sdkVersion) func sdkVersion() -> String
+    @objc(mpId) func mpId() -> NSNumber
+    @objc(automaticSessionTracking) func automaticSessionTracking() -> Bool
+    /// Pins a session start to the current SDK instance; `isCurrentBackend` is true while that
+    /// instance still uses `backend`.
+    @objc(sessionStartContextForBackend:) func sessionStartContext(forBackend backend: AnyObject?)
+        -> MPBackendSessionStartContext
+    @objc(messageQueue) func messageQueue() -> DispatchQueue
+    /// Runs `block` now when already on the message queue, otherwise asynchronously on it.
+    @objc(executeOnMessage:) func executeOnMessage(_ block: @escaping () -> Void)
+    @objc(executeOnMain:) func executeOnMain(_ block: @escaping () -> Void)
+    @objc(persistenceMaxAge) func persistenceMaxAge() -> NSNumber?
+    @objc(clearExpiredIdentityCache) func clearExpiredIdentityCache()
+    @objc(userDefaults) func userDefaults() -> MPUserDefaults
+    // These two are read through Objective-C, so a test's stub on the state machine applies.
+    @objc(optOut) func optOut() -> Bool
+    @objc(crashMaxPLReportLength) func crashMaxPLReportLength() -> NSNumber?
+    @objc(nullUserAttributeValue) func nullUserAttributeValue() -> String
+    @objc(shouldDelayUploadForKits) func shouldDelayUploadForKits() -> Bool
+    @objc(shouldDelayUploadForWebView) func shouldDelayUploadForWebView() -> Bool
+    @objc(currentUploadSettings) func currentUploadSettings() -> NSObject
+    @objc(uploadBatchLimits) func uploadBatchLimits() -> MPUploadBatchLimits
+    @objc(isDevelopmentEnvironment) func isDevelopmentEnvironment() -> Bool
 }
 
 public extension MPMessageBuilderContext {

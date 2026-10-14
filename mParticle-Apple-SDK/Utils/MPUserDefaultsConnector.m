@@ -23,9 +23,17 @@
 @property (nonatomic, strong) MParticleOptions *options;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
++ (dispatch_queue_t)messageQueue;
++ (void)executeOnMessage:(void(^)(void))block;
++ (void)executeOnMain:(void(^)(void))block;
 - (MPLog *)getLogger;
 
 @end
+
+// How long an upload waits for kits, and for the web view's user agent, before going ahead.
+static const NSTimeInterval kMPMaximumKitWaitTimeSeconds = 5.0;
+static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 // Re-declared from the deleted MPStateMachine.m: -setIdentity:identityType: is private to
 // MParticleUser and only reachable through a class extension.
@@ -182,6 +190,82 @@
 
 - (NSString *)sdkVersion {
     return kMParticleSDKVersion;
+}
+
+- (BOOL)automaticSessionTracking {
+    return MParticle.sharedInstance.automaticSessionTracking;
+}
+
+- (MPBackendSessionStartContext *)sessionStartContextForBackend:(id)backend {
+    MParticle *mparticle = MParticle.sharedInstance;
+    __weak id weakBackend = backend;
+    return [[MPBackendSessionStartContext alloc]
+        initWithAutomaticSessionTracking:^{ return mparticle.automaticSessionTracking; }
+        stateMachine:^{ return mparticle.stateMachine; }
+        isCurrentBackend:^{ return (BOOL)(mparticle.backendController == weakBackend); }];
+}
+
+- (dispatch_queue_t)messageQueue {
+    return [MParticle messageQueue];
+}
+
+- (void)executeOnMessage:(dispatch_block_t)block {
+    [MParticle executeOnMessage:block];
+}
+
+- (void)executeOnMain:(dispatch_block_t)block {
+    [MParticle executeOnMain:block];
+}
+
+- (NSNumber *)persistenceMaxAge {
+    return MParticle.sharedInstance.persistenceMaxAgeSeconds;
+}
+
+- (void)clearExpiredIdentityCache {
+    MPIdentityCaching *cache = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                                         logger:[MParticle.sharedInstance getLogger]];
+    [cache clearExpiredCache];
+}
+
+- (MPUserDefaults *)userDefaults {
+    return MPUserDefaultsConnector.userDefaults;
+}
+
+- (BOOL)optOut {
+    return MParticle.sharedInstance.stateMachine.optOut;
+}
+
+- (NSNumber *)crashMaxPLReportLength {
+    return MParticle.sharedInstance.stateMachine.crashMaxPLReportLength;
+}
+
+- (NSString *)nullUserAttributeValue {
+    return kMPNullUserAttributeString;
+}
+
+- (BOOL)shouldDelayUploadForKits {
+    return [MParticle.sharedInstance.kitContainer_PRIVATE shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+}
+
+- (BOOL)shouldDelayUploadForWebView {
+    return [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
+}
+
+- (NSObject *)currentUploadSettings {
+    return [MPUploadSettings currentUploadSettingsWithStateMachine:MParticle.sharedInstance.stateMachine
+                                                   networkOptions:MParticle.sharedInstance.networkOptions];
+}
+
+- (MPUploadBatchLimits *)uploadBatchLimits {
+    return [[MPUploadBatchLimits alloc] initWithMaxMessages:MAX_EVENTS_PER_BATCH
+                                              maxBatchBytes:MAX_BYTES_PER_BATCH
+                                            maxMessageBytes:MAX_BYTES_PER_EVENT
+                                            crashBatchBytes:MAX_BYTES_PER_BATCH_CRASH
+                                          crashMessageBytes:MAX_BYTES_PER_EVENT_CRASH];
+}
+
+- (BOOL)isDevelopmentEnvironment {
+    return [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment;
 }
 
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an
