@@ -41,7 +41,6 @@ extern const NSInteger kNilAttributeValue;
 extern const NSInteger kExceededAttributeValueMaximumLength;
 extern const NSInteger kExceededAttributeKeyMaximumLength;
 extern const NSInteger kInvalidDataType;
-extern const NSTimeInterval kMPMaximumKitWaitTimeSeconds;
 extern const NSInteger kInvalidKey;
 
 @protocol MPBackendControllerProtocol

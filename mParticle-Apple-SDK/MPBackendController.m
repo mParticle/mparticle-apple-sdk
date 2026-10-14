@@ -26,8 +26,6 @@ const NSInteger kExceededAttributeValueMaximumLength = 104;
 const NSInteger kExceededAttributeKeyMaximumLength = 105;
 const NSInteger kInvalidDataType = 106;
 const NSInteger kInvalidKey = 107;
-const NSTimeInterval kMPMaximumKitWaitTimeSeconds = 5.0;
-const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
  
 // The Swift backend workflows report MPExecStatusSwift and the forwarders below cast it straight
@@ -67,38 +65,34 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
 + (void)executeOnMain:(void(^)(void))block;
-- (MPLog *)getLogger;
 - (void)initializePersistence;
 
 @end
 
-@interface MPBackendController_PRIVATE() {
+@interface MPBackendController_PRIVATE() <MPBackendAssemblyOwner> {
     MParticleSession *tempSession;
 }
-@property NSTimeInterval nextCleanUpTime;
-@property NSTimeInterval timeAppWentToBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 @property NSTimeInterval timeOfLastEventInBackground;
 @property NSNotification *didFinishLaunchingNotification;
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSOperationQueue *backgroundCheckQueue;
-@property NSNumber *previousForegroundTime;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
-@property (nonatomic, strong) MPBackendUploadCoordinator *uploadCoordinator;
 @property (nonatomic, strong, readonly, nonnull) MPBackendSessionState *sessionState;
-@property (nonatomic, strong, nonnull) MPBackendSessionDependencies *sessionDependencies;
-@property (nonatomic, strong) MPBackendMessageWriter *messageWriter;
-@property (nonatomic, strong) MPBackendErrorReporter *errorReporter;
-@property (nonatomic, strong) MPBackendUserAttributeWriter *userAttributeWriter;
-@property (nonatomic, strong) MPBackendSessionCoordinator *sessionCoordinator;
-@property (nonatomic, strong) MPBackendLifecycleCoordinator *lifecycleCoordinator;
-@property (nonatomic, strong, nonnull) MPBackendSessionLifecycleDependencies *sessionLifecycleDependencies;
+@property (nonatomic, strong, readonly, nonnull) MPBackendAssembly *assembly;
+@property (nonatomic, readonly, nonnull) MPBackendSessionDependencies *sessionDependencies;
+@property (nonatomic, readonly, nonnull) MPBackendMessageWriter *messageWriter;
+@property (nonatomic, readonly, nonnull) MPBackendErrorReporter *errorReporter;
+@property (nonatomic, readonly, nonnull) MPBackendUserAttributeWriter *userAttributeWriter;
+@property (nonatomic, readonly, nonnull) MPBackendSessionCoordinator *sessionCoordinator;
+@property (nonatomic, readonly, nonnull) MPBackendLifecycleCoordinator *lifecycleCoordinator;
+@property (nonatomic, readonly, nonnull) MPBackendSessionLifecycleDependencies *sessionLifecycleDependencies;
+@property (nonatomic, readonly, nonnull) MPBackendUploadCoordinator *uploadCoordinator;
 - (MPUploadBuilderContext *)uploadBuilderContext;
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
@@ -116,6 +110,12 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     self = [super init];
     if (self) {
         _sessionState = [[MPBackendSessionState alloc] init];
+        _assembly = [[MPBackendAssembly alloc] initWithState:_sessionState
+                                                        host:MPBackendHostInstance()
+                                                       owner:self
+                                           validateAttribute:^MPAttributeValidationResult(NSString *key, id value) {
+            return [MPBackendController_PRIVATE validateAndLogAttributeKey:key value:value];
+        }];
     }
     return self;
 }
@@ -206,154 +206,38 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     self.sessionState.timeOfLastEventInBackground = timestamp;
 }
 
-// This monitor protects graph construction only. Constructors store dependencies without
-// running callbacks or acquiring the session lock; callers invoke workflows after the getter returns.
-- (MPBackendSessionDependencies * _Nonnull)sessionDependencies {
-    @synchronized (self) {
-        if (!_sessionDependencies) {
-            __weak MPBackendController_PRIVATE *weakSelf = self;
-            _sessionDependencies = [[MPBackendSessionDependencies alloc]
-                initWithPersistence:^{ return weakSelf.persistence; }
-                stateMachine:^{ return MParticle.sharedInstance.stateMachine; }
-                makeMessageContext:^{
-                    return [weakSelf messageBuilderContext] ?: [[MPMessageBuilderContext alloc]
-                        initWithDataPlanId:nil dataPlanVersion:nil logger:nil];
-                }
-                runningInBackground:^{ return MPStateMachine_PRIVATE.runningInBackground; }
-                enqueueOnMessage:^(dispatch_block_t block) {
-                    MPBackendController_PRIVATE *backend = weakSelf;
-                    dispatch_async([MParticle messageQueue], ^{ if (backend) { block(); } });
-                }
-                upload:^(dispatch_block_t completion) { [weakSelf waitForKitsAndUploadWithCompletionHandler:completion]; }
-                logger:^{ return [MParticle.sharedInstance getLogger]; }];
-        }
-        return _sessionDependencies;
-    }
+#pragma mark Collaborators
+
+- (MPBackendSessionDependencies *)sessionDependencies {
+    return self.assembly.sessionDependencies;
 }
 
 - (MPBackendMessageWriter *)messageWriter {
-    @synchronized (self) {
-        if (!_messageWriter) {
-            _messageWriter = [[MPBackendMessageWriter alloc] initWithState:self.sessionState dependencies:self.sessionDependencies];
-        }
-        return _messageWriter;
-    }
-}
-
-- (MPBackendUserAttributeWriter *)userAttributeWriter {
-    @synchronized (self) {
-        if (!_userAttributeWriter) {
-            MPBackendUserAttributeDependencies *attributes = [[MPBackendUserAttributeDependencies alloc]
-                initWithUserDefaults:^MPUserDefaults * { return MPUserDefaultsConnector.userDefaults; }
-                currentUserId:^NSNumber * { return [MPPersistenceUtilities mpId]; }
-                optOut:^BOOL { return MParticle.sharedInstance.stateMachine.optOut; }
-                nullSentinel:kMPNullUserAttributeString
-                validateAndLogAttribute:^MPAttributeValidationResult(NSString *key, id value) {
-                    return [MPBackendController_PRIVATE validateAndLogAttributeKey:key value:value];
-                }];
-            _userAttributeWriter = [[MPBackendUserAttributeWriter alloc] initWithState:self.sessionState
-                                                                         dependencies:self.sessionDependencies
-                                                                               writer:self.messageWriter
-                                                                           attributes:attributes];
-        }
-        return _userAttributeWriter;
-    }
+    return self.assembly.messageWriter;
 }
 
 - (MPBackendErrorReporter *)errorReporter {
-    @synchronized (self) {
-        if (!_errorReporter) {
-            MPBackendErrorDependencies *errors = [[MPBackendErrorDependencies alloc]
-                initWithMaxBytesPerEvent:^NSInteger(NSString *messageType) {
-                    return [MPPersistenceUtilities maxBytesPerEvent:messageType];
-                }
-                crashMaxPLReportLength:^NSNumber * {
-                    return MParticle.sharedInstance.stateMachine.crashMaxPLReportLength;
-                }];
-            _errorReporter = [[MPBackendErrorReporter alloc] initWithState:self.sessionState
-                                                             dependencies:self.sessionDependencies
-                                                                   writer:self.messageWriter
-                                                                   errors:errors];
-        }
-        return _errorReporter;
-    }
+    return self.assembly.errorReporter;
 }
 
-- (MPBackendSessionLifecycleDependencies * _Nonnull)sessionLifecycleDependencies {
-    @synchronized (self) {
-        if (!_sessionLifecycleDependencies) {
-            __weak MPBackendController_PRIVATE *weakSelf = self;
-            id<MPBackendHost> host = MPBackendHostInstance();
-            _sessionLifecycleDependencies = [[MPBackendSessionLifecycleDependencies alloc]
-                initWithAutomaticSessionTracking:^{ return MParticle.sharedInstance.automaticSessionTracking; }
-                sessionStartContext:^{
-                    MParticle *mparticle = MParticle.sharedInstance;
-                    return [[MPBackendSessionStartContext alloc]
-                        initWithAutomaticSessionTracking:^{ return mparticle.automaticSessionTracking; }
-                        stateMachine:^{ return mparticle.stateMachine; }
-                        isCurrentBackend:^{ return (BOOL)(mparticle.backendController == weakSelf); }];
-                }
-                currentUserID:^{ return [MPPersistenceUtilities mpId]; }
-                applicationInfo:^{
-                    return [host applicationInfoWithStateMachine:MParticle.sharedInstance.stateMachine];
-                }
-                deviceInfo:^NSDictionary *(NSNumber *mpid) { return [host deviceInfoForMpid:mpid]; }
-                executeOnMessage:^(dispatch_block_t block) {
-                    MPBackendController_PRIVATE *backend = weakSelf;
-                    [MParticle executeOnMessage:^{ if (backend) { block(); } }];
-                }
-                schedule:^(NSTimeInterval delay, dispatch_block_t block) {
-                    MPBackendController_PRIVATE *backend = weakSelf;
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)),
-                                   [MParticle messageQueue], ^{ if (backend) { block(); } });
-                }
-                createPendingSession:^(NSString *uuid) {
-                    MPBackendController_PRIVATE *backend = weakSelf;
-                    if (backend) { backend->tempSession = [[MParticleSession alloc] initWithUUID:uuid]; }
-                }
-                setPendingSessionStartTime:^(double timestamp) {
-                    MPBackendController_PRIVATE *backend = weakSelf;
-                    if (backend) { backend->tempSession.startTime = @(timestamp); }
-                }
-                clearPendingSession:^{
-                    MPBackendController_PRIVATE *backend = weakSelf;
-                    if (backend) { backend->tempSession = nil; }
-                }
-                broadcastBegin:^(MPSession *session) { [weakSelf broadcastSessionDidBegin:session]; }
-                broadcastEnd:^(MPSession *session) { [weakSelf broadcastSessionDidEnd:session]; }
-                clearEmptyTimedEvents:^{
-                    MPBackendController_PRIVATE *backend = weakSelf;
-                    if (backend.eventSet.count == 0) { backend.eventSet = nil; }
-                }];
-        }
-        return _sessionLifecycleDependencies;
-    }
+- (MPBackendUserAttributeWriter *)userAttributeWriter {
+    return self.assembly.userAttributeWriter;
 }
 
 - (MPBackendSessionCoordinator *)sessionCoordinator {
-    @synchronized (self) {
-        if (!_sessionCoordinator) {
-            _sessionCoordinator = [[MPBackendSessionCoordinator alloc] initWithState:self.sessionState
-                dependencies:self.sessionDependencies lifecycle:self.sessionLifecycleDependencies writer:self.messageWriter];
-        }
-        return _sessionCoordinator;
-    }
+    return self.assembly.sessionCoordinator;
 }
 
-- (NSTimeInterval)nextCleanUpTime {
-    return self.sessionState.nextCleanUpTime;
+- (MPBackendLifecycleCoordinator *)lifecycleCoordinator {
+    return self.assembly.lifecycleCoordinator;
 }
 
-- (void)setNextCleanUpTime:(NSTimeInterval)value {
-    self.sessionState.nextCleanUpTime = value;
+- (MPBackendSessionLifecycleDependencies *)sessionLifecycleDependencies {
+    return self.assembly.sessionLifecycleDependencies;
 }
 
-- (NSTimeInterval)timeAppWentToBackground {
-    return self.sessionState.timeAppWentToBackground;
-}
-
-- (void)setTimeAppWentToBackground:(NSTimeInterval)value {
-    self.sessionState.timeAppWentToBackground = value;
+- (MPBackendUploadCoordinator *)uploadCoordinator {
+    return self.assembly.uploadCoordinator;
 }
 
 - (NSTimeInterval)timeAppWentToBackgroundInCurrentSession {
@@ -362,54 +246,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 - (void)setTimeAppWentToBackgroundInCurrentSession:(NSTimeInterval)value {
     self.sessionState.timeAppWentToBackgroundInCurrentSession = value;
-}
-
-- (NSNumber *)previousForegroundTime {
-    return self.sessionState.previousForegroundTime;
-}
-
-- (void)setPreviousForegroundTime:(NSNumber *)value {
-    self.sessionState.previousForegroundTime = value;
-}
-
-- (MPBackendLifecycleCoordinator *)lifecycleCoordinator {
-    @synchronized (self) {
-        if (!_lifecycleCoordinator) {
-            __weak MPBackendController_PRIVATE *weakSelf = self;
-            MPBackendLifecycleDependencies *dependencies = [[MPBackendLifecycleDependencies alloc]
-                initWithPersistenceMaxAge:^{ return MParticle.sharedInstance.persistenceMaxAgeSeconds; }
-                setRunningInBackground:^(BOOL background) { [MPStateMachine_PRIVATE setRunningInBackground:background]; }
-                clearIdentityCache:^{
-                    MPIdentityCaching *cache = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
-                        logger:[MParticle.sharedInstance getLogger]];
-                    [cache clearExpiredCache];
-                }
-                requestConfig:^{ [weakSelf requestConfig:nil]; }];
-            MPBackendLifecycleSchedulingDependencies *scheduling = [[MPBackendLifecycleSchedulingDependencies alloc]
-                initWithMessageQueue:^{ return [MParticle messageQueue]; }
-                executeOnMain:^(dispatch_block_t block) { [MParticle executeOnMain:block]; }
-                executeOnMainSync:^(dispatch_block_t block) { dispatch_sync(dispatch_get_main_queue(), block); }
-                makeApplication:^{
-                    UIApplication *application = [MPApplication_PRIVATE sharedUIApplication];
-                    return [[MPBackendBackgroundApplication alloc]
-                        initWithApplicationState:^{ return (NSInteger)[MPApplication_PRIVATE sharedUIApplication].applicationState; }
-                        timeRemaining:^{ return application.backgroundTimeRemaining; }];
-                }
-                beginBackgroundTask:^NSUInteger(dispatch_block_t expiration) {
-                    return [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:expiration];
-                }
-                endBackgroundTask:^(NSUInteger identifier) {
-                    [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:identifier];
-                }
-                isAppExtension:^{ return [MPStateMachine_PRIVATE isAppExtension]; }
-                isDevelopment:^BOOL { return [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment; }
-                invalidBackgroundTask:UIBackgroundTaskInvalid];
-            _lifecycleCoordinator = [[MPBackendLifecycleCoordinator alloc] initWithState:self.sessionState
-                dependencies:self.sessionDependencies sessionDependencies:self.sessionLifecycleDependencies
-                lifecycle:dependencies sessions:self.sessionCoordinator writer:self.messageWriter scheduling:scheduling];
-        }
-        return _lifecycleCoordinator;
-    }
 }
 
 - (NSMutableSet<MPEvent *> *)eventSet {
@@ -458,58 +294,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return [[MPMessageBuilderContext alloc] initWithHost:MPBackendHostInstance()];
 }
 
-- (MPBackendUploadCoordinator *)uploadCoordinator {
-    if (!_uploadCoordinator) {
-        __weak MPBackendController_PRIVATE *weakSelf = self;
-        MPUploadBatchLimits *limits = [[MPUploadBatchLimits alloc]
-            initWithMaxMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH
-            maxMessageBytes:MAX_BYTES_PER_EVENT crashBatchBytes:MAX_BYTES_PER_BATCH_CRASH
-            crashMessageBytes:MAX_BYTES_PER_EVENT_CRASH];
-        _uploadCoordinator = [[MPBackendUploadCoordinator alloc]
-            initWithPersistence:^{ return weakSelf.persistence; }
-            stateMachine:^{ return MParticle.sharedInstance.stateMachine; }
-            makeContext:^{ return [weakSelf uploadBuilderContext]; }
-            makeBuilder:^MPUploadBuilder *(MPUploadMessageGroup *group, NSArray<MPMessage *> *messages, NSObject *settings, MPUploadBuilderContext *context) {
-                MPBackendController_PRIVATE *backend = weakSelf;
-                if (!backend) { return nil; }
-                MPUploadBuilder *builder = [[MPUploadBuilder alloc]
-                    initWithMpid:group.mpid sessionId:group.sessionId messages:messages
-                    sessionTimeout:backend.sessionTimeout uploadInterval:backend.uploadInterval
-                    dataPlanId:group.dataPlanId dataPlanVersion:group.dataPlanVersion
-                    uploadSettings:settings context:context];
-                [builder withUserAttributes:[backend userAttributesForUserId:group.mpid]
-                      deletedUserAttributes:backend.userAttributeWriter.deletedUserAttributes];
-                [builder withUserIdentities:[backend userIdentitiesForUserId:group.mpid]];
-                return builder;
-            }
-            clearDeletedAttributes:^{ [weakSelf.userAttributeWriter clearDeletedUserAttributes]; }
-            limits:limits
-            dependencies:[self uploadDependencies]
-            currentSettings:^{
-                return [MPUploadSettings currentUploadSettingsWithStateMachine:MParticle.sharedInstance.stateMachine
-                                                               networkOptions:MParticle.sharedInstance.networkOptions];
-            }];
-    }
-    return _uploadCoordinator;
-}
-
-- (MPBackendUploadDependencies *)uploadDependencies {
-    __weak MPBackendController_PRIVATE *weakSelf = self;
-    return [[MPBackendUploadDependencies alloc]
-        initWithNetwork:^{ return (id<MPBackendUploadNetworking>)weakSelf.networkCommunication; }
-        shouldDelayForKits:^{
-            return [MParticle.sharedInstance.kitContainer_PRIVATE shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
-        }
-        shouldDelayForWebView:^{
-            return [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
-        }
-        schedule:^(NSTimeInterval delay, dispatch_block_t block) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)),
-                           [MParticle messageQueue], block);
-        }
-        logger:^{ return [MParticle.sharedInstance getLogger]; }];
-}
-
 - (MPUploadBuilderContext *)uploadBuilderContext {
     return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{ return self.persistence; }];
 }
@@ -518,8 +302,36 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return [[MPUploadBuilderContext alloc] initWithHost:MPBackendHostInstance() persistence:persistence];
 }
 
-- (void)confirmEndSessionMessage:(MPSession *)session {
-    [self.messageWriter confirmEndSessionMessage:session];
+#pragma mark MPBackendAssemblyOwner
+
+- (void)uploadFromBackendWithCompletionHandler:(dispatch_block_t)completionHandler {
+    [self waitForKitsAndUploadWithCompletionHandler:completionHandler];
+}
+
+- (void)requestConfigFromBackend {
+    [self requestConfig:nil];
+}
+
+- (id<MPBackendUploadNetworking>)uploadNetworking {
+    return (id<MPBackendUploadNetworking>)self.networkCommunication;
+}
+
+- (void)createPendingSessionWithUUID:(NSString *)uuid {
+    tempSession = [[MParticleSession alloc] initWithUUID:uuid];
+}
+
+- (void)setPendingSessionStartTime:(double)timestamp {
+    tempSession.startTime = @(timestamp);
+}
+
+- (void)clearPendingSession {
+    tempSession = nil;
+}
+
+- (void)clearEmptyTimedEvents {
+    if (self.eventSet.count == 0) {
+        self.eventSet = nil;
+    }
 }
 
 - (void)broadcastSessionDidBegin:(MPSession *)session {
@@ -692,7 +504,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 
 - (void)endUploadTimer {
-    [_lifecycleCoordinator endUploadTimer];
+    [self.assembly.lifecycleCoordinator endUploadTimer];
 }
 
 #pragma mark Public accessors
@@ -1419,14 +1231,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 
 #pragma mark Session Handling
-
-- (void)updateSessionBackgroundTime {
-    [self.lifecycleCoordinator updateSessionBackgroundTime];
-}
-
-- (BOOL)shouldEndSession {
-    return [self.lifecycleCoordinator shouldEndSession];
-}
 
 - (void)endSessionIfTimedOut {
     [self.lifecycleCoordinator endSessionIfTimedOut];
