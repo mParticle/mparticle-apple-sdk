@@ -504,11 +504,14 @@ public final class MPStateMachinePRIVATE: NSObject,
     }
 
     @objc public func configureAliasMaxWindow(_ aliasMaxWindow: Any?) {
-        if MPSwiftIsNull(aliasMaxWindow) {
+        // Days before now that an alias request may start. A window that is not positive is treated
+        // as missing. A longer one is capped at 100 years, which already reaches past any date the SDK
+        // records, because a far larger one produces a start time the request cannot carry.
+        guard let days = (aliasMaxWindow as? NSNumber)?.doubleValue, days > 0 else {
             self.aliasMaxWindow = 90
             return
         }
-        self.aliasMaxWindow = aliasMaxWindow as? NSNumber
+        self.aliasMaxWindow = NSNumber(value: min(days, 36500))
     }
 
     /// Builds the custom modules for a configuration response. The connector is both the source of
