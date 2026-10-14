@@ -209,6 +209,22 @@ static atomic_bool gLaunchConsentReturned;
 }
 @end
 
+@interface MPRaisingStartedTestKit : MPKitTestClass
+@end
+@implementation MPRaisingStartedTestKit
++ (NSNumber *)kitCode {
+    return @123461;
+}
+- (BOOL)started {
+    [NSException raise:NSInternalInconsistencyException format:@"unexpected started"];
+    return NO;
+}
+@end
+
+// Set by an onKitsInitialized: block that queries the kits while kit configuration finishes.
+static atomic_bool gKitsInitializedBlockEntered;
+static atomic_bool gKitsInitializedBlockReturned;
+
 #pragma mark - MPKitContainerTests
 @interface MPKitContainerTests : MPBaseTestCase {
     MPKitContainer_PRIVATE *kitContainer;
@@ -4627,6 +4643,71 @@ static atomic_bool gLaunchConsentReturned;
     if (acquired) {
         dispatch_semaphore_signal(kitsSemaphore);
     }
+}
+
+- (void)testKitRaisingFromStartedDoesNotLeaveKitsSemaphoreHeld {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"RaisingStarted" className:@"MPRaisingStartedTestKit"];
+    self.consentTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+    id adapter = kitContainer.executionAdapter;
+    dispatch_semaphore_t kitsSemaphore = (dispatch_semaphore_t)object_getIvar(adapter, class_getInstanceVariable([adapter class], "kitsSemaphore"));
+    XCTAssertNotNil(kitsSemaphore);
+
+    // The first pass reads started after launching the kit, the second while listing the active kits.
+    NSArray *configurations = @[@{@"id": @123461, @"as": @{@"key": @"value"}}];
+    for (NSUInteger pass = 0; pass < 2; pass++) {
+        XCTAssertNoThrow([kitContainer configureKits:configurations]);
+        BOOL acquired = dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW) == 0;
+        XCTAssertTrue(acquired, @"kitsSemaphore left held after a kit raised from started (pass %lu)", (unsigned long)pass);
+        // Release a leaked hold too, so work this container queued cannot block later tests.
+        dispatch_semaphore_signal(kitsSemaphore);
+        if (!acquired) {
+            break;
+        }
+    }
+    [self drainConsentReplayQueue];
+}
+
+- (void)testKitsInitializedBlockQueryingKitsFromServerConfigDoesNotBlockMainThread {
+    [self registerConsentReplayTestKit];
+    atomic_store(&gKitsInitializedBlockEntered, false);
+    atomic_store(&gKitsInitializedBlockReturned, false);
+    id adapter = kitContainer.executionAdapter;
+    dispatch_semaphore_t kitsSemaphore = (dispatch_semaphore_t)object_getIvar(adapter, class_getInstanceVariable([adapter class], "kitsSemaphore"));
+    XCTAssertNotNil(kitsSemaphore);
+
+    // With nothing cached (a fresh install) the block waits for the first server configuration.
+    kitContainer.kitsInitialized = NO;
+    [[MParticle sharedInstance] onKitsInitialized:^{
+        atomic_store(&gKitsInitializedBlockEntered, true);
+        (void)[[MParticle sharedInstance] isKitActive:@123456];
+        atomic_store(&gKitsInitializedBlockReturned, true);
+    }];
+
+    // On a regression the main thread never returns from configureKits:, so a watchdog releases
+    // kitsSemaphore once to turn the hang into a failure.
+    __block BOOL released = NO;
+    dispatch_semaphore_t configureReturned = dispatch_semaphore_create(0);
+    dispatch_semaphore_t watchdogFinished = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (dispatch_semaphore_wait(configureReturned, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)) != 0 &&
+            atomic_load(&gKitsInitializedBlockEntered) && !atomic_load(&gKitsInitializedBlockReturned)) {
+            released = YES;
+            dispatch_semaphore_signal(kitsSemaphore);
+        }
+        dispatch_semaphore_signal(watchdogFinished);
+    });
+
+    [kitContainer configureKits:@[@{@"id": @123456, @"as": @{@"test": @YES}}]];
+    dispatch_semaphore_signal(configureReturned);
+    dispatch_semaphore_wait(watchdogFinished, DISPATCH_TIME_FOREVER);
+    if (released) {
+        dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW);
+    }
+    [self drainConsentReplayQueue];
+
+    XCTAssertTrue(atomic_load(&gKitsInitializedBlockEntered));
+    XCTAssertFalse(released, @"An onKitsInitialized: block blocked on kitsSemaphore held by configureKits:");
 }
 
 @end

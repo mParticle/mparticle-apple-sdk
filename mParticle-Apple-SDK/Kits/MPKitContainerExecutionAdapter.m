@@ -278,6 +278,18 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 
 static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
+// started is read while kitsSemaphore is held, so a kit that raises from it must not unwind past the
+// signal. A kit that cannot answer is treated as not started.
+static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
+    BOOL started = NO;
+    @try {
+        started = [kit started];
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception thrown while checking whether kit (%@) started: %@", kit, exception);
+    }
+    return started;
+}
+
 @interface MPKitContainerExecutionAdapter () {
     dispatch_semaphore_t kitsSemaphore;
     // brackets is guarded by its own semaphore rather than kitsSemaphore, because
@@ -1546,7 +1558,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 
 - (BOOL)isActiveAndNotDisabled:(id<MPExtensionKitProtocol>)kitRegister {
-    BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
+    BOOL active = MPKitIsStarted(kitRegister.wrapperInstance);
     MPBracket *bracket = [self bracketForKit:kitRegister.code];
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     MPKitConfiguration *configuration = self.kitConfigurations[kitRegister.code];
@@ -1699,7 +1711,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             }
             
             if (kitInstance) {
-                if (![kitInstance started] && !disabled) {
+                if (!MPKitIsStarted(kitInstance) && !disabled) {
                     if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
                         @try {
                             [kitInstance setLaunchOptions:stateMachine.launchOptions];
@@ -1784,9 +1796,11 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     }
     
     MPILogDebug(@"configureKits complete - marking kitsInitialized = YES, configured %lu kit(s)", (unsigned long)self.kitConfigurations.count);
-    self.kitsInitialized = YES;
-    
     dispatch_semaphore_signal(kitsSemaphore);
+
+    // Setting the flag runs the app's onKitsInitialized: blocks, which may call kitInstance: or
+    // isKitActive: and so wait on kitsSemaphore.
+    self.kitsInitialized = YES;
 }
 
 - (nullable NSArray<NSNumber *> *)supportedKits {
