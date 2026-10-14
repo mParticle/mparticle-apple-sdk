@@ -6,7 +6,6 @@
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPConsentSerialization.h"
 #import "MPILogger.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
@@ -48,6 +47,11 @@ _Static_assert((NSInteger)MPExecStatusSwiftServerBusy == (NSInteger)MPExecStatus
 _Static_assert((NSInteger)MPExecStatusSwiftItemNotFound == (NSInteger)MPExecStatusItemNotFound, "MPExecStatusSwift drifted from MPExecStatus");
 _Static_assert((NSInteger)MPExecStatusSwiftDisabledInSettings == (NSInteger)MPExecStatusDisabledInSettings, "MPExecStatusSwift drifted from MPExecStatus");
 _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecStatusNoConnectivity, "MPExecStatusSwift drifted from MPExecStatus");
+
+// MPUserDefaultsConnector holds no state and reads MParticle.sharedInstance on every call.
+static id<MPBackendHost> MPBackendHostInstance(void) {
+    return (id<MPBackendHost>)[[MPUserDefaultsConnector alloc] init];
+}
 
 @interface MParticleSession ()
 
@@ -279,6 +283,7 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
     @synchronized (self) {
         if (!_sessionLifecycleDependencies) {
             __weak MPBackendController_PRIVATE *weakSelf = self;
+            id<MPBackendHost> host = MPBackendHostInstance();
             _sessionLifecycleDependencies = [[MPBackendSessionLifecycleDependencies alloc]
                 initWithAutomaticSessionTracking:^{ return MParticle.sharedInstance.automaticSessionTracking; }
                 sessionStartContext:^{
@@ -290,21 +295,9 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
                 }
                 currentUserID:^{ return [MPPersistenceUtilities mpId]; }
                 applicationInfo:^{
-                    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
-                        initWithStateMachine:(id<MPApplicationStateMachineProtocol>)MParticle.sharedInstance.stateMachine
-                        userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
-                        environment:[MPStateMachine_PRIVATE environment]
-                        deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
-                    return [application dictionaryRepresentation];
+                    return [host applicationInfoWithStateMachine:MParticle.sharedInstance.stateMachine];
                 }
-                deviceInfo:^NSDictionary *(NSNumber *mpid) {
-                    MParticle *mparticle = MParticle.sharedInstance;
-                    MPDevice *device = [[MPDevice alloc]
-                        initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
-                        userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
-                        identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity logger:[mparticle getLogger]];
-                    return [device dictionaryRepresentationWithMpid:mpid];
-                }
+                deviceInfo:^NSDictionary *(NSNumber *mpid) { return [host deviceInfoForMpid:mpid]; }
                 executeOnMessage:^(dispatch_block_t block) {
                     MPBackendController_PRIVATE *backend = weakSelf;
                     [MParticle executeOnMessage:^{ if (backend) { block(); } }];
@@ -462,10 +455,7 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
 #pragma mark Private methods
 
 - (MPMessageBuilderContext *)messageBuilderContext {
-    MParticle *mparticle = [MParticle sharedInstance];
-    return [[MPMessageBuilderContext alloc] initWithDataPlanId:mparticle.dataPlanId
-                                               dataPlanVersion:mparticle.dataPlanVersion
-                                                        logger:[mparticle getLogger]];
+    return [[MPMessageBuilderContext alloc] initWithHost:MPBackendHostInstance()];
 }
 
 - (MPBackendUploadCoordinator *)uploadCoordinator {
@@ -520,50 +510,12 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
         logger:^{ return [MParticle.sharedInstance getLogger]; }];
 }
 
-// The upload builder cannot import the public Objective-C SDK. Keep identity, consent,
-// build macros and customer callbacks at this composition boundary, with live providers.
 - (MPUploadBuilderContext *)uploadBuilderContext {
     return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{ return self.persistence; }];
 }
 
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence {
-    return [[MPUploadBuilderContext alloc]
-        initWithStateMachine:^{ return MParticle.sharedInstance.stateMachine; }
-        lifetimeValue:^NSNumber *(NSNumber *mpid) {
-            return [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid] ?: @0;
-        }
-        persistence:persistence
-        applicationInfo:^NSDictionary *(MPStateMachine_PRIVATE *stateMachine) {
-            MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
-                initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
-                userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
-                environment:[MPStateMachine_PRIVATE environment]
-                deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
-                buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
-            return [application dictionaryRepresentation];
-        }
-        deviceInfo:^NSDictionary *(NSNumber *mpid) {
-            MParticle *mparticle = MParticle.sharedInstance;
-            MPDevice *device = [[MPDevice alloc]
-                initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
-                userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
-                identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
-                logger:[mparticle getLogger]];
-            return [device dictionaryRepresentationWithMpid:mpid];
-        }
-        advertiserID:^NSString *(NSNumber *mpid) {
-            return [MParticle.sharedInstance.identity getUser:mpid].identities[@(MPIdentityIOSAdvertiserId)];
-        }
-        consent:^NSDictionary *(NSNumber *mpid) {
-            MPConsentState *consent = [MPPersistenceUtilities effectiveConsentStateForMpid:mpid];
-            return consent ? [MPConsentSerialization serverDictionaryFromConsentState:consent] : nil;
-        }
-        transformBatch:^id(NSDictionary *batch) {
-            MParticle *mparticle = MParticle.sharedInstance;
-            return mparticle.options.onCreateBatch ? mparticle.options.onCreateBatch(batch) : batch;
-        }
-        logger:^{ return [MParticle.sharedInstance getLogger]; }
-        sdkVersion:kMParticleSDKVersion];
+    return [[MPUploadBuilderContext alloc] initWithHost:MPBackendHostInstance() persistence:persistence];
 }
 
 - (void)confirmEndSessionMessage:(MPSession *)session {
