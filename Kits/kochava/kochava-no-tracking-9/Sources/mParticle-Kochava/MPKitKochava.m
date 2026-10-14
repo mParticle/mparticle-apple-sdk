@@ -135,6 +135,32 @@ NSString *const kvEventTypeStringPromotionClick = @"click";
     return error;
 }
 
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+// Returns a string or number, both of which answer boolValue and integerValue. Anything else is
+// logged and returned as nil, so it takes the same path as an absent key.
+- (id)configurationScalarForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && !([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])) {
+        NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
 - (void)retrieveAttributionWithCompletionHandler:(void(^)(NSDictionary *attribution))completionHandler {
     [KVAMeasurement.shared.attribution retrieveResultWithClosure_didComplete:^(KVAMeasurement_Attribution_Result * _Nonnull attributionResult) {
         if (!attributionResult.rawDictionary) {
@@ -158,6 +184,8 @@ NSString *const kvEventTypeStringPromotionClick = @"click";
         return;
     }
     
+    NSString *userIdentificationType = [self configurationStringForKey:kvUserIdentificationType];
+    NSString *emailIdentificationType = [self configurationStringForKey:kvEmailIdentificationType];
     NSMutableDictionary *identityInfo = [[NSMutableDictionary alloc] initWithCapacity:user.userIdentities.count];
     NSString *identityKey;
     MPUserIdentity userIdentity;
@@ -220,10 +248,10 @@ NSString *const kvEventTypeStringPromotionClick = @"click";
         
         NSString *identityValue = user.userIdentities[userIdentityType];
         if (identityValue) {
-            if ([self.configuration[kvUserIdentificationType] isEqualToString:identityKey]) {
+            if ([userIdentificationType isEqualToString:identityKey]) {
                 identityInfo[identityKey] = identityValue;
             }
-            if ([self.configuration[kvEmailIdentificationType] isEqualToString:identityKey]) {
+            if ([emailIdentificationType isEqualToString:identityKey]) {
                 identityInfo[identityKey] = identityValue;
             }
         }
@@ -238,7 +266,8 @@ NSString *const kvEventTypeStringPromotionClick = @"click";
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
     
-    if (!configuration[kvAppId]) {
+    // Server configuration is parsed JSON, so a value is not guaranteed to have the type the mParticle UI collects.
+    if (![configuration[kvAppId] isKindOfClass:[NSString class]]) {
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
         return execStatus;
     }
@@ -250,28 +279,39 @@ NSString *const kvEventTypeStringPromotionClick = @"click";
 }
 
 - (void)start {
-    if (self.configuration[kvEnableATT]) {
-        KVAMeasurement.shared.appTrackingTransparency.enabledBool = [self.configuration[kvEnableATT] boolValue] ? TRUE : FALSE;
+    NSString *appGUID = [self configurationStringForKey:kvAppId];
+    if (appGUID.length == 0) {
+        NSLog(@"Not starting Kochava: the configuration has no appId");
+        return;
+    }
+
+    id enableATT = [self configurationScalarForKey:kvEnableATT];
+    if (enableATT) {
+        KVAMeasurement.shared.appTrackingTransparency.enabledBool = [enableATT boolValue] ? TRUE : FALSE;
     }
     
-    if (self.configuration[kvEnableATTPrompt]) {
-        KVAMeasurement.shared.appTrackingTransparency.autoRequestTrackingAuthorizationBool = [self.configuration[kvEnableATTPrompt] boolValue] ? TRUE : FALSE;
-        if (self.configuration[kvWaitIntervalATT] && [self.configuration[kvEnableATTPrompt] boolValue]) {
-            KVAMeasurement.shared.appTrackingTransparency.authorizationStatusWaitTimeInterval = [self.configuration[kvWaitIntervalATT] integerValue];
+    id enableATTPrompt = [self configurationScalarForKey:kvEnableATTPrompt];
+    if (enableATTPrompt) {
+        KVAMeasurement.shared.appTrackingTransparency.autoRequestTrackingAuthorizationBool = [enableATTPrompt boolValue] ? TRUE : FALSE;
+        id waitIntervalATT = [self configurationScalarForKey:kvWaitIntervalATT];
+        if (waitIntervalATT && [enableATTPrompt boolValue]) {
+            KVAMeasurement.shared.appTrackingTransparency.authorizationStatusWaitTimeInterval = [waitIntervalATT integerValue];
         }
     }
         
-    [KVAMeasurement.shared startWithAppGUIDString:self.configuration[kvAppId]];
+    [KVAMeasurement.shared startWithAppGUIDString:appGUID];
     
-    if (self.configuration[kvLimitAdTracking]) {
-        KVAMeasurement.shared.appLimitAdTracking.boolean = [self.configuration[kvLimitAdTracking] boolValue];
+    id limitAdTracking = [self configurationScalarForKey:kvLimitAdTracking];
+    if (limitAdTracking) {
+        KVAMeasurement.shared.appLimitAdTracking.boolean = [limitAdTracking boolValue];
     }
     
-    if (self.configuration[kvEnableLogging]) {
-        KVALog.shared.level = [self.configuration[kvEnableLogging] boolValue] ? KVALog_Level.debug : KVALog_Level.never;
+    id enableLogging = [self configurationScalarForKey:kvEnableLogging];
+    if (enableLogging) {
+        KVALog.shared.level = [enableLogging boolValue] ? KVALog_Level.debug : KVALog_Level.never;
     }
     
-    if (self.configuration[kvUserIdentificationType] || self.configuration[kvEmailIdentificationType] ) {
+    if ([self configurationStringForKey:kvUserIdentificationType] || [self configurationStringForKey:kvEmailIdentificationType]) {
         [self synchronizeIdentity];
     }
     
@@ -422,7 +462,7 @@ NSString *const kvEventTypeStringPromotionClick = @"click";
         return execStatus;
     }
     
-    if (self.configuration[kvUserIdentificationType] || self.configuration[kvEmailIdentificationType] ) {
+    if ([self configurationStringForKey:kvUserIdentificationType] || [self configurationStringForKey:kvEmailIdentificationType]) {
         [self synchronizeIdentity];
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceKochava) returnCode:MPKitReturnCodeSuccess];
     }
