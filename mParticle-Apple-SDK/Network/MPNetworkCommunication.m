@@ -418,22 +418,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 - (MPConnectorConfiguration *)connectorConfiguration {
     MParticle *mParticle = MParticle.sharedInstance;
     MPNetworkOptions *networkOptions = mParticle.networkOptions;
-    NSMutableArray<NSString *> *pinnedHosts = [[NSMutableArray alloc] init];
-    NSArray<NSString *> *candidateHosts = @[
-        networkOptions.customBaseURL.host ?: @"",
-        networkOptions.configHost.pathComponents.firstObject ?: @"",
-        networkOptions.identityHost.pathComponents.firstObject ?: @"",
-        networkOptions.identityTrackingHost.pathComponents.firstObject ?: @"",
-        networkOptions.eventsHost.pathComponents.firstObject ?: @"",
-        networkOptions.eventsTrackingHost.pathComponents.firstObject ?: @"",
-        networkOptions.aliasHost.pathComponents.firstObject ?: @"",
-        networkOptions.aliasTrackingHost.pathComponents.firstObject ?: @""
-    ];
-    for (NSString *host in candidateHosts) {
-        if (host.length > 0 && ![pinnedHosts containsObject:host]) {
-            [pinnedHosts addObject:host];
-        }
-    }
 
     MPLog *logger = mParticle.getLogger;
     if (!logger) {
@@ -441,8 +425,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 
     return [[MPConnectorConfiguration alloc]
-        initWithPinnedHosts:pinnedHosts
-        customCertificates:networkOptions.certificates ?: @[]
+        initWithCustomCertificates:networkOptions.certificates ?: @[]
         pinningDisabledInDevelopment:networkOptions.pinningDisabledInDevelopment
         pinningDisabled:networkOptions.pinningDisabled
         isDevelopmentEnvironment:mParticle.environment == MPEnvironmentDevelopment

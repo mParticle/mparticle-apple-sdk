@@ -53,7 +53,6 @@ public final class MPConnectorResponse: NSObject, MPConnectorResponseProtocol {
 
 /// Foundation-only dependencies needed by a connector instance.
 @objc public final class MPConnectorConfiguration: NSObject {
-    @objc public let pinnedHosts: [String]
     @objc public let customCertificates: [Data]
     @objc public let pinningDisabledInDevelopment: Bool
     @objc public let pinningDisabled: Bool
@@ -67,10 +66,9 @@ public final class MPConnectorResponse: NSObject, MPConnectorResponseProtocol {
     // swiftlint:disable line_length
     /// Creates a connector dependency snapshot at the Objective-C networking boundary.
     @objc(
-        initWithPinnedHosts:customCertificates:pinningDisabledInDevelopment:pinningDisabled:isDevelopmentEnvironment:secureScheme:requestTimeout:logger:requestContextProvider:
+        initWithCustomCertificates:pinningDisabledInDevelopment:pinningDisabled:isDevelopmentEnvironment:secureScheme:requestTimeout:logger:requestContextProvider:
     )
     public init(
-        pinnedHosts: [String],
         customCertificates: [Data],
         pinningDisabledInDevelopment: Bool,
         pinningDisabled: Bool,
@@ -80,7 +78,6 @@ public final class MPConnectorResponse: NSObject, MPConnectorResponseProtocol {
         logger: MPLog,
         requestContextProvider: @escaping (MPURLRequestKind) -> MPURLRequestContext
     ) {
-        self.pinnedHosts = pinnedHosts
         self.customCertificates = customCertificates
         self.pinningDisabledInDevelopment = pinningDisabledInDevelopment
         self.pinningDisabled = pinningDisabled
@@ -100,7 +97,6 @@ public final class MPConnectorResponse: NSObject, MPConnectorResponseProtocol {
     static func defaultConfiguration() -> MPConnectorConfiguration {
         let logger = MPLog(logLevel: .none)
         return MPConnectorConfiguration(
-            pinnedHosts: [],
             customCertificates: [],
             pinningDisabledInDevelopment: false,
             pinningDisabled: false,
