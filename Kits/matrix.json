@@ -36,8 +36,9 @@
       "dependencies": [
         {
           "framework": "AppsFlyerLib",
-          "package_identity": "appsflyerframework",
-          "url": "https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases/download/{version}/AppsFlyerLib-Dynamic.xcframework.zip"
+          "version": "6.18.1",
+          "url": "https://github.com/AppsFlyerSDK/AppsFlyerFramework/releases/download/{version}/AppsFlyerLib-Dynamic.xcframework.zip",
+          "sha256": "b8adfc6fe1cce79f704e22faa0361aa8fb555085ef3837058ab3ca858af45055"
         }
       ]
     },
