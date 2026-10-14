@@ -14,6 +14,8 @@
 @interface MPKitApptentive() 
 
 - (NSDictionary *)parseEventInfoDictionary:(NSDictionary *)info;
+- (NSString *)configurationStringForKey:(NSString *)key;
+- (void)updateConfiguredSettings;
 @property (assign, nonatomic) BOOL enableTypeDetection;
 
 @end
@@ -21,6 +23,11 @@
 @interface mParticle_ApptentiveTests : XCTestCase
 
 @end
+
+// Server configuration is parsed JSON, so any value can arrive as a number, boolean or container.
+static NSArray *MPKitApptentiveTestNonStringValues(void) {
+    return @[[NSNull null], @42, @YES, @[], @{}];
+}
 
 @implementation mParticle_ApptentiveTests
 
@@ -69,6 +76,68 @@
     kit.enableTypeDetection = YES;
     NSDictionary *actual = [kit parseEventInfoDictionary:data];
     XCTAssertEqualObjects(expected, actual);
+}
+
+#pragma mark - Malformed server configuration
+
+// None of these launches with valid credentials: that starts the real Apptentive SDK, once per process.
+
+- (void)testLaunchWithNonStringCredentialsReportsRequirementsNotMet {
+    for (id value in MPKitApptentiveTestNonStringValues()) {
+        for (NSString *key in @[@"apptentiveAppKey", @"apptentiveAppSignature"]) {
+            NSMutableDictionary *configuration = [@{@"apptentiveAppKey": @"key", @"apptentiveAppSignature": @"signature"} mutableCopy];
+            configuration[key] = value;
+
+            MPKitExecStatus *status = [[MPKitApptentive new] didFinishLaunchingWithConfiguration:configuration];
+
+            XCTAssertEqual(status.returnCode, MPKitReturnCodeRequirementsNotMet, @"%@ of %@ should not start the kit", key, [value class]);
+        }
+    }
+}
+
+- (void)testNonStringSettingsAreTreatedAsUnset {
+    for (id value in MPKitApptentiveTestNonStringValues()) {
+        MPKitApptentive *kit = [MPKitApptentive new];
+        kit.configuration = @{@"apptentiveAppKey": value, @"apptentiveAppSignature": value};
+
+        for (NSString *key in kit.configuration) {
+            XCTAssertNil([kit configurationStringForKey:key], @"%@ of %@ should be ignored", key, [value class]);
+        }
+    }
+
+    MPKitApptentive *kit = [MPKitApptentive new];
+    kit.configuration = @{@"apptentiveAppKey": @"key"};
+
+    XCTAssertEqualObjects([kit configurationStringForKey:@"apptentiveAppKey"], @"key");
+}
+
+- (void)testNonScalarEnableTypeDetectionKeepsTheDefault {
+    for (id value in @[[NSNull null], @[], @{}]) {
+        MPKitApptentive *kit = [MPKitApptentive new];
+        kit.configuration = @{@"enableTypeDetection": value};
+        [kit updateConfiguredSettings];
+
+        XCTAssertTrue(kit.enableTypeDetection, @"enableTypeDetection of %@ should be ignored", [value class]);
+    }
+
+    MPKitApptentive *kit = [MPKitApptentive new];
+    kit.configuration = @{@"enableTypeDetection": @"false"};
+    [kit updateConfiguredSettings];
+
+    XCTAssertFalse(kit.enableTypeDetection);
+}
+
+// The core calls -start even after a launch reports RequirementsNotMet. Without usable credentials
+// it must return before the once-per-launch registration, so a later configuration can still start it.
+- (void)testStartWithoutStringCredentialsLeavesTheKitStopped {
+    for (NSDictionary *configuration in @[@{}, @{@"apptentiveAppKey": @42, @"apptentiveAppSignature": @"signature"}]) {
+        MPKitApptentive *kit = [MPKitApptentive new];
+        kit.configuration = configuration;
+
+        [kit start];
+
+        XCTAssertFalse(kit.started, @"-start with configuration %@ should not start the kit", configuration);
+    }
 }
 
 @end
