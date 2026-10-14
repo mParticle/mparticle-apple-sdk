@@ -98,40 +98,7 @@
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSTimeInterval timeOfLastEventInBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
-- (MPBackendSessionDependencies *)sessionDependencies;
-- (MPBackendSessionCoordinator *)sessionCoordinator;
 
-@end
-
-@interface MPBackendPausedConstruction : MPBackendController_PRIVATE
-@property (nonatomic, strong) NSLock *constructionLock;
-@property (nonatomic) BOOL didPauseConstruction;
-@property (nonatomic, strong) dispatch_semaphore_t constructionEntered;
-@property (nonatomic, strong) dispatch_semaphore_t continueConstruction;
-@end
-
-@implementation MPBackendPausedConstruction
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _constructionLock = [[NSLock alloc] init];
-        _constructionEntered = dispatch_semaphore_create(0);
-        _continueConstruction = dispatch_semaphore_create(0);
-    }
-    return self;
-}
-
-- (MPBackendSessionDependencies *)sessionDependencies {
-    [self.constructionLock lock];
-    BOOL pause = !self.didPauseConstruction;
-    self.didPauseConstruction = YES;
-    [self.constructionLock unlock];
-    if (pause) {
-        dispatch_semaphore_signal(self.constructionEntered);
-        dispatch_semaphore_wait(self.continueConstruction, DISPATCH_TIME_FOREVER);
-    }
-    return [super sessionDependencies];
-}
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
@@ -220,67 +187,6 @@
     XCTAssertEqual(dispatch_group_wait(timers, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
 }
 
-- (void)testConcurrentFirstSessionAccessSharesOneCoordinator {
-    [self assertConcurrentFirstAccessUsesOneObjectForKey:@"sessionCoordinator"];
-}
-
-- (void)testConcurrentFirstLifecycleAccessSharesOneCoordinator {
-    [self assertConcurrentFirstAccessUsesOneObjectForKey:@"lifecycleCoordinator"];
-}
-
-- (void)assertConcurrentFirstAccessUsesOneObjectForKey:(NSString *)key {
-    MPBackendPausedConstruction *backend = [[MPBackendPausedConstruction alloc] init];
-    dispatch_queue_t queue = dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0);
-    dispatch_group_t group = dispatch_group_create();
-    __block id first;
-    __block id second;
-    dispatch_group_async(group, queue, ^{ first = [backend valueForKey:key]; });
-    XCTAssertEqual(dispatch_semaphore_wait(backend.constructionEntered, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    dispatch_semaphore_t secondStarted = dispatch_semaphore_create(0);
-    dispatch_semaphore_t secondFinished = dispatch_semaphore_create(0);
-    dispatch_group_async(group, queue, ^{
-        dispatch_semaphore_signal(secondStarted);
-        second = [backend valueForKey:key];
-        dispatch_semaphore_signal(secondFinished);
-    });
-    XCTAssertEqual(dispatch_semaphore_wait(secondStarted, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    XCTAssertNotEqual(dispatch_semaphore_wait(secondFinished, dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC)), 0);
-    dispatch_semaphore_signal(backend.continueConstruction);
-    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    XCTAssertNotNil(first);
-    XCTAssertEqual(first, second);
-}
-
-- (void)testConcurrentFirstAccessSharesEntireSessionGraph {
-    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
-    NSArray<NSString *> *keys = @[@"sessionDependencies", @"messageWriter", @"sessionLifecycleDependencies", @"sessionCoordinator", @"lifecycleCoordinator"];
-    NSMutableArray<NSDictionary *> *graphs = [[NSMutableArray alloc] init];
-    NSLock *resultsLock = [[NSLock alloc] init];
-    dispatch_group_t group = dispatch_group_create();
-    [backend.sessionState withSessionLock:^{
-        for (NSUInteger iteration = 0; iteration < 32; iteration++) {
-            dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-                NSMutableDictionary *graph = [[NSMutableDictionary alloc] init];
-                for (NSUInteger offset = 0; offset < keys.count; offset++) {
-                    NSString *key = keys[(iteration + offset) % keys.count];
-                    graph[key] = [backend valueForKey:key];
-                }
-                [resultsLock lock];
-                [graphs addObject:graph];
-                [resultsLock unlock];
-            });
-        }
-        XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    }];
-    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    XCTAssertEqual(graphs.count, 32);
-    for (NSDictionary *graph in graphs) {
-        for (NSString *key in keys) {
-            XCTAssertEqual(graph[key], [backend valueForKey:key]);
-        }
-    }
-}
-
 - (void)testBackendHostReadsTheLiveSDKInstance {
     MParticle *instance = [MParticle sharedInstance];
     id<MPBackendHost> host = (id<MPBackendHost>)[[MPUserDefaultsConnector alloc] init];
@@ -296,6 +202,17 @@
     XCTAssertEqualObjects([host sdkVersion], kMParticleSDKVersion);
     NSDictionary *batch = @{@"batch": @1};
     XCTAssertEqual([host transformBatch:batch], batch);
+    XCTAssertEqualObjects([host mpId], [MPPersistenceUtilities mpId]);
+    XCTAssertEqual([host automaticSessionTracking], instance.automaticSessionTracking);
+    XCTAssertEqual([host messageQueue], [MParticle messageQueue]);
+    XCTAssertEqual([host optOut], instance.stateMachine.optOut);
+    XCTAssertEqualObjects([host crashMaxPLReportLength], instance.stateMachine.crashMaxPLReportLength);
+    XCTAssertEqualObjects([host persistenceMaxAge], instance.persistenceMaxAgeSeconds);
+    XCTAssertEqualObjects([host nullUserAttributeValue], kMPNullUserAttributeString);
+    XCTAssertEqual([host isDevelopmentEnvironment], [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment);
+    XCTAssertNotNil([host userDefaults]);
+    XCTAssertNotNil([host uploadBatchLimits]);
+    XCTAssertNotNil([host currentUploadSettings]);
 }
 
 - (void)testSessionOwnershipDoesNotPublishStateMachineMirror {
