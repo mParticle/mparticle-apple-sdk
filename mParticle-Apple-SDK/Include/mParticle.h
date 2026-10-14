@@ -20,7 +20,7 @@
 #import "MPLocation.h"
 #import <UIKit/UIKit.h>
 #import "MPSideloadedKit.h"
-#import "MPBackendController.h"
+#import "MPUploadSettings.h"
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceUtilities.h"
