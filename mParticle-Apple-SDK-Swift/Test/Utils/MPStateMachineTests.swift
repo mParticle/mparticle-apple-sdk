@@ -78,6 +78,22 @@ final class MPStateMachineTests: XCTestCase {
         XCTAssertEqual(state.aliasMaxWindow, 30)
     }
 
+    func testAliasMaxWindowTreatsNonPositiveValuesAsMissing() {
+        for days in [0, -5, -1e12, .nan] as [Double] {
+            state.configureAliasMaxWindow(NSNumber(value: days))
+            XCTAssertEqual(state.aliasMaxWindow, 90, "\(days)")
+        }
+    }
+
+    func testAliasMaxWindowCapsVeryLargeValues() {
+        state.configureAliasMaxWindow(NSNumber(value: 1e12))
+        XCTAssertEqual(state.aliasMaxWindow, 36_500)
+        state.configureAliasMaxWindow(NSNumber(value: Double.infinity))
+        XCTAssertEqual(state.aliasMaxWindow, 36_500)
+        state.configureAliasMaxWindow(NSNumber(value: 36_499))
+        XCTAssertEqual(state.aliasMaxWindow, 36_499)
+    }
+
     func testApplyTriggersAddsCommerceMessageType() {
         XCTAssertTrue(state.applyTriggers([
             RemoteConfig.kMPRemoteConfigTriggerEventsKey: ["event-hash"],
