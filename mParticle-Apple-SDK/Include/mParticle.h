@@ -143,6 +143,12 @@ Defaults to false. If set true the aliasHost above with overwrite the subdirecto
 */
 @property (nonatomic) BOOL overridesAliasSubdirectory;
 
+/**
+ Root certificates, as DER data, that certificate pinning accepts in addition to the SDK's bundled
+ roots. Pinning applies to every host the SDK connects to, custom hosts included, so a custom host
+ whose certificate chains to another root needs that root here, or pinning disabled via
+ @c pinningDisabled / @c pinningDisabledInDevelopment.
+ */
 @property (nonatomic) NSArray<NSData *> *certificates;
 
 /**

@@ -113,6 +113,20 @@ final class MPConnectorSwiftTests: XCTestCase {
         )
     }
 
+    func testPinsAChallengeFromAHostTheOptionsNeverNamed() throws {
+        XCTAssertEqual(
+            try serverTrustChallengeDisposition(host: "unlisted.example.com", pinningDisabled: false),
+            .cancelAuthenticationChallenge
+        )
+    }
+
+    func testDefersAChallengeFromAHostTheOptionsNeverNamedToSystemTrustWhenPinningIsDisabled() throws {
+        XCTAssertEqual(
+            try serverTrustChallengeDisposition(host: "unlisted.example.com", pinningDisabled: true),
+            .performDefaultHandling
+        )
+    }
+
     func testBundledCertificatesAreValidBase64() {
         let certificates = MPConnector.defaultPinnedCertificates()
 
@@ -151,21 +165,58 @@ final class MPConnectorSwiftTests: XCTestCase {
     }
 
     private func makeConfiguration(
+        pinningDisabled: Bool = false,
         requestContextProvider: @escaping (MPURLRequestKind) -> MPURLRequestContext = { _ in
             MPConnectorSwiftTests.requestContext()
         }
     ) -> MPConnectorConfiguration {
         MPConnectorConfiguration(
-            pinnedHosts: [],
             customCertificates: [],
             pinningDisabledInDevelopment: false,
-            pinningDisabled: false,
+            pinningDisabled: pinningDisabled,
             isDevelopmentEnvironment: false,
             secureScheme: "https",
             requestTimeout: 10,
             logger: MPLog(logLevel: .none),
             requestContextProvider: requestContextProvider
         )
+    }
+
+    /// Drives the connector's challenge handler with a server trust that fails evaluation: a bundled
+    /// root presented as the server's own certificate does not match the host name.
+    private func serverTrustChallengeDisposition(
+        host: String,
+        pinningDisabled: Bool
+    ) throws -> URLSession.AuthChallengeDisposition {
+        let certificateData = try XCTUnwrap(Data(base64Encoded: MPPinnedCertificates.values[0]))
+        let certificate = try XCTUnwrap(SecCertificateCreateWithData(nil, certificateData as CFData))
+        var trust: SecTrust?
+        XCTAssertEqual(
+            SecTrustCreateWithCertificates(certificate, SecPolicyCreateSSL(true, host as CFString), &trust),
+            errSecSuccess
+        )
+        let challenge = URLAuthenticationChallenge(
+            protectionSpace: MPConnectorServerTrustProtectionSpace(host: host, trust: try XCTUnwrap(trust)),
+            proposedCredential: nil,
+            previousFailureCount: 0,
+            failureResponse: nil,
+            error: nil,
+            sender: MPConnectorChallengeSenderStub()
+        )
+        let session = URLSession(configuration: .ephemeral)
+        defer { session.invalidateAndCancel() }
+        let task = session.dataTask(with: try XCTUnwrap(URL(string: "https://\(host)/")))
+        let connector = MPConnector(configuration: makeConfiguration(pinningDisabled: pinningDisabled))
+        let handled = expectation(description: "challenge handled")
+        var disposition: URLSession.AuthChallengeDisposition?
+
+        connector.urlSession(session, task: task, didReceive: challenge) { result, _ in
+            disposition = result
+            handled.fulfill()
+        }
+
+        wait(for: [handled], timeout: 5)
+        return try XCTUnwrap(disposition)
     }
 
     private static func requestContext() -> MPURLRequestContext {
@@ -213,4 +264,35 @@ private class MPConnectorURLProtocolStub: URLProtocol {
     }
 
     override func stopLoading() {}
+}
+
+private final class MPConnectorServerTrustProtectionSpace: URLProtectionSpace {
+    private let trust: SecTrust
+
+    init(host: String, trust: SecTrust) {
+        self.trust = trust
+        super.init(
+            host: host,
+            port: 443,
+            protocol: NSURLProtectionSpaceHTTPS,
+            realm: nil,
+            authenticationMethod: NSURLAuthenticationMethodServerTrust
+        )
+    }
+
+    required init?(coder: NSCoder) {
+        nil
+    }
+
+    override var serverTrust: SecTrust? {
+        trust
+    }
+}
+
+private final class MPConnectorChallengeSenderStub: NSObject, URLAuthenticationChallengeSender {
+    func use(_ credential: URLCredential, for challenge: URLAuthenticationChallenge) {}
+
+    func continueWithoutCredential(for challenge: URLAuthenticationChallenge) {}
+
+    func cancel(_ challenge: URLAuthenticationChallenge) {}
 }

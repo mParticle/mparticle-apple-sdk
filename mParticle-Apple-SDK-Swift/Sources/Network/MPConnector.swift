@@ -87,16 +87,16 @@ public final class MPConnector: NSObject, MPConnectorProtocol, URLSessionDataDel
         let host = protectionSpace.host
         let requestProtocol = protectionSpace.protocol
         let serverTrust = protectionSpace.serverTrust
-        let isPinningHost = isPinningHost(host)
 
         configuration.logger.verbose(
             "SSL challenge received - host: \(host), authMethod: \(authenticationMethod), "
-                + "protocol: \(requestProtocol ?? "nil"), isPinningHost: \(isPinningHost), "
+                + "protocol: \(requestProtocol ?? "nil"), "
                 + "serverTrust: \(serverTrust == nil ? "nil" : "present")"
         )
 
+        // Every request on this session is one the SDK built, so every host it reaches is pinned:
+        // a configured host, an upload's persisted host and a redirect target alike.
         guard authenticationMethod == NSURLAuthenticationMethodServerTrust,
-              isPinningHost,
               requestProtocol == configuration.secureScheme,
               protectionSpace.receivesCredentialSecurely,
               let serverTrust
@@ -325,10 +325,6 @@ public final class MPConnector: NSObject, MPConnectorProtocol, URLSessionDataDel
         }
 
         return response
-    }
-
-    private func isPinningHost(_ host: String) -> Bool {
-        host.contains("mparticle.com") || configuration.pinnedHosts.contains(host)
     }
 
     /// Never grants `.useCredential` (accepting the server's certificate) unless the
