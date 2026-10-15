@@ -42,6 +42,7 @@
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 - (void)initializePersistence;
+- (MPLog *)getLogger;
 
 @end
 
@@ -278,6 +279,23 @@
             XCTAssertEqual(graph[key], [backend valueForKey:key]);
         }
     }
+}
+
+- (void)testBackendHostReadsTheLiveSDKInstance {
+    MParticle *instance = [MParticle sharedInstance];
+    id<MPBackendHost> host = (id<MPBackendHost>)[[MPUserDefaultsConnector alloc] init];
+    XCTAssertTrue([host conformsToProtocol:@protocol(MPBackendHost)]);
+
+    instance.dataPlanId = @"plan";
+    instance.dataPlanVersion = @2;
+    XCTAssertEqualObjects([host dataPlanId], @"plan");
+    XCTAssertEqualObjects([host dataPlanVersion], @2);
+    // The SDK's shared logger, not the connector's own -logger, which builds a new one per call.
+    XCTAssertEqual([host sdkLogger], [instance getLogger]);
+    XCTAssertEqual([host stateMachine], instance.stateMachine);
+    XCTAssertEqualObjects([host sdkVersion], kMParticleSDKVersion);
+    NSDictionary *batch = @{@"batch": @1};
+    XCTAssertEqual([host transformBatch:batch], batch);
 }
 
 - (void)testSessionOwnershipDoesNotPublishStateMachineMirror {

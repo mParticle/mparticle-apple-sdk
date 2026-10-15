@@ -20,6 +20,10 @@
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) MPDataPlanFilter *dataPlanFilter;
+@property (nonatomic, strong) MParticleOptions *options;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
+- (MPLog *)getLogger;
 
 @end
 
@@ -29,7 +33,7 @@
 - (void)setIdentity:(nullable NSString *)identityString identityType:(MPIdentity)identityType;
 @end
 
-@interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol>
+@interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol, MPBackendHost>
 
 @end
 
@@ -122,6 +126,62 @@
     MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
     logger.customLogger = mparticle.customLogger;
     return logger;
+}
+
+#pragma mark MPBackendHost
+
+- (NSString *)dataPlanId {
+    return MParticle.sharedInstance.dataPlanId;
+}
+
+- (NSNumber *)dataPlanVersion {
+    return MParticle.sharedInstance.dataPlanVersion;
+}
+
+- (MPLog *)sdkLogger {
+    return [MParticle.sharedInstance getLogger];
+}
+
+- (NSNumber *)lifetimeValueForMpid:(NSNumber *)mpid {
+    return [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid] ?: @0;
+}
+
+- (NSDictionary *)applicationInfoWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine {
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
+        initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
+        userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+        environment:[MPStateMachine_PRIVATE environment]
+        deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+        buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
+    return [application dictionaryRepresentation];
+}
+
+- (NSDictionary *)deviceInfoForMpid:(NSNumber *)mpid {
+    MParticle *mparticle = MParticle.sharedInstance;
+    MPDevice *device = [[MPDevice alloc]
+        initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+        userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+        identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+        logger:[mparticle getLogger]];
+    return [device dictionaryRepresentationWithMpid:mpid];
+}
+
+- (NSString *)advertiserIDForMpid:(NSNumber *)mpid {
+    return [MParticle.sharedInstance.identity getUser:mpid].identities[@(MPIdentityIOSAdvertiserId)];
+}
+
+- (NSDictionary *)consentForMpid:(NSNumber *)mpid {
+    MPConsentState *consent = [MPPersistenceUtilities effectiveConsentStateForMpid:mpid];
+    return consent ? [MPConsentSerialization serverDictionaryFromConsentState:consent] : nil;
+}
+
+- (id)transformBatch:(NSDictionary *)batch {
+    MParticle *mparticle = MParticle.sharedInstance;
+    return mparticle.options.onCreateBatch ? mparticle.options.onCreateBatch(batch) : batch;
+}
+
+- (NSString *)sdkVersion {
+    return kMParticleSDKVersion;
 }
 
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an
