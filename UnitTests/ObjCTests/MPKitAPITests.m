@@ -8,10 +8,12 @@
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPKitTestClassSideloaded.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MPKitContainer_PRIVATE ()
 
+@property (nonatomic, strong, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
 @end
@@ -398,6 +400,45 @@
     XCTAssertEqual((NSUInteger)MPILogLevelSwiftWarning, (NSUInteger)MPILogLevelWarning);
     XCTAssertEqual((NSUInteger)MPILogLevelSwiftDebug, (NSUInteger)MPILogLevelDebug);
     XCTAssertEqual((NSUInteger)MPILogLevelSwiftVerbose, (NSUInteger)MPILogLevelVerbose);
+}
+
+- (void)testSideloadedKitUserIsFilteredByItsRegisteredCode {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Sideloaded kit filters"];
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
+
+    NSDictionary *userAttributes = @{@"good data":@"67890", @"bad data":@"12345"};
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    [userDefaults setMPObject:userAttributes forKey:kMPUserAttributeKey userId:currentUser.userId];
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mParticle.logLevel]];
+    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *badHashedKey = [hasher hashString:@"bad data"];
+
+    // A sideloaded kit's configuration is keyed by the code the container assigns from the sideloaded
+    // range, never by its class code, which the protocol says is ignored.
+    NSNumber *sideloadedKitCode = @1000000000;
+    NSDictionary *configuration = @{@"id":sideloadedKitCode, @"as":@{@"appId":@"sideloaded"}, @"hs":@{@"ua":@{badHashedKey:@0}}};
+    _kitContainer.kitConfigurations[sideloadedKitCode] = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+
+    MPKitTestClassSideloaded *sideloadedKit = [[MPKitTestClassSideloaded alloc] init];
+    sideloadedKit.sideloadedKitCode = sideloadedKitCode;
+
+    dispatch_sync([MParticle messageQueue], ^{
+        // The API the container builds for the kit carries the registered code.
+        MPKitAPI *registeredKitAPI = [[MPKitAPI alloc] initWithKitCode:sideloadedKitCode];
+        NSDictionary *attributes = [registeredKitAPI getCurrentUserWithKit:sideloadedKit].userAttributes;
+        XCTAssertNil(attributes[@"bad data"], @"A sideloaded kit's user attribute filter is not applied");
+        XCTAssertEqualObjects(attributes[@"good data"], @"67890");
+
+        // An API a kit builds itself, with no code, falls back to the kit's sideloaded code.
+        MPKitAPI *bareKitAPI = [[MPKitAPI alloc] init];
+        attributes = [bareKitAPI getCurrentUserWithKit:sideloadedKit].userAttributes;
+        XCTAssertNil(attributes[@"bad data"], @"A sideloaded kit's filter is not applied through its sideloaded code");
+        XCTAssertEqualObjects(attributes[@"good data"], @"67890");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 @synthesize started;
