@@ -10,6 +10,19 @@ public final class MPConnector: NSObject, MPConnectorProtocol, URLSessionDataDel
     private let configuration: MPConnectorConfiguration
     private let sessionConfiguration: URLSessionConfiguration
     private var receivedData: NSMutableData?
+
+    /// The most a declared content length reserves up front. The length is the server's claim, so it
+    /// sizes the buffer only up to this cap; a response that grows past it still appends, and a
+    /// length no response could reach no longer reserves memory the app does not have.
+    static let maximumInitialBufferCapacity: Int64 = 1 << 20
+
+    /// The buffer capacity a declared content length reserves: none for an unknown or non-positive
+    /// length, and never more than `maximumInitialBufferCapacity`.
+    static func initialBufferCapacity(forDeclaredLength length: Int64) -> Int? {
+        guard length != NSURLSessionTransferSizeUnknown, length > 0 else { return nil }
+        return Int(min(length, maximumInitialBufferCapacity))
+    }
+
     private var requestStartTime: Date?
     private var httpURLResponse: HTTPURLResponse?
     private var completionHandler: CompletionHandler?
@@ -153,9 +166,8 @@ public final class MPConnector: NSObject, MPConnectorProtocol, URLSessionDataDel
 
         if responseCode == HTTPStatusCode.success.rawValue
             || responseCode == HTTPStatusCode.accepted.rawValue {
-            if response.expectedContentLength != NSURLSessionTransferSizeUnknown,
-               response.expectedContentLength > 0 {
-                receivedData = NSMutableData(capacity: Int(response.expectedContentLength))
+            if let capacity = Self.initialBufferCapacity(forDeclaredLength: response.expectedContentLength) {
+                receivedData = NSMutableData(capacity: capacity)
             } else {
                 receivedData = NSMutableData()
             }
