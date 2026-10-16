@@ -925,7 +925,9 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
     NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
     id currentValue = session.attributesDictionary[localKey];
     if (!currentValue && [value isKindOfClass:[NSNumber class]]) {
-        [self setSessionAttribute:session key:localKey value:value];
+        if ([self setSessionAttribute:session key:localKey value:value] != MPExecStatusSuccess) {
+            return nil;
+        }
         return value;
     }
 
@@ -1127,6 +1129,9 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
     }
     
     NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
+    if (session.attributesDictionary[localKey] == nil && session.attributesDictionary.count >= 100) {
+        return MPExecStatusInvalidDataType;
+    }
     NSError *error = nil;
     BOOL success = [MPBackendController_PRIVATE checkAttribute:session.attributesDictionary
                                     key:localKey

@@ -37,6 +37,7 @@ public final class MPBackendUserAttributeDependencies: NSObject {
 /// set of keys deleted since the last upload.
 @objc(MPBackendUserAttributeWriter)
 public final class MPBackendUserAttributeWriter: NSObject {
+    private static let maximumAttributeCount = 100
     private let state: MPBackendSessionState
     private let dependencies: MPBackendSessionDependencies
     private let writer: MPBackendMessageWriter
@@ -149,6 +150,8 @@ public final class MPBackendUserAttributeWriter: NSObject {
             return value
         }
 
+        guard stored[localKey] != nil || stored.count < Self.maximumAttributeCount else { return nil }
+
         var currentValue = stored[localKey]
         if let currentValue, !(currentValue is NSNumber) { return nil }
         if isNull(currentValue) { currentValue = NSNumber(value: 0) }
@@ -216,6 +219,11 @@ public final class MPBackendUserAttributeWriter: NSObject {
             forValidationResult: validation, keyExists: stored[localKey] != nil
         ) {
         case .store:
+            guard stored[localKey] != nil || stored.count < Self.maximumAttributeCount else {
+                return MPBackendUserAttributeOutcome(
+                    key: change.key, value: change.value, status: .invalidDataType
+                )
+            }
             stored[localKey] = change.value
         case .delete:
             change.deleted = true
