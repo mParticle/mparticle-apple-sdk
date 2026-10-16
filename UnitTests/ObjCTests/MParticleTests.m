@@ -30,7 +30,9 @@
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 - (BOOL)webviewBridgeAllowsHost:(NSString *)host;
+#if TARGET_OS_IOS == 1
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message;
+#endif
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, copy, nullable) NSArray<NSString *> *webviewBridgeAllowedHosts;
