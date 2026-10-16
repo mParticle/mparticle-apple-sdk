@@ -605,6 +605,74 @@ final class MPPersistenceStoreTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: oldPath))
     }
 
+    func testNegativeAndOverRangeOnDiskSessionCountersAreClamped() throws {
+        // A tampered or corrupted row must not trap the unsigned conversion at every launch.
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            mpidProvider: { 42 }
+        )
+        let session = MPSessionPRIVATE(
+            sessionId: 0,
+            uuid: "session",
+            backgroundTime: 0,
+            startTime: 1,
+            endTime: 2,
+            attributes: [:],
+            numberOfInterruptions: 1,
+            eventCounter: 2,
+            suspendTime: 0,
+            userId: 42,
+            sessionUserIds: "42",
+            applicationInfo: nil,
+            deviceInfo: nil
+        )
+        try store.saveSession(session)
+        try XCTUnwrap(store.connection).execute("UPDATE sessions SET number_interruptions = -3, event_count = -1")
+
+        let fetched = try XCTUnwrap(store.fetchSessions().first)
+
+        XCTAssertEqual(fetched.numberOfInterruptions, 0)
+        XCTAssertEqual(fetched.eventCounter, 0)
+
+        try XCTUnwrap(store.connection).execute("UPDATE sessions SET event_count = 4294967296")
+
+        XCTAssertEqual(try XCTUnwrap(store.fetchSessions().first).eventCounter, UInt32.max)
+    }
+
+    func testNegativeOnDiskUploadTypeReadsAsZero() throws {
+        let codec = TestUploadSettingsCodec()
+        let store = MPPersistenceStorePRIVATE(
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsCodec: codec
+        )
+        XCTAssertTrue(try store.saveUpload(upload(uuid: "upload", timestamp: 1)))
+        try XCTUnwrap(store.connection).execute("UPDATE uploads SET upload_type = -1")
+
+        let fetched = try XCTUnwrap(store.fetchUploads().first)
+
+        XCTAssertEqual(fetched.uploadType, 0)
+    }
+
+    func testNegativeOnDiskForwardRecordIdIsDroppedAndDeleted() throws {
+        // The upload path deletes a record by its id once it has been sent, so a row with such an id
+        // would be sent again on every cycle; it is not returned and its row is removed, while the
+        // valid row beside it is returned as before.
+        let store = MPPersistenceStorePRIVATE(fileSystem: fileSystem, logger: logger)
+        try store.saveForwardRecord(MPForwardRecordPRIVATE(recordId: 0, dataDictionary: ["timestamp": 1], mpid: 42))
+        try XCTUnwrap(store.connection).execute("UPDATE forwarding_records SET _id = -1")
+        try store.saveForwardRecord(MPForwardRecordPRIVATE(recordId: 0, dataDictionary: ["timestamp": 2], mpid: 43))
+
+        let fetched = try store.fetchForwardRecords()
+
+        XCTAssertEqual(fetched.count, 1)
+        XCTAssertEqual(fetched.first?.mpid, 43)
+        let count = try XCTUnwrap(store.connection?.prepare("SELECT COUNT(*) FROM forwarding_records"))
+        XCTAssertEqual(try count.step(), .row)
+        XCTAssertEqual(count.int(at: 0), 1)
+    }
+
     private func upload(uuid: String, timestamp: TimeInterval) -> MPUploadPRIVATE {
         MPUploadPRIVATE(
             sessionId: nil,

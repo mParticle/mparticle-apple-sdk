@@ -355,8 +355,11 @@ extension MPPersistenceStorePRIVATE: MPSessionPersisting, MPMessagePersisting {
             startTime: statement.double(at: 3),
             endTime: statement.double(at: 4),
             attributes: statement.jsonDictionary(at: 5).map(NSMutableDictionary.init(dictionary:)),
-            numberOfInterruptions: UInt32(statement.int(at: 7)),
-            eventCounter: UInt32(statement.int(at: 8)),
+            // Clamped, not checked: a checked unsigned conversion traps on a negative or over-range
+            // value, and a tampered or corrupted row would then crash the app at every launch. The
+            // values are read as 64-bit so an over-range one clamps rather than narrowing first.
+            numberOfInterruptions: UInt32(clamping: statement.int64(at: 7)),
+            eventCounter: UInt32(clamping: statement.int64(at: 8)),
             suspendTime: statement.double(at: 9),
             userId: NSNumber(value: statement.int64(at: 11)),
             sessionUserIds: statement.string(at: 12) ?? "",

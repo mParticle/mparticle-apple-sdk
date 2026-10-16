@@ -77,7 +77,7 @@ extension MPPersistenceStorePRIVATE: MPUploadPersistingStore {
                 uuid: uuid,
                 uploadData: uploadData,
                 timestamp: statement.double(at: 3),
-                uploadType: UInt(statement.int64(at: 5)),
+                uploadType: UInt(clamping: statement.int64(at: 5)),
                 dataPlanId: statement.string(at: 6),
                 dataPlanVersion: statement.isNull(at: 7)
                     ? nil
