@@ -1015,9 +1015,12 @@ public final class MPRoktKitImplementation: NSObject {
         }
     }
 
+    /// The placement event carries no custom attributes. The core forwards it to every other kit
+    /// and uploads it, while the prepared attributes hold the user's Rokt-filtered profile, the
+    /// caller's placement attributes and the identities with the MPID, which Rokt alone receives.
+    /// See the README's "Placement analytics" section and the fix in pull request 1012.
     private static func logPlacementEvent(name: String, attributes: [String: String]) {
         guard let event = MPEvent(name: name, type: .other) else { return }
-        event.customAttributes = attributes
         MParticle.sharedInstance().logEvent(event)
     }
 

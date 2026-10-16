@@ -10,6 +10,7 @@ import Testing
 import SwiftUI
 import ObjectiveC.runtime
 @testable import mParticle_Rokt
+@testable import mParticle_Rokt_Internal
 import Rokt_Widget
 import RoktContracts
 import mParticle_Rokt_Swift
@@ -69,19 +70,43 @@ struct mParticle_Rokt_SwiftTests {
         }
         // MPRoktLayout logs its placement event from the asynchronous attribute-preparation
         // completion, so by this point neither the number of events nor their arrival order has
-        // settled, and the attributes they carry are the prepared ones rather than empty. What
-        // must hold regardless of timing is that no malformed mapping reached an event: each one
-        // is a known placement event carrying only caller-supplied keys, never a key lifted out
-        // of the mapping payloads above.
+        // settled. What must hold regardless of timing is the README's contract: each one is a
+        // known placement event and carries no custom attributes, so neither a key lifted out of
+        // the mapping payloads above nor anything of the prepared attributes reaches another kit.
         for event in events {
             let name = (event as? MPEvent)?.name
             #expect(name == "selectPlacements" || name == "selectShoppableAds")
             #expect(event.type == .other)
-            for key in event.customAttributes?.keys ?? [:].keys {
-                #expect(key as? String != "x")
-                #expect(key as? String != "map")
-                #expect(key as? String != "value")
-            }
+            #expect(event.customAttributes?.isEmpty ?? true)
+        }
+    }
+
+    @Test func testPlacementEventsCarryNoCustomAttributes() throws {
+        // The prepared attributes hold the identities, the MPID and the user's Rokt-filtered
+        // profile; the event the core forwards to every other kit must carry none of them.
+        var events: [MPBaseEvent] = []
+        let logEvent = try #require(class_getInstanceMethod(MParticle.self, NSSelectorFromString("logEvent:")))
+        let captureEvent: @convention(block) (AnyObject, MPBaseEvent) -> Void = { _, event in events.append(event) }
+        let eventStub = imp_implementationWithBlock(captureEvent)
+        let originalLogEvent = method_setImplementation(logEvent, eventStub)
+        defer {
+            method_setImplementation(logEvent, originalLogEvent)
+            imp_removeBlock(eventStub)
+        }
+
+        let prepared = [
+            "source": "kept", "email": "ada", "emailsha256": "hash", "mpid": "123",
+            "customerid": "c-1", "sandbox": "true"
+        ]
+        MPRoktKitImplementation.logSelectPlacementEvent(prepared)
+        MPRoktKitImplementation.logSelectShoppableAdsEvent(prepared)
+
+        #expect(events.count == 2)
+        #expect((events.first as? MPEvent)?.name == "selectPlacements")
+        #expect((events.last as? MPEvent)?.name == "selectShoppableAds")
+        for event in events {
+            #expect(event.type == .other)
+            #expect(event.customAttributes?.isEmpty ?? true)
         }
     }
 
