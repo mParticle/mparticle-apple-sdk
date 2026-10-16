@@ -29,8 +29,11 @@
 - (void)initializePersistence;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
+- (BOOL)webviewBridgeAllowsHost:(NSString *)host;
+- (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
+@property (nonatomic, copy, nullable) NSArray<NSString *> *webviewBridgeAllowedHosts;
 @end
 
 @interface MParticleUser ()
@@ -790,9 +793,53 @@
     };
     
     [instance handleWebviewCommand:command dictionary:dictionary];
-    
+
     [mockBackend verifyWithDelay:5];
 }
+
+- (void)testWebviewBridgeInitializerKeepsTheAllowedHostsLowercased {
+    MParticle *instance = [[MParticle alloc] init];
+    // One web view per call: a content controller refuses a second handler under the same name.
+    [instance initializeWKWebView:[[WKWebView alloc] initWithFrame:CGRectZero] bridgeName:@"abc123" allowedHosts:@[@"Example.COM", @"", (id)@42]];
+    XCTAssertEqualObjects(instance.webviewBridgeAllowedHosts, @[@"example.com"]);
+    [instance initializeWKWebView:[[WKWebView alloc] initWithFrame:CGRectZero] bridgeName:@"abc123"];
+    XCTAssertNil(instance.webviewBridgeAllowedHosts);
+}
+
+- (void)testWebviewBridgeDropsAMessageFromAHostOutsideTheList {
+    MParticle *instance = [[MParticle alloc] init];
+    instance.webviewBridgeAllowedHosts = @[@"example.com"];
+    id mockInstance = OCMPartialMock(instance);
+    OCMReject([mockInstance handleWebviewCommand:[OCMArg any] dictionary:[OCMArg any]]);
+    [instance userContentController:[[WKUserContentController alloc] init] didReceiveScriptMessage:[self webviewMessageFromHost:@"evil.example.net"]];
+    OCMVerifyAll(mockInstance);
+    [mockInstance stopMocking];
+}
+
+- (void)testWebviewBridgeHandlesAMessageFromAListedHost {
+    MParticle *instance = [[MParticle alloc] init];
+    instance.webviewBridgeAllowedHosts = @[@"example.com"];
+    id mockInstance = OCMPartialMock(instance);
+    NSDictionary *expectedDictionary = @{@"key":@"foo-key", @"value":@"foo"};
+    OCMExpect([mockInstance handleWebviewCommand:kMParticleWebViewPathSetSessionAttribute dictionary:expectedDictionary]);
+    [instance userContentController:[[WKUserContentController alloc] init] didReceiveScriptMessage:[self webviewMessageFromHost:@"app.example.com"]];
+    OCMVerifyAll(mockInstance);
+    [mockInstance stopMocking];
+}
+
+// A script message whose frame reports the given host; the body is one setSessionAttribute command.
+- (WKScriptMessage *)webviewMessageFromHost:(NSString *)host {
+    id securityOrigin = OCMClassMock([WKSecurityOrigin class]);
+    OCMStub([securityOrigin host]).andReturn(host);
+    id frameInfo = OCMClassMock([WKFrameInfo class]);
+    OCMStub([frameInfo securityOrigin]).andReturn(securityOrigin);
+    id message = OCMClassMock([WKScriptMessage class]);
+    OCMStub([message frameInfo]).andReturn(frameInfo);
+    NSString *body = [NSString stringWithFormat:@"{\"path\":\"%@\",\"value\":{\"key\":\"foo-key\",\"value\":\"foo\"}}", kMParticleWebViewPathSetSessionAttribute];
+    OCMStub([message body]).andReturn(body);
+    return message;
+}
+
 - (void)testTrackNotificationsDefault {
     id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
@@ -895,6 +942,27 @@
     [mockBackendController verifyWithDelay:5.0];
 }
 #endif
+
+- (void)testWebviewBridgeAllowsEveryHostWithoutAList {
+    MParticle *instance = [[MParticle alloc] init];
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"example.com"]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"evil.example.net"]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:nil]);
+}
+
+- (void)testWebviewBridgeAllowsOnlyListedHostsAndTheirSubdomains {
+    MParticle *instance = [[MParticle alloc] init];
+    instance.webviewBridgeAllowedHosts = @[@"example.com", @"shop.example.org"];
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"example.com"]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"app.example.com"]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"App.Example.COM"]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"shop.example.org"]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"example.org"]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"notexample.com"]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"example.com.evil.net"]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@""]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:nil]);
+}
 
 - (void)testATTAuthorizationStatusNotDetermined {
     MParticle *instance = [MParticle sharedInstance];
