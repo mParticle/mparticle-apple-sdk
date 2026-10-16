@@ -46,8 +46,13 @@ NSString *const MPKitAdjustErrorDomain = @"mParticle-Adjust";
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
     
-    NSString *appToken = configuration[@"appToken"];
-    if (!appToken) {
+    // Server configuration is parsed JSON, so an app token that is not a string, or is empty, is
+    // treated as missing: ADJConfig reads it as a string inside the dispatch_once below, and a raise
+    // there leaves the predicate spent with the kit unstarted, so a later launch cannot start it.
+    id configuredAppToken = configuration[@"appToken"];
+    NSString *appToken = [configuredAppToken isKindOfClass:[NSString class]] ? configuredAppToken : nil;
+    if (appToken.length == 0) {
+        NSLog(@"mParticle -> Not starting Adjust: the configuration has no app token");
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
         return execStatus;
     }
@@ -59,8 +64,13 @@ NSString *const MPKitAdjustErrorDomain = @"mParticle-Adjust";
     
     
     dispatch_once(&adjustPredicate, ^{
-        CFTypeRef adjustConfigRef = CFRetain((__bridge CFTypeRef)[[ADJConfig alloc] initWithAppToken:appToken
-                                                                                         environment:adjEnvironment]);
+        // ADJConfig is nil for an app token the Adjust SDK rejects; retaining nil would crash here.
+        ADJConfig *adjustConfig = [[ADJConfig alloc] initWithAppToken:appToken environment:adjEnvironment];
+        if (adjustConfig == nil) {
+            NSLog(@"mParticle -> Not starting Adjust: the Adjust SDK rejected the app token");
+            return;
+        }
+        CFTypeRef adjustConfigRef = CFRetain((__bridge CFTypeRef)adjustConfig);
         self->_adjustConfig = (__bridge ADJConfig *)adjustConfigRef;
         
         NSObject<AdjustDelegate> *delegate = nil;
