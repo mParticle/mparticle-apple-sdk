@@ -1,5 +1,13 @@
 import Foundation
 
+/// A remaining-time read at or above this is treated as unlimited; finite grants are minutes at most.
+private let unlimitedBackgroundTime: TimeInterval = 24 * 60 * 60
+/// With finite remaining time, the background check uploads and releases the app after this many one-second
+/// polls, so the app is not held for most of its grant.
+private let finiteBackgroundHoldCapPolls = 5
+/// The background check uploads and releases the app once no more than this remains.
+private let minimumBackgroundTimeRemaining: TimeInterval = 10
+
 /// Timer cancellation exposed to deterministic lifecycle tests.
 protocol MPBackendLifecycleTimer: AnyObject {
     func cancel()
@@ -174,6 +182,7 @@ extension MPBackendLifecycleCoordinator {
                 return result
             }
             var applicationState = readState()
+            var finiteReads = 0
             while applicationState == 2 { // UIApplicationStateBackground
                 self?.endSessionIfTimedOut()
                 var cancelled = false
@@ -184,10 +193,18 @@ extension MPBackendLifecycleCoordinator {
                     timeRemaining = application.timeRemaining()
                 }
                 if cancelled { return }
-                if timeRemaining <= 10 {
-                    self?.dependencies.logger()?.verbose(
-                        "Less than 10.000000 time remaining in background, uploading batch and ending background task"
-                    )
+                // Continuous modes (audio, location, VoIP), and sometimes the first read after background entry,
+                // report an unlimited value, so the cap counts polls from the first finite read.
+                finiteReads = timeRemaining >= unlimitedBackgroundTime ? 0 : finiteReads + 1
+                let lowTime = timeRemaining <= minimumBackgroundTimeRemaining
+                if lowTime || finiteReads > finiteBackgroundHoldCapPolls {
+                    let message = lowTime
+                        ? "Less than 10.000000 time remaining in background, uploading batch and ending background task"
+                        : String(
+                            format: "Background hold cap reached with %f time remaining, uploading batch and ending task",
+                            timeRemaining
+                        )
+                    self?.dependencies.logger()?.verbose(message)
                     self?.sessionDependencies.executeOnMessage { [weak self] in
                         self?.dependencies.upload { [weak self] in
                             self?.endUploadTimer()
