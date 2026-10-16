@@ -1113,11 +1113,15 @@ _Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecSt
 
 - (MPExecStatus)setSessionAttribute:(MPSession *)session key:(NSString *)key value:(id)value {
     NSAssert(session != nil, @"session cannot be nil.");
-    NSAssert([key isKindOfClass:[NSString class]], @"'key' must be a string.");
-    NSAssert([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]], @"'value' must be a string or number.");
-    
+
     if (!session) {
         return MPExecStatusMissingParam;
+    } else if (![key isKindOfClass:[NSString class]]) {
+        // A caller behind an untyped bridge can pass a number or a null where the signature says a string;
+        // the case-insensitive lookup below hands the key to Swift as a String, where another type is a
+        // crash rather than an exception, so the type is checked at runtime, not only by an assertion a
+        // release build drops.
+        return MPExecStatusInvalidDataType;
     } else if (![value isKindOfClass:[NSString class]] && ![value isKindOfClass:[NSNumber class]]) {
         return MPExecStatusInvalidDataType;
     }
