@@ -47,13 +47,15 @@ private enum ConsentKeys {
     }
 
     @objc public static func dictionary(from string: String) -> NSDictionary? {
-        let nsString = string as NSString
-        guard let rawString = nsString.utf8String, nsString.length > 0 else {
-            NSLog("mParticle -> Empty or invalid UTF-8 C string when trying to convert string=%@", string)
+        guard !string.isEmpty else {
+            NSLog("mParticle -> Empty string when trying to convert string=%@", string)
             return nil
         }
 
-        let data = Data(bytes: rawString, count: nsString.length)
+        // The data is the string's own UTF-8 bytes. Their count is not the UTF-16 length a string
+        // reports: the two differ as soon as the text holds a character outside ASCII, and a byte
+        // count taken from that length cut the JSON short and read the stored consent as none.
+        let data = Data(string.utf8)
         let jsonObject: Any
         do {
             jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
