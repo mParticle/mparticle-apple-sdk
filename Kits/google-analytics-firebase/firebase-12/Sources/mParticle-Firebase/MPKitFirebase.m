@@ -53,6 +53,7 @@ static NSString *const reservedPrefixTwo = @"google_";
 static NSString *const reservedPrefixThree = @"ga_";
 static NSString *const firebaseAllowedCharacters = @"_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 static NSString *const aToZCharacters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static NSString *const invalidFirebaseKey = @"invalid_ga4_key";
 static NSString *const instanceIdIntegrationKey = @"app_instance_id";
 
 // Consent Mapping Keys
@@ -222,7 +223,9 @@ const NSInteger FIR_MAX_CHARACTERS_IDENTITY_ATTR_VALUE_INDEX = 35;
 
     NSCharacterSet *letterSet = [NSCharacterSet characterSetWithCharactersInString:aToZCharacters];
 
-    while (![letterSet characterIsMember:[standardizedString characterAtIndex:0]] && standardizedString.length > 1) {
+    // The length is checked before the first character is read: a key with no allowed characters
+    // standardizes to an empty string, and characterAtIndex: raises on one.
+    while (standardizedString.length > 1 && ![letterSet characterIsMember:[standardizedString characterAtIndex:0]]) {
         standardizedString = [standardizedString substringFromIndex:1];
     }
 
@@ -234,6 +237,13 @@ const NSInteger FIR_MAX_CHARACTERS_IDENTITY_ATTR_VALUE_INDEX = 35;
         if (standardizedString.length > FIR_MAX_CHARACTERS_IDENTITY_NAME_INDEX) {
             standardizedString = [standardizedString substringToIndex:FIR_MAX_CHARACTERS_IDENTITY_NAME_INDEX];
         }
+    }
+
+    // An empty result takes the same invalid-key constant the GA4 kit uses, so Firebase receives a
+    // well-formed name rather than an empty one. Firebase accepts that name, so every key with no
+    // allowed characters shares the one property, as in the GA4 kit.
+    if (standardizedString.length == 0) {
+        standardizedString = invalidFirebaseKey;
     }
 
     return standardizedString;
