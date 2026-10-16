@@ -62,6 +62,8 @@
 - (BOOL)hasKitBatchingKits;
 - (nullable NSDictionary *)launchConfigurationForKitCode:(nonnull NSNumber *)kitCode;
 - (void)reconfigureKits;
+- (nullable MPConsentState *)filteredConsentState:(nullable MPConsentState *)state
+                                    configuration:(nullable MPKitConfiguration *)configuration;
 
 @end
 
