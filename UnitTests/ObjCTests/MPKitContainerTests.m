@@ -3805,6 +3805,33 @@ static atomic_bool gKitsInitializedBlockReturned;
     XCTAssertFalse(kitFilter.shouldFilter, @"An event carrying the forwarded value should pass.");
 }
 
+- (void)testFilterCommerceEventAppFamilyAttributeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addCommerceEventAppFamilyAttributeFilterWithAttributeKey:@"Key1"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedKitInstance1.sideloadedKitCode, sideloadedKitInstance1];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    XCTAssertNotNil(registeredKit);
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product[@"Key1"] = @"val1";
+    product[@"key_number"] = @"1";
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"An attribute filter should not filter the whole commerce event.");
+    MPProduct *forwardedProduct = kitFilter.forwardCommerceEvent.products.firstObject;
+    XCTAssertNotNil(forwardedProduct, @"The forwarded commerce event should still carry the product.");
+    XCTAssertNil(forwardedProduct[@"Key1"], @"An app family attribute filter should drop the attribute it names.");
+    XCTAssertEqualObjects(forwardedProduct[@"key_number"], @"1", @"An app family attribute filter should keep the other attributes.");
+}
+
 - (void)testFilterEventNameForSideloadedKit {
     MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
     MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
