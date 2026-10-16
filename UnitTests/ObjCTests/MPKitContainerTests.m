@@ -3730,6 +3730,54 @@ static atomic_bool gKitsInitializedBlockReturned;
     XCTAssertTrue(kitFilter.shouldFilter, @"Non-screen event should have been filtered by event type");
 }
 
+- (void)testFilterScreenNameForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addScreenNameFilterWithScreenName:@"Home"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedKitInstance1.sideloadedKitCode, sideloadedKitInstance1];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    XCTAssertNotNil(registeredKit);
+
+    MPEvent *screen = [[MPEvent alloc] initWithName:@"Home" type:MPEventTypeNavigation];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:screen selector:@selector(logScreen:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"A screen name filter should be signaling to filter the screen it names.");
+
+    MPEvent *otherScreen = [[MPEvent alloc] initWithName:@"Settings" type:MPEventTypeNavigation];
+    kitFilter = [kitContainer filter:registeredKit forEvent:otherScreen selector:@selector(logScreen:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"A screen name filter should leave a screen it does not name alone.");
+}
+
+- (void)testFilterScreenAttributeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addScreenAttributeFilterWithScreenName:@"Home" customAttributeKey:@"secret"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedKitInstance1.sideloadedKitCode, sideloadedKitInstance1];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    XCTAssertNotNil(registeredKit);
+
+    MPEvent *screen = [[MPEvent alloc] initWithName:@"Home" type:MPEventTypeNavigation];
+    screen.customAttributes = @{@"secret":@"hidden",
+                                @"keep":@"shown"};
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:screen selector:@selector(logScreen:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"An attribute filter should not filter the whole screen.");
+    XCTAssertNil(kitFilter.filteredAttributes[@"secret"], @"A screen attribute filter should drop the attribute it names.");
+    XCTAssertEqualObjects(kitFilter.filteredAttributes[@"keep"], @"shown", @"A screen attribute filter should keep the other attributes.");
+}
+
 - (void)testFilterEventNameForSideloadedKit {
     MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
     MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
