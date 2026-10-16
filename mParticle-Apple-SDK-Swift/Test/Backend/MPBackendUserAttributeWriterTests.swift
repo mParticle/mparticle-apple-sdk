@@ -24,8 +24,12 @@ final class MPBackendUserAttributeWriterTests: MPBackendWorkflowTestCase {
 
     func testAttributeLimitRejectsNewScalarsListsTagsAndIncrementsWithoutLogging() throws {
         try onMessageQueue { [self] in
+            // Start from a known-empty store: the mock connector's mpId() is fixed, so every test
+            // in this file shares one persisted bucket regardless of fixture.userID.
+            writer.clearUserAttributes()
             for index in 0..<100 {
-                XCTAssertEqual(writer.setUserAttribute("Field\(index)", value: NSNumber(value: index), timestamp: nil).status, .success)
+                let outcome = writer.setUserAttribute("Field\(index)", value: NSNumber(value: index), timestamp: nil)
+                XCTAssertEqual(outcome.status, .success)
             }
             let loggedBefore = fixture.persistence.savedMessages.count
             XCTAssertEqual(writer.setUserAttribute("Overflow", value: "value", timestamp: nil).status, .invalidDataType)
@@ -40,6 +44,9 @@ final class MPBackendUserAttributeWriterTests: MPBackendWorkflowTestCase {
 
     func testAttributeLimitAllowsExistingKeysAndReusesADeletedSlot() throws {
         try onMessageQueue { [self] in
+            // Start from a known-empty store: the mock connector's mpId() is fixed, so every test
+            // in this file shares one persisted bucket regardless of fixture.userID.
+            writer.clearUserAttributes()
             for index in 0..<100 {
                 _ = writer.setUserAttribute("Field\(index)", value: NSNumber(value: index), timestamp: nil)
             }
