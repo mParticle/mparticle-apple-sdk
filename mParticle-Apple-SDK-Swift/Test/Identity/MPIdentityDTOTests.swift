@@ -172,6 +172,24 @@ final class MPIdentityApiLogicTests: XCTestCase {
         )
         XCTAssertNil((parsed[1] as? NSDictionary)?["identity_type_number"])
     }
+
+    func testParsedModifyChangesKeepOnlyANumericModifiedMpid() {
+        // The record's consumer assigns the mpid to a user id declared as a number, so a value of
+        // another JSON type used to reach it as it stood.
+        let parsed = MPIdentityApiLogicPRIVATE.parsedModifyChanges([
+            ["modified_mpid": 9, "identity_type": "email"],
+            ["modified_mpid": "12345", "identity_type": "email"],
+            ["modified_mpid": "nine", "identity_type": "email"],
+            ["modified_mpid": true, "identity_type": "email"],
+            ["modified_mpid": ["9"], "identity_type": "email"],
+            ["modified_mpid": ["id": 9], "identity_type": "email"],
+            ["modified_mpid": NSNull(), "identity_type": "email"]
+        ])
+
+        XCTAssertEqual(parsed.count, 2)
+        XCTAssertEqual((parsed[0] as? NSDictionary)?["modified_mpid"] as? NSNumber, 9)
+        XCTAssertEqual((parsed[1] as? NSDictionary)?["modified_mpid"] as? NSNumber, 12345)
+    }
 }
 
 final class MPIdentityUserStorageTests: XCTestCase {
