@@ -134,6 +134,26 @@ final class MPConnectorSwiftTests: XCTestCase {
         XCTAssertTrue(certificates.allSatisfy { Data(base64Encoded: $0) != nil })
     }
 
+    func testInitialBufferCapacityIsCappedAndIgnoresUnknownOrNonPositiveLengths() {
+        // The declared length is the server's claim; it used to size the buffer as declared.
+        XCTAssertNil(MPConnector.initialBufferCapacity(forDeclaredLength: NSURLSessionTransferSizeUnknown))
+        XCTAssertNil(MPConnector.initialBufferCapacity(forDeclaredLength: 0))
+        XCTAssertNil(MPConnector.initialBufferCapacity(forDeclaredLength: -5))
+        XCTAssertEqual(MPConnector.initialBufferCapacity(forDeclaredLength: 10), 10)
+        XCTAssertEqual(
+            MPConnector.initialBufferCapacity(forDeclaredLength: MPConnector.maximumInitialBufferCapacity),
+            Int(MPConnector.maximumInitialBufferCapacity)
+        )
+        XCTAssertEqual(
+            MPConnector.initialBufferCapacity(forDeclaredLength: 1 << 40),
+            Int(MPConnector.maximumInitialBufferCapacity)
+        )
+        XCTAssertEqual(
+            MPConnector.initialBufferCapacity(forDeclaredLength: Int64.max),
+            Int(MPConnector.maximumInitialBufferCapacity)
+        )
+    }
+
     func testPerformsRequestAndReturnsResponseData() throws {
         let expectedData = Data("response".utf8)
         MPConnectorURLProtocolStub.requestHandler = { request in
