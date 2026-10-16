@@ -33,6 +33,80 @@ final class MPKitAppsFlyerTests: XCTestCase {
         mock.appsFlyerDevKey = "test-dev-key"
     }
 
+    // MARK: - Filtered consent
+
+    private func configureConsent(defaultValue: String = "Granted") {
+        kit.configuration = [
+            "gdprApplies": "true",
+            "consentMapping": """
+            [{"value":"ad_storage","map":"advertising"},
+             {"value":"ad_user_data","map":"advertising"},
+             {"value":"ad_personalization","map":"advertising"}]
+            """,
+            "defaultAdStorageConsent": defaultValue,
+            "defaultAdUserDataConsent": defaultValue,
+            "defaultAdPersonalizationConsent": defaultValue
+        ]
+        kit.providerKitInstance = mock
+    }
+
+    private func consentState(consented: Bool) -> MPConsentState {
+        let consent = MPGDPRConsent()
+        consent.consented = consented
+        let state = MPConsentState()
+        state.addGDPRConsentState(consent, purpose: "advertising")
+        return state
+    }
+
+    func test_setConsentState_usesTheSuppliedDenialInsteadOfGrantedDefaults() throws {
+        configureConsent()
+        let supplied = consentState(consented: false)
+
+        let status = kit.setConsentState(supplied)
+
+        XCTAssertEqual(status.returnCode, .success)
+        let forwarded = try XCTUnwrap(mock.recordedConsents.last)
+        XCTAssertTrue(forwarded.isUserSubjectToGDPR)
+        XCTAssertFalse(forwarded.hasConsentForDataUsage)
+        XCTAssertFalse(forwarded.hasConsentForAdsPersonalization)
+        XCTAssertEqual(forwarded.hasConsentForAdStorage, NSNumber(value: false))
+        XCTAssertNotNil(supplied.gdprConsentState())
+    }
+
+    func test_setConsentState_usesTheSuppliedGrantInsteadOfDeniedDefaults() throws {
+        configureConsent(defaultValue: "Denied")
+
+        _ = kit.setConsentState(consentState(consented: true))
+
+        let forwarded = try XCTUnwrap(mock.recordedConsents.last)
+        XCTAssertTrue(forwarded.hasConsentForDataUsage)
+        XCTAssertTrue(forwarded.hasConsentForAdsPersonalization)
+        XCTAssertEqual(forwarded.hasConsentForAdStorage, NSNumber(value: true))
+    }
+
+    func test_setConsentState_withNilUsesTheConfiguredDefaults() throws {
+        configureConsent(defaultValue: "Denied")
+
+        _ = kit.setConsentState(nil)
+
+        let forwarded = try XCTUnwrap(mock.recordedConsents.last)
+        XCTAssertTrue(forwarded.isUserSubjectToGDPR)
+        XCTAssertFalse(forwarded.hasConsentForDataUsage)
+        XCTAssertEqual(forwarded.hasConsentForAdStorage, NSNumber(value: false))
+    }
+
+    func test_consentReplay_forwardsEveryStateItIsGiven() throws {
+        configureConsent()
+        XCTAssertTrue(kit.supportsConsentStateReplay())
+
+        _ = kit.setConsentState(consentState(consented: false))
+        _ = kit.setConsentState(consentState(consented: true))
+        _ = kit.setConsentState(consentState(consented: false))
+
+        XCTAssertEqual(mock.recordedConsents.count, 3)
+        XCTAssertEqual(mock.recordedConsents.map { $0.hasConsentForDataUsage }, [false, true, false])
+    }
+
     // MARK: - convertToKeyValuePairs
 
     func test_convertToKeyValuePairs_createsLowercasedMapping() {
