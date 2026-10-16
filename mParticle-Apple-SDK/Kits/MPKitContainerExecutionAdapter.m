@@ -1794,14 +1794,29 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                 
                 if (userIdentities && [kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)]) {
                     for (NSDictionary *userIdentity in userIdentities) {
+                        // The array is read back from storage; a malformed entry must not raise here.
+                        if (![userIdentity isKindOfClass:[NSDictionary class]]) {
+                            continue;
+                        }
                         MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
+                        // The stored array holds the device identities beside the user identities, and no
+                        // other path hands a device identity to a kit: setIdentitySync gates on this same
+                        // check and the filtered user drops the device types.
+                        if (![MPIdentityUserStoragePRIVATE isUserIdentity:(NSInteger)identityType]) {
+                            continue;
+                        }
                         if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)identityType]) {
                             NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                            
-                            @try {
-                                [kitInstance setUserIdentity:identityString identityType:identityType];
-                            } @catch (NSException *exception) {
-                                MPILogError(@"Exception thrown while forwarding a user identity to kit (%@): %@", kitInstance, exception);
+
+                            // The kit's own identity filter applies here as it does to every later identity
+                            // change, and as the user attribute loop above applies the attribute filter.
+                            MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
+                            if (!kitFilter.shouldFilter) {
+                                @try {
+                                    [kitInstance setUserIdentity:identityString identityType:identityType];
+                                } @catch (NSException *exception) {
+                                    MPILogError(@"Exception thrown while forwarding a user identity to kit (%@): %@", kitInstance, exception);
+                                }
                             }
                         }
                     }
