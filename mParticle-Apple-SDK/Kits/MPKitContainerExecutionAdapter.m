@@ -685,8 +685,14 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
         
         // Create default kit configuration
         NSDictionary *remoteConfigDict = [sideloadedKit getKitFilters];
-        NSDictionary *configDict = @{@"id": kitCode, @"as": @{}, kMPRemoteConfigKitHashesKey: remoteConfigDict};
-        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configDict];
+        NSMutableDictionary *configDict = [@{@"id": kitCode, @"as": @{}, kMPRemoteConfigKitHashesKey: remoteConfigDict} mutableCopy];
+        // The parser reads the conditional-forwarding filter from the configuration's own "avf" key,
+        // where the server sends it, never from inside the filters dictionary the builder returns.
+        NSDictionary *attributeValueFilter = remoteConfigDict[@"avf"];
+        if ([attributeValueFilter isKindOfClass:[NSDictionary class]] && attributeValueFilter.count > 0) {
+            configDict[@"avf"] = [attributeValueFilter copy];
+        }
+        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:[configDict copy]];
         self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
         
         // Finish registering kit and call its callbacks

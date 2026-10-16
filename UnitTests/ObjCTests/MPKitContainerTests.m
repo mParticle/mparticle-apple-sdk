@@ -3778,6 +3778,33 @@ static atomic_bool gKitsInitializedBlockReturned;
     XCTAssertEqualObjects(kitFilter.filteredAttributes[@"keep"], @"shown", @"A screen attribute filter should keep the other attributes.");
 }
 
+- (void)testConditionalForwardingForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 setEventAttributeConditionalForwardingWithAttributeName:@"tier" attributeValue:@"gold" onlyForward:YES];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedKitInstance1.sideloadedKitCode, sideloadedKitInstance1];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    XCTAssertNotNil(registeredKit);
+
+    MPEvent *silverEvent = [[MPEvent alloc] initWithName:@"Purchase" type:MPEventTypeTransaction];
+    silverEvent.customAttributes = @{@"tier":@"silver"};
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:silverEvent selector:@selector(logEvent:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Conditional forwarding should filter an event without the forwarded value.");
+
+    MPEvent *goldEvent = [[MPEvent alloc] initWithName:@"Purchase" type:MPEventTypeTransaction];
+    goldEvent.customAttributes = @{@"tier":@"gold"};
+    kitFilter = [kitContainer filter:registeredKit forEvent:goldEvent selector:@selector(logEvent:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"An event carrying the forwarded value should pass.");
+}
+
 - (void)testFilterEventNameForSideloadedKit {
     MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
     MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
