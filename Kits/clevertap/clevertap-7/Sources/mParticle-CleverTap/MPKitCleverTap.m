@@ -33,6 +33,24 @@ static NSString *const kLibVersion = @"9.7.3";
     return [[MPKitExecStatus alloc] initWithSDKCode:self.class.kitCode returnCode:returnCode];
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every configuration
+// refresh, so neither the dictionary nor its values are guaranteed to hold the type the mParticle
+// UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
 #pragma mark - MPKitProtocol methods
 
 #pragma mark Kit instance and lifecycle
@@ -53,12 +71,22 @@ static NSString *const kLibVersion = @"9.7.3";
 }
 
 - (void)start {
+    // The core also calls -start on a kit whose launch reported RequirementsNotMet, where no
+    // configuration was retained. The credentials are set once per process, so the predicate must
+    // not be spent before there are strings to set.
+    NSString *accountID = [self configurationStringForKey:ctAccountID];
+    NSString *accountToken = [self configurationStringForKey:ctAccountToken];
+    if (accountID.length == 0 || accountToken.length == 0) {
+        NSLog(@"mParticle -> Not starting CleverTap: the configuration has no account ID or token");
+        return;
+    }
+
     static dispatch_once_t kitPredicate;
 
     dispatch_once(&kitPredicate, ^{
-        NSString *accountID = self->_configuration[ctAccountID];
-        NSString *accountToken = self->_configuration[ctAccountToken];
-        NSString *region = self->_configuration[ctRegion];
+        // A region of another type is treated as unset: CleverTap takes nil as its default region,
+        // and a raise inside this block would leave the predicate spent and the kit unstarted.
+        NSString *region = [self configurationStringForKey:ctRegion];
 
         [CleverTap setCredentialsWithAccountID:accountID token:accountToken region:region];
         [[CleverTap sharedInstance] setLibrary:kLibName];
@@ -205,7 +233,7 @@ static NSString *const kLibVersion = @"9.7.3";
     NSDictionary *userIDsCopy = (request.userIdentities != nil) ? [request.userIdentities copy] : @{};
     NSMutableDictionary *profile = [NSMutableDictionary new];
 
-    NSString *userIdField = self->_configuration[kUserIdField];
+    NSString *userIdField = [self configurationStringForKey:kUserIdField];
     if ([userIdField isEqualToString:@"mpid"]) {
         profile[@"Identity"] = [user.userId stringValue];
     } else if (userIDsCopy[@(MPUserIdentityCustomerId)]) {
