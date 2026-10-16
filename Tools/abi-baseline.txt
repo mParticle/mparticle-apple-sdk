@@ -481,6 +481,7 @@ METHOD|- (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(null
 METHOD|- (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 METHOD|- (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion;
 METHOD|- (void)incrementForwardCount;
+METHOD|- (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName allowedHosts:(nullable NSArray<NSString *> *)allowedHosts;
 METHOD|- (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName;
 METHOD|- (void)initializeWKWebView:(WKWebView *)webView;
 METHOD|- (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;
