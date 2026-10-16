@@ -80,6 +80,86 @@
     _kitApi = [[MPKitAPI alloc] initWithKitCode:@42];
 }
 
+- (void)tearDown {
+    NSNumber *userId = [MParticle sharedInstance].identity.currentUser.userId;
+    if (userId) {
+        [MPPersistenceUtilities setConsentState:nil forMpid:userId];
+    }
+    [MPPersistenceUtilities setDeviceConsentState:nil];
+    [super tearDown];
+}
+
+#pragma mark - Filtered consent
+
+- (MPConsentState *)consentStateWithMarketingConsented:(BOOL)marketingConsented {
+    MPConsentState *state = [[MPConsentState alloc] init];
+    MPGDPRConsent *marketing = [[MPGDPRConsent alloc] init];
+    marketing.consented = marketingConsented;
+    [state addGDPRConsentState:marketing purpose:@"marketing"];
+    MPGDPRConsent *analytics = [[MPGDPRConsent alloc] init];
+    analytics.consented = YES;
+    [state addGDPRConsentState:analytics purpose:@"analytics"];
+    MPCCPAConsent *ccpa = [[MPCCPAConsent alloc] init];
+    ccpa.consented = YES;
+    [state setCCPAConsentState:ccpa];
+    return state;
+}
+
+- (MPConsentState *)filteredConsentForStoredState:(MPConsentState *)storedState kitConfiguration:(id)kitConfiguration {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    [MPPersistenceUtilities setDeviceConsentState:nil];
+    [MPPersistenceUtilities setConsentState:storedState forMpid:currentUser.userId];
+    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser
+                                                                             kitConfiguration:kitConfiguration];
+    return filteredUser.consentState;
+}
+
+- (void)testFilteredConsentKeepsBothRegulationsAndAppliesThePurposeFilter {
+    MParticle *mparticle = MParticle.sharedInstance;
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *marketingHash = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"marketing"];
+    MPKitConfiguration *unfiltered = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @42, @"as": @{}, @"hs": @{}}];
+    MPKitConfiguration *marketingFiltered = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @42, @"as": @{}, @"hs": @{@"pur": @{marketingHash: @0}}}];
+    MPConsentState *stored = [self consentStateWithMarketingConsented:NO];
+
+    MPConsentState *kept = [self filteredConsentForStoredState:stored kitConfiguration:unfiltered];
+    MPConsentState *filtered = [self filteredConsentForStoredState:stored kitConfiguration:marketingFiltered];
+
+    XCTAssertFalse(kept.gdprConsentState[@"marketing"].consented);
+    XCTAssertTrue(kept.gdprConsentState[@"analytics"].consented);
+    XCTAssertTrue(kept.ccpaConsentState.consented);
+    XCTAssertNil(filtered.gdprConsentState[@"marketing"]);
+    XCTAssertTrue(filtered.gdprConsentState[@"analytics"].consented);
+    XCTAssertEqual(stored.gdprConsentState.count, 2U);
+}
+
+- (void)testFilteredConsentPrefersDeviceConsentOverTheStoredUserState {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    [MPPersistenceUtilities setConsentState:[self consentStateWithMarketingConsented:YES] forMpid:currentUser.userId];
+    [MPPersistenceUtilities setDeviceConsentState:[self consentStateWithMarketingConsented:NO]];
+    [_kitContainer configureKits:nil];
+    [_kitContainer configureKits:@[@{@"id": @42, @"as": @{}, @"hs": @{}}]];
+
+    FilteredMParticleUser *filteredUser = [_kitApi getCurrentUserWithKit:self];
+
+    XCTAssertFalse(filteredUser.consentState.gdprConsentState[@"marketing"].consented);
+    XCTAssertTrue([MPPersistenceUtilities consentStateForMpid:currentUser.userId].gdprConsentState[@"marketing"].consented);
+}
+
+- (void)testFilteredConsentWithoutAUsableKitConfigurationReturnsNil {
+    MPConsentState *stored = [self consentStateWithMarketingConsented:NO];
+
+    XCTAssertNil([self filteredConsentForStoredState:stored kitConfiguration:nil]);
+    XCTAssertNil([self filteredConsentForStoredState:stored kitConfiguration:@{}]);
+}
+
+- (void)testFilteredConsentWithoutAStoredStateReturnsNil {
+    MPKitConfiguration *configuration = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @42, @"as": @{}, @"hs": @{}}];
+
+    XCTAssertNil([self filteredConsentForStoredState:nil kitConfiguration:configuration]);
+}
+
 - (void)testIntegrationAttributes {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
