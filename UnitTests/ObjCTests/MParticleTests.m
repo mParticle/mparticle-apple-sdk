@@ -33,6 +33,7 @@
 #if TARGET_OS_IOS == 1
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message;
 #endif
+- (nullable NSString *)webviewAttributeKeyFromDictionary:(NSDictionary *)dictionary;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, copy, nullable) NSArray<NSString *> *webviewBridgeAllowedHosts;
@@ -797,6 +798,37 @@
     [instance handleWebviewCommand:command dictionary:dictionary];
 
     [mockBackend verifyWithDelay:5];
+}
+
+- (void)testWebviewAttributeKeyReadsOnlyAString {
+    MParticle *instance = [[MParticle alloc] init];
+    XCTAssertEqualObjects([instance webviewAttributeKeyFromDictionary:@{@"key":@"attribute"}], @"attribute");
+    XCTAssertNil([instance webviewAttributeKeyFromDictionary:@{}]);
+    for (id key in @[@42, @YES, [NSNull null], @[], @{}]) {
+        XCTAssertNil([instance webviewAttributeKeyFromDictionary:@{@"key":key}], @"a key of %@ should read as absent", [key class]);
+    }
+}
+
+- (void)testWebviewSessionAttributeWithNonStringKeyIsDropped {
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    OCMReject([mockInstance setSessionAttribute:[OCMArg any] value:[OCMArg any]]);
+    for (id key in @[@42, @YES, [NSNull null], @[], @{}]) {
+        NSDictionary *dictionary = @{@"key":key, @"value":@"foo"};
+        [instance handleWebviewCommand:kMParticleWebViewPathSetSessionAttribute dictionary:dictionary];
+    }
+    OCMVerifyAll(mockInstance);
+    [mockInstance stopMocking];
+}
+
+- (void)testWebviewSessionAttributeWithAStringKeyIsSet {
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    OCMExpect([mockInstance setSessionAttribute:@"foo-key" value:@"foo"]);
+    NSDictionary *dictionary = @{@"key":@"foo-key", @"value":@"foo"};
+    [instance handleWebviewCommand:kMParticleWebViewPathSetSessionAttribute dictionary:dictionary];
+    OCMVerifyAll(mockInstance);
+    [mockInstance stopMocking];
 }
 
 - (void)testWebviewBridgeInitializerKeepsTheAllowedHostsLowercased {
