@@ -116,4 +116,47 @@ class MPResponseConfigTests: XCTestCase {
 
         XCTAssertNotNil(responseConfig, "Should not have been nil.")
     }
+
+    private func configuration(withKits kits: [[String: Any]]) -> [String: Any] {
+        [
+            RemoteConfig.kMPRemoteConfigKitsKey: kits,
+            RemoteConfig.kMPRemoteConfigCustomModuleSettingsKey: NSNull(),
+            RemoteConfig.kMPRemoteConfigRampKey: 100,
+            RemoteConfig.kMPRemoteConfigTriggerKey: NSNull(),
+            RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey: RemoteConfig.kMPRemoteConfigExceptionHandlingModeIgnore,
+            RemoteConfig.kMPRemoteConfigSessionTimeoutKey: 112
+        ]
+    }
+
+    private var consentFilteredKitBeforeAnUnfilteredOne: [[String: Any]] {
+        [
+            ["id": 1, "as": [String: Any](), ConsentFilteringSwift.kMPConsentKitFilter: ["i": true]],
+            ["id": 2, "as": [String: Any]()]
+        ]
+    }
+
+    func testOneConsentFilteredKitDefersEveryKitUntilIdentityIsKnown() {
+        // The filter on the first kit decides, whatever the kits after it carry.
+        connector.userIdValue = 0
+
+        let responseConfig = MPResponseConfig(
+            configuration: configuration(withKits: consentFilteredKitBeforeAnUnfilteredOne),
+            connector: connector
+        )
+
+        XCTAssertNotNil(responseConfig)
+        XCTAssertEqual(connector.deferredKitConfiguration?.count, 2)
+    }
+
+    func testKnownIdentityDoesNotDeferConsentFilteredKits() {
+        connector.userIdValue = 1
+
+        let responseConfig = MPResponseConfig(
+            configuration: configuration(withKits: consentFilteredKitBeforeAnUnfilteredOne),
+            connector: connector
+        )
+
+        XCTAssertNotNil(responseConfig)
+        XCTAssertNil(connector.deferredKitConfiguration)
+    }
 }

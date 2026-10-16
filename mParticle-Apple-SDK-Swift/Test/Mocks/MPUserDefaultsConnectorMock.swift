@@ -26,8 +26,9 @@ class MPUserDefaultsConnectorMock: MPUserDefaultsConnectorProtocol {
     func configureDataBlocking(_ blockSettings: [AnyHashable: Any]?) {
     }
 
+    var userIdValue: NSNumber? = 1
     func userId() -> NSNumber? {
-        return 1
+        return userIdValue
     }
 
     func setAllowASR(_ allowASR: Bool) {
