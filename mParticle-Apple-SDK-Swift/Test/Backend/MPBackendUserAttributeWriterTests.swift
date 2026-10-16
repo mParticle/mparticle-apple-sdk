@@ -22,6 +22,46 @@ final class MPBackendUserAttributeWriterTests: MPBackendWorkflowTestCase {
         }
     }
 
+    func testAttributeLimitRejectsNewScalarsListsTagsAndIncrementsWithoutLogging() throws {
+        try onMessageQueue { [self] in
+            // Start from a known-empty store: the mock connector's mpId() is fixed, so every test
+            // in this file shares one persisted bucket regardless of fixture.userID.
+            writer.clearUserAttributes()
+            for index in 0..<100 {
+                let outcome = writer.setUserAttribute("Field\(index)", value: NSNumber(value: index), timestamp: nil)
+                XCTAssertEqual(outcome.status, .success)
+            }
+            let loggedBefore = fixture.persistence.savedMessages.count
+            XCTAssertEqual(writer.setUserAttribute("Overflow", value: "value", timestamp: nil).status, .invalidDataType)
+            XCTAssertEqual(writer.setUserAttribute("OverflowList", values: ["value"], timestamp: nil).status, .invalidDataType)
+            XCTAssertEqual(writer.setUserTag("OverflowTag", timestamp: nil).status, .invalidDataType)
+            XCTAssertNil(writer.incrementUserAttribute("OverflowIncrement", byValue: NSNumber(value: 1)))
+            XCTAssertEqual(fixture.persistence.savedMessages.count, loggedBefore)
+        }
+        XCTAssertEqual(stored().count, 100)
+        XCTAssertNil(stored()["OverflowIncrement"])
+    }
+
+    func testAttributeLimitAllowsExistingKeysAndReusesADeletedSlot() throws {
+        try onMessageQueue { [self] in
+            // Start from a known-empty store: the mock connector's mpId() is fixed, so every test
+            // in this file shares one persisted bucket regardless of fixture.userID.
+            writer.clearUserAttributes()
+            for index in 0..<100 {
+                _ = writer.setUserAttribute("Field\(index)", value: NSNumber(value: index), timestamp: nil)
+            }
+            XCTAssertEqual(writer.setUserAttribute("field0", value: NSNumber(value: 10), timestamp: nil).status, .success)
+            XCTAssertEqual(writer.incrementUserAttribute("FIELD0", byValue: NSNumber(value: 1)), NSNumber(value: 11))
+            fixture.validationResult = .nilValue
+            XCTAssertEqual(writer.removeUserAttribute("Field0", timestamp: nil).status, .success)
+            fixture.validationResult = .valid
+            XCTAssertEqual(writer.setUserAttribute("Replacement", value: "value", timestamp: nil).status, .success)
+        }
+        XCTAssertEqual(stored().count, 100)
+        XCTAssertNil(stored()["Field0"])
+        XCTAssertEqual(stored()["Replacement"] as? String, "value")
+    }
+
     func testSettingAnAttributeStoresItAndLogsTheChange() throws {
         try onMessageQueue { [self] in
             let outcome = writer.setUserAttribute("Height", value: "183", timestamp: Date(timeIntervalSince1970: 100))

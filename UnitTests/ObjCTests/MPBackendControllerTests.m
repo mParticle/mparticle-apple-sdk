@@ -1896,6 +1896,22 @@
     XCTAssertEqualObjects(session.attributesDictionary[@"foo-session-attribute-1"], @5);
 }
 
+- (void)testSessionAttributeLimitPreservesExistingKeysAndRejectsNewIncrements {
+    MPSession *session = [[MPSession alloc] init];
+    for (NSUInteger index = 0; index < 100; index++) {
+        session.attributesDictionary[[NSString stringWithFormat:@"Field%lu", (unsigned long)index]] = @(index);
+    }
+    XCTAssertEqual([self.backendController setSessionAttribute:session key:@"Overflow" value:@1], MPExecStatusInvalidDataType);
+    XCTAssertNil([self.backendController incrementSessionAttribute:session key:@"OverflowIncrement" byValue:@1]);
+    XCTAssertEqual(session.attributesDictionary.count, 100);
+    XCTAssertEqual([self.backendController setSessionAttribute:session key:@"field0" value:@10], MPExecStatusSuccess);
+    XCTAssertEqualObjects([self.backendController incrementSessionAttribute:session key:@"FIELD0" byValue:@1], @11);
+    XCTAssertEqual(session.attributesDictionary.count, 100);
+    [session.attributesDictionary removeObjectForKey:@"Field0"];
+    XCTAssertEqual([self.backendController setSessionAttribute:session key:@"Replacement" value:@1], MPExecStatusSuccess);
+    XCTAssertEqual(session.attributesDictionary.count, 100);
+}
+
 - (void)testSessionAttributeWithNonStringKeyIsRejected {
     MPSession *session = [[MPSession alloc] init];
     for (id key in @[@42, @YES, [NSNull null], @[], @{}]) {
