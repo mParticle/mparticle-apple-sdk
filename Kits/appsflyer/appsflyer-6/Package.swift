@@ -32,7 +32,7 @@ let package = Package(
     dependencies: [
         mParticleAppleSDK,
         .package(url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Static",
-                 .upToNextMajor(from: "6.0.0")),
+                 .upToNextMajor(from: "7.0.2")),
         .package(
             url: "https://github.com/erikdoe/ocmock",
             branch: "master"
