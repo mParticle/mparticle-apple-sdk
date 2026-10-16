@@ -86,7 +86,9 @@
 
 - (void)addScreenNameFilterWithScreenName:(NSString *)screenName {
     NSString *hashedValue = [self.hasher hashEventType:MPEventTypeSwiftClick eventName:screenName isLogScreen:YES];
-    self.eventNameFilters[hashedValue] = @0;
+    // A screen filter belongs in the screen dictionary ("svec"), which is the one the filter engine
+    // reads for a logScreen: call. The event dictionary is never read for a screen.
+    self.screenNameFilters[hashedValue] = @0;
 }
 
 - (void)addEventAttributeFilterWithEventType:(MPEventType)eventType eventName:(NSString *)eventName customAttributeKey:(NSString *)customAttributeKey {
@@ -103,7 +105,7 @@
                                                       eventName:screenName
                                              customAttributeName:customAttributeKey
                                                     isLogScreen:YES];
-    self.eventAttributeFilters[hashedValue] = @0;
+    self.screenAttributeFilters[hashedValue] = @0;
 }
 
 - (void)addUserIdentityFilterWithUserIdentity:(MPUserIdentity)userIdentity {
