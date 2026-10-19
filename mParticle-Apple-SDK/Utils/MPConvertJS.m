@@ -190,6 +190,10 @@
     }
 
     for (MPWebviewIdentityPairJS *pair in parsed.pairs) {
+        // Device identities are supplied by the native SDK, never by web content.
+        if (pair.identityType >= MPIdentityIOSAdvertiserId) {
+            return nil;
+        }
         [request setIdentity:pair.identity identityType:(MPIdentity)pair.identityType];
     }
 

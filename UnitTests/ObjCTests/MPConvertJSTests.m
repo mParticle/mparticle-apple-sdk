@@ -12,6 +12,31 @@
 
 @implementation MPConvertJSTests
 
+- (void)testBridgeIdentityRequestAcceptsUserIdentityTypes {
+    for (NSUInteger type = MPIdentityOther; type < MPIdentityIOSAdvertiserId; type++) {
+        NSDictionary *json = @{@"UserIdentities": @[@{@"Identity": @"synthetic", @"Type": @(type)}]};
+        XCTAssertNotNil([MPConvertJS_PRIVATE identityApiRequest:json]);
+    }
+}
+
+- (void)testBridgeIdentityRequestRejectsDeviceAndUnknownIdentityTypes {
+    NSArray<NSNumber *> *types = @[@(MPIdentityIOSAdvertiserId), @(MPIdentityIOSVendorId),
+                                   @(MPIdentityPushToken), @(MPIdentityDeviceApplicationStamp),
+                                   @(-1), @(NSUIntegerMax)];
+    for (NSNumber *type in types) {
+        NSDictionary *json = @{@"UserIdentities": @[@{@"Identity": @"synthetic", @"Type": type}]};
+        XCTAssertNil([MPConvertJS_PRIVATE identityApiRequest:json]);
+    }
+}
+
+- (void)testBridgeIdentityRequestRejectsDeviceIdentityInTopLevelOverride {
+    for (NSNumber *type in @[@(MPIdentityIOSAdvertiserId), @(MPIdentityIOSVendorId), @(MPIdentityPushToken)]) {
+        NSDictionary *json = @{@"UserIdentities": @[@{@"Identity": @"synthetic", @"Type": @(MPIdentityCustomerId)}],
+                               @"Identity": @"synthetic-device", @"Type": type};
+        XCTAssertNil([MPConvertJS_PRIVATE identityApiRequest:json]);
+    }
+}
+
 - (void)testConvertTransaction {
     NSDictionary *json = @{
                            @"Affiliation":@"Test affiliation",
