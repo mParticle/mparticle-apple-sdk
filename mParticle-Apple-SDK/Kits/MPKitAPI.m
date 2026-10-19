@@ -112,8 +112,27 @@
 
 #pragma mark Kit Identity methods
 
+// The container keys a kit's configuration, its filters among it, by the code it registered the kit
+// under: the class code for a bundled kit, a code from the sideloaded range for a sideloaded kit, whose
+// class code the protocol says is ignored. The container builds this API with that registered code; an
+// API built without one takes the kit's sideloaded code, else its class code.
+- (NSNumber *)kitCodeForFilteringKit:(id<MPKitProtocol>)kit {
+    if (_kitCode != nil) {
+        return _kitCode;
+    }
+    if ([kit respondsToSelector:@selector(sideloadedKitCode)]) {
+        NSNumber *sideloadedKitCode = kit.sideloadedKitCode;
+        if (sideloadedKitCode != nil) {
+            return sideloadedKitCode;
+        }
+    }
+    return [[kit class] kitCode];
+}
+
 - (FilteredMParticleUser *_Nonnull)getCurrentUserWithKit:(id<MPKitProtocol> _Nonnull)kit {
-    return [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:[MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[[[kit class] kitCode]]];
+    NSNumber *kitCode = [self kitCodeForFilteringKit:kit];
+    MPKitConfiguration *kitConfiguration = [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[kitCode];
+    return [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:kitConfiguration];
 }
 
 - (nullable NSNumber *)incrementUserAttribute:(NSString *_Nonnull)key byValue:(NSNumber *_Nonnull)value forUser:(FilteredMParticleUser *_Nonnull)filteredUser {
