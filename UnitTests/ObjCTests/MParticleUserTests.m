@@ -3,24 +3,37 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
+#import "MPKitContainer+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 #import "FilteredMParticleUser.h"
 
+// Ceilings, not delays: the positive wait returns as soon as both forwards land. The inverted
+// wait is spent in full on every run, so keep it short.
+static const NSTimeInterval kMPUserAttributeForwardTimeout = 5.0;
+static const NSTimeInterval kMPUserAttributeNoForwardTimeout = 0.3;
+
 @interface MParticle ()
 
++ (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 
 @interface MParticleUserTests : MPBaseTestCase
 
+@property (nonatomic, strong) id mockBackendController;
+@property (nonatomic, strong) id mockKitContainer;
+
 @end
 
 @interface MParticleUser ()
 
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 - (BOOL)forwardLegacyUserIdentityToKitContainer:(NSString *)identityString identityType:(MPUserIdentity)identityType execStatus:(MPExecStatus) execStatus;
 @end
 
@@ -99,5 +112,95 @@
     XCTAssertTrue([filteredUser.userAttributes isKindOfClass:[NSMutableDictionary class]]);
 }
 
+- (void)tearDown {
+    // Stop the mocks only once the queues that can still reach them are empty: an increment
+    // hops onto the message queue and then onto main, and a block landing on a stopped mock
+    // raises where XCTest cannot catch it.
+    if (self.mockBackendController != nil || self.mockKitContainer != nil) {
+        dispatch_sync([MParticle messageQueue], ^{});
+        [self mp_drainMainQueue];
+        [MParticle sharedInstance].kitContainer_PRIVATE = nil;
+        [self.mockKitContainer stopMocking];
+        [self.mockBackendController stopMocking];
+        self.mockKitContainer = nil;
+        self.mockBackendController = nil;
+    }
+    [super tearDown];
+}
+
+// Tests run on the main thread, so spin the run loop rather than block on it.
+- (void)mp_drainMainQueue {
+    __block BOOL drained = NO;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        drained = YES;
+    });
+    NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:kMPUserAttributeForwardTimeout];
+    while (!drained && [[NSDate date] compare:deadline] == NSOrderedAscending) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.005]];
+    }
+}
+
+// Installs a backend controller whose increment returns newValue, and a kit container mock to
+// record what the user forwards.
+- (MParticleUser *)userWithIncrementResult:(NSNumber *)newValue {
+    self.mockBackendController = OCMClassMock([MPBackendController_PRIVATE class]);
+    OCMStub([self.mockBackendController incrementUserAttribute:OCMOCK_ANY byValue:OCMOCK_ANY]).andReturn(newValue);
+
+    self.mockKitContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [MParticle sharedInstance].kitContainer_PRIVATE = self.mockKitContainer;
+
+    MParticleUser *user = [[MParticleUser alloc] init];
+    user.backendController = self.mockBackendController;
+    return user;
+}
+
+// The core returns nil when it refuses an increment: an unusable key or value, or a stored value
+// that is not a number. Kits must not be told the attribute changed, and a kit that implements
+// only -setUserAttribute:value: must not be handed the nil as the attribute's new value.
+- (void)testRefusedIncrementIsNotForwardedToKits {
+    MParticleUser *user = [self userWithIncrementResult:nil];
+
+    XCTestExpectation *forwarded = [self expectationWithDescription:@"a refused increment reaches no kit"];
+    forwarded.inverted = YES;
+    OCMStub([self.mockKitContainer forwardSDKCall:[OCMArg anySelector]
+                                 userAttributeKey:OCMOCK_ANY
+                                            value:OCMOCK_ANY
+                                       kitHandler:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        [forwarded fulfill];
+    });
+
+    [user incrementUserAttribute:@"push ups" byValue:@1];
+
+    dispatch_sync([MParticle messageQueue], ^{});
+    [self waitForExpectations:@[forwarded] timeout:kMPUserAttributeNoForwardTimeout];
+}
+
+// The counterpart: an increment the core accepts still reaches kits both ways - the increment
+// itself, and the new total for kits without an increment method - so the guard above cannot
+// quietly swallow a successful increment.
+- (void)testAcceptedIncrementIsForwardedToKits {
+    MParticleUser *user = [self userWithIncrementResult:@5];
+
+    XCTestExpectation *incrementForwarded = [self expectationWithDescription:@"kits receive the increment"];
+    OCMStub([self.mockKitContainer forwardSDKCall:@selector(incrementUserAttribute:byValue:)
+                                 userAttributeKey:@"push ups"
+                                            value:@1
+                                       kitHandler:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        [incrementForwarded fulfill];
+    });
+
+    XCTestExpectation *newValueForwarded = [self expectationWithDescription:@"kits receive the new total"];
+    OCMStub([self.mockKitContainer forwardSDKCall:@selector(setUserAttribute:value:)
+                                 userAttributeKey:@"push ups"
+                                            value:@5
+                                       kitHandler:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        [newValueForwarded fulfill];
+    });
+
+    [user incrementUserAttribute:@"push ups" byValue:@1];
+
+    [self waitForExpectations:@[incrementForwarded, newValueForwarded] timeout:kMPUserAttributeForwardTimeout];
+}
 
 @end

@@ -182,6 +182,11 @@
         NSNumber *newValue = [self.backendController incrementUserAttribute:key byValue:value];
         
         MPILogDebug(@"User attribute %@ incremented by %@. New value: %@", key, value, newValue);
+        if (newValue == nil) {
+            MPILogDebug(@"User attribute increment refused, not forwarded to kits: %@", key);
+            return;
+        }
+
         if (MParticle.sharedInstance.dataPlanFilter == nil || ![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(incrementUserAttribute:byValue:)

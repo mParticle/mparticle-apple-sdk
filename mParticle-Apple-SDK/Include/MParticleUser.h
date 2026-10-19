@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Sets a single user attribute. The property will be combined with any existing attributes.
- There is a 100 count limit to user attributes.
+ There is no limit to the number of user attributes.
  @param key The user attribute key
  @param value The user attribute value
  */
@@ -79,7 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Sets a single user tag or attribute.  The property will be combined with any existing attributes.
- There is a 100 count limit to user attributes.
+ There is no limit to the number of user attributes.
  @param tag The user tag/attribute
  */
 - (void)setUserTag:(NSString *)tag;
