@@ -1220,6 +1220,16 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName;
 
+/**
+ Create a bridge between the mParticle web SDK and iOS SDK, open only to frames from the given hosts.
+
+ This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, as `initializeWKWebView:bridgeName:` does. Every frame in the web view can reach that handler, not only the page the app loaded, so without a list a third-party frame, or a page the user navigates to, can drive identity, opt-out and user attributes through the bridge.
+ @param webView The web view to be initialized
+ @param bridgeName The name of the webview bridge
+ @param allowedHosts The host names whose frames may use the bridge, each with its subdomains (`example.com` admits `app.example.com`); nil or empty keeps the bridge open to every origin, as `initializeWKWebView:bridgeName:` does. The list applies to every web view this instance bridges, and the latest call's list stands.
+ */
+- (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName allowedHosts:(nullable NSArray<NSString *> *)allowedHosts;
+
 #pragma mark - Manual Notification logging
 /**
  Logs a Notification event for a notification that has been reviewed but not acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:

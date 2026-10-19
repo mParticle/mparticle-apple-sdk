@@ -97,6 +97,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
+@property (nonatomic, copy, nullable) NSArray<NSString *> *webviewBridgeAllowedHosts;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
@@ -1627,9 +1628,41 @@ MPLog* logger;
     return kBridgeVersion;
 }
 
+// Every frame in the web view can reach the script message handler, not only the page the app loaded,
+// so without a list a third-party frame, or a page the user navigated to, drives identity, opt-out and
+// attributes through the bridge. A list names the hosts the app trusts, each with its subdomains; no
+// list keeps the bridge open to every origin, as before.
+- (BOOL)webviewBridgeAllowsHost:(NSString *)host {
+    NSArray<NSString *> *allowedHosts = self.webviewBridgeAllowedHosts;
+    if (allowedHosts.count == 0) {
+        return YES;
+    }
+    if (![host isKindOfClass:[NSString class]] || host.length == 0) {
+        return NO;
+    }
+    NSString *candidate = host.lowercaseString;
+    for (NSString *allowedHost in allowedHosts) {
+        if ([candidate isEqualToString:allowedHost] || [candidate hasSuffix:[@"." stringByAppendingString:allowedHost]]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
 #if TARGET_OS_IOS == 1
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(NSString *)bridgeName {
+    [self initializeWKWebView:webView bridgeName:bridgeName allowedHosts:nil];
+}
+
+- (void)initializeWKWebView:(WKWebView *)webView bridgeName:(NSString *)bridgeName allowedHosts:(NSArray<NSString *> *)allowedHosts {
     [self.rokt logRoktApiDiagnostic:@"REGISTER_WEBVIEW"];
+    NSMutableArray<NSString *> *hosts = [NSMutableArray array];
+    for (id host in allowedHosts) {
+        if ([host isKindOfClass:[NSString class]] && [host length] > 0) {
+            [hosts addObject:[host lowercaseString]];
+        }
+    }
+    self.webviewBridgeAllowedHosts = hosts.count > 0 ? hosts : nil;
     NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
     if (bridgeValue == nil) {
         [logger error:@"Unable to initialize webview due to missing or invalid bridgeName"];
@@ -1648,6 +1681,13 @@ MPLog* logger;
 
 // Process web log event that is raised in iOS hybrid apps that are using WKWebView
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+    NSString *host = message.frameInfo.securityOrigin.host;
+    if (![self webviewBridgeAllowsHost:host]) {
+        NSString *errorMessage = [NSString stringWithFormat:@"Ignoring webview bridge message from a frame outside the allowed hosts: %@", host];
+        [logger error:errorMessage];
+        return;
+    }
+
     NSString *body = message.body;
     if (body == nil || ![body isKindOfClass:[NSString class]]) {
         [logger error:@"Unexpected non-string body received from webview bridge"];
