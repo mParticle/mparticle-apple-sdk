@@ -3517,6 +3517,61 @@ static atomic_bool gKitsInitializedBlockReturned;
     [sideloadedKitMock verifyWithDelay:5.0];
 }
 
+- (void)testServerConfigurationCannotAddressASideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKit = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloaded = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit];
+    [sideloaded addEventTypeFilterWithEventType:MPEventTypeClick];
+    kitContainer.sideloadedKits = @[sideloaded];
+    [kitContainer initializeKits];
+
+    NSNumber *sideloadedCode = sideloadedKit.sideloadedKitCode;
+    MPKitConfiguration *localConfiguration = kitContainer.kitConfigurations[sideloadedCode];
+    XCTAssertNotNil(localConfiguration);
+    XCTAssertEqualObjects(localConfiguration.filters, [sideloaded getKitFilters]);
+
+    // A server entry under the sideloaded code, with its own settings and no filters: the code is
+    // predictable, so the entry must not replace the developer's local configuration.
+    NSArray *configurations = @[@{@"id":sideloadedCode, @"as":@{@"injected":@"1"}, @"hs":@{}}];
+    [kitContainer configureKits:configurations];
+
+    MPKitConfiguration *configuration = kitContainer.kitConfigurations[sideloadedCode];
+    XCTAssertEqual(configuration, localConfiguration);
+    XCTAssertEqualObjects(configuration.filters, [sideloaded getKitFilters]);
+    XCTAssertNil(configuration.configuration[@"injected"]);
+
+    // The entry still spares the kit from the teardown of kits the server did not mention: the
+    // register that holds this test's instance keeps it. The predicate names the instance, so the
+    // assertion does not depend on what the class-level registry holds from earlier tests.
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedCode, sideloadedKit];
+    XCTAssertEqual([[[MPKitContainer_PRIVATE registeredKits] filteredSetUsingPredicate:predicate] count], (NSUInteger)1);
+}
+
+- (void)testCachedServerConfigurationCannotAddressASideloadedKit {
+    // The cached response is re-applied at every launch by initializeKits, after the sideloaded
+    // kits are registered, so an entry under the predictable code must be ignored there too.
+    NSDictionary *configuration = @{kMPRemoteConfigKitsKey:@[@{@"id":@1000000000, @"as":@{@"injected":@"1"}, @"hs":@{}}],
+                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                     kMPRemoteConfigRampKey:@100,
+                                     kMPRemoteConfigTriggerKey:[NSNull null],
+                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                     kMPRemoteConfigSessionTimeoutKey:@112};
+    [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:@"etag" requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:0 maxAge:nil];
+
+    MPKitTestClassSideloaded *sideloadedKit = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloaded = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit];
+    [sideloaded addEventTypeFilterWithEventType:MPEventTypeClick];
+    kitContainer.sideloadedKits = @[sideloaded];
+    [kitContainer initializeKits];
+
+    NSNumber *sideloadedCode = sideloadedKit.sideloadedKitCode;
+    XCTAssertEqualObjects(sideloadedCode, @1000000000);
+    MPKitConfiguration *stored = kitContainer.kitConfigurations[sideloadedCode];
+    XCTAssertNotNil(stored);
+    XCTAssertEqualObjects(stored.filters, [sideloaded getKitFilters]);
+    XCTAssertNil(stored.configuration[@"injected"]);
+    [MPUserDefaultsConnector.userDefaults deleteConfiguration];
+}
+
 - (void)testRegisterMultipleSideloadedKits {
     MPKitTestClassSideloaded *sideloadedKit1 = [[MPKitTestClassSideloaded alloc] init];
     id sideloadedKitMock1 = OCMPartialMock(sideloadedKit1);

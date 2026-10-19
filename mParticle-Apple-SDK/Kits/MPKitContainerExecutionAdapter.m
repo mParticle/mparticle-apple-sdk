@@ -283,6 +283,13 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 
 static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
+// A sideloaded kit is registered and configured locally, and its code comes from the range above,
+// so a server entry carrying such a code, live or cached, would replace the developer's filters and
+// set the server's settings on the kit. Both configuration loops ignore such an entry.
+static BOOL MPKitIsSideloadedKitCode(NSNumber *code) {
+    return [code isKindOfClass:[NSNumber class]] && code.integerValue >= sideloadedKitCodeStartValue;
+}
+
 // started is read while kitsSemaphore is held, so a kit that raises from it must not unwind past the
 // signal. A kit that cannot answer is treated as not started.
 static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
@@ -731,6 +738,14 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
         // A rejected entry leaves integrationId nil, which cannot key kitConfigurations.
         if (kitConfiguration.integrationId == nil) {
             MPILogError(@"initializeKits - skipping an unusable cached kit configuration");
+            continue;
+        }
+
+        // A cached server entry under a sideloaded kit's code would replace the local configuration
+        // registerSideloadedKits stored above at the next launch, which the guard in configureKits:
+        // prevents on the live path; it is ignored the same way here.
+        if (MPKitIsSideloadedKitCode(kitConfiguration.integrationId)) {
+            MPILogError(@"initializeKits - ignoring a cached server configuration for sideloaded kit code %@: sideloaded kits are configured locally", kitConfiguration.integrationId);
             continue;
         }
 
@@ -1653,6 +1668,13 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                     break;
                 }
             }
+        }
+
+        // The entry is ignored for configuration; the local configuration stands. It has already
+        // spared the kit from the teardown of unmentioned kits above, as before.
+        if (MPKitIsSideloadedKitCode(integrationId)) {
+            MPILogError(@"configureKits - ignoring a server configuration for sideloaded kit code %@: sideloaded kits are configured locally", integrationId);
+            continue;
         }
 
         predicate = [NSPredicate predicateWithFormat:@"SELF == %@", integrationId];
