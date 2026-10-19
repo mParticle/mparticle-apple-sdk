@@ -366,8 +366,90 @@ final class MPBackendLifecycleSchedulingTests: MPBackendWorkflowTestCase {
             fixture.isMessageQueue = false
             fixture.persistence.calls = []
             fixture.scheduling.queue.runNext()
+            XCTAssertEqual(fixture.scheduling.remainingReads, 1)
             XCTAssertTrue(fixture.persistence.calls.isEmpty)
             fixture.drainMessageQueue()
+            XCTAssertEqual(fixture.persistence.calls, ["upload", "cancelTimer", "endTask"])
+        }
+    }
+
+    /// Runs one background check with `remaining` changed by `onSleep` after each one-second poll,
+    /// and returns the number of polls before the loop exited.
+    private func runFiniteGrantLoop(
+        _ fixture: MPBackendSessionFixture, remaining: TimeInterval, onSleep: @escaping (Int) -> Void
+    ) -> Int {
+        fixture.scheduling.remaining = remaining
+        var sleeps = 0
+        fixture.scheduling.onSleep = { sleeps += 1; onSleep(sleeps) }
+        fixture.application.beginBackgroundTask()
+        fixture.application.beginUploadTimer()
+        fixture.application.beginBackgroundTimeCheckLoop()
+        fixture.isMessageQueue = false
+        fixture.persistence.calls = []
+        fixture.scheduling.queue.runNext()
+        fixture.drainMessageQueue()
+        return sleeps
+    }
+
+    func testFiniteGrantUploadsAndEndsTaskAtHoldCap() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let sleeps = self.runFiniteGrantLoop(fixture, remaining: 30) { [weak fixture] _ in
+                fixture?.scheduling.remaining -= 1
+            }
+            XCTAssertEqual(sleeps, 5, "the cap ends the hold with 25 seconds of the grant left")
+            XCTAssertEqual(fixture.scheduling.remainingReads, 6)
+            XCTAssertEqual(fixture.persistence.calls, ["upload", "cancelTimer", "endTask"])
+        }
+    }
+
+    func testFiniteGrantUploadsAtTenSecondsRemainingWhenThatComesBeforeHoldCap() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let sleeps = self.runFiniteGrantLoop(fixture, remaining: 12) { [weak fixture] _ in
+                fixture?.scheduling.remaining -= 1
+            }
+            XCTAssertEqual(sleeps, 2)
+            XCTAssertEqual(fixture.scheduling.remainingReads, 3)
+            XCTAssertEqual(fixture.persistence.calls, ["upload", "cancelTimer", "endTask"])
+        }
+    }
+
+    func testUnlimitedFirstReadAfterBackgroundEntryStillCapsHold() {
+        onMessageQueue {
+            // UIKit can report an unlimited value for the first read right after background entry.
+            let fixture = MPBackendSessionFixture()
+            let sleeps = self.runFiniteGrantLoop(fixture, remaining: .greatestFiniteMagnitude) { [weak fixture] _ in
+                guard let scheduling = fixture?.scheduling else { return }
+                scheduling.remaining = scheduling.remaining > 30 ? 30 : scheduling.remaining - 1
+            }
+            XCTAssertEqual(sleeps, 6, "the cap counts from the first finite read")
+            XCTAssertEqual(fixture.scheduling.remainingReads, 7)
+            XCTAssertEqual(fixture.persistence.calls, ["upload", "cancelTimer", "endTask"])
+        }
+    }
+
+    func testUnlimitedGrantIgnoresHoldCapAndPollsUntilForeground() {
+        onMessageQueue {
+            let fixture = MPBackendSessionFixture()
+            let sleeps = self.runFiniteGrantLoop(fixture, remaining: .greatestFiniteMagnitude) { [weak fixture] sleeps in
+                if sleeps == 8 { fixture?.scheduling.appState = 0 }
+            }
+            XCTAssertEqual(sleeps, 8)
+            XCTAssertEqual(fixture.uploads, 0)
+            XCTAssertEqual(fixture.persistence.calls.last, "endTask")
+        }
+    }
+
+    func testUnlimitedReadRestartsHoldCap() {
+        onMessageQueue {
+            // A continuous mode that starts after background entry: finite, then unlimited, then finite again.
+            let fixture = MPBackendSessionFixture()
+            let sleeps = self.runFiniteGrantLoop(fixture, remaining: 30) { [weak fixture] sleeps in
+                if sleeps == 3 { fixture?.scheduling.remaining = .greatestFiniteMagnitude }
+                if sleeps == 7 { fixture?.scheduling.remaining = 30 }
+            }
+            XCTAssertEqual(sleeps, 12, "the cap restarts at the first finite read after the unlimited reads")
             XCTAssertEqual(fixture.persistence.calls, ["upload", "cancelTimer", "endTask"])
         }
     }
