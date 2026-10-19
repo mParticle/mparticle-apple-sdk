@@ -14,6 +14,11 @@ class AppsFlyerLibMock: AppsFlyerLib {
     var startCallCount = 0
     var setCustomerUserIDCallCount = 0
     var lastCustomerUserID: String?
+    var recordedConsents: [AppsFlyerConsent] = []
+
+    override func setConsentData(_ consent: AppsFlyerConsent) {
+        recordedConsents.append(consent)
+    }
 
     override func start() {
         startCallCount += 1
