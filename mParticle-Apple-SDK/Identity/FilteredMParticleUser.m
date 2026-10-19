@@ -3,11 +3,14 @@
 #import "MParticleUser.h"
 #import "MPKitConfiguration.h"
 #import "MPDataPlanFilter.h"
+#import "MPPersistenceUtilities.h"
+#import "MPKitContainer+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
 
 @property (nonatomic, strong) id<MPDataPlanFilterProtocol> dataPlanFilter;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
@@ -40,6 +43,15 @@
 
 -(BOOL)isLoggedIn {
     return self.user.isLoggedIn;
+}
+
+- (MPConsentState *)consentState {
+    if (![self.kitConfiguration isKindOfClass:[MPKitConfiguration class]]) {
+        return nil;
+    }
+    MPConsentState *state = [MPPersistenceUtilities effectiveConsentStateForMpid:self.userId];
+    return [[MParticle sharedInstance].kitContainer_PRIVATE filteredConsentState:state
+                                                                  configuration:self.kitConfiguration];
 }
 
 -(NSString *)idfa {

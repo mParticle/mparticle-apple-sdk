@@ -73,6 +73,8 @@
         
         //registering the observer
         [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(actionConsent:) name:@"OTConsentUpdated" object:nil];
+        // Identity callbacks only reach active kits, but the new user may lack consent until this sync.
+        [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(actionConsent:) name:mParticleIdentityStateChangeListenerNotification object:nil];
 
         dispatch_async(dispatch_get_main_queue(), ^{
             NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};

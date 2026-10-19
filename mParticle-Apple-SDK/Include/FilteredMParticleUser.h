@@ -6,6 +6,7 @@
 
 @class MParticleUser;
 @class MPKitConfiguration;
+@class MPConsentState;
 
 @interface FilteredMParticleUser : NSObject
 
@@ -42,6 +43,13 @@
  @returns A dictionary containing the collection of user attributes.
  */
 @property (readonly, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;
+
+/**
+ Returns effective device or user consent after this kit's regulation and purpose filters.
+ Returns nil when consent or the kit configuration is absent, or all consent is filtered.
+ The underlying stored state is not changed.
+ */
+@property (readonly, strong, nullable) MPConsentState *consentState;
 
 - (instancetype _Nonnull )initWithMParticleUser:(MParticleUser *_Nonnull)user kitConfiguration:(MPKitConfiguration *_Nonnull)kitConfiguration;
 
