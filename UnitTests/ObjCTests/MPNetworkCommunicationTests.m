@@ -5,6 +5,7 @@
 #import "MPNetworkCommunication+Tests.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
+#import "MPBackendController.h"
 #import "MPPersistenceUtilities.h"
 #import "MPPersistenceAdapter.h"
 #import "MPIConstants.h"
@@ -254,6 +255,30 @@ Method originalMethod = nil; Method swizzleMethod = nil;
           canonical:@"https://nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"];
     [self assertURL:[networkCommunication aliasURLForUpload:upload]
           requested:@"https://cdn.example.com/nativeevents/v1/identity/unit_test_app_key/alias"
+          canonical:@"https://nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
+
+    [self tearDownCharacterization];
+}
+
+- (void)testEndpointURLsWithCustomBaseURLKeepItsPort {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.customBaseURL = [NSURL URLWithString:@"https://cdn.example.com:8443/ignored/path"];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self characterizeWithOptions:options attAuthorized:NO];
+    MPUpload *upload = [self characterizationUploadWithOptions:options];
+    NSString *query = [self characterizationConfigQuery];
+
+    [self assertURL:[networkCommunication configURL]
+          requested:[@"https://cdn.example.com:8443/config/v4/unit_test_app_key/config" stringByAppendingString:query]
+          canonical:[@"https://config2.mparticle.com/v4/unit_test_app_key/config" stringByAppendingString:query]];
+    [self assertURL:[networkCommunication identifyURL]
+          requested:@"https://cdn.example.com:8443/identity/v1/identify"
+          canonical:@"https://identity.us1.mparticle.com/v1/identify"];
+    [self assertURL:[networkCommunication eventURLForUpload:upload]
+          requested:@"https://cdn.example.com:8443/nativeevents/v2/unit_test_app_key/events"
+          canonical:@"https://nativesdks.us1.mparticle.com/v2/unit_test_app_key/events"];
+    [self assertURL:[networkCommunication aliasURLForUpload:upload]
+          requested:@"https://cdn.example.com:8443/nativeevents/v1/identity/unit_test_app_key/alias"
           canonical:@"https://nativesdks.us1.mparticle.com/v1/identity/unit_test_app_key/alias"];
 
     [self tearDownCharacterization];

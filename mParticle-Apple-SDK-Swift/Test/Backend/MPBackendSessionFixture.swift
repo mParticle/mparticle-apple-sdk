@@ -58,6 +58,7 @@ final class MPBackendSessionFixture {
     )
     var automaticTracking = true
     var replacementStateMachine: MPStateMachinePRIVATE?
+    var isCurrentBackend = true
     var onAutomaticSessionTrackingRead: (() -> Void)?
     var userID: NSNumber = 1
     var isMessageQueue = true
@@ -77,7 +78,8 @@ final class MPBackendSessionFixture {
             let selectedMachine = replacementStateMachine ?? machine
             return MPBackendSessionStartContext(
                 automaticSessionTracking: { [unowned self] in automaticSessionTrackingValue() },
-                stateMachine: { selectedMachine }
+                stateMachine: { selectedMachine },
+                isCurrentBackend: { [unowned self] in isCurrentBackend }
             )
         },
         currentUserID: { [unowned self] in userID },

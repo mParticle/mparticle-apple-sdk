@@ -779,4 +779,69 @@ static NSString *const oiuserIdDeviceStampValue = @"deviceApplicationStamp";
     [mockClient stopMocking];
 }
 
+#pragma mark Malformed server configuration
+
+// Server configuration is parsed JSON, so any value can arrive as a number, boolean or container.
+
+- (NSArray *)nonStringValues {
+    return @[[NSNull null], @42, @YES, @[], @{}];
+}
+
+- (void)testLaunchWithNonStringSDKKeyReportsRequirementsNotMet {
+    for (id value in [self nonStringValues]) {
+        MPKitOptimizely *kitInstance = [[MPKitOptimizely alloc] init];
+
+        MPKitExecStatus *execStatus = [kitInstance didFinishLaunchingWithConfiguration:@{oiAPIKey:value}];
+
+        XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeRequirementsNotMet, @"projectId of %@ should not start the kit", [value class]);
+        XCTAssertFalse(kitInstance.started);
+    }
+}
+
+- (void)testNonStringUserIdFieldFallsBackToDeviceApplicationStamp {
+    id mockUser = OCMClassMock([FilteredMParticleUser class]);
+
+    OCMStub([mockUser userId]).andReturn(@4);
+    OCMStub([mockUser userIdentities]).andReturn(@{
+        @(MPUserIdentityCustomerId):@"user5560"
+    });
+
+    NSString *deviceId = [[[MParticle sharedInstance] identity] deviceApplicationStamp];
+
+    for (id value in [self nonStringValues]) {
+        MPKitOptimizely *kitInstance = [[MPKitOptimizely alloc] init];
+        kitInstance.configuration = @{oiAPIKey:@"274279246429244297", oiuserIdKey:value};
+
+        XCTAssertEqualObjects([kitInstance userIdForOptimizely:mockUser], deviceId, @"userIdField of %@ should be ignored", [value class]);
+    }
+}
+
+- (void)testVariationWithNonStringUserIdFieldUsesDeviceApplicationStamp {
+    OptimizelyClient *testClient = [[OptimizelyClient alloc] initWithSdkKey:@"test"];
+    id mockClient = OCMPartialMock(testClient);
+    [MPKitOptimizely setOptimizelyClient:mockClient];
+
+    MPKitOptimizely *kitInstance = [[MPKitOptimizely alloc] init];
+    kitInstance.configuration = @{oiAPIKey:@"274279246429244297", oiuserIdKey:@42};
+
+    MPKitAPI *kitAPI = [[MPKitAPI alloc] init];
+    id mockKitAPI = OCMPartialMock(kitAPI);
+    id mockUser = OCMClassMock([FilteredMParticleUser class]);
+
+    OCMStub([mockUser userId]).andReturn(@4);
+
+    OCMStub([mockKitAPI getCurrentUserWithKit:OCMOCK_ANY]).andReturn(mockUser);
+
+    kitInstance.kitApi = mockKitAPI;
+
+    NSString *deviceId = [[[MParticle sharedInstance] identity] deviceApplicationStamp];
+    [[mockClient expect] activateWithExperimentKey:@"variation" userId:deviceId attributes:OCMOCK_ANY error:nil];
+
+    [kitInstance activateWithExperimentKey:@"variation" customUserId:nil];
+
+    [mockClient verify];
+
+    [mockClient stopMocking];
+}
+
 @end

@@ -137,6 +137,18 @@
     XCTAssertEqualObjects([exampleKit standardizeNameOrKey:@"event - name " forEvent:NO], @"event_name_");
 }
 
+- (void)testSanitizationOfAKeyWithNoAllowedCharacters {
+    // A key that standardizes to nothing takes the invalid-key constant the GA4 kit uses, rather
+    // than raising on the empty string.
+    MPKitFirebase *exampleKit = [[MPKitFirebase alloc] init];
+
+    XCTAssertEqualObjects([exampleKit standardizeNameOrKey:@"###" forEvent:NO], @"invalid_ga4_key");
+    XCTAssertEqualObjects([exampleKit standardizeNameOrKey:@"" forEvent:NO], @"invalid_ga4_key");
+    XCTAssertEqualObjects([exampleKit standardizeNameOrKey:@"\u65e5\u672c\u8a9e" forEvent:YES], @"invalid_ga4_key");
+    XCTAssertEqualObjects([exampleKit standardizeNameOrKey:@"_" forEvent:NO], @"_");
+    XCTAssertEqualObjects([exampleKit standardizeNameOrKey:@"1 key" forEvent:NO], @"key");
+}
+
 - (void)testCommerceEventCheckoutOptions {
     MPKitFirebase *exampleKit = [[MPKitFirebase alloc] init];
     [exampleKit didFinishLaunchingWithConfiguration:@{}];

@@ -2,6 +2,20 @@ import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 final class MPEndpointHostResolverTests: XCTestCase {
+    // MARK: - Custom base URL
+
+    func testCustomBaseURLHostKeepsAPortAndDropsAPath() {
+        XCTAssertEqual(
+            MPEndpointHostResolver.customBaseURLHost(url: URL(string: "https://rkt.example.com:8443/ignored")),
+            "rkt.example.com:8443"
+        )
+        XCTAssertEqual(
+            MPEndpointHostResolver.customBaseURLHost(url: URL(string: "https://rkt.example.com/ignored")),
+            "rkt.example.com"
+        )
+        XCTAssertNil(MPEndpointHostResolver.customBaseURLHost(url: nil))
+    }
+
     // MARK: - Pod routing
 
     func testDefaultHostUsesThePodPrefixFromTheAPIKey() {

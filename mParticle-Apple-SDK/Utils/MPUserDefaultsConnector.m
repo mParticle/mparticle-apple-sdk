@@ -1,4 +1,5 @@
 #import "MPUserDefaultsConnector.h"
+#import "MPBackendController.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
@@ -105,10 +106,6 @@
 
 - (MPStateMachine_PRIVATE*)stateMachine {
     return MParticle.sharedInstance.stateMachine;
-}
-
-- (MPBackendController_PRIVATE*)backendController {
-    return MParticle.sharedInstance.backendController;
 }
 
 - (MPIdentityApi*)identity {

@@ -57,7 +57,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
@@ -174,7 +173,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPNetworkOptions *networkOptions = mParticle.networkOptions;
 
     return [[MPEndpointRouting alloc] initWithApiKey:mParticle.stateMachine.apiKey
-                                   customBaseURLHost:networkOptions.customBaseURL.host
+                                   customBaseURLHost:[MPEndpointHostResolver customBaseURLHostWithURL:networkOptions.customBaseURL]
                                     hasCustomBaseURL:networkOptions.customBaseURL != nil
                                           configHost:networkOptions.configHost
                                           eventsHost:networkOptions.eventsHost
@@ -198,7 +197,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPNetworkOptions *networkOptions = [MParticle sharedInstance].networkOptions;
 
     return [[MPEndpointRouting alloc] initWithApiKey:uploadSettings.apiKey
-                                   customBaseURLHost:networkOptions.customBaseURL.host
+                                   customBaseURLHost:[MPEndpointHostResolver customBaseURLHostWithURL:networkOptions.customBaseURL]
                                     hasCustomBaseURL:networkOptions.customBaseURL != nil
                                           configHost:nil
                                           eventsHost:uploadSettings.eventsHost
@@ -418,19 +417,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 - (MPConnectorConfiguration *)connectorConfiguration {
     MParticle *mParticle = MParticle.sharedInstance;
     MPNetworkOptions *networkOptions = mParticle.networkOptions;
-    NSMutableArray<NSString *> *pinnedHosts = [[NSMutableArray alloc] init];
-    NSArray<NSString *> *candidateHosts = @[
-        networkOptions.customBaseURL.host ?: @"",
-        networkOptions.configHost.pathComponents.firstObject ?: @"",
-        networkOptions.identityHost.pathComponents.firstObject ?: @"",
-        networkOptions.eventsHost.pathComponents.firstObject ?: @"",
-        networkOptions.aliasHost.pathComponents.firstObject ?: @""
-    ];
-    for (NSString *host in candidateHosts) {
-        if (host.length > 0 && ![pinnedHosts containsObject:host]) {
-            [pinnedHosts addObject:host];
-        }
-    }
 
     MPLog *logger = mParticle.getLogger;
     if (!logger) {
@@ -438,8 +424,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 
     return [[MPConnectorConfiguration alloc]
-        initWithPinnedHosts:pinnedHosts
-        customCertificates:networkOptions.certificates ?: @[]
+        initWithCustomCertificates:networkOptions.certificates ?: @[]
         pinningDisabledInDevelopment:networkOptions.pinningDisabledInDevelopment
         pinningDisabled:networkOptions.pinningDisabled
         isDevelopmentEnvironment:mParticle.environment == MPEnvironmentDevelopment

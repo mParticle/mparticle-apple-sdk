@@ -8,10 +8,12 @@
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPKitTestClassSideloaded.h"
 @import mParticle_Apple_SDK_Swift;
 
 @interface MPKitContainer_PRIVATE ()
 
+@property (nonatomic, strong, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
 @end
@@ -78,6 +80,86 @@
     }
         
     _kitApi = [[MPKitAPI alloc] initWithKitCode:@42];
+}
+
+- (void)tearDown {
+    NSNumber *userId = [MParticle sharedInstance].identity.currentUser.userId;
+    if (userId) {
+        [MPPersistenceUtilities setConsentState:nil forMpid:userId];
+    }
+    [MPPersistenceUtilities setDeviceConsentState:nil];
+    [super tearDown];
+}
+
+#pragma mark - Filtered consent
+
+- (MPConsentState *)consentStateWithMarketingConsented:(BOOL)marketingConsented {
+    MPConsentState *state = [[MPConsentState alloc] init];
+    MPGDPRConsent *marketing = [[MPGDPRConsent alloc] init];
+    marketing.consented = marketingConsented;
+    [state addGDPRConsentState:marketing purpose:@"marketing"];
+    MPGDPRConsent *analytics = [[MPGDPRConsent alloc] init];
+    analytics.consented = YES;
+    [state addGDPRConsentState:analytics purpose:@"analytics"];
+    MPCCPAConsent *ccpa = [[MPCCPAConsent alloc] init];
+    ccpa.consented = YES;
+    [state setCCPAConsentState:ccpa];
+    return state;
+}
+
+- (MPConsentState *)filteredConsentForStoredState:(MPConsentState *)storedState kitConfiguration:(id)kitConfiguration {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    [MPPersistenceUtilities setDeviceConsentState:nil];
+    [MPPersistenceUtilities setConsentState:storedState forMpid:currentUser.userId];
+    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser
+                                                                             kitConfiguration:kitConfiguration];
+    return filteredUser.consentState;
+}
+
+- (void)testFilteredConsentKeepsBothRegulationsAndAppliesThePurposeFilter {
+    MParticle *mparticle = MParticle.sharedInstance;
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *marketingHash = [hasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"marketing"];
+    MPKitConfiguration *unfiltered = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @42, @"as": @{}, @"hs": @{}}];
+    MPKitConfiguration *marketingFiltered = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @42, @"as": @{}, @"hs": @{@"pur": @{marketingHash: @0}}}];
+    MPConsentState *stored = [self consentStateWithMarketingConsented:NO];
+
+    MPConsentState *kept = [self filteredConsentForStoredState:stored kitConfiguration:unfiltered];
+    MPConsentState *filtered = [self filteredConsentForStoredState:stored kitConfiguration:marketingFiltered];
+
+    XCTAssertFalse(kept.gdprConsentState[@"marketing"].consented);
+    XCTAssertTrue(kept.gdprConsentState[@"analytics"].consented);
+    XCTAssertTrue(kept.ccpaConsentState.consented);
+    XCTAssertNil(filtered.gdprConsentState[@"marketing"]);
+    XCTAssertTrue(filtered.gdprConsentState[@"analytics"].consented);
+    XCTAssertEqual(stored.gdprConsentState.count, 2U);
+}
+
+- (void)testFilteredConsentPrefersDeviceConsentOverTheStoredUserState {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    [MPPersistenceUtilities setConsentState:[self consentStateWithMarketingConsented:YES] forMpid:currentUser.userId];
+    [MPPersistenceUtilities setDeviceConsentState:[self consentStateWithMarketingConsented:NO]];
+    [_kitContainer configureKits:nil];
+    [_kitContainer configureKits:@[@{@"id": @42, @"as": @{}, @"hs": @{}}]];
+
+    FilteredMParticleUser *filteredUser = [_kitApi getCurrentUserWithKit:self];
+
+    XCTAssertFalse(filteredUser.consentState.gdprConsentState[@"marketing"].consented);
+    XCTAssertTrue([MPPersistenceUtilities consentStateForMpid:currentUser.userId].gdprConsentState[@"marketing"].consented);
+}
+
+- (void)testFilteredConsentWithoutAUsableKitConfigurationReturnsNil {
+    MPConsentState *stored = [self consentStateWithMarketingConsented:NO];
+
+    XCTAssertNil([self filteredConsentForStoredState:stored kitConfiguration:nil]);
+    XCTAssertNil([self filteredConsentForStoredState:stored kitConfiguration:@{}]);
+}
+
+- (void)testFilteredConsentWithoutAStoredStateReturnsNil {
+    MPKitConfiguration *configuration = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @42, @"as": @{}, @"hs": @{}}];
+
+    XCTAssertNil([self filteredConsentForStoredState:nil kitConfiguration:configuration]);
 }
 
 - (void)testIntegrationAttributes {
@@ -398,6 +480,45 @@
     XCTAssertEqual((NSUInteger)MPILogLevelSwiftWarning, (NSUInteger)MPILogLevelWarning);
     XCTAssertEqual((NSUInteger)MPILogLevelSwiftDebug, (NSUInteger)MPILogLevelDebug);
     XCTAssertEqual((NSUInteger)MPILogLevelSwiftVerbose, (NSUInteger)MPILogLevelVerbose);
+}
+
+- (void)testSideloadedKitUserIsFilteredByItsRegisteredCode {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Sideloaded kit filters"];
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
+
+    NSDictionary *userAttributes = @{@"good data":@"67890", @"bad data":@"12345"};
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    [userDefaults setMPObject:userAttributes forKey:kMPUserAttributeKey userId:currentUser.userId];
+    MPLog *logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mParticle.logLevel]];
+    MPIHasher *hasher = [[MPIHasher alloc] initWithLogger:logger];
+    NSString *badHashedKey = [hasher hashString:@"bad data"];
+
+    // A sideloaded kit's configuration is keyed by the code the container assigns from the sideloaded
+    // range, never by its class code, which the protocol says is ignored.
+    NSNumber *sideloadedKitCode = @1000000000;
+    NSDictionary *configuration = @{@"id":sideloadedKitCode, @"as":@{@"appId":@"sideloaded"}, @"hs":@{@"ua":@{badHashedKey:@0}}};
+    _kitContainer.kitConfigurations[sideloadedKitCode] = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+
+    MPKitTestClassSideloaded *sideloadedKit = [[MPKitTestClassSideloaded alloc] init];
+    sideloadedKit.sideloadedKitCode = sideloadedKitCode;
+
+    dispatch_sync([MParticle messageQueue], ^{
+        // The API the container builds for the kit carries the registered code.
+        MPKitAPI *registeredKitAPI = [[MPKitAPI alloc] initWithKitCode:sideloadedKitCode];
+        NSDictionary *attributes = [registeredKitAPI getCurrentUserWithKit:sideloadedKit].userAttributes;
+        XCTAssertNil(attributes[@"bad data"], @"A sideloaded kit's user attribute filter is not applied");
+        XCTAssertEqualObjects(attributes[@"good data"], @"67890");
+
+        // An API a kit builds itself, with no code, falls back to the kit's sideloaded code.
+        MPKitAPI *bareKitAPI = [[MPKitAPI alloc] init];
+        attributes = [bareKitAPI getCurrentUserWithKit:sideloadedKit].userAttributes;
+        XCTAssertNil(attributes[@"bad data"], @"A sideloaded kit's filter is not applied through its sideloaded code");
+        XCTAssertEqualObjects(attributes[@"good data"], @"67890");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 @synthesize started;

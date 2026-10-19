@@ -23,6 +23,7 @@
 #import "MPKitConfiguration.h"
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
+#import "MPBackendController.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
 #import "MPCCPAConsent.h"
@@ -139,6 +140,22 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 @end
 
+@interface MPIdentityRecordingTestKit : MPKitTestClass
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSString *> *receivedIdentities;
+@end
+@implementation MPIdentityRecordingTestKit
++ (NSNumber *)kitCode {
+    return @123459;
+}
+- (MPKitExecStatus *)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
+    if (!self.receivedIdentities) {
+        self.receivedIdentities = [NSMutableDictionary dictionary];
+    }
+    self.receivedIdentities[@(identityType)] = identityString;
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+@end
+
 @interface MPLegacyConsentTestKit : MPKitTestClass
 @property (nonatomic) NSUInteger consentCalls;
 @end
@@ -209,11 +226,28 @@ static atomic_bool gLaunchConsentReturned;
 }
 @end
 
+@interface MPRaisingStartedTestKit : MPKitTestClass
+@end
+@implementation MPRaisingStartedTestKit
++ (NSNumber *)kitCode {
+    return @123461;
+}
+- (BOOL)started {
+    [NSException raise:NSInternalInconsistencyException format:@"unexpected started"];
+    return NO;
+}
+@end
+
+// Set by an onKitsInitialized: block that queries the kits while kit configuration finishes.
+static atomic_bool gKitsInitializedBlockEntered;
+static atomic_bool gKitsInitializedBlockReturned;
+
 #pragma mark - MPKitContainerTests
 @interface MPKitContainerTests : MPBaseTestCase {
     MPKitContainer_PRIVATE *kitContainer;
 }
 @property (nonatomic, strong) MPKitRegister *consentTestRegister;
+@property (nonatomic, strong) MPKitRegister *identityTestRegister;
 
 @end
 
@@ -268,6 +302,10 @@ static atomic_bool gLaunchConsentReturned;
     if (self.consentTestRegister) {
         [MPKitContainer_PRIVATE removeRegisteredKit:self.consentTestRegister];
         self.consentTestRegister = nil;
+    }
+    if (self.identityTestRegister) {
+        [MPKitContainer_PRIVATE removeRegisteredKit:self.identityTestRegister];
+        self.identityTestRegister = nil;
     }
     [MPPersistenceUtilities setDeviceConsentState:nil];
     kitContainer = nil;
@@ -3172,6 +3210,53 @@ static atomic_bool gLaunchConsentReturned;
     [MPUserDefaultsConnector.userDefaults deleteConfiguration];
 }
 
+- (void)testConfigureKitsAppliesTheKitIdentityFilterToTheForwardedIdentities {
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    NSArray *userIdentities = @[@{@"n":@(MPUserIdentityEmail),
+                                  @"i":@"example",
+                                  @"dfs":MPCurrentEpochInMilliseconds,
+                                  @"f":@NO},
+                                @{@"n":@(MPUserIdentityCustomerId),
+                                  @"i":@"12345",
+                                  @"dfs":MPCurrentEpochInMilliseconds,
+                                  @"f":@NO},
+                                @{@"n":@(MPIdentityIOSAdvertiserId),
+                                  @"i":@"00000000-0000-0000-0000-000000000001",
+                                  @"dfs":MPCurrentEpochInMilliseconds,
+                                  @"f":@NO}];
+    userDefaults[kMPUserIdentityArrayKey] = userIdentities;
+
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"IdentityRecordingTest" className:@"MPIdentityRecordingTestKit"];
+    self.identityTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+
+    NSString *emailType = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)MPUserIdentityEmail];
+    NSArray *blockingEmail = @[@{@"id":@123459,
+                                 @"as":@{@"appId":@"MyAppId"},
+                                 @"hs":@{@"uid":@{emailType:@0}}}];
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:blockingEmail];
+
+    MPIdentityRecordingTestKit *kit = (MPIdentityRecordingTestKit *)registration.wrapperInstance;
+    XCTAssertNotNil(kit, @"The kit should have been started by the configuration.");
+    XCTAssertEqualObjects(kit.receivedIdentities[@(MPUserIdentityCustomerId)], @"12345", @"An unfiltered identity should still reach the kit.");
+    XCTAssertNil(kit.receivedIdentities[@(MPUserIdentityEmail)], @"A kit whose configuration blocks an identity type should not receive it when configured.");
+    XCTAssertNil(kit.receivedIdentities[@(MPIdentityIOSAdvertiserId)], @"A device identity does not reach a kit through any later path and should not reach it here.");
+
+    // The same running kit, reconfigured without the filter: the email now arrives, the device identity still does not.
+    kit.receivedIdentities = nil;
+    NSArray *allowingEmail = @[@{@"id":@123459,
+                                 @"as":@{@"appId":@"MyAppId"}}];
+    [kitContainer configureKits:allowingEmail];
+
+    XCTAssertEqual(registration.wrapperInstance, kit, @"The reconfiguration should keep the running instance.");
+    XCTAssertEqualObjects(kit.receivedIdentities[@(MPUserIdentityEmail)], @"example");
+    XCTAssertEqualObjects(kit.receivedIdentities[@(MPUserIdentityCustomerId)], @"12345");
+    XCTAssertNil(kit.receivedIdentities[@(MPIdentityIOSAdvertiserId)]);
+
+    [userDefaults removeMPObjectForKey:kMPUserIdentityArrayKey];
+}
+
 #if TARGET_OS_IOS == 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -3500,6 +3585,61 @@ static atomic_bool gLaunchConsentReturned;
     [sideloadedKitMock verifyWithDelay:5.0];
 }
 
+- (void)testServerConfigurationCannotAddressASideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKit = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloaded = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit];
+    [sideloaded addEventTypeFilterWithEventType:MPEventTypeClick];
+    kitContainer.sideloadedKits = @[sideloaded];
+    [kitContainer initializeKits];
+
+    NSNumber *sideloadedCode = sideloadedKit.sideloadedKitCode;
+    MPKitConfiguration *localConfiguration = kitContainer.kitConfigurations[sideloadedCode];
+    XCTAssertNotNil(localConfiguration);
+    XCTAssertEqualObjects(localConfiguration.filters, [sideloaded getKitFilters]);
+
+    // A server entry under the sideloaded code, with its own settings and no filters: the code is
+    // predictable, so the entry must not replace the developer's local configuration.
+    NSArray *configurations = @[@{@"id":sideloadedCode, @"as":@{@"injected":@"1"}, @"hs":@{}}];
+    [kitContainer configureKits:configurations];
+
+    MPKitConfiguration *configuration = kitContainer.kitConfigurations[sideloadedCode];
+    XCTAssertEqual(configuration, localConfiguration);
+    XCTAssertEqualObjects(configuration.filters, [sideloaded getKitFilters]);
+    XCTAssertNil(configuration.configuration[@"injected"]);
+
+    // The entry still spares the kit from the teardown of kits the server did not mention: the
+    // register that holds this test's instance keeps it. The predicate names the instance, so the
+    // assertion does not depend on what the class-level registry holds from earlier tests.
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedCode, sideloadedKit];
+    XCTAssertEqual([[[MPKitContainer_PRIVATE registeredKits] filteredSetUsingPredicate:predicate] count], (NSUInteger)1);
+}
+
+- (void)testCachedServerConfigurationCannotAddressASideloadedKit {
+    // The cached response is re-applied at every launch by initializeKits, after the sideloaded
+    // kits are registered, so an entry under the predictable code must be ignored there too.
+    NSDictionary *configuration = @{kMPRemoteConfigKitsKey:@[@{@"id":@1000000000, @"as":@{@"injected":@"1"}, @"hs":@{}}],
+                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                     kMPRemoteConfigRampKey:@100,
+                                     kMPRemoteConfigTriggerKey:[NSNull null],
+                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                     kMPRemoteConfigSessionTimeoutKey:@112};
+    [MPUserDefaultsConnector.userDefaults setConfiguration:configuration eTag:@"etag" requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:0 maxAge:nil];
+
+    MPKitTestClassSideloaded *sideloadedKit = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloaded = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit];
+    [sideloaded addEventTypeFilterWithEventType:MPEventTypeClick];
+    kitContainer.sideloadedKits = @[sideloaded];
+    [kitContainer initializeKits];
+
+    NSNumber *sideloadedCode = sideloadedKit.sideloadedKitCode;
+    XCTAssertEqualObjects(sideloadedCode, @1000000000);
+    MPKitConfiguration *stored = kitContainer.kitConfigurations[sideloadedCode];
+    XCTAssertNotNil(stored);
+    XCTAssertEqualObjects(stored.filters, [sideloaded getKitFilters]);
+    XCTAssertNil(stored.configuration[@"injected"]);
+    [MPUserDefaultsConnector.userDefaults deleteConfiguration];
+}
+
 - (void)testRegisterMultipleSideloadedKits {
     MPKitTestClassSideloaded *sideloadedKit1 = [[MPKitTestClassSideloaded alloc] init];
     id sideloadedKitMock1 = OCMPartialMock(sideloadedKit1);
@@ -3656,6 +3796,108 @@ static atomic_bool gLaunchConsentReturned;
     
     XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
     XCTAssertTrue(kitFilter.shouldFilter, @"Non-screen event should have been filtered by event type");
+}
+
+- (void)testFilterScreenNameForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addScreenNameFilterWithScreenName:@"Home"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedKitInstance1.sideloadedKitCode, sideloadedKitInstance1];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    XCTAssertNotNil(registeredKit);
+
+    MPEvent *screen = [[MPEvent alloc] initWithName:@"Home" type:MPEventTypeNavigation];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:screen selector:@selector(logScreen:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"A screen name filter should be signaling to filter the screen it names.");
+
+    MPEvent *otherScreen = [[MPEvent alloc] initWithName:@"Settings" type:MPEventTypeNavigation];
+    kitFilter = [kitContainer filter:registeredKit forEvent:otherScreen selector:@selector(logScreen:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"A screen name filter should leave a screen it does not name alone.");
+}
+
+- (void)testFilterScreenAttributeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addScreenAttributeFilterWithScreenName:@"Home" customAttributeKey:@"secret"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedKitInstance1.sideloadedKitCode, sideloadedKitInstance1];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    XCTAssertNotNil(registeredKit);
+
+    MPEvent *screen = [[MPEvent alloc] initWithName:@"Home" type:MPEventTypeNavigation];
+    screen.customAttributes = @{@"secret":@"hidden",
+                                @"keep":@"shown"};
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:screen selector:@selector(logScreen:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"An attribute filter should not filter the whole screen.");
+    XCTAssertNil(kitFilter.filteredAttributes[@"secret"], @"A screen attribute filter should drop the attribute it names.");
+    XCTAssertEqualObjects(kitFilter.filteredAttributes[@"keep"], @"shown", @"A screen attribute filter should keep the other attributes.");
+}
+
+- (void)testConditionalForwardingForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 setEventAttributeConditionalForwardingWithAttributeName:@"tier" attributeValue:@"gold" onlyForward:YES];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedKitInstance1.sideloadedKitCode, sideloadedKitInstance1];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    XCTAssertNotNil(registeredKit);
+
+    MPEvent *silverEvent = [[MPEvent alloc] initWithName:@"Purchase" type:MPEventTypeTransaction];
+    silverEvent.customAttributes = @{@"tier":@"silver"};
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:silverEvent selector:@selector(logEvent:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Conditional forwarding should filter an event without the forwarded value.");
+
+    MPEvent *goldEvent = [[MPEvent alloc] initWithName:@"Purchase" type:MPEventTypeTransaction];
+    goldEvent.customAttributes = @{@"tier":@"gold"};
+    kitFilter = [kitContainer filter:registeredKit forEvent:goldEvent selector:@selector(logEvent:)];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"An event carrying the forwarded value should pass.");
+}
+
+- (void)testFilterCommerceEventAppFamilyAttributeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addCommerceEventAppFamilyAttributeFilterWithAttributeKey:@"Key1"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@ AND wrapperInstance == %@", sideloadedKitInstance1.sideloadedKitCode, sideloadedKitInstance1];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    XCTAssertNotNil(registeredKit);
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product[@"Key1"] = @"val1";
+    product[@"key_number"] = @"1";
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"An attribute filter should not filter the whole commerce event.");
+    MPProduct *forwardedProduct = kitFilter.forwardCommerceEvent.products.firstObject;
+    XCTAssertNotNil(forwardedProduct, @"The forwarded commerce event should still carry the product.");
+    XCTAssertNil(forwardedProduct[@"Key1"], @"An app family attribute filter should drop the attribute it names.");
+    XCTAssertEqualObjects(forwardedProduct[@"key_number"], @"1", @"An app family attribute filter should keep the other attributes.");
 }
 
 - (void)testFilterEventNameForSideloadedKit {
@@ -4627,6 +4869,71 @@ static atomic_bool gLaunchConsentReturned;
     if (acquired) {
         dispatch_semaphore_signal(kitsSemaphore);
     }
+}
+
+- (void)testKitRaisingFromStartedDoesNotLeaveKitsSemaphoreHeld {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"RaisingStarted" className:@"MPRaisingStartedTestKit"];
+    self.consentTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+    id adapter = kitContainer.executionAdapter;
+    dispatch_semaphore_t kitsSemaphore = (dispatch_semaphore_t)object_getIvar(adapter, class_getInstanceVariable([adapter class], "kitsSemaphore"));
+    XCTAssertNotNil(kitsSemaphore);
+
+    // The first pass reads started after launching the kit, the second while listing the active kits.
+    NSArray *configurations = @[@{@"id": @123461, @"as": @{@"key": @"value"}}];
+    for (NSUInteger pass = 0; pass < 2; pass++) {
+        XCTAssertNoThrow([kitContainer configureKits:configurations]);
+        BOOL acquired = dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW) == 0;
+        XCTAssertTrue(acquired, @"kitsSemaphore left held after a kit raised from started (pass %lu)", (unsigned long)pass);
+        // Release a leaked hold too, so work this container queued cannot block later tests.
+        dispatch_semaphore_signal(kitsSemaphore);
+        if (!acquired) {
+            break;
+        }
+    }
+    [self drainConsentReplayQueue];
+}
+
+- (void)testKitsInitializedBlockQueryingKitsFromServerConfigDoesNotBlockMainThread {
+    [self registerConsentReplayTestKit];
+    atomic_store(&gKitsInitializedBlockEntered, false);
+    atomic_store(&gKitsInitializedBlockReturned, false);
+    id adapter = kitContainer.executionAdapter;
+    dispatch_semaphore_t kitsSemaphore = (dispatch_semaphore_t)object_getIvar(adapter, class_getInstanceVariable([adapter class], "kitsSemaphore"));
+    XCTAssertNotNil(kitsSemaphore);
+
+    // With nothing cached (a fresh install) the block waits for the first server configuration.
+    kitContainer.kitsInitialized = NO;
+    [[MParticle sharedInstance] onKitsInitialized:^{
+        atomic_store(&gKitsInitializedBlockEntered, true);
+        (void)[[MParticle sharedInstance] isKitActive:@123456];
+        atomic_store(&gKitsInitializedBlockReturned, true);
+    }];
+
+    // On a regression the main thread never returns from configureKits:, so a watchdog releases
+    // kitsSemaphore once to turn the hang into a failure.
+    __block BOOL released = NO;
+    dispatch_semaphore_t configureReturned = dispatch_semaphore_create(0);
+    dispatch_semaphore_t watchdogFinished = dispatch_semaphore_create(0);
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^{
+        if (dispatch_semaphore_wait(configureReturned, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)) != 0 &&
+            atomic_load(&gKitsInitializedBlockEntered) && !atomic_load(&gKitsInitializedBlockReturned)) {
+            released = YES;
+            dispatch_semaphore_signal(kitsSemaphore);
+        }
+        dispatch_semaphore_signal(watchdogFinished);
+    });
+
+    [kitContainer configureKits:@[@{@"id": @123456, @"as": @{@"test": @YES}}]];
+    dispatch_semaphore_signal(configureReturned);
+    dispatch_semaphore_wait(watchdogFinished, DISPATCH_TIME_FOREVER);
+    if (released) {
+        dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_NOW);
+    }
+    [self drainConsentReplayQueue];
+
+    XCTAssertTrue(atomic_load(&gKitsInitializedBlockEntered));
+    XCTAssertFalse(released, @"An onKitsInitialized: block blocked on kitsSemaphore held by configureKits:");
 }
 
 @end

@@ -59,10 +59,28 @@ static NSString *const oiuserIdDeviceStampValue = @"deviceApplicationStamp";
     return [[MPKitExecStatus alloc] initWithSDKCode:self.class.kitCode returnCode:returnCode];
 }
 
+#pragma mark Private methods
+
+// Server configuration is parsed JSON, and the container rewrites it on every config refresh, so
+// neither the dictionary nor its values are guaranteed to have the type the mParticle UI collects.
+- (id)configurationValueForKey:(NSString *)key {
+    return [_configuration isKindOfClass:[NSDictionary class]] ? _configuration[key] : nil;
+}
+
+- (NSString *)configurationStringForKey:(NSString *)key {
+    id value = [self configurationValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
 #pragma mark MPKitInstanceProtocol methods
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    // Server configuration is parsed JSON, so a value is not guaranteed to have the type the mParticle UI collects.
     NSString *sdkKey = configuration[oiAPIKey];
-    if (!sdkKey) {
+    if (![sdkKey isKindOfClass:[NSString class]]) {
         return [self execStatus:MPKitReturnCodeRequirementsNotMet];
     }
 
@@ -216,8 +234,8 @@ static NSString *const oiuserIdDeviceStampValue = @"deviceApplicationStamp";
 
 - (NSString *)userIdForOptimizely:(FilteredMParticleUser *)currentUser {
     NSString *userId = [[[MParticle sharedInstance] identity] deviceApplicationStamp];
-    if (currentUser != nil && self.configuration[oiuserIdKey] != nil) {
-        NSString *key = self.configuration[oiuserIdKey];
+    NSString *key = currentUser != nil ? [self configurationStringForKey:oiuserIdKey] : nil;
+    if (key != nil) {
         if ([key isEqualToString:oiuserIdCustomerIDValue] && currentUser.userIdentities[@(MPUserIdentityCustomerId)] != nil) {
             userId = currentUser.userIdentities[@(MPUserIdentityCustomerId)];
         } else if ([key isEqualToString:oiuserIdEmailValue] && currentUser.userIdentities[@(MPUserIdentityEmail)] != nil) {

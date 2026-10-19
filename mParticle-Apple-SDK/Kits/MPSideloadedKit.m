@@ -86,7 +86,9 @@
 
 - (void)addScreenNameFilterWithScreenName:(NSString *)screenName {
     NSString *hashedValue = [self.hasher hashEventType:MPEventTypeSwiftClick eventName:screenName isLogScreen:YES];
-    self.eventNameFilters[hashedValue] = @0;
+    // A screen filter belongs in the screen dictionary ("svec"), which is the one the filter engine
+    // reads for a logScreen: call. The event dictionary is never read for a screen.
+    self.screenNameFilters[hashedValue] = @0;
 }
 
 - (void)addEventAttributeFilterWithEventType:(MPEventType)eventType eventName:(NSString *)eventName customAttributeKey:(NSString *)customAttributeKey {
@@ -103,7 +105,7 @@
                                                       eventName:screenName
                                              customAttributeName:customAttributeKey
                                                     isLogScreen:YES];
-    self.eventAttributeFilters[hashedValue] = @0;
+    self.screenAttributeFilters[hashedValue] = @0;
 }
 
 - (void)addUserIdentityFilterWithUserIdentity:(MPUserIdentity)userIdentity {
@@ -129,8 +131,21 @@
 }
 
 - (void)addCommerceEventAppFamilyAttributeFilterWithAttributeKey:(NSString *)attributeKey {
-    NSString *hashedValue = [self.hasher hashString:[attributeKey lowercaseString]];
-    self.commerceEventAppFamilyAttributeFilters[hashedValue] = @1;
+    // The engine reads this filter as the server sends it: keyed by the commerce event kind, each
+    // kind holding the hashed attribute keys with 0 for a blocked one. A sideloaded filter names
+    // the key alone, so it blocks the attribute under every kind. (The hasher lowercases the key
+    // itself, so the hash is the one the product, promotion and impression matchers look up.)
+    NSString *hashedValue = [self.hasher hashString:attributeKey];
+    NSArray<NSNumber *> *kinds = @[@(MPCommerceEventKindProduct), @(MPCommerceEventKindPromotion), @(MPCommerceEventKindImpression)];
+    for (NSNumber *kind in kinds) {
+        NSString *kindKey = [NSString stringWithFormat:@"%ld", (long)kind.integerValue];
+        NSMutableDictionary<NSString *, id> *kindFilters = self.commerceEventAppFamilyAttributeFilters[kindKey];
+        if (!kindFilters) {
+            kindFilters = [[NSMutableDictionary alloc] init];
+            self.commerceEventAppFamilyAttributeFilters[kindKey] = kindFilters;
+        }
+        kindFilters[hashedValue] = @0;
+    }
 }
 
 - (void)setEventAttributeConditionalForwardingWithAttributeName:(NSString *)attributeName attributeValue:(NSString *)attributeValue onlyForward:(BOOL)onlyForward {

@@ -126,6 +126,30 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertEqualObjects(gdprState.hardwareId, @"foo-hardware-id-1");
 }
 
+- (void)testRoundTripKeepsNonASCIIText {
+    MPConsentState *consentState = [[MPConsentState alloc] init];
+    MPGDPRConsent *gdprConsent = [[MPGDPRConsent alloc] init];
+    gdprConsent.consented = YES;
+    gdprConsent.document = @"Datenschutzerkl\u00e4rung \u2013 2026 \u2713";
+    gdprConsent.timestamp = [NSDate date];
+    gdprConsent.location = @"M\u00fcnchen, Stra\u00dfe 1";
+    gdprConsent.hardwareId = @"hw-\u65e5\u672c\u8a9e";
+    [consentState addGDPRConsentState:gdprConsent purpose:@"zweck \u00fc"];
+
+    NSString *string = [MPConsentSerialization stringFromConsentState:consentState];
+    XCTAssertNotNil(string);
+    XCTAssertGreaterThan([string lengthOfBytesUsingEncoding:NSUTF8StringEncoding], string.length,
+                         @"The text must hold multi-byte characters for this test to mean anything.");
+
+    MPConsentState *restored = [MPConsentSerialization consentStateFromString:string];
+    MPGDPRConsent *restoredConsent = [restored gdprConsentState][@"zweck \u00fc"];
+    XCTAssertNotNil(restoredConsent, @"A persisted consent state holding text outside ASCII should be read back, not discarded.");
+    XCTAssertTrue(restoredConsent.consented);
+    XCTAssertEqualObjects(restoredConsent.document, @"Datenschutzerkl\u00e4rung \u2013 2026 \u2713");
+    XCTAssertEqualObjects(restoredConsent.location, @"M\u00fcnchen, Stra\u00dfe 1");
+    XCTAssertEqualObjects(restoredConsent.hardwareId, @"hw-\u65e5\u672c\u8a9e");
+}
+
 - (void)testServerDictionaryCCPA {
     MPConsentState *consentState = nil;
     NSDictionary *dictionary = nil;

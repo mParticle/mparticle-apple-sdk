@@ -51,7 +51,14 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
 
 @end
 
+// The filtered user wrapper only exposes consent on cores that ship the accessor, so the kit
+// describes the getter itself rather than requiring a newer core header to compile against.
+@protocol MPAppsFlyerFilteredConsentSource <NSObject>
+@property (nonatomic, strong, readonly, nullable) MPConsentState *consentState;
+@end
+
 @interface MPKitAppsFlyer() <AppsFlyerLibDelegate, AppsFlyerDeepLinkDelegate>
+- (void)updateConsentWithState:(nullable MPConsentState *)state;
 @end
 
 @implementation MPKitAppsFlyer
@@ -508,13 +515,28 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
     return _kitApi;
 }
 
+- (BOOL)supportsConsentStateReplay {
+    return YES;
+}
+
 - (MPKitExecStatus *)setConsentState:(nullable MPConsentState *)state {
-    [self updateConsent];
+    [self updateConsentWithState:state];
     return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer)
                                          returnCode:MPKitReturnCodeSuccess];
 }
 
 - (void)updateConsent {
+    FilteredMParticleUser *user = [self currentUser];
+    MPConsentState *state = nil;
+    if ([user respondsToSelector:@selector(consentState)]) {
+        state = [(id<MPAppsFlyerFilteredConsentSource>)user consentState];
+    }
+    // A core without the accessor leaves the configured defaults in charge rather than the
+    // unfiltered user state.
+    [self updateConsentWithState:state];
+}
+
+- (void)updateConsentWithState:(nullable MPConsentState *)state {
     NSArray<NSDictionary *> *mappings = [self mappingForKey: @"consentMapping"];
     NSDictionary<NSString *, NSString *> *mappingsConfig;
     if (mappings != nil) {
@@ -528,8 +550,7 @@ static id<AppsFlyerLibDelegate> temporaryDelegate = nil;
         isUserSubjectToGDPR = [gdprValue boolValue];
     }
 
-    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    NSDictionary<NSString *, MPGDPRConsent *> *gdprConsents = currentUser.consentState.gdprConsentState;
+    NSDictionary<NSString *, MPGDPRConsent *> *gdprConsents = state.gdprConsentState;
 
     if (gdprConsents.count > 0) {
         isUserSubjectToGDPR = YES;

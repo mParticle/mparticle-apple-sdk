@@ -20,7 +20,7 @@
 #import "MPLocation.h"
 #import <UIKit/UIKit.h>
 #import "MPSideloadedKit.h"
-#import "MPBackendController.h"
+#import "MPUploadSettings.h"
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceUtilities.h"
@@ -104,6 +104,8 @@ Allows you to override the default event host.
 @property (nonatomic, nullable) NSString *eventsHost;
 /**
 Allows you to override the tracking event host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+Certificate pinning applies to this host: if pinning is enabled (the default), supply certificates
+for it via @c certificates, or disable pinning via @c pinningDisabled / @c pinningDisabledInDevelopment.
 */
 @property (nonatomic, nullable) NSString *eventsTrackingHost;
 /**
@@ -117,6 +119,8 @@ Allows you to override the default identity host.
 @property (nonatomic, nullable) NSString *identityHost;
 /**
 Allows you to override the tracking identity host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+Certificate pinning applies to this host: if pinning is enabled (the default), supply certificates
+for it via @c certificates, or disable pinning via @c pinningDisabled / @c pinningDisabledInDevelopment.
 */
 @property (nonatomic, nullable) NSString *identityTrackingHost;
 /**
@@ -130,6 +134,8 @@ Allows you to override the default alias host.
 @property (nonatomic, nullable) NSString *aliasHost;
 /**
 Allows you to override the tracking alias host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+Certificate pinning applies to this host: if pinning is enabled (the default), supply certificates
+for it via @c certificates, or disable pinning via @c pinningDisabled / @c pinningDisabledInDevelopment.
 */
 @property (nonatomic, nullable) NSString *aliasTrackingHost;
 /**
@@ -137,6 +143,12 @@ Defaults to false. If set true the aliasHost above with overwrite the subdirecto
 */
 @property (nonatomic) BOOL overridesAliasSubdirectory;
 
+/**
+ Root certificates, as DER data, that certificate pinning accepts in addition to the SDK's bundled
+ roots. Pinning applies to every host the SDK connects to, custom hosts included, so a custom host
+ whose certificate chains to another root needs that root here, or pinning disabled via
+ @c pinningDisabled / @c pinningDisabledInDevelopment.
+ */
 @property (nonatomic) NSArray<NSData *> *certificates;
 
 /**
@@ -161,6 +173,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Routes all mParticle endpoint traffic (config, events, identity, alias) through
  a single CNAME domain. Must be an HTTPS URL, e.g. https://rkt.example.com.
  Non-HTTPS values are rejected with a warning log and the property is left unchanged.
+ A port in the URL is used, e.g. https://rkt.example.com:8443; a path is not.
 
  When set, this property takes priority over all individual host properties
  (configHost, eventsHost, eventsTrackingHost, identityHost, identityTrackingHost,
@@ -1206,6 +1219,16 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @param bridgeName The name of the webview bridge
  */
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName;
+
+/**
+ Create a bridge between the mParticle web SDK and iOS SDK, open only to frames from the given hosts.
+
+ This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, as `initializeWKWebView:bridgeName:` does. Every frame in the web view can reach that handler, not only the page the app loaded, so without a list a third-party frame, or a page the user navigates to, can drive identity, opt-out and user attributes through the bridge.
+ @param webView The web view to be initialized
+ @param bridgeName The name of the webview bridge
+ @param allowedHosts The host names whose frames may use the bridge, each with its subdomains (`example.com` admits `app.example.com`); nil or empty keeps the bridge open to every origin, as `initializeWKWebView:bridgeName:` does. The list applies to every web view this instance bridges, and the latest call's list stands.
+ */
+- (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName allowedHosts:(nullable NSArray<NSString *> *)allowedHosts;
 
 #pragma mark - Manual Notification logging
 /**

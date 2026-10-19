@@ -256,7 +256,10 @@ public protocol MPUserDefaultsProtocol {
             setMPObject(eTag, forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID)
             setMPObject(storedConfigurationData, forKey: kMResponseConfigurationKey, userId: userID)
             setConfigurationCompressedFlag(MPZipPRIVATE.isGzipCompressedData(storedConfigurationData))
-            setMPObject(requestTimestamp - currentAge, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
+            // Age is how long the response sat in a cache, so only a finite, positive value moves the
+            // provisioned time back. Anything else is ignored, as a missing header already is.
+            let age = currentAge.isFinite && currentAge > 0 ? currentAge : 0
+            setMPObject(requestTimestamp - age, forKey: Miscellaneous.kMPConfigProvisionedTimestampKey, userId: userID)
             setMPObject(maxAge, forKey: Miscellaneous.kMPConfigMaxAgeHeaderKey, userId: userID)
         } catch {
             connector.logger.error("Failed to archive configuration: \(error)")
@@ -392,7 +395,9 @@ public protocol MPUserDefaultsProtocol {
             if let maxAge = maxAge as? NSNumber {
                 expirationAge = min(maxAge.doubleValue, Miscellaneous.CONFIG_REQUESTS_MAX_EXPIRATION_AGE)
             }
-            isConfigurationExpired = delta > expirationAge
+            // A provisioned time in the future, from a clock set back or a value stored before the Age
+            // check in setConfiguration, would otherwise never expire.
+            isConfigurationExpired = !(delta >= 0 && delta <= expirationAge)
         }
 
         return isConfigurationExpired

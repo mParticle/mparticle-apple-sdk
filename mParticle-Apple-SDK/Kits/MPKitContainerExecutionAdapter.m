@@ -46,7 +46,6 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
@@ -83,6 +82,7 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 - (NSDictionary *)launchConfigurationForKitCode:(NSNumber *)kitCode;
 - (void)reconfigureKits;
 - (id)transformValue:(id)originalValue dataType:(MPDataType)dataType;
+- (MPKitFilter *)filterConsentState:(MPConsentState *)state configuration:(MPKitConfiguration *)configuration;
 @end
 
 #pragma mark - Swift container Objective-C execution boundary
@@ -97,6 +97,11 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 // one entry point callers and tests already knew it by.
 - (id)transformValue:(id)originalValue dataType:(MPDataType)dataType {
     return [self.mp_executionAdapter transformValue:originalValue dataType:dataType];
+}
+
+- (MPConsentState *)filteredConsentState:(MPConsentState *)state configuration:(MPKitConfiguration *)configuration {
+    MPKitFilter *filter = [self.mp_executionAdapter filterConsentState:state configuration:configuration];
+    return filter.shouldFilter ? nil : filter.forwardConsentState;
 }
 
 - (void (^)(MPAttributionResult *, NSError *))attributionCompletionHandler {
@@ -277,6 +282,25 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 @end
 
 static const NSInteger sideloadedKitCodeStartValue = 1000000000;
+
+// A sideloaded kit is registered and configured locally, and its code comes from the range above,
+// so a server entry carrying such a code, live or cached, would replace the developer's filters and
+// set the server's settings on the kit. Both configuration loops ignore such an entry.
+static BOOL MPKitIsSideloadedKitCode(NSNumber *code) {
+    return [code isKindOfClass:[NSNumber class]] && code.integerValue >= sideloadedKitCodeStartValue;
+}
+
+// started is read while kitsSemaphore is held, so a kit that raises from it must not unwind past the
+// signal. A kit that cannot answer is treated as not started.
+static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
+    BOOL started = NO;
+    @try {
+        started = [kit started];
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception thrown while checking whether kit (%@) started: %@", kit, exception);
+    }
+    return started;
+}
 
 @interface MPKitContainerExecutionAdapter () {
     dispatch_semaphore_t kitsSemaphore;
@@ -667,8 +691,14 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         
         // Create default kit configuration
         NSDictionary *remoteConfigDict = [sideloadedKit getKitFilters];
-        NSDictionary *configDict = @{@"id": kitCode, @"as": @{}, kMPRemoteConfigKitHashesKey: remoteConfigDict};
-        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configDict];
+        NSMutableDictionary *configDict = [@{@"id": kitCode, @"as": @{}, kMPRemoteConfigKitHashesKey: remoteConfigDict} mutableCopy];
+        // The parser reads the conditional-forwarding filter from the configuration's own "avf" key,
+        // where the server sends it, never from inside the filters dictionary the builder returns.
+        NSDictionary *attributeValueFilter = remoteConfigDict[@"avf"];
+        if ([attributeValueFilter isKindOfClass:[NSDictionary class]] && attributeValueFilter.count > 0) {
+            configDict[@"avf"] = [attributeValueFilter copy];
+        }
+        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:[configDict copy]];
         self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
         
         // Finish registering kit and call its callbacks
@@ -714,6 +744,14 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         // A rejected entry leaves integrationId nil, which cannot key kitConfigurations.
         if (kitConfiguration.integrationId == nil) {
             MPILogError(@"initializeKits - skipping an unusable cached kit configuration");
+            continue;
+        }
+
+        // A cached server entry under a sideloaded kit's code would replace the local configuration
+        // registerSideloadedKits stored above at the next launch, which the guard in configureKits:
+        // prevents on the live path; it is ignored the same way here.
+        if (MPKitIsSideloadedKitCode(kitConfiguration.integrationId)) {
+            MPILogError(@"initializeKits - ignoring a cached server configuration for sideloaded kit code %@: sideloaded kits are configured locally", kitConfiguration.integrationId);
             continue;
         }
 
@@ -1212,11 +1250,14 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 // filtered outright: forwarding unfiltered consent to it would disclose more than the dashboard
 // ever allowed.
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentState *)state {
+    return [self filterConsentState:state configuration:self.kitConfigurations[kitRegister.code]];
+}
+
+- (MPKitFilter *)filterConsentState:(MPConsentState *)state configuration:(MPKitConfiguration *)configuration {
     if (!state) {
         return nil;
     }
 
-    MPKitConfiguration *configuration = self.kitConfigurations[kitRegister.code];
     if (!configuration) {
         return [[MPKitFilter alloc] initWithFilter:YES];
     }
@@ -1546,7 +1587,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 
 - (BOOL)isActiveAndNotDisabled:(id<MPExtensionKitProtocol>)kitRegister {
-    BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
+    BOOL active = MPKitIsStarted(kitRegister.wrapperInstance);
     MPBracket *bracket = [self bracketForKit:kitRegister.code];
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     MPKitConfiguration *configuration = self.kitConfigurations[kitRegister.code];
@@ -1635,6 +1676,13 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             }
         }
 
+        // The entry is ignored for configuration; the local configuration stands. It has already
+        // spared the kit from the teardown of unmentioned kits above, as before.
+        if (MPKitIsSideloadedKitCode(integrationId)) {
+            MPILogError(@"configureKits - ignoring a server configuration for sideloaded kit code %@: sideloaded kits are configured locally", integrationId);
+            continue;
+        }
+
         predicate = [NSPredicate predicateWithFormat:@"SELF == %@", integrationId];
         BOOL isKitSupported = [supportedKits filteredArrayUsingPredicate:predicate].count > 0;
         
@@ -1699,7 +1747,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             }
             
             if (kitInstance) {
-                if (![kitInstance started] && !disabled) {
+                if (!MPKitIsStarted(kitInstance) && !disabled) {
                     if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
                         @try {
                             [kitInstance setLaunchOptions:stateMachine.launchOptions];
@@ -1755,14 +1803,29 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                 
                 if (userIdentities && [kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)]) {
                     for (NSDictionary *userIdentity in userIdentities) {
+                        // The array is read back from storage; a malformed entry must not raise here.
+                        if (![userIdentity isKindOfClass:[NSDictionary class]]) {
+                            continue;
+                        }
                         MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
+                        // The stored array holds the device identities beside the user identities, and no
+                        // other path hands a device identity to a kit: setIdentitySync gates on this same
+                        // check and the filtered user drops the device types.
+                        if (![MPIdentityUserStoragePRIVATE isUserIdentity:(NSInteger)identityType]) {
+                            continue;
+                        }
                         if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)identityType]) {
                             NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                            
-                            @try {
-                                [kitInstance setUserIdentity:identityString identityType:identityType];
-                            } @catch (NSException *exception) {
-                                MPILogError(@"Exception thrown while forwarding a user identity to kit (%@): %@", kitInstance, exception);
+
+                            // The kit's own identity filter applies here as it does to every later identity
+                            // change, and as the user attribute loop above applies the attribute filter.
+                            MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
+                            if (!kitFilter.shouldFilter) {
+                                @try {
+                                    [kitInstance setUserIdentity:identityString identityType:identityType];
+                                } @catch (NSException *exception) {
+                                    MPILogError(@"Exception thrown while forwarding a user identity to kit (%@): %@", kitInstance, exception);
+                                }
                             }
                         }
                     }
@@ -1784,9 +1847,11 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     }
     
     MPILogDebug(@"configureKits complete - marking kitsInitialized = YES, configured %lu kit(s)", (unsigned long)self.kitConfigurations.count);
-    self.kitsInitialized = YES;
-    
     dispatch_semaphore_signal(kitsSemaphore);
+
+    // Setting the flag runs the app's onKitsInitialized: blocks, which may call kitInstance: or
+    // isKitActive: and so wait on kitsSemaphore.
+    self.kitsInitialized = YES;
 }
 
 - (nullable NSArray<NSNumber *> *)supportedKits {

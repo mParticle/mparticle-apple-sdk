@@ -3,6 +3,7 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "MPBaseTestCase.h"
+#import "MPBackendController.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPIConstants.h"

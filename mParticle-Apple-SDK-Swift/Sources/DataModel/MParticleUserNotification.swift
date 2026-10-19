@@ -3,7 +3,7 @@ import Foundation
 // A received push notification, with its payload redacted for logging.
 //
 // Keeps the MParticleUserNotification Objective-C runtime name the deleted wrapper had, so the
-// forward declarations and -logUserNotification: signatures in Include/MPBackendController.h and
+// forward declarations and -logUserNotification: signatures in MPBackendController.h and
 // Include/MPPersistenceController.h stay byte-identical. Reference
 // MParticleUserNotificationPRIVATE from Swift, MParticleUserNotification from Objective-C.
 //

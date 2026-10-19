@@ -9,8 +9,8 @@ __attribute__((objc_subclassing_restricted))
 @interface MPCCPAConsent : NSObject <NSCopying>
 
 /**
- * Whether the user consented to data collection
- * This should be set to false if the user has opted out of data sharing under the CCPA.
+ * Whether the user has opted out of the sale of their data under the CCPA.
+ * This should be set to true if the user has opted out, and false if they have not.
  */
 @property (nonatomic, assign) BOOL consented;
 

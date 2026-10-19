@@ -9,7 +9,7 @@
 
 NSString *const MPIAdobeErrorKey = @"MPIAdobeErrorKey";
 
-static NSString *      host = @"dpm.demdex.net";
+static NSString *const defaultHost = @"dpm.demdex.net";
 static NSString *const protocol = @"https";
 static NSString *const path = @"/id?";
 
@@ -36,6 +36,21 @@ static NSString *const errorDomain = @"mParticle-Adobe";
 static NSString *const serverErrorDomain = @"mParticle-Adobe Server Response";
 
 static NSString *const marketingCloudIdUserDefaultsKey = @"ADBMOBILE_PERSISTED_MID";
+
+// Uses the configured Audience Manager server only when it is a bare hostname. A scheme, userinfo,
+// port, path, query or fragment each needs a character outside this set, so none can reach the URL.
+static NSString *MPIAdobeHost(NSString *audienceManagerServer) {
+    if (audienceManagerServer.length == 0) {
+        return defaultHost;
+    }
+    NSCharacterSet *nonHostnameCharacters = [[NSCharacterSet characterSetWithCharactersInString:
+        @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-"] invertedSet];
+    if ([audienceManagerServer rangeOfCharacterFromSet:nonHostnameCharacters].location != NSNotFound) {
+        NSLog(@"mParticle -> Adobe kit ignoring an audienceManagerServer that is not a hostname; using %@", defaultHost);
+        return defaultHost;
+    }
+    return audienceManagerServer;
+}
 
 
 @interface MPIAdobeError ()
@@ -94,9 +109,7 @@ id<SessionProtocol> _session;
                   audienceManagerServer:(NSString *)audienceManagerServer
                              completion:(void (^)(NSString *marketingCloudId, NSString *locationHint, NSString *blob, NSError *error))completion {
     
-    if (audienceManagerServer != nil && audienceManagerServer.length > 0) {
-        host = audienceManagerServer;
-    }
+    NSString *host = MPIAdobeHost(audienceManagerServer);
     NSDictionary *userIdentityMappings = @{
                                            @(MPUserIdentityOther): @"other",
                                            @(MPUserIdentityCustomerId): @"customerid",
@@ -208,7 +221,11 @@ id<SessionProtocol> _session;
 }
 
 - (NSString *)marketingCloudIdFromUserDefaults {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:marketingCloudIdUserDefaultsKey];
+    // The key is shared with the Adobe SDK and reachable by the app, so the stored value is not
+    // guaranteed to be a string. Any other type reads as absent, rather than raising on the string
+    // messages the kit sends the result.
+    id marketingCloudId = [[NSUserDefaults standardUserDefaults] objectForKey:marketingCloudIdUserDefaultsKey];
+    return [marketingCloudId isKindOfClass:[NSString class]] ? marketingCloudId : nil;
 }
 
 @end

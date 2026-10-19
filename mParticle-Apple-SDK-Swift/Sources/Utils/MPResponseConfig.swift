@@ -178,7 +178,11 @@ public class RemoteConfig: NSObject {
                 if let configKitDictionary = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[String: Any]] {
                     for kitDictionary in configKitDictionary {
                         let consentKitFilter = kitDictionary[ConsentFilteringSwift.kMPConsentKitFilter] as? [String: Any]
-                        hasConsentFilters = consentKitFilter != nil && !consentKitFilter!.isEmpty
+                        // Accumulated across the kits: one kit carrying a consent filter defers the
+                        // whole configuration until an identity is known, whatever the kits after it
+                        // carry. Overwriting the flag per kit left the decision to the last kit
+                        // alone, so a filtered kit before an unfiltered one started early.
+                        let hasKitFilter = consentKitFilter != nil && !consentKitFilter!.isEmpty
                         var hasRegulationOrPurposeFilters = false
 
                         if let hashes = kitDictionary[RemoteConfig.kMPRemoteConfigKitHashesKey] as? [String: Any],
@@ -194,7 +198,7 @@ public class RemoteConfig: NSObject {
                             }
                         }
 
-                        if hasConsentFilters || hasRegulationOrPurposeFilters {
+                        if hasKitFilter || hasRegulationOrPurposeFilters {
                             hasConsentFilters = true
                         }
                     }

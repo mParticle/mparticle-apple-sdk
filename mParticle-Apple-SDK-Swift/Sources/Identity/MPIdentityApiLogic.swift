@@ -76,16 +76,31 @@ import Foundation
             .map { NSNumber(value: $0.offset) }
     }
 
+    /// The modified mpid of a change result as a number: a JSON number, or a string of digits.
+    /// Anything else — a boolean, a container, a null or text — is no mpid, and the change is
+    /// skipped; the record's consumer assigns it to a user id declared as a number and sends it
+    /// number messages.
+    static func modifiedMPIDNumber(_ value: Any?) -> NSNumber? {
+        switch value {
+        case let number as NSNumber where CFGetTypeID(number) != CFBooleanGetTypeID():
+            return number
+        case let string as String:
+            return Int64(string).map { NSNumber(value: $0) }
+        default:
+            return nil
+        }
+    }
+
     @objc public static func parsedModifyChanges(_ changeResults: NSArray?) -> NSArray {
         let changes = NSMutableArray()
         changeResults?.enumerateObjects { object, _, _ in
             guard let userChange = object as? NSDictionary,
-                  userChange[IdentityHTTPKeys.modifiedMPID] != nil,
+                  let modifiedMPID = modifiedMPIDNumber(userChange[IdentityHTTPKeys.modifiedMPID]),
                   let identityString = userChange[IdentityHTTPKeys.identityType] as? String
             else { return }
             let identityNumber = MPIdentityHTTPIdentitiesPRIVATE.identityType(for: identityString)
             let record = NSMutableDictionary()
-            record[IdentityHTTPKeys.modifiedMPID] = userChange[IdentityHTTPKeys.modifiedMPID]
+            record[IdentityHTTPKeys.modifiedMPID] = modifiedMPID
             record[IdentityHTTPKeys.identityType] = identityString
             if let identityNumber {
                 record["identity_type_number"] = identityNumber
