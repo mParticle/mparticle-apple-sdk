@@ -304,6 +304,34 @@ final class MPKitAdobeTests: XCTestCase {
         XCTAssertEqual(adobeError?.code, .clientSerializationError, line: line)
     }
 
+    func testPersistedMarketingCloudIdReadsOnlyAString() {
+        // The user-defaults key is shared with the Adobe SDK and reachable by the app, so a value of
+        // another type used to reach the string messages the kit sends the result.
+        let key = "ADBMOBILE_PERSISTED_MID"
+        let defaults = UserDefaults.standard
+        let previous = defaults.object(forKey: key)
+        defer {
+            if let previous {
+                defaults.set(previous, forKey: key)
+            } else {
+                defaults.removeObject(forKey: key)
+            }
+        }
+        let sut = MPIAdobe(session: session)!
+
+        defaults.set("mid-123", forKey: key)
+        XCTAssertEqual(sut.marketingCloudIdFromUserDefaults(), "mid-123")
+
+        for value: Any in [42, true, ["mid"], ["mid": "123"]] {
+            defaults.set(value, forKey: key)
+            XCTAssertNil(sut.marketingCloudIdFromUserDefaults(),
+                         "a value of \(type(of: value)) should read as absent")
+        }
+
+        defaults.removeObject(forKey: key)
+        XCTAssertNil(sut.marketingCloudIdFromUserDefaults())
+    }
+
     private func requestedURL(forAudienceManagerServer server: String) -> URLComponents? {
         let sut = MPIAdobe(session: session)!
         sut.sendRequest(withMarketingCloudId: "", advertiserId: "", pushToken: "", organizationId: "",

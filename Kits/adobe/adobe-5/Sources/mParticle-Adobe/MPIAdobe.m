@@ -221,7 +221,11 @@ id<SessionProtocol> _session;
 }
 
 - (NSString *)marketingCloudIdFromUserDefaults {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:marketingCloudIdUserDefaultsKey];
+    // The key is shared with the Adobe SDK and reachable by the app, so the stored value is not
+    // guaranteed to be a string. Any other type reads as absent, rather than raising on the string
+    // messages the kit sends the result.
+    id marketingCloudId = [[NSUserDefaults standardUserDefaults] objectForKey:marketingCloudIdUserDefaultsKey];
+    return [marketingCloudId isKindOfClass:[NSString class]] ? marketingCloudId : nil;
 }
 
 @end
