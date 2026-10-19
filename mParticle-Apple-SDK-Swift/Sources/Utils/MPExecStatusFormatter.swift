@@ -26,11 +26,11 @@ import Foundation
     }
 }
 
-/// Mirrors the Objective-C `MPExecStatus`; raw values must stay in step.
+/// How a backend operation ended, as reported to the SDK's completion handlers.
 ///
-/// The enum itself is declared in the internal `MPBackendController.h`, which the Swift module cannot
-/// import, so a Swift workflow returns one of these and the `.m` casts it back at the boundary.
-@objc public enum MPExecStatusSwift: Int {
+/// Objective-C sees this type as `MPExecStatus`, with case names such as `MPExecStatusSuccess`. The
+/// raw type is unsigned, so the Objective-C type stays `NSUInteger`.
+@objc public enum MPExecStatus: UInt {
     case success = 0
     case fail
     case missingParam

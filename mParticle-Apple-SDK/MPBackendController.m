@@ -26,25 +26,6 @@ const NSInteger kExceededAttributeValueMaximumLength = 104;
 const NSInteger kExceededAttributeKeyMaximumLength = 105;
 const NSInteger kInvalidDataType = 106;
 const NSInteger kInvalidKey = 107;
-const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
- 
-// The Swift backend workflows report MPExecStatusSwift and the forwarders below cast it straight
-// to MPExecStatus. The two enums are hand-maintained in separate modules, because MPExecStatus is
-// declared in a header the Swift module cannot import, so pin every pair at compile time: a
-// reordered or inserted case becomes a build failure rather than a silently wrong status.
-_Static_assert((NSInteger)MPExecStatusSwiftSuccess == (NSInteger)MPExecStatusSuccess, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftFail == (NSInteger)MPExecStatusFail, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftMissingParam == (NSInteger)MPExecStatusMissingParam, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftDisabledRemotely == (NSInteger)MPExecStatusDisabledRemotely, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftEnabledRemotely == (NSInteger)MPExecStatusEnabledRemotely, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftOptOut == (NSInteger)MPExecStatusOptOut, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftDataBeingFetched == (NSInteger)MPExecStatusDataBeingFetched, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftInvalidDataType == (NSInteger)MPExecStatusInvalidDataType, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftDataBeingUploaded == (NSInteger)MPExecStatusDataBeingUploaded, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftServerBusy == (NSInteger)MPExecStatusServerBusy, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftItemNotFound == (NSInteger)MPExecStatusItemNotFound, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftDisabledInSettings == (NSInteger)MPExecStatusDisabledInSettings, "MPExecStatusSwift drifted from MPExecStatus");
-_Static_assert((NSInteger)MPExecStatusSwiftNoConnectivity == (NSInteger)MPExecStatusNoConnectivity, "MPExecStatusSwift drifted from MPExecStatus");
 
 // MPUserDefaultsConnector holds no state and reads MParticle.sharedInstance on every call.
 static id<MPBackendHost> MPBackendHostInstance(void) {
@@ -261,31 +242,8 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return [self.userAttributeWriter userAttributesForUserId:userId];
 }
 
-- (NSMutableArray<NSDictionary<NSString *, id> *> *)identitiesForUserId:(NSNumber *)userId {
-    
-    NSMutableArray *userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:userId];
-    if (userIdentityArray) {
-        [userIdentities addObjectsFromArray:userIdentityArray];
-    }
-    
-    NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
-    BOOL notAuthorized = currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized;
-    return [[MPUserIdentityLogic identities:userIdentities removingType:MPIdentityIOSAdvertiserId when:notAuthorized typeKey:kMPUserIdentityTypeKey] mutableCopy];
-}
-
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
-
-    NSMutableArray *identities = [[NSMutableArray alloc] initWithCapacity:10];
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSArray *identityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:userId];
-    if (identityArray) {
-        [identities addObjectsFromArray:identityArray];
-    }
-
-    // Remove invalid identities
-    return [[MPUserIdentityLogic validIdentities:identities typeKey:kMPUserIdentityTypeKey maxValidTypeExclusive:MPIdentityIOSAdvertiserId] mutableCopy];
+    return [self.assembly.identityWriter userIdentitiesForUserId:userId];
 }
 
 #pragma mark Private methods
@@ -360,27 +318,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     }];
 }
                    
-- (void)logUserAttributeChange:(MPUserAttributeChange *)userAttributeChange {
-    [self.userAttributeWriter logChange:userAttributeChange];
-}
-
-- (void)logUserIdentityChange:(MPUserIdentityChangePRIVATE *)userIdentityChange {
-    if (!userIdentityChange) {
-        return;
-    }
-    
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeUserIdentityChange
-                                                                             session:self.session
-                                                                  userIdentityChange:userIdentityChange context:self.messageBuilderContext];
-    if (userIdentityChange.timestamp) {
-        [messageBuilder timestamp:[userIdentityChange.timestamp timeIntervalSince1970]];
-    }
-    
-    MPMessage *message = [messageBuilder build];
-    
-    [self saveMessage:message updateSession:YES];
-}
-
 - (void)processDidFinishLaunching:(NSNotification *)notification {
     NSString *astType = kMPASTInitKey;
     NSMutableDictionary *messageInfo = [[NSMutableDictionary alloc] initWithCapacity:3];
@@ -438,23 +375,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 - (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler {
     [self.uploadCoordinator requestConfig:completionHandler];
-}
-
-- (void)setUserAttributeChange:(MPUserAttributeChange *)userAttributeChange completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    // A nil change reported success without storing anything. There are no callers left in the
-    // tree, but the Swift entry point takes a non-optional change, so keep the original outcome
-    // here rather than trapping if this selector is ever used again.
-    if (!userAttributeChange) {
-        if (completionHandler) {
-            completionHandler(nil, nil, MPExecStatusSuccess);
-        }
-        return;
-    }
-
-    MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter applyChange:userAttributeChange];
-    if (completionHandler) {
-        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
-    }
 }
 
 - (NSArray *)batchMessageArraysFromMessageArray:(NSArray *)messages maxBatchMessages:(NSInteger)maxBatchMessages maxBatchBytes:(NSInteger)maxBatchBytes maxMessageBytes:(NSInteger)maxMessageBytes {
@@ -675,10 +595,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     }];
     
     return MPExecStatusSuccess;
-}
-
-+ (NSString *)execStatusDescription:(MPExecStatus)execStatus {
-    return [MPExecStatusFormatter descriptionForExecStatus:execStatus];
 }
 
 - (NSNumber *)incrementSessionAttribute:(MPSession *)session key:(NSString *)key byValue:(NSNumber *)value {
@@ -1034,100 +950,38 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 - (void)setUserTag:(NSString *)key timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
     MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter setUserTag:key timestamp:timestamp];
     if (completionHandler) {
-        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
+        completionHandler(outcome.key, outcome.value, outcome.status);
     }
 }
 
 - (void)setUserAttribute:(NSString *)key value:(id)value timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
     MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter setUserAttribute:key value:value timestamp:timestamp];
     if (completionHandler) {
-        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
+        completionHandler(outcome.key, outcome.value, outcome.status);
     }
 }
 
 - (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values timestamp:(NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler {
     MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter setUserAttribute:key values:values timestamp:timestamp];
     if (completionHandler) {
-        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
+        completionHandler(outcome.key, outcome.value, outcome.status);
     }
 }
 
 - (void)removeUserAttribute:(NSString *)key timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
     MPBackendUserAttributeOutcome *outcome = [self.userAttributeWriter removeUserAttribute:key timestamp:timestamp];
     if (completionHandler) {
-        completionHandler(outcome.key, outcome.value, (MPExecStatus)outcome.status);
+        completionHandler(outcome.key, outcome.value, outcome.status);
     }
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler {
-    
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
-    
-    if (MPIsNull(identityString)) {
-        identityString = nil;
-    }
-    
-    MPUserIdentityInstancePRIVATE *newUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithType:(MPUserIdentitySwift)identityType
-                                                                                                     value:identityString];
-    
-    MPUserIdentityChangePRIVATE *userIdentityChange = [[MPUserIdentityChangePRIVATE alloc] initWithNewUserIdentity:newUserIdentity
-                                                                                                      userIdentities:[self identitiesForUserId:[MPPersistenceUtilities mpId]]];
-    
-    userIdentityChange.timestamp = timestamp;
-    
-    NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPPersistenceUtilities mpId]];
 
-    MPUserIdentityChangePlan *plan = [MPUserIdentityLogic planForIdentityType:@(userIdentityChange.newUserIdentity.type)
-                                                                        value:userIdentityChange.newUserIdentity.value
-                                                            currentIdentities:userIdentities
-                                                                      typeKey:kMPUserIdentityTypeKey
-                                                                        idKey:kMPUserIdentityIdKey
-                                                              dateFirstSetKey:kMPDateUserIdentityWasFirstSet
-                                                                          now:[NSDate date]];
-
-    if (plan.kind == MPUserIdentityChangeKindUnchanged) {
-        completionHandler(identityString, identityType, MPExecStatusFail);
-        return;
-    }
-
-    BOOL persistUserIdentities = plan.kind != MPUserIdentityChangeKindNothingToRemove;
-
-    switch (plan.kind) {
-        case MPUserIdentityChangeKindRemove:
-            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:plan.existingIdentity];
-            userIdentityChange.newUserIdentity = nil;
-            [userIdentities removeObjectAtIndex:plan.index];
-            break;
-
-        case MPUserIdentityChangeKindAdd:
-            userIdentityChange.newUserIdentity.dateFirstSet = plan.dateFirstSet;
-            userIdentityChange.newUserIdentity.isFirstTimeSet = plan.isFirstTimeSet;
-            [userIdentities addObject:[userIdentityChange.newUserIdentity dictionaryRepresentation]];
-            break;
-
-        case MPUserIdentityChangeKindReplace:
-            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstancePRIVATE alloc] initWithUserIdentityDictionary:plan.existingIdentity];
-            userIdentityChange.newUserIdentity.dateFirstSet = plan.dateFirstSet;
-            userIdentityChange.newUserIdentity.isFirstTimeSet = plan.isFirstTimeSet;
-            [userIdentities replaceObjectAtIndex:plan.index withObject:[userIdentityChange.newUserIdentity dictionaryRepresentation]];
-            break;
-
-        case MPUserIdentityChangeKindNothingToRemove:
-        case MPUserIdentityChangeKindUnchanged:
-            break;
-    }
-
-    if (persistUserIdentities) {
-        if (userIdentityChange.changed) {
-            [self logUserIdentityChange:userIdentityChange];
-            
-            MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-            [userDefaults setObject:userIdentities forKeyedSubscript:kMPUserIdentityArrayKey];
-            [userDefaults synchronize];
-        }
-    }
-    
-    completionHandler(userIdentityChange.newUserIdentity.value, (MPUserIdentity)userIdentityChange.newUserIdentity.type, MPExecStatusSuccess);
+    MPBackendIdentityOutcome *outcome = [self.assembly.identityWriter setUserIdentity:identityString
+                                                                         identityType:(MPUserIdentitySwift)identityType
+                                                                            timestamp:timestamp];
+    completionHandler(outcome.value, (MPUserIdentity)outcome.type, outcome.status);
 }
 
 - (void)clearUserAttributes {

@@ -35,9 +35,11 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
     private(set) var sessionStartBackends: [AnyObject?] = []
     private(set) var applicationInfoMachines: [MPStateMachinePRIVATE] = []
 
-    override init() {
+    /// `defaults` replaces the simulator's real user defaults, for a test that must not share them.
+    init(defaults: MPUserDefaults? = nil) {
         let connector = MPUserDefaultsConnectorMock()
-        defaults = MPUserDefaults(connector: connector)
+        let defaults = defaults ?? MPUserDefaults(connector: connector)
+        self.defaults = defaults
         machine = MPStateMachinePRIVATE(
             userDefaults: defaults, connector: connector, messageQueue: .main,
             sdkVersion: "0.0.0", deploymentTarget: 0, buildSDK: 0
@@ -181,5 +183,34 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
 
     func isDevelopmentEnvironment() -> Bool {
         isDevelopment
+    }
+}
+
+/// User defaults kept in memory. The simulator's real user defaults are shared by every test
+/// process on it, and other suites reset them while tests run, so a test that asserts on what it
+/// stored uses this instead.
+final class MPBackendMemoryUserDefaults: MPUserDefaults {
+    private var values: [String: Any] = [:]
+
+    init() {
+        super.init(connector: MPUserDefaultsConnectorMock())
+    }
+
+    override func mpObject(forKey key: String, userId: NSNumber) -> Any? {
+        values["\(userId):\(key)"]
+    }
+
+    override func setMPObject(_ value: Any?, forKey key: String, userId: NSNumber) {
+        values["\(userId):\(key)"] = value
+    }
+
+    override func removeMPObject(forKey key: String, userId: NSNumber) {
+        values["\(userId):\(key)"] = nil
+    }
+
+    override func synchronize() {}
+
+    override func resetDefaults() {
+        values.removeAll()
     }
 }
