@@ -140,6 +140,22 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 @end
 
+@interface MPIdentityRecordingTestKit : MPKitTestClass
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSString *> *receivedIdentities;
+@end
+@implementation MPIdentityRecordingTestKit
++ (NSNumber *)kitCode {
+    return @123459;
+}
+- (MPKitExecStatus *)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
+    if (!self.receivedIdentities) {
+        self.receivedIdentities = [NSMutableDictionary dictionary];
+    }
+    self.receivedIdentities[@(identityType)] = identityString;
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+@end
+
 @interface MPLegacyConsentTestKit : MPKitTestClass
 @property (nonatomic) NSUInteger consentCalls;
 @end
@@ -231,6 +247,7 @@ static atomic_bool gKitsInitializedBlockReturned;
     MPKitContainer_PRIVATE *kitContainer;
 }
 @property (nonatomic, strong) MPKitRegister *consentTestRegister;
+@property (nonatomic, strong) MPKitRegister *identityTestRegister;
 
 @end
 
@@ -285,6 +302,10 @@ static atomic_bool gKitsInitializedBlockReturned;
     if (self.consentTestRegister) {
         [MPKitContainer_PRIVATE removeRegisteredKit:self.consentTestRegister];
         self.consentTestRegister = nil;
+    }
+    if (self.identityTestRegister) {
+        [MPKitContainer_PRIVATE removeRegisteredKit:self.identityTestRegister];
+        self.identityTestRegister = nil;
     }
     [MPPersistenceUtilities setDeviceConsentState:nil];
     kitContainer = nil;
@@ -3187,6 +3208,53 @@ static atomic_bool gKitsInitializedBlockReturned;
     [self assertMessageTypeRangeIsRespectedFor:localKitContainer];
 
     [MPUserDefaultsConnector.userDefaults deleteConfiguration];
+}
+
+- (void)testConfigureKitsAppliesTheKitIdentityFilterToTheForwardedIdentities {
+    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
+    NSArray *userIdentities = @[@{@"n":@(MPUserIdentityEmail),
+                                  @"i":@"example",
+                                  @"dfs":MPCurrentEpochInMilliseconds,
+                                  @"f":@NO},
+                                @{@"n":@(MPUserIdentityCustomerId),
+                                  @"i":@"12345",
+                                  @"dfs":MPCurrentEpochInMilliseconds,
+                                  @"f":@NO},
+                                @{@"n":@(MPIdentityIOSAdvertiserId),
+                                  @"i":@"00000000-0000-0000-0000-000000000001",
+                                  @"dfs":MPCurrentEpochInMilliseconds,
+                                  @"f":@NO}];
+    userDefaults[kMPUserIdentityArrayKey] = userIdentities;
+
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"IdentityRecordingTest" className:@"MPIdentityRecordingTestKit"];
+    self.identityTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+
+    NSString *emailType = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)MPUserIdentityEmail];
+    NSArray *blockingEmail = @[@{@"id":@123459,
+                                 @"as":@{@"appId":@"MyAppId"},
+                                 @"hs":@{@"uid":@{emailType:@0}}}];
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:blockingEmail];
+
+    MPIdentityRecordingTestKit *kit = (MPIdentityRecordingTestKit *)registration.wrapperInstance;
+    XCTAssertNotNil(kit, @"The kit should have been started by the configuration.");
+    XCTAssertEqualObjects(kit.receivedIdentities[@(MPUserIdentityCustomerId)], @"12345", @"An unfiltered identity should still reach the kit.");
+    XCTAssertNil(kit.receivedIdentities[@(MPUserIdentityEmail)], @"A kit whose configuration blocks an identity type should not receive it when configured.");
+    XCTAssertNil(kit.receivedIdentities[@(MPIdentityIOSAdvertiserId)], @"A device identity does not reach a kit through any later path and should not reach it here.");
+
+    // The same running kit, reconfigured without the filter: the email now arrives, the device identity still does not.
+    kit.receivedIdentities = nil;
+    NSArray *allowingEmail = @[@{@"id":@123459,
+                                 @"as":@{@"appId":@"MyAppId"}}];
+    [kitContainer configureKits:allowingEmail];
+
+    XCTAssertEqual(registration.wrapperInstance, kit, @"The reconfiguration should keep the running instance.");
+    XCTAssertEqualObjects(kit.receivedIdentities[@(MPUserIdentityEmail)], @"example");
+    XCTAssertEqualObjects(kit.receivedIdentities[@(MPUserIdentityCustomerId)], @"12345");
+    XCTAssertNil(kit.receivedIdentities[@(MPIdentityIOSAdvertiserId)]);
+
+    [userDefaults removeMPObjectForKey:kMPUserIdentityArrayKey];
 }
 
 #if TARGET_OS_IOS == 1
