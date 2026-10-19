@@ -3,4 +3,6 @@
 
 @interface AppDelegate : RCTAppDelegate
 
+@property (nonatomic, copy, nullable) NSDictionary<UIApplicationLaunchOptionsKey, id> *reactNativeLaunchOptions;
+
 @end
