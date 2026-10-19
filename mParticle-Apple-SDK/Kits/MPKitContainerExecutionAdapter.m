@@ -82,6 +82,7 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 - (NSDictionary *)launchConfigurationForKitCode:(NSNumber *)kitCode;
 - (void)reconfigureKits;
 - (id)transformValue:(id)originalValue dataType:(MPDataType)dataType;
+- (MPKitFilter *)filterConsentState:(MPConsentState *)state configuration:(MPKitConfiguration *)configuration;
 @end
 
 #pragma mark - Swift container Objective-C execution boundary
@@ -96,6 +97,11 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 // one entry point callers and tests already knew it by.
 - (id)transformValue:(id)originalValue dataType:(MPDataType)dataType {
     return [self.mp_executionAdapter transformValue:originalValue dataType:dataType];
+}
+
+- (MPConsentState *)filteredConsentState:(MPConsentState *)state configuration:(MPKitConfiguration *)configuration {
+    MPKitFilter *filter = [self.mp_executionAdapter filterConsentState:state configuration:configuration];
+    return filter.shouldFilter ? nil : filter.forwardConsentState;
 }
 
 - (void (^)(MPAttributionResult *, NSError *))attributionCompletionHandler {
@@ -1223,11 +1229,14 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
 // filtered outright: forwarding unfiltered consent to it would disclose more than the dashboard
 // ever allowed.
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentState *)state {
+    return [self filterConsentState:state configuration:self.kitConfigurations[kitRegister.code]];
+}
+
+- (MPKitFilter *)filterConsentState:(MPConsentState *)state configuration:(MPKitConfiguration *)configuration {
     if (!state) {
         return nil;
     }
 
-    MPKitConfiguration *configuration = self.kitConfigurations[kitRegister.code];
     if (!configuration) {
         return [[MPKitFilter alloc] initWithFilter:YES];
     }

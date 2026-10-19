@@ -1,12 +1,28 @@
 #import <XCTest/XCTest.h>
 #import "MPKitOneTrust.h"
 
-// start wraps its body in a process-wide dispatch_once that testStarted below already consumes, so
+// start wraps its body in a process-wide dispatch_once that the startup test below already consumes, so
 // the configuration parsing is exercised directly rather than through a second kit launch.
 @interface MPKitOneTrust (Testing)
 - (NSDictionary *)parseConsentMapping:(NSString *)rawConsentMapping;
 - (NSString * _Nullable)configurationStringForKey:(NSString *)key;
 - (void)persistConfigurationKey:(NSString *)key asDefaultsKey:(NSString *)defaultsKey;
+@end
+
+// Keep this lifecycle test independent of persistence and network identity requests.
+@interface MPConsentRecordingUser : MParticleUser
+@property (nonatomic, strong) MPConsentState *recordedConsent;
+@property (nonatomic) NSUInteger consentWrites;
+@end
+
+@implementation MPConsentRecordingUser
+- (MPConsentState *)consentState {
+    return self.recordedConsent;
+}
+- (void)setConsentState:(MPConsentState *)state {
+    self.recordedConsent = state;
+    self.consentWrites += 1;
+}
 @end
 
 @interface mParticle_OneTrustTests : XCTestCase
@@ -27,10 +43,45 @@
     XCTAssertEqualObjects([MPKitOneTrust kitCode], @134);
 }
 
-- (void)testStarted {
+- (void)testStartedSynchronizesConsentAfterIdentityChanges {
+    id identity = [MParticle sharedInstance].identity;
+    MParticleUser *originalUser = [identity currentUser];
+    MPConsentRecordingUser *firstUser = [[MPConsentRecordingUser alloc] init];
+    MPConsentRecordingUser *secondUser = [[MPConsentRecordingUser alloc] init];
+    MPConsentRecordingUser *thirdUser = [[MPConsentRecordingUser alloc] init];
     MPKitOneTrust *oneTrustKit = [[MPKitOneTrust alloc] init];
-    [oneTrustKit didFinishLaunchingWithConfiguration:@{@"mobileConsentGroups":@"12345"}];
-    XCTAssertTrue(oneTrustKit.started);
+
+    @try {
+        [identity setValue:firstUser forKey:@"currentUser"];
+        [oneTrustKit didFinishLaunchingWithConfiguration:@{@"mobileConsentGroups":@"[]"}];
+        XCTAssertTrue(oneTrustKit.started);
+        XCTAssertNotNil(firstUser.recordedConsent);
+        XCTAssertEqual(firstUser.consentWrites, 1);
+
+        // Posting the core identity notification must work without an active-kit callback.
+        [identity setValue:secondUser forKey:@"currentUser"];
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification
+                                                             object:nil];
+        XCTAssertNotNil(secondUser.recordedConsent);
+        XCTAssertEqual(secondUser.consentWrites, 1);
+        XCTAssertEqual(firstUser.consentWrites, 1);
+        XCTAssertNotEqual(firstUser.recordedConsent, secondUser.recordedConsent);
+
+        [identity setValue:thirdUser forKey:@"currentUser"];
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification
+                                                             object:nil];
+        XCTAssertNotNil(thirdUser.recordedConsent);
+        XCTAssertEqual(thirdUser.consentWrites, 1);
+        XCTAssertEqual(secondUser.consentWrites, 1);
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"OTConsentUpdated" object:nil];
+        XCTAssertEqual(thirdUser.consentWrites, 2);
+        XCTAssertEqual(firstUser.consentWrites, 1);
+        XCTAssertEqual(secondUser.consentWrites, 1);
+    } @finally {
+        [[NSNotificationCenter defaultCenter] removeObserver:oneTrustKit];
+        [identity setValue:originalUser forKey:@"currentUser"];
+    }
 }
 
 #pragma mark - Malformed consent mapping
