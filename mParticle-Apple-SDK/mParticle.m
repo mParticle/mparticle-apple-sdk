@@ -1730,6 +1730,23 @@ MPLog* logger;
     }
 }
 
+// The bridge's dictionary is the page's JSON, so "key" can arrive as a number, a boolean or a container
+// where the identity and session APIs declare a string. Such a key raised on the message queue, outside
+// the bridge's own exception guard, and the session path hands it to Swift as a String, where another
+// type is a crash rather than an exception. A key of another type is logged and the command dropped.
+- (nullable NSString *)webviewAttributeKeyFromDictionary:(NSDictionary *)dictionary {
+    id key = dictionary[@"key"];
+    if (key == nil || (NSNull *)key == [NSNull null]) {
+        return nil;
+    }
+    if (![key isKindOfClass:[NSString class]]) {
+        NSString *message = [NSString stringWithFormat:@"Ignoring webview attribute key: expected a string, got %@", [key class]];
+        [logger error:message];
+        return nil;
+    }
+    return key;
+}
+
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary {
     if (!command || ![command isKindOfClass:[NSString class]] || (dictionary && ![dictionary isKindOfClass:[NSDictionary class]])) {
         [logger error:@"Unexpected data received from embedded webview"];
@@ -1858,34 +1875,39 @@ MPLog* logger;
             
         }];
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserTag]) {
-        if (dictionary[@"key"] && (NSNull *)dictionary[@"key"] != [NSNull null]) {
-            [self.identity.currentUser setUserTag:dictionary[@"key"]];
+        NSString *key = [self webviewAttributeKeyFromDictionary:dictionary];
+        if (key) {
+            [self.identity.currentUser setUserTag:key];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserTag]) {
-        if (dictionary[@"key"] && (NSNull *)dictionary[@"key"] != [NSNull null]) {
-            [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
+        NSString *key = [self webviewAttributeKeyFromDictionary:dictionary];
+        if (key) {
+            [self.identity.currentUser removeUserAttribute:key];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
-        if (!dictionary[@"key"] || (NSNull *)dictionary[@"key"] == [NSNull null]) {
+        NSString *key = [self webviewAttributeKeyFromDictionary:dictionary];
+        if (!key) {
             [logger error:@"Unexpected user attribute data received from webview"];
             return;
         }
         if (!dictionary[@"value"]) {
-            [self.identity.currentUser setUserTag:dictionary[@"key"]];
+            [self.identity.currentUser setUserTag:key];
         } else if ((NSNull *)dictionary[@"value"] != [NSNull null]) {
-            [self.identity.currentUser setUserAttribute:dictionary[@"key"] value:dictionary[@"value"]];
+            [self.identity.currentUser setUserAttribute:key value:dictionary[@"value"]];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserAttribute]) {
-        if (dictionary[@"key"] && (NSNull *)dictionary[@"key"] != [NSNull null]) {
-            [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
+        NSString *key = [self webviewAttributeKeyFromDictionary:dictionary];
+        if (key) {
+            [self.identity.currentUser removeUserAttribute:key];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {
-        if (!dictionary[@"key"]) {
+        NSString *key = [self webviewAttributeKeyFromDictionary:dictionary];
+        if (!key) {
             [logger error:@"Unexpected session attribute data received from webview"];
             return;
         }
-        if ((NSNull *)dictionary[@"key"] != [NSNull null] && (NSNull *)dictionary[@"value"] != [NSNull null]) {
-            [self setSessionAttribute:dictionary[@"key"] value:dictionary[@"value"]];
+        if ((NSNull *)dictionary[@"value"] != [NSNull null]) {
+            [self setSessionAttribute:key value:dictionary[@"value"]];
         }
     }
 }
