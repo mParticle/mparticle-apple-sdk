@@ -1896,6 +1896,15 @@
     XCTAssertEqualObjects(session.attributesDictionary[@"foo-session-attribute-1"], @5);
 }
 
+- (void)testSessionAttributeWithNonStringKeyIsRejected {
+    MPSession *session = [[MPSession alloc] init];
+    for (id key in @[@42, @YES, [NSNull null], @[], @{}]) {
+        MPExecStatus status = [self.backendController setSessionAttribute:session key:(NSString *)key value:@"foo-session-value-1"];
+        XCTAssertEqual(status, MPExecStatusInvalidDataType, @"a key of %@ should be rejected", [key class]);
+    }
+    XCTAssertEqual(session.attributesDictionary.count, (NSUInteger)0);
+}
+
 - (void)testMessageWithOptOut {
     [MPPersistenceUtilities setMpid:@2];
     
