@@ -29,7 +29,7 @@ extension MPPersistenceStorePRIVATE {
         try statement.bind(data, at: 1)
         try statement.bind(record.mpid.int64Value, at: 2)
         _ = try statement.step()
-        record.forwardRecordId = UInt64(sqlite3_last_insert_rowid(try requireConnection().handle))
+        record.forwardRecordId = UInt64(clamping: sqlite3_last_insert_rowid(try requireConnection().handle))
     }
 
     func fetchForwardRecords() throws -> [MPForwardRecordPRIVATE] {
@@ -37,10 +37,19 @@ extension MPPersistenceStorePRIVATE {
             "SELECT _id, forwarding_data, mpid FROM forwarding_records ORDER BY _id"
         )
         var records: [MPForwardRecordPRIVATE] = []
+        var corruptIds: [NSNumber] = []
         while try statement.step() == .row {
+            let recordId = statement.int64(at: 0)
+            // A row id at or below zero is not one SQLite assigned (the column is AUTOINCREMENT), and
+            // the upload path deletes a record by its id once it has been sent, so such a row would be
+            // sent again on every cycle; it is dropped here and its row deleted below.
+            guard recordId > 0 else {
+                corruptIds.append(NSNumber(value: recordId))
+                continue
+            }
             guard let data = statement.data(at: 1),
                   let record = MPForwardRecordPRIVATE(
-                      recordId: statement.int64(at: 0),
+                      recordId: recordId,
                       data: data,
                       mpid: NSNumber(value: statement.int64(at: 2))
                   )
@@ -49,6 +58,9 @@ extension MPPersistenceStorePRIVATE {
             }
             records.append(record)
         }
+        // A failed delete must not withhold this cycle's valid records; the rows are skipped again
+        // on the next fetch.
+        try? deleteForwardRecords(ids: corruptIds)
         return records
     }
 

@@ -7,7 +7,9 @@ import Foundation
 
     @objc(initWithId:dataDictionary:mpid:)
     public init(recordId: Int64, dataDictionary: NSDictionary?, mpid: NSNumber) {
-        forwardRecordId = UInt64(recordId)
+        // Clamped, not checked: the on-disk _id read by fetchForwardRecords arrives here, and a
+        // checked conversion of a negative value would trap at every upload cycle.
+        forwardRecordId = UInt64(clamping: recordId)
         self.mpid = mpid
         if let dataDictionary, !MPSwiftIsNull(dataDictionary) {
             self.dataDictionary = NSMutableDictionary(dictionary: dataDictionary)
