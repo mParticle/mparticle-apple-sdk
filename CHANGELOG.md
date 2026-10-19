@@ -20,6 +20,133 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.7.4] - 2026-10-19
+
+### Core
+
+#### Added
+
+- Expose kit-filtered effective consent on the user wrapper ([#1135](https://github.com/mParticle/mparticle-apple-sdk/pull/1135))
+
+#### Fixed
+
+- Read a webview bridge attribute key only when it is a string ([#1111](https://github.com/mParticle/mparticle-apple-sdk/pull/1111))
+- Let an app name the hosts whose frames may use the webview bridge ([#1110](https://github.com/mParticle/mparticle-apple-sdk/pull/1110))
+- Keep a modify change only when its modified mpid is a number ([#1125](https://github.com/mParticle/mparticle-apple-sdk/pull/1125))
+- Cap the response buffer a declared content length reserves ([#1124](https://github.com/mParticle/mparticle-apple-sdk/pull/1124))
+- Reject device and unknown identity types in webview identity requests ([#1131](https://github.com/mParticle/mparticle-apple-sdk/pull/1131))
+- Read a persisted consent state holding text outside ASCII instead of discarding it ([#1119](https://github.com/mParticle/mparticle-apple-sdk/pull/1119))
+- Clamp on-disk integers at the unsigned conversions instead of trapping ([#1118](https://github.com/mParticle/mparticle-apple-sdk/pull/1118))
+- Correct the consented property's doc comment in MPCCPAConsent ([#1134](https://github.com/mParticle/mparticle-apple-sdk/pull/1134))
+- Apply a kit's identity filter to the identities forwarded when it is configured ([#1117](https://github.com/mParticle/mparticle-apple-sdk/pull/1117))
+- Write a sideloaded kit's app family attribute filter in the shape and polarity the engine reads ([#1116](https://github.com/mParticle/mparticle-apple-sdk/pull/1116))
+- Activate a sideloaded kit's conditional forwarding by lifting its filter to the configuration ([#1115](https://github.com/mParticle/mparticle-apple-sdk/pull/1115))
+- Write a sideloaded kit's screen filters to the dictionaries the filter engine reads ([#1114](https://github.com/mParticle/mparticle-apple-sdk/pull/1114))
+- Ignore a server kit configuration that carries a sideloaded kit's code, live or cached ([#1113](https://github.com/mParticle/mparticle-apple-sdk/pull/1113))
+- Look up a kit's filters by the code the container registered it under ([#1112](https://github.com/mParticle/mparticle-apple-sdk/pull/1112))
+- Defer kit configuration when any kit carries a consent filter, not only the last ([#1127](https://github.com/mParticle/mparticle-apple-sdk/pull/1127))
+- Cap the background hold at 5 seconds when background time is finite ([#1138](https://github.com/mParticle/mparticle-apple-sdk/pull/1138))
+- Keep the port of customBaseURL in request URLs ([#1107](https://github.com/mParticle/mparticle-apple-sdk/pull/1107))
+- Pin certificates for every host the SDK connects to ([#1106](https://github.com/mParticle/mparticle-apple-sdk/pull/1106))
+- Stop a replaced backend controller publishing its session ([#1075](https://github.com/mParticle/mparticle-apple-sdk/pull/1075))
+- Run onKitsInitialized blocks after kit configuration releases its lock ([#1103](https://github.com/mParticle/mparticle-apple-sdk/pull/1103))
+- Keep the alias window from server configuration in a usable range ([#1102](https://github.com/mParticle/mparticle-apple-sdk/pull/1102))
+- Stop a negative Age header keeping the cached configuration from expiring ([#1101](https://github.com/mParticle/mparticle-apple-sdk/pull/1101))
+- Pin certificates for ATT tracking host overrides ([#1093](https://github.com/mParticle/mparticle-apple-sdk/pull/1093))
+- Ignore non-numeric values in commerce attribute filters ([#1092](https://github.com/mParticle/mparticle-apple-sdk/pull/1092))
+- Stop reconfigureKits deadlocking when a kit sets consent during launch ([#1088](https://github.com/mParticle/mparticle-apple-sdk/pull/1088))
+- Keep a kit exception from leaving kitsSemaphore held ([#1091](https://github.com/mParticle/mparticle-apple-sdk/pull/1091))
+- Run pending kit instance handlers after kit configuration ([#1089](https://github.com/mParticle/mparticle-apple-sdk/pull/1089))
+- Stop the data plan filter crashing on unconstrained events ([#1086](https://github.com/mParticle/mparticle-apple-sdk/pull/1086))
+- Ignore a negative crash report size limit ([#1085](https://github.com/mParticle/mparticle-apple-sdk/pull/1085))
+
+#### Changed
+
+- Make the backend controller header internal ([#1076](https://github.com/mParticle/mparticle-apple-sdk/pull/1076))
+
+### Kits
+
+#### Adjust
+
+##### Fixed
+
+- Treat a non-string or empty app token as missing instead of raising in dispatch_once ([#1122](https://github.com/mParticle/mparticle-apple-sdk/pull/1122))
+
+#### Adobe
+
+##### Fixed
+
+- Read the persisted marketing cloud id only when it is a string ([#1123](https://github.com/mParticle/mparticle-apple-sdk/pull/1123))
+- Validate the Audience Manager server hostname in the Adobe kit ([#1097](https://github.com/mParticle/mparticle-apple-sdk/pull/1097))
+- Validate server configuration types in the Adobe kit ([#1090](https://github.com/mParticle/mparticle-apple-sdk/pull/1090))
+
+#### Appsflyer
+
+##### Fixed
+
+- Use the consent state the kit is given ([#1136](https://github.com/mParticle/mparticle-apple-sdk/pull/1136))
+
+#### Apptentive
+
+##### Fixed
+
+- Validate server configuration types in the Apptentive kit ([#1105](https://github.com/mParticle/mparticle-apple-sdk/pull/1105))
+
+#### Clevertap
+
+##### Fixed
+
+- Validate server configuration types before they reach CleverTap ([#1121](https://github.com/mParticle/mparticle-apple-sdk/pull/1121))
+
+#### Google-analytics-firebase
+
+##### Fixed
+
+- Do not raise on a key with no allowed characters ([#1120](https://github.com/mParticle/mparticle-apple-sdk/pull/1120))
+
+#### Iterable
+
+##### Fixed
+
+- Validate server configuration types in the Iterable kit ([#1087](https://github.com/mParticle/mparticle-apple-sdk/pull/1087))
+
+#### Kochava
+
+##### Fixed
+
+- Validate server configuration types in the Kochava kit ([#1098](https://github.com/mParticle/mparticle-apple-sdk/pull/1098))
+
+#### Leanplum
+
+##### Fixed
+
+- Validate server configuration types in the Leanplum kit ([#1095](https://github.com/mParticle/mparticle-apple-sdk/pull/1095))
+
+#### Onetrust
+
+##### Fixed
+
+- Refresh OneTrust consent when the current user changes ([#1132](https://github.com/mParticle/mparticle-apple-sdk/pull/1132))
+
+#### Optimizely
+
+##### Fixed
+
+- Validate server configuration types in the Optimizely kit ([#1104](https://github.com/mParticle/mparticle-apple-sdk/pull/1104))
+
+#### Rokt
+
+##### Fixed
+
+- Log the placement event with no custom attributes ([#1126](https://github.com/mParticle/mparticle-apple-sdk/pull/1126))
+
+#### Urbanairship
+
+##### Fixed
+
+- Validate server configuration types in the Urban Airship 19 kit ([#1100](https://github.com/mParticle/mparticle-apple-sdk/pull/1100))
+- Validate server configuration types in the Urban Airship kit ([#1094](https://github.com/mParticle/mparticle-apple-sdk/pull/1094))
+
 ## [9.7.3] - 2026-10-12
 
 ### Kits
@@ -2702,7 +2829,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.3...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.4...HEAD
+[9.7.4]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.3...v9.7.4
 [9.7.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.2...v9.7.3
 [9.7.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.1...v9.7.2
 [9.7.1]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.0...v9.7.1
