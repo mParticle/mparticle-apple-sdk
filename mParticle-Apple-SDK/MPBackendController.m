@@ -20,13 +20,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return (id<MPBackendHost>)[[MPUserDefaultsConnector alloc] init];
 }
 
-@interface MParticleSession ()
-
-@property (nonatomic, readwrite) NSNumber *startTime;
-- (instancetype)initWithUUID:(NSString *)uuid;
-
-@end
-
 @interface MParticle ()
 
 @property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
@@ -39,15 +32,12 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 @end
 
-@interface MPBackendController_PRIVATE() <MPBackendAssemblyOwner> {
-    MParticleSession *tempSession;
-}
+@interface MPBackendController_PRIVATE() <MPBackendAssemblyOwner>
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 @property NSTimeInterval timeOfLastEventInBackground;
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSOperationQueue *backgroundCheckQueue;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
-@property (nonatomic, strong, readonly, nonnull) MPBackendSessionState *sessionState;
 @property (nonatomic, strong, readonly, nonnull) MPBackendAssembly *assembly;
 @property (nonatomic, readonly, nonnull) MPBackendSessionDependencies *sessionDependencies;
 @property (nonatomic, readonly, nonnull) MPBackendMessageWriter *messageWriter;
@@ -56,9 +46,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 @property (nonatomic, readonly, nonnull) MPBackendSessionCoordinator *sessionCoordinator;
 @property (nonatomic, readonly, nonnull) MPBackendLifecycleCoordinator *lifecycleCoordinator;
 @property (nonatomic, readonly, nonnull) MPBackendSessionLifecycleDependencies *sessionLifecycleDependencies;
-@property (nonatomic, readonly, nonnull) MPBackendUploadCoordinator *uploadCoordinator;
 - (MPUploadBuilderContext *)uploadBuilderContext;
-+ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence;
 
 @end
 
@@ -187,6 +175,18 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return self.assembly.uploadCoordinator;
 }
 
+- (MPBackendEventLogger *)eventLogger {
+    return self.assembly.eventLogger;
+}
+
+- (MPBackendIdentityWriter *)identityWriter {
+    return self.assembly.identityWriter;
+}
+
+- (MPBackendStartupCoordinator *)startupCoordinator {
+    return self.assembly.startupCoordinator;
+}
+
 - (NSTimeInterval)timeAppWentToBackgroundInCurrentSession {
     return self.sessionState.timeAppWentToBackgroundInCurrentSession;
 }
@@ -222,10 +222,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{ return self.persistence; }];
 }
 
-+ (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence {
-    return [[MPUploadBuilderContext alloc] initWithHost:MPBackendHostInstance() persistence:persistence];
-}
-
 #pragma mark MPBackendAssemblyOwner
 
 - (void)uploadFromBackendWithCompletionHandler:(dispatch_block_t)completionHandler {
@@ -240,18 +236,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return (id<MPBackendUploadNetworking>)self.networkCommunication;
 }
 
-- (void)createPendingSessionWithUUID:(NSString *)uuid {
-    tempSession = [[MParticleSession alloc] initWithUUID:uuid];
-}
-
-- (void)setPendingSessionStartTime:(double)timestamp {
-    tempSession.startTime = @(timestamp);
-}
-
-- (void)clearPendingSession {
-    tempSession = nil;
-}
-
 - (void)clearEmptyTimedEvents {
     if (self.eventSet.count == 0) {
         self.eventSet = nil;
@@ -260,10 +244,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 - (id<MPBackendControllerDelegate>)backendDelegate {
     return self.delegate;
-}
-
-- (void)prepareBatchesForUploadSettings:(NSObject *)settings {
-    [self prepareBatchesForUpload:(MPUploadSettings *)settings];
 }
 
 - (void)processDidFinishLaunching:(NSNotification *)notification {
@@ -287,10 +267,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 - (void)skipNextUpload {
     [self.uploadCoordinator skipNextUpload];
-}
-
-- (void)prepareBatchesForUpload:(MPUploadSettings *)uploadSettings {
-    [self.uploadCoordinator prepareBatchesForUpload:uploadSettings];
 }
 
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
@@ -355,12 +331,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     [self.sessionCoordinator createTempSession];
 }
 
-- (MParticleSession *)tempSession {
-    __block MParticleSession *pending;
-    [self.sessionState withSessionLock:^{ pending = self->tempSession; }];
-    return pending;
-}
-
 #pragma mark Public methods
 
 - (void)beginSession {
@@ -377,23 +347,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 - (void)endSessionWithIsManual:(BOOL)isManual {
     [self.sessionCoordinator endSessionWithIsManual:isManual];
-}
-
-- (void)beginTimedEvent:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    [event beginTiming];
-    [self.eventSet addObject:event];
-    completionHandler(event, MPExecStatusSuccess);
-}
-
-+ (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
-    return [MPBackendAttributeValidation checkKey:key value:value host:MPBackendHostInstance() error:error];
-}
-
-- (MPEvent *)eventWithName:(NSString *)eventName {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", eventName];
-    MPEvent *event = [[self.eventSet filteredSetUsingPredicate:predicate] anyObject];
-    
-    return event;
 }
 
 - (MPExecStatus)fetchAudiencesWithCompletionHandler:(void (^ _Nonnull)(NSArray * _Nullable currentAudiences, NSError * _Nullable error))completionHandler {
@@ -414,20 +367,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return [self.userAttributeWriter incrementUserAttribute:key byValue:value];
 }
 
-- (void)leaveBreadcrumb:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    event.messageType = MPMessageTypeBreadcrumb;
-    [self.assembly.eventLogger saveEventMessageOfType:event.messageType
-                                          messageInfo:[event breadcrumbDictionaryRepresentation]
-                                            timestamp:event.timestamp
-                                    shouldUploadEvent:YES];
-
-    if ([self.eventSet containsObject:event]) {
-        [_eventSet removeObject:event];
-    }
-
-    completionHandler(event, MPExecStatusSuccess);
-}
-
 - (void)logError:(NSString *)message exception:(NSException *)exception topmostContext:(id)topmostContext eventInfo:(NSDictionary *)eventInfo completionHandler:(void (^)(NSString *message, MPExecStatus execStatus))completionHandler {
     NSString *topmostContextDescription = topmostContext ? [[topmostContext class] description] : nil;
     NSString *execMessage = [self.errorReporter logErrorWithMessage:message
@@ -445,64 +384,8 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     completionHandler(execMessage, MPExecStatusSuccess);
 }
 
-- (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
-    if (event.shouldBeginSession) {
-        [self.assembly.eventLogger beginSessionForEventAtDate:event.timestamp];
-    }
-    if ([event isKindOfClass:[MPEvent class]] || [event isKindOfClass:[MPCommerceEvent class]]) {
-        [self.assembly.eventLogger saveEventMessageOfType:event.messageType
-                                              messageInfo:[event dictionaryRepresentation]
-                                                timestamp:event.timestamp
-                                        shouldUploadEvent:event.shouldUploadEvent];
-        MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
-    }
-
-    completionHandler(event, MPExecStatusSuccess);
-}
-
-- (void)logEvent:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-     event.messageType = MPMessageTypeEvent;
-
-    [self logBaseEvent:event
-     completionHandler:^(MPBaseEvent *baseEvent, MPExecStatus execStatus) {
-         if ([self.eventSet containsObject:(MPEvent *)baseEvent]) {
-             [self.eventSet removeObject:(MPEvent *)baseEvent];
-         }
-
-         completionHandler((MPEvent *)baseEvent, execStatus);
-     }];
-}
-
-- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent completionHandler:(void (^)(MPCommerceEvent *commerceEvent, MPExecStatus execStatus))completionHandler {
-    commerceEvent.messageType = MPMessageTypeCommerceEvent;
-    
-    [self logBaseEvent:commerceEvent
-     completionHandler:^(MPBaseEvent *baseEvent, MPExecStatus execStatus) {
-         completionHandler((MPCommerceEvent *)baseEvent, execStatus);
-     }];
-}
-
 - (void)logNetworkPerformanceMeasurement:(MPNetworkPerformance *)networkPerformance completionHandler:(void (^)(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus))completionHandler {
     [self.assembly.messageLogger logNetworkPerformanceMeasurement:networkPerformance completionHandler:completionHandler];
-}
-
-- (void)logScreen:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    event.messageType = MPMessageTypeScreenView;
-    [event endTiming];
-    if (event.type != MPEventTypeNavigation) {
-        event.type = MPEventTypeNavigation;
-    }
-
-    [self.assembly.eventLogger saveEventMessageOfType:event.messageType
-                                          messageInfo:[event screenDictionaryRepresentation]
-                                            timestamp:event.timestamp
-                                    shouldUploadEvent:event.shouldUploadEvent];
-
-    if ([self.eventSet containsObject:event]) {
-        [_eventSet removeObject:event];
-    }
-
-    completionHandler(event, MPExecStatusSuccess);
 }
 
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler {
@@ -513,21 +396,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     NSAssert(session != nil, @"session cannot be nil.");
 
     return [self.assembly.sessionAttributeWriter setSessionAttribute:session key:key value:value];
-}
-
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
-    MPConsentState *storedConsentState = [MPPersistenceUtilities consentStateForMpid:[MPPersistenceUtilities mpId]];
-    if (consentState != nil && storedConsentState == nil) {
-        [MPPersistenceUtilities setConsentState:consentState forMpid:[MPPersistenceUtilities mpId]];
-    }
-
-    [self.assembly.startupCoordinator startWithKey:apiKey
-                                            secret:secret
-                                    networkOptions:networkOptions
-                                          firstRun:firstRun
-                                  installationType:(MPInstallationTypeSwift)installationType
-                                    startKitsAsync:startKitsAsync
-                                 completionHandler:completionHandler];
 }
 
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession {
@@ -570,15 +438,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     if (completionHandler) {
         completionHandler(outcome.key, outcome.value, outcome.status);
     }
-}
-
-- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler {
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
-
-    MPBackendIdentityOutcome *outcome = [self.assembly.identityWriter setUserIdentity:identityString
-                                                                         identityType:(MPUserIdentitySwift)identityType
-                                                                            timestamp:timestamp];
-    completionHandler(outcome.value, (MPUserIdentity)outcome.type, outcome.status);
 }
 
 - (void)clearUserAttributes {

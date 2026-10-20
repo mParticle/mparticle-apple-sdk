@@ -95,7 +95,7 @@ public final class MPBackendStartupCoordinator: NSObject {
             // settings counts as different, and the batching is then asked for with nil settings.
             let lastUploadSettings = host.lastUploadSettings()
             if host.apiKey(ofUploadSettings: lastUploadSettings) != apiKey {
-                owner.prepareBatches(forUploadSettings: lastUploadSettings)
+                owner.prepareBatches?(forUploadSettings: lastUploadSettings)
                 host.deleteCachedConfiguration()
             }
             host.storeUploadSettings(apiKey: apiKey, secret: secret, networkOptions: networkOptions)
