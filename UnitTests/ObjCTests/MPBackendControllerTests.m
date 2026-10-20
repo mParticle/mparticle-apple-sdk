@@ -1,5 +1,6 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
+#import <objc/runtime.h>
 #import "MPBackendController.h"
 #import "MPIConstants.h"
 #import "MPPersistenceUtilities.h"
@@ -64,9 +65,9 @@
 @property (nonatomic, strong, readonly) MPBackendSessionState *sessionState;
 - (void)beginUploadTimer;
 - (void)endUploadTimer;
+- (void)beginSession;
 
 - (NSString *)caseInsensitiveKeyInDictionary:(NSDictionary *)dictionary withKey:(NSString *)key;
-- (void)cleanUp;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
 - (void)logRemoteNotificationWithNotificationController:(MPNotificationController_PRIVATE *const)notificationController;
@@ -79,11 +80,8 @@
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error;
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error;
 - (NSArray *)batchMessageArraysFromMessageArray:(NSArray *)messages maxBatchMessages:(NSInteger)maxBatchMessages maxBatchBytes:(NSInteger)maxBatchBytes maxMessageBytes:(NSInteger)maxMessageBytes;
-- (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(void))completionHandler;
 - (void)backgroundTaskBlock;
-- (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler;
 - (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler;
-- (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler;
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
 - (void)cleanUp:(NSTimeInterval)currentTime;
 - (void)processDidFinishLaunching:(NSNotification *)notification;
@@ -95,7 +93,6 @@
 - (void)cancelBackgroundTimeCheckLoop;
 - (void)endSessionIfTimedOut;
 @property NSOperationQueue *backgroundCheckQueue;
-@property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSTimeInterval timeOfLastEventInBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 
@@ -219,6 +216,20 @@
     [host storeUploadSettingsWithApiKey:@"round-trip-key" secret:@"round-trip-secret" networkOptions:nil];
     XCTAssertEqualObjects([host apiKeyOfUploadSettings:[host lastUploadSettings]], @"round-trip-key");
     XCTAssertNil([host apiKeyOfUploadSettings:[[NSObject alloc] init]]);
+    XCTAssertTrue([(id)[host makeNetworkCommunication] isKindOfClass:[MPNetworkCommunication_PRIVATE class]]);
+}
+
+- (void)testTheControllerAnswersTheOwnerCallbacksItsCategoryImplements {
+    // MPBackendAssemblyOwner's optional requirements are the ones the boundary category implements, so a
+    // missing one would be skipped without an error.
+    MPBackendController_PRIVATE *controller = [[MPBackendController_PRIVATE alloc] init];
+    unsigned int count = 0;
+    struct objc_method_description *methods = protocol_copyMethodDescriptionList(@protocol(MPBackendAssemblyOwner), NO, YES, &count);
+    XCTAssertGreaterThan(count, 0u);
+    for (unsigned int i = 0; i < count; i++) {
+        XCTAssertTrue([controller respondsToSelector:methods[i].name], @"%@", NSStringFromSelector(methods[i].name));
+    }
+    free(methods);
 }
 
 - (void)testSessionOwnershipDoesNotPublishStateMachineMirror {

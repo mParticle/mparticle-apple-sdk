@@ -65,6 +65,8 @@ public protocol MPBackendHost: NSObjectProtocol {
     /// Restores the cached server configuration, if one is stored.
     @objc(restoreCachedConfiguration) func restoreCachedConfiguration()
     @objc(updateStoredVersionAndBuildNumbers) func updateStoredVersionAndBuildNumbers()
+    /// A new instance of the SDK's network layer, for a controller made for the SDK.
+    @objc(makeNetworkCommunication) func makeNetworkCommunication() -> MPBackendUploadNetworking?
 }
 
 public extension MPMessageBuilderContext {

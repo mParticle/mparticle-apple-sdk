@@ -27,13 +27,6 @@
 
 @end
 
-@interface MPBackendController_PRIVATE ()
-
-
-- (void)clearUserAttributes;
-
-@end
-
 @interface FilteredMParticleUser (RoktFilteringTests)
 - (NSDictionary<NSString *, id> *)mp_filteredUserAttributesByMergingAttributes:(NSDictionary<NSString *, id> *)attributes;
 @end
