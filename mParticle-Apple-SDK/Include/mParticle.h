@@ -1151,7 +1151,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 /**
  Set a single session attribute. The property will be combined with any existing attributes.
- There is a 100 count limit to existing session attributes. Passing in a nil value for an
+ There is no limit to the number of session attributes. Passing in a nil value for an
  existing key will remove the session attribute.
  @param key The attribute key
  @param value The attribute value
