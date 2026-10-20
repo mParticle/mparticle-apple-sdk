@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E90D51202F9A000100000001 /* SceneDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = E90D51202F9A000100000003 /* SceneDelegate.mm */; };
 		00E356F31AD99517003FC87E /* RNExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* RNExampleTests.m */; };
 		01F408F2CE1BF9575E9A9F4E /* Pods_RNExample_RNExampleTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEC2C97FD25773E85852EE8B /* Pods_RNExample_RNExampleTests.framework */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
@@ -28,6 +29,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E90D51202F9A000100000002 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SceneDelegate.h; path = RNExample/SceneDelegate.h; sourceTree = "<group>"; };
+		E90D51202F9A000100000003 /* SceneDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = SceneDelegate.mm; path = RNExample/SceneDelegate.mm; sourceTree = "<group>"; };
 		00E356EE1AD99517003FC87E /* RNExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RNExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* RNExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RNExampleTests.m; sourceTree = "<group>"; };
@@ -90,6 +93,8 @@
 			children = (
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
+				E90D51202F9A000100000002 /* SceneDelegate.h */,
+				E90D51202F9A000100000003 /* SceneDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
@@ -397,6 +402,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
+				E90D51202F9A000100000001 /* SceneDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

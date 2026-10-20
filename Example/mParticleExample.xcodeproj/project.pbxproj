@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E90D51202F9A000100000001 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E90D51202F9A000100000003 /* SceneDelegate.m */; };
 		33C91FA762EC2B1BE1D4A3E6 /* Pods_mParticleExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C82CE5BF2DD50BCF8C74BD42 /* Pods_mParticleExample.framework */; };
 		76A5F011073E72F6F0C415DB /* Pods_mParticleExampleTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2EA4B28DA755816DD1F32FC /* Pods_mParticleExampleTests.framework */; };
 		D37FB8E9236208E200E47B6D /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37FB8E8236208E200E47B6D /* Dummy.swift */; };
@@ -54,6 +55,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E90D51202F9A000100000002 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		E90D51202F9A000100000003 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
 		778529B8C3011C3CB9D1CF07 /* Pods-mParticleExampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExampleTests.debug.xcconfig"; path = "Target Support Files/Pods-mParticleExampleTests/Pods-mParticleExampleTests.debug.xcconfig"; sourceTree = "<group>"; };
 		7CF1AE3E00E36168C5CB1C8C /* Pods-mParticleExampleUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExampleUITests.debug.xcconfig"; path = "Target Support Files/Pods-mParticleExampleUITests/Pods-mParticleExampleUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		8FCF726BCB7D30C3C6A5860B /* Pods-mParticleExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExample.debug.xcconfig"; path = "Target Support Files/Pods-mParticleExample/Pods-mParticleExample.debug.xcconfig"; sourceTree = "<group>"; };
@@ -169,6 +172,8 @@
 				D3D685CC232BE18900112FCC /* mParticleExample.entitlements */,
 				DBD54A10224941630053BD20 /* AppDelegate.h */,
 				DBD54A11224941630053BD20 /* AppDelegate.m */,
+				E90D51202F9A000100000002 /* SceneDelegate.h */,
+				E90D51202F9A000100000003 /* SceneDelegate.m */,
 				DBD54A13224941630053BD20 /* ViewController.h */,
 				DBD54A14224941630053BD20 /* ViewController.m */,
 				A1B2C3D4E5F60718293A4B51 /* RoktHybridWebViewController.h */,
@@ -432,6 +437,7 @@
 				DBD54A20224941640053BD20 /* main.m in Sources */,
 				D37FB8E9236208E200E47B6D /* Dummy.swift in Sources */,
 				DBD54A12224941630053BD20 /* AppDelegate.m in Sources */,
+				E90D51202F9A000100000001 /* SceneDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

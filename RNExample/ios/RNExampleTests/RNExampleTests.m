@@ -5,7 +5,7 @@
 #import <React/RCTRootView.h>
 
 #define TIMEOUT_SECONDS 600
-#define TEXT_TO_LOOK_FOR @"Welcome to React"
+#define TEXT_TO_LOOK_FOR @"Step One"
 
 @interface RNExampleTests : XCTestCase
 
@@ -28,7 +28,7 @@
 
 - (void)testRendersWelcomeScreen
 {
-  UIViewController *vc = [[[RCTSharedApplication() delegate] window] rootViewController];
+  UIViewController *vc = nil;
   NSDate *date = [NSDate dateWithTimeIntervalSinceNow:TIMEOUT_SECONDS];
   BOOL foundElement = NO;
 
@@ -46,6 +46,17 @@
     [[NSRunLoop mainRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
     [[NSRunLoop mainRunLoop] runMode:NSRunLoopCommonModes beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
 
+    for (UIScene *scene in RCTSharedApplication().connectedScenes) {
+      if ([scene isKindOfClass:[UIWindowScene class]] && scene.activationState == UISceneActivationStateForegroundActive) {
+        for (UIWindow *window in ((UIWindowScene *)scene).windows) {
+          if (window.isKeyWindow) {
+            vc = window.rootViewController;
+            break;
+          }
+        }
+      }
+    }
+
     foundElement = [self findSubviewInView:vc.view
                                   matching:^BOOL(UIView *view) {
                                     if ([view.accessibilityLabel isEqualToString:TEXT_TO_LOOK_FOR]) {
@@ -60,6 +71,8 @@
 #endif
 
   XCTAssertNil(redboxError, @"RedBox error: %@", redboxError);
+  XCTAssertNotNil(vc, @"The React Native view must be attached to an active window scene");
+  XCTAssertEqual(vc.view.window, [[RCTSharedApplication() delegate] window]);
   XCTAssertTrue(foundElement, @"Couldn't find element with text '%@' in %d seconds", TEXT_TO_LOOK_FOR, TIMEOUT_SECONDS);
 }
 

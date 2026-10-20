@@ -31,8 +31,8 @@ target 'mParticleExample' do
   end
 
   target 'mParticleExampleUITests' do
-    inherit! :search_paths
-    # Pods for testing
+    # The UI runner drives the app through XCTest and does not load its SDK frameworks.
+    inherit! :none
   end
 
   # target 'mParticleExample_Extension' do
