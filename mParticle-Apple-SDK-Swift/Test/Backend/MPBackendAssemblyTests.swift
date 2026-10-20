@@ -87,19 +87,33 @@ final class MPBackendAssemblyTests: XCTestCase {
         let owner = MPBackendFakeOwner(host: host)
         let assembly = makeAssembly(owner: owner)
         let lifecycle = assembly.sessionLifecycleDependencies
-        let session = MPSessionPRIVATE(startTime: 100, userId: 1)
 
         lifecycle.createPendingSession("pending")
         lifecycle.setPendingSessionStartTime(5)
         lifecycle.clearPendingSession()
-        lifecycle.broadcastBegin(session)
-        lifecycle.broadcastEnd(session)
         lifecycle.clearEmptyTimedEvents()
 
         XCTAssertEqual(owner.calls, [
             "createPendingSession:pending", "setPendingSessionStartTime:5.0", "clearPendingSession",
-            "broadcastSessionDidBegin", "broadcastSessionDidEnd", "clearEmptyTimedEvents"
+            "clearEmptyTimedEvents"
         ])
+    }
+
+    func testSessionBroadcastsReachTheDelegateOnTheMainThread() {
+        let owner = MPBackendFakeOwner(host: host)
+        let assembly = makeAssembly(owner: owner)
+        let session = MPSessionPRIVATE(startTime: 100, userId: 1)
+        let broadcast = expectation(description: "both broadcasts delivered")
+
+        DispatchQueue.global().async {
+            assembly.sessionLifecycleDependencies.broadcastBegin(session)
+            assembly.sessionLifecycleDependencies.broadcastEnd(session)
+            DispatchQueue.main.async { broadcast.fulfill() }
+        }
+        wait(for: [broadcast], timeout: 2)
+
+        XCTAssertEqual(owner.delegate.calls, ["sessionDidBegin", "sessionDidEnd"])
+        XCTAssertEqual(owner.delegate.callsOnMainThread, [true, true])
     }
 
     func testSessionStartsArePinnedToTheOwningController() {

@@ -9,6 +9,7 @@
 #import "MPConsentState.h"
 #import "MPPersistenceAdapter.h"
 #import "../Kits/MPDataPlanFilter.h"
+#import "UploadSettingsUtils.h"
 #if TARGET_OS_IOS == 1
     #import <AdServices/AAAttribution.h>
 #endif
@@ -27,10 +28,12 @@
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
 + (void)executeOnMain:(void(^)(void))block;
 - (MPLog *)getLogger;
+- (void)initializePersistence;
 
 @end
 
@@ -286,6 +289,54 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 #else
     return nil;
 #endif
+}
+
+- (BOOL)shouldBeginSession {
+    return MParticle.sharedInstance.shouldBeginSession;
+}
+
+- (BOOL)collectSearchAdsAttribution {
+#if TARGET_OS_IOS == 1
+    return MParticle.sharedInstance.collectSearchAdsAttribution;
+#else
+    return NO;
+#endif
+}
+
+- (void)initializeKits {
+    [MParticle.sharedInstance.kitContainer_PRIVATE initializeKits];
+}
+
+- (id<MPBackendPersistence>)openPersistence {
+    MParticle *mparticle = MParticle.sharedInstance;
+    [mparticle initializePersistence];
+    return mparticle.persistenceStore;
+}
+
+- (NSObject *)lastUploadSettings {
+    return [UploadSettingsUtils lastUploadSettingsWithUserDefaults:MPUserDefaultsConnector.userDefaults];
+}
+
+- (NSString *)apiKeyOfUploadSettings:(NSObject *)settings {
+    return [settings isKindOfClass:[MPUploadSettings class]] ? ((MPUploadSettings *)settings).apiKey : nil;
+}
+
+- (void)storeUploadSettingsWithApiKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(NSObject *)networkOptions {
+    // The start-up coordinator passes on what -startWithKey: was given: an MPNetworkOptions or nil.
+    MPUploadSettings *settings = [[MPUploadSettings alloc] initWithApiKey:apiKey secret:secret networkOptions:(MPNetworkOptions *)networkOptions];
+    [UploadSettingsUtils setLastUploadSettings:settings userDefaults:MPUserDefaultsConnector.userDefaults];
+}
+
+- (void)deleteCachedConfiguration {
+    [MPUserDefaults deleteConfig];
+}
+
+- (void)restoreCachedConfiguration {
+    (void)[MPUserDefaults restore];
+}
+
+- (void)updateStoredVersionAndBuildNumbers {
+    [MPApplication_PRIVATE updateStoredVersionAndBuildNumbersWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
 }
 
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an

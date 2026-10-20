@@ -34,7 +34,22 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
     var keyLengthLimit = 256
     var valueLengthLimit = 4096
     var attributionTokenValue: String?
-    private(set) var calls: [String] = []
+    var beginsSessions = true
+    var collectsSearchAdsAttribution = false
+    var persistenceValue: MPBackendPersistence?
+    var lastUploadSettingsValue: NSObject?
+    var uploadSettingsApiKeys: [ObjectIdentifier: String] = [:]
+    private(set) var storedUploadSettings: [MPBackendStoredUploadSettings] = []
+    private let callsLock = NSLock()
+    private var recordedCalls: [String] = []
+    /// Every request, in order. Start-up asks for some on the message queue while the test thread
+    /// asks for others, so the list is guarded.
+    var calls: [String] {
+        callsLock.lock()
+        defer { callsLock.unlock() }
+        return recordedCalls
+    }
+
     private(set) var sessionStartBackends: [AnyObject?] = []
     private(set) var applicationInfoMachines: [MPStateMachinePRIVATE] = []
 
@@ -52,74 +67,80 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
 
     deinit { defaults.resetDefaults() }
 
+    private func record(_ call: String) {
+        callsLock.lock()
+        recordedCalls.append(call)
+        callsLock.unlock()
+    }
+
     func dataPlanId() -> String? {
-        calls.append("dataPlanId")
+        record("dataPlanId")
         return planId
     }
 
     func dataPlanVersion() -> NSNumber? {
-        calls.append("dataPlanVersion")
+        record("dataPlanVersion")
         return planVersion
     }
 
     func sdkLogger() -> MPLog? {
-        calls.append("sdkLogger")
+        record("sdkLogger")
         return log
     }
 
     func stateMachine() -> MPStateMachinePRIVATE {
-        calls.append("stateMachine")
+        record("stateMachine")
         return machine
     }
 
     func lifetimeValue(forMpid mpid: NSNumber) -> NSNumber {
-        calls.append("lifetimeValue:\(mpid)")
+        record("lifetimeValue:\(mpid)")
         return lifetimeValues[mpid] ?? 0
     }
 
     func applicationInfo(stateMachine: MPStateMachinePRIVATE) -> NSDictionary {
-        calls.append("applicationInfo")
+        record("applicationInfo")
         applicationInfoMachines.append(stateMachine)
         return applicationInfoValue
     }
 
     func deviceInfo(forMpid mpid: NSNumber) -> NSDictionary {
-        calls.append("deviceInfo:\(mpid)")
+        record("deviceInfo:\(mpid)")
         return deviceInfoValue
     }
 
     func advertiserID(forMpid mpid: NSNumber) -> String? {
-        calls.append("advertiserID:\(mpid)")
+        record("advertiserID:\(mpid)")
         return advertiserIDs[mpid]
     }
 
     func consent(forMpid mpid: NSNumber) -> NSDictionary? {
-        calls.append("consent:\(mpid)")
+        record("consent:\(mpid)")
         return consents[mpid]
     }
 
     func transformBatch(_ batch: NSDictionary) -> Any? {
-        calls.append("transformBatch")
+        record("transformBatch")
         return batchTransform(batch)
     }
 
     func sdkVersion() -> String {
-        calls.append("sdkVersion")
+        record("sdkVersion")
         return version
     }
 
     func mpId() -> NSNumber {
-        calls.append("mpId")
+        record("mpId")
         return currentUserId
     }
 
     func automaticSessionTracking() -> Bool {
-        calls.append("automaticSessionTracking")
+        record("automaticSessionTracking")
         return tracksSessionsAutomatically
     }
 
     func sessionStartContext(forBackend backend: AnyObject?) -> MPBackendSessionStartContext {
-        calls.append("sessionStartContext")
+        record("sessionStartContext")
         sessionStartBackends.append(backend)
         let machine = machine
         return MPBackendSessionStartContext(
@@ -142,12 +163,12 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
     }
 
     func persistenceMaxAge() -> NSNumber? {
-        calls.append("persistenceMaxAge")
+        record("persistenceMaxAge")
         return maxAge
     }
 
     func clearExpiredIdentityCache() {
-        calls.append("clearExpiredIdentityCache")
+        record("clearExpiredIdentityCache")
     }
 
     func userDefaults() -> MPUserDefaults {
@@ -155,12 +176,12 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
     }
 
     func optOut() -> Bool {
-        calls.append("optOut")
+        record("optOut")
         return isOptedOut
     }
 
     func crashMaxPLReportLength() -> NSNumber? {
-        calls.append("crashMaxPLReportLength")
+        record("crashMaxPLReportLength")
         return crashReportLimit
     }
 
@@ -189,18 +210,59 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
     }
 
     func attributeKeyLengthLimit() -> Int {
-        calls.append("attributeKeyLengthLimit")
+        record("attributeKeyLengthLimit")
         return keyLengthLimit
     }
 
     func attributeValueLengthLimit() -> Int {
-        calls.append("attributeValueLengthLimit")
+        record("attributeValueLengthLimit")
         return valueLengthLimit
     }
 
     func attributionToken() -> String? {
-        calls.append("attributionToken")
+        record("attributionToken")
         return attributionTokenValue
+    }
+
+    func shouldBeginSession() -> Bool {
+        beginsSessions
+    }
+
+    func collectSearchAdsAttribution() -> Bool {
+        collectsSearchAdsAttribution
+    }
+
+    func initializeKits() {
+        record("initializeKits")
+    }
+
+    func openPersistence() -> MPBackendPersistence? {
+        record("openPersistence")
+        return persistenceValue
+    }
+
+    func lastUploadSettings() -> NSObject? {
+        lastUploadSettingsValue
+    }
+
+    func apiKey(ofUploadSettings settings: NSObject?) -> String? {
+        settings.flatMap { uploadSettingsApiKeys[ObjectIdentifier($0)] }
+    }
+
+    func storeUploadSettings(apiKey: String, secret: String, networkOptions: NSObject?) {
+        storedUploadSettings.append(MPBackendStoredUploadSettings(apiKey: apiKey, secret: secret, networkOptions: networkOptions))
+    }
+
+    func deleteCachedConfiguration() {
+        record("deleteCachedConfiguration")
+    }
+
+    func restoreCachedConfiguration() {
+        record("restoreCachedConfiguration")
+    }
+
+    func updateStoredVersionAndBuildNumbers() {
+        record("updateStoredVersionAndBuildNumbers")
     }
 }
 
@@ -231,4 +293,11 @@ final class MPBackendMemoryUserDefaults: MPUserDefaults {
     override func resetDefaults() {
         values.removeAll()
     }
+}
+
+/// One call to `storeUploadSettings(apiKey:secret:networkOptions:)`.
+struct MPBackendStoredUploadSettings {
+    let apiKey: String
+    let secret: String
+    let networkOptions: NSObject?
 }

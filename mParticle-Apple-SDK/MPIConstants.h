@@ -474,9 +474,6 @@ extern const NSTimeInterval INITIAL_UPLOAD_TIME;
 extern const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE;
 extern const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE;
 
-// Search Ads timeout/retry
-extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS;
-
 // Network request timeout
 extern const NSTimeInterval NETWORK_REQUEST_MAX_WAIT_SECONDS;
 

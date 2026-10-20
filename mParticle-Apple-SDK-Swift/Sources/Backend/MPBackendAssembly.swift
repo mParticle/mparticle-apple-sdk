@@ -15,8 +15,11 @@ public protocol MPBackendAssemblyOwner: NSObjectProtocol {
     @objc(createPendingSessionWithUUID:) func createPendingSession(uuid: String)
     @objc(setPendingSessionStartTime:) func setPendingSessionStartTime(_ timestamp: Double)
     @objc(clearPendingSession) func clearPendingSession()
-    @objc(broadcastSessionDidBegin:) func broadcastSessionDidBegin(_ session: MPSessionPRIVATE)
-    @objc(broadcastSessionDidEnd:) func broadcastSessionDidEnd(_ session: MPSessionPRIVATE)
+    @objc(backendDelegate) func backendDelegate() -> MPBackendControllerDelegate?
+    @objc(setPersistence:) func setPersistence(_ persistence: MPBackendPersistence?)
+    /// Batches the stored messages under `settings`, through the controller, which takes them as
+    /// they were stored, including none.
+    @objc(prepareBatchesForUploadSettings:) func prepareBatches(forUploadSettings settings: NSObject?)
     @objc(clearEmptyTimedEvents) func clearEmptyTimedEvents()
     /// The session attribution requests use; a test substitutes one that never reaches the network.
     @objc(attributionURLSession) func attributionURLSession() -> URLSession
@@ -32,6 +35,7 @@ public final class MPBackendAssembly: NSObject {
     @objc public let identityWriter: MPBackendIdentityWriter
     @objc public let sessionAttributeWriter: MPBackendSessionAttributeWriter
     @objc public let searchAdsAttribution: MPSearchAdsAttribution
+    @objc public let startupCoordinator: MPBackendStartupCoordinator
     @objc public let errorReporter: MPBackendErrorReporter
     @objc public let sessionLifecycleDependencies: MPBackendSessionLifecycleDependencies
     @objc public let sessionCoordinator: MPBackendSessionCoordinator
@@ -88,8 +92,15 @@ public final class MPBackendAssembly: NSObject {
             createPendingSession: { [weak owner] in owner?.createPendingSession(uuid: $0) },
             setPendingSessionStartTime: { [weak owner] in owner?.setPendingSessionStartTime($0) },
             clearPendingSession: { [weak owner] in owner?.clearPendingSession() },
-            broadcastBegin: { [weak owner] in owner?.broadcastSessionDidBegin($0) },
-            broadcastEnd: { [weak owner] in owner?.broadcastSessionDidEnd($0) },
+            // The delegate is read on the main thread, and the controller is held until then.
+            broadcastBegin: { [weak owner] session in
+                let backend = owner
+                host.executeOnMain { backend?.backendDelegate()?.sessionDidBegin(session) }
+            },
+            broadcastEnd: { [weak owner] session in
+                let backend = owner
+                host.executeOnMain { backend?.backendDelegate()?.sessionDidEnd(session) }
+            },
             clearEmptyTimedEvents: { [weak owner] in owner?.clearEmptyTimedEvents() }
         )
         let sessions = MPBackendSessionCoordinator(
@@ -143,7 +154,12 @@ public final class MPBackendAssembly: NSObject {
         userAttributeWriter = attributeWriter
         identityWriter = identities
         sessionAttributeWriter = MPBackendSessionAttributeWriter(dependencies: dependencies, host: host)
-        searchAdsAttribution = MPSearchAdsAttribution(host: host, owner: owner)
+        let attribution = MPSearchAdsAttribution(host: host, owner: owner)
+        searchAdsAttribution = attribution
+        startupCoordinator = MPBackendStartupCoordinator(
+            host: host, owner: owner, state: state, dependencies: dependencies, writer: writer,
+            sessions: sessions, lifecycle: lifecycle, attribution: attribution
+        )
         errorReporter = MPBackendErrorReporter(state: state, dependencies: dependencies, writer: writer, errors: errors)
         sessionLifecycleDependencies = sessionLifecycle
         sessionCoordinator = sessions

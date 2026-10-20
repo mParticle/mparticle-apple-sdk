@@ -49,6 +49,22 @@ public protocol MPBackendHost: NSObjectProtocol {
     /// The App Store attribution token for this install, or nil when there is none: on tvOS, or
     /// when the system cannot create one.
     @objc(attributionToken) func attributionToken() -> String?
+    @objc(shouldBeginSession) func shouldBeginSession() -> Bool
+    @objc(collectSearchAdsAttribution) func collectSearchAdsAttribution() -> Bool
+    @objc(initializeKits) func initializeKits()
+    /// Opens the SDK's persistence if it is not open yet, and returns it.
+    @objc(openPersistence) func openPersistence() -> MPBackendPersistence?
+    /// The upload settings stored by the last start, or nil before the first.
+    @objc(lastUploadSettings) func lastUploadSettings() -> NSObject?
+    @objc(apiKeyOfUploadSettings:) func apiKey(ofUploadSettings settings: NSObject?) -> String?
+    /// Stores the upload settings for this start, for the next start's workspace check.
+    @objc(storeUploadSettingsWithApiKey:secret:networkOptions:)
+    func storeUploadSettings(apiKey: String, secret: String, networkOptions: NSObject?)
+    /// Drops the cached server configuration, after a workspace switch.
+    @objc(deleteCachedConfiguration) func deleteCachedConfiguration()
+    /// Restores the cached server configuration, if one is stored.
+    @objc(restoreCachedConfiguration) func restoreCachedConfiguration()
+    @objc(updateStoredVersionAndBuildNumbers) func updateStoredVersionAndBuildNumbers()
 }
 
 public extension MPMessageBuilderContext {

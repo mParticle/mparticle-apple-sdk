@@ -8,6 +8,8 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
     let uploadContext: MPUploadBuilderContext
     var network: MPBackendUploadNetworking?
     var attributionSession = URLSession(configuration: .ephemeral)
+    let delegate = MPBackendFakeDelegate()
+    private(set) var preparedUploadSettings: [NSObject?] = []
     private(set) var calls: [String] = []
 
     init(host: MPBackendHost) {
@@ -52,12 +54,18 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
         calls.append("clearPendingSession")
     }
 
-    func broadcastSessionDidBegin(_ session: MPSessionPRIVATE) {
-        calls.append("broadcastSessionDidBegin")
+    func backendDelegate() -> MPBackendControllerDelegate? {
+        delegate
     }
 
-    func broadcastSessionDidEnd(_ session: MPSessionPRIVATE) {
-        calls.append("broadcastSessionDidEnd")
+    func setPersistence(_ persistence: MPBackendPersistence?) {
+        calls.append("setPersistence")
+        persistenceValue = persistence
+    }
+
+    func prepareBatches(forUploadSettings settings: NSObject?) {
+        calls.append("prepareBatches")
+        preparedUploadSettings.append(settings)
     }
 
     func clearEmptyTimedEvents() {
@@ -67,5 +75,21 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
     func attributionURLSession() -> URLSession {
         calls.append("attributionURLSession")
         return attributionSession
+    }
+}
+
+/// A backend delegate that records what it is told, and whether on the main thread.
+final class MPBackendFakeDelegate: NSObject, MPBackendControllerDelegate {
+    private(set) var calls: [String] = []
+    private(set) var callsOnMainThread: [Bool] = []
+
+    func forwardLogInstall() { record("forwardLogInstall") }
+    func forwardLogUpdate() { record("forwardLogUpdate") }
+    func sessionDidBegin(_ session: MPSessionPRIVATE) { record("sessionDidBegin") }
+    func sessionDidEnd(_ session: MPSessionPRIVATE) { record("sessionDidEnd") }
+
+    private func record(_ call: String) {
+        calls.append(call)
+        callsOnMainThread.append(Thread.isMainThread)
     }
 }
