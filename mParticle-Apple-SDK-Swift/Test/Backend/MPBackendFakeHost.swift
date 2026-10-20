@@ -31,6 +31,8 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
         crashBatchBytes: 102_400, crashMessageBytes: 102_400
     )
     var isDevelopment = false
+    var keyLengthLimit = 256
+    var valueLengthLimit = 4096
     private(set) var calls: [String] = []
     private(set) var sessionStartBackends: [AnyObject?] = []
     private(set) var applicationInfoMachines: [MPStateMachinePRIVATE] = []
@@ -183,6 +185,16 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
 
     func isDevelopmentEnvironment() -> Bool {
         isDevelopment
+    }
+
+    func attributeKeyLengthLimit() -> Int {
+        calls.append("attributeKeyLengthLimit")
+        return keyLengthLimit
+    }
+
+    func attributeValueLengthLimit() -> Int {
+        calls.append("attributeValueLengthLimit")
+        return valueLengthLimit
     }
 }
 

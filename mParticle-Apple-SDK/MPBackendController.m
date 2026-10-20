@@ -5,7 +5,6 @@
 #import "MPAudience.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
-#import "NSDictionary+MPCaseInsensitive.h"
 #import "MPILogger.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
@@ -21,11 +20,6 @@
 #endif
 @import mParticle_Apple_SDK_Swift;
 
-const NSInteger kNilAttributeValue = 101;
-const NSInteger kExceededAttributeValueMaximumLength = 104;
-const NSInteger kExceededAttributeKeyMaximumLength = 105;
-const NSInteger kInvalidDataType = 106;
-const NSInteger kInvalidKey = 107;
 
 // MPUserDefaultsConnector holds no state and reads MParticle.sharedInstance on every call.
 static id<MPBackendHost> MPBackendHostInstance(void) {
@@ -91,12 +85,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     self = [super init];
     if (self) {
         _sessionState = [[MPBackendSessionState alloc] init];
-        _assembly = [[MPBackendAssembly alloc] initWithState:_sessionState
-                                                        host:MPBackendHostInstance()
-                                                       owner:self
-                                           validateAttribute:^MPAttributeValidationResult(NSString *key, id value) {
-            return [MPBackendController_PRIVATE validateAndLogAttributeKey:key value:value];
-        }];
+        _assembly = [[MPBackendAssembly alloc] initWithState:_sessionState host:MPBackendHostInstance() owner:self];
     }
     return self;
 }
@@ -495,78 +484,8 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     completionHandler(event, MPExecStatusSuccess);
 }
 
-// Validates a key/value pair and logs the matching console message. Logging stays here so the
-// `MPILogError` level gate keeps deciding whether the offending value is ever interpolated.
-+ (MPAttributeValidationResult)validateAndLogAttributeKey:(NSString *)key value:(id)value {
-    id invalidArrayEntry = nil;
-    MPAttributeValidationResult result = [MPAttributeValidator validateKey:key
-                                                                     value:value
-                                                            keyLengthLimit:LIMIT_ATTR_KEY_LENGTH
-                                                          valueLengthLimit:LIMIT_ATTR_VALUE_LENGTH
-                                                         invalidArrayEntry:&invalidArrayEntry];
-
-    switch (result) {
-        case MPAttributeValidationResultInvalidKey:
-            MPILogError(@"Error while setting attribute key: the key parameter cannot be nil");
-            break;
-        case MPAttributeValidationResultKeyTooLong:
-            MPILogError(@"Error while setting attribute key: the key parameter is longer than the maximum allowed length.");
-            break;
-        case MPAttributeValidationResultNilValue:
-            // A nil value may just be treated as a removal, so no error is logged.
-            break;
-        case MPAttributeValidationResultInvalidType:
-            MPILogError(@"Error while setting attribute value: must be an NSString or NSArray");
-            break;
-        case MPAttributeValidationResultValueTooLong:
-            MPILogError(@"Error while setting attribute value: value is longer than the maximum allowed %@", value);
-            break;
-        case MPAttributeValidationResultInvalidArrayEntry:
-            MPILogError(@"Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: %@", invalidArrayEntry);
-            break;
-        case MPAttributeValidationResultArrayValueTooLong:
-            MPILogError(@"Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
-            break;
-        case MPAttributeValidationResultValid:
-            break;
-    }
-
-    return result;
-}
-
-+ (NSInteger)errorCodeForValidationResult:(MPAttributeValidationResult)result {
-    switch (result) {
-        case MPAttributeValidationResultInvalidKey:
-            return kInvalidKey;
-        case MPAttributeValidationResultKeyTooLong:
-            return kExceededAttributeKeyMaximumLength;
-        case MPAttributeValidationResultNilValue:
-            return kNilAttributeValue;
-        case MPAttributeValidationResultValueTooLong:
-        case MPAttributeValidationResultArrayValueTooLong:
-            return kExceededAttributeValueMaximumLength;
-        case MPAttributeValidationResultInvalidType:
-        case MPAttributeValidationResultInvalidArrayEntry:
-        case MPAttributeValidationResultValid:
-            return kInvalidDataType;
-    }
-}
-
 + (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
-    static NSString *attributeValidationErrorDomain = @"Attribute Validation";
-    MPAttributeValidationResult result = [self validateAndLogAttributeKey:key value:value];
-
-    if (result == MPAttributeValidationResultValid) {
-        return YES;
-    }
-
-    if (error) {
-        *error = [NSError errorWithDomain:attributeValidationErrorDomain
-                                     code:[self errorCodeForValidationResult:result]
-                                 userInfo:nil];
-    }
-
-    return NO;
+    return [MPBackendAttributeValidation checkKey:key value:value host:MPBackendHostInstance() error:error];
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
@@ -598,30 +517,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 
 - (NSNumber *)incrementSessionAttribute:(MPSession *)session key:(NSString *)key byValue:(NSNumber *)value {
-    if (!session) {
-        return nil;
-    }
-    
-    NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
-    id currentValue = session.attributesDictionary[localKey];
-    if (!currentValue && [value isKindOfClass:[NSNumber class]]) {
-        [self setSessionAttribute:session key:localKey value:value];
-        return value;
-    }
-
-    if (![currentValue isKindOfClass:[NSNumber class]]) {
-        return nil;
-    }
-    
-    NSNumber *newValue = [MPUserAttributeLogic incrementedValueFrom:(NSNumber *)currentValue byValue:value];
-
-    session.attributesDictionary[localKey] = newValue;
-    
-    dispatch_async([MParticle messageQueue], ^{
-        [self.persistence updateSession:session];
-    });
-    
-    return (NSNumber *)newValue;
+    return [self.assembly.sessionAttributeWriter incrementSessionAttribute:session key:key byValue:value];
 }
 
 - (NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
@@ -794,33 +690,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 - (MPExecStatus)setSessionAttribute:(MPSession *)session key:(NSString *)key value:(id)value {
     NSAssert(session != nil, @"session cannot be nil.");
 
-    if (!session) {
-        return MPExecStatusMissingParam;
-    } else if (![key isKindOfClass:[NSString class]]) {
-        // A caller behind an untyped bridge can pass a number or a null where the signature says a string;
-        // the case-insensitive lookup below hands the key to Swift as a String, where another type is a
-        // crash rather than an exception, so the type is checked at runtime, not only by an assertion a
-        // release build drops.
-        return MPExecStatusInvalidDataType;
-    } else if (![value isKindOfClass:[NSString class]] && ![value isKindOfClass:[NSNumber class]]) {
-        return MPExecStatusInvalidDataType;
-    }
-    
-    NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
-    NSError *error = nil;
-    BOOL success = [MPBackendController_PRIVATE checkAttribute:session.attributesDictionary
-                                    key:localKey
-                                  value:value
-                                  error:&error];
-    if ((!success && error) || [session.attributesDictionary[localKey] isEqual:value]) {
-        return MPExecStatusInvalidDataType;
-    }
-    
-    session.attributesDictionary[localKey] = value;
-    
-    [self.persistence updateSession:session];
-    
-    return MPExecStatusSuccess;
+    return [self.assembly.sessionAttributeWriter setSessionAttribute:session key:key value:value];
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {

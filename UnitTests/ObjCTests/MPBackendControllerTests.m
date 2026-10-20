@@ -210,6 +210,8 @@
     XCTAssertEqualObjects([host persistenceMaxAge], instance.persistenceMaxAgeSeconds);
     XCTAssertEqualObjects([host nullUserAttributeValue], kMPNullUserAttributeString);
     XCTAssertEqual([host isDevelopmentEnvironment], [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment);
+    XCTAssertEqual([host attributeKeyLengthLimit], LIMIT_ATTR_KEY_LENGTH);
+    XCTAssertEqual([host attributeValueLengthLimit], LIMIT_ATTR_VALUE_LENGTH);
     XCTAssertNotNil([host userDefaults]);
     XCTAssertNotNil([host uploadBatchLimits]);
     XCTAssertNotNil([host currentUploadSettings]);
@@ -529,7 +531,7 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeValueTooLong, error.code);
 }
 
 - (void)testCheckAttributeArrayValueInvalidLongAttribute {
@@ -552,7 +554,7 @@
 
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kInvalidDataType, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeInvalidDataType, error.code);
     XCTAssertEqualObjects(logMessage, @"mParticle -> Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: 10");
 }
 
@@ -577,7 +579,7 @@
 
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeValueTooLong, error.code);
     XCTAssertEqualObjects(logMessage, @"mParticle -> Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
 }
 
@@ -599,7 +601,7 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:mockKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeKeyMaximumLength, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeKeyTooLong, error.code);
 }
 
 - (void)testCheckAttributeValueTooLong {
@@ -610,7 +612,7 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:mockValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeValueTooLong, error.code);
 }
 
 - (void)testCheckAttributeValueNil {
@@ -619,7 +621,7 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:nilValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kNilAttributeValue, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeNilValue, error.code);
 }
 
 - (void)testCheckAttributeKeyNullNil {
@@ -628,14 +630,14 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kInvalidKey, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeInvalidKey, error.code);
     
     error = nil;
     nilKey = nil;
     success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kInvalidKey, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeInvalidKey, error.code);
 }
 
 - (void)testBatchCycle {
@@ -1854,6 +1856,15 @@
     for (id key in @[@42, @YES, [NSNull null], @[], @{}]) {
         MPExecStatus status = [self.backendController setSessionAttribute:session key:(NSString *)key value:@"foo-session-value-1"];
         XCTAssertEqual(status, MPExecStatusInvalidDataType, @"a key of %@ should be rejected", [key class]);
+    }
+    XCTAssertEqual(session.attributesDictionary.count, (NSUInteger)0);
+}
+
+- (void)testIncrementSessionAttributeWithNonStringKeyStoresNothing {
+    MPSession *session = [[MPSession alloc] init];
+    for (id key in @[@42, [NSNull null]]) {
+        NSNumber *result = [self.backendController incrementSessionAttribute:session key:(NSString *)key byValue:@3];
+        XCTAssertNil(result, @"a key of %@ should not increment", [key class]);
     }
     XCTAssertEqual(session.attributesDictionary.count, (NSUInteger)0);
 }

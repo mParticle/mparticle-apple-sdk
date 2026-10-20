@@ -28,20 +28,14 @@ public final class MPBackendAssembly: NSObject {
     @objc public let messageWriter: MPBackendMessageWriter
     @objc public let userAttributeWriter: MPBackendUserAttributeWriter
     @objc public let identityWriter: MPBackendIdentityWriter
+    @objc public let sessionAttributeWriter: MPBackendSessionAttributeWriter
     @objc public let errorReporter: MPBackendErrorReporter
     @objc public let sessionLifecycleDependencies: MPBackendSessionLifecycleDependencies
     @objc public let sessionCoordinator: MPBackendSessionCoordinator
     @objc public let lifecycleCoordinator: MPBackendLifecycleCoordinator
     @objc public let uploadCoordinator: MPBackendUploadCoordinator
 
-    /// `validateAttribute` stays with the controller, which logs each rejection behind the
-    /// Objective-C logger's level check.
-    @objc public init(
-        state: MPBackendSessionState,
-        host: MPBackendHost,
-        owner: MPBackendAssemblyOwner,
-        validateAttribute: @escaping (String, Any?) -> MPAttributeValidationResult
-    ) {
+    @objc public init(state: MPBackendSessionState, host: MPBackendHost, owner: MPBackendAssemblyOwner) {
         let dependencies = MPBackendSessionDependencies(
             persistence: { [weak owner] in owner?.persistence() },
             stateMachine: { host.stateMachine() },
@@ -64,7 +58,7 @@ public final class MPBackendAssembly: NSObject {
             currentUserId: { host.mpId() },
             optOut: { host.optOut() },
             nullSentinel: host.nullUserAttributeValue(),
-            validateAndLogAttribute: validateAttribute
+            validateAndLogAttribute: { MPBackendAttributeValidation.validate(key: $0, value: $1, host: host) }
         )
         let attributeWriter = MPBackendUserAttributeWriter(
             state: state, dependencies: dependencies, writer: writer, attributes: attributes
@@ -145,6 +139,7 @@ public final class MPBackendAssembly: NSObject {
         messageWriter = writer
         userAttributeWriter = attributeWriter
         identityWriter = identities
+        sessionAttributeWriter = MPBackendSessionAttributeWriter(dependencies: dependencies, host: host)
         errorReporter = MPBackendErrorReporter(state: state, dependencies: dependencies, writer: writer, errors: errors)
         sessionLifecycleDependencies = sessionLifecycle
         sessionCoordinator = sessions

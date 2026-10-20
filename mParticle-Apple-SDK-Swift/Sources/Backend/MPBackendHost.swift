@@ -44,6 +44,8 @@ public protocol MPBackendHost: NSObjectProtocol {
     @objc(currentUploadSettings) func currentUploadSettings() -> NSObject
     @objc(uploadBatchLimits) func uploadBatchLimits() -> MPUploadBatchLimits
     @objc(isDevelopmentEnvironment) func isDevelopmentEnvironment() -> Bool
+    @objc(attributeKeyLengthLimit) func attributeKeyLengthLimit() -> Int
+    @objc(attributeValueLengthLimit) func attributeValueLengthLimit() -> Int
 }
 
 public extension MPMessageBuilderContext {
