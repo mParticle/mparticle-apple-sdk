@@ -10,6 +10,8 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
     var attributionSession = URLSession(configuration: .ephemeral)
     let delegate = MPBackendFakeDelegate()
     private(set) var preparedUploadSettings: [NSObject?] = []
+    private(set) var savedMessages: [(message: MPMessagePRIVATE, updateSession: Bool)] = []
+    var onSave: ((MPMessagePRIVATE) -> Void)?
     private(set) var calls: [String] = []
 
     init(host: MPBackendHost) {
@@ -75,6 +77,11 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
     func attributionURLSession() -> URLSession {
         calls.append("attributionURLSession")
         return attributionSession
+    }
+
+    func saveMessage(_ message: MPMessagePRIVATE, updateSession: Bool) {
+        savedMessages.append((message, updateSession))
+        onSave?(message)
     }
 }
 

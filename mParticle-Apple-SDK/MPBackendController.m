@@ -13,9 +13,6 @@
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPUploadSettings.h"
-#if TARGET_OS_IOS == 1
-    #import "MPNotificationController.h"
-#endif
 @import mParticle_Apple_SDK_Swift;
 
 // MPUserDefaultsConnector holds no state and reads MParticle.sharedInstance on every call.
@@ -34,13 +31,10 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 @property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 @property (nonatomic, strong) MParticleOptions *options;
-@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
-+ (dispatch_queue_t)messageQueue;
-+ (void)executeOnMessage:(void(^)(void))block;
 - (void)initializePersistence;
 
 @end
@@ -72,10 +66,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 @implementation MPBackendController_PRIVATE
 @synthesize sessionState = _sessionState;
 
-#if TARGET_OS_IOS == 1
-@synthesize notificationController = _notificationController;
-#endif
-
 - (instancetype)init {
     self = [super init];
     if (self) {
@@ -97,9 +87,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     if (self) {
         _persistence = persistence;
         _networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
-#if TARGET_OS_IOS == 1
-        _notificationController = [[MPNotificationController_PRIVATE alloc] init];
-#endif
         _sessionState.sessionTimeout = DEFAULT_SESSION_TIMEOUT;
         _sessionState.nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
         self.lifecycleCoordinator.backgroundTaskIdentifier = UIBackgroundTaskInvalid;
@@ -121,11 +108,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
         [notificationCenter addObserver:self
                                selector:@selector(handleApplicationDidFinishLaunching:)
                                    name:UIApplicationDidFinishLaunchingNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:self
-                               selector:@selector(handleNetworkPerformanceNotification:)
-                                   name:kMPNetworkPerformanceMeasurementNotification
                                  object:nil];
         
         [notificationCenter addObserver:self
@@ -325,17 +307,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     self.assembly.startupCoordinator.didFinishLaunchingNotification = notification;
 }
 
-- (void)handleNetworkPerformanceNotification:(NSNotification *)notification {
-    if (!self.session) {
-        return;
-    }
-    
-    NSDictionary *userInfo = [notification userInfo];
-    MPNetworkPerformance *networkPerformance = userInfo[kMPNetworkPerformanceKey];
-    
-    [self logNetworkPerformanceMeasurement:networkPerformance completionHandler:nil];
-}
-
 #pragma mark Timers
 
 - (void)beginUploadTimer {
@@ -426,23 +397,9 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 
 - (MPExecStatus)fetchAudiencesWithCompletionHandler:(void (^ _Nonnull)(NSArray * _Nullable currentAudiences, NSError * _Nullable error))completionHandler {
-    
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
-        
-    [self.networkCommunication requestAudiencesWithCompletionHandler:^(BOOL success, NSArray *currentAudiences, NSError *error) {
-        if (success) {
-            MPILogVerbose(@"Audiences Request Succesful: \nCurrent Audiences: %@", currentAudiences);
-        } else {
-            if (!error) {
-                MPILogError(@"Audience request failed without error")
-            } else {
-                MPILogError(@"Audience request failed with error: %@", error)
-            }
-        }
-        
-        completionHandler(currentAudiences, error);
-    }];
-    
+
+    [self.assembly.messageLogger fetchAudiencesWithCompletionHandler:completionHandler];
     return MPExecStatusSuccess;
 }
 
@@ -548,21 +505,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 
 - (void)logNetworkPerformanceMeasurement:(MPNetworkPerformance *)networkPerformance completionHandler:(void (^)(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus))completionHandler {
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    NSDictionary *messageInfo = [networkPerformance dictionaryRepresentation];
-    
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeNetworkPerformance session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
-
-    MPMessage *message = [messageBuilder build];
-    
-    [self saveMessage:message updateSession:YES];
-    
-    execStatus = MPExecStatusSuccess;
-    
-    if (completionHandler) {
-        completionHandler(networkPerformance, execStatus);
-    }
+    [self.assembly.messageLogger logNetworkPerformanceMeasurement:networkPerformance completionHandler:completionHandler];
 }
 
 - (void)logScreen:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
@@ -600,21 +543,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler {
-    dispatch_async([MParticle messageQueue], ^{
-        MPExecStatus execStatus = MPExecStatusFail;
-        
-        [MParticle sharedInstance].stateMachine.optOut = optOutStatus;
-        
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")} context:self.messageBuilderContext];
-
-        MPMessage *message = [messageBuilder build];
-        
-        [self saveMessage:message updateSession:YES];
-        
-        execStatus = MPExecStatusSuccess;
-        
-        completionHandler(optOutStatus, execStatus);
-    });
+    [self.assembly.messageLogger setOptOut:optOutStatus completionHandler:completionHandler];
 }
 
 - (MPExecStatus)setSessionAttribute:(MPSession *)session key:(NSString *)key value:(id)value {
@@ -695,84 +624,12 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 #if TARGET_OS_IOS == 1
 
-- (MPNotificationController_PRIVATE *)notificationController {
-    return _notificationController;
-}
-
-- (void)setNotificationController:(MPNotificationController_PRIVATE *)notificationController {
-    _notificationController = notificationController;
-}
-
 - (void)handleDeviceTokenNotification:(NSNotification *)notification {
-    dispatch_async([MParticle messageQueue], ^{
-        NSDictionary *userInfo = [notification userInfo];
-        NSData *deviceToken = userInfo[kMPRemoteNotificationDeviceTokenKey];
-        NSData *oldDeviceToken = userInfo[kMPRemoteNotificationOldDeviceTokenKey];
-        
-        MPPushRegistrationDecision *decision = [MPBackendMessageInfo pushRegistrationForDeviceToken:deviceToken oldDeviceToken:oldDeviceToken];
-        if (!decision) {
-            return;
-        }
-
-        NSData *logDeviceToken = decision.logToken;
-        NSMutableDictionary *messageInfo = [@{kMPPushStatusKey:decision.status} mutableCopy];
-
-        NSString *tokenString = [MPUserDefaults stringFromDeviceToken:logDeviceToken];
-        if (tokenString) {
-            messageInfo[kMPDeviceTokenKey] = tokenString;
-        }
-        
-        if ([MParticle sharedInstance].stateMachine.deviceTokenType.length > 0) {
-            messageInfo[kMPDeviceTokenTypeKey] = [MParticle sharedInstance].stateMachine.deviceTokenType;
-        }
-        
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushRegistration session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
-        MPMessage *message = [messageBuilder build];
-        
-        [self saveMessage:message updateSession:YES];
-        
-        if (deviceToken) {
-            MPILogDebug(@"Set Device Token: %@", [MPUserDefaults stringFromDeviceToken:deviceToken]);
-        } else {
-            MPILogDebug(@"Reset Device Token: %@", [MPUserDefaults stringFromDeviceToken:oldDeviceToken]);
-        }
-    });
+    [self.assembly.messageLogger handleDeviceTokenNotification:notification];
 }
 
 - (void)logUserNotification:(MParticleUserNotification *)userNotification {
-    [MParticle executeOnMessage:^{
-        NSMutableDictionary *messageInfo = [@{kMPPushNotificationStateKey:userNotification.state,
-                                              kMPPushMessageProviderKey:kMPPushMessageProviderValue,
-                                              kMPPushMessageTypeKey:userNotification.type}
-                                            mutableCopy];
-        
-        NSString *tokenString = [MPUserDefaults stringFromDeviceToken:[self.notificationController deviceToken]];
-        if (tokenString) {
-            messageInfo[kMPDeviceTokenKey] = tokenString;
-        }
-                                 
-        if (userNotification.redactedUserNotificationString) {
-            messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
-        }
-        
-        if (userNotification.actionTitle) {
-            messageInfo[kMPPushNotificationActionTitleKey] = userNotification.actionTitle;
-        }
-
-        if (userNotification.actionIdentifier) {
-            messageInfo[kMPPushNotificationActionIdentifierKey] = userNotification.actionIdentifier;
-        }
-    
-        if (userNotification.behavior > 0) {
-            messageInfo[kMPPushNotificationBehaviorKey] = @(userNotification.behavior);
-        }
-    
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushNotification session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
-
-        MPMessage *message = [messageBuilder build];
-    
-        [self saveMessage:message updateSession:(self.session != nil)];
-    }];
+    [self.assembly.messageLogger logUserNotification:userNotification];
 }
 
 #endif

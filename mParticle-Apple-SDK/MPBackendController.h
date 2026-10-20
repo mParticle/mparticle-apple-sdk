@@ -9,7 +9,6 @@
 @class MPSession;
 @class MPMessage;
 @class MPNetworkPerformance;
-@class MPNotificationController_PRIVATE;
 @class MPBaseEvent;
 @class MPEvent;
 @class MPCommerceEvent;
@@ -53,12 +52,6 @@
 @end
 
 @interface MPBackendController_PRIVATE : NSObject<MPBackendControllerProtocol>
-
-
-
-#if TARGET_OS_IOS == 1
-@property (nonatomic, strong, nonnull) MPNotificationController_PRIVATE *notificationController;
-#endif
 
 @property (nonatomic, weak, nullable) id<MPBackendControllerDelegate> delegate;
 @property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
