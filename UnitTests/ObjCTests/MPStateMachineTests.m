@@ -570,7 +570,7 @@
                                                                headerFields:nil];
     capturedHandler([@"{}" dataUsingEncoding:NSUTF8StringEncoding], serverError, nil);
 
-    // The retry is scheduled SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY out, so a shorter wait here
+    // The retry is scheduled three seconds out, so a shorter wait here
     // proves the completion did not fire on the spot.
     [self waitForExpectations:@[completed] timeout:1.0];
 
@@ -636,7 +636,7 @@
                                                             headerFields:nil];
     XCTAssertNoThrow(capturedHandler(body, response, nil));
 
-    // Shorter than SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY, so this proves a retry was scheduled
+    // Shorter than the three-second retry delay, so this proves a retry was scheduled
     // rather than the flow being finished on the spot.
     [self waitForExpectations:@[completed] timeout:1.0];
 

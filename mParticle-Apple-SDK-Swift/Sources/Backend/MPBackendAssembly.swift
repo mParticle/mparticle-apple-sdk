@@ -18,6 +18,8 @@ public protocol MPBackendAssemblyOwner: NSObjectProtocol {
     @objc(broadcastSessionDidBegin:) func broadcastSessionDidBegin(_ session: MPSessionPRIVATE)
     @objc(broadcastSessionDidEnd:) func broadcastSessionDidEnd(_ session: MPSessionPRIVATE)
     @objc(clearEmptyTimedEvents) func clearEmptyTimedEvents()
+    /// The session attribution requests use; a test substitutes one that never reaches the network.
+    @objc(attributionURLSession) func attributionURLSession() -> URLSession
 }
 
 /// Builds the backend controller's collaborators once, with the controller. Callbacks hold the
@@ -29,6 +31,7 @@ public final class MPBackendAssembly: NSObject {
     @objc public let userAttributeWriter: MPBackendUserAttributeWriter
     @objc public let identityWriter: MPBackendIdentityWriter
     @objc public let sessionAttributeWriter: MPBackendSessionAttributeWriter
+    @objc public let searchAdsAttribution: MPSearchAdsAttribution
     @objc public let errorReporter: MPBackendErrorReporter
     @objc public let sessionLifecycleDependencies: MPBackendSessionLifecycleDependencies
     @objc public let sessionCoordinator: MPBackendSessionCoordinator
@@ -140,6 +143,7 @@ public final class MPBackendAssembly: NSObject {
         userAttributeWriter = attributeWriter
         identityWriter = identities
         sessionAttributeWriter = MPBackendSessionAttributeWriter(dependencies: dependencies, host: host)
+        searchAdsAttribution = MPSearchAdsAttribution(host: host, owner: owner)
         errorReporter = MPBackendErrorReporter(state: state, dependencies: dependencies, writer: writer, errors: errors)
         sessionLifecycleDependencies = sessionLifecycle
         sessionCoordinator = sessions

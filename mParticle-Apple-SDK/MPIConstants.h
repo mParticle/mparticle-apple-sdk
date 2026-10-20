@@ -476,8 +476,6 @@ extern const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE;
 
 // Search Ads timeout/retry
 extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS;
-extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY;
-extern const NSInteger SEARCH_ADS_ATTRIBUTION_MAX_RETRIES;
 
 // Network request timeout
 extern const NSTimeInterval NETWORK_REQUEST_MAX_WAIT_SECONDS;

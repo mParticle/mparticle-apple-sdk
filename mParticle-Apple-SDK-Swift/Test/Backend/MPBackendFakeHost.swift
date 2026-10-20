@@ -33,6 +33,7 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
     var isDevelopment = false
     var keyLengthLimit = 256
     var valueLengthLimit = 4096
+    var attributionTokenValue: String?
     private(set) var calls: [String] = []
     private(set) var sessionStartBackends: [AnyObject?] = []
     private(set) var applicationInfoMachines: [MPStateMachinePRIVATE] = []
@@ -195,6 +196,11 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
     func attributeValueLengthLimit() -> Int {
         calls.append("attributeValueLengthLimit")
         return valueLengthLimit
+    }
+
+    func attributionToken() -> String? {
+        calls.append("attributionToken")
+        return attributionTokenValue
     }
 }
 
