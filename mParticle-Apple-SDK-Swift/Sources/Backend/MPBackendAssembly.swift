@@ -3,6 +3,8 @@ import UIKit
 
 /// What the backend's collaborators call back on the controller that owns them. Each call goes
 /// through the Objective-C runtime, so an Objective-C test's partial mock of the controller sees it.
+/// The optional requirements are the ones the controller's Objective-C boundary category implements,
+/// because they handle Objective-C types; the class's own implementation does not provide them.
 @objc(MPBackendAssemblyOwner)
 public protocol MPBackendAssemblyOwner: NSObjectProtocol {
     @objc(persistence) func persistence() -> MPBackendPersistence?
@@ -12,14 +14,14 @@ public protocol MPBackendAssemblyOwner: NSObjectProtocol {
     @objc(uploadFromBackendWithCompletionHandler:) func upload(completionHandler: (() -> Void)?)
     @objc(requestConfigFromBackend) func requestConfig()
     @objc(uploadNetworking) func uploadNetworking() -> MPBackendUploadNetworking?
-    @objc(createPendingSessionWithUUID:) func createPendingSession(uuid: String)
-    @objc(setPendingSessionStartTime:) func setPendingSessionStartTime(_ timestamp: Double)
-    @objc(clearPendingSession) func clearPendingSession()
+    @objc(createPendingSessionWithUUID:) optional func createPendingSession(uuid: String)
+    @objc(setPendingSessionStartTime:) optional func setPendingSessionStartTime(_ timestamp: Double)
+    @objc(clearPendingSession) optional func clearPendingSession()
     @objc(backendDelegate) func backendDelegate() -> MPBackendControllerDelegate?
     @objc(setPersistence:) func setPersistence(_ persistence: MPBackendPersistence?)
     /// Batches the stored messages under `settings`, through the controller, which takes them as
     /// they were stored, including none.
-    @objc(prepareBatchesForUploadSettings:) func prepareBatches(forUploadSettings settings: NSObject?)
+    @objc(prepareBatchesForUploadSettings:) optional func prepareBatches(forUploadSettings settings: NSObject?)
     @objc(clearEmptyTimedEvents) func clearEmptyTimedEvents()
     /// The session attribution requests use; a test substitutes one that never reaches the network.
     @objc(attributionURLSession) func attributionURLSession() -> URLSession
@@ -93,9 +95,9 @@ public final class MPBackendAssembly: NSObject {
                 let backend = owner
                 host.messageQueue().asyncAfter(deadline: .now() + delay) { if backend != nil { block() } }
             },
-            createPendingSession: { [weak owner] in owner?.createPendingSession(uuid: $0) },
-            setPendingSessionStartTime: { [weak owner] in owner?.setPendingSessionStartTime($0) },
-            clearPendingSession: { [weak owner] in owner?.clearPendingSession() },
+            createPendingSession: { [weak owner] in owner?.createPendingSession?(uuid: $0) },
+            setPendingSessionStartTime: { [weak owner] in owner?.setPendingSessionStartTime?($0) },
+            clearPendingSession: { [weak owner] in owner?.clearPendingSession?() },
             // The delegate is read on the main thread, and the controller is held until then.
             broadcastBegin: { [weak owner] session in
                 let backend = owner

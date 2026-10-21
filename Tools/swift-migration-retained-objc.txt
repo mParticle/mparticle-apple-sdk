@@ -106,3 +106,10 @@ mParticle-Apple-SDK/Kits/MPDataPlanFilter.m
 # kit code — the marshalling the Swift module cannot do because it cannot import
 # the ObjC module. It stays ObjC by design.
 mParticle-Apple-SDK/Kits/MPKitContainerExecutionAdapter.m
+
+# The backend controller's entry points that take or return Objective-C types its
+# Swift collaborators cannot see: MPEvent, MPBaseEvent, MPCommerceEvent,
+# MParticleSession, MPConsentState, MPUploadSettings and the MPUserIdentity enum.
+# The category reads and writes those types and hands everything else to Swift. It
+# has no public header; the internal MPBackendController.h declares it.
+mParticle-Apple-SDK/MPBackendController+ObjCBoundary.m
