@@ -248,6 +248,7 @@ MPLog* logger;
 
 #pragma mark MPBackendControllerDelegate methods
 - (void)sessionDidBegin:(MPSession *)session {
+    MParticleSession *mparticleSession = [[MParticleSession alloc] initWithUUID:session.uuid];
     [executor executeOnMain: ^{
         [self.kitContainer forwardSDKCall:@selector(beginSession)
                                     event:nil
@@ -255,10 +256,12 @@ MPLog* logger;
                               messageType:MPMessageTypeSessionStart
                                  userInfo:nil
         ];
+        [self postSessionNotification:mParticleSessionDidBeginNotification forSession:mparticleSession];
     }];
 }
 
 - (void)sessionDidEnd:(MPSession *)session {
+    MParticleSession *mparticleSession = [[MParticleSession alloc] initWithUUID:session.uuid];
     [executor executeOnMain: ^{
         [self.kitContainer forwardSDKCall:@selector(endSession)
                                     event:nil
@@ -266,7 +269,15 @@ MPLog* logger;
                               messageType:MPMessageTypeSessionEnd
                                  userInfo:nil
         ];
+        [self postSessionNotification:mParticleSessionDidEndNotification forSession:mparticleSession];
     }];
+}
+
+- (void)postSessionNotification:(NSString *)name forSession:(MParticleSession *)session {
+    NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+    userInfo[mParticleSessionId] = session.sessionID;
+    userInfo[mParticleSessionUUID] = session.UUID;
+    [[NSNotificationCenter defaultCenter] postNotificationName:name object:self userInfo:userInfo];
 }
 
 #pragma mark MPBackendControllerDelegate methods

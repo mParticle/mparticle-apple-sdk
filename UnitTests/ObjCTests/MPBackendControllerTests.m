@@ -215,6 +215,10 @@
     XCTAssertNotNil([host userDefaults]);
     XCTAssertNotNil([host uploadBatchLimits]);
     XCTAssertNotNil([host currentUploadSettings]);
+    XCTAssertEqual([host openPersistence], instance.persistenceStore);
+    [host storeUploadSettingsWithApiKey:@"round-trip-key" secret:@"round-trip-secret" networkOptions:nil];
+    XCTAssertEqualObjects([host apiKeyOfUploadSettings:[host lastUploadSettings]], @"round-trip-key");
+    XCTAssertNil([host apiKeyOfUploadSettings:[[NSObject alloc] init]]);
 }
 
 - (void)testSessionOwnershipDoesNotPublishStateMachineMirror {

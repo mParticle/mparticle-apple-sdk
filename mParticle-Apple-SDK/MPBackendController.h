@@ -18,9 +18,6 @@
 @class MPNetworkOptions;
 @class MPNetworkCommunication_PRIVATE;
 
-
-@protocol MPBackendControllerDelegate;
-
 @protocol MPBackendControllerProtocol
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
 - (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
@@ -109,11 +106,4 @@
 - (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 
-@end
-
-@protocol MPBackendControllerDelegate <NSObject>
-- (void)forwardLogInstall;
-- (void)forwardLogUpdate;
-- (void)sessionDidBegin:(nonnull MPSession *)session;
-- (void)sessionDidEnd:(nonnull MPSession *)session;
 @end

@@ -13,7 +13,6 @@
 #import "MPNetworkCommunication.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPUploadSettings.h"
-#import "UploadSettingsUtils.h"
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
@@ -42,7 +41,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
-+ (void)executeOnMain:(void(^)(void))block;
 - (void)initializePersistence;
 
 @end
@@ -52,7 +50,6 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
 @property NSTimeInterval timeOfLastEventInBackground;
-@property NSNotification *didFinishLaunchingNotification;
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSOperationQueue *backgroundCheckQueue;
 @property (nonatomic, strong) id<MPBackendPersistence> persistence;
@@ -279,81 +276,16 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     }
 }
 
-- (void)broadcastSessionDidBegin:(MPSession *)session {
-    MParticleSession *mparticleSession = [[MParticleSession alloc] initWithUUID:session.uuid];
-    [MParticle executeOnMain:^{
-        [self.delegate sessionDidBegin:session];
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-        userInfo[mParticleSessionId] = mparticleSession.sessionID;
-        userInfo[mParticleSessionUUID] = mparticleSession.UUID;
-        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidBeginNotification
-                                                            object:self.delegate
-                                                          userInfo:userInfo];
-    }];
+- (id<MPBackendControllerDelegate>)backendDelegate {
+    return self.delegate;
 }
 
-- (void)broadcastSessionDidEnd:(MPSession *)session {
-    MParticleSession *mparticleSession = [[MParticleSession alloc] initWithUUID:session.uuid];
-    [MParticle executeOnMain:^{
-        [self.delegate sessionDidEnd:session];
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-        userInfo[mParticleSessionId] = mparticleSession.sessionID;
-        userInfo[mParticleSessionUUID] = mparticleSession.UUID;
-        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidEndNotification
-                                                            object:self.delegate
-                                                          userInfo:userInfo];
-    }];
+- (void)prepareBatchesForUploadSettings:(NSObject *)settings {
+    [self prepareBatchesForUpload:(MPUploadSettings *)settings];
 }
-                   
+
 - (void)processDidFinishLaunching:(NSNotification *)notification {
-    NSString *astType = kMPASTInitKey;
-    NSMutableDictionary *messageInfo = [[NSMutableDictionary alloc] initWithCapacity:3];
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    BOOL isInstallOrUpgrade = NO;
-    if (stateMachine.installationType == MPInstallationTypeKnownInstall) {
-        messageInfo[kMPASTIsFirstRunKey] = @YES;
-        [self.delegate forwardLogInstall];
-        isInstallOrUpgrade = YES;
-    } else if (stateMachine.installationType == MPInstallationTypeKnownUpgrade) {
-        messageInfo[kMPASTIsUpgradeKey] = @YES;
-        [self.delegate forwardLogUpdate];
-        isInstallOrUpgrade = YES;
-    }
-    
-    NSDictionary *userInfo = [notification userInfo];
-    
-    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
-        NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
-        
-        if (userActivity.webpageURL) {
-            MParticle* mparticle = MParticle.sharedInstance;
-            MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-            logger.customLogger = mparticle.customLogger;
-            
-            stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil logger:logger];
-        }
-    }
-    
-    messageInfo[kMPAppStateTransitionType] = astType;
-    
-    dispatch_async([MParticle messageQueue], ^{
-        if (isInstallOrUpgrade && MParticle.sharedInstance.automaticSessionTracking) {
-            [self beginSession];
-        }
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
-
-        [messageBuilder stateTransition:YES previousSession:nil launchInfo:stateMachine.launchInfo];
-        MPMessage *message = [messageBuilder build];
-        
-        [self saveMessage:message updateSession:YES];
-    });
-    
-    [MPApplication_PRIVATE updateStoredVersionAndBuildNumbersWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
-
-    self.didFinishLaunchingNotification = nil;
-    
-    MPILogVerbose(@"Application Did Finish Launching");
+    [self.assembly.startupCoordinator processDidFinishLaunching:notification];
 }
 
 - (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(void (^)(void))completionHandler {
@@ -390,7 +322,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 #pragma mark Notification handlers
 
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification {
-    self.didFinishLaunchingNotification = [notification copy];
+    self.assembly.startupCoordinator.didFinishLaunchingNotification = notification;
 }
 
 - (void)handleNetworkPerformanceNotification:(NSNotification *)notification {
@@ -692,113 +624,18 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
-    MPILogDebug(@"Backend controller starting - firstRun: %@, startKitsAsync: %@",
-                firstRun ? @"YES" : @"NO", startKitsAsync ? @"YES" : @"NO");
-    
     MPConsentState *storedConsentState = [MPPersistenceUtilities consentStateForMpid:[MPPersistenceUtilities mpId]];
     if (consentState != nil && storedConsentState == nil) {
         [MPPersistenceUtilities setConsentState:consentState forMpid:[MPPersistenceUtilities mpId]];
     }
-    
-    if (![MParticle sharedInstance].stateMachine.optOut) {
-        MPILogDebug(@"Dispatching kit initialization to message queue");
-        dispatch_async([MParticle messageQueue], ^{
-            [[MParticle sharedInstance].kitContainer_PRIVATE initializeKits];
-        });
-    } else {
-        MPILogWarning(@"Skipping kit initialization - SDK is opted out");
-    }
 
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    stateMachine.apiKey = apiKey;
-    stateMachine.secret = secret;
-    stateMachine.installationType = installationType;
-    [MPStateMachine_PRIVATE setRunningInBackground:NO];
-    
-    BOOL shouldBeginSession = !stateMachine.optOut && MParticle.sharedInstance.shouldBeginSession;
-    NSDate *date = nil;
-    if (shouldBeginSession) {
-        [self createTempSession];
-        date = [NSDate date];
-    }
-    
-    // Weak, so that once nothing else holds a controller a reset or workspace switch replaced, it is
-    // released rather than starting up against the instance that replaced it.
-    __weak MPBackendController_PRIVATE *weakSelf = self;
-    dispatch_async([MParticle messageQueue], ^{
-        MPBackendController_PRIVATE *strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        [[MParticle sharedInstance] initializePersistence];
-        strongSelf.persistence = [MParticle sharedInstance].persistenceStore;
-
-        // Check if we've switched workspaces on startup
-        MPUploadSettings *lastUploadSettings = [UploadSettingsUtils lastUploadSettingsWithUserDefaults: MPUserDefaultsConnector.userDefaults];
-        if (![lastUploadSettings.apiKey isEqualToString:apiKey]) {
-            // Different workspace, so batch previous messages under old upload settings before starting
-            [strongSelf prepareBatchesForUpload:lastUploadSettings];
-            
-            // Delete the cached config
-            [MPUserDefaults deleteConfig];
-        }
-        
-        // Cache the upload settings in case we switch workspaces on startup
-        MPUploadSettings *uploadSettings = [[MPUploadSettings alloc] initWithApiKey:apiKey secret:secret networkOptions:networkOptions];
-        [UploadSettingsUtils setLastUploadSettings:uploadSettings userDefaults: MPUserDefaultsConnector.userDefaults];
-        
-        // Restore cached config if exists
-        (void)[MPUserDefaults restore];
-
-        if (shouldBeginSession) {
-            [strongSelf beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
-        }
-        
-        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeFirstRun session:strongSelf.session messageInfo:nil context:strongSelf.messageBuilderContext];
-                
-        [strongSelf processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
-        
-        [strongSelf beginUploadTimer];
-        
-        if (firstRun) {
-            MPMessage *message = [messageBuilder build];
-            message.uploadStatus = MPUploadStatusBatch;
-            
-            [strongSelf saveMessage:message updateSession:YES];
-            
-            MPILogDebug(@"Application First Run");
-        }
-        
-        // Single-shot: the attribution path and the global-timeout fallback below both hold this
-        // block and the timeout is never cancelled, so whichever finishes first has to win.
-        // -processDidFinishLaunching is not idempotent - running it twice forwards a second
-        // install/update and emits a second app-state-transition message. The timeout holds the block
-        // for 30 seconds, so it captures the controller weakly.
-        void (^searchAdsCompletion)(void) = [strongSelf singleShotBlock:^{
-            MPBackendController_PRIVATE *backend = weakSelf;
-            if (!backend) {
-                return;
-            }
-            [backend processDidFinishLaunching:backend.didFinishLaunchingNotification];
-            MPILogDebug(@"Initiating config request and upload cycle");
-            [backend waitForKitsAndUploadWithCompletionHandler:nil];
-        }];
-        
-#if TARGET_OS_IOS == 1
-        if (MParticle.sharedInstance.collectSearchAdsAttribution) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS * NSEC_PER_SEC)), [MParticle messageQueue], searchAdsCompletion);
-            [strongSelf requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
-        } else {
-            searchAdsCompletion();
-        }
-#else
-        searchAdsCompletion();
-#endif
-        
-        MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
-        
-        completionHandler();
-    });
+    [self.assembly.startupCoordinator startWithKey:apiKey
+                                            secret:secret
+                                    networkOptions:networkOptions
+                                          firstRun:firstRun
+                                  installationType:(MPInstallationTypeSwift)installationType
+                                    startKitsAsync:startKitsAsync
+                                 completionHandler:completionHandler];
 }
 
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession {
