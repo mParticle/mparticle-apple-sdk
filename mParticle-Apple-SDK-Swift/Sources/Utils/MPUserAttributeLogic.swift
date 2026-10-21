@@ -62,7 +62,7 @@ import Foundation
     }
 }
 
-/// What `setUserAttributeChange:` should do to the stored attribute dictionary.
+/// What applying a user-attribute change should do to the stored attribute dictionary.
 @objc public enum MPUserAttributeMutation: Int {
     /// Write the value at the key.
     case store

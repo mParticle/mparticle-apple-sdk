@@ -1251,6 +1251,24 @@
     XCTAssertNil([identities objectForKey:@(MPUserIdentityEmail)]);
 }
 
+- (void)testSetIdentityToANonStringIsRejected {
+    [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+
+    }];
+    __block MPExecStatus status = MPExecStatusSuccess;
+    [[self backendController] setUserIdentity:(NSString *)@7 identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+        status = execStatus;
+    }];
+
+    XCTAssertEqual(MPExecStatusInvalidDataType, status);
+    NSDictionary *identities = [MParticle sharedInstance].identity.currentUser.identities;
+    XCTAssertEqualObjects(@"foo", [identities objectForKey:@(MPUserIdentityEmail)]);
+}
+
 - (void)testDoNotSetDuplicateIdentityCasing {
     __block MPExecStatus status = MPExecStatusFail;
     [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail

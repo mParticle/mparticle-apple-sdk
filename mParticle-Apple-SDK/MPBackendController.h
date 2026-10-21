@@ -1,5 +1,6 @@
 #import "MPEnums.h"
 #import "MPUploadSettings.h"
+@import mParticle_Apple_SDK_Swift;
 
 #if TARGET_OS_IOS == 1
     @class MParticleUserNotification;
@@ -20,23 +21,6 @@
 
 @protocol MPBackendControllerDelegate;
 
-typedef NS_ENUM(NSUInteger, MPExecStatus) {
-    MPExecStatusSuccess = 0,
-    MPExecStatusFail,
-    MPExecStatusMissingParam,
-    MPExecStatusDisabledRemotely,
-    MPExecStatusEnabledRemotely,
-    MPExecStatusOptOut,
-    MPExecStatusDataBeingFetched,
-    MPExecStatusInvalidDataType,
-    MPExecStatusDataBeingUploaded,
-    MPExecStatusServerBusy,
-    MPExecStatusItemNotFound,
-    MPExecStatusDisabledInSettings,
-    MPExecStatusNoConnectivity
-};
-
-extern const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold;
 extern const NSInteger kNilAttributeValue;
 extern const NSInteger kExceededAttributeValueMaximumLength;
 extern const NSInteger kExceededAttributeKeyMaximumLength;
@@ -102,7 +86,6 @@ extern const NSInteger kInvalidKey;
 - (void)beginTimedEvent:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 + (BOOL)checkAttribute:(nonnull NSDictionary *)attributesDictionary key:(nonnull NSString *)key value:(nonnull id)value error:(out NSError *__autoreleasing _Nullable * _Nullable)error;
 - (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;
-+ (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
 - (MPExecStatus)fetchAudiencesWithCompletionHandler:(void (^ _Nonnull)(NSArray * _Nullable currentAudiences, NSError * _Nullable error))completionHandler;
 - (nullable NSNumber *)incrementSessionAttribute:(nonnull MPSession *)session key:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (nullable NSNumber *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;

@@ -123,6 +123,12 @@
 
 - (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType timestamp:(NSDate *)timestamp {
     if ([MPIdentityUserStoragePRIVATE isUserIdentity:(NSInteger)identityType]) {
+        // The backend controller rejects a value that is not a string; storing it below would still upload it.
+        if (!MPIsNull(identityString) && !MPIsString(identityString)) {
+            MPILogError(@"User identity of type %@ not set: its value is not a string", @(identityType));
+            return;
+        }
+
         __weak MParticleUser *weakSelf = self;
         [self.backendController setUserIdentity:identityString
                                    identityType:(MPUserIdentity)identityType

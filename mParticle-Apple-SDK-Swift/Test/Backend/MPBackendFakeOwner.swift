@@ -7,7 +7,6 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
     let messageContext = MPMessageBuilderContext(dataPlanId: "owner-plan", dataPlanVersion: 1, logger: nil)
     let uploadContext: MPUploadBuilderContext
     var network: MPBackendUploadNetworking?
-    var identities: NSMutableArray = []
     private(set) var calls: [String] = []
 
     init(host: MPBackendHost) {
@@ -38,11 +37,6 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
 
     func uploadNetworking() -> MPBackendUploadNetworking? {
         network
-    }
-
-    func userIdentities(forUserId userId: NSNumber) -> NSMutableArray {
-        calls.append("userIdentities:\(userId)")
-        return identities
     }
 
     func createPendingSession(uuid: String) {

@@ -35,6 +35,7 @@ static const NSTimeInterval kMPUserAttributeNoForwardTimeout = 0.3;
 
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 - (BOOL)forwardLegacyUserIdentityToKitContainer:(NSString *)identityString identityType:(MPUserIdentity)identityType execStatus:(MPExecStatus) execStatus;
+- (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType;
 @end
 
 
@@ -70,6 +71,28 @@ static const NSTimeInterval kMPUserAttributeNoForwardTimeout = 0.3;
     XCTAssertTrue([user forwardLegacyUserIdentityToKitContainer:@"foo"
                                                    identityType:MPUserIdentityEmail
                                                      execStatus:MPExecStatusSuccess]);
+}
+
+- (void)testSetIdentitySyncIgnoresANonStringUserIdentity {
+    MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+    [user setIdentitySync:@"a@example.com" identityType:MPIdentityEmail];
+
+    [user setIdentitySync:(NSString *)@7 identityType:MPIdentityEmail];
+
+    XCTAssertEqualObjects(user.identities[@(MPIdentityEmail)], @"a@example.com");
+}
+
+- (void)testSetIdentitySyncStillRemovesAUserIdentityWithNilNullOrAnEmptyString {
+    MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+    for (id removal in @[[NSNull null], @""]) {
+        [user setIdentitySync:@"a@example.com" identityType:MPIdentityEmail];
+        [user setIdentitySync:(NSString *)removal identityType:MPIdentityEmail];
+        XCTAssertNil(user.identities[@(MPIdentityEmail)], @"%@ should remove the identity", [removal class]);
+    }
+
+    [user setIdentitySync:@"a@example.com" identityType:MPIdentityEmail];
+    [user setIdentitySync:nil identityType:MPIdentityEmail];
+    XCTAssertNil(user.identities[@(MPIdentityEmail)]);
 }
 
 - (void)testGetUserAudiencesWithCompletionHandlerEnabled {

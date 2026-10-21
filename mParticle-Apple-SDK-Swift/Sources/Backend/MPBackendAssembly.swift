@@ -12,7 +12,6 @@ public protocol MPBackendAssemblyOwner: NSObjectProtocol {
     @objc(uploadFromBackendWithCompletionHandler:) func upload(completionHandler: (() -> Void)?)
     @objc(requestConfigFromBackend) func requestConfig()
     @objc(uploadNetworking) func uploadNetworking() -> MPBackendUploadNetworking?
-    @objc(userIdentitiesForUserId:) func userIdentities(forUserId userId: NSNumber) -> NSMutableArray
     @objc(createPendingSessionWithUUID:) func createPendingSession(uuid: String)
     @objc(setPendingSessionStartTime:) func setPendingSessionStartTime(_ timestamp: Double)
     @objc(clearPendingSession) func clearPendingSession()
@@ -28,6 +27,7 @@ public final class MPBackendAssembly: NSObject {
     @objc public let sessionDependencies: MPBackendSessionDependencies
     @objc public let messageWriter: MPBackendMessageWriter
     @objc public let userAttributeWriter: MPBackendUserAttributeWriter
+    @objc public let identityWriter: MPBackendIdentityWriter
     @objc public let errorReporter: MPBackendErrorReporter
     @objc public let sessionLifecycleDependencies: MPBackendSessionLifecycleDependencies
     @objc public let sessionCoordinator: MPBackendSessionCoordinator
@@ -69,6 +69,7 @@ public final class MPBackendAssembly: NSObject {
         let attributeWriter = MPBackendUserAttributeWriter(
             state: state, dependencies: dependencies, writer: writer, attributes: attributes
         )
+        let identities = MPBackendIdentityWriter(state: state, dependencies: dependencies, writer: writer, host: host)
         let errors = MPBackendErrorDependencies(
             maxBytesPerEvent: { MPPersistenceSchemaPRIVATE.maxBytesPerEvent(for: $0) },
             crashMaxPLReportLength: { host.crashMaxPLReportLength() }
@@ -116,7 +117,7 @@ public final class MPBackendAssembly: NSObject {
             stateMachine: { host.stateMachine() },
             makeContext: { [weak owner] in owner?.uploadBuilderContext() },
             makeBuilder: { [weak owner] group, messages, settings, context in
-                guard let owner else { return nil }
+                guard owner != nil else { return nil }
                 let builder = MPUploadBuilderPRIVATE(
                     mpid: group.mpid, sessionId: group.sessionId, messages: messages,
                     sessionTimeout: lifecycle.sessionTimeout, uploadInterval: lifecycle.uploadInterval,
@@ -125,8 +126,7 @@ public final class MPBackendAssembly: NSObject {
                 )
                 let userAttributes = attributeWriter.userAttributes(forUserId: group.mpid) as? [String: Any] ?? [:]
                 _ = builder?.withUserAttributes(userAttributes, deletedUserAttributes: attributeWriter.deletedUserAttributes)
-                let identities = owner.userIdentities(forUserId: group.mpid) as? [NSDictionary] ?? []
-                _ = builder?.withUserIdentities(identities)
+                _ = builder?.withUserIdentities(identities.userIdentities(forUserId: group.mpid) as? [NSDictionary] ?? [])
                 return builder
             },
             clearDeletedAttributes: { attributeWriter.clearDeletedUserAttributes() },
@@ -144,6 +144,7 @@ public final class MPBackendAssembly: NSObject {
         sessionDependencies = dependencies
         messageWriter = writer
         userAttributeWriter = attributeWriter
+        identityWriter = identities
         errorReporter = MPBackendErrorReporter(state: state, dependencies: dependencies, writer: writer, errors: errors)
         sessionLifecycleDependencies = sessionLifecycle
         sessionCoordinator = sessions
