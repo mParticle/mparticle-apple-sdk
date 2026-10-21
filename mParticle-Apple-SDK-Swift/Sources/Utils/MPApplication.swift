@@ -115,7 +115,13 @@ import UIKit
 
     @objc public var architecture: String {
         if let cachedArchitecture { return cachedArchitecture }
-        let name = NXGetLocalArchInfo().pointee.name.map { String(cString: $0) } ?? ""
+        // The app binary's architecture, not the device's (MPDevice reports that): an arm64 app on
+        // an arm64e device is arm64.
+        let header: UnsafePointer<mach_header>? = _dyld_get_image_header(0)
+        let info: UnsafePointer<NXArchInfo>? = header.flatMap {
+            NXGetArchInfoFromCpuType($0.pointee.cputype, $0.pointee.cpusubtype)
+        }
+        let name = info?.pointee.name.map { String(cString: $0) } ?? ""
         cachedArchitecture = name
         return name
     }
