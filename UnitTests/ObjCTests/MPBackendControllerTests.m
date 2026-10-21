@@ -42,6 +42,7 @@
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 - (void)initializePersistence;
+- (MPLog *)getLogger;
 
 @end
 
@@ -97,40 +98,7 @@
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSTimeInterval timeOfLastEventInBackground;
 @property NSTimeInterval timeAppWentToBackgroundInCurrentSession;
-- (MPBackendSessionDependencies *)sessionDependencies;
-- (MPBackendSessionCoordinator *)sessionCoordinator;
 
-@end
-
-@interface MPBackendPausedConstruction : MPBackendController_PRIVATE
-@property (nonatomic, strong) NSLock *constructionLock;
-@property (nonatomic) BOOL didPauseConstruction;
-@property (nonatomic, strong) dispatch_semaphore_t constructionEntered;
-@property (nonatomic, strong) dispatch_semaphore_t continueConstruction;
-@end
-
-@implementation MPBackendPausedConstruction
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _constructionLock = [[NSLock alloc] init];
-        _constructionEntered = dispatch_semaphore_create(0);
-        _continueConstruction = dispatch_semaphore_create(0);
-    }
-    return self;
-}
-
-- (MPBackendSessionDependencies *)sessionDependencies {
-    [self.constructionLock lock];
-    BOOL pause = !self.didPauseConstruction;
-    self.didPauseConstruction = YES;
-    [self.constructionLock unlock];
-    if (pause) {
-        dispatch_semaphore_signal(self.constructionEntered);
-        dispatch_semaphore_wait(self.continueConstruction, DISPATCH_TIME_FOREVER);
-    }
-    return [super sessionDependencies];
-}
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
@@ -219,65 +187,38 @@
     XCTAssertEqual(dispatch_group_wait(timers, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
 }
 
-- (void)testConcurrentFirstSessionAccessSharesOneCoordinator {
-    [self assertConcurrentFirstAccessUsesOneObjectForKey:@"sessionCoordinator"];
-}
+- (void)testBackendHostReadsTheLiveSDKInstance {
+    MParticle *instance = [MParticle sharedInstance];
+    id<MPBackendHost> host = (id<MPBackendHost>)[[MPUserDefaultsConnector alloc] init];
+    XCTAssertTrue([host conformsToProtocol:@protocol(MPBackendHost)]);
 
-- (void)testConcurrentFirstLifecycleAccessSharesOneCoordinator {
-    [self assertConcurrentFirstAccessUsesOneObjectForKey:@"lifecycleCoordinator"];
-}
-
-- (void)assertConcurrentFirstAccessUsesOneObjectForKey:(NSString *)key {
-    MPBackendPausedConstruction *backend = [[MPBackendPausedConstruction alloc] init];
-    dispatch_queue_t queue = dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0);
-    dispatch_group_t group = dispatch_group_create();
-    __block id first;
-    __block id second;
-    dispatch_group_async(group, queue, ^{ first = [backend valueForKey:key]; });
-    XCTAssertEqual(dispatch_semaphore_wait(backend.constructionEntered, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    dispatch_semaphore_t secondStarted = dispatch_semaphore_create(0);
-    dispatch_semaphore_t secondFinished = dispatch_semaphore_create(0);
-    dispatch_group_async(group, queue, ^{
-        dispatch_semaphore_signal(secondStarted);
-        second = [backend valueForKey:key];
-        dispatch_semaphore_signal(secondFinished);
-    });
-    XCTAssertEqual(dispatch_semaphore_wait(secondStarted, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    XCTAssertNotEqual(dispatch_semaphore_wait(secondFinished, dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC)), 0);
-    dispatch_semaphore_signal(backend.continueConstruction);
-    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    XCTAssertNotNil(first);
-    XCTAssertEqual(first, second);
-}
-
-- (void)testConcurrentFirstAccessSharesEntireSessionGraph {
-    MPBackendController_PRIVATE *backend = [[MPBackendController_PRIVATE alloc] init];
-    NSArray<NSString *> *keys = @[@"sessionDependencies", @"messageWriter", @"sessionLifecycleDependencies", @"sessionCoordinator", @"lifecycleCoordinator"];
-    NSMutableArray<NSDictionary *> *graphs = [[NSMutableArray alloc] init];
-    NSLock *resultsLock = [[NSLock alloc] init];
-    dispatch_group_t group = dispatch_group_create();
-    [backend.sessionState withSessionLock:^{
-        for (NSUInteger iteration = 0; iteration < 32; iteration++) {
-            dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
-                NSMutableDictionary *graph = [[NSMutableDictionary alloc] init];
-                for (NSUInteger offset = 0; offset < keys.count; offset++) {
-                    NSString *key = keys[(iteration + offset) % keys.count];
-                    graph[key] = [backend valueForKey:key];
-                }
-                [resultsLock lock];
-                [graphs addObject:graph];
-                [resultsLock unlock];
-            });
-        }
-        XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    }];
-    XCTAssertEqual(dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC)), 0);
-    XCTAssertEqual(graphs.count, 32);
-    for (NSDictionary *graph in graphs) {
-        for (NSString *key in keys) {
-            XCTAssertEqual(graph[key], [backend valueForKey:key]);
-        }
-    }
+    instance.dataPlanId = @"plan";
+    instance.dataPlanVersion = @2;
+    XCTAssertEqualObjects([host dataPlanId], @"plan");
+    XCTAssertEqualObjects([host dataPlanVersion], @2);
+    // The SDK's shared logger, not the connector's own -logger, which builds a new one per call.
+    XCTAssertEqual([host sdkLogger], [instance getLogger]);
+    XCTAssertEqual([host stateMachine], instance.stateMachine);
+    XCTAssertEqualObjects([host sdkVersion], kMParticleSDKVersion);
+    NSDictionary *batch = @{@"batch": @1};
+    XCTAssertEqual([host transformBatch:batch], batch);
+    XCTAssertEqualObjects([host mpId], [MPPersistenceUtilities mpId]);
+    XCTAssertEqual([host automaticSessionTracking], instance.automaticSessionTracking);
+    XCTAssertEqual([host messageQueue], [MParticle messageQueue]);
+    XCTAssertEqual([host optOut], instance.stateMachine.optOut);
+    XCTAssertEqualObjects([host crashMaxPLReportLength], instance.stateMachine.crashMaxPLReportLength);
+    XCTAssertEqualObjects([host persistenceMaxAge], instance.persistenceMaxAgeSeconds);
+    XCTAssertEqualObjects([host nullUserAttributeValue], kMPNullUserAttributeString);
+    XCTAssertEqual([host isDevelopmentEnvironment], [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment);
+    XCTAssertEqual([host attributeKeyLengthLimit], LIMIT_ATTR_KEY_LENGTH);
+    XCTAssertEqual([host attributeValueLengthLimit], LIMIT_ATTR_VALUE_LENGTH);
+    XCTAssertNotNil([host userDefaults]);
+    XCTAssertNotNil([host uploadBatchLimits]);
+    XCTAssertNotNil([host currentUploadSettings]);
+    XCTAssertEqual([host openPersistence], instance.persistenceStore);
+    [host storeUploadSettingsWithApiKey:@"round-trip-key" secret:@"round-trip-secret" networkOptions:nil];
+    XCTAssertEqualObjects([host apiKeyOfUploadSettings:[host lastUploadSettings]], @"round-trip-key");
+    XCTAssertNil([host apiKeyOfUploadSettings:[[NSObject alloc] init]]);
 }
 
 - (void)testSessionOwnershipDoesNotPublishStateMachineMirror {
@@ -594,7 +535,7 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeValueTooLong, error.code);
 }
 
 - (void)testCheckAttributeArrayValueInvalidLongAttribute {
@@ -617,7 +558,7 @@
 
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kInvalidDataType, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeInvalidDataType, error.code);
     XCTAssertEqualObjects(logMessage, @"mParticle -> Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: 10");
 }
 
@@ -642,7 +583,7 @@
 
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeValueTooLong, error.code);
     XCTAssertEqualObjects(logMessage, @"mParticle -> Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
 }
 
@@ -664,7 +605,7 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:mockKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeKeyMaximumLength, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeKeyTooLong, error.code);
 }
 
 - (void)testCheckAttributeValueTooLong {
@@ -675,7 +616,7 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:mockValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeValueTooLong, error.code);
 }
 
 - (void)testCheckAttributeValueNil {
@@ -684,7 +625,7 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:nilValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kNilAttributeValue, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeNilValue, error.code);
 }
 
 - (void)testCheckAttributeKeyNullNil {
@@ -693,14 +634,14 @@
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kInvalidKey, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeInvalidKey, error.code);
     
     error = nil;
     nilKey = nil;
     success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
-    XCTAssertEqual(kInvalidKey, error.code);
+    XCTAssertEqual(MPAttributeValidationErrorCodeInvalidKey, error.code);
 }
 
 - (void)testBatchCycle {
@@ -1142,6 +1083,60 @@
     }
 }
 
+- (NSArray<NSString *> *)messageTypesSavedInSession:(MPSession *)session {
+    NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceStore fetchMessagesForUploading];
+    NSDictionary *dataPlans = messagesDictionary[[MPPersistenceUtilities mpId]][@(session.sessionId)];
+    NSMutableArray<NSString *> *types = [NSMutableArray array];
+    for (NSDictionary *versions in dataPlans.allValues) {
+        for (NSArray<MPMessage *> *messages in versions.allValues) {
+            for (MPMessage *message in messages) {
+                if (message.messageType) {
+                    [types addObject:message.messageType];
+                }
+            }
+        }
+    }
+    return types;
+}
+
+- (void)testLeaveBreadcrumbSavesABreadcrumbAndCountsIt {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    MPSession *session = self.backendController.session;
+    uint32_t eventsBefore = session.eventCounter;
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Breadcrumb Test" type:MPEventTypeOther];
+
+    __block MPExecStatus status = MPExecStatusFail;
+    [self.backendController leaveBreadcrumb:event completionHandler:^(MPEvent *loggedEvent, MPExecStatus execStatus) {
+        status = execStatus;
+    }];
+
+    XCTAssertEqual(status, MPExecStatusSuccess);
+    XCTAssertEqual(event.messageType, MPMessageTypeBreadcrumb);
+    XCTAssertEqual(session.eventCounter, eventsBefore + 1);
+    XCTAssertTrue([[self messageTypesSavedInSession:session] containsObject:kMPMessageTypeStringBreadcrumb]);
+}
+
+- (void)testLogScreenSavesANavigationScreenViewAndCountsIt {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    MPSession *session = self.backendController.session;
+    uint32_t eventsBefore = session.eventCounter;
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Screen Test" type:MPEventTypeOther];
+
+    __block MPExecStatus status = MPExecStatusFail;
+    [self.backendController logScreen:event completionHandler:^(MPEvent *loggedEvent, MPExecStatus execStatus) {
+        status = execStatus;
+    }];
+
+    XCTAssertEqual(status, MPExecStatusSuccess);
+    XCTAssertEqual(event.type, MPEventTypeNavigation);
+    XCTAssertEqual(session.eventCounter, eventsBefore + 1);
+    XCTAssertTrue([[self messageTypesSavedInSession:session] containsObject:kMPMessageTypeStringScreenView]);
+}
+
 - (void)testRampUpload {
     [MParticle sharedInstance].dataPlanId = @"test";
     [MParticle sharedInstance].dataPlanVersion = @(1);
@@ -1314,6 +1309,24 @@
     
     identities = [MParticle sharedInstance].identity.currentUser.identities;
     XCTAssertNil([identities objectForKey:@(MPUserIdentityEmail)]);
+}
+
+- (void)testSetIdentityToANonStringIsRejected {
+    [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+
+    }];
+    __block MPExecStatus status = MPExecStatusSuccess;
+    [[self backendController] setUserIdentity:(NSString *)@7 identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+        status = execStatus;
+    }];
+
+    XCTAssertEqual(MPExecStatusInvalidDataType, status);
+    NSDictionary *identities = [MParticle sharedInstance].identity.currentUser.identities;
+    XCTAssertEqualObjects(@"foo", [identities objectForKey:@(MPUserIdentityEmail)]);
 }
 
 - (void)testDoNotSetDuplicateIdentityCasing {
@@ -1905,6 +1918,15 @@
     XCTAssertEqual(session.attributesDictionary.count, (NSUInteger)0);
 }
 
+- (void)testIncrementSessionAttributeWithNonStringKeyStoresNothing {
+    MPSession *session = [[MPSession alloc] init];
+    for (id key in @[@42, [NSNull null]]) {
+        NSNumber *result = [self.backendController incrementSessionAttribute:session key:(NSString *)key byValue:@3];
+        XCTAssertNil(result, @"a key of %@ should not increment", [key class]);
+    }
+    XCTAssertEqual(session.attributesDictionary.count, (NSUInteger)0);
+}
+
 - (void)testMessageWithOptOut {
     [MPPersistenceUtilities setMpid:@2];
     
@@ -2213,6 +2235,29 @@
     }];
     XCTAssertTrue(completed);
     [network verifyWithDelay:5.0];
+    [network stopMocking];
+}
+
+- (void)testFetchAudiencesHandsTheNetworkResultToTheCompletionHandler {
+    id network = OCMPartialMock(self.backendController.networkCommunication);
+    NSArray *audiences = @[@"first"];
+    [OCMStub([network requestAudiencesWithCompletionHandler:[OCMArg any]]) andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(BOOL success, NSArray *currentAudiences, NSError *error);
+        [invocation getArgument:&handler atIndex:2];
+        handler(YES, audiences, nil);
+    }];
+
+    __block NSArray *received = nil;
+    __block NSUInteger completions = 0;
+    MPExecStatus status = [self.backendController fetchAudiencesWithCompletionHandler:^(NSArray *currentAudiences, NSError *error) {
+        received = currentAudiences;
+        XCTAssertNil(error);
+        completions += 1;
+    }];
+
+    XCTAssertEqual(status, MPExecStatusSuccess);
+    XCTAssertEqual(completions, 1);
+    XCTAssertEqualObjects(received, audiences);
     [network stopMocking];
 }
 

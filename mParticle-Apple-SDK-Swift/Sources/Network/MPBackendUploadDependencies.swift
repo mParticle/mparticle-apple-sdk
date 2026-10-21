@@ -1,11 +1,14 @@
 import Foundation
 
-/// The upload coordinator's view of networking; identity and endpoint implementation stay behind it.
+/// The backend's view of networking: configuration, uploads and audiences. Identity and endpoint
+/// implementation stay behind it.
 @objc public protocol MPBackendUploadNetworking {
     @objc(requestConfig:withCompletionHandler:)
     func requestConfig(_ connector: (NSObject & MPConnectorProtocol)?, completionHandler: @escaping (Bool) -> Void)
     @objc(upload:completionHandler:)
     func upload(_ uploads: [MPUploadPRIVATE], completionHandler: @escaping () -> Void)
+    @objc(requestAudiencesWithCompletionHandler:)
+    func requestAudiences(completionHandler: @escaping (Bool, [Any]?, Error?) -> Void)
 }
 
 /// Live networking and readiness dependencies. Scheduling always uses the SDK's message queue.

@@ -194,9 +194,11 @@ Adding an entry requires the same evidence
 `docs/swift-migration/CONVERSION-RECIPE.md` demands to classify a declaration
 as a supported contract, runtime-identity-pinned, or boundary glue: name the
 declaration, point at its `Tools/abi-baseline.txt` entry, and record the
-customer/kit/wrapper-SDK audit in the PR. A file whose declaration is an
-accidental export is **not** retained — it stays in scope and its wrapper gets
-deleted.
+customer/kit/wrapper-SDK audit in the PR. Boundary glue (classification 4)
+without a public header has no baseline entry; name the boundary it bridges
+instead, as the existing internal glue entries do. A file whose declaration is
+an accidental export is **not** retained — it stays in scope and its wrapper
+gets deleted.
 
 Removing an entry is the normal end of classification 4: when a boundary is
 redesigned and the glue is deleted, delete its line with it. A future major

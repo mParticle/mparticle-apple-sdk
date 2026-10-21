@@ -9,6 +9,10 @@
 #import "MPConsentState.h"
 #import "MPPersistenceAdapter.h"
 #import "../Kits/MPDataPlanFilter.h"
+#import "UploadSettingsUtils.h"
+#if TARGET_OS_IOS == 1
+    #import <AdServices/AAAttribution.h>
+#endif
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -20,8 +24,22 @@
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) MPDataPlanFilter *dataPlanFilter;
+@property (nonatomic, strong) MParticleOptions *options;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
+@property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
+@property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
++ (dispatch_queue_t)messageQueue;
++ (void)executeOnMessage:(void(^)(void))block;
++ (void)executeOnMain:(void(^)(void))block;
+- (MPLog *)getLogger;
+- (void)initializePersistence;
 
 @end
+
+// How long an upload waits for kits, and for the web view's user agent, before going ahead.
+static const NSTimeInterval kMPMaximumKitWaitTimeSeconds = 5.0;
+static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 // Re-declared from the deleted MPStateMachine.m: -setIdentity:identityType: is private to
 // MParticleUser and only reachable through a class extension.
@@ -29,7 +47,7 @@
 - (void)setIdentity:(nullable NSString *)identityString identityType:(MPIdentity)identityType;
 @end
 
-@interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol>
+@interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol, MPBackendHost>
 
 @end
 
@@ -122,6 +140,203 @@
     MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
     logger.customLogger = mparticle.customLogger;
     return logger;
+}
+
+#pragma mark MPBackendHost
+
+- (NSString *)dataPlanId {
+    return MParticle.sharedInstance.dataPlanId;
+}
+
+- (NSNumber *)dataPlanVersion {
+    return MParticle.sharedInstance.dataPlanVersion;
+}
+
+- (MPLog *)sdkLogger {
+    return [MParticle.sharedInstance getLogger];
+}
+
+- (NSNumber *)lifetimeValueForMpid:(NSNumber *)mpid {
+    return [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid] ?: @0;
+}
+
+- (NSDictionary *)applicationInfoWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine {
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
+        initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
+        userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+        environment:[MPStateMachine_PRIVATE environment]
+        deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
+        buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
+    return [application dictionaryRepresentation];
+}
+
+- (NSDictionary *)deviceInfoForMpid:(NSNumber *)mpid {
+    MParticle *mparticle = MParticle.sharedInstance;
+    MPDevice *device = [[MPDevice alloc]
+        initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+        userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+        identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+        logger:[mparticle getLogger]];
+    return [device dictionaryRepresentationWithMpid:mpid];
+}
+
+- (NSString *)advertiserIDForMpid:(NSNumber *)mpid {
+    return [MParticle.sharedInstance.identity getUser:mpid].identities[@(MPIdentityIOSAdvertiserId)];
+}
+
+- (NSDictionary *)consentForMpid:(NSNumber *)mpid {
+    MPConsentState *consent = [MPPersistenceUtilities effectiveConsentStateForMpid:mpid];
+    return consent ? [MPConsentSerialization serverDictionaryFromConsentState:consent] : nil;
+}
+
+- (id)transformBatch:(NSDictionary *)batch {
+    MParticle *mparticle = MParticle.sharedInstance;
+    return mparticle.options.onCreateBatch ? mparticle.options.onCreateBatch(batch) : batch;
+}
+
+- (NSString *)sdkVersion {
+    return kMParticleSDKVersion;
+}
+
+- (BOOL)automaticSessionTracking {
+    return MParticle.sharedInstance.automaticSessionTracking;
+}
+
+- (MPBackendSessionStartContext *)sessionStartContextForBackend:(id)backend {
+    MParticle *mparticle = MParticle.sharedInstance;
+    __weak id weakBackend = backend;
+    return [[MPBackendSessionStartContext alloc]
+        initWithAutomaticSessionTracking:^{ return mparticle.automaticSessionTracking; }
+        stateMachine:^{ return mparticle.stateMachine; }
+        isCurrentBackend:^{ return (BOOL)(mparticle.backendController == weakBackend); }];
+}
+
+- (dispatch_queue_t)messageQueue {
+    return [MParticle messageQueue];
+}
+
+- (void)executeOnMessage:(dispatch_block_t)block {
+    [MParticle executeOnMessage:block];
+}
+
+- (void)executeOnMain:(dispatch_block_t)block {
+    [MParticle executeOnMain:block];
+}
+
+- (NSNumber *)persistenceMaxAge {
+    return MParticle.sharedInstance.persistenceMaxAgeSeconds;
+}
+
+- (void)clearExpiredIdentityCache {
+    MPIdentityCaching *cache = [[MPIdentityCaching alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
+                                                                         logger:[MParticle.sharedInstance getLogger]];
+    [cache clearExpiredCache];
+}
+
+- (MPUserDefaults *)userDefaults {
+    return MPUserDefaultsConnector.userDefaults;
+}
+
+- (BOOL)optOut {
+    return MParticle.sharedInstance.stateMachine.optOut;
+}
+
+- (NSNumber *)crashMaxPLReportLength {
+    return MParticle.sharedInstance.stateMachine.crashMaxPLReportLength;
+}
+
+- (NSString *)nullUserAttributeValue {
+    return kMPNullUserAttributeString;
+}
+
+- (BOOL)shouldDelayUploadForKits {
+    return [MParticle.sharedInstance.kitContainer_PRIVATE shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+}
+
+- (BOOL)shouldDelayUploadForWebView {
+    return [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
+}
+
+- (NSObject *)currentUploadSettings {
+    return [MPUploadSettings currentUploadSettingsWithStateMachine:MParticle.sharedInstance.stateMachine
+                                                   networkOptions:MParticle.sharedInstance.networkOptions];
+}
+
+- (MPUploadBatchLimits *)uploadBatchLimits {
+    return [[MPUploadBatchLimits alloc] initWithMaxMessages:MAX_EVENTS_PER_BATCH
+                                              maxBatchBytes:MAX_BYTES_PER_BATCH
+                                            maxMessageBytes:MAX_BYTES_PER_EVENT
+                                            crashBatchBytes:MAX_BYTES_PER_BATCH_CRASH
+                                          crashMessageBytes:MAX_BYTES_PER_EVENT_CRASH];
+}
+
+- (BOOL)isDevelopmentEnvironment {
+    return [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment;
+}
+
+- (NSInteger)attributeKeyLengthLimit {
+    return LIMIT_ATTR_KEY_LENGTH;
+}
+
+- (NSInteger)attributeValueLengthLimit {
+    return LIMIT_ATTR_VALUE_LENGTH;
+}
+
+- (NSString *)attributionToken {
+#if TARGET_OS_IOS == 1
+    NSError *error = nil;
+    return [AAAttribution attributionTokenWithError:&error];
+#else
+    return nil;
+#endif
+}
+
+- (BOOL)shouldBeginSession {
+    return MParticle.sharedInstance.shouldBeginSession;
+}
+
+- (BOOL)collectSearchAdsAttribution {
+#if TARGET_OS_IOS == 1
+    return MParticle.sharedInstance.collectSearchAdsAttribution;
+#else
+    return NO;
+#endif
+}
+
+- (void)initializeKits {
+    [MParticle.sharedInstance.kitContainer_PRIVATE initializeKits];
+}
+
+- (id<MPBackendPersistence>)openPersistence {
+    MParticle *mparticle = MParticle.sharedInstance;
+    [mparticle initializePersistence];
+    return mparticle.persistenceStore;
+}
+
+- (NSObject *)lastUploadSettings {
+    return [UploadSettingsUtils lastUploadSettingsWithUserDefaults:MPUserDefaultsConnector.userDefaults];
+}
+
+- (NSString *)apiKeyOfUploadSettings:(NSObject *)settings {
+    return [settings isKindOfClass:[MPUploadSettings class]] ? ((MPUploadSettings *)settings).apiKey : nil;
+}
+
+- (void)storeUploadSettingsWithApiKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(NSObject *)networkOptions {
+    // The start-up coordinator passes on what -startWithKey: was given: an MPNetworkOptions or nil.
+    MPUploadSettings *settings = [[MPUploadSettings alloc] initWithApiKey:apiKey secret:secret networkOptions:(MPNetworkOptions *)networkOptions];
+    [UploadSettingsUtils setLastUploadSettings:settings userDefaults:MPUserDefaultsConnector.userDefaults];
+}
+
+- (void)deleteCachedConfiguration {
+    [MPUserDefaults deleteConfig];
+}
+
+- (void)restoreCachedConfiguration {
+    (void)[MPUserDefaults restore];
+}
+
+- (void)updateStoredVersionAndBuildNumbers {
+    [MPApplication_PRIVATE updateStoredVersionAndBuildNumbersWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
 }
 
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an

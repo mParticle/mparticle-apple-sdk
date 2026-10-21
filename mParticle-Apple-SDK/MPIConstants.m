@@ -102,21 +102,12 @@ NSString *const kMPConsentCCPAPurposeName = @"data_sale_opt_out";
 
 // Push Notifications
 NSString *const kMPDeviceTokenKey = @"to";
-NSString *const kMPPushStatusKey = @"r";
-NSString *const kMPPushMessageTypeKey = @"t";
 NSString *const kMPPushMessageReceived = @"received";
 NSString *const kMPPushMessageAction = @"action";
 NSString *const kMPPushMessageSent = @"sent";
-NSString *const kMPPushMessageProviderKey = @"n";
-NSString *const kMPPushMessageProviderValue = @"apn";
-NSString *const kMPPushMessagePayloadKey = @"pay";
-NSString *const kMPPushNotificationStateKey = @"as";
 NSString *const kMPPushNotificationStateNotRunning = @"not_running";
 NSString *const kMPPushNotificationStateBackground = @"background";
 NSString *const kMPPushNotificationStateForeground = @"foreground";
-NSString *const kMPPushNotificationActionIdentifierKey = @"aid";
-NSString *const kMPPushNotificationBehaviorKey = @"bhv";
-NSString *const kMPPushNotificationActionTitleKey = @"an";
 NSString *const kMPPushNotificationCategoryIdentifierKey = @"acid";
 
 // Assorted Keys
@@ -156,7 +147,6 @@ NSString *const kMPResponseMethodKey = @"m";
 NSString *const kMPResponsePOSTDataKey = @"d";
 NSString *const kMPHTTPHeadersKey = @"h";
 NSString *const kMPHTTPAcceptEncodingKey = @"Accept-Encoding";
-NSString *const kMPDeviceTokenTypeKey = @"tot";
 NSString *const kMPDeviceTokenTypeDevelopment = @"appleSandbox";
 NSString *const kMPDeviceTokenTypeProduction = @"appleProduction";
 NSString *const kMPHTTPETagHeaderKey = @"ETag";
@@ -283,7 +273,6 @@ NSString *const kMPUserNotificationDictionaryKey = @"MPUserNotificationDictionar
 NSString *const kMPUserNotificationActionKey = @"MPUserNotificationActionKey";
 NSString *const kMPRemoteNotificationDeviceTokenNotification = @"MPRemoteNotificationDeviceTokenNotification";
 NSString *const kMPRemoteNotificationDeviceTokenKey = @"MPRemoteNotificationDeviceTokenKey";
-NSString *const kMPRemoteNotificationOldDeviceTokenKey = @"MPRemoteNotificationOldDeviceTokenKey";
 
 // Config.plist keys
 NSString *const kMPConfigPlist = @"MParticleConfig";
@@ -313,10 +302,6 @@ NSString *const kMPASTBackgroundKey = @"app_back";
 NSString *const kMPASTForegroundKey = @"app_fore";
 NSString *const kMPASTIsFirstRunKey = @"ifr";
 NSString *const kMPASTIsUpgradeKey = @"iu";
-
-// Network performance
-NSString *const kMPNetworkPerformanceMeasurementNotification = @"MPNetworkPerformanceMeasurement";
-NSString *const kMPNetworkPerformanceKey = @"MPNetworkPerformance";
 
 // Kits
 NSString *const MPKitAttributeJailbrokenKey = @"jailbroken";
@@ -441,10 +426,6 @@ const NSTimeInterval DEFAULT_UPLOAD_INTERVAL = 600.0;
 // How long to block config requests after a successful response.
 const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0*60;
 const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60*60*24.0;
-
-const NSTimeInterval SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS = 30.0;
-const NSTimeInterval SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY = 3.0;
-const NSInteger SEARCH_ADS_ATTRIBUTION_MAX_RETRIES = 4;
 
 const NSTimeInterval NETWORK_REQUEST_MAX_WAIT_SECONDS = 10;
 

@@ -25,8 +25,7 @@ public final class MPBackendErrorDependencies: NSObject {
 
 /// Assembles and persists the handled-error and crash-report messages.
 ///
-/// Both workflows return the message the caller echoes back to its completion handler; the
-/// `MPExecStatus` that travels with it is declared in Objective-C, so the boundary keeps it.
+/// Both workflows return the message the caller echoes back to its completion handler.
 @objc(MPBackendErrorReporter)
 public final class MPBackendErrorReporter: NSObject {
     private let state: MPBackendSessionState

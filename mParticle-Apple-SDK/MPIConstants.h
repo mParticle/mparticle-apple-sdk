@@ -159,21 +159,12 @@ extern NSString * _Nonnull const kMPConsentCCPAPurposeName;
 
 // Push Notifications
 extern NSString * _Nonnull const kMPDeviceTokenKey;
-extern NSString * _Nonnull const kMPPushStatusKey;
-extern NSString * _Nonnull const kMPPushMessageTypeKey;
 extern NSString * _Nonnull const kMPPushMessageReceived;
 extern NSString * _Nonnull const kMPPushMessageAction;
 extern NSString * _Nonnull const kMPPushMessageSent;
-extern NSString * _Nonnull const kMPPushMessageProviderKey;
-extern NSString * _Nonnull const kMPPushMessageProviderValue;
-extern NSString * _Nonnull const kMPPushMessagePayloadKey;
-extern NSString * _Nonnull const kMPPushNotificationStateKey;
 extern NSString * _Nonnull const kMPPushNotificationStateNotRunning;
 extern NSString * _Nonnull const kMPPushNotificationStateBackground;
 extern NSString * _Nonnull const kMPPushNotificationStateForeground;
-extern NSString * _Nonnull const kMPPushNotificationActionIdentifierKey;
-extern NSString * _Nonnull const kMPPushNotificationBehaviorKey;
-extern NSString * _Nonnull const kMPPushNotificationActionTitleKey;
 extern NSString * _Nonnull const kMPPushNotificationCategoryIdentifierKey;
 
 // Assorted Keys
@@ -213,7 +204,6 @@ extern NSString * _Nonnull const kMPResponseMethodKey;
 extern NSString * _Nonnull const kMPResponsePOSTDataKey;
 extern NSString * _Nonnull const kMPHTTPHeadersKey;
 extern NSString * _Nonnull const kMPHTTPAcceptEncodingKey;
-extern NSString * _Nonnull const kMPDeviceTokenTypeKey;
 extern NSString * _Nonnull const kMPDeviceTokenTypeDevelopment;
 extern NSString * _Nonnull const kMPDeviceTokenTypeProduction;
 extern NSString * _Nonnull const kMPHTTPETagHeaderKey;
@@ -351,7 +341,6 @@ extern NSString * _Nonnull const kMPUserNotificationDictionaryKey;
 extern NSString * _Nonnull const kMPUserNotificationActionKey;
 extern NSString * _Nonnull const kMPRemoteNotificationDeviceTokenNotification;
 extern NSString * _Nonnull const kMPRemoteNotificationDeviceTokenKey;
-extern NSString * _Nonnull const kMPRemoteNotificationOldDeviceTokenKey;
 
 // Config.plist keys
 extern NSString * _Nonnull const kMPConfigPlist;
@@ -381,10 +370,6 @@ extern NSString * _Nonnull const kMPASTBackgroundKey;
 extern NSString * _Nonnull const kMPASTForegroundKey;
 extern NSString * _Nonnull const kMPASTIsFirstRunKey;
 extern NSString * _Nonnull const kMPASTIsUpgradeKey;
-
-// Network performance
-extern NSString * _Nonnull const kMPNetworkPerformanceMeasurementNotification;
-extern NSString * _Nonnull const kMPNetworkPerformanceKey;
 
 // Kits
 extern NSString * _Nonnull const MPKitAttributeJailbrokenKey;
@@ -473,11 +458,6 @@ extern const NSTimeInterval INITIAL_UPLOAD_TIME;
 // How long to block config requests after a successful response.
 extern const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE;
 extern const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE;
-
-// Search Ads timeout/retry
-extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS;
-extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY;
-extern const NSInteger SEARCH_ADS_ATTRIBUTION_MAX_RETRIES;
 
 // Network request timeout
 extern const NSTimeInterval NETWORK_REQUEST_MAX_WAIT_SECONDS;

@@ -2,10 +2,8 @@ import Foundation
 
 /// Live dependencies for reading and writing user attributes.
 ///
-/// `validateAndLogAttribute` stays on the Objective-C side rather than calling
-/// `MPAttributeValidator` from here: the original logs the offending key and value behind
-/// `MPILogError`'s level gate, and several Objective-C tests pass mocks stubbed for a single
-/// selector, so the message must not be built eagerly.
+/// `validateAndLogAttribute` is injected so a test can observe each validation; the assembly passes
+/// `MPBackendAttributeValidation.validate`, which builds its log message only at the error level.
 @objc(MPBackendUserAttributeDependencies)
 public final class MPBackendUserAttributeDependencies: NSObject {
     let userDefaults: () -> MPUserDefaults
@@ -196,11 +194,7 @@ public final class MPBackendUserAttributeWriter: NSObject {
     }
 
     /// Applies one attribute change to storage and logs it when it changed anything.
-    ///
-    /// The parameter is non-optional; the Objective-C forwarder keeps the nil case, which the
-    /// original reported as success without storing anything.
-    @objc(applyChange:)
-    public func applyChange(_ change: MPUserAttributeChange) -> MPBackendUserAttributeOutcome {
+    private func applyChange(_ change: MPUserAttributeChange) -> MPBackendUserAttributeOutcome {
         if attributes.optOut() {
             return MPBackendUserAttributeOutcome(key: change.key, value: change.value, status: .optOut)
         }
@@ -247,9 +241,7 @@ public final class MPBackendUserAttributeWriter: NSObject {
     }
 
     /// Writes the user-attribute-change message for an attribute that actually moved.
-    @objc(logChange:)
-    public func logChange(_ change: MPUserAttributeChange?) {
-        guard let change else { return }
+    private func logChange(_ change: MPUserAttributeChange) {
         let builder = MPMessageBuilderPRIVATE(
             messageType: MPMessageTypeSwift.userAttributeChange.rawValue,
             session: state.session,
@@ -296,15 +288,15 @@ public final class MPBackendUserAttributeWriter: NSObject {
     }
 }
 
-/// What one attribute mutation produced: the key and value to hand back to the caller's
-/// completion handler, and the status the `.m` casts to `MPExecStatus`.
+/// What one attribute mutation produced: the key, value and status to hand back to the caller's
+/// completion handler.
 @objc(MPBackendUserAttributeOutcome)
 public final class MPBackendUserAttributeOutcome: NSObject {
     @objc public let key: Any?
     @objc public let value: Any?
-    @objc public let status: MPExecStatusSwift
+    @objc public let status: MPExecStatus
 
-    init(key: Any?, value: Any?, status: MPExecStatusSwift) {
+    init(key: Any?, value: Any?, status: MPExecStatus) {
         self.key = key
         self.value = value
         self.status = status
