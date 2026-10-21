@@ -10,6 +10,7 @@
 #import "MPPersistenceAdapter.h"
 #import "../Kits/MPDataPlanFilter.h"
 #import "UploadSettingsUtils.h"
+#import "MPNetworkCommunication.h"
 #if TARGET_OS_IOS == 1
     #import <AdServices/AAAttribution.h>
 #endif
@@ -333,6 +334,10 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 - (void)restoreCachedConfiguration {
     (void)[MPUserDefaults restore];
+}
+
+- (id<MPBackendUploadNetworking>)makeNetworkCommunication {
+    return (id<MPBackendUploadNetworking>)[[MPNetworkCommunication_PRIVATE alloc] init];
 }
 
 - (void)updateStoredVersionAndBuildNumbers {

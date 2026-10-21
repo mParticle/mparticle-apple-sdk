@@ -51,55 +51,14 @@
 @property (strong, nullable) MPSession *session;
 @end
 
-@interface MPBackendController_PRIVATE : NSObject
-
-@property (nonatomic, weak, nullable) id<MPBackendControllerDelegate> delegate;
-@property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
-@property (nonatomic, strong, nullable) MPNetworkCommunication_PRIVATE *networkCommunication;
-@property (strong, nullable) MPSession *session;
-@property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
-@property (nonatomic) NSTimeInterval uploadInterval;
-@property (nonatomic, strong, readonly, nonnull) MPBackendSessionState *sessionState;
-@property (nonatomic, readonly, nonnull) MPBackendEventLogger *eventLogger;
-@property (nonatomic, readonly, nonnull) MPBackendIdentityWriter *identityWriter;
-@property (nonatomic, readonly, nonnull) MPBackendStartupCoordinator *startupCoordinator;
-@property (nonatomic, readonly, nonnull) MPBackendUploadCoordinator *uploadCoordinator;
-/// The pending session, untyped so that a Swift implementation of the controller can hold it.
-@property (nonatomic, strong, nullable) id pendingSessionStorage;
-
-- (nonnull instancetype)initWithDelegate:(nonnull id<MPBackendControllerDelegate>)delegate;
-- (void)beginSession;
-- (void)endSession;
-- (void)beginSessionWithIsManual:(BOOL)isManual date:(nonnull NSDate *)date;
-- (void)endSessionWithIsManual:(BOOL)isManual;
-- (void)createTempSession;
-- (MPExecStatus)fetchAudiencesWithCompletionHandler:(void (^ _Nonnull)(NSArray * _Nullable currentAudiences, NSError * _Nullable error))completionHandler;
-- (nullable NSNumber *)incrementSessionAttribute:(nonnull MPSession *)session key:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
-- (nullable NSNumber *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
-- (void)logError:(nullable NSString *)message exception:(nullable NSException *)exception topmostContext:(nullable id)topmostContext eventInfo:(nullable NSDictionary *)eventInfo completionHandler:(void (^ _Nonnull)(NSString * _Nullable message, MPExecStatus execStatus))completionHandler;
-- (void)logCrash:(nullable NSString *)message stackTrace:(nullable NSString *)stackTrace plCrashReport:(nonnull NSString *)plCrashReport completionHandler:(void (^ _Nonnull)(NSString * _Nullable message, MPExecStatus execStatus)) completionHandler;
-- (void)logNetworkPerformanceMeasurement:(nonnull MPNetworkPerformance *)networkPerformance completionHandler:(void (^ _Nullable)(MPNetworkPerformance * _Nonnull networkPerformance, MPExecStatus execStatus))completionHandler;
-- (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
-- (MPExecStatus)setSessionAttribute:(nonnull MPSession *)session key:(nonnull NSString *)key value:(nonnull id)value;
-- (void)setUserTag:(nonnull NSString *)key timestamp:(nonnull NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, id _Nullable value, MPExecStatus execStatus))completionHandler;
-- (void)setUserAttribute:(nonnull NSString *)key value:(nullable id)value timestamp:(nonnull NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, id _Nullable value, MPExecStatus execStatus))completionHandler;
-- (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values timestamp:(nonnull NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler;
-- (void)removeUserAttribute:(nonnull NSString *)key timestamp:(nonnull NSDate *)timestamp completionHandler:(void (^ _Nullable)(NSString * _Nullable key, id _Nullable value, MPExecStatus execStatus))completionHandler;
-- (void)saveMessage:(nonnull MPMessage *)message updateSession:(BOOL)updateSession;
-- (void)skipNextUpload;
-- (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
-- (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
-- (nonnull NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(nonnull NSNumber *)userId;
-
-#if TARGET_OS_IOS == 1
-- (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
-- (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
-#endif
-
-@end
-
-/// The controller's entry points that take or return Objective-C types the Swift module cannot see.
+/// The controller's initialisers, which build the SDK's host from a class the Swift module cannot see,
+/// and its entry points that take or return Objective-C types it cannot see.
 @interface MPBackendController_PRIVATE (ObjCBoundary) <MPBackendControllerProtocol>
+
+- (nonnull instancetype)initWithDelegate:(nullable id<MPBackendControllerDelegate>)delegate;
+- (nonnull instancetype)initWithDelegate:(nullable id<MPBackendControllerDelegate>)delegate persistence:(nullable id<MPBackendPersistence>)persistence;
+
+@property (nonatomic, strong, nullable) MPNetworkCommunication_PRIVATE *networkCommunication;
 
 + (BOOL)checkAttribute:(nonnull NSDictionary *)attributesDictionary key:(nonnull NSString *)key value:(nonnull id)value error:(out NSError *__autoreleasing _Nullable * _Nullable)error;
 + (nonnull MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> _Nonnull (^ _Nonnull)(void))persistence;
@@ -107,6 +66,7 @@
 - (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings NS_SWIFT_NAME(prepareBatches(forUpload:));
 - (void)prepareBatchesForUploadSettings:(nullable NSObject *)settings;
 - (nonnull MParticleSession *)tempSession;
+- (nonnull MPUploadBuilderContext *)uploadBuilderContext;
 - (void)createPendingSessionWithUUID:(nonnull NSString *)uuid;
 - (void)setPendingSessionStartTime:(double)timestamp;
 - (void)clearPendingSession;

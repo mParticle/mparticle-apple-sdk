@@ -39,11 +39,6 @@ static NSString *const kMPStateKey = @"state";
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
 @end
 
-@interface MPBackendController_PRIVATE (PersistenceInjection)
-- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate
-                     persistence:(id<MPBackendPersistence>)persistence;
-@end
-
 @interface MPKitContainer_PRIVATE ()
 - (BOOL)kitsInitialized;
 @end
@@ -109,13 +104,6 @@ static NSString *const kMPStateKey = @"state";
 @end
 
 @implementation MPDataPlanOptions
-@end
-
-
-@interface MPBackendController_PRIVATE ()
-
-- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
-
 @end
 
 #pragma mark - MParticle

@@ -8,6 +8,8 @@
 #import "mParticle.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPUploadSettings.h"
+#import "MPNetworkCommunication.h"
+#import "MParticleSession+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 
 // MPUserDefaultsConnector holds no state and reads MParticle.sharedInstance on every call.
@@ -15,14 +17,28 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
     return (id<MPBackendHost>)[[MPUserDefaultsConnector alloc] init];
 }
 
-@interface MParticleSession ()
-
-@property (nonatomic, readwrite) NSNumber *startTime;
-- (instancetype)initWithUUID:(NSString *)uuid;
-
-@end
-
 @implementation MPBackendController_PRIVATE (ObjCBoundary)
+
+#pragma mark Initialization
+
+- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
+    id<MPBackendHost> host = MPBackendHostInstance();
+    return [self initWithHost:host delegate:delegate persistence:[host openPersistence]];
+}
+
+- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate persistence:(id<MPBackendPersistence>)persistence {
+    return [self initWithHost:MPBackendHostInstance() delegate:delegate persistence:persistence];
+}
+
+#pragma mark Network layer
+
+- (MPNetworkCommunication_PRIVATE *)networkCommunication {
+    return (MPNetworkCommunication_PRIVATE *)self.networkCommunicationStorage;
+}
+
+- (void)setNetworkCommunication:(MPNetworkCommunication_PRIVATE *)networkCommunication {
+    self.networkCommunicationStorage = (id<MPBackendUploadNetworking>)networkCommunication;
+}
 
 #pragma mark Attribute validation and upload context
 
@@ -32,6 +48,11 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 + (MPUploadBuilderContext *)uploadBuilderContextWithPersistence:(id<MPUploadEnrichmentPersistence> (^)(void))persistence {
     return [[MPUploadBuilderContext alloc] initWithHost:MPBackendHostInstance() persistence:persistence];
+}
+
+// Objective-C because the persistence block may return nil, which the Swift context's closure type does not allow.
+- (MPUploadBuilderContext *)uploadBuilderContext {
+    return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{ return (id<MPUploadEnrichmentPersistence>)self.persistence; }];
 }
 
 #pragma mark Start-up

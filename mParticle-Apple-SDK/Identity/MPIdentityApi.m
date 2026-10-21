@@ -54,12 +54,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @end
 
-@interface MPBackendController_PRIVATE ()
-
-- (NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId;
-
-@end
-
 @interface MParticleUser ()
 
 - (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType;

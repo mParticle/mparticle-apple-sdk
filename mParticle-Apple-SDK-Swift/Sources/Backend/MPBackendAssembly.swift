@@ -4,12 +4,13 @@ import UIKit
 /// What the backend's collaborators call back on the controller that owns them. Each call goes
 /// through the Objective-C runtime, so an Objective-C test's partial mock of the controller sees it.
 /// The optional requirements are the ones the controller's Objective-C boundary category implements,
-/// because they handle Objective-C types; the class's own implementation does not provide them.
+/// because they handle Objective-C types or, for the upload builder context, a persistence block that may
+/// return nil; the class's own implementation does not provide them.
 @objc(MPBackendAssemblyOwner)
 public protocol MPBackendAssemblyOwner: NSObjectProtocol {
     @objc(persistence) func persistence() -> MPBackendPersistence?
     @objc(messageBuilderContext) func messageBuilderContext() -> MPMessageBuilderContext
-    @objc(uploadBuilderContext) func uploadBuilderContext() -> MPUploadBuilderContext
+    @objc(uploadBuilderContext) optional func uploadBuilderContext() -> MPUploadBuilderContext
     /// Waits for kits, then uploads.
     @objc(uploadFromBackendWithCompletionHandler:) func upload(completionHandler: (() -> Void)?)
     @objc(requestConfigFromBackend) func requestConfig()
@@ -31,24 +32,23 @@ public protocol MPBackendAssemblyOwner: NSObjectProtocol {
 
 /// Builds the backend controller's collaborators once, with the controller. Callbacks hold the
 /// controller weakly and reach the SDK instance through the host.
-@objc(MPBackendAssembly)
-public final class MPBackendAssembly: NSObject {
-    @objc public let sessionDependencies: MPBackendSessionDependencies
-    @objc public let messageWriter: MPBackendMessageWriter
-    @objc public let userAttributeWriter: MPBackendUserAttributeWriter
-    @objc public let identityWriter: MPBackendIdentityWriter
-    @objc public let sessionAttributeWriter: MPBackendSessionAttributeWriter
-    @objc public let searchAdsAttribution: MPSearchAdsAttribution
-    @objc public let startupCoordinator: MPBackendStartupCoordinator
-    @objc public let messageLogger: MPBackendMessageLogger
-    @objc public let eventLogger: MPBackendEventLogger
-    @objc public let errorReporter: MPBackendErrorReporter
-    @objc public let sessionLifecycleDependencies: MPBackendSessionLifecycleDependencies
-    @objc public let sessionCoordinator: MPBackendSessionCoordinator
-    @objc public let lifecycleCoordinator: MPBackendLifecycleCoordinator
-    @objc public let uploadCoordinator: MPBackendUploadCoordinator
+final class MPBackendAssembly {
+    let sessionDependencies: MPBackendSessionDependencies
+    let messageWriter: MPBackendMessageWriter
+    let userAttributeWriter: MPBackendUserAttributeWriter
+    let identityWriter: MPBackendIdentityWriter
+    let sessionAttributeWriter: MPBackendSessionAttributeWriter
+    let searchAdsAttribution: MPSearchAdsAttribution
+    let startupCoordinator: MPBackendStartupCoordinator
+    let messageLogger: MPBackendMessageLogger
+    let eventLogger: MPBackendEventLogger
+    let errorReporter: MPBackendErrorReporter
+    let sessionLifecycleDependencies: MPBackendSessionLifecycleDependencies
+    let sessionCoordinator: MPBackendSessionCoordinator
+    let lifecycleCoordinator: MPBackendLifecycleCoordinator
+    let uploadCoordinator: MPBackendUploadCoordinator
 
-    @objc public init(state: MPBackendSessionState, host: MPBackendHost, owner: MPBackendAssemblyOwner) {
+    init(state: MPBackendSessionState, host: MPBackendHost, owner: MPBackendAssemblyOwner) {
         let dependencies = MPBackendSessionDependencies(
             persistence: { [weak owner] in owner?.persistence() },
             stateMachine: { host.stateMachine() },
@@ -129,7 +129,7 @@ public final class MPBackendAssembly: NSObject {
         let uploads = MPBackendUploadCoordinator(
             persistence: { [weak owner] in owner?.persistence() },
             stateMachine: { host.stateMachine() },
-            makeContext: { [weak owner] in owner?.uploadBuilderContext() },
+            makeContext: { [weak owner] in owner?.uploadBuilderContext?() },
             makeBuilder: { [weak owner] group, messages, settings, context in
                 guard owner != nil else { return nil }
                 let builder = MPUploadBuilderPRIVATE(
@@ -175,7 +175,6 @@ public final class MPBackendAssembly: NSObject {
         sessionCoordinator = sessions
         lifecycleCoordinator = lifecycle
         uploadCoordinator = uploads
-        super.init()
     }
 
     /// UIApplication access for background-task handling. A missing application (an app extension,
