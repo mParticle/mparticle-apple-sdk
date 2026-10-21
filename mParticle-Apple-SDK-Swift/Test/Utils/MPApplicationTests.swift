@@ -129,7 +129,13 @@ final class MPApplicationTests: XCTestCase {
         XCTAssertNotNil(dict[MPApplicationKeys.kMPAppImageSizeKey])
     }
 
-    func testArchitectureNonEmpty() {
-        XCTAssertFalse(makeApp().architecture.isEmpty)
+    func testArchitectureIsTheAppBinarysNotTheDevices() {
+        // Simulator binaries are arm64 or x86_64 while the host CPU reports arm64e or x86_64h, so a
+        // device architecture would fail here.
+        #if arch(arm64)
+            XCTAssertEqual(makeApp().architecture, "arm64")
+        #elseif arch(x86_64)
+            XCTAssertEqual(makeApp().architecture, "x86_64")
+        #endif
     }
 }
