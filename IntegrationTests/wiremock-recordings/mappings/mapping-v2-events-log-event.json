@@ -59,11 +59,24 @@
             {
               "id": "${json-unit.ignore}",
               "vc": "off_thread",
+              "ov": null,
+              "dt": "uac",
+              "ct": "${json-unit.ignore}",
+              "nv": "example attribute value",
+              "sct": "${json-unit.ignore}",
+              "d": false,
+              "sid": "${json-unit.ignore}",
+              "na": true,
+              "n": "example attribute key",
+              "mt": false
+            },
+            {
+              "id": "${json-unit.ignore}",
+              "vc": "off_thread",
               "sf": true,
               "dt": "ast",
               "ct": "${json-unit.ignore}",
               "sct": "${json-unit.ignore}",
-              "sc": true,
               "sid": "${json-unit.ignore}",
               "t": "app_init",
               "ifr": true,
@@ -103,7 +116,10 @@
             "env": 1,
             "abn": "1",
             "bsv": "${json-unit.ignore}",
-            "ict": "${json-unit.ignore}"
+            "ict": "${json-unit.ignore}",
+            "lc": 1,
+            "lcu": 1,
+            "ud": "${json-unit.ignore-element}"
           },
           "ct": "${json-unit.ignore}",
           "das": "${json-unit.ignore}",
@@ -118,6 +134,9 @@
               "n": 7
             }
           ],
+          "ua": {
+            "example attribute key": "example attribute value"
+          },
           "uitl": 60,
           "oo": false,
           "sdk": "SDK_VERSION_PLACEHOLDER",
@@ -128,13 +147,13 @@
             "dn": "${json-unit.ignore}",
             "dll": "en",
             "dlc": "${json-unit.ignore}",
-            "dsh": "1440",
+            "dsh": "${json-unit.ignore}",
             "dma": "Apple",
             "vid": "${json-unit.ignore}",
-            "idst": false,
+            "idst": "${json-unit.ignore}",
             "tzn": "${json-unit.ignore}",
             "dp": "iOS",
-            "dsw": "960",
+            "dsw": "${json-unit.ignore}",
             "dosv": "${json-unit.ignore}",
             "it": false,
             "dmdl": "arm64",

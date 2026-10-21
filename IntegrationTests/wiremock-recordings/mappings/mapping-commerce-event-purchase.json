@@ -63,7 +63,10 @@
             "env": 1,
             "abn": "1",
             "bsv": "${json-unit.ignore}",
-            "ict": "${json-unit.ignore}"
+            "ict": "${json-unit.ignore}",
+            "lc": 1,
+            "lcu": 1,
+            "ud": "${json-unit.ignore-element}"
           },
           "ct": "${json-unit.ignore}",
           "ck": "${json-unit.ignore}",
@@ -79,6 +82,9 @@
               "n": 7
             }
           ],
+          "ua": {
+            "example attribute key": "example attribute value"
+          },
           "uitl": 60,
           "oo": false,
           "sdk": "SDK_VERSION_PLACEHOLDER",
@@ -89,13 +95,13 @@
             "dn": "${json-unit.ignore}",
             "dma": "Apple",
             "dlc": "${json-unit.ignore}",
-            "dsh": "1440",
+            "dsh": "${json-unit.ignore}",
             "dll": "en",
-            "idst": false,
+            "idst": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
             "dp": "iOS",
             "tzn": "${json-unit.ignore}",
-            "dsw": "960",
+            "dsw": "${json-unit.ignore}",
             "dosv": "${json-unit.ignore}",
             "it": false,
             "dmdl": "arm64",

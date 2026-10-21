@@ -44,12 +44,15 @@ DEFAULT_REPLACE_FIELDS = [
     'dlc',     # Device Locale
     'dn',      # Device Name
     'dosv',    # Device OS Version
+    'dsh',     # Device Screen Height (the simulator model's once the screen connects)
+    'dsw',     # Device Screen Width
     'el',      # Event Length (duration in milliseconds for timed events)
     'en',      # Event Number (position in session, e.g., 0, 1, 2...)
     'est',     # Event Start Time
     'iba',     # Instruction Base Address (memory address for errors)
     'ict',     # Init Config Time
     'id',      # ID (various message/event IDs)
+    'idst',    # Is Daylight Saving Time (depends on the machine's time zone and the date)
     'lud',     # Last Update Date
     'sct',     # Session Creation Time
     'sid',     # Session ID
@@ -296,6 +299,10 @@ def mode_unescape_update(mapping_data: Dict[str, Any], mapping_path: Path) -> No
     
     # Replace dynamic fields
     updated_body = replace_fields_from_list(request_body, DEFAULT_REPLACE_FIELDS)
+
+    # Some runs send the upgrade date and others do not, so accept it present or missing
+    if isinstance(updated_body, dict) and isinstance(updated_body.get('ai'), dict):
+        updated_body['ai']['ud'] = '${json-unit.ignore-element}'
     
     # Update mapping data with modified body as JSON object (not string)
     mapping_data = set_request_body_in_mapping(mapping_data, updated_body, as_string=False)

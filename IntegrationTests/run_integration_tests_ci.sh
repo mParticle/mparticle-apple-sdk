@@ -24,6 +24,11 @@ WIREMOCK_LOG_FILE="${SCRIPT_DIR}/wiremock.log"
 # Tracks which version was injected so we can restore the placeholder on cleanup
 SDK_INJECTED_VERSION=""
 
+# Set by create_wiremock_certificate
+WIREMOCK_TLS_DIR=""
+WIREMOCK_CA=""
+WIREMOCK_KEYSTORE=""
+
 # === Generate project with Tuist (using source-based distribution) ===
 echo "🔄 Generating project with Tuist..."
 tuist generate --no-open
@@ -107,6 +112,51 @@ unescape_mapping_bodies() {
 	fi
 }
 
+create_wiremock_certificate() {
+	# With pinning disabled the SDK still requires system trust, so WireMock serves a certificate
+	# from a throwaway CA that the simulator is told to trust.
+	echo "🔐 Creating a throwaway certificate authority for WireMock's HTTPS port..."
+	WIREMOCK_TLS_DIR="$(mktemp -d)"
+	local CONFIG="${WIREMOCK_TLS_DIR}/openssl.cnf"
+	cat >"${CONFIG}" <<'EOF'
+[req]
+distinguished_name = dn
+[dn]
+[ca]
+basicConstraints = critical, CA:TRUE
+keyUsage = critical, keyCertSign, cRLSign
+[server]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = IP:127.0.0.1, DNS:localhost
+EOF
+	(
+		cd "${WIREMOCK_TLS_DIR}" &&
+			openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 2 -subj "/CN=mParticle Integration Tests CA" \
+				-config "${CONFIG}" -extensions ca -keyout ca.key -out ca.pem &&
+			openssl req -new -newkey rsa:2048 -nodes -subj "/CN=127.0.0.1" -config "${CONFIG}" \
+				-keyout server.key -out server.csr &&
+			openssl x509 -req -sha256 -days 2 -in server.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
+				-extfile "${CONFIG}" -extensions server -out server.pem &&
+			openssl pkcs12 -export -name wiremock -inkey server.key -in server.pem -certfile ca.pem \
+				-passout pass:password -out wiremock.p12
+	) >"${WIREMOCK_TLS_DIR}/openssl.log" 2>&1 || {
+		echo "❌ Could not create the WireMock certificate:"
+		cat "${WIREMOCK_TLS_DIR}/openssl.log"
+		exit 1
+	}
+	WIREMOCK_CA="${WIREMOCK_TLS_DIR}/ca.pem"
+	WIREMOCK_KEYSTORE="${WIREMOCK_TLS_DIR}/wiremock.p12"
+	echo "✅ Certificate created"
+}
+
+trust_wiremock_certificate() {
+	echo "🔐 Trusting the WireMock certificate authority on the simulator..."
+	xcrun simctl keychain "${DEVICE_ID}" add-root-cert "${WIREMOCK_CA}"
+	echo "✅ Certificate authority trusted"
+}
+
 start_wiremock_java() {
 	echo "🚀 Starting WireMock as Java process..."
 
@@ -129,12 +179,16 @@ start_wiremock_java() {
 		sudo java -jar "${WIREMOCK_JAR}" \
 			--port "${HTTP_PORT}" \
 			--https-port "${HTTPS_PORT}" \
+			--https-keystore "${WIREMOCK_KEYSTORE}" \
+			--keystore-type PKCS12 \
 			--root-dir "${ABS_MAPPINGS_DIR}" \
 			--verbose 2>&1 | sudo tee "${WIREMOCK_LOG_FILE}" >/dev/null &
 	else
 		java -jar "${WIREMOCK_JAR}" \
 			--port "${HTTP_PORT}" \
 			--https-port "${HTTPS_PORT}" \
+			--https-keystore "${WIREMOCK_KEYSTORE}" \
+			--keystore-type PKCS12 \
 			--root-dir "${ABS_MAPPINGS_DIR}" \
 			--verbose \
 			>"${WIREMOCK_LOG_FILE}" 2>&1 &
@@ -202,9 +256,11 @@ verify_wiremock_results() {
 	echo ""
 
 	local WIREMOCK_PORT=${HTTP_PORT}
+	local FAILED=false
 
 	# Count all requests
-	local TOTAL=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests | jq '.requests | length')
+	local SERVED=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests)
+	local TOTAL=$(printf '%s\n' "${SERVED}" | jq '.requests | length')
 	local UNMATCHED=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests/unmatched | jq '.requests | length')
 	local MATCHED=$((TOTAL - UNMATCHED))
 
@@ -216,59 +272,48 @@ verify_wiremock_results() {
 	echo "──────────────────────────────"
 	echo ""
 
+	if [[ ${TOTAL} -eq 0 ]]; then
+		echo "❌ The application sent no requests."
+		FAILED=true
+	fi
+
 	# Check for unmatched requests
 	if [[ ${UNMATCHED} -gt 0 ]]; then
 		echo "❌ Found requests that did not match any mappings:"
 		curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests/unmatched |
 			jq -r '.requests[] | "  [\(.method)] \(.url)"'
-		echo ""
-		show_wiremock_logs_java
-		stop_wiremock_java
-		exit 1
+		FAILED=true
 	else
 		echo "✅ All incoming requests matched their mappings."
 	fi
 
-	# Check for unused mappings
+	# A mapping no request matched is a request the application no longer sends.
 	echo ""
 	echo "🧩 Checking: were all mappings invoked..."
 
-	local EXPECTED_MAPPINGS=$(jq -r 'select(.response.proxyBaseUrl == null) | "\(.request.method // "ANY") \(.request.url // .request.urlPattern // .request.urlPath // .request.urlPathPattern)"' "${MAPPINGS_DIR}"/mappings/*.json 2>/dev/null | sort)
-
-	local ACTUAL_REQUESTS=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests |
-		jq -r '.requests[] | "\(.request.method) \(.request.url)"' | sort | uniq)
-
+	local USED_IDS=$(printf '%s\n' "${SERVED}" | jq -r '.requests[] | select(.wasMatched) | .stubMapping.id')
 	local UNUSED_FOUND=false
-	while IFS= read -r mapping; do
-		if [[ -n ${mapping} ]]; then
-			local method=$(echo "${mapping}" | awk '{print $1}')
-			local url=$(echo "${mapping}" | awk '{$1=""; print $0}' | sed 's/^ //')
-
-			local matched=false
-
-			if echo "${url}" | grep -q '\[' || echo "${url}" | grep -Fq $'\\'; then
-				local url_start=$(echo "${url}" | cut -d'[' -f1 | cut -d $'\\' -f1)
-				if echo "${ACTUAL_REQUESTS}" | grep -Fq "${method} ${url_start}"; then
-					matched=true
-				fi
-			else
-				if echo "${ACTUAL_REQUESTS}" | grep -Fq "${mapping}"; then
-					matched=true
-				fi
+	for mapping_file in "${MAPPINGS_DIR}"/mappings/*.json; do
+		if ! grep -qxF "$(jq -r '.id' "${mapping_file}")" <<<"${USED_IDS}"; then
+			if [[ ${UNUSED_FOUND} == false ]]; then
+				echo "❌ Some mappings were not invoked by the application:"
+				UNUSED_FOUND=true
 			fi
-
-			if [[ ${matched} == false ]]; then
-				if [[ ${UNUSED_FOUND} == false ]]; then
-					echo "⚠️  Some mappings were not invoked by the application:"
-					UNUSED_FOUND=true
-				fi
-				echo "  ${mapping}"
-			fi
+			echo "  $(basename "${mapping_file}")"
 		fi
-	done <<<"${EXPECTED_MAPPINGS}"
+	done
 
 	if [[ ${UNUSED_FOUND} == false ]]; then
 		echo "✅ All recorded mappings were invoked by the application."
+	else
+		FAILED=true
+	fi
+
+	if [[ ${FAILED} == true ]]; then
+		echo ""
+		show_wiremock_logs_java
+		stop_wiremock_java
+		exit 1
 	fi
 
 	echo ""
@@ -280,6 +325,7 @@ cleanup() {
 	unescape_mapping_bodies
 	restore_sdk_version_placeholder
 	stop_wiremock_java
+	rm -rf "${WIREMOCK_TLS_DIR}"
 }
 
 # Error handler
@@ -306,6 +352,7 @@ find_available_device
 find_device
 inject_sdk_version
 escape_mapping_bodies
+create_wiremock_certificate
 start_wiremock_java
 wait_for_wiremock_java
 echo "📝 WireMock is running in verification mode"
@@ -313,9 +360,17 @@ echo "🔗 Admin UI: http://localhost:${HTTP_PORT}/__admin"
 echo "🔗 HTTPS Endpoint: https://localhost:${HTTPS_PORT}"
 echo ""
 start_simulator
+trust_wiremock_certificate
 install_application
 launch_application
 wait_for_app_completion
+# A run cut short leaves its last recordings unused; report that cause instead
+if kill -0 "${APP_PID}" 2>/dev/null; then
+	echo "❌ The application was still running when the wait ended, so its run is incomplete."
+	show_wiremock_logs_java
+	stop_wiremock_java
+	exit 1
+fi
 verify_wiremock_results
 unescape_mapping_bodies
 restore_sdk_version_placeholder

@@ -41,7 +41,10 @@
             "env": 1,
             "abn": "1",
             "bsv": "${json-unit.ignore}",
-            "av": "1.0"
+            "av": "1.0",
+            "lc": 1,
+            "lcu": 1,
+            "ud": "${json-unit.ignore-element}"
           },
           "ct": "${json-unit.ignore}",
           "ck": "${json-unit.ignore}",
@@ -53,7 +56,7 @@
               "n": 1
             },
             {
-              "i": "j.smit@example.com",
+              "i": "foo@example.com",
               "n": 7
             }
           ],
@@ -67,14 +70,14 @@
             "dn": "${json-unit.ignore}",
             "dll": "en",
             "dlc": "${json-unit.ignore}",
-            "idst": false,
-            "dsh": "1440",
+            "idst": "${json-unit.ignore}",
+            "dsh": "${json-unit.ignore}",
             "vid": "${json-unit.ignore}",
             "dma": "Apple",
             "atts": "authorized",
             "tzn": "${json-unit.ignore}",
             "dp": "iOS",
-            "dsw": "960",
+            "dsw": "${json-unit.ignore}",
             "attt": 1700000000000,
             "dosv": "${json-unit.ignore}",
             "it": false,
@@ -87,6 +90,7 @@
             "bid": "${json-unit.ignore}"
           },
           "ua": {
+            "example attribute key": "example attribute value",
             "$Age": "45",
             "$Gender": "m",
             "Achieved Level": "11"

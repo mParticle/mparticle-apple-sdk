@@ -142,7 +142,9 @@ python3 transform_mapping_body.py wiremock-recordings/mappings/mapping-v1-identi
 3. **`unescape+update`** - Parse, replace dynamic fields with `${json-unit.ignore}`, convert to JSON object, and save
 
 **Dynamic fields replaced with `${json-unit.ignore}`:**
-`a`, `bid`, `bsv`, `ck`, `ct`, `das`, `dfs`, `dlc`, `dn`, `dosv`, `en`, `est`, `ict`, `id`, `lud`, `sct`, `sid`, `vid`
+`a`, `bid`, `bsv`, `ck`, `ct`, `das`, `dfs`, `dlc`, `dn`, `dosv`, `dsh`, `dsw`, `el`, `en`, `est`, `iba`, `ict`, `id`, `idst`, `lud`, `sct`, `sid`, `vid`
+
+The upgrade date `ai.ud` is set to `${json-unit.ignore-element}` instead, because some runs send it and others do not.
 
 ## Troubleshooting
 
@@ -289,3 +291,5 @@ Use the verification script to run full end-to-end integration tests:
 7. **Returns exit code:** Exits with code 1 if any verification fails (CI/CD compatible)
 
 **Note:** The SDK is used directly from source via Swift Package Manager, ensuring tests always use your latest code changes without requiring a separate build step.
+
+**Known gap:** this Docker-based script serves WireMock's own certificate and trusts nothing on the simulator, so the app's requests fail TLS and the run passes without any. It also only warns about a mapping no request used. CI runs `run_integration_tests_ci.sh` instead, which trusts a throwaway certificate on the simulator and fails on both.
