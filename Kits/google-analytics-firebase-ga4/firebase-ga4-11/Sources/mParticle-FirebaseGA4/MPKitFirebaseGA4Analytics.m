@@ -28,6 +28,11 @@ static NSString* (^customNameStandardization)(NSString* name) = nil;
 
 @end
 
+// Resolve this additive core accessor at runtime so older supported cores still build.
+@protocol MPFirebaseGA4FilteredConsentSource <NSObject>
+@property (nonatomic, readonly, strong, nullable) MPConsentState *consentState;
+@end
+
 @interface MPKitFirebaseGA4Analytics () <MPKitProtocol> {
     BOOL forwardRequestsServerSide;
 }
@@ -102,8 +107,13 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
 
 #pragma mark MPKitInstanceProtocol methods
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
-    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    return [self didFinishLaunchingWithConfiguration:configuration withConsentState:currentUser.consentState];
+    FilteredMParticleUser *currentUser = [self.kitApi getCurrentUserWithKit:self];
+    MPConsentState *consentState = nil;
+    if ([currentUser respondsToSelector:@selector(consentState)]) {
+        consentState = [(id<MPFirebaseGA4FilteredConsentSource>)currentUser consentState];
+    }
+    // Missing or filtered-out consent keeps the existing configured-defaults behavior.
+    return [self didFinishLaunchingWithConfiguration:configuration withConsentState:consentState];
 }
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration withConsentState:(MPConsentState *)consentState {
@@ -391,6 +401,10 @@ const NSInteger FIR_MAX_ITEM_PARAMETERS = 25;
     for (NSString *attributeKey in userAttributesKeys) {
         [FIRAnalytics setUserPropertyString:standardizedUserAttributes[attributeKey] forName:attributeKey];
     }
+}
+
+- (BOOL)supportsConsentStateReplay {
+    return YES;
 }
 
 - (MPKitExecStatus *)setConsentState:(nullable MPConsentState *)state {

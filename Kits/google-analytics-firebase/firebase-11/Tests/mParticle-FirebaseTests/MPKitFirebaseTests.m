@@ -15,6 +15,46 @@
 - (NSString *)userIdForFirebase:(FilteredMParticleUser *)currentUser;
 @end
 
+// Exercise the ordinary startup entry point without sending anything to Firebase.
+@interface MPKitFirebaseConsentUserFixture : NSObject
+@property (nonatomic, strong) MPConsentState *consentState;
+@end
+
+@implementation MPKitFirebaseConsentUserFixture
+@end
+
+@interface MPKitFirebaseConsentAPIFixture : MPKitAPI
+@property (nonatomic, strong) id userFixture;
+@property (nonatomic, weak) id requestedKit;
+@end
+
+@implementation MPKitFirebaseConsentAPIFixture
+- (FilteredMParticleUser *)getCurrentUserWithKit:(id<MPKitProtocol>)kit {
+    self.requestedKit = kit;
+    return (FilteredMParticleUser *)self.userFixture;
+}
+@end
+
+@interface MPKitFirebaseConsentStartupSpy : MPKitFirebase
+@property (nonatomic, strong) MPKitFirebaseConsentAPIFixture *apiFixture;
+@property (nonatomic, strong) MPConsentState *startupConsent;
+@property (nonatomic, assign) BOOL startupCalled;
+@end
+
+@implementation MPKitFirebaseConsentStartupSpy
+- (MPKitAPI *)kitApi {
+    return self.apiFixture;
+}
+
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration
+                                      withConsentState:(MPConsentState *)consentState {
+    self.startupCalled = YES;
+    self.startupConsent = consentState;
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode]
+                                      returnCode:MPKitReturnCodeSuccess];
+}
+@end
+
 @interface MPKitFirebaseTests : XCTestCase
 @end
 
@@ -305,6 +345,37 @@
     __block NSString *userId = nil;
     XCTAssertNoThrow(userId = [exampleKit userIdForFirebase:user]);
     XCTAssertEqualObjects(userId, @"12345");
+}
+
+- (void)testOrdinaryStartupUsesTheKitFilteredConsentSource {
+    MPKitFirebaseConsentStartupSpy *kit = [[MPKitFirebaseConsentStartupSpy alloc] init];
+    MPKitFirebaseConsentUserFixture *user = [[MPKitFirebaseConsentUserFixture alloc] init];
+    user.consentState = [[MPConsentState alloc] init];
+    kit.apiFixture = [[MPKitFirebaseConsentAPIFixture alloc] init];
+    kit.apiFixture.userFixture = user;
+
+    [kit didFinishLaunchingWithConfiguration:@{}];
+
+    XCTAssertTrue(kit.startupCalled);
+    XCTAssertEqual(kit.apiFixture.requestedKit, kit);
+    XCTAssertEqual(kit.startupConsent, user.consentState);
+}
+
+- (void)testOrdinaryStartupSupportsACoreWithoutTheConsentAccessor {
+    MPKitFirebaseConsentStartupSpy *kit = [[MPKitFirebaseConsentStartupSpy alloc] init];
+    kit.apiFixture = [[MPKitFirebaseConsentAPIFixture alloc] init];
+    kit.apiFixture.userFixture = [[NSObject alloc] init];
+
+    XCTAssertNoThrow([kit didFinishLaunchingWithConfiguration:@{}]);
+
+    XCTAssertTrue(kit.startupCalled);
+    XCTAssertNil(kit.startupConsent);
+}
+
+- (void)testTheKitOptsIntoConsentStateReplay {
+    MPKitFirebase *kit = [[MPKitFirebase alloc] init];
+
+    XCTAssertTrue([kit supportsConsentStateReplay]);
 }
 
 @end

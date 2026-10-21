@@ -3,9 +3,24 @@
 import Foundation
 import mParticle_Apple_SDK
 
+/// Waits with the main run loop running, never with sleep(): the SDK does part of its work on the
+/// main queue, and no request leaves while the main thread is blocked. Returns true as soon as
+/// `done` is signalled, false if `seconds` pass first.
+@discardableResult
+func pump(_ seconds: TimeInterval, until done: DispatchSemaphore? = nil) -> Bool {
+    let deadline = Date().addingTimeInterval(seconds)
+    while Date() < deadline {
+        if done?.wait(timeout: .now()) == .success {
+            return true
+        }
+        RunLoop.main.run(until: min(deadline, Date().addingTimeInterval(0.1)))
+    }
+    return false
+}
+
 func wait(timeout: UInt32 = 5) {
     mparticle.upload()
-    sleep(timeout)
+    pump(TimeInterval(timeout))
 }
 
 // Test 1: Simple Event
@@ -125,10 +140,7 @@ func testGetUserAudiences(mparticle: MParticle) {
     }
 
     // Wait for async completion (timeout 10 seconds)
-    let timeout = DispatchTime.now() + .seconds(10)
-    let result = semaphore.wait(timeout: timeout)
-
-    if result == .timedOut {
+    if !pump(10, until: semaphore) {
         print("Warning: getAudiencesWithCompletionHandler timed out")
     }
 }
@@ -147,7 +159,7 @@ func testLogTimedEvent(mparticle: MParticle) {
         // Use fixed delay instead of random (required for deterministic testing)
         // Original code uses arc4random_uniform(4000.0) / 1000.0 + 1.0 which is 1-5 seconds
         // We use fixed 2 seconds for consistent test behavior
-        sleep(2)
+        pump(2)
         // Retrieve the timed event by name and end it
         if let retrievedTimedEvent = mparticle.event(withName: eventName) {
             mparticle.endTimedEvent(retrievedTimedEvent)
@@ -411,10 +423,12 @@ identityRequest.email = "foo@example.com"
 identityRequest.customerId = "123456"
 options.identifyRequest = identityRequest
 
+let identified = DispatchSemaphore(value: 0)
 options.onIdentifyComplete = { apiResult, _ in
     if let apiResult {
         apiResult.user.setUserAttribute("example attribute key", value: "example attribute value")
     }
+    identified.signal()
 }
 options.logLevel = .verbose
 
@@ -429,7 +443,10 @@ options.networkOptions = networkOptions
 let mparticle = MParticle.sharedInstance()
 mparticle.start(with: options)
 
-sleep(1)
+// The first upload's mapping expects the attribute set above, so start once identify completes.
+if !pump(30, until: identified) {
+    print("Warning: identify did not complete")
+}
 
 // Run tests
 testSimpleEvent(mparticle: mparticle)

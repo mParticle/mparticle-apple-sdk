@@ -20,6 +20,46 @@
 
 static BOOL sFirebaseConfigured = NO;
 
+// Exercise the ordinary startup entry point without sending anything to Firebase.
+@interface MPKitFirebaseGA4AnalyticsConsentUserFixture : NSObject
+@property (nonatomic, strong) MPConsentState *consentState;
+@end
+
+@implementation MPKitFirebaseGA4AnalyticsConsentUserFixture
+@end
+
+@interface MPKitFirebaseGA4AnalyticsConsentAPIFixture : MPKitAPI
+@property (nonatomic, strong) id userFixture;
+@property (nonatomic, weak) id requestedKit;
+@end
+
+@implementation MPKitFirebaseGA4AnalyticsConsentAPIFixture
+- (FilteredMParticleUser *)getCurrentUserWithKit:(id<MPKitProtocol>)kit {
+    self.requestedKit = kit;
+    return (FilteredMParticleUser *)self.userFixture;
+}
+@end
+
+@interface MPKitFirebaseGA4AnalyticsConsentStartupSpy : MPKitFirebaseGA4Analytics
+@property (nonatomic, strong) MPKitFirebaseGA4AnalyticsConsentAPIFixture *apiFixture;
+@property (nonatomic, strong) MPConsentState *startupConsent;
+@property (nonatomic, assign) BOOL startupCalled;
+@end
+
+@implementation MPKitFirebaseGA4AnalyticsConsentStartupSpy
+- (MPKitAPI *)kitApi {
+    return self.apiFixture;
+}
+
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration
+                                      withConsentState:(MPConsentState *)consentState {
+    self.startupCalled = YES;
+    self.startupConsent = consentState;
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode]
+                                      returnCode:MPKitReturnCodeSuccess];
+}
+@end
+
 @interface MPKitFirebaseGA4AnalyticsTests : XCTestCase
 @end
 
@@ -451,6 +491,37 @@ static BOOL sFirebaseConfigured = NO;
     __block NSString *userId = nil;
     XCTAssertNoThrow(userId = [exampleKit userIdForFirebase:user]);
     XCTAssertEqualObjects(userId, @"12345");
+}
+
+- (void)testOrdinaryStartupUsesTheKitFilteredConsentSource {
+    MPKitFirebaseGA4AnalyticsConsentStartupSpy *kit = [[MPKitFirebaseGA4AnalyticsConsentStartupSpy alloc] init];
+    MPKitFirebaseGA4AnalyticsConsentUserFixture *user = [[MPKitFirebaseGA4AnalyticsConsentUserFixture alloc] init];
+    user.consentState = [[MPConsentState alloc] init];
+    kit.apiFixture = [[MPKitFirebaseGA4AnalyticsConsentAPIFixture alloc] init];
+    kit.apiFixture.userFixture = user;
+
+    [kit didFinishLaunchingWithConfiguration:@{}];
+
+    XCTAssertTrue(kit.startupCalled);
+    XCTAssertEqual(kit.apiFixture.requestedKit, kit);
+    XCTAssertEqual(kit.startupConsent, user.consentState);
+}
+
+- (void)testOrdinaryStartupSupportsACoreWithoutTheConsentAccessor {
+    MPKitFirebaseGA4AnalyticsConsentStartupSpy *kit = [[MPKitFirebaseGA4AnalyticsConsentStartupSpy alloc] init];
+    kit.apiFixture = [[MPKitFirebaseGA4AnalyticsConsentAPIFixture alloc] init];
+    kit.apiFixture.userFixture = [[NSObject alloc] init];
+
+    XCTAssertNoThrow([kit didFinishLaunchingWithConfiguration:@{}]);
+
+    XCTAssertTrue(kit.startupCalled);
+    XCTAssertNil(kit.startupConsent);
+}
+
+- (void)testTheKitOptsIntoConsentStateReplay {
+    MPKitFirebaseGA4Analytics *kit = [[MPKitFirebaseGA4Analytics alloc] init];
+
+    XCTAssertTrue([kit supportsConsentStateReplay]);
 }
 
 @end

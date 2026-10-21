@@ -38,6 +38,7 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
     var collectsSearchAdsAttribution = false
     var persistenceValue: MPBackendPersistence?
     var lastUploadSettingsValue: NSObject?
+    var networkCommunicationValue: MPBackendUploadNetworking?
     var uploadSettingsApiKeys: [ObjectIdentifier: String] = [:]
     private(set) var storedUploadSettings: [MPBackendStoredUploadSettings] = []
     private let callsLock = NSLock()
@@ -263,6 +264,11 @@ final class MPBackendFakeHost: NSObject, MPBackendHost {
 
     func updateStoredVersionAndBuildNumbers() {
         record("updateStoredVersionAndBuildNumbers")
+    }
+
+    func makeNetworkCommunication() -> MPBackendUploadNetworking? {
+        record("makeNetworkCommunication")
+        return networkCommunicationValue
     }
 }
 
