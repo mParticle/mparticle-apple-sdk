@@ -22,7 +22,7 @@
 NSString *const ekBMAppKey = @"branchKey";
 NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
 NSString *const userIdentificationType = @"userIdentificationType";
-NSString *const ekBMSessionUUIDKey = @"mp_session_uuid";
+NSString *const ekBMSessionIDKey = @"mp_session_id";
 
 #pragma mark - MPKitBranchMetrics
 
@@ -99,15 +99,15 @@ NSString *const ekBMSessionUUIDKey = @"mp_session_uuid";
     return [value boolValue];
 }
 
-- (NSString *)currentSessionUUID {
-    return [MParticle sharedInstance].currentSession.UUID;
+- (NSString *)currentSessionID {
+    return [MParticle sharedInstance].currentSession.sessionID.stringValue;
 }
 
 // A customer attribute with the same key wins.
-- (void)addSessionUUIDToCustomData:(NSMutableDictionary<NSString *, NSString *> *)customData {
-    NSString *sessionUUID = [self currentSessionUUID];
-    if (sessionUUID.length && !customData[ekBMSessionUUIDKey]) {
-        customData[ekBMSessionUUIDKey] = sessionUUID;
+- (void)addSessionIDToCustomData:(NSMutableDictionary<NSString *, NSString *> *)customData {
+    NSString *sessionID = [self currentSessionID];
+    if (sessionID.length && !customData[ekBMSessionIDKey]) {
+        customData[ekBMSessionIDKey] = sessionID;
     }
 }
 
@@ -348,7 +348,7 @@ NSString *const ekBMSessionUUIDKey = @"mp_session_uuid";
         BranchEvent *branchEvent = [BranchEvent customEventWithName:event.name ?: @"screen_view"];
         NSMutableDictionary<NSString *, NSString *> *mutableDictionary = [[NSMutableDictionary alloc] initWithDictionary:branchEvent.customData];
         [mutableDictionary addEntriesFromDictionary:[self stringDictionaryFromDictionary:event.customAttributes]];
-        [self addSessionUUIDToCustomData:mutableDictionary];
+        [self addSessionIDToCustomData:mutableDictionary];
         branchEvent.customData = mutableDictionary;
         [branchEvent logEvent];
         return [self execStatus:MPKitReturnCodeSuccess];
@@ -378,7 +378,7 @@ NSString *const ekBMSessionUUIDKey = @"mp_session_uuid";
     BranchEvent *branchEvent = [BranchEvent customEventWithName:event.name ?: @"screen_view"];
     NSMutableDictionary<NSString *, NSString *> *mutableDictionary = [[NSMutableDictionary alloc] initWithDictionary:branchEvent.customData];
     [mutableDictionary addEntriesFromDictionary:[self stringDictionaryFromDictionary:event.customAttributes]];
-    [self addSessionUUIDToCustomData:mutableDictionary];
+    [self addSessionIDToCustomData:mutableDictionary];
     branchEvent.customData = mutableDictionary;
     [branchEvent logEvent];
     return [self execStatus:MPKitReturnCodeSuccess];
@@ -525,7 +525,7 @@ NSString *const ekBMSessionUUIDKey = @"mp_session_uuid";
     NSMutableDictionary<NSString *, NSString *> *mutableDictionary = [[NSMutableDictionary alloc] initWithDictionary:event.customData];
     [mutableDictionary addEntriesFromDictionary:[self stringDictionaryFromDictionary:dictionary]];
     if (mpEvent.category.length) mutableDictionary[@"category"] = mpEvent.category;
-    [self addSessionUUIDToCustomData:mutableDictionary];
+    [self addSessionIDToCustomData:mutableDictionary];
     event.customData = mutableDictionary;
     event.alias = mutableDictionary[@"customer_event_alias"];
 
@@ -644,7 +644,7 @@ NSString *const ekBMSessionUUIDKey = @"mp_session_uuid";
             [NSString stringWithFormat:@"%ld", (long)mpEvent.checkoutStep];
     }
     mutableDictionary[@"non_interactive"] = mpEvent.nonInteractive ? @"true" : @"false";
-    [self addSessionUUIDToCustomData:mutableDictionary];
+    [self addSessionIDToCustomData:mutableDictionary];
     event.customData = mutableDictionary;
     event.alias = mutableDictionary[@"customer_event_alias"];
     return event;

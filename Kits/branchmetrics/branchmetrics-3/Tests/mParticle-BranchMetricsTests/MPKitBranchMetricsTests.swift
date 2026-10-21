@@ -143,68 +143,68 @@ final class MPKitBranchMetricsTests: XCTestCase {
         XCTAssertEqual(kit.value(forKey: "identityType") as? UInt, MPIdentity.email.rawValue)
     }
 
-    // MARK: - Session UUID in custom data
+    // MARK: - Session ID in custom data
 
-    private let sessionUUIDKey = "mp_session_uuid"
+    private let sessionIDKey = "mp_session_id"
 
     private func customData(_ kit: MPKitBranchMetrics, building selector: String, from event: MPBaseEvent) -> [String: String]? {
         let branchEvent = kit.perform(Selector((selector)), with: event)?.takeUnretainedValue() as? NSObject
         return branchEvent?.value(forKey: "customData") as? [String: String]
     }
 
-    /// Verifies a standard event carries the current session UUID in its custom data.
-    func testStandardEventIncludesSessionUUID() throws {
-        let kit = SessionStubKit(sessionUUID: "11111111-2222-3333-4444-555555555555")
+    /// Verifies a standard event carries the current session ID in its custom data.
+    func testStandardEventIncludesSessionID() throws {
+        let kit = SessionStubKit(sessionID: "-7046029254386353131")
         let event = try XCTUnwrap(MPEvent(name: "Order", type: .other))
 
         let data = customData(kit, building: "branchEventWithStandardEvent:", from: event)
 
-        XCTAssertEqual(data?[sessionUUIDKey], "11111111-2222-3333-4444-555555555555")
+        XCTAssertEqual(data?[sessionIDKey], "-7046029254386353131")
     }
 
-    /// Verifies a commerce event carries the current session UUID in its custom data.
-    func testCommerceEventIncludesSessionUUID() {
-        let kit = SessionStubKit(sessionUUID: "11111111-2222-3333-4444-555555555555")
+    /// Verifies a commerce event carries the current session ID in its custom data.
+    func testCommerceEventIncludesSessionID() {
+        let kit = SessionStubKit(sessionID: "-7046029254386353131")
         let event = MPCommerceEvent(action: .purchase, product: nil)
 
         let data = customData(kit, building: "branchEventWithCommerceEvent:", from: event)
 
-        XCTAssertEqual(data?[sessionUUIDKey], "11111111-2222-3333-4444-555555555555")
+        XCTAssertEqual(data?[sessionIDKey], "-7046029254386353131")
     }
 
-    /// Verifies a customer attribute with the session UUID key is not overwritten.
-    func testCustomerAttributeWithSessionUUIDKeyWins() throws {
-        let kit = SessionStubKit(sessionUUID: "11111111-2222-3333-4444-555555555555")
+    /// Verifies a customer attribute with the session ID key is not overwritten.
+    func testCustomerAttributeWithSessionIDKeyWins() throws {
+        let kit = SessionStubKit(sessionID: "-7046029254386353131")
         let event = try XCTUnwrap(MPEvent(name: "Order", type: .other))
-        event.customAttributes = [sessionUUIDKey: "customer-value"]
+        event.customAttributes = [sessionIDKey: "customer-value"]
 
         let data = customData(kit, building: "branchEventWithStandardEvent:", from: event)
 
-        XCTAssertEqual(data?[sessionUUIDKey], "customer-value")
+        XCTAssertEqual(data?[sessionIDKey], "customer-value")
     }
 
-    /// Verifies no session UUID key is added when there is no current session.
-    func testNoSessionLeavesSessionUUIDOut() throws {
-        let kit = SessionStubKit(sessionUUID: nil)
+    /// Verifies no session ID key is added when there is no current session.
+    func testNoSessionLeavesSessionIDOut() throws {
+        let kit = SessionStubKit(sessionID: nil)
         let event = try XCTUnwrap(MPEvent(name: "Order", type: .other))
 
         let data = customData(kit, building: "branchEventWithStandardEvent:", from: event)
 
         XCTAssertNotNil(data)
-        XCTAssertNil(data?[sessionUUIDKey])
+        XCTAssertNil(data?[sessionIDKey])
     }
 }
 
-// Replaces the kit's private -currentSessionUUID through Objective-C dispatch, so tests need no running SDK.
+// Replaces the kit's private -currentSessionID through Objective-C dispatch, so tests need no running SDK.
 private final class SessionStubKit: MPKitBranchMetrics {
-    private let sessionUUID: String?
+    private let sessionID: String?
 
-    init(sessionUUID: String?) {
-        self.sessionUUID = sessionUUID
+    init(sessionID: String?) {
+        self.sessionID = sessionID
         super.init()
     }
 
-    @objc func currentSessionUUID() -> String? {
-        sessionUUID
+    @objc func currentSessionID() -> String? {
+        sessionID
     }
 }
