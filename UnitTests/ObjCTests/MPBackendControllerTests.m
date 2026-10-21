@@ -2184,6 +2184,29 @@
     [network stopMocking];
 }
 
+- (void)testFetchAudiencesHandsTheNetworkResultToTheCompletionHandler {
+    id network = OCMPartialMock(self.backendController.networkCommunication);
+    NSArray *audiences = @[@"first"];
+    [OCMStub([network requestAudiencesWithCompletionHandler:[OCMArg any]]) andDo:^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(BOOL success, NSArray *currentAudiences, NSError *error);
+        [invocation getArgument:&handler atIndex:2];
+        handler(YES, audiences, nil);
+    }];
+
+    __block NSArray *received = nil;
+    __block NSUInteger completions = 0;
+    MPExecStatus status = [self.backendController fetchAudiencesWithCompletionHandler:^(NSArray *currentAudiences, NSError *error) {
+        received = currentAudiences;
+        XCTAssertNil(error);
+        completions += 1;
+    }];
+
+    XCTAssertEqual(status, MPExecStatusSuccess);
+    XCTAssertEqual(completions, 1);
+    XCTAssertEqualObjects(received, audiences);
+    [network stopMocking];
+}
+
 #if TARGET_OS_IOS == 1
 - (void)testHandleDeviceTokenNotification {
     id mockBackendController = OCMPartialMock(self.backendController);

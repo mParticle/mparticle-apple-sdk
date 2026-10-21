@@ -41,6 +41,10 @@ final class MPBackendUploadNetworkMock: NSObject, MPBackendUploadNetworking {
     var deferUploadCompletion = false
     var uploadCompletion: (() -> Void)?
     var uploaded: [[MPUploadPRIVATE]] = []
+    var audienceRequests = 0
+    var audienceSuccess = true
+    var audiences: [Any]?
+    var audienceError: Error?
 
     func requestConfig(_: (NSObject & MPConnectorProtocol)?, completionHandler: @escaping (Bool) -> Void) {
         configRequests += 1
@@ -51,5 +55,10 @@ final class MPBackendUploadNetworkMock: NSObject, MPBackendUploadNetworking {
         uploaded.append(uploads)
         uploadCompletion = completionHandler
         if !deferUploadCompletion { completionHandler() }
+    }
+
+    func requestAudiences(completionHandler: @escaping (Bool, [Any]?, Error?) -> Void) {
+        audienceRequests += 1
+        completionHandler(audienceSuccess, audiences, audienceError)
     }
 }

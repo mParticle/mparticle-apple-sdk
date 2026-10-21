@@ -23,6 +23,8 @@ public protocol MPBackendAssemblyOwner: NSObjectProtocol {
     @objc(clearEmptyTimedEvents) func clearEmptyTimedEvents()
     /// The session attribution requests use; a test substitutes one that never reaches the network.
     @objc(attributionURLSession) func attributionURLSession() -> URLSession
+    /// Saves a message through the controller, where an Objective-C test's partial mock sees it.
+    @objc(saveMessage:updateSession:) func saveMessage(_ message: MPMessagePRIVATE, updateSession: Bool)
 }
 
 /// Builds the backend controller's collaborators once, with the controller. Callbacks hold the
@@ -36,6 +38,7 @@ public final class MPBackendAssembly: NSObject {
     @objc public let sessionAttributeWriter: MPBackendSessionAttributeWriter
     @objc public let searchAdsAttribution: MPSearchAdsAttribution
     @objc public let startupCoordinator: MPBackendStartupCoordinator
+    @objc public let messageLogger: MPBackendMessageLogger
     @objc public let errorReporter: MPBackendErrorReporter
     @objc public let sessionLifecycleDependencies: MPBackendSessionLifecycleDependencies
     @objc public let sessionCoordinator: MPBackendSessionCoordinator
@@ -160,6 +163,7 @@ public final class MPBackendAssembly: NSObject {
             host: host, owner: owner, state: state, dependencies: dependencies, writer: writer,
             sessions: sessions, lifecycle: lifecycle, attribution: attribution
         )
+        messageLogger = MPBackendMessageLogger(state: state, dependencies: dependencies, host: host, owner: owner)
         errorReporter = MPBackendErrorReporter(state: state, dependencies: dependencies, writer: writer, errors: errors)
         sessionLifecycleDependencies = sessionLifecycle
         sessionCoordinator = sessions
