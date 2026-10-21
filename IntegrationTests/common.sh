@@ -191,7 +191,8 @@ launch_application() {
 
 wait_for_app_completion() {
 	echo "⏳ Waiting for app to complete execution..."
-	local MAX_WAIT=120
+	# Keep above the app's longest bounded run, its waits in Sources/main.swift (132 s today)
+	local MAX_WAIT=180
 	local WAIT_COUNT=0
 	while kill -0 "$APP_PID" 2>/dev/null; do
 		sleep 1

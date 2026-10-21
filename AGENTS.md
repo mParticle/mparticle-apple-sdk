@@ -195,8 +195,11 @@ nothing else discovers it.
 4. **The root `Package.swift` is compiled by exactly one PR job.** `integration-tests` pulls it in
    through Tuist (`.package(path: "../")`); nothing else builds the SwiftPM graph, so an SPM-only
    break survives every other check.
-5. Integration tests fail on an unmatched request but only _warn_ on a recorded WireMock mapping
-   the app never calls (`IntegrationTests/run_integration_tests_ci.sh`).
+5. **Only the CI integration script checks the recorded traffic strictly.**
+   `IntegrationTests/run_integration_tests_ci.sh` fails on an unmatched request, on a recorded
+   WireMock mapping the app never calls, and on a run with no requests. The Docker-based
+   `run_clean_integration_tests.sh` only warns on an uncalled mapping, and it trusts no certificate
+   on the simulator, so the app's requests fail TLS and the run passes with none.
 6. **Check workflow settings and callers as well as the tree.** `cross-platform-tests.yml` is in
    the tree but disabled in repository settings, and GitHub may list workflows whose files are
    absent from the checkout. The PR workflow calls `build-secondary-platforms`, which builds
