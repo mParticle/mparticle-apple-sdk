@@ -30,6 +30,8 @@ let package = Package(
     ],
     dependencies: [
         mParticleAppleSDK,
+        // Rokt SDK+ pins RoktPaymentExtension, which ships in lockstep with this package; change
+        // its range in Kits/rokt-sdk-plus/rokt-sdk-plus-ios/Package.swift together with this one.
         .package(
             url: "https://github.com/ROKT/rokt-sdk-ios",
             .upToNextMajor(from: "5.4.0")

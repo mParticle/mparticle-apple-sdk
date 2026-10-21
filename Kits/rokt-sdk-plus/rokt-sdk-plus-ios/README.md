@@ -17,7 +17,7 @@ Official documentation: [mParticle iOS SDK](https://docs.mparticle.com/developer
 
 ## Versioning
 
-**RoktSDKPlus**, **mParticle-Rokt**, and **mParticle-Apple-SDK** share the same semver for each monorepo release. **RoktPaymentExtension** remains on its own 2.x line.
+**RoktSDKPlus**, **mParticle-Rokt**, and **mParticle-Apple-SDK** share the same semver for each monorepo release. **RoktPaymentExtension** is released together with the [Rokt SDK](https://github.com/ROKT/rokt-sdk-ios) (`Rokt-Widget`) at the same version, so **RoktSDKPlus** accepts the same RoktPaymentExtension range as the `Rokt-Widget` range **mParticle-Rokt** requires (currently 5.x, from 5.4).
 
 ## Swift Package Manager
 
