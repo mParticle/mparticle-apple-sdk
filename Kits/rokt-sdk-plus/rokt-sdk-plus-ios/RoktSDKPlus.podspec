@@ -15,5 +15,7 @@ Pod::Spec.new do |s|
   s.requires_arc = true
   s.source_files = 'Sources/RoktSDKPlus/**/*.swift'
   s.dependency 'mParticle-Rokt', s.version.to_s
-  s.dependency 'RoktPaymentExtension', '~> 2.0'
+  # Released in lockstep with Rokt-Widget, at the same version. Keep this requirement equal to the
+  # mParticle-Rokt kit's Rokt-Widget requirement (Kits/rokt/rokt/mParticle-Rokt.podspec).
+  s.dependency 'RoktPaymentExtension', '~> 5.4'
 end

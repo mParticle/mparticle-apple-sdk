@@ -15,5 +15,7 @@ Pod::Spec.new do |s|
     s.ios.resource_bundles  = { 'mParticle-Rokt-Privacy' => ['Sources/mParticle-Rokt/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.1'
     s.ios.dependency 'RoktContracts', '~> 2.0'
+    # Rokt SDK+ pins RoktPaymentExtension, which ships in lockstep with Rokt-Widget; change its
+    # requirement in Kits/rokt-sdk-plus/rokt-sdk-plus-ios/RoktSDKPlus.podspec together with this one.
     s.ios.dependency 'Rokt-Widget', '~> 5.4'
 end
