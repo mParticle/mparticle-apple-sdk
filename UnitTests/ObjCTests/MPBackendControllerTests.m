@@ -1083,6 +1083,60 @@
     }
 }
 
+- (NSArray<NSString *> *)messageTypesSavedInSession:(MPSession *)session {
+    NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceStore fetchMessagesForUploading];
+    NSDictionary *dataPlans = messagesDictionary[[MPPersistenceUtilities mpId]][@(session.sessionId)];
+    NSMutableArray<NSString *> *types = [NSMutableArray array];
+    for (NSDictionary *versions in dataPlans.allValues) {
+        for (NSArray<MPMessage *> *messages in versions.allValues) {
+            for (MPMessage *message in messages) {
+                if (message.messageType) {
+                    [types addObject:message.messageType];
+                }
+            }
+        }
+    }
+    return types;
+}
+
+- (void)testLeaveBreadcrumbSavesABreadcrumbAndCountsIt {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    MPSession *session = self.backendController.session;
+    uint32_t eventsBefore = session.eventCounter;
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Breadcrumb Test" type:MPEventTypeOther];
+
+    __block MPExecStatus status = MPExecStatusFail;
+    [self.backendController leaveBreadcrumb:event completionHandler:^(MPEvent *loggedEvent, MPExecStatus execStatus) {
+        status = execStatus;
+    }];
+
+    XCTAssertEqual(status, MPExecStatusSuccess);
+    XCTAssertEqual(event.messageType, MPMessageTypeBreadcrumb);
+    XCTAssertEqual(session.eventCounter, eventsBefore + 1);
+    XCTAssertTrue([[self messageTypesSavedInSession:session] containsObject:kMPMessageTypeStringBreadcrumb]);
+}
+
+- (void)testLogScreenSavesANavigationScreenViewAndCountsIt {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    MPSession *session = self.backendController.session;
+    uint32_t eventsBefore = session.eventCounter;
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Screen Test" type:MPEventTypeOther];
+
+    __block MPExecStatus status = MPExecStatusFail;
+    [self.backendController logScreen:event completionHandler:^(MPEvent *loggedEvent, MPExecStatus execStatus) {
+        status = execStatus;
+    }];
+
+    XCTAssertEqual(status, MPExecStatusSuccess);
+    XCTAssertEqual(event.type, MPEventTypeNavigation);
+    XCTAssertEqual(session.eventCounter, eventsBefore + 1);
+    XCTAssertTrue([[self messageTypesSavedInSession:session] containsObject:kMPMessageTypeStringScreenView]);
+}
+
 - (void)testRampUpload {
     [MParticle sharedInstance].dataPlanId = @"test";
     [MParticle sharedInstance].dataPlanVersion = @(1);

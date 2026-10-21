@@ -39,6 +39,7 @@ public final class MPBackendAssembly: NSObject {
     @objc public let searchAdsAttribution: MPSearchAdsAttribution
     @objc public let startupCoordinator: MPBackendStartupCoordinator
     @objc public let messageLogger: MPBackendMessageLogger
+    @objc public let eventLogger: MPBackendEventLogger
     @objc public let errorReporter: MPBackendErrorReporter
     @objc public let sessionLifecycleDependencies: MPBackendSessionLifecycleDependencies
     @objc public let sessionCoordinator: MPBackendSessionCoordinator
@@ -164,6 +165,9 @@ public final class MPBackendAssembly: NSObject {
             sessions: sessions, lifecycle: lifecycle, attribution: attribution
         )
         messageLogger = MPBackendMessageLogger(state: state, dependencies: dependencies, host: host, owner: owner)
+        eventLogger = MPBackendEventLogger(
+            state: state, dependencies: dependencies, host: host, sessions: sessions, owner: owner
+        )
         errorReporter = MPBackendErrorReporter(state: state, dependencies: dependencies, writer: writer, errors: errors)
         sessionLifecycleDependencies = sessionLifecycle
         sessionCoordinator = sessions

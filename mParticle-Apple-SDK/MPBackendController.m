@@ -416,27 +416,16 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 - (void)leaveBreadcrumb:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
     event.messageType = MPMessageTypeBreadcrumb;
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    NSDictionary *messageInfo = [event breadcrumbDictionaryRepresentation];
-    
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
-    if (event.timestamp) {
-        [messageBuilder timestamp:[event.timestamp timeIntervalSince1970]];
-    }
-    MPMessage *message = [messageBuilder build];
-    
-    [self saveMessage:message updateSession:YES];
-    
+    [self.assembly.eventLogger saveEventMessageOfType:event.messageType
+                                          messageInfo:[event breadcrumbDictionaryRepresentation]
+                                            timestamp:event.timestamp
+                                    shouldUploadEvent:YES];
+
     if ([self.eventSet containsObject:event]) {
         [_eventSet removeObject:event];
     }
-    
-    [self.session incrementCounter];
-    
-    execStatus = MPExecStatusSuccess;
 
-    completionHandler(event, execStatus);
+    completionHandler(event, MPExecStatusSuccess);
 }
 
 - (void)logError:(NSString *)message exception:(NSException *)exception topmostContext:(id)topmostContext eventInfo:(NSDictionary *)eventInfo completionHandler:(void (^)(NSString *message, MPExecStatus execStatus))completionHandler {
@@ -458,27 +447,16 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 - (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
     if (event.shouldBeginSession) {
-        NSDate *date = event.timestamp ?: [NSDate date];
-        [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
+        [self.assembly.eventLogger beginSessionForEventAtDate:event.timestamp];
     }
     if ([event isKindOfClass:[MPEvent class]] || [event isKindOfClass:[MPCommerceEvent class]]) {
-        NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
-            
-            MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
-            if (event.timestamp) {
-                [messageBuilder timestamp:[event.timestamp timeIntervalSince1970]];
-            }
-
-            MPMessage *message = [messageBuilder build];
-            message.shouldUploadEvent = event.shouldUploadEvent;
-            
-            [self saveMessage:message updateSession:YES];
-            
-            [self.session incrementCounter];
-            
-            MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
+        [self.assembly.eventLogger saveEventMessageOfType:event.messageType
+                                              messageInfo:[event dictionaryRepresentation]
+                                                timestamp:event.timestamp
+                                        shouldUploadEvent:event.shouldUploadEvent];
+        MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
     }
-    
+
     completionHandler(event, MPExecStatusSuccess);
 }
 
@@ -510,36 +488,21 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 
 - (void)logScreen:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
     event.messageType = MPMessageTypeScreenView;
-
-    MPExecStatus execStatus = MPExecStatusFail;
-
     [event endTiming];
-    
     if (event.type != MPEventTypeNavigation) {
         event.type = MPEventTypeNavigation;
     }
-    
-    NSDictionary *messageInfo = [event screenDictionaryRepresentation];
-    
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:event.messageType session:self.session messageInfo:messageInfo context:self.messageBuilderContext];
-    if (event.timestamp) {
-        [messageBuilder timestamp:[event.timestamp timeIntervalSince1970]];
-    }
 
-    MPMessage *message = [messageBuilder build];
-    message.shouldUploadEvent = event.shouldUploadEvent;
-    
-    [self saveMessage:message updateSession:YES];
-    
+    [self.assembly.eventLogger saveEventMessageOfType:event.messageType
+                                          messageInfo:[event screenDictionaryRepresentation]
+                                            timestamp:event.timestamp
+                                    shouldUploadEvent:event.shouldUploadEvent];
+
     if ([self.eventSet containsObject:event]) {
         [_eventSet removeObject:event];
     }
-    
-    [self.session incrementCounter];
-    
-    execStatus = MPExecStatusSuccess;
-    
-    completionHandler(event, execStatus);
+
+    completionHandler(event, MPExecStatusSuccess);
 }
 
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler {
