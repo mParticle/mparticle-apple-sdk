@@ -146,46 +146,65 @@ final class MPKitBranchMetricsTests: XCTestCase {
     // MARK: - Session ID in custom data
 
     private let sessionIDKey = "mp_session_id"
+    private let sessionUUID = "3F2504E0-4F89-41D3-9A0C-0305E82C3301"
+    private let sessionID = "-827904993797955793"
 
     private func customData(_ kit: MPKitBranchMetrics, building selector: String, from event: MPBaseEvent) -> [String: String]? {
         let branchEvent = kit.perform(Selector((selector)), with: event)?.takeUnretainedValue() as? NSObject
         return branchEvent?.value(forKey: "customData") as? [String: String]
     }
 
-    /// Verifies a standard event carries the current session ID in its custom data.
+    private func session(uuid: String, sessionID: Int64) -> MParticleSession {
+        let session = MParticleSession()
+        session.setValue(uuid, forKey: "UUID")
+        session.setValue(NSNumber(value: sessionID), forKey: "sessionID")
+        return session
+    }
+
+    private func kitWithSession(sendSessionID: Bool = true) -> SessionStubKit {
+        SessionStubKit(session: session(uuid: sessionUUID, sessionID: -827904993797955793), sendSessionID: sendSessionID)
+    }
+
+    /// Verifies a standard event carries the numeric session ID, not the session UUID, in its custom data.
     func testStandardEventIncludesSessionID() throws {
-        let kit = SessionStubKit(sessionID: "-7046029254386353131")
         let event = try XCTUnwrap(MPEvent(name: "Order", type: .other))
 
-        let data = customData(kit, building: "branchEventWithStandardEvent:", from: event)
+        let data = customData(kitWithSession(), building: "branchEventWithStandardEvent:", from: event)
 
-        XCTAssertEqual(data?[sessionIDKey], "-7046029254386353131")
+        XCTAssertEqual(data?[sessionIDKey], sessionID)
     }
 
     /// Verifies a commerce event carries the current session ID in its custom data.
     func testCommerceEventIncludesSessionID() {
-        let kit = SessionStubKit(sessionID: "-7046029254386353131")
         let event = MPCommerceEvent(action: .purchase, product: nil)
 
-        let data = customData(kit, building: "branchEventWithCommerceEvent:", from: event)
+        let data = customData(kitWithSession(), building: "branchEventWithCommerceEvent:", from: event)
 
-        XCTAssertEqual(data?[sessionIDKey], "-7046029254386353131")
+        XCTAssertEqual(data?[sessionIDKey], sessionID)
+    }
+
+    /// Verifies a screen view, from either screen path, carries the current session ID in its custom data.
+    func testScreenEventIncludesSessionID() throws {
+        let event = try XCTUnwrap(MPEvent(name: "Home", type: .other))
+
+        let data = customData(kitWithSession(), building: "branchEventWithScreenEvent:", from: event)
+
+        XCTAssertEqual(data?[sessionIDKey], sessionID)
     }
 
     /// Verifies a customer attribute with the session ID key is not overwritten.
     func testCustomerAttributeWithSessionIDKeyWins() throws {
-        let kit = SessionStubKit(sessionID: "-7046029254386353131")
         let event = try XCTUnwrap(MPEvent(name: "Order", type: .other))
         event.customAttributes = [sessionIDKey: "customer-value"]
 
-        let data = customData(kit, building: "branchEventWithStandardEvent:", from: event)
+        let data = customData(kitWithSession(), building: "branchEventWithStandardEvent:", from: event)
 
         XCTAssertEqual(data?[sessionIDKey], "customer-value")
     }
 
     /// Verifies no session ID key is added when there is no current session.
     func testNoSessionLeavesSessionIDOut() throws {
-        let kit = SessionStubKit(sessionID: nil)
+        let kit = SessionStubKit(session: nil, sendSessionID: true)
         let event = try XCTUnwrap(MPEvent(name: "Order", type: .other))
 
         let data = customData(kit, building: "branchEventWithStandardEvent:", from: event)
@@ -193,18 +212,30 @@ final class MPKitBranchMetricsTests: XCTestCase {
         XCTAssertNotNil(data)
         XCTAssertNil(data?[sessionIDKey])
     }
+
+    /// Verifies no session ID key is added when the connection has not enabled sendSessionId.
+    func testSessionIDLeftOutWhenSettingIsOff() throws {
+        let event = try XCTUnwrap(MPEvent(name: "Order", type: .other))
+
+        let data = customData(kitWithSession(sendSessionID: false), building: "branchEventWithStandardEvent:", from: event)
+
+        XCTAssertNotNil(data)
+        XCTAssertNil(data?[sessionIDKey])
+    }
 }
 
-// Replaces the kit's private -currentSessionID through Objective-C dispatch, so tests need no running SDK.
+// Replaces the kit's private -currentSession through Objective-C dispatch, so tests need no running SDK.
 private final class SessionStubKit: MPKitBranchMetrics {
-    private let sessionID: String?
+    private let session: MParticleSession?
 
-    init(sessionID: String?) {
-        self.sessionID = sessionID
+    init(session: MParticleSession?, sendSessionID: Bool) {
+        self.session = session
         super.init()
+        configuration = ["sendSessionId": sendSessionID ? "True" : "False"]
+        perform(Selector(("updateConfiguredSettings")))
     }
 
-    @objc func currentSessionID() -> String? {
-        sessionID
+    @objc func currentSession() -> MParticleSession? {
+        session
     }
 }

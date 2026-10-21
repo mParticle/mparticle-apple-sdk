@@ -21,6 +21,7 @@
 
 NSString *const ekBMAppKey = @"branchKey";
 NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
+NSString *const ekBMSendSessionID = @"sendSessionId";
 NSString *const userIdentificationType = @"userIdentificationType";
 NSString *const ekBMSessionIDKey = @"mp_session_id";
 
@@ -47,6 +48,7 @@ NSString *const ekBMSessionIDKey = @"mp_session_id";
 - (MPKitExecStatus *_Nonnull)setOptOut:(BOOL)optOut;
 
 @property (assign) BOOL forwardScreenViews;
+@property (assign) BOOL sendSessionID;
 @property (strong, nullable) Branch *branchInstance;
 @property (readwrite) BOOL started;
 @property (readwrite) BOOL isMpidIdentityType;
@@ -99,13 +101,16 @@ NSString *const ekBMSessionIDKey = @"mp_session_id";
     return [value boolValue];
 }
 
-- (NSString *)currentSessionID {
-    return [MParticle sharedInstance].currentSession.sessionID.stringValue;
+- (MParticleSession *)currentSession {
+    return [MParticle sharedInstance].currentSession;
 }
 
 // A customer attribute with the same key wins.
 - (void)addSessionIDToCustomData:(NSMutableDictionary<NSString *, NSString *> *)customData {
-    NSString *sessionID = [self currentSessionID];
+    if (!self.sendSessionID) {
+        return;
+    }
+    NSString *sessionID = [self currentSession].sessionID.stringValue;
     if (sessionID.length && !customData[ekBMSessionIDKey]) {
         customData[ekBMSessionIDKey] = sessionID;
     }
@@ -138,6 +143,7 @@ NSString *const ekBMSessionIDKey = @"mp_session_id";
 
 - (void)updateConfiguredSettings {
     self.forwardScreenViews = [self configurationBoolForKey:ekBMAForwardScreenViews];
+    self.sendSessionID = [self configurationBoolForKey:ekBMSendSessionID];
     [self updateIdentityType];
 }
 
@@ -345,12 +351,7 @@ NSString *const ekBMSessionIDKey = @"mp_session_id";
         if (!self.forwardScreenViews) {
             return [self execStatus:MPKitReturnCodeUnavailable];
         }
-        BranchEvent *branchEvent = [BranchEvent customEventWithName:event.name ?: @"screen_view"];
-        NSMutableDictionary<NSString *, NSString *> *mutableDictionary = [[NSMutableDictionary alloc] initWithDictionary:branchEvent.customData];
-        [mutableDictionary addEntriesFromDictionary:[self stringDictionaryFromDictionary:event.customAttributes]];
-        [self addSessionIDToCustomData:mutableDictionary];
-        branchEvent.customData = mutableDictionary;
-        [branchEvent logEvent];
+        [[self branchEventWithScreenEvent:event] logEvent];
         return [self execStatus:MPKitReturnCodeSuccess];
     }
 
@@ -375,13 +376,17 @@ NSString *const ekBMSessionIDKey = @"mp_session_id";
     if (!self.forwardScreenViews) {
         return [self execStatus:MPKitReturnCodeUnavailable];
     }
+    [[self branchEventWithScreenEvent:event] logEvent];
+    return [self execStatus:MPKitReturnCodeSuccess];
+}
+
+- (BranchEvent *)branchEventWithScreenEvent:(MPEvent *)event {
     BranchEvent *branchEvent = [BranchEvent customEventWithName:event.name ?: @"screen_view"];
     NSMutableDictionary<NSString *, NSString *> *mutableDictionary = [[NSMutableDictionary alloc] initWithDictionary:branchEvent.customData];
     [mutableDictionary addEntriesFromDictionary:[self stringDictionaryFromDictionary:event.customAttributes]];
     [self addSessionIDToCustomData:mutableDictionary];
     branchEvent.customData = mutableDictionary;
-    [branchEvent logEvent];
-    return [self execStatus:MPKitReturnCodeSuccess];
+    return branchEvent;
 }
 
 #pragma mark - Branch Categories
