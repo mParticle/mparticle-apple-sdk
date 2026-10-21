@@ -3,13 +3,8 @@ import XCTest
 
 final class MPBackendAssemblyTests: XCTestCase {
     private let host = MPBackendFakeHost()
-    private var validated: [String] = []
-
     private func makeAssembly(owner: MPBackendFakeOwner) -> MPBackendAssembly {
-        MPBackendAssembly(state: MPBackendSessionState(), host: host, owner: owner) { [unowned self] key, _ in
-            validated.append(key)
-            return .valid
-        }
+        MPBackendAssembly(state: MPBackendSessionState(), host: host, owner: owner)
     }
 
     func testTheAssemblyHoldsItsOwnerWeakly() {
@@ -137,7 +132,7 @@ final class MPBackendAssemblyTests: XCTestCase {
         XCTAssertTrue(lifecycle.scheduling.isDevelopment())
     }
 
-    func testUserAttributesReadOptOutFromTheHostAndValidateThroughTheController() {
+    func testUserAttributesReadOptOutAndAttributeLimitsFromTheHost() {
         let owner = MPBackendFakeOwner(host: host)
         let assembly = makeAssembly(owner: owner)
 
@@ -148,7 +143,8 @@ final class MPBackendAssemblyTests: XCTestCase {
 
         XCTAssertEqual(refused.status, .optOut)
         XCTAssertTrue(host.calls.contains("optOut"))
-        XCTAssertEqual(validated, ["Height"])
+        XCTAssertTrue(host.calls.contains("attributeKeyLengthLimit"))
+        XCTAssertTrue(host.calls.contains("attributeValueLengthLimit"))
     }
 
     func testCrashReportsReadTheTruncationLimitFromTheHost() {

@@ -268,6 +268,14 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     return [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment;
 }
 
+- (NSInteger)attributeKeyLengthLimit {
+    return LIMIT_ATTR_KEY_LENGTH;
+}
+
+- (NSInteger)attributeValueLengthLimit {
+    return LIMIT_ATTR_VALUE_LENGTH;
+}
+
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an
 // Objective-C exception raised further down. Without a boundary here a parse defect in one section
 // terminates the host app and stops the remaining sections from being applied.

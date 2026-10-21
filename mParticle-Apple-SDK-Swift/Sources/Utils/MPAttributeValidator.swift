@@ -1,8 +1,7 @@
 import Foundation
 
 /// Which attribute-validation rule a key-value pair failed, or `.valid`.
-/// The numeric error code, NSError construction, and console logging stay in
-/// the Objective-C caller so the log level continues to gate message building.
+/// `MPBackendAttributeValidation` maps it to an error code and logs it behind the log level.
 @objc public enum MPAttributeValidationResult: Int {
     case valid
     case invalidKey

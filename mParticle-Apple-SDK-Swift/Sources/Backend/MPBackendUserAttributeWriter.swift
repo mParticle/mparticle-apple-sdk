@@ -2,10 +2,8 @@ import Foundation
 
 /// Live dependencies for reading and writing user attributes.
 ///
-/// `validateAndLogAttribute` stays on the Objective-C side rather than calling
-/// `MPAttributeValidator` from here: the original logs the offending key and value behind
-/// `MPILogError`'s level gate, and several Objective-C tests pass mocks stubbed for a single
-/// selector, so the message must not be built eagerly.
+/// `validateAndLogAttribute` is injected so a test can observe each validation; the assembly passes
+/// `MPBackendAttributeValidation.validate`, which builds its log message only at the error level.
 @objc(MPBackendUserAttributeDependencies)
 public final class MPBackendUserAttributeDependencies: NSObject {
     let userDefaults: () -> MPUserDefaults

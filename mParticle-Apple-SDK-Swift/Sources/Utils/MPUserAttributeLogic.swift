@@ -40,8 +40,7 @@ import Foundation
     ///
     /// A nil value is only a removal when the key is actually present; asking to remove an absent
     /// key is rejected, as is every other validation failure. The caller reports
-    /// `MPExecStatusInvalidDataType` for `reject` regardless of which rule failed, which is what
-    /// the original did once its redundant early return for `kInvalidDataType` is folded in.
+    /// `MPExecStatusInvalidDataType` for `reject` regardless of which rule failed.
     @objc(mutationForValidationResult:keyExists:)
     public static func mutation(
         forValidationResult result: MPAttributeValidationResult,

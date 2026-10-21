@@ -21,12 +21,6 @@
 
 @protocol MPBackendControllerDelegate;
 
-extern const NSInteger kNilAttributeValue;
-extern const NSInteger kExceededAttributeValueMaximumLength;
-extern const NSInteger kExceededAttributeKeyMaximumLength;
-extern const NSInteger kInvalidDataType;
-extern const NSInteger kInvalidKey;
-
 @protocol MPBackendControllerProtocol
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
 - (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
