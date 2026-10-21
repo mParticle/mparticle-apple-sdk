@@ -7,6 +7,7 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
     let messageContext = MPMessageBuilderContext(dataPlanId: "owner-plan", dataPlanVersion: 1, logger: nil)
     let uploadContext: MPUploadBuilderContext
     var network: MPBackendUploadNetworking?
+    var attributionSession = URLSession(configuration: .ephemeral)
     private(set) var calls: [String] = []
 
     init(host: MPBackendHost) {
@@ -61,5 +62,10 @@ final class MPBackendFakeOwner: NSObject, MPBackendAssemblyOwner {
 
     func clearEmptyTimedEvents() {
         calls.append("clearEmptyTimedEvents")
+    }
+
+    func attributionURLSession() -> URLSession {
+        calls.append("attributionURLSession")
+        return attributionSession
     }
 }

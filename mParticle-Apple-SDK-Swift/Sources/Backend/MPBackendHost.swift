@@ -46,6 +46,9 @@ public protocol MPBackendHost: NSObjectProtocol {
     @objc(isDevelopmentEnvironment) func isDevelopmentEnvironment() -> Bool
     @objc(attributeKeyLengthLimit) func attributeKeyLengthLimit() -> Int
     @objc(attributeValueLengthLimit) func attributeValueLengthLimit() -> Int
+    /// The App Store attribution token for this install, or nil when there is none: on tvOS, or
+    /// when the system cannot create one.
+    @objc(attributionToken) func attributionToken() -> String?
 }
 
 public extension MPMessageBuilderContext {

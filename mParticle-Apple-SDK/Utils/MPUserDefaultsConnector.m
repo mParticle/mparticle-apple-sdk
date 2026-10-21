@@ -9,6 +9,9 @@
 #import "MPConsentState.h"
 #import "MPPersistenceAdapter.h"
 #import "../Kits/MPDataPlanFilter.h"
+#if TARGET_OS_IOS == 1
+    #import <AdServices/AAAttribution.h>
+#endif
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -274,6 +277,15 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 - (NSInteger)attributeValueLengthLimit {
     return LIMIT_ATTR_VALUE_LENGTH;
+}
+
+- (NSString *)attributionToken {
+#if TARGET_OS_IOS == 1
+    NSError *error = nil;
+    return [AAAttribution attributionTokenWithError:&error];
+#else
+    return nil;
+#endif
 }
 
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an
