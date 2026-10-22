@@ -21,7 +21,9 @@
 
 NSString *const ekBMAppKey = @"branchKey";
 NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
+NSString *const ekBMSendSessionID = @"sendSessionId";
 NSString *const userIdentificationType = @"userIdentificationType";
+NSString *const ekBMSessionIDKey = @"mp_session_id";
 
 #pragma mark - MPKitBranchMetrics
 
@@ -46,6 +48,7 @@ NSString *const userIdentificationType = @"userIdentificationType";
 - (MPKitExecStatus *_Nonnull)setOptOut:(BOOL)optOut;
 
 @property (assign) BOOL forwardScreenViews;
+@property (assign) BOOL sendSessionID;
 @property (strong, nullable) Branch *branchInstance;
 @property (readwrite) BOOL started;
 @property (readwrite) BOOL isMpidIdentityType;
@@ -98,6 +101,21 @@ NSString *const userIdentificationType = @"userIdentificationType";
     return [value boolValue];
 }
 
+- (MParticleSession *)currentSession {
+    return [MParticle sharedInstance].currentSession;
+}
+
+// A customer attribute with the same key wins.
+- (void)addSessionIDToCustomData:(NSMutableDictionary<NSString *, NSString *> *)customData {
+    if (!self.sendSessionID) {
+        return;
+    }
+    NSString *sessionID = [self currentSession].sessionID.stringValue;
+    if (sessionID.length && !customData[ekBMSessionIDKey]) {
+        customData[ekBMSessionIDKey] = sessionID;
+    }
+}
+
 #pragma mark - MPKitInstanceProtocol Lifecycle Methods
 
 - (instancetype _Nonnull)init {
@@ -125,6 +143,7 @@ NSString *const userIdentificationType = @"userIdentificationType";
 
 - (void)updateConfiguredSettings {
     self.forwardScreenViews = [self configurationBoolForKey:ekBMAForwardScreenViews];
+    self.sendSessionID = [self configurationBoolForKey:ekBMSendSessionID];
     [self updateIdentityType];
 }
 
@@ -332,11 +351,7 @@ NSString *const userIdentificationType = @"userIdentificationType";
         if (!self.forwardScreenViews) {
             return [self execStatus:MPKitReturnCodeUnavailable];
         }
-        BranchEvent *branchEvent = [BranchEvent customEventWithName:event.name ?: @"screen_view"];
-        NSMutableDictionary<NSString *, NSString *> *mutableDictionary = [[NSMutableDictionary alloc] initWithDictionary:branchEvent.customData];
-        [mutableDictionary addEntriesFromDictionary:[self stringDictionaryFromDictionary:event.customAttributes]];
-        branchEvent.customData = mutableDictionary;
-        [branchEvent logEvent];
+        [[self branchEventWithScreenEvent:event] logEvent];
         return [self execStatus:MPKitReturnCodeSuccess];
     }
 
@@ -361,12 +376,17 @@ NSString *const userIdentificationType = @"userIdentificationType";
     if (!self.forwardScreenViews) {
         return [self execStatus:MPKitReturnCodeUnavailable];
     }
+    [[self branchEventWithScreenEvent:event] logEvent];
+    return [self execStatus:MPKitReturnCodeSuccess];
+}
+
+- (BranchEvent *)branchEventWithScreenEvent:(MPEvent *)event {
     BranchEvent *branchEvent = [BranchEvent customEventWithName:event.name ?: @"screen_view"];
     NSMutableDictionary<NSString *, NSString *> *mutableDictionary = [[NSMutableDictionary alloc] initWithDictionary:branchEvent.customData];
     [mutableDictionary addEntriesFromDictionary:[self stringDictionaryFromDictionary:event.customAttributes]];
+    [self addSessionIDToCustomData:mutableDictionary];
     branchEvent.customData = mutableDictionary;
-    [branchEvent logEvent];
-    return [self execStatus:MPKitReturnCodeSuccess];
+    return branchEvent;
 }
 
 #pragma mark - Branch Categories
@@ -510,6 +530,7 @@ NSString *const userIdentificationType = @"userIdentificationType";
     NSMutableDictionary<NSString *, NSString *> *mutableDictionary = [[NSMutableDictionary alloc] initWithDictionary:event.customData];
     [mutableDictionary addEntriesFromDictionary:[self stringDictionaryFromDictionary:dictionary]];
     if (mpEvent.category.length) mutableDictionary[@"category"] = mpEvent.category;
+    [self addSessionIDToCustomData:mutableDictionary];
     event.customData = mutableDictionary;
     event.alias = mutableDictionary[@"customer_event_alias"];
 
@@ -628,6 +649,7 @@ NSString *const userIdentificationType = @"userIdentificationType";
             [NSString stringWithFormat:@"%ld", (long)mpEvent.checkoutStep];
     }
     mutableDictionary[@"non_interactive"] = mpEvent.nonInteractive ? @"true" : @"false";
+    [self addSessionIDToCustomData:mutableDictionary];
     event.customData = mutableDictionary;
     event.alias = mutableDictionary[@"customer_event_alias"];
     return event;
