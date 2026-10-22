@@ -123,7 +123,6 @@
 		53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ACF29CDFB1F00E7489F /* MPIConstants.h */; };
 		53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA329CDFB1E00E7489F /* MPBackendController.h */; };
 		53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */; };
-		53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */; };
 		53A79D3329CE23F700E7489F /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */; };
 		53A79D3629CE23F700E7489F /* MPNetworkPerformance.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */; };
 		53A79D4029CE23F700E7489F /* MPILogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B4629CDFB1F00E7489F /* MPILogger.h */; };
@@ -309,7 +308,6 @@
 		53A79AA329CDFB1E00E7489F /* MPBackendController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBackendController.h; sourceTree = "<group>"; };
 		53A79AA929CDFB1E00E7489F /* MPNetworkCommunication+ObjCBoundary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkCommunication+ObjCBoundary.m"; sourceTree = "<group>"; };
 		53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformance.h; sourceTree = "<group>"; };
-		53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConnectorFactoryProtocol.h; sourceTree = "<group>"; };
 		53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
 		B5A004042F8A000000000001 /* MPPersistenceUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPPersistenceUtilities.h; sourceTree = "<group>"; };
 		B5A004022F5F900000000001 /* MPPersistenceUploadSettingsCodec.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPPersistenceUploadSettingsCodec.m; sourceTree = "<group>"; };
@@ -418,7 +416,6 @@
 		53A79CA129CE019F00E7489F /* MPGDPRConsentTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPGDPRConsentTests.m; sourceTree = "<group>"; };
 		53A79CA229CE019F00E7489F /* MPBaseTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBaseTestCase.m; sourceTree = "<group>"; };
 		53A79CA329CE019F00E7489F /* MPMessageTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMessageTests.m; sourceTree = "<group>"; };
-		53A79CA429CE019F00E7489F /* MPNetworkCommunication+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNetworkCommunication+Tests.h"; sourceTree = "<group>"; };
 		53A79CA529CE019F00E7489F /* MPConsumerInfoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsumerInfoTests.m; sourceTree = "<group>"; };
 		53A79CA629CE019F00E7489F /* MPKitSecondTestClassNoStartImmediately.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitSecondTestClassNoStartImmediately.h; sourceTree = "<group>"; };
 		53A79CA729CE019F00E7489F /* MParticleUserTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleUserTests.m; sourceTree = "<group>"; };
@@ -870,7 +867,6 @@
 				53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */,
 				53A79AA929CDFB1E00E7489F /* MPNetworkCommunication+ObjCBoundary.m */,
 				53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */,
-				53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -1108,7 +1104,6 @@
 				53A79CA129CE019F00E7489F /* MPGDPRConsentTests.m */,
 				53A79CA229CE019F00E7489F /* MPBaseTestCase.m */,
 				53A79CA329CE019F00E7489F /* MPMessageTests.m */,
-				53A79CA429CE019F00E7489F /* MPNetworkCommunication+Tests.h */,
 				53A79CA529CE019F00E7489F /* MPConsumerInfoTests.m */,
 				53A79CA629CE019F00E7489F /* MPKitSecondTestClassNoStartImmediately.h */,
 				53A79CA729CE019F00E7489F /* MParticleUserTests.m */,
@@ -1231,7 +1226,6 @@
 				35F99CF72F31345C00820648 /* MPUserDefaultsConnector.h in Headers */,
 				35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */,
 				D34286122D419CB800FEC2C8 /* MPUploadSettings.h in Headers */,
-				53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */,
 				53A79D3329CE23F700E7489F /* MPNetworkCommunication.h in Headers */,
 				53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */,
 				53A79D3629CE23F700E7489F /* MPNetworkPerformance.h in Headers */,

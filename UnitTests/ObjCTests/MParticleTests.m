@@ -4,7 +4,6 @@
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
 #import "MPNetworkCommunication.h"
-#import "MPNetworkCommunication+Tests.h"
 #import "MPPersistenceUtilities.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitTestClassSideloaded.h"

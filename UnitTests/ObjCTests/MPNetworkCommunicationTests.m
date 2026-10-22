@@ -2,7 +2,6 @@
 #import <OCMock/OCMock.h>
 #import <Foundation/Foundation.h>
 #import "MPNetworkCommunication.h"
-#import "MPNetworkCommunication+Tests.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
@@ -25,11 +24,8 @@
 
 @interface MPNetworkCommunication_PRIVATE ()
 
-- (NSNumber *)maxAgeForCache:(nonnull NSString *)cache;
 - (BOOL)performMessageUpload:(MPUpload *)upload;
 - (BOOL)performAliasUpload:(MPUpload *)upload;
-- (UIBackgroundTaskIdentifier)beginSafeBackgroundTaskWithExpirationHandler:(void(^_Nullable)(void))handler;
-- (void)endSafeBackgroundTask:(UIBackgroundTaskIdentifier)taskId;
 - (void)identityApiRequestWithURL:(NSURL *)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
 
 @end
