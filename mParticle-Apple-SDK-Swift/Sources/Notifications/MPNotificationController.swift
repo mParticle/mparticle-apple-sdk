@@ -47,8 +47,10 @@ public final class MPNotificationControllerPRIVATE: NSObject, MPNotificationCont
                 modifyDeviceID("push_token", value, oldValue)
             }
 
+            // The change's own token, not the store's: any read through adopt(persistedToken:)
+            // since the change has put the old persisted token back in the store.
             let defaults = userDefaults()
-            defaults[Self.deviceTokenKey] = store.currentToken()
+            defaults[Self.deviceTokenKey] = change.newToken
             defaults.synchronize()
         }
     }

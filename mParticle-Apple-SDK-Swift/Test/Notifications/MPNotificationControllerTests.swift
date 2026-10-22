@@ -65,6 +65,20 @@ final class MPNotificationControllerTests: XCTestCase {
         XCTAssertEqual(defaults.values[tokenKey] as? Data, tokenB)
     }
 
+    func testReadingTheTokenBeforeItIsPersistedDoesNotUndoTheChange() {
+        defaults.values[tokenKey] = tokenA
+        _ = controller.deviceToken()
+
+        queue.suspend()
+        controller.setDeviceToken(tokenB)
+        _ = controller.deviceToken()
+        queue.resume()
+        drainQueue()
+
+        XCTAssertEqual(defaults.values[tokenKey] as? Data, tokenB)
+        XCTAssertEqual(controller.deviceToken(), tokenB)
+    }
+
     func testFirstTokenIsPersistedWithoutModifyingTheDeviceID() {
         controller.setDeviceToken(tokenA)
         drainQueue()
