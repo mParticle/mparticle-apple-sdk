@@ -94,10 +94,11 @@ snapshot() {
 		exit 1
 	fi
 	local f
+	# Sort in byte order, as the baseline is; a locale-aware sort reorders it on en_US.UTF-8 shells.
 	for f in "${dir}"/*.h; do
 		[[ -e ${f} ]] || continue
 		extract_tokens "${f}"
-	done | sort
+	done | LC_ALL=C sort
 }
 
 cmd_update() {

@@ -51,11 +51,14 @@ contract still requires explicit compatibility coordination. An unexplained
 baseline diff is a **gate failure**, not something to fix by blindly running
 `update`.
 
-### Local validation
+### Validation
 
 Run `abi-guard.sh check` locally as part of the standing conversion PR gate
-(see `docs/swift-migration/PR-GATE.md`). Adding CI enforcement is a separate
-change.
+(see `docs/swift-migration/PR-GATE.md`). The `ABI guard` job in
+`.github/workflows/pull-request.yml` also runs `abi-guard-selftest.sh` on every
+pull request, so a header change without its reviewed baseline update fails CI.
+The guard sorts with `LC_ALL=C`, so its output does not depend on the shell's
+locale.
 
 ### Baseline reconciliation after the integration merge
 
@@ -69,6 +72,8 @@ in these PRs:
   the optional `MPKitProtocol.supportsConsentStateReplay` method.
 - [#1032](https://github.com/mParticle/mparticle-apple-sdk/pull/1032):
   session handoff methods on `MPKitProtocol` and `MPRoktKitDispatchTarget`.
+- [#1135](https://github.com/mParticle/mparticle-apple-sdk/pull/1135):
+  `FilteredMParticleUser.consentState`, the kit-filtered consent state.
 
 This snapshot update records existing declarations; it adds or removes no
 SDK API. Future baseline changes still require the review described above.

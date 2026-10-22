@@ -31,6 +31,18 @@ jobs:
       - name: Test gate policy
         run: node --test .github/actions/rokt-safe-pr-gate/test/gate.test.js
 
+  abi-guard:
+    name: ABI guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check the exported header surface against the baseline
+        run: Tools/abi-guard-selftest.sh
+
   build-and-lint:
     uses: ./.github/workflows/build-and-lint.yml # zizmor: ignore[self-repository]
     permissions:
