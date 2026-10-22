@@ -5,6 +5,12 @@
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPIConstants.h"
+#import "MPKitContainer+MParticlePrivate.h"
+#import "MPKitExecStatus.h"
+#import <OCMock/OCMock.h>
+#if TARGET_OS_IOS == 1
+#import <UserNotifications/UserNotifications.h>
+#endif
 @import mParticle_Apple_SDK_Swift;
 
 @interface MParticle ()
@@ -13,8 +19,66 @@
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPAppNotificationHandler *appNotificationHandler;
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
+
+#if TARGET_OS_IOS == 1
+@interface MPNotificationCenterTestKit : NSObject <MPKitProtocol>
+@property (nonatomic, readonly) BOOL started;
+@property (nonatomic) BOOL throwsException;
+@property (nonatomic) NSUInteger notificationCallCount;
+@end
+
+@implementation MPNotificationCenterTestKit
+
++ (NSNumber *)kitCode {
+    return @(-1);
+}
+
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    return [[MPKitExecStatus alloc] initWithSDKCode:@(-1) returnCode:MPKitReturnCodeSuccess];
+}
+
+- (MPKitExecStatus *)handleNotificationCall {
+    self.notificationCallCount += 1;
+    if (self.throwsException) {
+        [NSException raise:NSInternalInconsistencyException format:@"Test kit failure"];
+    }
+    return [[MPKitExecStatus alloc] initWithSDKCode:@(-1) returnCode:MPKitReturnCodeSuccess];
+}
+
+- (MPKitExecStatus *)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification {
+    return [self handleNotificationCall];
+}
+
+- (MPKitExecStatus *)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
+    return [self handleNotificationCall];
+}
+
+@end
+
+@interface MPNotificationCenterTestKitRegister : NSObject <MPExtensionKitProtocol>
+@property (nonatomic, strong, nonnull) NSNumber *code;
+@property (nonatomic, strong, nullable) id<MPKitProtocol> wrapperInstance;
+@property (nonatomic, strong, nonnull) NSString *name;
+@property (nonatomic, strong, nonnull) NSString *className;
+@end
+
+@implementation MPNotificationCenterTestKitRegister
+
+- (instancetype)initWithName:(NSString *)name className:(NSString *)className {
+    self = [super init];
+    if (self) {
+        _code = @(-1);
+        _name = name;
+        _className = className;
+    }
+    return self;
+}
+
+@end
+#endif
 
 @interface MPAppNotificationHandlerTests : MPBaseTestCase
 
@@ -72,6 +136,83 @@
     
     NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
+}
+
+- (UNNotification *)notificationMockWithUserInfo:(NSDictionary *)userInfo {
+    UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+    content.userInfo = userInfo;
+    UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:@"test" content:content trigger:nil];
+    id notification = OCMClassMock([UNNotification class]);
+    OCMStub([notification request]).andReturn(request);
+    return notification;
+}
+
+// Runs `call` with a throwing kit registered ahead of a working one, then returns the forward
+// records saved once the main-queue kit loop and the message-queue saves it scheduled have run.
+- (NSArray<MPForwardRecord *> *)forwardRecordsAfterNotificationCall:(void (^)(MPAppNotificationHandler *handler))call
+                                                       throwingKit:(MPNotificationCenterTestKit *)throwingKit
+                                                        workingKit:(MPNotificationCenterTestKit *)workingKit {
+    throwingKit.throwsException = YES;
+    MPNotificationCenterTestKitRegister *throwingRegister = [[MPNotificationCenterTestKitRegister alloc] initWithName:@"Throwing" className:@"MPNotificationCenterTestKit"];
+    throwingRegister.wrapperInstance = throwingKit;
+    MPNotificationCenterTestKitRegister *workingRegister = [[MPNotificationCenterTestKitRegister alloc] initWithName:@"Working" className:@"MPNotificationCenterTestKit"];
+    workingRegister.wrapperInstance = workingKit;
+
+    MParticle *instance = [MParticle sharedInstance];
+    MPAppNotificationHandler *handler = instance.appNotificationHandler;
+    id mockInstance = OCMPartialMock(instance);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    OCMStub([mockContainer activeKitsRegistry]).andReturn((@[throwingRegister, workingRegister]));
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+
+    call(handler);
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Kit loop and forward-record saves finished"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async([MParticle messageQueue], ^{
+            [expectation fulfill];
+        });
+    });
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+
+    NSArray<MPForwardRecord *> *forwardRecords = [instance.persistenceAdapter fetchForwardRecords];
+    [mockInstance stopMocking];
+    [mockContainer stopMocking];
+    return forwardRecords;
+}
+
+- (void)testWillPresentNotificationContainsKitException {
+    MPNotificationCenterTestKit *throwingKit = [[MPNotificationCenterTestKit alloc] init];
+    MPNotificationCenterTestKit *workingKit = [[MPNotificationCenterTestKit alloc] init];
+    UNNotification *notification = [self notificationMockWithUserInfo:@{@"aps": @{@"alert": @"Test"}}];
+    id center = OCMClassMock([UNUserNotificationCenter class]);
+
+    NSArray<MPForwardRecord *> *forwardRecords = [self forwardRecordsAfterNotificationCall:^(MPAppNotificationHandler *handler) {
+        [handler userNotificationCenter:center willPresentNotification:notification];
+    } throwingKit:throwingKit workingKit:workingKit];
+
+    XCTAssertEqual(throwingKit.notificationCallCount, 1);
+    XCTAssertEqual(workingKit.notificationCallCount, 1);
+    XCTAssertEqual(forwardRecords.count, 1);
+}
+
+- (void)testDidReceiveNotificationResponseContainsKitException {
+    MPNotificationCenterTestKit *throwingKit = [[MPNotificationCenterTestKit alloc] init];
+    MPNotificationCenterTestKit *workingKit = [[MPNotificationCenterTestKit alloc] init];
+    UNNotification *notification = [self notificationMockWithUserInfo:@{@"aps": @{@"alert": @"Test"}}];
+    id response = OCMClassMock([UNNotificationResponse class]);
+    OCMStub([response notification]).andReturn(notification);
+    OCMStub([response actionIdentifier]).andReturn(UNNotificationDefaultActionIdentifier);
+    id center = OCMClassMock([UNUserNotificationCenter class]);
+
+    NSArray<MPForwardRecord *> *forwardRecords = [self forwardRecordsAfterNotificationCall:^(MPAppNotificationHandler *handler) {
+        [handler userNotificationCenter:center didReceiveNotificationResponse:response];
+    } throwingKit:throwingKit workingKit:workingKit];
+
+    XCTAssertEqual(throwingKit.notificationCallCount, 1);
+    XCTAssertEqual(workingKit.notificationCallCount, 1);
+    XCTAssertEqual(forwardRecords.count, 1);
 }
 
 #endif
