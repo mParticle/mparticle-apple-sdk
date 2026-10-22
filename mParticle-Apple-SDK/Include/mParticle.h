@@ -21,8 +21,6 @@
 #import <UIKit/UIKit.h>
 #import "MPSideloadedKit.h"
 #import "MPUploadSettings.h"
-#import "MPNotificationController.h"
-#import "MPNetworkCommunication.h"
 #import "MPPersistenceUtilities.h"
 #import "MPRokt.h"
 #import "MPRoktSession.h"
