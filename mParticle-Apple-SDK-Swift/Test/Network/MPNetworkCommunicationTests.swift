@@ -20,6 +20,8 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     var currentIdentities: NSDictionary?
     var vendorIdValue: String?
     var deviceTokenValue: Data?
+    /// The config, events and identity host the network routing names, if any.
+    var routedHost: String?
     private(set) var deletedUploads: [MPUploadPRIVATE] = []
     private(set) var kitBatches: [String] = []
     private(set) var mergedResponses: [NSDictionary] = []
@@ -27,7 +29,7 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     private(set) var mainHops: [String] = []
 
     func networkRouting(attAuthorized: Bool) -> MPEndpointRouting {
-        Self.routing(apiKey: "network-key", attAuthorized: attAuthorized)
+        Self.routing(apiKey: "network-key", host: routedHost, attAuthorized: attAuthorized)
     }
 
     func routing(forUploadSettings uploadSettings: NSObject, attAuthorized: Bool) -> MPEndpointRouting {
@@ -76,16 +78,14 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
         return NSError(domain: "client-side", code: code, userInfo: userInfo)
     }
 
-    func identityError(responseObject: NSDictionary?, httpCode: Int) -> NSError {
-        var userInfo: [String: Any] = [:]
-        userInfo["body"] = responseObject
-        return NSError(domain: "server", code: httpCode, userInfo: userInfo)
+    func identityError(httpCode: Int) -> NSError {
+        NSError(domain: "server", code: httpCode)
     }
 
-    private static func routing(apiKey: String, attAuthorized: Bool) -> MPEndpointRouting {
+    private static func routing(apiKey: String, host: String? = nil, attAuthorized: Bool) -> MPEndpointRouting {
         MPEndpointRouting(
-            apiKey: apiKey, customBaseURLHost: nil, hasCustomBaseURL: false, configHost: nil,
-            eventsHost: nil, eventsTrackingHost: nil, identityHost: nil, identityTrackingHost: nil,
+            apiKey: apiKey, customBaseURLHost: nil, hasCustomBaseURL: false, configHost: host,
+            eventsHost: host, eventsTrackingHost: nil, identityHost: host, identityTrackingHost: nil,
             aliasHost: nil, aliasTrackingHost: nil, overridesConfigSubdirectory: false,
             overridesEventsSubdirectory: false, overridesIdentitySubdirectory: false,
             overridesAliasSubdirectory: false, eventsOnly: false, attAuthorized: attAuthorized
@@ -99,6 +99,16 @@ private struct MPNetworkFakePost {
     let message: String?
     let params: Data?
     let secret: String?
+}
+
+/// Records every verbose message it is handed, whether or not its level prints it.
+private final class MPVerboseRecordingLog: MPLog {
+    private(set) var verboseMessages: [String] = []
+
+    override func verbose(_ message: String) {
+        verboseMessages.append(message)
+        super.verbose(message)
+    }
 }
 
 final class MPNetworkCommunicationTests: XCTestCase {
@@ -439,7 +449,7 @@ final class MPNetworkCommunicationTests: XCTestCase {
             ((200, json(["id": 1])), unparsed + "200)"),
             ((200, json(["dt": "xx"])), unparsed + "200)"),
             ((500, json(["dt": "ac"])), unparsed + "500)"),
-            // Bodies that raised inside the Objective-C version's @try, which reported them as a 204.
+            // Bodies that parsed but are not an object, or have a non-string message type, fail as a 204.
             ((200, json([["dt": "ac"]])), unparsed + "204)"),
             ((200, json(["dt": 1])), unparsed + "204)"),
             ((200, json(["dt": NSNull()])), unparsed + "204)")
@@ -455,6 +465,29 @@ final class MPNetworkCommunicationTests: XCTestCase {
             XCTAssertTrue(messages.first?.contains(logged) == true, "\(messages) lacks \(logged)")
         }
         XCTAssertNil(host.defaults.getConfiguration())
+    }
+
+    func testAConfigRequestWhoseURLCannotBeBuiltSendsNothingAndFails() {
+        host.routedHost = "not a host"
+        let connector = FakeConnector()
+        connector.respond(200, body: json(["dt": "ac", "id": 42]), headers: ["ETag": "etag-4"])
+
+        XCTAssertNil(network.configURL)
+        XCTAssertEqual(requestConfig(connector), false)
+        XCTAssertEqual(connector.requestedURLs, [])
+        XCTAssertNil(host.defaults.getConfiguration())
+    }
+
+    func testAConfigResponseWithoutAnETagSucceedsButIsNeitherAppliedNorCached() {
+        let connector = FakeConnector()
+        connector.respond(200, body: json(["dt": "ac", "id": 42, "cms": [["id": 1]]]), headers: ["Cache-Control": "max-age=600"])
+
+        XCTAssertEqual(requestConfig(connector), true)
+        XCTAssertEqual(connector.requestedURLs, [network.configURL?.url])
+        XCTAssertNil(host.configConnector.configureCustomModulesCustomModuleSettingsParams)
+        XCTAssertNil(host.defaults.getConfiguration())
+        XCTAssertNil(host.defaults[Miscellaneous.kMPHTTPETagHeaderKey])
+        XCTAssertNil(host.defaults[Miscellaneous.kMPConfigMaxAgeHeaderKey])
     }
 
     func testAudienceIDsArePassedOnAndNoneIsNil() {
@@ -565,7 +598,7 @@ final class MPNetworkCommunicationTests: XCTestCase {
             ((200, json(["id": 1])), (false, "Upload complete")),
             ((200, Data("{".utf8)), (false, "Upload complete")),
             ((500, json(["dt": "rh"])), (false, nil)),
-            // Bodies that raised inside the Objective-C version's @try.
+            // Bodies that parsed but are not an object, or have a non-string message type.
             ((200, json([["dt": "rh"]])), (false, "Upload error: response is not a JSON object")),
             ((200, json(["dt": 1])), (false, "Upload error: response message type is not a string")),
             ((200, json(["dt": NSNull()])), (false, "Upload error: response message type is not a string"))
@@ -860,8 +893,6 @@ final class MPNetworkCommunicationTests: XCTestCase {
             if let message = failure.message {
                 XCTAssertEqual(error?.localizedDescription, message)
                 XCTAssertTrue((error?.userInfo[NSUnderlyingErrorKey] as? NSError) === failure.transportError, failure.logged)
-            } else {
-                XCTAssertNil(error?.userInfo["body"], "A refused request's body is not read")
             }
             XCTAssertEqual(logged.last, failed + failure.logged)
             XCTAssertFalse(network.identifying)
@@ -876,11 +907,58 @@ final class MPNetworkCommunicationTests: XCTestCase {
         XCTAssertFalse(network.identifying)
     }
 
+    func testAnIdentityRequestWhoseURLCannotBeBuiltSendsNothingAndFailsAsAnHTTPError() {
+        host.routedHost = "not a host"
+        captureErrorLogs()
+        let connector = respondToEveryRequest(200, body: mpidBody)
+
+        XCTAssertNil(network.identifyURL)
+        let error = identityRequest()?.error
+        XCTAssertEqual(error?.domain, "server")
+        XCTAssertEqual(error?.code, 0)
+        XCTAssertEqual(connector.posts.count, 0)
+        XCTAssertEqual(logged, ["mParticle -> Identity request failed - HTTP error (code: 0)"])
+        XCTAssertFalse(network.identifying)
+    }
+
+    // MARK: - Logging
+
+    func testMessagesHoldingABatchOrABodyAreBuiltOnlyWhenVerboseLoggingWouldPrintThem() {
+        let log = MPVerboseRecordingLog(logLevel: .debug)
+        host.log = log
+        let batch = makeUpload()
+        let alias = makeUpload(type: 1)
+        let expected = [
+            "Upload complete: \(batch.serializedString() ?? "(null)")\n",
+            "Alias request:\nURL: \(network.aliasURL(for: alias).map { "\($0.url)" } ?? "(null)") "
+                + "\nBody:\(alias.serializedString() ?? "(null)")",
+            #"Alias response:\#n{"dt":"xx"}"#,
+            "Identity request:\nURL: \(network.identifyURL.map { "\($0.url)" } ?? "(null)") "
+                + #"\#nBody:{"known_identities":{"email":"user@example.com"}}"#,
+            #"Identity response:\#n{"mpid":"42"}"#
+        ]
+        func send() {
+            _ = respondToEveryRequest(202, body: json(["dt": "xx"]))
+            _ = network.performMessageUpload(batch)
+            _ = network.performAliasUpload(alias)
+            _ = respondToEveryRequest(200, body: mpidBody)
+            _ = identityRequest()
+        }
+
+        send()
+        XCTAssertEqual(log.verboseMessages.filter(expected.contains), [], "Built while verbose logging is off")
+
+        log.logLevel = .verbose
+        send()
+        for message in expected {
+            XCTAssertTrue(log.verboseMessages.contains(message), "\(message) not in \(log.verboseMessages)")
+        }
+    }
+
     // MARK: - Identity entry points
 
-    // The expected bodies were captured from the deleted Objective-C DTOs for the same input, with
-    // the SDK version and the API key replaced by the fake host's, and without the request ID and
-    // timestamp, which are checked on their own.
+    // The expected bodies are the wire format for the same input, with the fake host's SDK version
+    // and API key, and without the request ID and timestamp, which are checked on their own.
 
     private static let capturedIdentifyBody = #"""
     {"client_sdk":{"platform":"ios","sdk_vendor":"mparticle","sdk_version":"0.0.0-test"},"environment":"development",\#

@@ -6,8 +6,6 @@ NSString *const kMParticleSDKVersion = @"9.7.4";
 // Message Type (dt)
 NSString *const kMPMessageTypeKey = @"dt";
 NSString *const kMPMessageTypeRequestHeader = @"h";
-NSString *const kMPMessageTypeConfig = @"ac";
-NSString *const kMPMessageTypeNetworkPerformance = @"npe";
 NSString *const kMPMessageTypeLeaveBreadcrumbs = @"bc";
 
 // Request Header Keys
@@ -113,7 +111,6 @@ NSString *const kMPPushNotificationCategoryIdentifierKey = @"acid";
 NSString *const kMPSessionLengthKey = @"sl";
 NSString *const kMPSessionTotalLengthKey = @"slx";
 NSString *const kMPOptOutStatus = @"s";
-NSString *const kMPATT = @"atts";
 NSString *const kMPATTTimestamp = @"attt";
 NSString *const kMPCrashingSeverity = @"s";
 NSString *const kMPCrashingClass = @"c";
@@ -148,9 +145,6 @@ NSString *const kMPHTTPHeadersKey = @"h";
 NSString *const kMPHTTPAcceptEncodingKey = @"Accept-Encoding";
 NSString *const kMPDeviceTokenTypeDevelopment = @"appleSandbox";
 NSString *const kMPDeviceTokenTypeProduction = @"appleProduction";
-NSString *const kMPHTTPETagHeaderKey = @"ETag";
-NSString *const kMPHTTPCacheControlHeaderKey = @"Cache-Control";
-NSString *const kMPHTTPAgeHeaderKey = @"Age";
 NSString *const kMResponseConfigurationKey = @"responseConfiguration";
 NSString *const kMResponseConfigurationMigrationKey = @"responseConfigurationMigrated";
 NSString *const kMResponseConfigurationCompressedKey = @"responseConfigurationCompressed";

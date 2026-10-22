@@ -36,7 +36,7 @@ static id<MPBackendHost> MPBackendHostInstance(void) {
 }
 
 - (void)setNetworkCommunication:(MPNetworkCommunication_PRIVATE *)networkCommunication {
-    self.networkCommunicationStorage = (id<MPBackendUploadNetworking>)networkCommunication;
+    self.networkCommunicationStorage = networkCommunication;
 }
 
 #pragma mark Attribute validation and upload context

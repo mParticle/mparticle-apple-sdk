@@ -46,10 +46,10 @@ public protocol MPNetworkHost: MPBackendHost, MPUploadPersisting, MPKitBatchLogg
     /// here from `code`, `message` and the transport error.
     @objc(identityErrorWithCode:message:underlyingError:)
     func identityError(code: Int, message: String, underlyingError: NSError?) -> NSError
-    /// The same, with the `MPIdentityHTTPErrorResponse` made from a refused request's body and
-    /// status code.
-    @objc(identityErrorWithResponseObject:httpCode:)
-    func identityError(responseObject: NSDictionary?, httpCode: Int) -> NSError
+    /// The same, with the `MPIdentityHTTPErrorResponse` made from a refused request's status code.
+    /// Its body is not read.
+    @objc(identityErrorWithHTTPCode:)
+    func identityError(httpCode: Int) -> NSError
     /// The current user's identities, keyed by `MPIdentity` number, which a modify request is
     /// diffed against.
     @objc(currentUserIdentities) func currentUserIdentities() -> NSDictionary?

@@ -2,36 +2,36 @@ import Foundation
 
 /// Everything derivable from an alias upload's HTTP status, request body, and response body.
 ///
-/// Objective-C owns the side effects — deleting the upload, throttling, and building the public
-/// `MPAliasResponse`/`MPAliasRequest` pair — because those touch SDK types this module cannot see.
+/// The caller applies the side effects: deleting the upload and throttling. Only `isSuccessCode(_:)`
+/// is Objective-C API, for `MPAliasResponse`.
 @objc(MPAliasResponsePlanPRIVATE)
 public final class MPAliasResponsePlanPRIVATE: NSObject {
     /// Whether the status code is in the 2xx range.
-    @objc public let isSuccessCode: Bool
+    let isSuccessCode: Bool
 
     /// Whether the status code is a non-retriable client error (4xx other than 429).
-    @objc public let isInvalidCode: Bool
+    let isInvalidCode: Bool
 
     /// Whether the SDK will re-send the request (429 or 503).
-    @objc public let shouldRetry: Bool
+    let shouldRetry: Bool
 
     /// The GUID the SDK generated for this alias request, echoed back from the uploaded body.
-    @objc public let requestID: String?
+    let requestID: String?
 
     /// Source MPID, read back from the uploaded body.
-    @objc public let sourceMPID: NSNumber?
+    let sourceMPID: NSNumber?
 
     /// Destination MPID, read back from the uploaded body.
-    @objc public let destinationMPID: NSNumber?
+    let destinationMPID: NSNumber?
 
     /// Alias window start, converted from the uploaded body's millisecond timestamp.
-    @objc public let startTime: Date
+    let startTime: Date
 
     /// Alias window end, converted from the uploaded body's millisecond timestamp.
-    @objc public let endTime: Date
+    let endTime: Date
 
     /// The server's human-readable failure message, when the response carried one.
-    @objc public let errorMessage: String?
+    let errorMessage: String?
 
     init(
         isSuccessCode: Bool,
@@ -63,8 +63,7 @@ public final class MPAliasResponsePlanPRIVATE: NSObject {
     }
 
     /// Classifies an alias upload's outcome and recovers the request fields from the uploaded body.
-    @objc(planFromRequestData:responseData:statusCode:logger:)
-    public static func plan(
+    static func plan(
         requestData: Data?,
         responseData: Data?,
         statusCode: Int,
@@ -79,9 +78,7 @@ public final class MPAliasResponsePlanPRIVATE: NSObject {
 
         let request = jsonDictionary(from: requestData)
         // `MPIdentityHTTPRequestBuilderPRIVATE.aliasDictionary` nests the alias window under
-        // `data` and leaves `request_id` at the top level. The Objective-C implementation read
-        // every field from the top level, so it always recovered a nil source/destination MPID and
-        // an epoch window; nothing consumed the result, which is why that went unnoticed.
+        // `data` and leaves `request_id` at the top level; a body without `data` is read flat.
         let aliasFields = (request?[IdentityHTTPKeys.data] as? [String: Any]) ?? request
 
         var errorMessage: String?

@@ -61,8 +61,6 @@ extern NSString * _Nonnull const kMParticleSDKVersion;
 // Message Type (dt)
 extern NSString * _Nonnull const kMPMessageTypeKey;                  
 extern NSString * _Nonnull const kMPMessageTypeRequestHeader;
-extern NSString * _Nonnull const kMPMessageTypeConfig;
-extern NSString * _Nonnull const kMPMessageTypeNetworkPerformance;
 extern NSString * _Nonnull const kMPMessageTypeLeaveBreadcrumbs;
 
 // Request Header Keys
@@ -170,7 +168,6 @@ extern NSString * _Nonnull const kMPPushNotificationCategoryIdentifierKey;
 extern NSString * _Nonnull const kMPSessionLengthKey;                 
 extern NSString * _Nonnull const kMPSessionTotalLengthKey;
 extern NSString * _Nonnull const kMPOptOutStatus;
-extern NSString * _Nonnull const kMPATT;
 extern NSString * _Nonnull const kMPATTTimestamp;
 extern NSString * _Nonnull const kMPCrashingSeverity;
 extern NSString * _Nonnull const kMPCrashingClass;
@@ -205,9 +202,6 @@ extern NSString * _Nonnull const kMPHTTPHeadersKey;
 extern NSString * _Nonnull const kMPHTTPAcceptEncodingKey;
 extern NSString * _Nonnull const kMPDeviceTokenTypeDevelopment;
 extern NSString * _Nonnull const kMPDeviceTokenTypeProduction;
-extern NSString * _Nonnull const kMPHTTPETagHeaderKey;
-extern NSString * _Nonnull const kMPHTTPCacheControlHeaderKey;
-extern NSString * _Nonnull const kMPHTTPAgeHeaderKey;
 extern NSString * _Nonnull const kMResponseConfigurationKey;
 extern NSString * _Nonnull const kMResponseConfigurationMigrationKey;
 extern NSString * _Nonnull const kMResponseConfigurationCompressedKey;

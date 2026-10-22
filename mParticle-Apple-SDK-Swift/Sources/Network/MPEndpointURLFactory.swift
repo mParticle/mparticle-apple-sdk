@@ -68,7 +68,7 @@ public final class MPEndpointRouting: NSObject {
 /// Builds the outgoing/canonical URL pair for every mParticle endpoint.
 ///
 /// Each method pairs the URL the request is sent to with the canonical mParticle URL
-/// used to sign it, mirroring what `MPNetworkCommunication` did inline.
+/// used to sign it.
 final class MPEndpointURLFactory: NSObject {
     private let logger: () -> MPLog?
 

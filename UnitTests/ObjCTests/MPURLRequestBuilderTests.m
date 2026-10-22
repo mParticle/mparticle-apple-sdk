@@ -49,7 +49,7 @@
                                 hasStoredConfiguration:YES
                                            environment:MPEnvironmentDevelopment
                                         requestTimeout:10
-                         networkPerformanceMessageType:kMPMessageTypeNetworkPerformance
+                         networkPerformanceMessageType:@"npe"
                                                 logger:logger];
 }
 
