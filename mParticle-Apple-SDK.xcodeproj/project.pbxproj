@@ -160,7 +160,7 @@
 		53A79D9D29CE23F700E7489F /* MParticleUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79A9A29CDFB1E00E7489F /* MParticleUser.m */; };
 		53A79DA029CE23F700E7489F /* MPKitExecStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4D29CDFB1F00E7489F /* MPKitExecStatus.m */; };
 		53A79DA429CE23F700E7489F /* MPIdentityDTO.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79A9D29CDFB1E00E7489F /* MPIdentityDTO.m */; };
-		53A79DA529CE23F700E7489F /* MPNetworkCommunication.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA929CDFB1E00E7489F /* MPNetworkCommunication.m */; };
+		53A79DA529CE23F700E7489F /* MPNetworkCommunication+ObjCBoundary.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA929CDFB1E00E7489F /* MPNetworkCommunication+ObjCBoundary.m */; };
 		53A79DA829CE23F700E7489F /* MPKitAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5C29CDFB1F00E7489F /* MPKitAPI.m */; };
 		53A79DA929CE23F700E7489F /* MPAppNotificationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B3D29CDFB1F00E7489F /* MPAppNotificationHandler.m */; };
 		53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4929CDFB1F00E7489F /* MPEvent.m */; };
@@ -307,7 +307,7 @@
 		53A79AA029CDFB1E00E7489F /* MPIdentityDTO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIdentityDTO.h; sourceTree = "<group>"; };
 		53A79AA129CDFB1E00E7489F /* MPIdentityApi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityApi.m; sourceTree = "<group>"; };
 		53A79AA329CDFB1E00E7489F /* MPBackendController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBackendController.h; sourceTree = "<group>"; };
-		53A79AA929CDFB1E00E7489F /* MPNetworkCommunication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkCommunication.m; sourceTree = "<group>"; };
+		53A79AA929CDFB1E00E7489F /* MPNetworkCommunication+ObjCBoundary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkCommunication+ObjCBoundary.m"; sourceTree = "<group>"; };
 		53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformance.h; sourceTree = "<group>"; };
 		53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConnectorFactoryProtocol.h; sourceTree = "<group>"; };
 		53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
@@ -528,6 +528,7 @@
 				Test/Network/MPEndpointHostResolverTests.swift,
 				Test/Network/MPEndpointPathStyleTests.swift,
 				Test/Network/MPEndpointURLFactoryTests.swift,
+				Test/Network/MPNetworkCommunicationTests.swift,
 				Test/Network/MPAliasResponsePlanTests.swift,
 				Test/Network/MPBackendUploadDependenciesTests.swift,
 				Test/Network/MPBackendUploadCoordinatorTests.swift,
@@ -644,6 +645,7 @@
 				Test/Network/MPEndpointHostResolverTests.swift,
 				Test/Network/MPEndpointPathStyleTests.swift,
 				Test/Network/MPEndpointURLFactoryTests.swift,
+				Test/Network/MPNetworkCommunicationTests.swift,
 				Test/Network/MPAliasResponsePlanTests.swift,
 				Test/Network/MPBackendUploadDependenciesTests.swift,
 				Test/Network/MPBackendUploadCoordinatorTests.swift,
@@ -866,7 +868,7 @@
 			isa = PBXGroup;
 			children = (
 				53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */,
-				53A79AA929CDFB1E00E7489F /* MPNetworkCommunication.m */,
+				53A79AA929CDFB1E00E7489F /* MPNetworkCommunication+ObjCBoundary.m */,
 				53A79AAB29CDFB1E00E7489F /* MPNetworkPerformance.h */,
 				53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */,
 			);
@@ -1565,7 +1567,7 @@
 				53A79DA029CE23F700E7489F /* MPKitExecStatus.m in Sources */,
 				35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */,
 				53A79DA429CE23F700E7489F /* MPIdentityDTO.m in Sources */,
-				53A79DA529CE23F700E7489F /* MPNetworkCommunication.m in Sources */,
+				53A79DA529CE23F700E7489F /* MPNetworkCommunication+ObjCBoundary.m in Sources */,
 				53A79DA829CE23F700E7489F /* MPKitAPI.m in Sources */,
 				53A79DA929CE23F700E7489F /* MPAppNotificationHandler.m in Sources */,
 				53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */,
