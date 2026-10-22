@@ -96,6 +96,58 @@ final class MPConsentStateTests: XCTestCase {
         XCTAssertEqual(restored?.timestamp, timestamp)
     }
 
+    func testServerDictionaryFromConsentState() {
+        XCTAssertEqual(MPConsentSerializationPRIVATE.serverDictionary(from: nil).count, 0)
+        let state = MPConsentStatePRIVATE()
+        XCTAssertEqual(MPConsentSerializationPRIVATE.serverDictionary(from: state).count, 0)
+
+        let record = MPConsentRecordPRIVATE()
+        record.consented = true
+        record.document = "foo-document-1"
+        _ = state.addGDPRConsentRecord(record, purpose: "test purpose 1")
+        state.setCCPAConsentRecord(record)
+
+        let dictionary = MPConsentSerializationPRIVATE.serverDictionary(from: state)
+        let gdpr = (dictionary["gdpr"] as? NSDictionary)?["test purpose 1"] as? NSDictionary
+        let ccpa = (dictionary["ccpa"] as? NSDictionary)?["data_sale_opt_out"] as? NSDictionary
+        XCTAssertEqual(gdpr?["d"] as? String, "foo-document-1")
+        XCTAssertEqual(ccpa?["c"] as? Bool, true)
+    }
+
+    func testConsentStateStringRoundTrip() {
+        XCTAssertNil(MPConsentSerializationPRIVATE.string(from: nil, logger: nil))
+        let state = MPConsentStatePRIVATE()
+        XCTAssertNil(MPConsentSerializationPRIVATE.string(from: state, logger: nil))
+
+        let record = MPConsentRecordPRIVATE()
+        record.consented = true
+        record.document = "foo-document-1"
+        _ = state.addGDPRConsentRecord(record, purpose: "test purpose 1")
+        state.setCCPAConsentRecord(record)
+
+        guard let string = MPConsentSerializationPRIVATE.string(from: state, logger: nil) else {
+            XCTFail("Expected consent state to serialize")
+            return
+        }
+        let restored = MPConsentSerializationPRIVATE.consentState(from: string, logger: nil)
+        let gdpr = restored?.gdprConsentRecords()["test purpose 1"] as? MPConsentRecordPRIVATE
+        XCTAssertEqual(gdpr?.document, "foo-document-1")
+        XCTAssertEqual(restored?.ccpaConsentRecord()?.consented, true)
+    }
+
+    func testConsentStateFromStringLogsOnlyUnreadableStrings() {
+        var messages: [String] = []
+        let logger = MPLog(logLevel: .error)
+        logger.customLogger = { messages.append($0) }
+
+        XCTAssertNil(MPConsentSerializationPRIVATE.consentState(from: "not json", logger: logger))
+        XCTAssertEqual(messages, ["mParticle -> Failed to create consent state from string=not json"])
+
+        XCTAssertNil(MPConsentSerializationPRIVATE.consentState(from: "{}", logger: logger))
+        XCTAssertNotNil(MPConsentSerializationPRIVATE.consentState(from: "{\"gdpr\":{}}", logger: logger))
+        XCTAssertEqual(messages.count, 1)
+    }
+
     func testFilterFromDictionary() {
         let config: NSDictionary = [
             "i": true,
