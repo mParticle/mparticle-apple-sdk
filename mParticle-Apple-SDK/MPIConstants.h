@@ -61,7 +61,6 @@ extern NSString * _Nonnull const kMParticleSDKVersion;
 // Message Type (dt)
 extern NSString * _Nonnull const kMPMessageTypeKey;                  
 extern NSString * _Nonnull const kMPMessageTypeRequestHeader;
-extern NSString * _Nonnull const kMPMessageTypeResponseHeader;
 extern NSString * _Nonnull const kMPMessageTypeConfig;
 extern NSString * _Nonnull const kMPMessageTypeNetworkPerformance;
 extern NSString * _Nonnull const kMPMessageTypeLeaveBreadcrumbs;
@@ -458,9 +457,6 @@ extern const NSTimeInterval INITIAL_UPLOAD_TIME;
 // How long to block config requests after a successful response.
 extern const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE;
 extern const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE;
-
-// Network request timeout
-extern const NSTimeInterval NETWORK_REQUEST_MAX_WAIT_SECONDS;
 
 // Attributes limits
 extern const NSInteger LIMIT_ATTR_KEY_LENGTH;

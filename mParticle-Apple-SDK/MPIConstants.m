@@ -6,7 +6,6 @@ NSString *const kMParticleSDKVersion = @"9.7.4";
 // Message Type (dt)
 NSString *const kMPMessageTypeKey = @"dt";
 NSString *const kMPMessageTypeRequestHeader = @"h";
-NSString *const kMPMessageTypeResponseHeader = @"rh";
 NSString *const kMPMessageTypeConfig = @"ac";
 NSString *const kMPMessageTypeNetworkPerformance = @"npe";
 NSString *const kMPMessageTypeLeaveBreadcrumbs = @"bc";
@@ -426,8 +425,6 @@ const NSTimeInterval DEFAULT_UPLOAD_INTERVAL = 600.0;
 // How long to block config requests after a successful response.
 const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0*60;
 const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60*60*24.0;
-
-const NSTimeInterval NETWORK_REQUEST_MAX_WAIT_SECONDS = 10;
 
 // Attributes limits
 const NSInteger LIMIT_ATTR_KEY_LENGTH = 256;
