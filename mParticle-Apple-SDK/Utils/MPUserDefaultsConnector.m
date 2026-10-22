@@ -49,6 +49,12 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 - (void)setIdentity:(nullable NSString *)identityString identityType:(MPIdentity)identityType;
 @end
 
+// Implemented in MPIdentityApi.m.
+@interface MPIdentityHTTPErrorResponse ()
+- (instancetype)initWithJsonObject:(nullable NSDictionary *)dictionary httpCode:(NSInteger)httpCode;
+- (instancetype)initWithCode:(MPIdentityErrorResponseCode)code message:(NSString *)message error:(NSError *)error;
+@end
+
 @interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol, MPBackendHost, MPNetworkHost>
 
 @end
@@ -466,6 +472,22 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     if (persistenceInfo.cookies != nil) {
         [MParticle sharedInstance].stateMachine.consumerInfo.cookies = persistenceInfo.cookies;
     }
+}
+
+static NSError *MPIdentityErrorWithResponse(MPIdentityHTTPErrorResponse *errorResponse) {
+    return [NSError errorWithDomain:mParticleIdentityErrorDomain
+                               code:errorResponse.code
+                           userInfo:@{mParticleIdentityErrorKey: errorResponse}];
+}
+
+- (NSError *)identityErrorWithCode:(NSInteger)code message:(NSString *)message underlyingError:(NSError *)underlyingError {
+    return MPIdentityErrorWithResponse([[MPIdentityHTTPErrorResponse alloc] initWithCode:(MPIdentityErrorResponseCode)code
+                                                                                 message:message
+                                                                                   error:underlyingError]);
+}
+
+- (NSError *)identityErrorWithResponseObject:(NSDictionary *)responseObject httpCode:(NSInteger)httpCode {
+    return MPIdentityErrorWithResponse([[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseObject httpCode:httpCode]);
 }
 
 // The connector keeps no state of its own, so the host serves as the one a config response is

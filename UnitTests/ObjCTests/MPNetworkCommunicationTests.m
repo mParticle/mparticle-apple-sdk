@@ -26,7 +26,6 @@
 
 - (BOOL)performMessageUpload:(MPUpload *)upload;
 - (BOOL)performAliasUpload:(MPUpload *)upload;
-- (void)identityApiRequestWithURL:(NSURL *)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
 
 @end
 
@@ -979,28 +978,29 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 }
 
 - (NSError *)errorFromIdentityRequestWithStatusCode:(int)statusCode body:(NSData *)body maxAgeSeconds:(NSString *)maxAgeSeconds {
-    id urlResponseMock = OCMClassMock([NSHTTPURLResponse class]);
-    [[[urlResponseMock stub] andReturnValue:OCMOCK_VALUE(statusCode)] statusCode];
-    [[[urlResponseMock stub] andReturn:(maxAgeSeconds ? @{@"X-MP-Max-Age": maxAgeSeconds} : @{})] allHeaderFields];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
+    // A real response, as the max age header is read with -valueForHTTPHeaderField:.
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
-    response.httpResponse = urlResponseMock;
+    response.httpResponse = [[NSHTTPURLResponse alloc] initWithURL:[networkCommunication identifyURL].url
+                                                        statusCode:statusCode
+                                                       HTTPVersion:@"HTTP/1.1"
+                                                      headerFields:(maxAgeSeconds ? @{@"X-MP-Max-Age": maxAgeSeconds} : @{})];
     response.data = body;
 
     id mockConnector = OCMClassMock([MPConnector class]);
     [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:[[MPIdentityApiRequest alloc] init]];
     __block NSError *capturedError = nil;
     __block BOOL completed = NO;
-    XCTAssertNoThrow([mockNetworkCommunication identityApiRequestWithURL:[networkCommunication identifyURL].url
-                                                        identityRequest:request
-                                                     blockOtherRequests:NO
-                                                             completion:^(MPIdentityHTTPBaseSuccessResponse *httpResponse, NSError *error) {
+    XCTAssertNoThrow([mockNetworkCommunication identityRequestToEndpoint:MPEndpointIdentityIdentify
+                                                       requestDictionary:[request dictionaryRepresentation]
+                                                      blockOtherRequests:NO
+                                                              completion:^(MPIdentityHTTPBaseSuccessResponse *httpResponse, NSError *error) {
         completed = YES;
         capturedError = error;
     }]);

@@ -14,8 +14,8 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
 typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 
-/// The network layer's members that are still Objective-C: the identity requests. The Swift class
-/// holds the rest.
+/// The network layer's members that are still Objective-C: the identity request entry points, which
+/// build each request from its Objective-C DTO. The Swift class sends them and holds the rest.
 @interface MPNetworkCommunication_PRIVATE (ObjCBoundary)
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;

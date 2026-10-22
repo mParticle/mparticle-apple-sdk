@@ -47,7 +47,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
 @interface MPNetworkCommunication_PRIVATE ()
 - (void)modifyWithIdentityChanges:(NSArray *)identityChanges blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerModifyCallback)completion;
-- (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
 @end
 
 #pragma mark - MPStateMachine category
@@ -509,7 +508,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     id partialMock = OCMPartialMock(network);
     
-    [[[partialMock reject] ignoringNonObjectArgs] identityApiRequestWithURL:[OCMArg any] identityRequest:[OCMArg any] blockOtherRequests:[OCMArg any] completion:[OCMArg any]];
+    [[[partialMock reject] ignoringNonObjectArgs] identityRequestToEndpoint:0 requestDictionary:[OCMArg any] blockOtherRequests:NO completion:[OCMArg any]];
     
     [partialMock modifyWithIdentityChanges:nil blockOtherRequests:YES completion:^(MPIdentityHTTPModifySuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
         XCTAssertNil(error);

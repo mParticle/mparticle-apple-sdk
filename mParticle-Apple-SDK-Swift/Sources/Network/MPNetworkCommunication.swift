@@ -10,11 +10,13 @@ protocol MPConnectorFactoryProtocol {
 
 /// The SDK's network layer. It holds the host it reads the SDK through, builds the endpoint URLs and
 /// the connectors, holds the background tasks and upload throttling the requests use, and sends the
-/// config, audience and upload requests. The identity requests are still sent by the Objective-C
-/// boundary category in MPNetworkCommunication+ObjCBoundary.m.
+/// config, audience, upload and identity requests. The identity entry points, which build each
+/// request from its Objective-C DTO, are still in the boundary category in
+/// MPNetworkCommunication+ObjCBoundary.m.
 ///
-/// Besides the initialiser, which the connector calls, and the `MPBackendUploadNetworking`
-/// requests, every member Objective-C can see exists for that category and its tests.
+/// Besides the initialiser, which the connector calls, the `MPBackendUploadNetworking` requests, and
+/// `host` and the identity request, which that category calls, every member Objective-C can see
+/// exists for the tests.
 @objc(MPNetworkCommunication_PRIVATE)
 public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetworking {
     /// The default-host subdomains. A tracking subdomain is used once the app has ATT authorisation.
@@ -35,6 +37,21 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         static let ageHeader = "Age"
         static let responseHeaderMessageType = "rh"
         static let retryAfterHeader = "Retry-After"
+        static let identityMaxAgeHeader = "X-MP-Max-Age"
+    }
+
+    /// The identity error domain and userInfo key, the `MPIdentityErrorResponseCode` values an
+    /// identity request fails with, and `MPConnectivityErrorCodeNoConnection`, mirrored from
+    /// MPEnums.h and MPEnums.m, which this module cannot import.
+    private enum IdentityError {
+        static let domain = "mParticle Identity Error Domain"
+        static let key = "mParticle Identity Error"
+        static let unknown = 0
+        static let requestInProgress = 1
+        static let clientNoConnection = 3
+        static let sslError = 4
+        static let optOut = 5
+        static let noConnectionTransportCode = 1
     }
 
     /// The `MPUploadType` values.
@@ -64,7 +81,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
 
     /// Whether an identity request that blocks the others is in flight. Read and written from any
     /// thread.
-    @objc public var identifying: Bool {
+    @objc var identifying: Bool {
         get {
             identifyingLock.lock()
             defer { identifyingLock.unlock() }
@@ -127,28 +144,28 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         urlFactory.audienceURL(routing: networkRouting, defaultEventHost: defaultEventHost, mpId: host.mpId())
     }
 
-    @objc public var identifyURL: MPURL? {
+    @objc var identifyURL: MPURL? {
         if memoizedIdentifyURL == nil {
             memoizedIdentifyURL = identityURL(pathComponent: "identify")
         }
         return memoizedIdentifyURL
     }
 
-    @objc public var loginURL: MPURL? {
+    @objc var loginURL: MPURL? {
         if memoizedLoginURL == nil {
             memoizedLoginURL = identityURL(pathComponent: "login")
         }
         return memoizedLoginURL
     }
 
-    @objc public var logoutURL: MPURL? {
+    @objc var logoutURL: MPURL? {
         if memoizedLogoutURL == nil {
             memoizedLogoutURL = identityURL(pathComponent: "logout")
         }
         return memoizedLogoutURL
     }
 
-    @objc public var modifyURL: MPURL? {
+    @objc var modifyURL: MPURL? {
         urlFactory.modifyURL(routing: networkRouting, defaultIdentityHost: defaultIdentityHost, mpId: host.mpId())
     }
 
@@ -177,7 +194,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
 
     /// The connector for one request: the test factory's while one is set, otherwise a new
     /// `MPConnector`. Dynamic, so a partial mock's stub also answers the calls made from Swift.
-    @objc public dynamic func makeConnector() -> MPConnectorProtocol {
+    @objc dynamic func makeConnector() -> MPConnectorProtocol {
         if let factory = Self.connectorFactory {
             return factory.createConnector()
         }
@@ -260,7 +277,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
     /// in an app extension, which has no `UIApplication`. If the task expires, `handler` runs and the
     /// task ends.
     @objc(beginSafeBackgroundTaskWithExpirationHandler:)
-    public func beginSafeBackgroundTask(expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier {
+    func beginSafeBackgroundTask(expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier {
         if host.isAppExtension() {
             return .invalid
         }
@@ -279,7 +296,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
 
     /// Ends a task `beginSafeBackgroundTask(expirationHandler:)` began, on the main thread.
     @objc(endSafeBackgroundTask:)
-    public func endSafeBackgroundTask(_ taskId: UIBackgroundTaskIdentifier) {
+    func endSafeBackgroundTask(_ taskId: UIBackgroundTaskIdentifier) {
         guard taskId != .invalid else { return }
         host.executeOnMain {
             MPApplication_PRIVATE.sharedUIApplication()?.endBackgroundTask(taskId)
@@ -622,5 +639,212 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         }
 
         return false
+    }
+
+    // MARK: - Identity requests
+
+    /// Sends `requestDictionary` to the identity `endpoint`, or answers from the identity cache when
+    /// caching is on and holds a usable response. Fails unsent while another blocking request is in
+    /// flight or the SDK is opted out. A request that blocks the others holds `identifying` until it
+    /// finishes. A modify request succeeds with an `MPIdentityHTTPModifySuccessResponse`, the others
+    /// with an `MPIdentityHTTPSuccessResponse`; the host builds a failure's error. Synchronous:
+    /// `completion` runs once, on the calling thread, before this returns.
+    @objc(identityRequestToEndpoint:requestDictionary:blockOtherRequests:completion:)
+    public func identityRequest(
+        to endpoint: MPEndpoint,
+        requestDictionary: NSDictionary,
+        blockOtherRequests: Bool,
+        completion: ((MPIdentityHTTPBaseSuccessResponse?, Error?) -> Void)?
+    ) {
+        let logger = logger
+        if identifying {
+            logger.warning("Identity API request blocked - another identity request is already in progress")
+            completion?(nil, NSError(
+                domain: IdentityError.domain, code: IdentityError.requestInProgress,
+                userInfo: [IdentityError.key: "Identity API request in progress."]
+            ))
+            return
+        }
+        if host.optOut() {
+            logger.warning("Identity API request blocked - SDK is opted out")
+            completion?(nil, NSError(
+                domain: IdentityError.domain, code: IdentityError.optOut, userInfo: [IdentityError.key: "Opt Out Enabled."]
+            ))
+            return
+        }
+        if blockOtherRequests {
+            identifying = true
+        }
+
+        let url: MPURL?
+        switch endpoint {
+        case .identityIdentify: url = identifyURL
+        case .identityLogin: url = loginURL
+        case .identityLogout: url = logoutURL
+        default: url = modifyURL
+        }
+
+        let start = Date().timeIntervalSince1970
+        // Cannot fail: the DTOs build the dictionary from strings, numbers, NSNull and containers of them.
+        let data = try? JSONSerialization.data(withJSONObject: requestDictionary)
+        let jsonRequest = data.flatMap { String(data: $0, encoding: .utf8) }
+        logger.verbose("Identity request:\nURL: \(url.map { "\($0.url)" } ?? "(null)") \nBody:\(jsonRequest ?? "(null)")")
+
+        var success = false
+        var responseObject: NSDictionary?
+        var responseString: String?
+        var responseCode = 0
+        var transportError: NSError?
+        var bodyWasNotAnObject = false
+
+        let identityCaching = host.stateMachine().enableIdentityCaching
+            ? MPIdentityCaching(userDefaults: host.userDefaults(), logger: logger)
+            : nil
+
+        if let cached = identityCaching?.getCachedIdentityResponse(for: endpoint, requestDictionary: requestDictionary) {
+            responseString = String(data: cached.bodyData, encoding: .utf8)
+            // An entry that is not an object is as unusable as one that will not parse, and is
+            // treated the same way: as a miss, so the request falls through to the network rather
+            // than failing for as long as the entry has left to live. An entry written before this
+            // was checked on the way in heals itself that way.
+            do {
+                if let object = try JSONSerialization.jsonObject(with: cached.bodyData) as? NSDictionary {
+                    responseObject = object
+                    responseCode = cached.statusCode
+                    success = true
+                } else {
+                    logger.error("Cached identity response was unusable: body was not a JSON object")
+                }
+            } catch {
+                logger.error("Cached identity response was unusable: \(error.localizedDescription)")
+            }
+        }
+
+        let answeredFromCache = success
+        if !answeredFromCache {
+            let taskId = beginSafeBackgroundTask { self.identifying = false }
+            let connector = makeConnector()
+            let response = url.map {
+                connector.responseFromPostRequest(to: $0, message: nil, serializedParams: data, secret: nil)
+            }
+            let responseData = response?.data
+            transportError = response?.error
+            let httpResponse = response?.httpResponse
+            endSafeBackgroundTask(taskId)
+
+            responseCode = httpResponse?.statusCode ?? 0
+            success = responseCode == HTTPStatusCode.success.rawValue || responseCode == HTTPStatusCode.accepted.rawValue
+            success = success && !(responseData?.isEmpty ?? true)
+            logger.verbose("Identity response code: \(responseCode)")
+
+            if success, let responseData {
+                responseString = String(data: responseData, encoding: .utf8)
+                do {
+                    // A JSON body is as legitimately an array, string or number as it is an object,
+                    // and every reader subscripts it by key. This has to be settled before the cache
+                    // below: caching a body that is then rejected would hand it back on every
+                    // request until it expired, turning one bad response into a window of failing ones.
+                    if let object = try JSONSerialization.jsonObject(with: responseData) as? NSDictionary {
+                        responseObject = object
+                        if let identityCaching {
+                            cacheIdentityResponse(
+                                responseData, statusCode: responseCode, httpResponse: httpResponse,
+                                endpoint: endpoint, requestDictionary: requestDictionary,
+                                identityCaching: identityCaching, logger: logger
+                            )
+                        }
+                    } else {
+                        bodyWasNotAnObject = true
+                        success = false
+                    }
+                } catch {
+                    success = false
+                    logger.error("Identity response serialization error: \(error.localizedDescription)")
+                }
+            }
+        }
+
+        logger.verbose(String(format: "Identity execution time: %.2fms", (Date().timeIntervalSince1970 - start) * 1000.0))
+
+        identifying = false
+
+        if success {
+            if let responseString {
+                logger.verbose("Identity response:\n\(responseString)")
+            }
+            let successResponse: MPIdentityHTTPSuccessResponse = endpoint == .identityModify
+                ? MPIdentityHTTPModifySuccessResponse(jsonObject: responseObject)
+                : MPIdentityHTTPSuccessResponse(jsonObject: responseObject)
+            completion?(successResponse, nil)
+        } else if let completion {
+            completion(nil, identityError(
+                transportError: transportError, bodyWasNotAnObject: bodyWasNotAnObject,
+                responseObject: responseObject, responseCode: responseCode, logger: logger
+            ))
+        }
+    }
+
+    /// Caches an identity response for as many seconds as its `X-MP-Max-Age` header asks, if any.
+    private func cacheIdentityResponse(
+        _ body: Data,
+        statusCode: Int,
+        httpResponse: HTTPURLResponse?,
+        endpoint: MPEndpoint,
+        requestDictionary: NSDictionary,
+        identityCaching: MPIdentityCaching,
+        logger: MPLog
+    ) {
+        // Header names are case-insensitive; a Swift dictionary bridged from allHeaderFields is not.
+        let header = httpResponse?.value(forHTTPHeaderField: Constant.identityMaxAgeHeader)
+        let maxAgeSeconds = (header as NSString?)?.integerValue ?? 0
+        logger.verbose("Identity Caching - max age header value (in seconds): \(maxAgeSeconds)")
+        guard maxAgeSeconds > 0 else { return }
+        let cachedResponse = MPIdentityCachedResponse(
+            bodyData: body, statusCode: statusCode, expires: Date().addingTimeInterval(TimeInterval(maxAgeSeconds))
+        )
+        identityCaching.cacheIdentityResponse(cachedResponse, endpoint: endpoint, requestDictionary: requestDictionary)
+    }
+
+    /// The error a failed identity request completes with, logged.
+    private func identityError(
+        transportError: NSError?,
+        bodyWasNotAnObject: Bool,
+        responseObject: NSDictionary?,
+        responseCode: Int,
+        logger: MPLog
+    ) -> NSError {
+        if let transportError {
+            if transportError.code == IdentityError.noConnectionTransportCode {
+                logger.error("Identity request failed - no network connectivity")
+                return host.identityError(
+                    code: IdentityError.clientNoConnection, message: "Device has no network connectivity.",
+                    underlyingError: transportError
+                )
+            }
+            if transportError.domain == NSURLErrorDomain {
+                logger.error(
+                    "Identity request failed - SSL error: \(transportError.localizedDescription) (code: \(transportError.code))"
+                )
+                return host.identityError(
+                    code: IdentityError.sslError, message: "Failed to establish SSL connection.", underlyingError: transportError
+                )
+            }
+            logger.error(
+                "Identity request failed - unknown error: \(transportError.localizedDescription) "
+                    + "(domain: \(transportError.domain), code: \(transportError.code))"
+            )
+            return host.identityError(
+                code: IdentityError.unknown, message: "An unknown client-side error has occured", underlyingError: transportError
+            )
+        }
+        if bodyWasNotAnObject {
+            logger.error("Identity request failed - response body was not a JSON object")
+            return host.identityError(
+                code: IdentityError.unknown, message: "Identity response body was not a JSON object.", underlyingError: nil
+            )
+        }
+        logger.error("Identity request failed - HTTP error (code: \(responseCode))")
+        // Always nil here, as it was in Objective-C: a body is only read from a 200 or 202 response.
+        return host.identityError(responseObject: responseObject, httpCode: responseCode)
     }
 }

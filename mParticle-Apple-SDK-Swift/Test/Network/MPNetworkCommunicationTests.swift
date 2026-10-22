@@ -61,6 +61,19 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     func logKitBatch(_ uploadString: String) { kitBatches.append(uploadString) }
     func userDefaultsConnector() -> MPUserDefaultsConnectorProtocol { configConnector }
 
+    /// Stands in for the Objective-C error response, keeping what it was made from.
+    func identityError(code: Int, message: String, underlyingError: NSError?) -> NSError {
+        var userInfo: [String: Any] = [NSLocalizedDescriptionKey: message]
+        userInfo[NSUnderlyingErrorKey] = underlyingError
+        return NSError(domain: "client-side", code: code, userInfo: userInfo)
+    }
+
+    func identityError(responseObject: NSDictionary?, httpCode: Int) -> NSError {
+        var userInfo: [String: Any] = [:]
+        userInfo["body"] = responseObject
+        return NSError(domain: "server", code: httpCode, userInfo: userInfo)
+    }
+
     private static func routing(apiKey: String, attAuthorized: Bool) -> MPEndpointRouting {
         MPEndpointRouting(
             apiKey: apiKey, customBaseURLHost: nil, hasCustomBaseURL: false, configHost: nil,
@@ -327,6 +340,7 @@ final class MPNetworkCommunicationTests: XCTestCase {
         let response = MPConnectorResponse()
         private(set) var requestedURLs: [URL] = []
         private(set) var posts: [MPNetworkFakePost] = []
+        var onPost: () -> Void = {}
 
         func respond(_ statusCode: Int, body: Data? = nil, headers: [String: String] = [:], error: NSError? = nil) {
             response.httpResponse = HTTPURLResponse(
@@ -345,6 +359,7 @@ final class MPNetworkCommunicationTests: XCTestCase {
             to url: MPURL, message: String?, serializedParams: Data?, secret: String?
         ) -> MPConnectorResponseProtocol {
             posts.append(MPNetworkFakePost(url: url.url, message: message, params: serializedParams, secret: secret))
+            onPost()
             return response
         }
     }
@@ -625,5 +640,231 @@ final class MPNetworkCommunicationTests: XCTestCase {
         network.upload([message, alias]) { completions += 1 }
         XCTAssertEqual(completions, 2)
         XCTAssertEqual(connector.posts.count, 3)
+    }
+
+    // MARK: - Identity requests
+
+    private static let knownIdentities: NSDictionary = ["known_identities": ["email": "user@example.com"]]
+    private let mpidBody = Data(#"{"mpid":"42"}"#.utf8)
+
+    /// What one identity request completed with.
+    private struct IdentityOutcome {
+        let response: MPIdentityHTTPBaseSuccessResponse?
+        let error: NSError?
+    }
+
+    /// Sends an identity request, checking its completion ran exactly once before the call returned.
+    private func identityRequest(
+        _ endpoint: MPEndpoint = .identityIdentify,
+        blocking: Bool = true,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> IdentityOutcome? {
+        var outcomes: [IdentityOutcome] = []
+        network.identityRequest(to: endpoint, requestDictionary: Self.knownIdentities, blockOtherRequests: blocking) {
+            outcomes.append(IdentityOutcome(response: $0, error: $1 as NSError?))
+        }
+        XCTAssertEqual(outcomes.count, 1, "The completion runs once, before the request returns", file: file, line: line)
+        return outcomes.first
+    }
+
+    private func captureErrorLogs() {
+        host.log = MPLog(logLevel: .error)
+        host.log?.customLogger = { [unowned self] in logged.append($0) }
+    }
+
+    private func identityCache() -> MPIdentityCaching {
+        MPIdentityCaching(userDefaults: host.defaults, logger: MPLog(logLevel: .none))
+    }
+
+    func testARequestInFlightAndThenAnOptOutFailUnsentWithoutTakingTheFlag() {
+        captureLogs()
+        let connector = respondToEveryRequest(200, body: mpidBody)
+        network.identifying = true
+        host.isOptedOut = true
+
+        let inFlight = identityRequest()?.error
+        XCTAssertEqual(inFlight?.domain, "mParticle Identity Error Domain")
+        XCTAssertEqual(inFlight?.code, 1)
+        XCTAssertEqual(inFlight?.userInfo["mParticle Identity Error"] as? String, "Identity API request in progress.")
+        XCTAssertTrue(network.identifying, "The request in flight still holds the flag")
+        XCTAssertFalse(host.calls.contains("optOut"), "The in-flight check comes first")
+
+        network.identifying = false
+        let optedOut = identityRequest()?.error
+        XCTAssertEqual(optedOut?.domain, "mParticle Identity Error Domain")
+        XCTAssertEqual(optedOut?.code, 5)
+        XCTAssertEqual(optedOut?.userInfo["mParticle Identity Error"] as? String, "Opt Out Enabled.")
+        XCTAssertFalse(network.identifying, "An opted-out request never takes the flag")
+
+        XCTAssertEqual(connector.posts.count, 0)
+        XCTAssertEqual(logged, [
+            "mParticle -> Identity API request blocked - another identity request is already in progress",
+            "mParticle -> Identity API request blocked - SDK is opted out"
+        ])
+    }
+
+    func testOnlyABlockingRequestHoldsTheFlagWhileItIsSent() {
+        let connector = respondToEveryRequest(200, body: mpidBody)
+        var flagWhileSent: [Bool] = []
+        connector.onPost = { [unowned self] in flagWhileSent.append(network.identifying) }
+
+        XCTAssertNotNil(identityRequest(blocking: true)?.response)
+        XCTAssertFalse(network.identifying)
+        XCTAssertNotNil(identityRequest(blocking: false)?.response)
+        XCTAssertFalse(network.identifying)
+        XCTAssertEqual(flagWhileSent, [true, false])
+    }
+
+    func testAModifyRequestSucceedsWithAModifyResponseAndEachEndpointIsPostedToItsOwnURL() throws {
+        let connector = respondToEveryRequest(202, body: Data(#"{"mpid":"42","change_results":[]}"#.utf8))
+        let cases: [(endpoint: MPEndpoint, url: URL?)] = [
+            (.identityIdentify, network.identifyURL?.url),
+            (.identityLogin, network.loginURL?.url),
+            (.identityLogout, network.logoutURL?.url),
+            (.identityModify, network.modifyURL?.url)
+        ]
+        for (endpoint, url) in cases {
+            let response = identityRequest(endpoint)?.response
+            XCTAssertEqual(
+                response.map { String(describing: type(of: $0)) },
+                endpoint == .identityModify ? "MPIdentityHTTPModifySuccessResponse" : "MPIdentityHTTPSuccessResponse"
+            )
+            XCTAssertEqual((response as? MPIdentityHTTPSuccessResponse)?.mpid, 42)
+            let post = try XCTUnwrap(connector.posts.last)
+            XCTAssertEqual(post.url, url)
+            XCTAssertNil(post.message)
+            XCTAssertNil(post.secret)
+            let body = post.params.flatMap { try? JSONSerialization.jsonObject(with: $0) }
+            XCTAssertEqual(body as? NSDictionary, Self.knownIdentities)
+        }
+        XCTAssertEqual(connector.posts.count, 4)
+    }
+
+    func testAUsableCachedResponseAnswersUnsentAndAnUnusableOneIsAMissLoggedAsAnError() {
+        host.machine.enableIdentityCaching = true
+        captureErrorLogs()
+        let connector = respondToEveryRequest(200, body: mpidBody)
+        let unusable = "mParticle -> Cached identity response was unusable: "
+        // Each cached body, with the error an unusable one is logged with before the request is sent.
+        let cases: [(cached: Data, logged: String?)] = [
+            (Data(#"{"mpid":"7"}"#.utf8), nil),
+            (Data("[1,2]".utf8), unusable + "body was not a JSON object"),
+            (Data("{".utf8), unusable)
+        ]
+        for (cached, expected) in cases {
+            let sent = expected != nil
+            logged = []
+            identityCache().clearAllCache()
+            identityCache().cacheIdentityResponse(
+                MPIdentityCachedResponse(bodyData: cached, statusCode: 200, expires: Date(timeIntervalSinceNow: 3600)),
+                endpoint: .identityIdentify, requestDictionary: Self.knownIdentities
+            )
+            let posts = connector.posts.count
+            let mainHops = host.mainHops.count
+
+            let response = identityRequest()?.response as? MPIdentityHTTPSuccessResponse
+            XCTAssertEqual(response?.mpid, sent ? 42 : 7)
+            XCTAssertEqual(connector.posts.count - posts, sent ? 1 : 0)
+            XCTAssertEqual(host.mainHops.count > mainHops, sent, "A background task is begun only to send")
+            XCTAssertEqual(logged.count, expected == nil ? 0 : 1, "\(logged)")
+            XCTAssertTrue(expected.map { logged.first?.hasPrefix($0) == true } ?? true, "\(logged)")
+        }
+        XCTAssertFalse(network.identifying)
+    }
+
+    func testAResponseIsCachedOnlyWhileCachingIsOnAndItsMaxAgeHeaderIsPositive() {
+        let cache = identityCache()
+        cache.clearAllCache()
+        host.machine.enableIdentityCaching = true
+        // Lower case, as HTTP/2 sends header names: the lookup must ignore case.
+        for maxAge in [nil, "0", "-60", "soon"] {
+            _ = respondToEveryRequest(200, body: mpidBody, headers: maxAge.map { ["x-mp-max-age": $0] } ?? [:])
+            XCTAssertNotNil(identityRequest()?.response)
+            XCTAssertNil(cache.getCache(), maxAge ?? "no header")
+        }
+
+        _ = respondToEveryRequest(200, body: mpidBody, headers: ["x-mp-max-age": "3600"])
+        host.machine.enableIdentityCaching = false
+        XCTAssertNotNil(identityRequest()?.response)
+        XCTAssertNil(cache.getCache(), "Nothing is cached while caching is off")
+
+        host.machine.enableIdentityCaching = true
+        XCTAssertNotNil(identityRequest()?.response)
+        let cached = cache.getCachedIdentityResponse(for: .identityIdentify, requestDictionary: Self.knownIdentities)
+        XCTAssertEqual(cached?.bodyData, mpidBody)
+        XCTAssertEqual(cached?.statusCode, 200)
+        XCTAssertEqual(cached?.expires.timeIntervalSinceNow ?? 0, 3600, accuracy: 60)
+    }
+
+    func testABodyThatIsNotAnObjectIsNotCachedAndFailsAsAnUnknownError() {
+        let cache = identityCache()
+        cache.clearAllCache()
+        host.machine.enableIdentityCaching = true
+        captureErrorLogs()
+        _ = respondToEveryRequest(200, body: Data("[1,2]".utf8), headers: ["x-mp-max-age": "3600"])
+
+        let error = identityRequest()?.error
+        XCTAssertEqual(error?.domain, "client-side")
+        XCTAssertEqual(error?.code, 0)
+        XCTAssertEqual(error?.localizedDescription, "Identity response body was not a JSON object.")
+        XCTAssertNil(error?.userInfo[NSUnderlyingErrorKey])
+        XCTAssertNil(cache.getCache())
+        XCTAssertEqual(logged, ["mParticle -> Identity request failed - response body was not a JSON object"])
+        XCTAssertFalse(network.identifying)
+    }
+
+    func testEachFailureIsMappedToItsCodeAndLoggedOnlyWhenACompletionWaits() {
+        captureErrorLogs()
+        let noConnection = NSError(domain: "MPConnector", code: 1)
+        let ssl = NSError(domain: NSURLErrorDomain, code: NSURLErrorSecureConnectionFailed)
+        let other = NSError(domain: "other", code: 7)
+        let failed = "mParticle -> Identity request failed - "
+        struct Failure {
+            let status: Int
+            var body: Data?
+            var transportError: NSError?
+            let domain: String
+            let code: Int
+            var message: String?
+            let logged: String
+        }
+        let cases = [
+            Failure(status: 0, transportError: noConnection, domain: "client-side", code: 3,
+                    message: "Device has no network connectivity.", logged: "no network connectivity"),
+            Failure(status: 0, transportError: ssl, domain: "client-side", code: 4,
+                    message: "Failed to establish SSL connection.",
+                    logged: "SSL error: \(ssl.localizedDescription) (code: -1200)"),
+            Failure(status: 0, transportError: other, domain: "client-side", code: 0,
+                    message: "An unknown client-side error has occured",
+                    logged: "unknown error: \(other.localizedDescription) (domain: other, code: 7)"),
+            Failure(status: 500, body: mpidBody, domain: "server", code: 500, logged: "HTTP error (code: 500)"),
+            Failure(status: 200, body: Data(), domain: "server", code: 200, logged: "HTTP error (code: 200)"),
+            Failure(status: 200, body: Data("{".utf8), domain: "server", code: 200, logged: "HTTP error (code: 200)")
+        ]
+        for failure in cases {
+            logged = []
+            _ = respondToEveryRequest(failure.status, body: failure.body, error: failure.transportError)
+
+            let error = identityRequest()?.error
+            XCTAssertEqual(error?.domain, failure.domain, failure.logged)
+            XCTAssertEqual(error?.code, failure.code, failure.logged)
+            if let message = failure.message {
+                XCTAssertEqual(error?.localizedDescription, message)
+                XCTAssertTrue((error?.userInfo[NSUnderlyingErrorKey] as? NSError) === failure.transportError, failure.logged)
+            } else {
+                XCTAssertNil(error?.userInfo["body"], "A refused request's body is not read")
+            }
+            XCTAssertEqual(logged.last, failed + failure.logged)
+            XCTAssertFalse(network.identifying)
+        }
+
+        logged = []
+        _ = respondToEveryRequest(500)
+        network.identityRequest(
+            to: .identityIdentify, requestDictionary: Self.knownIdentities, blockOtherRequests: true, completion: nil
+        )
+        XCTAssertEqual(logged, [])
+        XCTAssertFalse(network.identifying)
     }
 }
