@@ -4,7 +4,7 @@ import UIKit
 /// Internal boundary used by scene-delegate handling to forward URLs and user activities.
 ///
 /// The Objective-C selectors are fixed because `MPAppNotificationHandler` implements this
-/// contract in the Objective-C core.
+/// contract with the same methods that implement `MPAppNotificationHandlerProtocol`.
 @objc(OpenURLHandlerProtocol)
 public protocol OpenURLHandlerProtocolPRIVATE: NSObjectProtocol {
     @objc(openURL:options:)

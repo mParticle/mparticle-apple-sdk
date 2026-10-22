@@ -126,7 +126,6 @@
 		53A79D4029CE23F700E7489F /* MPILogger.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B4629CDFB1F00E7489F /* MPILogger.h */; };
 		53A79D4329CE23F700E7489F /* MParticleUserNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ABD29CDFB1E00E7489F /* MParticleUserNotification.h */; };
 		53A79D4529CE23F700E7489F /* MPKitContainer+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5229CDFB1F00E7489F /* MPKitContainer+MParticlePrivate.h */; };
-		53A79D4A29CE23F700E7489F /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B3C29CDFB1F00E7489F /* MPAppNotificationHandler.h */; };
 		53A79D4B29CE23F700E7489F /* MPKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B6029CDFB1F00E7489F /* MPKitFilter.h */; };
 		53A79D4C29CE23F700E7489F /* MPDataPlanFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5729CDFB1F00E7489F /* MPDataPlanFilter.h */; };
 		53A79D4D29CE23F700E7489F /* MPPromotion+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B3F29CDFB1F00E7489F /* MPPromotion+Dictionary.h */; };
@@ -151,7 +150,6 @@
 		53A79D9D29CE23F700E7489F /* MParticleUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79A9A29CDFB1E00E7489F /* MParticleUser.m */; };
 		53A79DA029CE23F700E7489F /* MPKitExecStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4D29CDFB1F00E7489F /* MPKitExecStatus.m */; };
 		53A79DA829CE23F700E7489F /* MPKitAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5C29CDFB1F00E7489F /* MPKitAPI.m */; };
-		53A79DA929CE23F700E7489F /* MPAppNotificationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B3D29CDFB1F00E7489F /* MPAppNotificationHandler.m */; };
 		53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B4929CDFB1F00E7489F /* MPEvent.m */; };
 		53A79DAD29CE23F700E7489F /* MPAliasResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79A9929CDFB1E00E7489F /* MPAliasResponse.m */; };
 		53A79DAE29CE23F700E7489F /* MPKitFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5429CDFB1F00E7489F /* MPKitFilter.m */; };
@@ -306,8 +304,6 @@
 		53A79AF929CDFB1F00E7489F /* MPConsentState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsentState.m; sourceTree = "<group>"; };
 		53A79B0929CDFB1F00E7489F /* NSDictionary+MPCaseInsensitive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+MPCaseInsensitive.m"; sourceTree = "<group>"; };
 		53A79B3629CDFB1F00E7489F /* mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mParticle.m; sourceTree = "<group>"; };
-		53A79B3C29CDFB1F00E7489F /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppNotificationHandler.h; sourceTree = "<group>"; };
-		53A79B3D29CDFB1F00E7489F /* MPAppNotificationHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppNotificationHandler.m; sourceTree = "<group>"; };
 		53A79B3F29CDFB1F00E7489F /* MPPromotion+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPPromotion+Dictionary.h"; sourceTree = "<group>"; };
 		53A79B4029CDFB1F00E7489F /* MPCommerceEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCommerceEvent.m; sourceTree = "<group>"; };
 		53A79B4129CDFB1F00E7489F /* MPPromotion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPPromotion.m; sourceTree = "<group>"; };
@@ -522,6 +518,7 @@
 				Test/Network/MPConfigResponseParserTests.swift,
 				Test/Network/MPNetworkPerformanceTests.swift,
 				Test/Network/MPURLTests.swift,
+				Test/Notifications/MPAppNotificationHandlerTests.swift,
 				Test/Notifications/MParticleUserNotificationTests.swift,
 				Test/Notifications/MPDeviceTokenStoreTests.swift,
 				Test/Notifications/MPNotificationControllerTests.swift,
@@ -641,6 +638,7 @@
 				Test/Network/MPConfigResponseParserTests.swift,
 				Test/Network/MPNetworkPerformanceTests.swift,
 				Test/Network/MPURLTests.swift,
+				Test/Notifications/MPAppNotificationHandlerTests.swift,
 				Test/Notifications/MParticleUserNotificationTests.swift,
 				Test/Notifications/MPDeviceTokenStoreTests.swift,
 				Test/Notifications/MPNotificationControllerTests.swift,
@@ -813,7 +811,6 @@
 				53A79AD029CDFB1F00E7489F /* MPEnums.m */,
 				53A79ACF29CDFB1F00E7489F /* MPIConstants.h */,
 				53A79B6429CDFB1F00E7489F /* MPIConstants.m */,
-				53A79B3729CDFB1F00E7489F /* AppNotifications */,
 				53A79AF529CDFB1F00E7489F /* Consent */,
 				53A79ABC29CDFB1E00E7489F /* Data Model */,
 				53A79B3E29CDFB1F00E7489F /* Ecommerce */,
@@ -892,15 +889,6 @@
 				53A79B0929CDFB1F00E7489F /* NSDictionary+MPCaseInsensitive.m */,
 			);
 			path = Utils;
-			sourceTree = "<group>";
-		};
-		53A79B3729CDFB1F00E7489F /* AppNotifications */ = {
-			isa = PBXGroup;
-			children = (
-				53A79B3C29CDFB1F00E7489F /* MPAppNotificationHandler.h */,
-				53A79B3D29CDFB1F00E7489F /* MPAppNotificationHandler.m */,
-			);
-			path = AppNotifications;
 			sourceTree = "<group>";
 		};
 		53A79B3E29CDFB1F00E7489F /* Ecommerce */ = {
@@ -1205,7 +1193,6 @@
 				35E3FCC62E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h in Headers */,
 				53A79D4329CE23F700E7489F /* MParticleUserNotification.h in Headers */,
 				53A79D4529CE23F700E7489F /* MPKitContainer+MParticlePrivate.h in Headers */,
-				53A79D4A29CE23F700E7489F /* MPAppNotificationHandler.h in Headers */,
 				72E8785A2F2AB23600F355F2 /* MPSideloadedKit.h in Headers */,
 				53A79D4B29CE23F700E7489F /* MPKitFilter.h in Headers */,
 				53A79D4C29CE23F700E7489F /* MPDataPlanFilter.h in Headers */,
@@ -1527,7 +1514,6 @@
 				53A79DA029CE23F700E7489F /* MPKitExecStatus.m in Sources */,
 				35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */,
 				53A79DA829CE23F700E7489F /* MPKitAPI.m in Sources */,
-				53A79DA929CE23F700E7489F /* MPAppNotificationHandler.m in Sources */,
 				53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */,
 				7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */,
 				A1B2C3D72DB913D2003B7D5E /* MPRoktSession.m in Sources */,

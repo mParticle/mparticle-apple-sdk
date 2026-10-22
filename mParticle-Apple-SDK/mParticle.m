@@ -1,7 +1,7 @@
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPILogger.h"
-#import "MPAppNotificationHandler.h"
+#import "MParticleUserNotification.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
 #import "MPKitFilter.h"
@@ -184,7 +184,7 @@ MPLog* logger;
     _collectSearchAdsAttribution = NO;
     _trackNotifications = YES;
     _automaticSessionTracking = YES;
-    _appNotificationHandler = (id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol>)[[MPAppNotificationHandler alloc] init];
+    _appNotificationHandler = [[MPAppNotificationHandler alloc] initWithHost:(id<MPAppNotificationHost>)[[MPUserDefaultsConnector alloc] init]];
     _stateMachine = [[MPStateMachine_PRIVATE alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
                                                                connector:(id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init]
                                                             messageQueue:executor.messageQueue

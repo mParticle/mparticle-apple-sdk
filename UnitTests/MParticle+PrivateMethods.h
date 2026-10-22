@@ -1,7 +1,6 @@
 #import "MPBackendController.h"
 #import "SettingsProvider.h"
 #import "MPDataPlanFilter.h"
-#import "MPAppNotificationHandler.h"
 @import mParticle_Apple_SDK_Swift;
 
 @protocol MPUserDefaultsProtocol;

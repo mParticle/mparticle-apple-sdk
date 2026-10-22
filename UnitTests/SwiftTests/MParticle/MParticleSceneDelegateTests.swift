@@ -43,7 +43,8 @@ final class MParticleSceneDelegateTests: XCTestCase {
     func test_mpAppNotificationHandler_respondsToOpenURLHandlerProtocolSelectors() {
         // This test verifies that MPAppNotificationHandler responds to the selectors
         // expected by OpenURLHandlerProtocol
-        let handler = MPAppNotificationHandler()
+        let handler = mparticle.appNotificationHandler as AnyObject
+        XCTAssertTrue(handler is MPAppNotificationHandler)
 
         let openURLSelector = NSSelectorFromString("openURL:options:")
         XCTAssertTrue(handler.responds(to: openURLSelector),
