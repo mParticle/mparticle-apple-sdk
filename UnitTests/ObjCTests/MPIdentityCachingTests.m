@@ -3,7 +3,6 @@
 
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
-#import "MPIdentityDTO.h"
 #import "MPUserDefaultsConnector.h"
 
 static NSString *const kMPIdentityCachingCacheKey = @"kMPIdentityCachingCachedIdentityCallsKey";
@@ -144,12 +143,14 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
 }
 
 - (void)testAcceptsDictionaryFromRealIdentityRequestFacade {
-    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] init];
-    request.knownIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:@{
+    MPIdentityHTTPIdentitiesPRIVATE *identities = [[MPIdentityHTTPIdentitiesPRIVATE alloc] initWithIdentities:@{
         @(MPIdentityEmail): @"test@example.com",
         @(MPIdentityGoogle): NSNull.null
-    }];
-    NSDictionary *requestDictionary = request.dictionaryRepresentation;
+    } attAuthorizationStatus:nil];
+    NSDictionary *requestDictionary = [MPIdentityHTTPRequestBuilderPRIVATE identifyDictionaryWithSdkVersion:@"1.0.0"
+                                                                                                 environment:@"development"
+                                                                                                previousMPID:nil
+                                                                                                  identities:[identities dictionaryRepresentation]];
     MPIdentityCachedResponse *response = [self responseExpiringAfter:60];
 
     [self.identityCaching cacheIdentityResponse:response

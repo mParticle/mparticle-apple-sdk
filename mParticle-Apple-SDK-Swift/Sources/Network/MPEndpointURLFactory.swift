@@ -69,11 +69,10 @@ public final class MPEndpointRouting: NSObject {
 ///
 /// Each method pairs the URL the request is sent to with the canonical mParticle URL
 /// used to sign it, mirroring what `MPNetworkCommunication` did inline.
-@objc(MPEndpointURLFactory)
-public final class MPEndpointURLFactory: NSObject {
+final class MPEndpointURLFactory: NSObject {
     private let logger: () -> MPLog?
 
-    @objc public init(logger: @escaping () -> MPLog?) {
+    init(logger: @escaping () -> MPLog?) {
         self.logger = logger
         super.init()
     }
@@ -99,8 +98,7 @@ public final class MPEndpointURLFactory: NSObject {
         static let audienceHint = "audience"
     }
 
-    @objc(configURLWithRouting:appVersion:sdkVersion:dataPlanId:dataPlanVersion:)
-    public func configURL(
+    func configURL(
         routing: MPEndpointRouting,
         appVersion: String?,
         sdkVersion: String,
@@ -154,8 +152,7 @@ public final class MPEndpointURLFactory: NSObject {
         return urlPair(requested: requested, canonical: canonical, hint: nil)
     }
 
-    @objc(eventURLWithRouting:defaultEventHost:)
-    public func eventURL(routing: MPEndpointRouting, defaultEventHost: String) -> MPURL? {
+    func eventURL(routing: MPEndpointRouting, defaultEventHost: String) -> MPURL? {
         let host = MPEndpointHostResolver.resolvedHost(
             customBaseURLHost: nil,
             trackingHost: routing.eventsTrackingHost,
@@ -187,8 +184,7 @@ public final class MPEndpointURLFactory: NSObject {
     /// canonical URL and the subdirectory-override URL both feed `/audience` into the
     /// `mpid` slot and drop the real mpid, and the override URL leaves the version
     /// jammed against the API key. `MPNetworkCommunicationTests` pins all three strings.
-    @objc(audienceURLWithRouting:defaultEventHost:mpId:)
-    public func audienceURL(
+    func audienceURL(
         routing: MPEndpointRouting,
         defaultEventHost: String,
         mpId: NSNumber
@@ -225,8 +221,7 @@ public final class MPEndpointURLFactory: NSObject {
         return urlPair(requested: requested, canonical: canonical, hint: Constant.audienceHint)
     }
 
-    @objc(identityURLWithRouting:defaultIdentityHost:pathComponent:)
-    public func identityURL(
+    func identityURL(
         routing: MPEndpointRouting,
         defaultIdentityHost: String,
         pathComponent: String
@@ -246,8 +241,7 @@ public final class MPEndpointURLFactory: NSObject {
         return urlPair(requested: requested, canonical: canonical, hint: Constant.identityKey)
     }
 
-    @objc(modifyURLWithRouting:defaultIdentityHost:mpId:)
-    public func modifyURL(
+    func modifyURL(
         routing: MPEndpointRouting,
         defaultIdentityHost: String,
         mpId: NSNumber
@@ -269,8 +263,7 @@ public final class MPEndpointURLFactory: NSObject {
         return urlPair(requested: requested, canonical: canonical, hint: Constant.identityKey)
     }
 
-    @objc(aliasURLWithRouting:defaultEventHost:)
-    public func aliasURL(routing: MPEndpointRouting, defaultEventHost: String) -> MPURL? {
+    func aliasURL(routing: MPEndpointRouting, defaultEventHost: String) -> MPURL? {
         let pathComponent = "alias"
         var host = MPEndpointHostResolver.resolvedHost(
             customBaseURLHost: nil,

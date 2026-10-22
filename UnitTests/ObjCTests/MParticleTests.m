@@ -3,7 +3,6 @@
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
-#import "MPNetworkCommunication.h"
 #import "MPPersistenceUtilities.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitTestClassSideloaded.h"

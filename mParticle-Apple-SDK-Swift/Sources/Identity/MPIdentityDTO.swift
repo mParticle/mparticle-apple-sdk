@@ -297,8 +297,8 @@ enum IdentityHTTPKeys {
 }
 
 /// Base class for identity responses, so callers can hold identify/login/logout and modify
-/// results behind one type. Kept as an empty class because the Objective-C
-/// `MPIdentityApiManagerCallback` typedef is declared in terms of it.
+/// results behind one type. Kept as an empty class because the identity entry points'
+/// completions are declared in terms of it.
 @objc(MPIdentityHTTPBaseSuccessResponse)
 public class MPIdentityHTTPBaseSuccessResponse: NSObject {}
 

@@ -17,7 +17,6 @@
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPRokt+MParticlePrivate.h"
-#import "MPNetworkCommunication.h"
 #import "Persistence/MPPersistenceUploadSettingsCodec.h"
 
 @import mParticle_Apple_SDK_Swift;

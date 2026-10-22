@@ -4,7 +4,6 @@
 #import "MPBackendController.h"
 #import "MPIConstants.h"
 #import "MPPersistenceUtilities.h"
-#import "MPNetworkCommunication.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
 #import "mParticle.h"

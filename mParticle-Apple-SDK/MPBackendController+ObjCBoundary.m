@@ -8,7 +8,6 @@
 #import "mParticle.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPUploadSettings.h"
-#import "MPNetworkCommunication.h"
 #import "MParticleSession+MParticlePrivate.h"
 @import mParticle_Apple_SDK_Swift;
 
