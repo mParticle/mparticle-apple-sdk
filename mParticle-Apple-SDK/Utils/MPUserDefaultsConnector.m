@@ -464,6 +464,12 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     }
 }
 
+// The connector keeps no state of its own, so the host serves as the one a config response is
+// applied through.
+- (id<MPUserDefaultsConnectorProtocol>)userDefaultsConnector {
+    return self;
+}
+
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an
 // Objective-C exception raised further down. Without a boundary here a parse defect in one section
 // terminates the host app and stops the remaining sections from being applied.

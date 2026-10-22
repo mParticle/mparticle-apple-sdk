@@ -1,13 +1,11 @@
 #import "MPNetworkCommunication.h"
 #import <UIKit/UIKit.h>
-#import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
-#import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
 NSString *const kMPIdentityCachingMaxAgeHeader = @"X-MP-Max-Age";
@@ -20,122 +18,6 @@ NSString *const kMPIdentityCachingMaxAgeHeader = @"X-MP-Max-Age";
 @end
 
 @implementation MPNetworkCommunication_PRIVATE (ObjCBoundary)
-
-- (void)requestConfig:(nullable NSObject<MPConnectorProtocol> *)connector withCompletionHandler:(void(^)(BOOL success))completionHandler {
-    MPUserDefaults *userDefaults = self.host.userDefaults;
-    BOOL shouldSendRequest = [userDefaults isConfigurationExpired];
-
-    if (!shouldSendRequest) {
-        completionHandler(YES);
-        return;
-    }
-
-    MPILogVerbose(@"Starting config request");
-    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-
-    UIBackgroundTaskIdentifier backgroundTaskIdentifier = [self beginSafeBackgroundTaskWithExpirationHandler:nil];
-
-    connector = connector ? connector : [self makeConnector];
-    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromGetRequestToURL:self.configURL];
-    NSData *data = response.data;
-    NSHTTPURLResponse *httpResponse = response.httpResponse;
-
-    NSString *cacheControl = httpResponse.allHeaderFields[kMPHTTPCacheControlHeaderKey];
-    NSString *ageString = httpResponse.allHeaderFields[kMPHTTPAgeHeaderKey];
-    NSNumber *maxAge = [self maxAgeForCache:cacheControl];
-
-    [self endSafeBackgroundTask:backgroundTaskIdentifier];
-
-    NSInteger responseCode = [httpResponse statusCode];
-    MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-
-    if (responseCode == HTTPStatusCodeNotModified) {
-        MPILogDebug(@"Config response 304 Not Modified - using cached config");
-        MPUserDefaults *userDefaults = self.host.userDefaults;
-        NSDictionary *configuration = [userDefaults getConfiguration];
-        if (configuration != nil) {
-            [userDefaults setConfiguration:configuration eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
-        }
-
-        completionHandler(YES);
-        return;
-    }
-
-    BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-
-    if (!data && success) {
-        completionHandler(NO);
-        MPILogError(@"Config request failed - no data received (responseCode: %ld). Kits may not initialize.", (long)responseCode);
-        return;
-    }
-
-    success = success && [data length] > 0;
-
-    NSDictionary *configurationDictionary = nil;
-    if (success) {
-        @try {
-            NSError *serializationError = nil;
-            configurationDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-            success = serializationError == nil && [configurationDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeConfig];
-        } @catch (NSException *exception) {
-            success = NO;
-            responseCode = HTTPStatusCodeNoContent;
-        }
-    }
-
-    if (success && configurationDictionary) {
-        NSDictionary *headersDictionary = [httpResponse allHeaderFields];
-        NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
-        if (!MPIsNull(eTag)) {
-            MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary dataReceivedFromServer:YES connector:(id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init]];
-            MPILogDebug(@"MPResponseConfig init: %@", responseConfig.description);
-
-            MPUserDefaults *userDefaults = self.host.userDefaults;
-            // An entry no kit can be configured from is dropped here rather than written to the
-            // cache, where it would be re-read and re-rejected at every launch. The live
-            // MPResponseConfig above still sees the response as it arrived.
-            NSDictionary *storableConfiguration = [MPKitConfigurationParser configurationDroppingUnusableKitsFrom:configurationDictionary];
-            [userDefaults setConfiguration:storableConfiguration eTag:eTag requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
-        }
-
-        completionHandler(success);
-    } else {
-        MPILogError(@"Config request failed - could not parse response or wrong message type (responseCode: %ld). Kits may not initialize.", (long)responseCode);
-        completionHandler(NO);
-    }
-}
-
-- (void)requestAudiencesWithCompletionHandler:(MPAudienceResponseHandler)completionHandler {
-    UIBackgroundTaskIdentifier backgroundTaskIdentifier = [self beginSafeBackgroundTaskWithExpirationHandler:nil];
-
-    __weak MPNetworkCommunication_PRIVATE *weakSelf = self;
-    NSObject<MPConnectorProtocol> *connector = [self makeConnector];
-
-    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromGetRequestToURL:self.audienceURL];
-    NSData *data = response.data;
-    NSHTTPURLResponse *httpResponse = response.httpResponse;
-    __strong MPNetworkCommunication_PRIVATE *strongSelf = weakSelf;
-    if (!strongSelf) {
-        completionHandler(NO, nil, nil);
-        return;
-    }
-
-    [self endSafeBackgroundTask:backgroundTaskIdentifier];
-
-    MPAudienceResponsePRIVATE *audienceResponse = [MPAudienceResponsePRIVATE responseFromData:data
-                                                                                   statusCode:[httpResponse statusCode]
-                                                                                       logger:self.host.sdkLogger];
-
-    NSMutableArray<MPAudience *> *currentAudiences = nil;
-    if (audienceResponse.audienceIDs.count > 0) {
-        currentAudiences = [[NSMutableArray alloc] initWithCapacity:audienceResponse.audienceIDs.count];
-        for (NSNumber *audienceId in audienceResponse.audienceIDs) {
-            [currentAudiences addObject:[[MPAudience alloc] initWithAudienceId:audienceId]];
-        }
-    }
-
-    completionHandler(audienceResponse.isSuccess, currentAudiences, audienceResponse.error);
-}
 
 - (BOOL)performMessageUpload:(MPUpload *)upload {
     MPStateMachine_PRIVATE *stateMachine = self.host.stateMachine;

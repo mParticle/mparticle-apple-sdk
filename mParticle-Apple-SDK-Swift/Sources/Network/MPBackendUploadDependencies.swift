@@ -7,6 +7,7 @@ import Foundation
     func requestConfig(_ connector: (NSObject & MPConnectorProtocol)?, completionHandler: @escaping (Bool) -> Void)
     @objc(upload:completionHandler:)
     func upload(_ uploads: [MPUploadPRIVATE], completionHandler: @escaping () -> Void)
+    /// Hands `completionHandler` the current user's audience IDs, as `NSNumber`s, or nil for none.
     @objc(requestAudiencesWithCompletionHandler:)
     func requestAudiences(completionHandler: @escaping (Bool, [Any]?, Error?) -> Void)
 }
