@@ -5,7 +5,6 @@
 #import "MPBackendController.h"
 #import "MPPersistenceUtilities.h"
 #import "MPKitContainer+MParticlePrivate.h"
-#import "MPKitConfiguration.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPKitTestClassSideloaded.h"

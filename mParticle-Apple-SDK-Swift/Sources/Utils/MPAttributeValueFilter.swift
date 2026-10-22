@@ -3,8 +3,7 @@ import Foundation
 /// Decides whether an event survives a kit's attribute-value filter.
 /// Behavior-preserving port of
 /// `-[MPKitContainer shouldIncludeEventWithAttributes:afterAttributeValueFilteringWithConfiguration:]`.
-/// The config lives in ObjC `MPKitConfiguration` (not importable here), so the relevant
-/// fields are passed as primitives.
+/// The relevant `MPKitConfiguration` fields are passed as primitives.
 @objc public final class MPAttributeValueFilter: NSObject {
     private let hasher: MPIHasher
 

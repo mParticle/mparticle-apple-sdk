@@ -5,7 +5,6 @@
 #import "FilteredMPIdentityApiRequest.h"
 #import "MPIConstants.h"
 #import "MParticleUser.h"
-#import "MPKitConfiguration.h"
 #import "MPIdentityApiRequest.h"
 #import "MPDataPlanFilter.h"
 #import "mParticle.h"

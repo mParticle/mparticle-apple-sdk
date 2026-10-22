@@ -7,7 +7,6 @@
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitTestClassSideloaded.h"
 #import "MPKitTestClassNoStartImmediately.h"
-#import "MPKitConfiguration.h"
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
 #import "MPCCPAConsent.h"
@@ -1560,7 +1559,7 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
     }), @"SDK did not finish initializing");
 
     registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
-    [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @42}];
 
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
 
@@ -1592,7 +1591,7 @@ static BOOL MPWaitForCondition(NSTimeInterval timeout, BOOL (^condition)(void)) 
     }), @"SDK did not finish initializing kits");
 
     registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
-    [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @43}];
 
     XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
 
