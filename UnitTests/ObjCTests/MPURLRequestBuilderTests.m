@@ -31,7 +31,7 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     self.connector = [[MPConnector alloc] initWithConfiguration:networkCommunication.connectorConfiguration];
 }
 
@@ -104,7 +104,7 @@
 }
 
 - (void)testConnectorBuildsConfigRequest {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSMutableURLRequest *request = [self.connector urlRequestForURL:networkCommunication.configURL
                                                             message:nil
@@ -133,7 +133,7 @@
                                           requestTimestamp:NSDate.date.timeIntervalSince1970
                                                 currentAge:0
                                                     maxAge:nil];
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSMutableURLRequest *request = [self.connector urlRequestForURL:networkCommunication.configURL
                                                             message:nil
@@ -211,7 +211,7 @@
 
 - (void)testConnectorOmitsSignatureWhenNoSecretIsAvailable {
     [MParticle sharedInstance].stateMachine.secret = @"";
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSMutableURLRequest *request = [self.connector urlRequestForURL:networkCommunication.configURL
                                                             message:nil

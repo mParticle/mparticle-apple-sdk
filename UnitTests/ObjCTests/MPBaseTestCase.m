@@ -66,6 +66,11 @@
     [super tearDown];
 }
 
+- (MPNetworkCommunication_PRIVATE *)sdkNetworkCommunication {
+    id<MPBackendHost> host = (id<MPBackendHost>)[[MPUserDefaultsConnector alloc] init];
+    return (MPNetworkCommunication_PRIVATE *)[host makeNetworkCommunication];
+}
+
 - (MPMessageBuilderContext *)messageBuilderContext {
     MParticle *mparticle = [MParticle sharedInstance];
     return [[MPMessageBuilderContext alloc] initWithDataPlanId:mparticle.dataPlanId

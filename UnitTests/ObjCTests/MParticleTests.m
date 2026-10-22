@@ -1282,7 +1282,7 @@
     NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com/events"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
     NSData *body = [@"{}" dataUsingEncoding:NSUTF8StringEncoding];
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPConnector *connector = [[MPConnector alloc] initWithConfiguration:networkCommunication.connectorConfiguration];
     NSMutableURLRequest *urlRequest = [connector urlRequestForURL:mpURL
                                                           message:@"{}"
@@ -1309,7 +1309,7 @@
     NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com/events"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
     NSData *body = [@"{}" dataUsingEncoding:NSUTF8StringEncoding];
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPConnector *connector = [[MPConnector alloc] initWithConfiguration:networkCommunication.connectorConfiguration];
     NSMutableURLRequest *urlRequest = [connector urlRequestForURL:mpURL
                                                           message:@"{}"

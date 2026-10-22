@@ -83,7 +83,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     [MParticle sharedInstance].stateMachine.attAuthorizationStatus =
         attAuthorized ? @(MPATTAuthorizationStatusAuthorized) : nil;
-    return [[MPNetworkCommunication_PRIVATE alloc] init];
+    return [self sdkNetworkCommunication];
 }
 
 - (MPUpload *)characterizationUploadWithOptions:(MPNetworkOptions *)options {
@@ -348,7 +348,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testAudienceURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *audienceURL = [networkCommunication audienceURL].url;
 
     [self deswizzle];
@@ -359,7 +359,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testConfigURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
 
     [self deswizzle];
@@ -373,7 +373,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
     options.configHost = @"config.mpproxy.example.com";
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
 
     [self deswizzle];
@@ -388,7 +388,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.configHost = @"config.mpproxy.example.com";
     options.overridesConfigSubdirectory = true;
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
 
     [self deswizzle];
@@ -401,7 +401,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testModifyURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *modifyURL = [networkCommunication modifyURL].url;
 
     [self deswizzle];
@@ -416,7 +416,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.identityHost = @"identity.mpproxy.example.com";
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *modifyURL = [networkCommunication modifyURL].url;
 
     [self deswizzle];
@@ -435,7 +435,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.identityTrackingHost = @"identity-tracking.mpproxy.example.com";
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *modifyURL = [networkCommunication modifyURL].url;
 
     [self deswizzle];
@@ -455,7 +455,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.eventsOnly = true;
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
 
@@ -470,7 +470,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testAliasURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
 
@@ -486,7 +486,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.eventsHost = @"events.mpproxy.example.com";
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
 
@@ -503,7 +503,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.overridesEventsSubdirectory = true;
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
 
@@ -522,7 +522,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.eventsOnly = true;
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
 
@@ -540,7 +540,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.eventsOnly = true;
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
 
@@ -559,7 +559,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.eventsOnly = true;
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
 
@@ -585,7 +585,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.eventsOnly = true;
     [MParticle sharedInstance].networkOptions = options;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
 
@@ -608,7 +608,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
     [self deswizzle];
     XCTAssert([configURL.absoluteString rangeOfString:@"rkt.example.com/config/v4/"].location != NSNotFound);
@@ -621,7 +621,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     options.configHost = @"config.mpproxy.example.com";
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
     [self deswizzle];
     XCTAssert([configURL.absoluteString rangeOfString:@"rkt.example.com/config/v4/"].location != NSNotFound);
@@ -633,7 +633,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *modifyURL = [networkCommunication modifyURL].url;
     [self deswizzle];
     XCTAssert([modifyURL.absoluteString rangeOfString:@"https://rkt.example.com/identity/v1/"].location != NSNotFound);
@@ -649,7 +649,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     options.identityTrackingHost = @"identity-tracking.mpproxy.example.com";
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *modifyURL = [networkCommunication modifyURL].url;
     stateMachine.attAuthorizationStatus = nil;
     [self deswizzle];
@@ -662,7 +662,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
     [self deswizzle];
@@ -677,7 +677,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
     stateMachine.attAuthorizationStatus = nil;
@@ -691,7 +691,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     [self deswizzle];
@@ -705,7 +705,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *audienceURL = [networkCommunication audienceURL].url;
     [self deswizzle];
     XCTAssert([audienceURL.absoluteString rangeOfString:@"rkt.example.com"].location != NSNotFound);
@@ -719,7 +719,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
     options.customBaseURL = [NSURL URLWithString:@"https://rkt.example.com"];
     [MParticle sharedInstance].networkOptions = options;
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     stateMachine.attAuthorizationStatus = nil;
@@ -729,8 +729,43 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
+#pragma mark Host
+
+// The connector hands itself to the network layer it makes, and the network layer reads the SDK
+// through it rather than through the shared instance.
+- (void)testTheNetworkLayerReadsTheHostThatMadeIt {
+    id<MPNetworkHost> host = OCMPartialMock([[MPUserDefaultsConnector alloc] init]);
+    OCMStub([host mpId]).andReturn(@42);
+
+    MPNetworkCommunication_PRIVATE *networkCommunication = (MPNetworkCommunication_PRIVATE *)[host makeNetworkCommunication];
+
+    XCTAssertEqualObjects([networkCommunication modifyURL].url.absoluteString, @"https://identity.us1.mparticle.com/v1/42/modify");
+    [(id)host stopMocking];
+}
+
+- (void)testConnectorConfigurationReadsThePinningOptions {
+    NSData *certificate = [@"certificate" dataUsingEncoding:NSUTF8StringEncoding];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.certificates = @[certificate];
+    options.pinningDisabled = YES;
+    options.pinningDisabledInDevelopment = YES;
+    [MParticle sharedInstance].networkOptions = options;
+
+    MPConnectorConfiguration *configuration = [[self sdkNetworkCommunication] connectorConfiguration];
+    XCTAssertEqualObjects(configuration.customCertificates, @[certificate]);
+    XCTAssertTrue(configuration.pinningDisabled);
+    XCTAssertTrue(configuration.pinningDisabledInDevelopment);
+    XCTAssertEqual(configuration.isDevelopmentEnvironment, [MParticle sharedInstance].environment == MPEnvironmentDevelopment);
+
+    [MParticle sharedInstance].networkOptions = nil;
+    configuration = [[self sdkNetworkCommunication] connectorConfiguration];
+    XCTAssertEqualObjects(configuration.customCertificates, @[]);
+    XCTAssertFalse(configuration.pinningDisabled);
+    XCTAssertFalse(configuration.pinningDisabledInDevelopment);
+}
+
 - (void)testEmptyUploadsArray {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSArray *uploads = @[];
     __block BOOL handlerCalled = NO;
     [networkCommunication upload:uploads completionHandler:^{
@@ -740,7 +775,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 }
 
 - (void)testUploadsArrayZipFail {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZipPRIVATE class]);
@@ -755,7 +790,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testUploadsArrayZipSucceedWithATTNotDetermined {
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusNotDetermined withATTStatusTimestampMillis:nil];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZipPRIVATE class]);
@@ -772,7 +807,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testUploadsArrayZipSucceedWithATTRestricted {
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusRestricted withATTStatusTimestampMillis:nil];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZipPRIVATE class]);
@@ -789,7 +824,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testUploadsArrayZipSucceedWithATTDenied {
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusDenied withATTStatusTimestampMillis:nil];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZipPRIVATE class]);
@@ -806,7 +841,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testUploadsArrayZipSucceedWithATTAuthorized {
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZipPRIVATE class]);
@@ -845,7 +880,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockConnector = OCMClassMock([MPConnector class]);
     [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
@@ -961,7 +996,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockConnector = OCMClassMock([MPConnector class]);
     [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
@@ -989,7 +1024,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockConnector = OCMClassMock([MPConnector class]);
     [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
@@ -1010,7 +1045,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockConnector = OCMClassMock([MPConnector class]);
     [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
@@ -1042,7 +1077,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockConnector = OCMClassMock([MPConnector class]);
     [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
@@ -1084,7 +1119,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockConnector = OCMClassMock([MPConnector class]);
     [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
@@ -1120,7 +1155,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssertEqualObjects(configProvisioned, nil);
     XCTAssertEqualObjects(maxAge, nil);
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
 
     MPConnector *connector = [[MPConnector alloc] init];
@@ -1176,7 +1211,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
 
     MPConnector *connector = [[MPConnector alloc] init];
@@ -1228,7 +1263,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 }
 
 - (void)testRequestConfigWithManualMaxAgeAndInitialAge {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
 
     MPConnector *connector = [[MPConnector alloc] init];
@@ -1291,7 +1326,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
 
     MPConnector *connector = [[MPConnector alloc] init];
@@ -1348,7 +1383,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     NSURL *configURL = [networkCommunication configURL].url;
 
     MPConnector *connector = [[MPConnector alloc] init];
@@ -1401,42 +1436,42 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 }
 
 - (void)testMaxAgeForCacheEmptyString {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSString *test1 = @"";
     XCTAssertEqualObjects([networkCommunication maxAgeForCache:test1], nil);
 }
 
 - (void)testMaxAgeForCacheSimple {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSString *test2 = @"max-age=12";
     XCTAssertEqualObjects([networkCommunication maxAgeForCache:test2], @12);
 }
 
 - (void)testMaxAgeForCacheMultiValue1 {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSString *test3 = @"max-age=13, max-stale=7";
     XCTAssertEqualObjects([networkCommunication maxAgeForCache:test3], @13);
 }
 
 - (void)testMaxAgeForCacheMultiValue2 {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSString *test4 = @"max-stale=34, max-age=14";
     XCTAssertEqualObjects([networkCommunication maxAgeForCache:test4], @14);
 }
 
 - (void)testMaxAgeForCacheMultiValue3 {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSString *test4 = @"max-stale=33434344, max-age=15, min-fresh=3553553";
     XCTAssertEqualObjects([networkCommunication maxAgeForCache:test4], @15);
 }
 
 - (void)testMaxAgeForCacheCapitalization {
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
 
     NSString *test5 = @"max-stale=34, MAX-age=16, min-fresh=3553553";
     XCTAssertEqualObjects([networkCommunication maxAgeForCache:test5], @16);
@@ -1453,7 +1488,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         @[@"st1-k77ivhkbbqf4ce0s3y12zpcthyn1ixfyu", @"nativesdks.st1.mparticle.com", @"identity.st1.mparticle.com", @"tracking-nativesdks.st1.mparticle.com", @"tracking-identity.st1.mparticle.com"],
         @[@"us3-w1y2y8yj8q58d5bx9u2dvtxzl4cpa7cuf", @"nativesdks.us3.mparticle.com", @"identity.us3.mparticle.com", @"tracking-nativesdks.us3.mparticle.com", @"tracking-identity.us3.mparticle.com"]
     ];
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
 
     stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusNotDetermined);
@@ -1496,7 +1531,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Background queue completed"];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        MPNetworkCommunication_PRIVATE *nc = [[MPNetworkCommunication_PRIVATE alloc] init];
+        MPNetworkCommunication_PRIVATE *nc = [self sdkNetworkCommunication];
         UIBackgroundTaskIdentifier taskId = [nc beginSafeBackgroundTaskWithExpirationHandler:nil];
         XCTAssertEqual(taskId, (UIBackgroundTaskIdentifier)42);
         [expectation fulfill];
@@ -1522,7 +1557,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTestExpectation *expectation = [self expectationWithDescription:@"Background queue completed"];
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        MPNetworkCommunication_PRIVATE *nc = [[MPNetworkCommunication_PRIVATE alloc] init];
+        MPNetworkCommunication_PRIVATE *nc = [self sdkNetworkCommunication];
         [nc endSafeBackgroundTask:42];
         [expectation fulfill];
     });
@@ -1568,7 +1603,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockConnector = OCMClassMock([MPConnector class]);
     [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:OCMOCK_ANY];
 
-    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [self sdkNetworkCommunication];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
@@ -1602,7 +1637,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
     [MPApplication_PRIVATE setMockApplication:mockApplication];
 
-    MPNetworkCommunication_PRIVATE *nc = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *nc = [self sdkNetworkCommunication];
     [nc beginSafeBackgroundTaskWithExpirationHandler:nil];
 
     XCTAssertNotNil(capturedExpirationHandler, @"Expiration handler should have been captured");
@@ -1629,7 +1664,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
     [MPApplication_PRIVATE setMockApplication:mockApplication];
 
-    MPNetworkCommunication_PRIVATE *nc = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *nc = [self sdkNetworkCommunication];
     nc.identifying = YES;
 
     [nc beginSafeBackgroundTaskWithExpirationHandler:^{
@@ -1656,7 +1691,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
     [MPApplication_PRIVATE setMockApplication:mockApplication];
 
-    MPNetworkCommunication_PRIVATE *nc = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *nc = [self sdkNetworkCommunication];
     UIBackgroundTaskIdentifier taskId = [nc beginSafeBackgroundTaskWithExpirationHandler:nil];
 
     XCTAssertEqual(taskId, UIBackgroundTaskInvalid, @"Should return UIBackgroundTaskInvalid in app extension");

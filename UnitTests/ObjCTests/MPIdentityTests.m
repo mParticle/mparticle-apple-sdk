@@ -506,7 +506,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testNoEmptyModifyRequests {
-    MPNetworkCommunication_PRIVATE *network = [[MPNetworkCommunication_PRIVATE alloc] init];
+    MPNetworkCommunication_PRIVATE *network = [self sdkNetworkCommunication];
     
     id partialMock = OCMPartialMock(network);
     
