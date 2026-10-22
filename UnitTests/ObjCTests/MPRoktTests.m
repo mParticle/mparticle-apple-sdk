@@ -5,7 +5,6 @@
 #import "MPBackendController.h"
 #import "MParticleUser.h"
 #import "MPIdentityApi.h"
-#import "MPIdentityApiManager.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
@@ -88,10 +87,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 + (dispatch_queue_t)messageQueue;
-@end
-
-@interface MPIdentityApi ()
-@property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @end
 
 // A shared CI runner can miss a sub-second budget for work that hops through

@@ -3,7 +3,7 @@
 //
 
 #import "MPIdentityApi.h"
-#import "MPIdentityApiManager.h"
+#import "MPNetworkCommunication.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPPersistenceUtilities.h"
@@ -33,7 +33,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @interface MPIdentityApi ()<MPIdentityApiMPDeviceProtocol>
 
-@property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @property(strong, readwrite, nonnull) MParticleUser *currentUser;
 
 @end
@@ -78,13 +77,10 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @synthesize currentUser = _currentUser;
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        _apiManager = [[MPIdentityApiManager alloc] init];
-    }
-    return self;
+// Read at call time, so a reset or workspace switch that replaces the SDK instance is picked up
+// by the next request.
+- (MPNetworkCommunication_PRIVATE *)networkCommunication {
+    return [MParticle sharedInstance].backendController.networkCommunication;
 }
 
 - (void)onModifyRequestComplete:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPModifyApiResultCallback)completion error: (NSError *) error {
@@ -372,7 +368,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [self.apiManager identify:identifyRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+    [self.networkCommunication identify:identifyRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
         [self onIdentityRequestComplete:identifyRequest identityRequestType:MPIdentityRequestIdentify httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
     }];
 }
@@ -407,7 +403,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     dispatch_async([MParticle messageQueue], ^{
         
-        [self.apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self.networkCommunication login:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
         
@@ -429,7 +425,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     };
     
     dispatch_async([MParticle messageQueue], ^{
-        [self.apiManager logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self.networkCommunication logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
     });
@@ -449,7 +445,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
     };
     dispatch_async([MParticle messageQueue], ^{
-        [self.apiManager modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self.networkCommunication modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onModifyRequestComplete:modifyRequest httpResponse:httpResponse completion:wrappedCompletion error: error];
         }];
     });

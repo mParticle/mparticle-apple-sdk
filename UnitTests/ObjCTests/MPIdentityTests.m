@@ -9,7 +9,6 @@
 #import "MPNetworkCommunication.h"
 #import "MPBaseTestCase.h"
 #import "MPIdentityApi.h"
-#import "MPIdentityApiManager.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPPersistenceUtilities.h"
 #import "MPPersistenceAdapter.h"
@@ -39,7 +38,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @end
 
 @interface MPIdentityApi ()
-@property (nonatomic, strong) MPIdentityApiManager *apiManager;
+- (MPNetworkCommunication_PRIVATE *)networkCommunication;
 @property(strong, readwrite, nonnull) MParticleUser *currentUser;
 
 - (void)onIdentityRequestComplete:(MPIdentityApiRequest *)request identityRequestType:(MPIdentityRequestType)identityRequestType httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion error: (NSError *) error;
@@ -889,79 +888,79 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testIdentify {
-    id mockManager = OCMClassMock([MPIdentityApiManager class]);
+    id mockNetwork = OCMClassMock([MPNetworkCommunication_PRIVATE class]);
     
     MPIdentityApi *identity = [[MPIdentityApi alloc] init];
     MPIdentityApi *identityMock = OCMPartialMock(identity);
-    OCMStub([identityMock apiManager]).andReturn(mockManager);
+    OCMStub([identityMock networkCommunication]).andReturn(mockNetwork);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
     [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
     [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
-    [[mockManager expect] identify:request completion:OCMOCK_ANY];
+    [[mockNetwork expect] identify:request completion:OCMOCK_ANY];
     
     [identityMock identify:request completion:nil];
     
-    [mockManager verifyWithDelay:0.2];
+    [mockNetwork verifyWithDelay:0.2];
 }
 
 - (void)testLogin {
-    id mockManager = OCMClassMock([MPIdentityApiManager class]);
+    id mockNetwork = OCMClassMock([MPNetworkCommunication_PRIVATE class]);
     
     MPIdentityApi *identity = [[MPIdentityApi alloc] init];
     MPIdentityApi *identityMock = OCMPartialMock(identity);
-    OCMStub([identityMock apiManager]).andReturn(mockManager);
+    OCMStub([identityMock networkCommunication]).andReturn(mockNetwork);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
     [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
     [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
-    [[mockManager expect] loginRequest:request completion:OCMOCK_ANY];
+    [[mockNetwork expect] login:request completion:OCMOCK_ANY];
     
     [identityMock login:request completion:nil];
     
-    [mockManager verifyWithDelay:0.2];
+    [mockNetwork verifyWithDelay:0.2];
 }
 
 - (void)testLogout {
-    id mockManager = OCMClassMock([MPIdentityApiManager class]);
+    id mockNetwork = OCMClassMock([MPNetworkCommunication_PRIVATE class]);
     
     MPIdentityApi *identity = [[MPIdentityApi alloc] init];
     MPIdentityApi *identityMock = OCMPartialMock(identity);
-    OCMStub([identityMock apiManager]).andReturn(mockManager);
+    OCMStub([identityMock networkCommunication]).andReturn(mockNetwork);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
     [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
     [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
-    [[mockManager expect] logout:request completion:OCMOCK_ANY];
+    [[mockNetwork expect] logout:request completion:OCMOCK_ANY];
     
     [identityMock logout:request completion:nil];
     
-    [mockManager verifyWithDelay:0.2];
+    [mockNetwork verifyWithDelay:0.2];
 }
 
 - (void)testModify {
-    id mockManager = OCMClassMock([MPIdentityApiManager class]);
+    id mockNetwork = OCMClassMock([MPNetworkCommunication_PRIVATE class]);
     
     MPIdentityApi *identity = [[MPIdentityApi alloc] init];
     MPIdentityApi *identityMock = OCMPartialMock(identity);
-    OCMStub([identityMock apiManager]).andReturn(mockManager);
+    OCMStub([identityMock networkCommunication]).andReturn(mockNetwork);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
     [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
     [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
-    [[mockManager expect] modify:request completion:OCMOCK_ANY];
+    [[mockNetwork expect] modify:request completion:OCMOCK_ANY];
     
     [identityMock modify:request completion:nil];
     
-    [mockManager verifyWithDelay:0.2];
+    [mockNetwork verifyWithDelay:0.2];
 }
 
 - (void)testLastSeenSorting {

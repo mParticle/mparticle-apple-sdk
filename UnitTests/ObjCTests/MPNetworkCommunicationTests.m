@@ -11,7 +11,6 @@
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPIdentityDTO.h"
-#import "MPIdentityApiManager.h"
 
 @import mParticle_Apple_SDK_Swift;
 
