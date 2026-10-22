@@ -6,7 +6,6 @@
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
 #import "MPPersistenceUtilities.h"
-#import "MPPersistenceAdapter.h"
 #import "MPILogger.h"
 #import "MPKitFilter.h"
 #import "MPEvent.h"
@@ -271,6 +270,7 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 @end
 
 @interface MPForwardRecord ()
+@property (nonatomic, strong, readonly) MPForwardRecordPRIVATE *implementation;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus kitFilter:(nullable MPKitFilter *)kitFilter originalEvent:(nullable MPBaseEvent *)originalEvent;
 - (nullable NSData *)dataRepresentation;
@@ -2119,7 +2119,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     
     if (forwardRecord != nil) {
         dispatch_async([MParticle messageQueue], ^{
-            [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord];
+            [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord.implementation];
         });
     }
 }
@@ -2130,7 +2130,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
                                                                         kitFilter:kitFilter
                                                                     originalEvent:commerceEvent];
     dispatch_async([MParticle messageQueue], ^{
-        [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord];
+        [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord.implementation];
     });
 }
 

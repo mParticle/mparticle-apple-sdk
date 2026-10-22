@@ -3,7 +3,6 @@
 #import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 #import "MPPersistenceUtilities.h"
-#import "MPPersistenceAdapter.h"
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
 #import "mParticle.h"

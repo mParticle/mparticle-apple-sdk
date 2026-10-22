@@ -215,24 +215,6 @@ extension MPPersistenceStorePRIVATE {
         try? deleteIntegrationAttributes(for: integrationId)
     }
 
-    @objc(deleteAllIntegrationAttributes)
-    public func objectiveCDeleteAllIntegrationAttributes() {
-        try? deleteAllIntegrationAttributes()
-    }
-
-    @objc(moveDatabaseContentFromMpidZeroToMpid:)
-    public func objectiveCMoveDatabaseContentFromMpidZero(to mpid: NSNumber) {
-        try? moveDatabaseContentFromMpidZero(to: mpid)
-    }
-
-    @objc(fetchRawCookiesForUserId:)
-    public func objectiveCFetchRawCookies(forUserId mpid: NSNumber) -> NSArray? {
-        guard let cookies = try? fetchCookies(for: mpid), !cookies.isEmpty else {
-            return nil
-        }
-        return cookies.map(rawCookieDictionary) as NSArray
-    }
-
     @objc(fetchRawConsumerInfoForUserId:)
     public func objectiveCFetchRawConsumerInfo(forUserId mpid: NSNumber) -> NSDictionary? {
         guard let info = try? fetchConsumerInfo(for: mpid) else {
@@ -260,47 +242,12 @@ extension MPPersistenceStorePRIVATE {
         )) ?? 0
     }
 
-    @objc(saveRawConsumerInfoWithCookieIdsForMpid:uniqueIdentifier:cookies:)
-    public func objectiveCSaveRawConsumerInfoWithCookieIds(
-        forMpid mpid: NSNumber,
-        uniqueIdentifier: String?,
-        cookies: [NSDictionary]
-    ) -> NSDictionary? {
-        let rawCookies = cookies.compactMap(persistedCookie)
-        guard rawCookies.count == cookies.count,
-              let result = try? saveConsumerInfoWithCookieIds(
-                  mpid: mpid,
-                  uniqueIdentifier: uniqueIdentifier,
-                  cookies: rawCookies
-              )
-        else {
-            return nil
-        }
-        return [
-            "consumerInfoId": result.consumerInfoId,
-            "cookieIds": result.cookieIds
-        ]
-    }
-
-    @objc(deleteCookieId:)
-    public func objectiveCDeleteCookie(id: Int64) {
-        try? deleteCookie(id: id)
-    }
-
     @objc(saveRawCookie:)
     public func objectiveCSaveRawCookie(_ cookie: NSDictionary) -> Int64 {
         guard let cookie = persistedCookie(cookie) else {
             return 0
         }
         return (try? saveCookie(cookie)) ?? 0
-    }
-
-    @objc(updateRawCookie:)
-    public func objectiveCUpdateRawCookie(_ cookie: NSDictionary) {
-        guard let cookie = persistedCookie(cookie) else {
-            return
-        }
-        try? updateCookie(cookie)
     }
 
     @objc(deleteConsumerInfo)

@@ -191,7 +191,7 @@ public final class MPStateMachinePRIVATE: NSObject,
     // MARK: - Lazily derived state
 
     /// Fetched once from persistence, created and saved when absent. The fetch goes through the
-    /// connector because the persistence adapter is an Objective-C type this module cannot import.
+    /// connector because the persistence adapter hangs off the Objective-C SDK instance.
     @objc public var consumerInfo: MPConsumerInfoPRIVATE {
         get {
             if let storedConsumerInfo {

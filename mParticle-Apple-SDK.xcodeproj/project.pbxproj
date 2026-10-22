@@ -89,8 +89,6 @@
 		534CD2A229CE2CE1008452B3 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79CFB29CE046800E7489F /* libsqlite3.tbd */; };
 		B5A001012F5F900000000001 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79CFB29CE046800E7489F /* libsqlite3.tbd */; };
 		B5A004012F5F900000000001 /* MPPersistenceUploadSettingsCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A004022F5F900000000001 /* MPPersistenceUploadSettingsCodec.m */; };
-		B5A006012F8A000000000001 /* MPPersistenceAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = B5A006022F8A000000000001 /* MPPersistenceAdapter.m */; };
-		B5A006042F8A000000000001 /* MPPersistenceAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = B5A006032F8A000000000001 /* MPPersistenceAdapter.h */; };
 		534CD2A429CE2CE1008452B3 /* OCMock.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79C8829CE019F00E7489F /* OCMock.xcframework */; };
 		534CD2A629CE2CE1008452B3 /* sample_dataplan2.json in Resources */ = {isa = PBXBuildFile; fileRef = 53A79C9829CE019F00E7489F /* sample_dataplan2.json */; };
 		534CD2AC29CE2CF1008452B3 /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79DC629CE23F700E7489F /* mParticle_Apple_SDK.framework */; };
@@ -318,8 +316,6 @@
 		B5A004042F8A000000000001 /* MPPersistenceUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPPersistenceUtilities.h; sourceTree = "<group>"; };
 		B5A004022F5F900000000001 /* MPPersistenceUploadSettingsCodec.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPPersistenceUploadSettingsCodec.m; sourceTree = "<group>"; };
 		B5A004032F5F900000000001 /* MPPersistenceUploadSettingsCodec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPPersistenceUploadSettingsCodec.h; sourceTree = "<group>"; };
-		B5A006022F8A000000000001 /* MPPersistenceAdapter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPPersistenceAdapter.m; sourceTree = "<group>"; };
-		B5A006032F8A000000000001 /* MPPersistenceAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPPersistenceAdapter.h; sourceTree = "<group>"; };
 		53A79ABD29CDFB1E00E7489F /* MParticleUserNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MParticleUserNotification.h; sourceTree = "<group>"; };
 		53A79ACA29CDFB1E00E7489F /* MPForwardRecord.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardRecord.m; sourceTree = "<group>"; };
 		53A79ACF29CDFB1F00E7489F /* MPIConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIConstants.h; sourceTree = "<group>"; };
@@ -556,6 +552,7 @@
 				Test/Notifications/MPPushTrackingLogicTests.swift,
 				Test/Notifications/SceneDelegateLogicTests.swift,
 				Test/Persistence/MPIdentityCachingTests.swift,
+				Test/Persistence/MPPersistenceAdapterTests.swift,
 				Test/Persistence/MPPersistenceFileSystemTests.swift,
 				Test/Persistence/MPPersistenceSchemaTests.swift,
 				Test/Persistence/MPPersistenceStoreTests.swift,
@@ -670,6 +667,7 @@
 				Test/Notifications/MPPushTrackingLogicTests.swift,
 				Test/Notifications/SceneDelegateLogicTests.swift,
 				Test/Persistence/MPIdentityCachingTests.swift,
+				Test/Persistence/MPPersistenceAdapterTests.swift,
 				Test/Persistence/MPPersistenceFileSystemTests.swift,
 				Test/Persistence/MPPersistenceSchemaTests.swift,
 				Test/Persistence/MPPersistenceStoreTests.swift,
@@ -885,8 +883,6 @@
 			children = (
 				B5A004032F5F900000000001 /* MPPersistenceUploadSettingsCodec.h */,
 				B5A004022F5F900000000001 /* MPPersistenceUploadSettingsCodec.m */,
-				B5A006032F8A000000000001 /* MPPersistenceAdapter.h */,
-				B5A006022F8A000000000001 /* MPPersistenceAdapter.m */,
 			);
 			path = Persistence;
 			sourceTree = "<group>";
@@ -1262,7 +1258,6 @@
 				53A79D4C29CE23F700E7489F /* MPDataPlanFilter.h in Headers */,
 				53A79D4D29CE23F700E7489F /* MPPromotion+Dictionary.h in Headers */,
 				B5A004052F8A000000000001 /* MPPersistenceUtilities.h in Headers */,
-				B5A006042F8A000000000001 /* MPPersistenceAdapter.h in Headers */,
 				53A79D5829CE23F700E7489F /* MPIdentityDTO.h in Headers */,
 				D3CEDACB2CB027E1001B32DE /* MPConvertJS.h in Headers */,
 				D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK.h in Headers */,
@@ -1559,7 +1554,6 @@
 				53A79D7029CE23F700E7489F /* MPProduct.m in Sources */,
 				35329FF32E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m in Sources */,
 				B5A004012F5F900000000001 /* MPPersistenceUploadSettingsCodec.m in Sources */,
-				B5A006012F8A000000000001 /* MPPersistenceAdapter.m in Sources */,
 				53A79D7329CE23F700E7489F /* FilteredMParticleUser.m in Sources */,
 				53A79D7429CE23F700E7489F /* MPBaseEvent.m in Sources */,
 				53A79D7729CE23F700E7489F /* MPKitConfiguration.m in Sources */,

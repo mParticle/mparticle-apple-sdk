@@ -7,7 +7,6 @@
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPPersistenceUtilities.h"
-#import "MPPersistenceAdapter.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPIdentityDTO.h"

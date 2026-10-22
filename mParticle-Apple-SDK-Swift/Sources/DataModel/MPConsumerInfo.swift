@@ -1,9 +1,8 @@
 import Foundation
 
-// Keeps the MPConsumerInfo Objective-C runtime name the deleted wrapper had, so the @class forward
-// declaration and the -fetchConsumerInfoForUserId: / -saveConsumerInfo: / -updateConsumerInfo:
-// signatures in Persistence/MPPersistenceAdapter.h stay byte-identical, along with the name this class
-// archives under. Reference MPConsumerInfoPRIVATE from Swift, MPConsumerInfo from Objective-C.
+// Keeps the MPConsumerInfo Objective-C runtime name the deleted wrapper had, so Objective-C callers
+// keep the type name they use, along with the name this class archives under. Reference
+// MPConsumerInfoPRIVATE from Swift, MPConsumerInfo from Objective-C.
 @objc(MPConsumerInfo)
 public final class MPConsumerInfoPRIVATE: NSObject, NSSecureCoding {
     @objc public var consumerInfoId: Int64 = 0
@@ -93,8 +92,8 @@ public final class MPConsumerInfoPRIVATE: NSObject, NSSecureCoding {
     /// Applies the `ck` cookie table from a remote-configuration response.
     ///
     /// `existingCookies` are the cookies already persisted for the current user. They are passed in
-    /// rather than fetched here because the persistence adapter is an Objective-C type this module
-    /// cannot import; the one production caller already holds it. A configured cookie whose name
+    /// rather than fetched here because the persistence adapter hangs off the Objective-C SDK
+    /// instance; the one production caller already holds it. A configured cookie whose name
     /// matches an existing one updates that cookie in place instead of adding a duplicate.
     @objc(updateWithConfiguration:existingCookies:)
     public func update(withConfiguration configuration: Any?, existingCookies: [MPCookiePRIVATE]?) {

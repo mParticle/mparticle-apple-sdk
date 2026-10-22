@@ -11,7 +11,6 @@
 #import "MPIdentityApi.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPPersistenceUtilities.h"
-#import "MPPersistenceAdapter.h"
 @import mParticle_Apple_SDK_Swift;
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {

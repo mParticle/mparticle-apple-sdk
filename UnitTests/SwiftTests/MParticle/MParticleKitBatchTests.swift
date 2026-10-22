@@ -68,7 +68,7 @@ final class MParticleKitBatchTests: MParticleTestBase {
         kitContainer.kitsInitialized = true
         kitContainer.hasKitBatchingKitsReturnValue = true
 
-        let forwardRecord = MPForwardRecord()
+        let forwardRecord = MPForwardRecord(id: 0, dataDictionary: [:], mpid: 1)
         kit.logBatchReturnValue = [forwardRecord]
 
         mparticle.logKitBatch(LogKitBatchData.singleEvent)
@@ -92,7 +92,10 @@ final class MParticleKitBatchTests: MParticleTestBase {
                        LogKitBatchData.parsedSingleEvent.values.first as? [[String: Int]])
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(persistenceController.saveCalled)
-        XCTAssertTrue(persistenceController.saveForwardRecordParam === forwardRecord)
+        // The saved object is the record's backing store: an id the store assigns to it is the
+        // record's id.
+        persistenceController.saveForwardRecordParam?.forwardRecordId = 42
+        XCTAssertEqual(forwardRecord.forwardRecordId, 42)
     }
 
     func test_logKitBatch_forwardsWithNilBatch_whenJSONInvalid() {
