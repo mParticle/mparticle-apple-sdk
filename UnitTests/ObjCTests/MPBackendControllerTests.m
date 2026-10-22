@@ -4,7 +4,6 @@
 #import "MPBackendController.h"
 #import "MPIConstants.h"
 #import "MPPersistenceUtilities.h"
-#import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
@@ -106,7 +105,6 @@
 
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPSession *session;
-@property (nonatomic, strong) MPNotificationController_PRIVATE *notificationController;
 
 @end
 
@@ -136,8 +134,6 @@
                                                  persistence:persistence];
     self.backendController = [MParticle sharedInstance].backendController;
     messageQueue = [MParticle messageQueue];
-    
-    [self notificationController];
 }
 
 - (void)tearDown {
@@ -311,15 +307,6 @@
     return remoteNotificationDictionary;
 }
 
-- (MPNotificationController_PRIVATE *)notificationController {
-    if (_notificationController) {
-        return _notificationController;
-    }
-    
-    _notificationController = [[MPNotificationController_PRIVATE alloc] init];
-    
-    return _notificationController;
-}
 #endif
 
 - (void)testBeginSession {

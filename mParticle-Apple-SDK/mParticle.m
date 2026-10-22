@@ -17,7 +17,7 @@
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPRokt+MParticlePrivate.h"
-#import "MPNotificationController.h"
+#import "MPNetworkCommunication.h"
 #import "Persistence/MPPersistenceUploadSettingsCodec.h"
 
 @import mParticle_Apple_SDK_Swift;
@@ -184,7 +184,14 @@ MPLog* logger;
                                                         deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
                                                                 buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
     _appEnvironmentProvider = [[AppEnvironmentProvider alloc] init];
-    _notificationController = [[MPNotificationController_PRIVATE alloc] init];
+    _notificationController = [[MPNotificationController_PRIVATE alloc] initWithUserDefaults:^{
+        return MPUserDefaultsConnector.userDefaults;
+    } messageQueue:^{
+        return [MParticle messageQueue];
+    } modifyDeviceID:^(NSString *deviceIdType, NSString *value, NSString *oldValue) {
+        MPBackendController_PRIVATE *backendController = (MPBackendController_PRIVATE *)[MParticle sharedInstance].backendController;
+        [backendController.networkCommunication modifyDeviceID:deviceIdType value:value oldValue:oldValue];
+    }];
     logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue: _stateMachine.logLevel]];
     _sceneDelegateHandler = [[SceneDelegateHandler alloc] initWithAppNotificationHandler:_appNotificationHandler];
     _sceneDelegateHandler.logger = logger;

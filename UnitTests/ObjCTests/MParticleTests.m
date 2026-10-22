@@ -320,6 +320,28 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
+- (void)testPushNotificationTokenChangeModifiesThePushTokenDeviceIDAndPersistsTheToken {
+    MParticle *instance = [MParticle sharedInstance];
+    id mockNetwork = OCMClassMock([MPNetworkCommunication_PRIVATE class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
+    OCMStub([mockBackend networkCommunication]).andReturn(mockNetwork);
+    // Not a partial mock of the instance: earlier tests' backends observe the token change and
+    // reach the shared instance from the message queue after this test has finished.
+    MPBackendController_PRIVATE *backendController = instance.backendController;
+    instance.backendController = mockBackend;
+
+    const uint8_t oldBytes[] = {0x01, 0x02};
+    const uint8_t newBytes[] = {0x0a, 0xff};
+    NSData *newToken = [NSData dataWithBytes:newBytes length:sizeof(newBytes)];
+    instance.pushNotificationToken = [NSData dataWithBytes:oldBytes length:sizeof(oldBytes)];
+    instance.pushNotificationToken = newToken;
+    dispatch_sync([MParticle messageQueue], ^{});
+
+    OCMVerify([mockNetwork modifyDeviceID:@"push_token" value:@"0aff" oldValue:@"0102"]);
+    XCTAssertEqualObjects(MPUserDefaultsConnector.userDefaults[kMPDeviceTokenKey], newToken);
+    instance.backendController = backendController;
+}
+
 - (void)testEventStartSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
