@@ -1,5 +1,5 @@
 #import <XCTest/XCTest.h>
-#import "MPKitConfiguration.h"
+@import mParticle_Apple_SDK_Swift;
 #import "MPBaseTestCase.h"
 #import "MPEnums.h"
 
@@ -113,16 +113,15 @@
     XCTAssertFalse(kitConfiguration.excludeAnonymousUsers);
 }
 
-- (void)testCopyAndCoding {
-    MPKitConfiguration *copyKitConfiguration = [kitConfiguration copy];
-    XCTAssertEqualObjects(kitConfiguration, copyKitConfiguration);
-    
-    NSData *kitConfigurationData = [NSKeyedArchiver archivedDataWithRootObject:kitConfiguration];
-    XCTAssertNotNil(kitConfigurationData);
-    
-    MPKitConfiguration *deserializedKitConfiguration = [NSKeyedUnarchiver unarchiveObjectWithData:kitConfigurationData];
-    XCTAssertNotNil(deserializedKitConfiguration);
-    XCTAssertEqualObjects(deserializedKitConfiguration, copyKitConfiguration);
+- (void)testEqualityFollowsTheConfigurationHash {
+    NSDictionary *configuration = @{@"id": @80, @"as": @{@"appId": @"MyAppId"}};
+    MPKitConfiguration *first = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+    MPKitConfiguration *second = [[MPKitConfiguration alloc] initWithDictionary:[configuration mutableCopy]];
+    MPKitConfiguration *other = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": @81, @"as": @{@"appId": @"MyAppId"}}];
+
+    XCTAssertEqualObjects(first, second);
+    XCTAssertEqual(first.hash, second.hash);
+    XCTAssertNotEqualObjects(first, other);
 }
 
 - (void)testInvalidConfiguration {
@@ -334,11 +333,6 @@
     XCTAssertNoThrow(kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration]);
     XCTAssertNotNil(kitConfig);
     XCTAssertEqual(kitConfig.projections.count, 1);
-}
-
-- (void)testKitConfigurationEncoding {
-    MPKitConfiguration *persistedKitConfiguration = [self attemptSecureEncodingwithClass:[MPKitConfiguration class] Object:kitConfiguration];
-    XCTAssertEqualObjects(kitConfiguration, persistedKitConfiguration);
 }
 
 - (void)testStripNullsInConfig {

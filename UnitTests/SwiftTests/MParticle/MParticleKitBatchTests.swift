@@ -79,7 +79,10 @@ final class MParticleKitBatchTests: MParticleTestBase {
         }
 
         // Simulate invoking the handler
-        let config = MPKitConfiguration()
+        guard let config = MPKitConfiguration(dictionary: ["id": 42], logger: MPLog(logLevel: .none)) else {
+            XCTFail("Expected a kit configuration")
+            return
+        }
         kitHandler(kit, LogKitBatchData.parsedSingleEvent, config)
 
         XCTAssertTrue(executor.executeOnMessageQueueAsync)

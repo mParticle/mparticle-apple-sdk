@@ -20,7 +20,6 @@
 #import "MPKitAppsFlyerTest.h"
 #import "MPKitRegister.h"
 #import "MPTransactionAttributes.h"
-#import "MPKitConfiguration.h"
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "MPBackendController.h"
@@ -3206,6 +3205,55 @@ static atomic_bool gKitsInitializedBlockReturned;
 
     XCTAssertNoThrow([localKitContainer initializeKits]);
     [self assertMessageTypeRangeIsRespectedFor:localKitContainer];
+
+    [MPUserDefaultsConnector.userDefaults deleteConfiguration];
+}
+
+// Parsing a kit configuration logs through the SDK's logger, so the app's log level and custom
+// logger apply on both paths that build one from server configuration.
+- (BOOL)SDKLoggerReceivesOutOfRangeProjectionWhilePerforming:(void (^)(void))work {
+    MParticle *mParticle = [MParticle sharedInstance];
+    MPILogLevel previousLogLevel = mParticle.logLevel;
+    void (^previousCustomLogger)(NSString *) = [mParticle.customLogger copy];
+    __block BOOL logged = NO;
+    mParticle.logLevel = MPILogLevelError;
+    mParticle.customLogger = ^(NSString *message) {
+        if ([message isEqualToString:@"mParticle -> Ignoring projection with out-of-range message type: 100"]) {
+            logged = YES;
+        }
+    };
+
+    work();
+
+    mParticle.customLogger = previousCustomLogger;
+    mParticle.logLevel = previousLogLevel;
+    return logged;
+}
+
+- (void)testConfigureKitsParsesWithTheSDKLogger {
+    [kitContainer configureKits:nil];
+
+    XCTAssertTrue([self SDKLoggerReceivesOutOfRangeProjectionWhilePerforming:^{
+        [self->kitContainer configureKits:@[[self kitConfigurationSpanningTheMessageTypeRange]]];
+    }]);
+}
+
+- (void)testInitializeKitsParsesWithTheSDKLogger {
+    NSDictionary *configuration = @{kMPRemoteConfigKitsKey: @[[self kitConfigurationSpanningTheMessageTypeRange]],
+                                    kMPRemoteConfigRampKey: @100,
+                                    kMPRemoteConfigSessionTimeoutKey: @112};
+    [MPUserDefaultsConnector.userDefaults setConfiguration:configuration
+                                                      eTag:@"sdk-logger"
+                                          requestTimestamp:[[NSDate date] timeIntervalSince1970]
+                                                currentAge:0
+                                                    maxAge:nil];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    id mockAdapter = OCMPartialMock(localKitContainer.executionAdapter);
+    [[[mockAdapter stub] andReturn:@[@42]] supportedKits];
+
+    XCTAssertTrue([self SDKLoggerReceivesOutOfRangeProjectionWhilePerforming:^{
+        [localKitContainer initializeKits];
+    }]);
 
     [MPUserDefaultsConnector.userDefaults deleteConfiguration];
 }

@@ -12,5 +12,4 @@
 #import "MParticleUserNotification.h"
 #import "MPBaseEvent.h"
 #import "MPKitProtocol.h"
-#import "MPKitConfiguration.h"
 #import "MPForwardRecord.h"
