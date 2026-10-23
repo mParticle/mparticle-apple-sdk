@@ -52,7 +52,6 @@ let package = Package(
                 .headerSearchPath("Utils"),
                 .headerSearchPath("Persistence"),
                 .headerSearchPath("Consent"),
-                .headerSearchPath("AppNotifications"),
                 .headerSearchPath("Data Model")
             ],
             linkerSettings: [
