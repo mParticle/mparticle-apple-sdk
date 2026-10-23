@@ -17,7 +17,6 @@
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPRokt+MParticlePrivate.h"
-#import "MPPersistenceAdapter.h"
 #import "MPNotificationController.h"
 #import "Persistence/MPPersistenceUploadSettingsCodec.h"
 
@@ -42,6 +41,10 @@ static NSString *const kMPStateKey = @"state";
 
 @interface MPKitContainer_PRIVATE ()
 - (BOOL)kitsInitialized;
+@end
+
+@interface MPForwardRecord ()
+@property (nonatomic, strong, readonly) MPForwardRecordPRIVATE *implementation;
 @end
 
 @interface MPPersistenceUploadSettingsProvider : NSObject <MPUploadSettingsProviding>
@@ -996,7 +999,7 @@ MPLog* logger;
                             if ([forwardRecords isKindOfClass:[NSArray class]]) {
                                 for (MPForwardRecord *forwardRecord in forwardRecords) {
                                     [executor executeOnMessage: ^{
-                                        [self.persistenceAdapter saveForwardRecord:forwardRecord];
+                                        [self.persistenceAdapter saveForwardRecord:forwardRecord.implementation];
                                     }];
                                 }
                             }

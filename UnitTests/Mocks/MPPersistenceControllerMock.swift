@@ -3,12 +3,6 @@ import mParticle_Apple_SDK
 internal import mParticle_Apple_SDK_Swift
 
 class MPPersistenceControllerMock: NSObject, MPPersistenceAdapting {
-    func appAndDeviceInfo(forSessionId sessionId: NSNumber) -> [String: [AnyHashable: Any]] {
-        [:]
-    }
-
-    func fetchForwardRecords() -> [MPForwardRecord]? { nil }
-
     var resetDatabaseForWorkspaceSwitchingCalled = false
 
     func resetDatabaseForWorkspaceSwitching() {
@@ -22,14 +16,12 @@ class MPPersistenceControllerMock: NSObject, MPPersistenceAdapting {
     }
 
     var saveCalled = false
-    var saveForwardRecordParam: MPForwardRecord?
+    var saveForwardRecordParam: MPForwardRecordPRIVATE?
 
-    func save(_ forwardRecord: MPForwardRecord) {
+    func save(_ forwardRecord: MPForwardRecordPRIVATE?) {
         saveCalled = true
         saveForwardRecordParam = forwardRecord
     }
-
-    func deleteForwardRecordsIds(_ recordIds: [NSNumber]) {}
 
     func fetchIntegrationAttributes() -> [MPIntegrationAttributesPRIVATE]? { nil }
 
@@ -58,7 +50,6 @@ class MPPersistenceControllerMock: NSObject, MPPersistenceAdapting {
         return fetchIntegrationAttributesReturnValue
     }
 
-    func deleteAllIntegrationAttributes() {}
     func fetchConsumerInfo(forUserId userId: NSNumber) -> MPConsumerInfoPRIVATE? { nil }
     func fetchCookies(forUserId userId: NSNumber) -> [MPCookiePRIVATE]? { nil }
     func save(_ consumerInfo: MPConsumerInfoPRIVATE) {}

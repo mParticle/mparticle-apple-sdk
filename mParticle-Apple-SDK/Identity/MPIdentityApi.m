@@ -13,7 +13,6 @@
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
 #import "../MPRokt+MParticlePrivate.h"
-#import "MPPersistenceAdapter.h"
 @import mParticle_Apple_SDK_Swift;
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
@@ -490,7 +489,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
                                                    dataPlanVersion:[MParticle sharedInstance].dataPlanVersion
                                                     uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
             
-            [MParticle.sharedInstance.persistenceAdapter saveUpload:upload];
+            [MParticle.sharedInstance.persistenceAdapter saveUpload:upload optedOut:MParticle.sharedInstance.stateMachine.optOut];
             [MParticle.sharedInstance.backendController waitForKitsAndUploadWithCompletionHandler:nil];
         }];
         

@@ -133,10 +133,6 @@ extension MPPersistenceStorePRIVATE {
         _ = try statement.step()
     }
 
-    func deleteAllIntegrationAttributes() throws {
-        try requireConnection().execute("DELETE FROM integration_attributes")
-    }
-
     func saveConsumerInfo(
         mpid: NSNumber,
         uniqueIdentifier: String?,

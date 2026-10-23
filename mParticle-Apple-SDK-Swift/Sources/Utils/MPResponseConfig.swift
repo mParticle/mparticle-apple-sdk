@@ -39,7 +39,7 @@ public protocol MPUserDefaultsConnectorProtocol {
     func mpId() -> NSNumber
 
     /// The consumer info stored for the current user, created and saved when there is none. Lives
-    /// here because it needs the persistence adapter, an Objective-C type this module cannot import.
+    /// here because it needs the persistence adapter, which hangs off the Objective-C SDK instance.
     func fetchOrCreateConsumerInfo() -> MPConsumerInfoPRIVATE
 
     /// Clears every user's advertiser id after App Tracking Transparency authorization is revoked.

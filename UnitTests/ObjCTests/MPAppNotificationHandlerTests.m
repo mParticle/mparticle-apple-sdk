@@ -1,7 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MPAppNotificationHandler.h"
 #import "MPPersistenceUtilities.h"
-#import "MPPersistenceAdapter.h"
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPIConstants.h"
@@ -18,7 +17,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPAppNotificationHandler *appNotificationHandler;
-@property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
+@property (nonatomic, strong, readonly) MPPersistenceStorePRIVATE *persistenceStore;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
@@ -96,13 +95,13 @@
     [MParticle sharedInstance];
     [appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
+    NSArray<MPForwardRecordPRIVATE *> *forwardedRecords = [[MParticle sharedInstance].persistenceStore fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
     
     error = nil;
     [appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     
-    forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
+    forwardedRecords = [[MParticle sharedInstance].persistenceStore fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 
@@ -113,13 +112,13 @@
     NSData *deviceToken = [@"<1234 5678>" dataUsingEncoding:NSUTF8StringEncoding];
     [appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
+    NSArray<MPForwardRecordPRIVATE *> *forwardedRecords = [[MParticle sharedInstance].persistenceStore fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
     
     deviceToken = nil;
     [appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     
-    forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
+    forwardedRecords = [[MParticle sharedInstance].persistenceStore fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 
@@ -134,7 +133,7 @@
     notificationDictionary = nil;
     [appNotificationHandler handleActionWithIdentifier:actionIdentifier forRemoteNotification:notificationDictionary];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceAdapter fetchForwardRecords];
+    NSArray<MPForwardRecordPRIVATE *> *forwardedRecords = [[MParticle sharedInstance].persistenceStore fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 
@@ -149,7 +148,7 @@
 
 // Runs `call` with a throwing kit registered ahead of a working one, then returns the forward
 // records saved once the main-queue kit loop and the message-queue saves it scheduled have run.
-- (NSArray<MPForwardRecord *> *)forwardRecordsAfterNotificationCall:(void (^)(MPAppNotificationHandler *handler))call
+- (NSArray<MPForwardRecordPRIVATE *> *)forwardRecordsAfterNotificationCall:(void (^)(MPAppNotificationHandler *handler))call
                                                        throwingKit:(MPNotificationCenterTestKit *)throwingKit
                                                         workingKit:(MPNotificationCenterTestKit *)workingKit {
     throwingKit.throwsException = YES;
@@ -176,7 +175,7 @@
     });
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 
-    NSArray<MPForwardRecord *> *forwardRecords = [instance.persistenceAdapter fetchForwardRecords];
+    NSArray<MPForwardRecordPRIVATE *> *forwardRecords = [instance.persistenceStore fetchForwardRecords];
     [mockInstance stopMocking];
     [mockContainer stopMocking];
     return forwardRecords;
@@ -188,7 +187,7 @@
     UNNotification *notification = [self notificationMockWithUserInfo:@{@"aps": @{@"alert": @"Test"}}];
     id center = OCMClassMock([UNUserNotificationCenter class]);
 
-    NSArray<MPForwardRecord *> *forwardRecords = [self forwardRecordsAfterNotificationCall:^(MPAppNotificationHandler *handler) {
+    NSArray<MPForwardRecordPRIVATE *> *forwardRecords = [self forwardRecordsAfterNotificationCall:^(MPAppNotificationHandler *handler) {
         [handler userNotificationCenter:center willPresentNotification:notification];
     } throwingKit:throwingKit workingKit:workingKit];
 
@@ -206,7 +205,7 @@
     OCMStub([response actionIdentifier]).andReturn(UNNotificationDefaultActionIdentifier);
     id center = OCMClassMock([UNUserNotificationCenter class]);
 
-    NSArray<MPForwardRecord *> *forwardRecords = [self forwardRecordsAfterNotificationCall:^(MPAppNotificationHandler *handler) {
+    NSArray<MPForwardRecordPRIVATE *> *forwardRecords = [self forwardRecordsAfterNotificationCall:^(MPAppNotificationHandler *handler) {
         [handler userNotificationCenter:center didReceiveNotificationResponse:response];
     } throwingKit:throwingKit workingKit:workingKit];
 

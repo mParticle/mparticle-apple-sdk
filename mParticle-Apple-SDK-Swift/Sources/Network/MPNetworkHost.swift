@@ -2,8 +2,8 @@ import Foundation
 
 /// The SDK instance as the network layer sees it: what `MPBackendHost` already provides, plus the
 /// values the network layer reads from `MParticle.sharedInstance`, `MPNetworkOptions`,
-/// `MPUploadSettings`, the kit container and the persistence adapter, none of which this module
-/// can import.
+/// `MPUploadSettings`, the kit container and the SDK instance's persistence adapter, which this
+/// module cannot reach on its own.
 ///
 /// The Objective-C module supplies the conformance and reads the SDK instance on every call, so a
 /// request sees the SDK as it is when the request is built, and a test's stubs on those reads apply.

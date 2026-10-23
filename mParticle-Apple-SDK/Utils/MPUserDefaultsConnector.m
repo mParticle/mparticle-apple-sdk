@@ -7,7 +7,6 @@
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
 #import "MPConsentState.h"
-#import "MPPersistenceAdapter.h"
 #import "../Kits/MPDataPlanFilter.h"
 #import "UploadSettingsUtils.h"
 #import "MPNetworkCommunication.h"
@@ -450,7 +449,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
     // Consumer Information
     MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
-    // MPConsumerInfo is Swift and cannot import the persistence adapter, so the cookies it merges
+    // MPConsumerInfo cannot reach the SDK instance's persistence adapter, so the cookies it merges
     // the response onto are fetched here and passed in.
     [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]
                          existingCookies:[persistence fetchCookiesForUserId:[MPPersistenceUtilities mpId]]];
