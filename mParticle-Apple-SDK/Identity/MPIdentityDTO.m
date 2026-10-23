@@ -4,7 +4,6 @@
 
 #import "MPIdentityDTO.h"
 #import "mParticle.h"
-#import "MPNotificationController.h"
 #import "MPPersistenceUtilities.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
@@ -12,6 +11,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
 
 @end
 
@@ -68,8 +68,7 @@ static NSString *MPIdentityEnvironmentString(void) {
 
 #if TARGET_OS_IOS == 1
         if (![MPStateMachine_PRIVATE isAppExtension]) {
-            MPNotificationController_PRIVATE *notificationController = [[MPNotificationController_PRIVATE alloc] init];
-            NSData *deviceTokenData = [notificationController deviceToken];
+            NSData *deviceTokenData = [mparticle.notificationController deviceToken];
             if (deviceTokenData) {
                 NSString *deviceTokenString = [MPUserDefaults stringFromDeviceToken:deviceTokenData];
                 if (deviceTokenString && [deviceTokenString length] > 0) {

@@ -6,10 +6,6 @@
 #import <UIKit/UIKit.h>
 #import "mParticle.h"
 
-#if TARGET_OS_IOS == 1
-    #import "MPNotificationController.h"
-#endif
-
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
     #import <UserNotifications/UserNotifications.h>
 #endif
@@ -20,6 +16,7 @@
 @property (nonatomic, strong, readonly) MPPersistenceAdapter *persistenceAdapter;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
+@property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
 + (dispatch_queue_t)messageQueue;
 
 @end
@@ -39,8 +36,7 @@
     }
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        MPNotificationController_PRIVATE *notificationController = [[MPNotificationController_PRIVATE alloc] init];
-        [notificationController setDeviceToken:nil];
+        [[MParticle sharedInstance].notificationController setDeviceToken:nil];
     }
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
@@ -85,8 +81,7 @@
     }
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        MPNotificationController_PRIVATE *notificationController = [[MPNotificationController_PRIVATE alloc] init];
-        [notificationController setDeviceToken:deviceToken];
+        [[MParticle sharedInstance].notificationController setDeviceToken:deviceToken];
     }
 
     SEL deviceTokenSelector = @selector(setDeviceToken:);

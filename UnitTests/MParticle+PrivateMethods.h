@@ -2,7 +2,6 @@
 #import "SettingsProvider.h"
 #import "MPDataPlanFilter.h"
 #import "MPAppNotificationHandler.h"
-#import "MPNotificationController.h"
 @import mParticle_Apple_SDK_Swift;
 
 @protocol MPUserDefaultsProtocol;
