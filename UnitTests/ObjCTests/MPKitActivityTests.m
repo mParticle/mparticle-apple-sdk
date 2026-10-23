@@ -1,5 +1,4 @@
 #import "MPExtensionProtocol.h"
-#import "MPKitActivity.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitRegister.h"
 #import "MPKitTestClassNoStartImmediately.h"
@@ -37,7 +36,12 @@
 - (void)setUp {
     [super setUp];
 
-    _kitActivity = [[MPKitActivity alloc] init];
+    // Resolve through MParticle so the lookups mParticle.m gives its own kit activity are the ones under test.
+    _kitActivity = [[MPKitActivity alloc] initWithIsKitActive:^BOOL(NSNumber *integrationId) {
+        return [[MParticle sharedInstance] isKitActive:integrationId];
+    } kitInstance:^id(NSNumber *integrationId) {
+        return [[MParticle sharedInstance] kitInstance:integrationId];
+    }];
     
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
