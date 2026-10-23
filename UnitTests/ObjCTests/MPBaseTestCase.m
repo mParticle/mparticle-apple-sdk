@@ -43,6 +43,14 @@
 
 @implementation MPBaseTestCase
 
++ (void)setUp {
+    [super setUp];
+    // The first UIScreen use in a process can block on a synchronous call to the simulator's
+    // system services. Pay it here, before a test starts a session, which reads the screen size,
+    // inside a timed wait.
+    (void)UIScreen.mainScreen.bounds;
+}
+
 - (MPUploadBuilderContext *)uploadBuilderContext {
     return [MPBackendController_PRIVATE uploadBuilderContextWithPersistence:^{
         return [MParticle sharedInstance].persistenceStore;
