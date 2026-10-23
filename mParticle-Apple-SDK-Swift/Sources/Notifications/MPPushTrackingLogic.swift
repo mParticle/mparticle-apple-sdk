@@ -13,7 +13,7 @@ import Foundation
 /// UserNotifications state — application state, action identifiers — into plain
 /// booleans and strings, so this type never sees an SDK or UIKit type.
 @objc(MPPushTrackingLogic) public final class PushTrackingLogic: NSObject {
-    /// Mirrors `hasContentAvail:`. The ObjC original read the value into an `NSString *`
+    /// Mirrors the former ObjC `hasContentAvail:`, which read the value into an `NSString *`
     /// but compared it with `isEqual:@1`, so it matches the number 1 rather than a string.
     /// Typing the local as `Any?` keeps that behaviour rather than quietly tightening it.
     @objc(hasContentAvailable:) public static func hasContentAvailable(_ userInfo: [AnyHashable: Any]?) -> Bool {

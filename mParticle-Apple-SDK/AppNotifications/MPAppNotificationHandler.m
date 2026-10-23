@@ -31,15 +31,6 @@
 
 @implementation MPAppNotificationHandler
 
-- (instancetype)init {
-    self = [super init];
-    if (!self) {
-        return nil;
-    }
-
-    return self;
-}
-
 #pragma mark Public methods
 #if TARGET_OS_IOS == 1
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
@@ -69,10 +60,6 @@
 
 - (BOOL)is9 {
     return [MPPushTrackingLogic isPreIOS10WithSystemVersion:[[UIDevice currentDevice] systemVersion]];
-}
-
-- (BOOL)hasContentAvail:(NSDictionary *)dict {
-    return [MPPushTrackingLogic hasContentAvailable:dict];
 }
 
 // Non-extractable: logNotificationOpened/Received live on MParticle, an ObjC type the Swift
@@ -192,26 +179,6 @@
     });
 }
 
-- (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    if (stateMachine.optOut) {
-        return;
-    }
-    
-    SEL didUpdateUserActivitySelector = @selector(didUpdateUserActivity:);
-    
-    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-    [queueParameters addParameter:userActivity];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:didUpdateUserActivitySelector
-                                                          event:nil
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                                       userInfo:nil
-         ];
-    });
-}
 #endif
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
@@ -358,37 +325,6 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:openURLOptionsSelector
-                                                          event:nil
-                                                     parameters:queueParameters
-                                                    messageType:MPMessageTypeUnknown
-                                                       userInfo:nil
-         ];
-    });
-}
-
-- (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    if (stateMachine.optOut) {
-        return;
-    }
-    MParticle* mparticle = MParticle.sharedInstance;
-    MPLog* logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
-    logger.customLogger = mparticle.customLogger;
-    
-    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
-                                              sourceApplication:sourceApplication
-                                                     annotation:annotation
-                                                         logger:logger];
-    
-    SEL openURLSourceAppAnnotationSelector = @selector(openURL:sourceApplication:annotation:);
-    
-    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-    [queueParameters addParameter:url];
-    [queueParameters addParameter:sourceApplication];
-    [queueParameters addParameter:annotation];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:openURLSourceAppAnnotationSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
