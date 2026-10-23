@@ -35,6 +35,7 @@ mParticle-Apple-SDK/MPAttributionResult+MParticlePrivate.m
 mParticle-Apple-SDK/MPNetworkOptions+MParticlePrivate.m
 mParticle-Apple-SDK/MPEnums.m
 mParticle-Apple-SDK/MPRokt.m
+mParticle-Apple-SDK/MPRoktSession.m
 mParticle-Apple-SDK/Event/MPBaseEvent.m
 mParticle-Apple-SDK/Event/MPEvent.m
 mParticle-Apple-SDK/Ecommerce/MPCommerceEvent.m
@@ -97,6 +98,24 @@ mParticle-Apple-SDK/MPIConstants.m
 # is marshalling and event mutation that has to sit on the ObjC side of the boundary.
 # MPDataPlanFilterProtocol is the Swift-facing seam, exactly as with MPUserDefaultsConnector.
 mParticle-Apple-SDK/Kits/MPDataPlanFilter.m
+
+# The kit filter result: the event, commerce event and consent state a kit receives
+# once filtering and projection have run. Six of its ten properties are MPBaseEvent or
+# MPCommerceEvent and one is MPConsentState, and five of its seven initializers take
+# those types, none of which the Swift module can import. It holds no decisions: they
+# already live in Sources/Kits/MPKitFilterEngine.swift. Its readers are the retained
+# MPKitContainerExecutionAdapter.m and MPForwardRecord.m, so it is data that only the
+# Objective-C side of the kit boundary carries.
+mParticle-Apple-SDK/Kits/MPKitFilter.m
+
+# Builds the webview bridge's MPCommerceEvent, MPPromotionContainer, MPPromotion,
+# MPProduct, MPTransactionAttributes and MPIdentityApiRequest from its JSON. Those are
+# all public Objective-C types the Swift module cannot import. The parsing itself
+# already lives in Sources/Utils/MPConvertJSFields.swift. What remains is constructing
+# the public objects from its Foundation values, plus one guard that refuses device
+# identities from web content by comparing against the Objective-C MPIdentity enum.
+# Its only caller is the retained mParticle.m webview bridge.
+mParticle-Apple-SDK/Utils/MPConvertJS.m
 
 # The ObjC<->Swift kit execution bridge. It has no ObjC callers and no public
 # header; the Swift MPKitContainer_PRIVATE reaches it only by
