@@ -3,7 +3,6 @@
 #import "MPBaseTestCase.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPNetworkCommunication.h"
-#import "MPNetworkCommunication+Tests.h"
 #import "MPPersistenceUtilities.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"

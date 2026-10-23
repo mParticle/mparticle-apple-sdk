@@ -6,7 +6,6 @@
 @class MPIdentityHTTPSuccessResponse;
 @class MPIdentityHTTPBaseSuccessResponse;
 @class MPIdentityHTTPModifySuccessResponse;
-@protocol MPConnectorFactoryProtocol;
 
 typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorTimeout = 1,
@@ -20,15 +19,11 @@ typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *
 typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
-/// The network layer's members that are still Objective-C: the connector, the config, audience
-/// and upload requests, and the identity requests. The Swift class holds the host, the
-/// identity-request flag and the endpoint URLs.
+/// The network layer's members that are still Objective-C: the config, audience and upload
+/// requests, and the identity requests. The Swift class holds the host, the identity-request flag,
+/// the endpoint URLs, the connectors, the background tasks and the upload throttling.
 @interface MPNetworkCommunication_PRIVATE (ObjCBoundary) <MPBackendUploadNetworking>
 
-+ (void)setConnectorFactory:(NSObject<MPConnectorFactoryProtocol> *_Nullable)connectorFactory;
-+ (NSObject<MPConnectorFactoryProtocol> *_Nullable)connectorFactory;
-
-- (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector;
 - (void)requestConfig:(nullable NSObject<MPConnectorProtocol> *)connector withCompletionHandler:(MPConfigCompletionHandler)completionHandler;
 - (void)requestAudiencesWithCompletionHandler:(MPAudienceResponseHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler;

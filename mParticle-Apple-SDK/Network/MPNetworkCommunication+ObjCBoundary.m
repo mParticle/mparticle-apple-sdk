@@ -7,14 +7,10 @@
 #import "mParticle.h"
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
-#import "MPConnectorFactoryProtocol.h"
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
-NSString *const kMPURLScheme = @"https";
 NSString *const kMPIdentityCachingMaxAgeHeader = @"X-MP-Max-Age";
-
-static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @interface MPIdentityHTTPErrorResponse ()
 
@@ -24,152 +20,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @end
 
 @implementation MPNetworkCommunication_PRIVATE (ObjCBoundary)
-
-#pragma mark Private methods
-- (BOOL)isRetriableTransportError:(NSError *)error {
-    return [MPTransportErrorDetector isRetriableTransportError:error];
-}
-
-- (void)throttleWithRetryAfter:(NSTimeInterval)retryAfter uploadType:(MPUploadType)uploadType {
-    MPLog *logger = self.host.sdkLogger;
-    NSDate *now = [NSDate date];
-
-    NSDate *minUploadDate = [self.host.stateMachine minUploadDateForUploadType:uploadType];
-    if ([minUploadDate compare:now] == NSOrderedAscending) {
-        [self.host.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
-        if (uploadType == MPUploadTypeMessage) {
-            NSString *messageThrottleLog = [NSString stringWithFormat:@"Throttling uploads for %.0f seconds", retryAfter];
-            [logger debug:messageThrottleLog];
-        } else if (uploadType == MPUploadTypeAlias) {
-            NSString *aliasThrottleLog = [NSString stringWithFormat:@"Throttling alias requests for %.0f seconds", retryAfter];
-            [logger debug:aliasThrottleLog];
-        }
-    }
-}
-
-- (NSNumber *)maxAgeForCache:(nonnull NSString *)cache {
-    return [MPConfigResponseParser maxAgeFromCacheControl:cache maxExpirationAge:CONFIG_REQUESTS_MAX_EXPIRATION_AGE];
-}
-
-- (MPURLRequestContext *)requestContextForKind:(MPURLRequestKind)requestKind {
-    id<MPNetworkHost> host = self.host;
-
-    NSString *apiKey = nil;
-    NSString *fallbackSecret = nil;
-    NSString *userAgent = nil;
-    NSArray<NSNumber *> *supportedKits = nil;
-    NSArray<NSNumber *> *configuredKits = nil;
-    NSString *eTag = nil;
-    BOOL hasStoredConfiguration = NO;
-    NSInteger environment = 0;
-
-    if (requestKind != MPURLRequestKindCustom) {
-        // The state machine's secret is a non-optional string that starts empty, so "not set yet"
-        // arrives as @"" rather than nil. Signing needs it to stay nil in that case: an HMAC over
-        // an empty key is not a meaningful signature, and MPURLRequestBuilder omits the
-        // x-mp-signature header entirely when the secret is absent.
-        NSString *stateMachineSecret = host.stateMachine.secret;
-        fallbackSecret = stateMachineSecret.length > 0 ? stateMachineSecret : nil;
-    }
-
-    switch (requestKind) {
-        case MPURLRequestKindAudience:
-            apiKey = host.stateMachine.apiKey;
-            userAgent = host.webView.userAgent;
-            break;
-        case MPURLRequestKindIdentity:
-            apiKey = host.stateMachine.apiKey;
-            break;
-        case MPURLRequestKindEvent:
-            supportedKits = host.supportedKits;
-            configuredKits = host.configuredKits;
-            userAgent = host.webView.userAgent;
-            break;
-        case MPURLRequestKindConfig: {
-            MPUserDefaults *userDefaults = host.userDefaults;
-            eTag = userDefaults[kMPHTTPETagHeaderKey];
-            hasStoredConfiguration = [userDefaults getConfiguration] != nil;
-            supportedKits = host.supportedKits;
-            userAgent = host.webView.originalDefaultUserAgent;
-            environment = (NSInteger)[MPStateMachine_PRIVATE environment];
-            break;
-        }
-        case MPURLRequestKindCustom:
-            break;
-    }
-
-    MPLog *logger = host.sdkLogger;
-    if (!logger) {
-        logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:host.logLevel]];
-    }
-
-    return [[MPURLRequestContext alloc] initWithAPIKey:apiKey
-                                        fallbackSecret:fallbackSecret
-                                             userAgent:userAgent
-                                         supportedKits:supportedKits
-                                        configuredKits:configuredKits
-                                                  eTag:eTag
-                                hasStoredConfiguration:hasStoredConfiguration
-                                           environment:environment
-                                        requestTimeout:NETWORK_REQUEST_MAX_WAIT_SECONDS
-                         networkPerformanceMessageType:kMPMessageTypeNetworkPerformance
-                                                logger:logger];
-}
-
-- (MPConnectorConfiguration *)connectorConfiguration {
-    id<MPNetworkHost> host = self.host;
-
-    MPLog *logger = host.sdkLogger;
-    if (!logger) {
-        logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:host.logLevel]];
-    }
-
-    return [[MPConnectorConfiguration alloc]
-        initWithCustomCertificates:host.customCertificates
-        pinningDisabledInDevelopment:host.pinningDisabledInDevelopment
-        pinningDisabled:host.pinningDisabled
-        isDevelopmentEnvironment:host.isDevelopmentEnvironment
-        secureScheme:kMPURLScheme
-        requestTimeout:NETWORK_REQUEST_MAX_WAIT_SECONDS
-        logger:logger
-        requestContextProvider:^MPURLRequestContext * _Nonnull(MPURLRequestKind requestKind) {
-            return [self requestContextForKind:requestKind];
-        }];
-}
-
-#pragma mark Public methods
-- (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector {
-    if (MPNetworkCommunication_PRIVATE.connectorFactory) {
-        return [MPNetworkCommunication_PRIVATE.connectorFactory createConnector];
-    }
-
-    return [[MPConnector alloc] initWithConfiguration:self.connectorConfiguration];
-}
-
-- (UIBackgroundTaskIdentifier)beginSafeBackgroundTaskWithExpirationHandler:(void(^_Nullable)(void))handler {
-    if ([MPStateMachine_PRIVATE isAppExtension]) {
-        return UIBackgroundTaskInvalid;
-    }
-    __block UIBackgroundTaskIdentifier taskId = UIBackgroundTaskInvalid;
-    [self.host executeOnMainSync:^{
-        taskId = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-            if (taskId != UIBackgroundTaskInvalid) {
-                MPILogDebug(@"Background task expiration handler invoked");
-                if (handler) handler();
-                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:taskId];
-                taskId = UIBackgroundTaskInvalid;
-            }
-        }];
-    }];
-    return taskId;
-}
-
-- (void)endSafeBackgroundTask:(UIBackgroundTaskIdentifier)taskId {
-    if (taskId == UIBackgroundTaskInvalid) return;
-    [self.host executeOnMain:^{
-        [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:taskId];
-    }];
-}
 
 - (void)requestConfig:(nullable NSObject<MPConnectorProtocol> *)connector withCompletionHandler:(void(^)(BOOL success))completionHandler {
     MPUserDefaults *userDefaults = self.host.userDefaults;
@@ -749,14 +599,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             completion((MPIdentityHTTPModifySuccessResponse *)httpResponse, error);
         }
     }];
-}
-
-+ (void)setConnectorFactory:(NSObject<MPConnectorFactoryProtocol> *)connectorFactory {
-    factory = connectorFactory;
-}
-
-+ (NSObject<MPConnectorFactoryProtocol> *)connectorFactory {
-    return factory;
 }
 
 @end

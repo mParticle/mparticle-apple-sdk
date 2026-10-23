@@ -20,7 +20,13 @@ public protocol MPNetworkHost: MPBackendHost, MPUploadPersisting, MPKitBatchLogg
     @objc(applicationVersion) func applicationVersion() -> String?
     /// The SDK's log level, for a logger to fall back on when the shared one is not set yet.
     @objc(logLevel) func logLevel() -> UInt
-    @objc(webView) func webView() -> MParticleWebViewPRIVATE?
+    /// The web view's user agent, which audience and event requests send. Read in Objective-C, so a
+    /// test's mock web view answers.
+    @objc(userAgent) func userAgent() -> String?
+    /// The SDK's own user agent, which config requests send.
+    @objc(originalDefaultUserAgent) func originalDefaultUserAgent() -> String?
+    /// Read in Objective-C, so a test's class mock of the state machine answers.
+    @objc(isAppExtension) func isAppExtension() -> Bool
     @objc(supportedKits) func supportedKits() -> [NSNumber]?
     @objc(configuredKits) func configuredKits() -> [NSNumber]?
     /// The pinning inputs from the current `MPNetworkOptions`.

@@ -79,7 +79,7 @@ public final class MPEndpointURLFactory: NSObject {
     }
 
     /// The parts every endpoint URL is built from. Of these, only `scheme` is also defined
-    /// in Objective-C, as `kMPURLScheme`, which the connector configuration reads.
+    /// elsewhere, in `MPNetworkCommunicationPRIVATE`, as the scheme its connectors require.
     private enum Constant {
         static let scheme = "https"
         static let configHost = "config2.mparticle.com"

@@ -404,8 +404,12 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     return (NSUInteger)MParticle.sharedInstance.logLevel;
 }
 
-- (MParticleWebViewPRIVATE *)webView {
-    return MParticle.sharedInstance.webView;
+- (NSString *)userAgent {
+    return MParticle.sharedInstance.webView.userAgent;
+}
+
+- (NSString *)originalDefaultUserAgent {
+    return MParticle.sharedInstance.webView.originalDefaultUserAgent;
 }
 
 - (NSArray<NSNumber *> *)supportedKits {
