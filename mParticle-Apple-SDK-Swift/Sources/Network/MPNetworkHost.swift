@@ -41,4 +41,13 @@ public protocol MPNetworkHost: MPBackendHost, MPUploadPersisting, MPKitBatchLogg
     @objc(mergeConsumerInfoFromResponse:) func mergeConsumerInfo(fromResponse response: NSDictionary)
     /// What a config response is applied to the SDK through.
     @objc(userDefaultsConnector) func userDefaultsConnector() -> MPUserDefaultsConnectorProtocol
+    /// The error a failed identity request completes with: in the identity error domain, with the
+    /// code of the `MPIdentityHTTPErrorResponse` it holds under `mParticleIdentityErrorKey`, made
+    /// here from `code`, `message` and the transport error.
+    @objc(identityErrorWithCode:message:underlyingError:)
+    func identityError(code: Int, message: String, underlyingError: NSError?) -> NSError
+    /// The same, with the `MPIdentityHTTPErrorResponse` made from a refused request's body and
+    /// status code.
+    @objc(identityErrorWithResponseObject:httpCode:)
+    func identityError(responseObject: NSDictionary?, httpCode: Int) -> NSError
 }
