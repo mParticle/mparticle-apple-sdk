@@ -32,56 +32,54 @@ enum IdentityHTTPKeys {
     static let modifiedMPID = "modified_mpid"
 }
 
-@objc public final class MPIdentityHTTPIdentitiesPRIVATE: NSObject {
+@objc final class MPIdentityHTTPIdentitiesPRIVATE: NSObject {
     private let passthroughValues = NSMutableDictionary()
 
-    @objc public var advertiserId: String?
-    @objc public var vendorId: String?
-    @objc public var deviceApplicationStamp: String?
-    @objc public var pushToken: String?
-    @objc public var customerId: String?
-    @objc public var email: String?
-    @objc public var facebook: String?
-    @objc public var facebookCustomAudienceId: String?
-    @objc public var google: String?
-    @objc public var microsoft: String?
-    @objc public var other: String?
-    @objc public var twitter: String?
-    @objc public var yahoo: String?
-    @objc public var other2: String?
-    @objc public var other3: String?
-    @objc public var other4: String?
-    @objc public var other5: String?
-    @objc public var other6: String?
-    @objc public var other7: String?
-    @objc public var other8: String?
-    @objc public var other9: String?
-    @objc public var other10: String?
-    @objc public var mobileNumber: String?
-    @objc public var phoneNumber2: String?
-    @objc public var phoneNumber3: String?
+    @objc var advertiserId: String?
+    @objc var vendorId: String?
+    @objc var deviceApplicationStamp: String?
+    @objc var pushToken: String?
+    @objc var customerId: String?
+    @objc var email: String?
+    @objc var facebook: String?
+    @objc var facebookCustomAudienceId: String?
+    @objc var google: String?
+    @objc var microsoft: String?
+    @objc var other: String?
+    @objc var twitter: String?
+    @objc var yahoo: String?
+    @objc var other2: String?
+    @objc var other3: String?
+    @objc var other4: String?
+    @objc var other5: String?
+    @objc var other6: String?
+    @objc var other7: String?
+    @objc var other8: String?
+    @objc var other9: String?
+    @objc var other10: String?
+    @objc var mobileNumber: String?
+    @objc var phoneNumber2: String?
+    @objc var phoneNumber3: String?
 
-    override public init() {
+    override init() {
         super.init()
     }
 
     @objc(initWithIdentities:attAuthorizationStatus:)
-    public init(identities: NSDictionary?, attAuthorizationStatus: NSNumber?) {
+    init(identities: NSDictionary?, attAuthorizationStatus: NSNumber?) {
         super.init()
         apply(identities: identities, attAuthorizationStatus: attAuthorizationStatus)
     }
 
-    @objc(stringForIdentityType:)
-    public static func string(forIdentityType identityType: Int) -> String? {
+    static func string(forIdentityType identityType: Int) -> String? {
         IdentityHTTPKeys.string(forIdentityType: identityType)
     }
 
-    @objc(identityTypeForString:)
-    public static func identityType(for string: String?) -> NSNumber? {
+    static func identityType(for string: String?) -> NSNumber? {
         IdentityHTTPKeys.identityType(for: string)
     }
 
-    @objc public func dictionaryRepresentation() -> NSDictionary {
+    @objc func dictionaryRepresentation() -> NSDictionary {
         let dictionary = NSMutableDictionary()
         assign(advertiserId, to: dictionary, key: "ios_idfa")
         assign(vendorId, to: dictionary, key: "ios_idfv")
@@ -170,8 +168,8 @@ enum IdentityHTTPKeys {
     }
 }
 
-@objc public final class MPIdentityHTTPRequestBuilderPRIVATE: NSObject {
-    @objc public static func clientSDKDictionary(withVersion sdkVersion: String?) -> NSDictionary {
+@objc final class MPIdentityHTTPRequestBuilderPRIVATE: NSObject {
+    static func clientSDKDictionary(withVersion sdkVersion: String?) -> NSDictionary {
         let dictionary = NSMutableDictionary()
         #if os(tvOS)
         dictionary[IdentityHTTPKeys.platform] = "tvos"
@@ -185,7 +183,7 @@ enum IdentityHTTPKeys {
         return dictionary
     }
 
-    @objc public static func baseDictionary(sdkVersion: String?, environment: String?) -> NSMutableDictionary {
+    static func baseDictionary(sdkVersion: String?, environment: String?) -> NSMutableDictionary {
         let dictionary = NSMutableDictionary()
         dictionary[IdentityHTTPKeys.clientSDK] = clientSDKDictionary(withVersion: sdkVersion)
         if let environment {
@@ -197,7 +195,7 @@ enum IdentityHTTPKeys {
         return dictionary
     }
 
-    @objc public static func identifyDictionary(
+    @objc static func identifyDictionary(
         sdkVersion: String?,
         environment: String?,
         previousMPID: String?,
@@ -213,7 +211,7 @@ enum IdentityHTTPKeys {
         return dictionary
     }
 
-    @objc public static func modifyDictionary(
+    static func modifyDictionary(
         sdkVersion: String?,
         environment: String?,
         identityChanges: NSArray?
@@ -229,7 +227,7 @@ enum IdentityHTTPKeys {
         return dictionary
     }
 
-    @objc public static func aliasDictionary(
+    static func aliasDictionary(
         sdkVersion: String?,
         environment: String?,
         apiKey: String?,
@@ -266,7 +264,7 @@ enum IdentityHTTPKeys {
         return dictionary
     }
 
-    @objc public static func successFields(from dictionary: NSDictionary?) -> NSDictionary {
+    static func successFields(from dictionary: NSDictionary?) -> NSDictionary {
         let result = NSMutableDictionary()
         result[IdentityHTTPKeys.context] = dictionary?[IdentityHTTPKeys.context]
         // A container here answers neither longLongValue nor the NSString overload, and the
@@ -344,23 +342,23 @@ public final class MPIdentityHTTPModifySuccessResponse: MPIdentityHTTPSuccessRes
     }
 }
 
-@objc public final class MPIdentityHTTPIdentityChangePRIVATE: NSObject {
-    @objc public var oldValue: String?
-    @objc public var value: String?
-    @objc public var identityType: String?
+@objc final class MPIdentityHTTPIdentityChangePRIVATE: NSObject {
+    var oldValue: String?
+    var value: String?
+    var identityType: String?
 
-    override public init() {
+    override init() {
         super.init()
     }
 
-    @objc public init(oldValue: String?, value: String?, identityType: String?) {
+    init(oldValue: String?, value: String?, identityType: String?) {
         self.oldValue = oldValue
         self.value = value
         self.identityType = identityType
         super.init()
     }
 
-    @objc public func dictionaryRepresentation() -> NSMutableDictionary {
+    @objc func dictionaryRepresentation() -> NSMutableDictionary {
         let dictionary = NSMutableDictionary()
         dictionary[IdentityHTTPKeys.oldValue] = oldValue ?? NSNull()
         dictionary[IdentityHTTPKeys.newValue] = value ?? NSNull()

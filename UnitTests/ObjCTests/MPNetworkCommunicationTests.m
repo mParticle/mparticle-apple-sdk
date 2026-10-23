@@ -10,6 +10,12 @@
 
 @import mParticle_Apple_SDK_Swift;
 
+// Wire keys and values these tests use, which the SDK now defines only in Swift.
+static NSString *const kMPATT = @"atts";
+static NSString *const kMPHTTPETagHeaderKey = @"ETag";
+static NSString *const kMPHTTPCacheControlHeaderKey = @"Cache-Control";
+static NSString *const kMPMessageTypeConfig = @"ac";
+
 @interface MParticle ()
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;

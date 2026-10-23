@@ -347,7 +347,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 }
 
 - (id<MPBackendUploadNetworking>)makeNetworkCommunication {
-    return (id<MPBackendUploadNetworking>)[[MPNetworkCommunication_PRIVATE alloc] initWithHost:self];
+    return [[MPNetworkCommunication_PRIVATE alloc] initWithHost:self];
 }
 
 - (void)updateStoredVersionAndBuildNumbers {
@@ -454,23 +454,30 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     [MParticle.sharedInstance logKitBatch:uploadString];
 }
 
+// Called synchronously from the Swift upload path, whose frames cannot catch an Objective-C
+// exception raised further down. Without a boundary here a defect in merging one response's
+// consumer information terminates the host app.
 - (void)mergeConsumerInfoFromResponse:(NSDictionary *)configuration {
-    if (MPIsNull(configuration) || MPIsNull(configuration[kMPMessageTypeKey])) {
-        return;
-    }
+    @try {
+        if (MPIsNull(configuration) || MPIsNull(configuration[kMPMessageTypeKey])) {
+            return;
+        }
 
-    MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
+        MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
 
-    // Consumer Information
-    MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
-    // MPConsumerInfo cannot reach the SDK instance's persistence adapter, so the cookies it merges
-    // the response onto are fetched here and passed in.
-    [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]
-                         existingCookies:[persistence fetchCookiesForUserId:[MPPersistenceUtilities mpId]]];
-    [persistence updateConsumerInfo:consumerInfo];
-    MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceUtilities mpId]];
-    if (persistenceInfo.cookies != nil) {
-        [MParticle sharedInstance].stateMachine.consumerInfo.cookies = persistenceInfo.cookies;
+        // Consumer Information
+        MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
+        // MPConsumerInfo cannot reach the SDK instance's persistence adapter, so the cookies it merges
+        // the response onto are fetched here and passed in.
+        [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]
+                             existingCookies:[persistence fetchCookiesForUserId:[MPPersistenceUtilities mpId]]];
+        [persistence updateConsumerInfo:consumerInfo];
+        MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceUtilities mpId]];
+        if (persistenceInfo.cookies != nil) {
+            [MParticle sharedInstance].stateMachine.consumerInfo.cookies = persistenceInfo.cookies;
+        }
+    } @catch (NSException *e) {
+        MPILogError(@"Failed to merge the consumer information from an upload response: %@", e);
     }
 }
 
@@ -486,8 +493,8 @@ static NSError *MPIdentityErrorWithResponse(MPIdentityHTTPErrorResponse *errorRe
                                                                                    error:underlyingError]);
 }
 
-- (NSError *)identityErrorWithResponseObject:(NSDictionary *)responseObject httpCode:(NSInteger)httpCode {
-    return MPIdentityErrorWithResponse([[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseObject httpCode:httpCode]);
+- (NSError *)identityErrorWithHTTPCode:(NSInteger)httpCode {
+    return MPIdentityErrorWithResponse([[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:nil httpCode:httpCode]);
 }
 
 - (NSDictionary *)currentUserIdentities {

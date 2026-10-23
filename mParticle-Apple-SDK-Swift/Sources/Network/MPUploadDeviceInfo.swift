@@ -4,8 +4,8 @@ import Foundation
 /// block: writes the wire status string, drops the advertiser id unless the user
 /// authorized tracking, and stamps the ATT timestamp. Pure JSON transform — the
 /// caller resolves the ATT status/timestamp and keeps compression and I/O.
-@objc public final class MPUploadDeviceInfo: NSObject {
-    // Mirrors MPIConstants wire keys.
+final class MPUploadDeviceInfo: NSObject {
+    // The device-information wire keys.
     private enum Keys {
         static let deviceInfo = "di" // kMPDeviceInformationKey
         static let att = "atts" // kMPATT
@@ -18,8 +18,7 @@ import Foundation
 
     /// Returns `uploadData` with ATT applied to its device-info block, or
     /// `uploadData` unchanged when it is not a JSON object.
-    @objc(uploadDataApplyingATT:authStatus:authTimestamp:)
-    public static func uploadDataApplyingATT(_ uploadData: Data, authStatus: Int, authTimestamp: NSNumber) -> Data {
+    static func uploadDataApplyingATT(_ uploadData: Data, authStatus: Int, authTimestamp: NSNumber) -> Data {
         guard var uploadDict = (try? JSONSerialization.jsonObject(with: uploadData)) as? [AnyHashable: Any] else {
             return uploadData
         }

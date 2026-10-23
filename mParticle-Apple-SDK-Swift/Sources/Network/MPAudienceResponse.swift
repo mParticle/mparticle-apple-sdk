@@ -14,15 +14,15 @@ enum AudienceKeys {
 ///
 /// Objective-C turns `audienceIDs` into `MPAudience` objects; this type never sees an SDK type.
 @objc(MPAudienceResponsePRIVATE)
-public final class MPAudienceResponsePRIVATE: NSObject {
+final class MPAudienceResponsePRIVATE: NSObject {
     /// Whether the request both succeeded at the HTTP level and produced a decodable body.
-    @objc public let isSuccess: Bool
+    let isSuccess: Bool
 
     /// The decoded audience identifiers, in response order. Empty means "no audiences".
-    @objc public let audienceIDs: [NSNumber]
+    let audienceIDs: [NSNumber]
 
     /// The error to hand back to the caller, if the response warrants one.
-    @objc public let error: NSError?
+    let error: NSError?
 
     init(isSuccess: Bool, audienceIDs: [NSNumber], error: NSError?) {
         self.isSuccess = isSuccess
@@ -31,9 +31,8 @@ public final class MPAudienceResponsePRIVATE: NSObject {
         super.init()
     }
 
-    /// Decodes an audience response, logging the same messages the Objective-C implementation did.
-    @objc(responseFromData:statusCode:logger:)
-    public static func response(from data: Data?, statusCode: Int, logger: MPLog) -> MPAudienceResponsePRIVATE {
+    /// Decodes an audience response and logs the outcome.
+    static func response(from data: Data?, statusCode: Int, logger: MPLog) -> MPAudienceResponsePRIVATE {
         guard let data else {
             return MPAudienceResponsePRIVATE(
                 isSuccess: false,

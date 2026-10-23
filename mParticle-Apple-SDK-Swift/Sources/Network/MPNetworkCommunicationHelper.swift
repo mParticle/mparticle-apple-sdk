@@ -1,8 +1,7 @@
 import Foundation
 
-@objc public final class MPNetworkCommunicationHelper: NSObject {
-    @objc(calculateRetryTimeForHeaders:)
-    public static func calculateRetryTime(for headers: NSDictionary) -> NSNumber {
+final class MPNetworkCommunicationHelper: NSObject {
+    static func calculateRetryTime(for headers: NSDictionary) -> NSNumber {
         let retryAfterDate = headers.mp_retryDate()
         let retryAfterSeconds = headers.mp_retrySeconds()
         let defaultRetryAfter: Double = 7200

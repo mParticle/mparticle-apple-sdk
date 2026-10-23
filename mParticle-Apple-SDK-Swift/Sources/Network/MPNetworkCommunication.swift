@@ -12,8 +12,9 @@ protocol MPConnectorFactoryProtocol {
 /// the connectors, holds the background tasks and upload throttling the requests use, and builds and
 /// sends the config, audience, upload and identity requests.
 ///
-/// Besides the initialiser, which the connector calls, the `MPBackendUploadNetworking` requests, the
-/// identity entry points and the alias body, every member Objective-C can see exists for the tests.
+/// Besides the initialiser, which `MPUserDefaultsConnector` calls, the `MPBackendUploadNetworking`
+/// requests, the identity entry points and the alias body, every member Objective-C can see exists
+/// for the tests.
 @objc(MPNetworkCommunication_PRIVATE)
 public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetworking {
     /// The default-host subdomains. A tracking subdomain is used once the app has ATT authorisation.
@@ -30,9 +31,11 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         static let requestTimeout: TimeInterval = 10
         static let networkPerformanceMessageType = "npe"
         static let configMessageType = "ac"
+        static let responseHeaderMessageType = "rh"
+        // Response headers are read with `value(forHTTPHeaderField:)`, which ignores case as HTTP
+        // requires; a Swift dictionary bridged from `allHeaderFields` does not.
         static let cacheControlHeader = "Cache-Control"
         static let ageHeader = "Age"
-        static let responseHeaderMessageType = "rh"
         static let retryAfterHeader = "Retry-After"
         static let identityMaxAgeHeader = "X-MP-Max-Age"
     }
@@ -360,7 +363,6 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         let data = response?.data
         let httpResponse = response?.httpResponse
 
-        // Header names are case-insensitive; a Swift dictionary bridged from allHeaderFields is not.
         let ageString = httpResponse?.value(forHTTPHeaderField: Constant.ageHeader)
         let currentAge = (ageString as NSString?)?.doubleValue ?? 0
         let maxAge = maxAge(forCache: httpResponse?.value(forHTTPHeaderField: Constant.cacheControlHeader))
@@ -403,8 +405,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
             configuration = body as? [AnyHashable: Any]
             let messageType = configuration?[MessageKeys.kMPMessageTypeKey]
             success = messageType as? String == Constant.configMessageType
-            // A body that parsed but is not an object, or whose message type is not a string, used to
-            // raise inside an Objective-C @try, whose handler reported the failure as a 204.
+            // A body that parsed but is not an object, or has a non-string message type, fails as a 204.
             if body != nil, configuration == nil || !(messageType == nil || messageType is String) {
                 responseCode = HTTPStatusCode.noContent.rawValue
             }
@@ -544,8 +545,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
             let body = try? JSONSerialization.jsonObject(with: data)
             let responseObject = body as? NSDictionary
             let messageType = responseObject?[MessageKeys.kMPMessageTypeKey]
-            // A body that parsed but is not an object, or whose message type is not a string, used to
-            // raise inside an Objective-C @try, whose handler logged it as an upload error.
+            // A body that parsed but is not an object, or has a non-string message type, is an upload error.
             if body != nil, responseObject == nil || !(messageType == nil || messageType is String) {
                 let reason = responseObject == nil ? "response is not a JSON object" : "response message type is not a string"
                 logger.error("Upload error: \(reason)")
@@ -553,7 +553,11 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
                 if let responseObject, messageType as? String == Constant.responseHeaderMessageType {
                     host.mergeConsumerInfo(fromResponse: responseObject)
                 }
-                logger.verbose("Upload complete: \(uploadString ?? "(null)")\n")
+                // MPLog takes a finished string, so one that holds a whole batch or body is only built
+                // when verbose logging would print it.
+                if logger.logLevel == .verbose {
+                    logger.verbose("Upload complete: \(uploadString ?? "(null)")\n")
+                }
             }
         }
 
@@ -565,8 +569,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         return outcome.willRetry
     }
 
-    /// The response's `Retry-After` header, the only one the throttle reads. Header names are
-    /// case-insensitive; a Swift dictionary bridged from `allHeaderFields` is not.
+    /// The response's `Retry-After` header, the only one the throttle reads.
     private func retryHeaders(of response: HTTPURLResponse?) -> NSDictionary {
         guard let retryAfter = response?.value(forHTTPHeaderField: Constant.retryAfterHeader) else {
             return [:]
@@ -593,7 +596,9 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         }
         let start = Date().timeIntervalSince1970
 
-        logger.verbose("Alias request:\nURL: \(aliasURL.map { "\($0.url)" } ?? "(null)") \nBody:\(uploadString ?? "(null)")")
+        if logger.logLevel == .verbose {
+            logger.verbose("Alias request:\nURL: \(aliasURL.map { "\($0.url)" } ?? "(null)") \nBody:\(uploadString ?? "(null)")")
+        }
 
         let response = aliasURL.map {
             connector.responseFromPostRequest(
@@ -615,7 +620,8 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
             host.deleteUpload(upload)
         }
 
-        if let data = response?.data, let responseString = String(data: data, encoding: .utf8), !responseString.isEmpty {
+        if logger.logLevel == .verbose, let data = response?.data,
+           let responseString = String(data: data, encoding: .utf8), !responseString.isEmpty {
             logger.verbose("Alias response:\n\(responseString)")
         }
 
@@ -839,12 +845,14 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         let start = Date().timeIntervalSince1970
         // Cannot fail: the DTOs build the dictionary from strings, numbers, NSNull and containers of them.
         let data = try? JSONSerialization.data(withJSONObject: requestDictionary)
-        let jsonRequest = data.flatMap { String(data: $0, encoding: .utf8) }
-        logger.verbose("Identity request:\nURL: \(url.map { "\($0.url)" } ?? "(null)") \nBody:\(jsonRequest ?? "(null)")")
+        if logger.logLevel == .verbose {
+            let jsonRequest = data.flatMap { String(data: $0, encoding: .utf8) }
+            logger.verbose("Identity request:\nURL: \(url.map { "\($0.url)" } ?? "(null)") \nBody:\(jsonRequest ?? "(null)")")
+        }
 
         var success = false
         var responseObject: NSDictionary?
-        var responseString: String?
+        var responseBody: Data?
         var responseCode = 0
         var transportError: NSError?
         var bodyWasNotAnObject = false
@@ -854,11 +862,9 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
             : nil
 
         if let cached = identityCaching?.getCachedIdentityResponse(for: endpoint, requestDictionary: requestDictionary) {
-            responseString = String(data: cached.bodyData, encoding: .utf8)
-            // An entry that is not an object is as unusable as one that will not parse, and is
-            // treated the same way: as a miss, so the request falls through to the network rather
-            // than failing for as long as the entry has left to live. An entry written before this
-            // was checked on the way in heals itself that way.
+            responseBody = cached.bodyData
+            // An entry that will not parse, or is not an object, is a miss: the request is sent
+            // rather than failing until the entry expires.
             do {
                 if let object = try JSONSerialization.jsonObject(with: cached.bodyData) as? NSDictionary {
                     responseObject = object
@@ -874,7 +880,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
 
         let answeredFromCache = success
         if !answeredFromCache {
-            let taskId = beginSafeBackgroundTask { self.identifying = false }
+            let taskId = beginSafeBackgroundTask { [weak self] in self?.identifying = false }
             let connector = makeConnector()
             let response = url.map {
                 connector.responseFromPostRequest(to: $0, message: nil, serializedParams: data, secret: nil)
@@ -890,12 +896,10 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
             logger.verbose("Identity response code: \(responseCode)")
 
             if success, let responseData {
-                responseString = String(data: responseData, encoding: .utf8)
+                responseBody = responseData
                 do {
-                    // A JSON body is as legitimately an array, string or number as it is an object,
-                    // and every reader subscripts it by key. This has to be settled before the cache
-                    // below: caching a body that is then rejected would hand it back on every
-                    // request until it expired, turning one bad response into a window of failing ones.
+                    // Every reader subscripts the body by key, so only an object is accepted, and that
+                    // is settled before caching: a cached bad body would fail each request until it expired.
                     if let object = try JSONSerialization.jsonObject(with: responseData) as? NSDictionary {
                         responseObject = object
                         if let identityCaching {
@@ -921,7 +925,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         identifying = false
 
         if success {
-            if let responseString {
+            if logger.logLevel == .verbose, let responseString = responseBody.flatMap({ String(data: $0, encoding: .utf8) }) {
                 logger.verbose("Identity response:\n\(responseString)")
             }
             let successResponse: MPIdentityHTTPSuccessResponse = endpoint == .identityModify
@@ -931,7 +935,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         } else if let completion {
             completion(nil, identityError(
                 transportError: transportError, bodyWasNotAnObject: bodyWasNotAnObject,
-                responseObject: responseObject, responseCode: responseCode, logger: logger
+                responseCode: responseCode, logger: logger
             ))
         }
     }
@@ -946,7 +950,6 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         identityCaching: MPIdentityCaching,
         logger: MPLog
     ) {
-        // Header names are case-insensitive; a Swift dictionary bridged from allHeaderFields is not.
         let header = httpResponse?.value(forHTTPHeaderField: Constant.identityMaxAgeHeader)
         let maxAgeSeconds = (header as NSString?)?.integerValue ?? 0
         logger.verbose("Identity Caching - max age header value (in seconds): \(maxAgeSeconds)")
@@ -961,7 +964,6 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
     private func identityError(
         transportError: NSError?,
         bodyWasNotAnObject: Bool,
-        responseObject: NSDictionary?,
         responseCode: Int,
         logger: MPLog
     ) -> NSError {
@@ -996,7 +998,6 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
             )
         }
         logger.error("Identity request failed - HTTP error (code: \(responseCode))")
-        // Always nil here, as it was in Objective-C: a body is only read from a 200 or 202 response.
-        return host.identityError(responseObject: responseObject, httpCode: responseCode)
+        return host.identityError(httpCode: responseCode)
     }
 }

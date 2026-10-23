@@ -14,6 +14,9 @@
 #import "MPUserDefaultsConnector.h"
 @import mParticle_Apple_SDK_Swift;
 
+// The device-information key of the ATT status, which the SDK now defines only in Swift.
+static NSString *const kMPATT = @"atts";
+
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;

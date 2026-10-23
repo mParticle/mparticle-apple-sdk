@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
@@ -63,6 +64,17 @@
     XCTAssertEqualObjects([MPPersistenceUtilities mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));
+}
+
+- (void)testAMergeThatRaisesIsContained {
+    id mockConsumerInfo = OCMPartialMock([MParticle sharedInstance].stateMachine.consumerInfo);
+    OCMStub([mockConsumerInfo updateWithConfiguration:OCMOCK_ANY existingCookies:OCMOCK_ANY])
+        .andThrow([NSException exceptionWithName:NSInternalInconsistencyException reason:@"merge" userInfo:nil]);
+    NSDictionary *response = @{kMPMessageTypeKey: @"rh", kMPRemoteConfigConsumerInfoKey: @{}};
+
+    XCTAssertNoThrow([(id<MPNetworkHost>)[[MPUserDefaultsConnector alloc] init] mergeConsumerInfoFromResponse:response]);
+    OCMVerify([mockConsumerInfo updateWithConfiguration:OCMOCK_ANY existingCookies:OCMOCK_ANY]);
+    [mockConsumerInfo stopMocking];
 }
 
 BOOL areEqual(NSDictionary *cookies1, NSArray<MPCookie *> *cookies2) {

@@ -9,13 +9,12 @@ import Foundation
 /// The result of handling a message-upload response. `willRetry` is what the
 /// caller returns to stop/continue the upload loop; `shouldThrottle` +
 /// `throttleRetryAfter` are the state-machine throttle for the caller to apply;
-/// `isSuccess` drives the caller's response-body config parse (kept in ObjC as it
-/// touches persistence).
-@objc public final class MPUploadResponseOutcome: NSObject {
-    @objc public let isSuccess: Bool
-    @objc public let willRetry: Bool
-    @objc public let shouldThrottle: Bool
-    @objc public let throttleRetryAfter: TimeInterval
+/// `isSuccess` decides whether the caller reads the response body.
+final class MPUploadResponseOutcome: NSObject {
+    let isSuccess: Bool
+    let willRetry: Bool
+    let shouldThrottle: Bool
+    let throttleRetryAfter: TimeInterval
 
     init(isSuccess: Bool, willRetry: Bool, shouldThrottle: Bool, throttleRetryAfter: TimeInterval) {
         self.isSuccess = isSuccess
@@ -26,19 +25,18 @@ import Foundation
     }
 }
 
-@objc public final class MPUploadResponseHandler: NSObject {
-    /// Applies the message-upload response effects that belong in Swift —
-    /// success/invalid classification, transport-error-counter reset, upload
-    /// deletion (via the persistence seam), and kit-batch logging — then returns
-    /// the throttle/retry decision for the ObjC caller to apply.
-    @objc(handleMessageResponseWithStatusCode:transportError:headers:uploadString:upload:persistence:kitBatchLogger:)
-    public static func handleMessageResponse(statusCode: Int,
-                                             transportError: NSError?,
-                                             headers: NSDictionary,
-                                             uploadString: String?,
-                                             upload: MPUploadPRIVATE,
-                                             persistence: MPUploadPersisting,
-                                             kitBatchLogger: MPKitBatchLogging) -> MPUploadResponseOutcome {
+final class MPUploadResponseHandler: NSObject {
+    /// Applies the message-upload response effects — success/invalid
+    /// classification, transport-error-counter reset, upload deletion (via the
+    /// persistence seam), and kit-batch logging — then returns the throttle/retry
+    /// decision for the caller to apply.
+    static func handleMessageResponse(statusCode: Int,
+                                      transportError: NSError?,
+                                      headers: NSDictionary,
+                                      uploadString: String?,
+                                      upload: MPUploadPRIVATE,
+                                      persistence: MPUploadPersisting,
+                                      kitBatchLogger: MPKitBatchLogging) -> MPUploadResponseOutcome {
         let isSuccess = (200..<300).contains(statusCode)
         let isInvalid = statusCode != 429 && (400..<500).contains(statusCode)
 
