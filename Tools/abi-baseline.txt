@@ -805,6 +805,7 @@ PROP|@property (nonatomic, strong, readwrite, nullable) NSString *dataPlanId;
 PROP|@property (readonly, strong, nonnull) NSDictionary<NSNumber *, NSString *> *identities;
 PROP|@property (readonly, strong, nonnull) NSDictionary<NSNumber *, NSString *> *userIdentities;
 PROP|@property (readonly, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;
+PROP|@property (readonly, strong, nullable) MPConsentState *consentState;
 PROP|@property (readonly, strong, nullable) NSString *idfa;
 PROP|@property (readonly, strong, nullable) NSString *idfv;
 PROP|@property (readwrite, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;

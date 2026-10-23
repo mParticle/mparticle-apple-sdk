@@ -91,6 +91,6 @@ retained column rather than in the percentage.
 
 This gate applies to every conversion PR against `main`. The ABI check
 distinguishes supported contracts from accidentally exported internal types
-through item 1's review process. It remains a local check; adding it to CI is
-a separate change. Run all five items before opening or updating a conversion
-PR.
+through item 1's review process. CI also runs it on every pull request (the
+`ABI guard` job), but run all five items locally before opening or updating a
+conversion PR.
