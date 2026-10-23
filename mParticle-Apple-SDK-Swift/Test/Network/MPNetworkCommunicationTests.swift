@@ -17,6 +17,9 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     var pinningOff = false
     let configConnector = MPUserDefaultsConnectorMock()
     var uploadSecret: String? = "upload-secret"
+    var currentIdentities: NSDictionary?
+    var vendorIdValue: String?
+    var deviceTokenValue: Data?
     private(set) var deletedUploads: [MPUploadPRIVATE] = []
     private(set) var kitBatches: [String] = []
     private(set) var mergedResponses: [NSDictionary] = []
@@ -60,6 +63,11 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     func deleteUpload(_ upload: MPUploadPRIVATE) { deletedUploads.append(upload) }
     func logKitBatch(_ uploadString: String) { kitBatches.append(uploadString) }
     func userDefaultsConnector() -> MPUserDefaultsConnectorProtocol { configConnector }
+    func currentUserIdentities() -> NSDictionary? { currentIdentities }
+    func vendorId() -> String? { vendorIdValue }
+    #if os(iOS)
+    func deviceToken() -> Data? { deviceTokenValue }
+    #endif
 
     /// Stands in for the Objective-C error response, keeping what it was made from.
     func identityError(code: Int, message: String, underlyingError: NSError?) -> NSError {
@@ -866,5 +874,268 @@ final class MPNetworkCommunicationTests: XCTestCase {
         )
         XCTAssertEqual(logged, [])
         XCTAssertFalse(network.identifying)
+    }
+
+    // MARK: - Identity entry points
+
+    // The expected bodies were captured from the deleted Objective-C DTOs for the same input, with
+    // the SDK version and the API key replaced by the fake host's, and without the request ID and
+    // timestamp, which are checked on their own.
+
+    private static let capturedIdentifyBody = #"""
+    {"client_sdk":{"platform":"ios","sdk_vendor":"mparticle","sdk_version":"0.0.0-test"},"environment":"development",\#
+    "known_identities":{"customerid":"cust-1","device_application_stamp":"stamp-fixture","email":"user@example.com",\#
+    "google":"google-id","ios_idfa":"idfa-fixture","ios_idfv":"vendor-id-fixture","other":null,"push_token":"0aff"},\#
+    "previous_mpid":"42"}
+    """#
+    private static let capturedDeniedIdentifyBody = #"""
+    {"client_sdk":{"platform":"ios","sdk_vendor":"mparticle","sdk_version":"0.0.0-test"},"environment":"development",\#
+    "known_identities":{"customerid":"cust-1","device_application_stamp":"stamp-fixture","email":"user@example.com",\#
+    "google":"google-id","ios_idfv":"vendor-id-fixture","other":null,"push_token":"0aff"},"previous_mpid":"42"}
+    """#
+    private static let capturedEmptyIdentifyBody = #"""
+    {"client_sdk":{"platform":"ios","sdk_vendor":"mparticle","sdk_version":"0.0.0-test"},"environment":"development",\#
+    "known_identities":{"device_application_stamp":"stamp-fixture","ios_idfv":"vendor-id-fixture","push_token":"0aff"},\#
+    "previous_mpid":"42"}
+    """#
+    private static let capturedModifyBody = #"""
+    {"client_sdk":{"platform":"ios","sdk_vendor":"mparticle","sdk_version":"0.0.0-test"},"environment":"development",\#
+    "identity_changes":[{"identity_type":"email","new_value":"new@example.com","old_value":"old@example.com"},\#
+    {"identity_type":"google","new_value":"google-new","old_value":null},\#
+    {"identity_type":"yahoo","new_value":null,"old_value":null},\#
+    {"identity_type":"other3","new_value":null,"old_value":"removed-value"}]}
+    """#
+    private static let capturedDeviceIDBody = #"""
+    {"client_sdk":{"platform":"ios","sdk_vendor":"mparticle","sdk_version":"0.0.0-test"},"environment":"development",\#
+    "identity_changes":[{"identity_type":"push_token","new_value":"0aff","old_value":"0102"}]}
+    """#
+    private static let capturedAliasBody = #"""
+    {"api_key":"us2-test","data":{"destination_mpid":2,"device_application_stamp":"stamp-fixture",\#
+    "end_unixtime_ms":200250,"source_mpid":1,"start_unixtime_ms":100500},"environment":"development",\#
+    "request_type":"alias"}
+    """#
+    private static let attLog = "mParticle -> The IDFA was supplied but the App Tracking Transparency Status not set "
+        + "with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]"
+
+    private static func identities(_ values: [MPIdentitySwift: Any]) -> NSDictionary {
+        let dictionary = NSMutableDictionary()
+        for (type, value) in values {
+            dictionary[NSNumber(value: type.rawValue)] = value
+        }
+        return dictionary
+    }
+
+    /// The identities of the captured identify, login and logout requests.
+    private static let requestIdentities = identities([
+        .customerId: "cust-1", .email: "user@example.com", .iosAdvertiserId: "idfa-fixture",
+        .other: NSNull(), .google: "google-id"
+    ])
+
+    /// The SDK state the bodies were captured in.
+    private func useCapturedState() {
+        host.currentUserId = 42
+        host.vendorIdValue = "vendor-id-fixture"
+        host.deviceTokenValue = Data([0x0A, 0xFF])
+        authorizeTracking()
+        // Consumer info reads the stamp from the shared user defaults.
+        let shared = MPUserDefaults.standardUserDefaults(connector: MPUserDefaultsConnectorMock())
+        let stamp = shared["dast"]
+        shared["dast"] = "stamp-fixture"
+        let environment = MPStateMachinePRIVATE.environment()
+        MPStateMachinePRIVATE.setEnvironment(1)
+        addTeardownBlock {
+            shared["dast"] = stamp
+            MPStateMachinePRIVATE.setEnvironment(environment)
+        }
+    }
+
+    /// `json` as this platform sends it: tvOS reports its own platform and has no push token.
+    private func expectedBody(_ json: String) -> NSMutableDictionary? {
+        let body = (try? JSONSerialization.jsonObject(with: Data(json.utf8), options: .mutableContainers)) as? NSMutableDictionary
+        #if os(tvOS)
+        (body?["client_sdk"] as? NSMutableDictionary)?["platform"] = "tvos"
+        (body?["known_identities"] as? NSMutableDictionary)?.removeObject(forKey: "push_token")
+        #endif
+        return body
+    }
+
+    /// A request body without its request ID and timestamp, once those are checked.
+    private func stripped(_ body: NSDictionary?, file: StaticString = #filePath, line: UInt = #line) -> NSMutableDictionary? {
+        guard let body = body?.mutableCopy() as? NSMutableDictionary else {
+            XCTFail("No body", file: file, line: line)
+            return nil
+        }
+        XCTAssertNotNil((body["request_id"] as? String).flatMap(UUID.init(uuidString:)), file: file, line: line)
+        if body["request_type"] == nil {
+            let timestamp = (body["request_timestamp_ms"] as? NSNumber)?.doubleValue ?? 0
+            XCTAssertEqual(timestamp, Date().timeIntervalSince1970 * 1000, accuracy: 60000, file: file, line: line)
+        }
+        body.removeObjects(forKeys: ["request_id", "request_timestamp_ms"])
+        return body
+    }
+
+    private func sentBody(
+        _ post: MPNetworkFakePost?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> NSMutableDictionary? {
+        let body = post?.params.flatMap { try? JSONSerialization.jsonObject(with: $0) } as? NSDictionary
+        return stripped(body, file: file, line: line)
+    }
+
+    func testIdentifyLoginAndLogoutSendTheCapturedBodyToTheirOwnURLWhileBlockingTheOthers() throws {
+        useCapturedState()
+        let connector = respondToEveryRequest(200, body: mpidBody)
+        var flagWhileSent: [Bool] = []
+        connector.onPost = { [unowned self] in flagWhileSent.append(network.identifying) }
+        typealias EntryPoint = (NSDictionary?, ((MPIdentityHTTPBaseSuccessResponse?, Error?) -> Void)?) -> Void
+        let cases: [(entryPoint: EntryPoint, url: URL?)] = [
+            (network.identify, network.identifyURL?.url),
+            (network.login, network.loginURL?.url),
+            (network.logout, network.logoutURL?.url)
+        ]
+        for (entryPoint, url) in cases {
+            var responses: [MPIdentityHTTPBaseSuccessResponse?] = []
+            entryPoint(Self.requestIdentities) { response, _ in responses.append(response) }
+            XCTAssertEqual(responses.count, 1, "The completion runs once, before the call returns")
+            let response = try XCTUnwrap(responses.first ?? nil)
+            XCTAssertTrue(type(of: response) == MPIdentityHTTPSuccessResponse.self)
+            let post = try XCTUnwrap(connector.posts.last)
+            XCTAssertEqual(post.url, url)
+            XCTAssertEqual(sentBody(post), expectedBody(Self.capturedIdentifyBody))
+        }
+        XCTAssertEqual(flagWhileSent, [true, true, true])
+        XCTAssertFalse(network.identifying)
+    }
+
+    func testAnIdentifyBodyLeavesOutWhatTheUserAndDeviceDoNotHave() throws {
+        useCapturedState()
+        let connector = respondToEveryRequest(200, body: mpidBody)
+
+        network.identify(nil, completion: nil)
+        XCTAssertEqual(sentBody(connector.posts.last), expectedBody(Self.capturedEmptyIdentifyBody))
+
+        host.machine.attAuthorizationStatus = NSNumber(value: MPATTAuthorizationStatusSwift.denied.rawValue)
+        network.identify(Self.requestIdentities, completion: nil)
+        XCTAssertEqual(sentBody(connector.posts.last), expectedBody(Self.capturedDeniedIdentifyBody))
+
+        // No mpid yet, no vendor ID, and an app extension, in production.
+        host.currentUserId = 0
+        host.vendorIdValue = nil
+        host.inAppExtension = true
+        MPStateMachinePRIVATE.setEnvironment(2)
+        network.identify(nil, completion: nil)
+        let body = try XCTUnwrap(sentBody(connector.posts.last))
+        XCTAssertNil(body["previous_mpid"])
+        XCTAssertEqual(body["environment"] as? String, "production")
+        XCTAssertEqual(body["known_identities"] as? NSDictionary, ["device_application_stamp": "stamp-fixture"])
+
+        host.inAppExtension = false
+        host.deviceTokenValue = nil
+        network.identify(nil, completion: nil)
+        XCTAssertEqual(
+            sentBody(connector.posts.last)?["known_identities"] as? NSDictionary,
+            ["device_application_stamp": "stamp-fixture"]
+        )
+    }
+
+    func testAnIDFAIsLoggedAtDebugLevelOnlyWhileTheATTStatusIsUnset() {
+        _ = respondToEveryRequest(200, body: mpidBody)
+        host.log = MPLog(logLevel: .debug)
+        host.log?.customLogger = { [unowned self] in logged.append($0) }
+
+        network.identify(Self.requestIdentities, completion: nil)
+        network.login(Self.identities([.iosAdvertiserId: NSNull()]), completion: nil)
+        network.logout(Self.identities([.email: "user@example.com"]), completion: nil)
+        network.modify(Self.identities([.iosAdvertiserId: "idfa-fixture"]), completion: nil)
+        XCTAssertEqual(logged, [Self.attLog, Self.attLog, Self.attLog], "An IDFA, even a removed one, and only an IDFA")
+
+        logged = []
+        host.machine.attAuthorizationStatus = NSNumber(value: MPATTAuthorizationStatusSwift.denied.rawValue)
+        network.identify(Self.requestIdentities, completion: nil)
+        network.modify(Self.identities([.iosAdvertiserId: "idfa-fixture"]), completion: nil)
+        XCTAssertEqual(logged, [])
+    }
+
+    private static func sortedByType(_ changes: [NSDictionary]) -> [NSDictionary] {
+        changes.sorted { ($0["identity_type"] as? String ?? "") < ($1["identity_type"] as? String ?? "") }
+    }
+
+    func testModifySendsOnlyTheChangedAndRemovedIdentitiesInTheirOrderWhileBlockingTheOthers() throws {
+        useCapturedState()
+        host.currentIdentities = Self.identities([
+            .customerId: "cust-1", .email: "old@example.com", .other3: "removed-value", .mobileNumber: "555"
+        ])
+        let connector = respondToEveryRequest(200, body: Data(#"{"mpid":"42","change_results":[]}"#.utf8))
+        var flagWhileSent: [Bool] = []
+        connector.onPost = { [unowned self] in flagWhileSent.append(network.identifying) }
+        let modified = Self.identities([
+            .customerId: "cust-1", .email: "new@example.com", .other3: NSNull(), .google: "google-new", .yahoo: NSNull()
+        ])
+
+        var responses: [MPIdentityHTTPBaseSuccessResponse?] = []
+        network.modify(modified) { response, _ in responses.append(response) }
+
+        XCTAssertEqual(responses.count, 1)
+        XCTAssertTrue(responses.first??.isKind(of: MPIdentityHTTPModifySuccessResponse.self) == true)
+        let post = try XCTUnwrap(connector.posts.last)
+        XCTAssertEqual(post.url, network.modifyURL?.url)
+        XCTAssertEqual(flagWhileSent, [true])
+        let body = try XCTUnwrap(sentBody(post))
+        let expected = try XCTUnwrap(expectedBody(Self.capturedModifyBody))
+        let changes = try XCTUnwrap(body["identity_changes"] as? [NSDictionary])
+        // The changes follow the order the identities enumerate in, which a literal does not fix.
+        var order: [String] = []
+        modified.enumerateKeysAndObjects { key, _, _ in
+            let type = MPIdentityHTTPIdentitiesPRIVATE.string(forIdentityType: (key as? NSNumber)?.intValue ?? -1)
+            if let type, changes.contains(where: { $0["identity_type"] as? String == type }) {
+                order.append(type)
+            }
+        }
+        XCTAssertEqual(changes.map { $0["identity_type"] as? String }, order)
+        body["identity_changes"] = Self.sortedByType(changes)
+        expected["identity_changes"] = Self.sortedByType(expected["identity_changes"] as? [NSDictionary] ?? [])
+        XCTAssertEqual(body, expected)
+    }
+
+    func testModifyWithNothingChangedSucceedsAtOnceUnsent() {
+        host.currentIdentities = Self.identities([.customerId: "cust-1", .mobileNumber: "555"])
+        let connector = respondToEveryRequest(200, body: mpidBody)
+        for unchanged in [nil, Self.identities([:]), Self.identities([.customerId: "cust-1", .mobileNumber: "555"])] {
+            var outcomes: [(MPIdentityHTTPBaseSuccessResponse?, Error?)] = []
+            network.modify(unchanged) { outcomes.append(($0, $1)) }
+            XCTAssertEqual(outcomes.count, 1, "\(String(describing: unchanged))")
+            XCTAssertTrue(outcomes.first?.0?.isKind(of: MPIdentityHTTPModifySuccessResponse.self) == true)
+            XCTAssertNil(outcomes.first?.1)
+        }
+        XCTAssertEqual(connector.posts.count, 0)
+    }
+
+    func testModifyDeviceIDSendsOneChangeWithoutBlockingAndStillLogsAFailure() throws {
+        useCapturedState()
+        captureErrorLogs()
+        let connector = respondToEveryRequest(500)
+        var flagWhileSent: [Bool] = []
+        connector.onPost = { [unowned self] in flagWhileSent.append(network.identifying) }
+
+        network.modifyDeviceID("push_token", value: "0aff", oldValue: "0102")
+
+        let post = try XCTUnwrap(connector.posts.last)
+        XCTAssertEqual(post.url, network.modifyURL?.url)
+        XCTAssertEqual(sentBody(post), expectedBody(Self.capturedDeviceIDBody))
+        XCTAssertEqual(flagWhileSent, [false])
+        XCTAssertEqual(logged, ["mParticle -> Identity request failed - HTTP error (code: 500)"])
+    }
+
+    func testTheAliasBodyCarriesTheAPIKeyAndTheDeviceApplicationStamp() {
+        useCapturedState()
+        let body = network.aliasRequestDictionary(
+            sourceMPID: 1, destinationMPID: 2,
+            startTime: Date(timeIntervalSince1970: 100.5), endTime: Date(timeIntervalSince1970: 200.25)
+        )
+        XCTAssertEqual(stripped(body), expectedBody(Self.capturedAliasBody))
+
+        let empty = network.aliasRequestDictionary(sourceMPID: nil, destinationMPID: nil, startTime: nil, endTime: nil)
+        XCTAssertEqual(empty["data"] as? NSDictionary, ["device_application_stamp": "stamp-fixture"])
     }
 }

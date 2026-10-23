@@ -9,7 +9,6 @@
 #import "MPConsentState.h"
 #import "../Kits/MPDataPlanFilter.h"
 #import "UploadSettingsUtils.h"
-#import "MPNetworkCommunication.h"
 #if TARGET_OS_IOS == 1
     #import <AdServices/AAAttribution.h>
 #endif
@@ -29,6 +28,7 @@
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
+@property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
 + (void)executeOnMain:(void(^)(void))block;
@@ -489,6 +489,25 @@ static NSError *MPIdentityErrorWithResponse(MPIdentityHTTPErrorResponse *errorRe
 - (NSError *)identityErrorWithResponseObject:(NSDictionary *)responseObject httpCode:(NSInteger)httpCode {
     return MPIdentityErrorWithResponse([[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseObject httpCode:httpCode]);
 }
+
+- (NSDictionary *)currentUserIdentities {
+    return MParticle.sharedInstance.identity.currentUser.identities;
+}
+
+- (NSString *)vendorId {
+    MParticle *mparticle = MParticle.sharedInstance;
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:(id<MPStateMachineMPDeviceProtocol>)mparticle.stateMachine
+                                                 userDefaults:(id<MPIdentityApiMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
+                                                     identity:(id<MPIdentityApiMPDeviceProtocol>)mparticle.identity
+                                                       logger:self.logger];
+    return device.vendorId;
+}
+
+#if TARGET_OS_IOS == 1
+- (NSData *)deviceToken {
+    return [MParticle.sharedInstance.notificationController deviceToken];
+}
+#endif
 
 // The connector keeps no state of its own, so the host serves as the one a config response is
 // applied through.

@@ -1,8 +1,7 @@
 import Foundation
 
 @objc public final class MPEndpointHostResolver: NSObject {
-    @objc(defaultHostWithSubdomain:apiKey:)
-    public static func defaultHost(subdomain: String, apiKey: String?) -> String {
+    static func defaultHost(subdomain: String, apiKey: String?) -> String {
         let podPrefix = apiKey?.components(separatedBy: "-") ?? []
         guard podPrefix.count > 1 else {
             return "\(subdomain).us1.mparticle.com"
@@ -23,8 +22,7 @@ import Foundation
         return "\(host):\(port)"
     }
 
-    @objc(resolvedHostWithCustomBaseURLHost:trackingHost:host:defaultHost:attAuthorized:)
-    public static func resolvedHost(
+    static func resolvedHost(
         customBaseURLHost: String?,
         trackingHost: String?,
         host: String?,

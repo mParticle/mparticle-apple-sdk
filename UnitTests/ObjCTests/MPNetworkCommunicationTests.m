@@ -1,14 +1,12 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import <Foundation/Foundation.h>
-#import "MPNetworkCommunication.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPPersistenceUtilities.h"
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
-#import "MPIdentityDTO.h"
 
 @import mParticle_Apple_SDK_Swift;
 
@@ -32,6 +30,14 @@
 @interface MPNetworkCommunicationTests : MPBaseTestCase
 
 @end
+
+// The body of an identify request, made by the builder the network layer makes it with.
+static NSDictionary *MPIdentifyRequestDictionary(void) {
+    return [MPIdentityHTTPRequestBuilderPRIVATE identifyDictionaryWithSdkVersion:kMParticleSDKVersion
+                                                                     environment:@"development"
+                                                                    previousMPID:nil
+                                                                      identities:@{@"ios_idfv": @"vendor-id"}];
+}
 
 Method originalMethod = nil; Method swizzleMethod = nil;
 
@@ -955,14 +961,13 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [identityCaching clearAllCache];
     [MParticle sharedInstance].stateMachine.enableIdentityCaching = YES;
 
-    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:[[MPIdentityApiRequest alloc] init]];
     MPIdentityCachedResponse *poisoned =
         [[MPIdentityCachedResponse alloc] initWithBodyData:[@"[1,2]" dataUsingEncoding:NSUTF8StringEncoding]
                                                 statusCode:200
                                                    expires:[NSDate dateWithTimeIntervalSinceNow:3600]];
     [identityCaching cacheIdentityResponse:poisoned
                                   endpoint:MPEndpointIdentityIdentify
-                         requestDictionary:[request dictionaryRepresentation]];
+                         requestDictionary:MPIdentifyRequestDictionary()];
 
     XCTAssertNil([self errorFromIdentityRequestWithStatusCode:200
                                                          body:[@"{\"mpid\":\"42\"}" dataUsingEncoding:NSUTF8StringEncoding]
@@ -994,11 +999,10 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
 
-    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:[[MPIdentityApiRequest alloc] init]];
     __block NSError *capturedError = nil;
     __block BOOL completed = NO;
     XCTAssertNoThrow([mockNetworkCommunication identityRequestToEndpoint:MPEndpointIdentityIdentify
-                                                       requestDictionary:[request dictionaryRepresentation]
+                                                       requestDictionary:MPIdentifyRequestDictionary()
                                                       blockOtherRequests:NO
                                                               completion:^(MPIdentityHTTPBaseSuccessResponse *httpResponse, NSError *error) {
         completed = YES;

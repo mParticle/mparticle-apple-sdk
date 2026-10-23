@@ -50,4 +50,14 @@ public protocol MPNetworkHost: MPBackendHost, MPUploadPersisting, MPKitBatchLogg
     /// status code.
     @objc(identityErrorWithResponseObject:httpCode:)
     func identityError(responseObject: NSDictionary?, httpCode: Int) -> NSError
+    /// The current user's identities, keyed by `MPIdentity` number, which a modify request is
+    /// diffed against.
+    @objc(currentUserIdentities) func currentUserIdentities() -> NSDictionary?
+    /// The vendor identifier `MPDevice` reports, which identify, login and logout requests carry.
+    @objc(vendorId) func vendorId() -> String?
+    #if os(iOS)
+    /// The notification controller's push token, which identify, login and logout requests carry
+    /// outside an app extension.
+    @objc(deviceToken) func deviceToken() -> Data?
+    #endif
 }

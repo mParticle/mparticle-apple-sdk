@@ -5,8 +5,6 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "mParticle.h"
-#import "MPIdentityDTO.h"
-#import "MPNetworkCommunication.h"
 #import "MPBaseTestCase.h"
 #import "MPIdentityApi.h"
 #import "MPKitContainer+MParticlePrivate.h"
@@ -45,18 +43,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 - (NSArray<MParticleUser *> *)sortedUserArrayByLastSeen:(NSMutableArray<MParticleUser *> *)userArray;
 @end
     
-@interface MPNetworkCommunication_PRIVATE ()
-- (void)modifyWithIdentityChanges:(NSArray *)identityChanges blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerModifyCallback)completion;
-@end
-
-#pragma mark - MPStateMachine category
-
-@interface MPIdentityHTTPIdentities(Tests) 
-
-- (instancetype)initWithIdentities:(NSDictionary *)identities;
-
-@end
-
 @interface MParticle ()
 
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
@@ -95,7 +81,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"yahoo id" identityType:MPIdentityYahoo];
     [request setIdentity:@"twitter id" identityType:MPIdentityTwitter];
     
-    MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.identities];
+    MPIdentityHTTPIdentitiesPRIVATE *httpIdentities = [[MPIdentityHTTPIdentitiesPRIVATE alloc] initWithIdentities:request.identities attAuthorizationStatus:[MParticle sharedInstance].stateMachine.attAuthorizationStatus];
     
     XCTAssertEqual(@"other id", httpIdentities.other);
     XCTAssertEqual(@"other id 2", httpIdentities.other2);
@@ -183,7 +169,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"yahoo id" identityType:MPIdentityYahoo];
     [request setIdentity:@"twitter id" identityType:MPIdentityTwitter];
     
-    MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.identities];
+    MPIdentityHTTPIdentitiesPRIVATE *httpIdentities = [[MPIdentityHTTPIdentitiesPRIVATE alloc] initWithIdentities:request.identities attAuthorizationStatus:[MParticle sharedInstance].stateMachine.attAuthorizationStatus];
     
     XCTAssertEqual(@"other id", httpIdentities.other);
     XCTAssertEqual(@"other id 2", httpIdentities.other2);
@@ -270,7 +256,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"yahoo id" identityType:MPIdentityYahoo];
     [request setIdentity:@"twitter id" identityType:MPIdentityTwitter];
     
-    MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.identities];
+    MPIdentityHTTPIdentitiesPRIVATE *httpIdentities = [[MPIdentityHTTPIdentitiesPRIVATE alloc] initWithIdentities:request.identities attAuthorizationStatus:[MParticle sharedInstance].stateMachine.attAuthorizationStatus];
     
     XCTAssertEqual(@"other id", httpIdentities.other);
     XCTAssertEqual(@"other id 2", httpIdentities.other2);
@@ -357,7 +343,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"yahoo id" identityType:MPIdentityYahoo];
     [request setIdentity:@"twitter id" identityType:MPIdentityTwitter];
     
-    MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.identities];
+    MPIdentityHTTPIdentitiesPRIVATE *httpIdentities = [[MPIdentityHTTPIdentitiesPRIVATE alloc] initWithIdentities:request.identities attAuthorizationStatus:[MParticle sharedInstance].stateMachine.attAuthorizationStatus];
     
     XCTAssertEqual(@"other id", httpIdentities.other);
     XCTAssertEqual(@"other id 2", httpIdentities.other2);
@@ -444,7 +430,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"yahoo id" identityType:MPIdentityYahoo];
     [request setIdentity:@"twitter id" identityType:MPIdentityTwitter];
     
-    MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.identities];
+    MPIdentityHTTPIdentitiesPRIVATE *httpIdentities = [[MPIdentityHTTPIdentitiesPRIVATE alloc] initWithIdentities:request.identities attAuthorizationStatus:[MParticle sharedInstance].stateMachine.attAuthorizationStatus];
     
     XCTAssertEqual(@"other id", httpIdentities.other);
     XCTAssertEqual(@"other id 2", httpIdentities.other2);
@@ -510,13 +496,13 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     [[[partialMock reject] ignoringNonObjectArgs] identityRequestToEndpoint:0 requestDictionary:[OCMArg any] blockOtherRequests:NO completion:[OCMArg any]];
     
-    [partialMock modifyWithIdentityChanges:nil blockOtherRequests:YES completion:^(MPIdentityHTTPModifySuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
+    [partialMock modify:nil completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
         XCTAssertNil(error);
         XCTAssertNotNil(httpResponse);
         XCTAssert([httpResponse isKindOfClass:[MPIdentityHTTPModifySuccessResponse class]]);
     }];
 
-    [partialMock modifyWithIdentityChanges:@[] blockOtherRequests:YES completion:^(MPIdentityHTTPModifySuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
+    [partialMock modify:@{} completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
         XCTAssertNil(error);
         XCTAssertNotNil(httpResponse);
         XCTAssert([httpResponse isKindOfClass:[MPIdentityHTTPModifySuccessResponse class]]);
@@ -897,7 +883,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
     [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
-    [[mockNetwork expect] identify:request completion:OCMOCK_ANY];
+    [[mockNetwork expect] identify:request.identities completion:OCMOCK_ANY];
     
     [identityMock identify:request completion:nil];
     
@@ -916,7 +902,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
     [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
-    [[mockNetwork expect] login:request completion:OCMOCK_ANY];
+    [[mockNetwork expect] login:request.identities completion:OCMOCK_ANY];
     
     [identityMock login:request completion:nil];
     
@@ -935,7 +921,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
     [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
-    [[mockNetwork expect] logout:request completion:OCMOCK_ANY];
+    [[mockNetwork expect] logout:request.identities completion:OCMOCK_ANY];
     
     [identityMock logout:request completion:nil];
     
@@ -954,7 +940,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
     [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
-    [[mockNetwork expect] modify:request completion:OCMOCK_ANY];
+    [[mockNetwork expect] modify:request.identities completion:OCMOCK_ANY];
     
     [identityMock modify:request completion:nil];
     
@@ -1092,8 +1078,10 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:100];
     NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:200];
     MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
-    MPIdentityHTTPAliasRequest *httpRequest = [[MPIdentityHTTPAliasRequest alloc] initWithIdentityApiAliasRequest:request];
-    NSDictionary *dictionary = httpRequest.dictionaryRepresentation;
+    NSDictionary *dictionary = [[self sdkNetworkCommunication] aliasRequestDictionaryWithSourceMPID:request.sourceMPID
+                                                                         destinationMPID:request.destinationMPID
+                                                                               startTime:request.startTime
+                                                                                 endTime:request.endTime];
     XCTAssertNil(dictionary[@"client_sdk"]);
     XCTAssertNil(dictionary[@"request_timestamp_ms"]);
     XCTAssertEqualObjects(dictionary[@"request_type"], @"alias");
@@ -1113,7 +1101,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testIdentityChangePlainInitProducesNullValues {
-    MPIdentityHTTPIdentityChange *change = [[MPIdentityHTTPIdentityChange alloc] init];
+    MPIdentityHTTPIdentityChangePRIVATE *change = [[MPIdentityHTTPIdentityChangePRIVATE alloc] init];
     NSMutableDictionary *dictionary = [change dictionaryRepresentation];
     XCTAssertEqualObjects(dictionary[@"old_value"], [NSNull null]);
     XCTAssertEqualObjects(dictionary[@"new_value"], [NSNull null]);
@@ -1121,10 +1109,10 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testHTTPIdentitiesPreservesNonStringValues {
-    MPIdentityHTTPIdentities *identities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:@{
+    MPIdentityHTTPIdentitiesPRIVATE *identities = [[MPIdentityHTTPIdentitiesPRIVATE alloc] initWithIdentities:@{
         @(MPIdentityGoogle): @12345,
         @(MPIdentityOther): [NSNull null]
-    }];
+    } attAuthorizationStatus:[MParticle sharedInstance].stateMachine.attAuthorizationStatus];
     NSDictionary *dictionary = [identities dictionaryRepresentation];
     XCTAssertEqualObjects(dictionary[@"google"], @12345);
     XCTAssertEqualObjects(dictionary[@"other"], [NSNull null]);

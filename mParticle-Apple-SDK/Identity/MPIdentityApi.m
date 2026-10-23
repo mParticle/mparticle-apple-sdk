@@ -3,11 +3,10 @@
 //
 
 #import "MPIdentityApi.h"
-#import "MPNetworkCommunication.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPPersistenceUtilities.h"
-#import "MPIdentityDTO.h"
+#import "MPIConstants.h"
 #import "MPEnums.h"
 #import "MPILogger.h"
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
@@ -367,7 +366,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [self.networkCommunication identify:identifyRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+    [self.networkCommunication identify:identifyRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
         [self onIdentityRequestComplete:identifyRequest identityRequestType:MPIdentityRequestIdentify httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
     }];
 }
@@ -402,7 +401,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     dispatch_async([MParticle messageQueue], ^{
         
-        [self.networkCommunication login:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self.networkCommunication login:loginRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
         
@@ -424,7 +423,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     };
     
     dispatch_async([MParticle messageQueue], ^{
-        [self.networkCommunication logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self.networkCommunication logout:logoutRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
     });
@@ -444,8 +443,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
     };
     dispatch_async([MParticle messageQueue], ^{
-        [self.networkCommunication modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-            [self onModifyRequestComplete:modifyRequest httpResponse:httpResponse completion:wrappedCompletion error: error];
+        [self.networkCommunication modify:modifyRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+            [self onModifyRequestComplete:modifyRequest httpResponse:(MPIdentityHTTPModifySuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
     });
 }
@@ -473,8 +472,15 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         
         [MParticle.sharedInstance.backendController skipNextUpload];
         [MParticle.sharedInstance.backendController waitForKitsAndUploadWithCompletionHandler:^{
-            MPIdentityHTTPAliasRequest *request = [[MPIdentityHTTPAliasRequest alloc] initWithIdentityApiAliasRequest:aliasRequest];
-            NSDictionary *aliasDictionary = request.dictionaryRepresentation;
+            NSDictionary *aliasDictionary = [self.networkCommunication aliasRequestDictionaryWithSourceMPID:aliasRequest.sourceMPID
+                                                                                            destinationMPID:aliasRequest.destinationMPID
+                                                                                                  startTime:aliasRequest.startTime
+                                                                                                    endTime:aliasRequest.endTime];
+            // A reset before this runs leaves no network layer to build the body with, and the
+            // alias is dropped.
+            if (!aliasDictionary) {
+                return;
+            }
             NSData *uploadData = [NSJSONSerialization dataWithJSONObject:aliasDictionary options:0 error:nil];
             
             NSString *uuid = aliasDictionary[@"request_id"];

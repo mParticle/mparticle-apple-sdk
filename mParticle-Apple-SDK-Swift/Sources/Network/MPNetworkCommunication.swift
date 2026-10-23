@@ -9,14 +9,11 @@ protocol MPConnectorFactoryProtocol {
 }
 
 /// The SDK's network layer. It holds the host it reads the SDK through, builds the endpoint URLs and
-/// the connectors, holds the background tasks and upload throttling the requests use, and sends the
-/// config, audience, upload and identity requests. The identity entry points, which build each
-/// request from its Objective-C DTO, are still in the boundary category in
-/// MPNetworkCommunication+ObjCBoundary.m.
+/// the connectors, holds the background tasks and upload throttling the requests use, and builds and
+/// sends the config, audience, upload and identity requests.
 ///
-/// Besides the initialiser, which the connector calls, the `MPBackendUploadNetworking` requests, and
-/// `host` and the identity request, which that category calls, every member Objective-C can see
-/// exists for the tests.
+/// Besides the initialiser, which the connector calls, the `MPBackendUploadNetworking` requests, the
+/// identity entry points and the alias body, every member Objective-C can see exists for the tests.
 @objc(MPNetworkCommunication_PRIVATE)
 public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetworking {
     /// The default-host subdomains. A tracking subdomain is used once the app has ATT authorisation.
@@ -54,6 +51,9 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         static let noConnectionTransportCode = 1
     }
 
+    /// `MPEnvironmentProduction`, the one environment an identity request reports as production.
+    private static let productionEnvironment: UInt = 2
+
     /// The `MPUploadType` values.
     private enum UploadType {
         static let message: UInt = 0
@@ -63,7 +63,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
     /// Replaces `MPConnector` for every request while set.
     @objc static var connectorFactory: MPConnectorFactoryProtocol?
 
-    @objc public let host: MPNetworkHost
+    let host: MPNetworkHost
     private let urlFactory: MPEndpointURLFactory
     private let identifyingLock = NSLock()
     private var identifyingValue = false
@@ -126,7 +126,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
     // every read, because they embed the current mpid: keeping them would pin them to whichever
     // user was current first.
 
-    @objc public var configURL: MPURL? {
+    @objc var configURL: MPURL? {
         if memoizedConfigURL == nil {
             let appVersion = host.applicationVersion()
             memoizedConfigURL = urlFactory.configURL(
@@ -140,7 +140,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         return memoizedConfigURL
     }
 
-    @objc public var audienceURL: MPURL? {
+    @objc var audienceURL: MPURL? {
         urlFactory.audienceURL(routing: networkRouting, defaultEventHost: defaultEventHost, mpId: host.mpId())
     }
 
@@ -151,14 +151,14 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         return memoizedIdentifyURL
     }
 
-    @objc var loginURL: MPURL? {
+    var loginURL: MPURL? {
         if memoizedLoginURL == nil {
             memoizedLoginURL = identityURL(pathComponent: "login")
         }
         return memoizedLoginURL
     }
 
-    @objc var logoutURL: MPURL? {
+    var logoutURL: MPURL? {
         if memoizedLogoutURL == nil {
             memoizedLogoutURL = identityURL(pathComponent: "logout")
         }
@@ -641,6 +641,157 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
         return false
     }
 
+    // MARK: - Identity entry points
+
+    // `identities` is an `MPIdentityApiRequest`'s: each value, keyed by `MPIdentity` number, is a
+    // string or NSNull. Each entry point completes synchronously, as `identityRequest` does.
+
+    /// Identifies the user by `identities`, blocking the other identity requests.
+    @objc(identify:completion:)
+    public func identify(_ identities: NSDictionary?, completion: ((MPIdentityHTTPBaseSuccessResponse?, Error?) -> Void)?) {
+        sendIdentifyRequest(to: .identityIdentify, identities: identities, completion: completion)
+    }
+
+    /// Logs the user in by `identities`, blocking the other identity requests.
+    @objc(login:completion:)
+    public func login(_ identities: NSDictionary?, completion: ((MPIdentityHTTPBaseSuccessResponse?, Error?) -> Void)?) {
+        sendIdentifyRequest(to: .identityLogin, identities: identities, completion: completion)
+    }
+
+    /// Logs the user out, blocking the other identity requests.
+    @objc(logout:completion:)
+    public func logout(_ identities: NSDictionary?, completion: ((MPIdentityHTTPBaseSuccessResponse?, Error?) -> Void)?) {
+        sendIdentifyRequest(to: .identityLogout, identities: identities, completion: completion)
+    }
+
+    /// Sends the identities in `identities` that differ from the current user's, an NSNull one as
+    /// removed, blocking the other identity requests. With none, `completion` succeeds unsent.
+    @objc(modify:completion:)
+    public func modify(_ identities: NSDictionary?, completion: ((MPIdentityHTTPBaseSuccessResponse?, Error?) -> Void)?) {
+        logIfAdvertiserIdPrecedesATTStatus(identities)
+        let currentIdentities = host.currentUserIdentities()
+        var changes: [MPIdentityHTTPIdentityChangePRIVATE] = []
+        identities?.enumerateKeysAndObjects { key, value, _ in
+            // A value that is neither, which the public API cannot set, is skipped rather than sent as removed.
+            guard let identityType = key as? NSNumber, value is String || value is NSNull else { return }
+            let oldValue = currentIdentities?[identityType] as? String
+            let newValue = value as? String
+            if let oldValue, let newValue, (newValue as NSString).isEqual(to: oldValue) {
+                return
+            }
+            changes.append(MPIdentityHTTPIdentityChangePRIVATE(
+                oldValue: oldValue, value: newValue,
+                identityType: MPIdentityHTTPIdentitiesPRIVATE.string(forIdentityType: identityType.intValue)
+            ))
+        }
+        modify(identityChanges: changes, blockOtherRequests: true, completion: completion)
+    }
+
+    /// Sends one change of a device identifier, without blocking the other identity requests and
+    /// with nothing waiting for the outcome.
+    @objc(modifyDeviceID:value:oldValue:)
+    public func modifyDeviceID(_ deviceIdType: String, value: String, oldValue: String) {
+        let change = MPIdentityHTTPIdentityChangePRIVATE(oldValue: oldValue, value: value, identityType: deviceIdType)
+        modify(identityChanges: [change], blockOtherRequests: false, completion: nil)
+    }
+
+    /// The body of an alias request, which is uploaded as an `MPUploadTypeAlias` upload.
+    @objc(aliasRequestDictionaryWithSourceMPID:destinationMPID:startTime:endTime:)
+    public func aliasRequestDictionary(
+        sourceMPID: NSNumber?,
+        destinationMPID: NSNumber?,
+        startTime: Date?,
+        endTime: Date?
+    ) -> NSDictionary {
+        let stateMachine = host.stateMachine()
+        return MPIdentityHTTPRequestBuilderPRIVATE.aliasDictionary(
+            sdkVersion: host.sdkVersion(),
+            environment: identityEnvironment,
+            apiKey: stateMachine.apiKey,
+            sourceMPID: sourceMPID,
+            destinationMPID: destinationMPID,
+            startTime: startTime,
+            endTime: endTime,
+            deviceApplicationStamp: stateMachine.consumerInfo.deviceApplicationStamp
+        )
+    }
+
+    private func sendIdentifyRequest(
+        to endpoint: MPEndpoint,
+        identities: NSDictionary?,
+        completion: ((MPIdentityHTTPBaseSuccessResponse?, Error?) -> Void)?
+    ) {
+        logIfAdvertiserIdPrecedesATTStatus(identities)
+        identityRequest(
+            to: endpoint, requestDictionary: identifyRequestDictionary(identities: identities),
+            blockOtherRequests: true, completion: completion
+        )
+    }
+
+    /// The body of an identify, login or logout request: `identities`, with the device's own
+    /// identifiers added, and the current mpid as the previous one.
+    private func identifyRequestDictionary(identities: NSDictionary?) -> NSDictionary {
+        let stateMachine = host.stateMachine()
+        let knownIdentities = MPIdentityHTTPIdentitiesPRIVATE(
+            identities: identities, attAuthorizationStatus: stateMachine.attAuthorizationStatus
+        )
+        let mpid = host.mpId()
+        if let vendorId = host.vendorId() {
+            knownIdentities.vendorId = vendorId
+        }
+        if let deviceApplicationStamp = stateMachine.consumerInfo.deviceApplicationStamp {
+            knownIdentities.deviceApplicationStamp = deviceApplicationStamp
+        }
+        #if os(iOS)
+        if !host.isAppExtension(), let deviceToken = host.deviceToken(),
+           let pushToken = MPUserDefaults.stringFromDeviceToken(deviceToken), !pushToken.isEmpty {
+            knownIdentities.pushToken = pushToken
+        }
+        #endif
+        return MPIdentityHTTPRequestBuilderPRIVATE.identifyDictionary(
+            sdkVersion: host.sdkVersion(),
+            environment: identityEnvironment,
+            previousMPID: mpid.int64Value != 0 ? mpid.stringValue : nil,
+            identities: knownIdentities.dictionaryRepresentation()
+        )
+    }
+
+    /// Sends `identityChanges` as one modify request. With none, `completion` succeeds at once,
+    /// unsent, with an empty `MPIdentityHTTPModifySuccessResponse`.
+    private func modify(
+        identityChanges: [MPIdentityHTTPIdentityChangePRIVATE],
+        blockOtherRequests: Bool,
+        completion: ((MPIdentityHTTPBaseSuccessResponse?, Error?) -> Void)?
+    ) {
+        if identityChanges.isEmpty {
+            completion?(MPIdentityHTTPModifySuccessResponse(), nil)
+            return
+        }
+        let requestDictionary = MPIdentityHTTPRequestBuilderPRIVATE.modifyDictionary(
+            sdkVersion: host.sdkVersion(),
+            environment: identityEnvironment,
+            identityChanges: identityChanges.map { $0.dictionaryRepresentation() } as NSArray
+        )
+        // Always with a completion, so a failure is logged even when nothing waits for it.
+        identityRequest(
+            to: .identityModify, requestDictionary: requestDictionary, blockOtherRequests: blockOtherRequests
+        ) { completion?($0, $1) }
+    }
+
+    private var identityEnvironment: String {
+        MPStateMachinePRIVATE.environment() == Self.productionEnvironment ? "production" : "development"
+    }
+
+    private func logIfAdvertiserIdPrecedesATTStatus(_ identities: NSDictionary?) {
+        if host.userDefaults()[Miscellaneous.kMPATT] == nil,
+           identities?[NSNumber(value: MPIdentitySwift.iosAdvertiserId.rawValue)] != nil {
+            logger.debug(
+                "The IDFA was supplied but the App Tracking Transparency Status not set with "
+                    + "[[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]"
+            )
+        }
+    }
+
     // MARK: - Identity requests
 
     /// Sends `requestDictionary` to the identity `endpoint`, or answers from the identity cache when
@@ -648,9 +799,10 @@ public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetwo
     /// flight or the SDK is opted out. A request that blocks the others holds `identifying` until it
     /// finishes. A modify request succeeds with an `MPIdentityHTTPModifySuccessResponse`, the others
     /// with an `MPIdentityHTTPSuccessResponse`; the host builds a failure's error. Synchronous:
-    /// `completion` runs once, on the calling thread, before this returns.
+    /// `completion` runs once, on the calling thread, before this returns. Dynamic, so a partial
+    /// mock's stub also answers the entry points' calls.
     @objc(identityRequestToEndpoint:requestDictionary:blockOtherRequests:completion:)
-    public func identityRequest(
+    dynamic func identityRequest(
         to endpoint: MPEndpoint,
         requestDictionary: NSDictionary,
         blockOtherRequests: Bool,
