@@ -14,6 +14,7 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     var configured: [NSNumber]? = [1]
     var certificates: [Data] = []
     var pinningOff = false
+    let configConnector = MPUserDefaultsConnectorMock()
     private(set) var uploadRoutings: [(settings: NSObject, attAuthorized: Bool)] = []
     private(set) var mainHops: [String] = []
 
@@ -49,6 +50,7 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     func mergeConsumerInfo(fromResponse _: NSDictionary) {}
     func deleteUpload(_: MPUploadPRIVATE) {}
     func logKitBatch(_: String) {}
+    func userDefaultsConnector() -> MPUserDefaultsConnectorProtocol { configConnector }
 
     private static func routing(apiKey: String, attAuthorized: Bool) -> MPEndpointRouting {
         MPEndpointRouting(
@@ -157,7 +159,8 @@ final class MPNetworkCommunicationTests: XCTestCase {
     // MARK: - Connector
 
     private final class FakeConnectorFactory: NSObject, MPConnectorFactoryProtocol {
-        let connector = MPConnector()
+        let connector: MPConnectorProtocol
+        init(_ connector: MPConnectorProtocol = MPConnector()) { self.connector = connector }
         func createConnector() -> MPConnectorProtocol { connector }
     }
 
@@ -296,5 +299,147 @@ final class MPNetworkCommunicationTests: XCTestCase {
         XCTAssertEqual(network.maxAge(forCache: "max-age=90000"), 86400)
         XCTAssertEqual(network.maxAge(forCache: "max-age=12"), 12)
         XCTAssertNil(network.maxAge(forCache: nil))
+    }
+
+    // MARK: - Config and audience requests
+
+    /// Answers every GET with one settable response, and records the URLs asked for.
+    private final class FakeConnector: NSObject, MPConnectorProtocol {
+        let response = MPConnectorResponse()
+        private(set) var requestedURLs: [URL] = []
+
+        func respond(_ statusCode: Int, body: Data? = nil, headers: [String: String] = [:]) {
+            response.httpResponse = HTTPURLResponse(
+                url: URL(string: "https://example.com")!, statusCode: statusCode, httpVersion: nil, headerFields: headers
+            )
+            response.data = body
+        }
+
+        func responseFromGetRequest(to url: MPURL) -> MPConnectorResponseProtocol {
+            requestedURLs.append(url.url)
+            return response
+        }
+
+        func responseFromPostRequest(
+            to _: MPURL, message _: String?, serializedParams _: Data?, secret _: String?
+        ) -> MPConnectorResponseProtocol {
+            response
+        }
+    }
+
+    private func json(_ object: Any) -> Data {
+        (try? JSONSerialization.data(withJSONObject: object)) ?? Data()
+    }
+
+    /// The result of a config request, nil if the completion did not run before the call returned.
+    private func requestConfig(_ connector: FakeConnector) -> Bool? {
+        var result: Bool?
+        network.requestConfig(connector) { result = $0 }
+        return result
+    }
+
+    private var provisionedAge: TimeInterval? {
+        (host.defaults[Miscellaneous.kMPConfigProvisionedTimestampKey] as? NSNumber)
+            .map { Date().timeIntervalSince1970 - $0.doubleValue }
+    }
+
+    func testAFreshCachedConfigurationIsNotRequestedAgain() {
+        host.defaults.setConfiguration(
+            ["dt": "ac"], eTag: "etag-1", requestTimestamp: Date().timeIntervalSince1970, currentAge: 0, maxAge: nil
+        )
+        let connector = FakeConnector()
+
+        XCTAssertEqual(requestConfig(connector), true)
+        XCTAssertEqual(connector.requestedURLs, [])
+    }
+
+    func testAConfigResponseIsAppliedThroughTheHostAndCachedWithItsHeadersInAnyCase() {
+        let connector = FakeConnector()
+        connector.respond(
+            200,
+            body: json(["dt": "ac", "id": 42, "cms": [["id": 1]]]),
+            headers: ["etag": "etag-2", "cache-control": "max-age=600", "age": "100"]
+        )
+
+        XCTAssertEqual(requestConfig(connector), true)
+        XCTAssertEqual(connector.requestedURLs, [network.configURL?.url])
+        XCTAssertNotNil(host.configConnector.configureCustomModulesCustomModuleSettingsParams)
+        XCTAssertEqual(host.defaults.getConfiguration()?["id"] as? Int, 42)
+        XCTAssertEqual(host.defaults[Miscellaneous.kMPHTTPETagHeaderKey] as? String, "etag-2")
+        XCTAssertEqual(host.defaults[Miscellaneous.kMPConfigMaxAgeHeaderKey] as? NSNumber, 600)
+        XCTAssertEqual(provisionedAge ?? 0, 100, accuracy: 5)
+    }
+
+    func testANotModifiedResponseKeepsTheCachedConfigurationAndRestartsItsAge() {
+        host.defaults.setConfiguration(["dt": "ac", "id": 7], eTag: "etag-1", requestTimestamp: 0, currentAge: 0, maxAge: nil)
+        let connector = FakeConnector()
+        connector.respond(304, headers: ["Cache-Control": "max-age=30", "Age": "5"])
+
+        XCTAssertEqual(requestConfig(connector), true)
+        XCTAssertEqual(host.defaults.getConfiguration()?["id"] as? Int, 7)
+        XCTAssertEqual(host.defaults[Miscellaneous.kMPHTTPETagHeaderKey] as? String, "etag-1")
+        XCTAssertEqual(host.defaults[Miscellaneous.kMPConfigMaxAgeHeaderKey] as? NSNumber, 30)
+        XCTAssertEqual(provisionedAge ?? 0, 5, accuracy: 5)
+    }
+
+    func testAConfigResponseThatIsNotAConfigObjectFailsWithTheResponseCodeItLogs() {
+        var messages: [String] = []
+        host.log = MPLog(logLevel: .error)
+        host.log?.customLogger = { messages.append($0) }
+        let unparsed = "could not parse response or wrong message type (responseCode: "
+        let cases: [(response: (status: Int, body: Data?), logged: String)] = [
+            ((200, nil), "no data received (responseCode: 200)"),
+            ((200, Data()), unparsed + "200)"),
+            ((200, Data("{".utf8)), unparsed + "200)"),
+            ((200, json(["id": 1])), unparsed + "200)"),
+            ((200, json(["dt": "xx"])), unparsed + "200)"),
+            ((500, json(["dt": "ac"])), unparsed + "500)"),
+            // Bodies that raised inside the Objective-C version's @try, which reported them as a 204.
+            ((200, json([["dt": "ac"]])), unparsed + "204)"),
+            ((200, json(["dt": 1])), unparsed + "204)"),
+            ((200, json(["dt": NSNull()])), unparsed + "204)")
+        ]
+
+        for (response, logged) in cases {
+            messages = []
+            let connector = FakeConnector()
+            connector.respond(response.status, body: response.body, headers: ["ETag": "etag-3"])
+
+            XCTAssertEqual(requestConfig(connector), false, logged)
+            XCTAssertEqual(messages.count, 1, logged)
+            XCTAssertTrue(messages.first?.contains(logged) == true, "\(messages) lacks \(logged)")
+        }
+        XCTAssertNil(host.defaults.getConfiguration())
+    }
+
+    func testAudienceIDsArePassedOnAndNoneIsNil() {
+        let connector = FakeConnector()
+        MPNetworkCommunicationPRIVATE.connectorFactory = FakeConnectorFactory(connector)
+        defer { MPNetworkCommunicationPRIVATE.connectorFactory = nil }
+        var success: Bool?
+        var audiences: [Any]?
+        var error: Error?
+        func request() {
+            success = nil
+            network.requestAudiences { success = $0; audiences = $1; error = $2 }
+        }
+
+        connector.respond(200, body: json(["audience_memberships": [["audience_id": 1], ["audience_id": 2]]]))
+        request()
+        XCTAssertEqual(success, true)
+        XCTAssertEqual(audiences as? [NSNumber], [1, 2])
+        XCTAssertNil(error)
+        XCTAssertEqual(connector.requestedURLs, [network.audienceURL?.url])
+
+        connector.respond(200, body: json(["audience_memberships": []]))
+        request()
+        XCTAssertEqual(success, true)
+        XCTAssertNil(audiences)
+
+        connector.respond(403)
+        request()
+        XCTAssertEqual(success, false)
+        XCTAssertNil(audiences)
+        XCTAssertEqual((error as NSError?)?.code, 403)
     }
 }

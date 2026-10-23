@@ -19,6 +19,7 @@ static const NSTimeInterval kMPUserAttributeNoForwardTimeout = 0.3;
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
++ (BOOL)isMessageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
@@ -104,6 +105,52 @@ static const NSTimeInterval kMPUserAttributeNoForwardTimeout = 0.3;
     [user getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> * _Nonnull currentAudiences, NSError *_Nullable error) {
         XCTAssertNil(error);
     }];
+}
+
+- (void)testGetUserAudiencesMakesAnAudiencePerIdOnTheMessageQueue {
+    [MParticle sharedInstance].stateMachine.enableAudienceAPI = YES;
+    NSError *failure = [NSError errorWithDomain:@"test" code:7 userInfo:nil];
+    __block NSArray *audienceIds = @[@1, @2];
+    self.mockBackendController = OCMClassMock([MPBackendController_PRIVATE class]);
+    OCMStub([(MPBackendController_PRIVATE *)self.mockBackendController fetchAudiencesWithCompletionHandler:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        __unsafe_unretained void (^handler)(NSArray *, NSError *);
+        [invocation getArgument:&handler atIndex:2];
+        handler(audienceIds, failure);
+    });
+    MParticleUser *user = [[MParticleUser alloc] init];
+    user.backendController = self.mockBackendController;
+
+    __block NSArray *received = nil;
+    __block NSError *receivedError = nil;
+    __block BOOL onMessageQueue = NO;
+    XCTestExpectation *answered = [self expectationWithDescription:@"audiences"];
+    [user getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> *currentAudiences, NSError *error) {
+        received = currentAudiences;
+        receivedError = error;
+        onMessageQueue = [MParticle isMessageQueue];
+        [answered fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+
+    NSMutableArray *receivedIds = [NSMutableArray array];
+    for (id audience in received) {
+        XCTAssertTrue([audience isKindOfClass:[MPAudience class]]);
+        if ([audience isKindOfClass:[MPAudience class]]) {
+            [receivedIds addObject:((MPAudience *)audience).audienceId];
+        }
+    }
+    XCTAssertEqualObjects(receivedIds, (@[@1, @2]));
+    XCTAssertEqual(receivedError, failure);
+    XCTAssertTrue(onMessageQueue);
+
+    audienceIds = nil;
+    XCTestExpectation *answeredEmpty = [self expectationWithDescription:@"no audiences"];
+    [user getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> *currentAudiences, NSError *error) {
+        received = currentAudiences;
+        [answeredEmpty fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+    XCTAssertNil(received);
 }
 
 - (void)testGetUserAudiencesWithCompletionHandlerDisabled {

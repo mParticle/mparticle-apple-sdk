@@ -37,4 +37,6 @@ public protocol MPNetworkHost: MPBackendHost, MPUploadPersisting, MPKitBatchLogg
     /// Merges the consumer information in an upload response into the state machine and the
     /// persisted copy.
     @objc(mergeConsumerInfoFromResponse:) func mergeConsumerInfo(fromResponse response: NSDictionary)
+    /// What a config response is applied to the SDK through.
+    @objc(userDefaultsConnector) func userDefaultsConnector() -> MPUserDefaultsConnectorProtocol
 }

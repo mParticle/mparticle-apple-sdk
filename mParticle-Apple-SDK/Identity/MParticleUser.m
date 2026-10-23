@@ -410,7 +410,16 @@
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"GET_USER_AUDIENCES"];
     if ([MParticle sharedInstance].stateMachine.enableAudienceAPI) {
         dispatch_async([MParticle messageQueue], ^{
-            [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
+            [self.backendController fetchAudiencesWithCompletionHandler:^(NSArray *audienceIds, NSError *error) {
+                NSMutableArray<MPAudience *> *currentAudiences = nil;
+                if (audienceIds.count > 0) {
+                    currentAudiences = [[NSMutableArray alloc] initWithCapacity:audienceIds.count];
+                    for (NSNumber *audienceId in audienceIds) {
+                        [currentAudiences addObject:[[MPAudience alloc] initWithAudienceId:audienceId]];
+                    }
+                }
+                completionHandler(currentAudiences, error);
+            }];
         });
     } else {
         NSError *audienceError = [MPIdentityUserStoragePRIVATE audienceDisabledError];

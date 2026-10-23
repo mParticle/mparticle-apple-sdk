@@ -116,7 +116,7 @@ public final class MPBackendMessageLogger: NSObject {
         }
     }
 
-    /// Requests the current user's audiences, logs how the request went, and hands the audiences
+    /// Requests the current user's audiences, logs how the request went, and hands the audience IDs
     /// and error to `completionHandler` as the network layer reported them.
     @objc(fetchAudiencesWithCompletionHandler:)
     public func fetchAudiences(completionHandler: @escaping ([Any]?, Error?) -> Void) {
