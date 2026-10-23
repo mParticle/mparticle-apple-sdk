@@ -31,7 +31,6 @@
 - (UIBackgroundTaskIdentifier)beginSafeBackgroundTaskWithExpirationHandler:(void(^_Nullable)(void))handler;
 - (void)endSafeBackgroundTask:(UIBackgroundTaskIdentifier)taskId;
 - (void)identityApiRequestWithURL:(NSURL *)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
-@property (nonatomic) BOOL identifying;
 
 @end
 

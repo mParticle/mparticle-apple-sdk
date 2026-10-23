@@ -3,7 +3,7 @@ import Foundation
 
 /// A backend host that answers from settable values and records each request, so a test can
 /// assert which value a workflow asked for and with which user ID.
-final class MPBackendFakeHost: NSObject, MPBackendHost {
+class MPBackendFakeHost: NSObject, MPBackendHost {
     let defaults: MPUserDefaults
     let machine: MPStateMachinePRIVATE
     var planId: String?

@@ -1,19 +1,12 @@
 #import <Foundation/Foundation.h>
+@import mParticle_Apple_SDK_Swift;
 
-@class MPURL;
-@class MPSession;
-@class MPUpload;
 @class MPAudience;
 @class MPIdentityApiRequest;
 @class MPIdentityHTTPSuccessResponse;
 @class MPIdentityHTTPBaseSuccessResponse;
 @class MPIdentityHTTPModifySuccessResponse;
-@protocol MPConnectorProtocol;
 @protocol MPConnectorFactoryProtocol;
-@protocol MPNetworkHost;
-
-
-extern NSString * _Nonnull const kMPURLScheme;
 
 typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorTimeout = 1,
@@ -27,21 +20,10 @@ typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *
 typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
-@interface MPNetworkCommunication_PRIVATE : NSObject
-
-@property (nonatomic, strong, readonly, nullable) MPURL *audienceURL;
-@property (nonatomic, strong, readonly, nullable) MPURL *configURL;
-@property (nonatomic, strong, readonly, nullable) MPURL *identifyURL;
-@property (nonatomic, strong, readonly, nullable) MPURL *loginURL;
-@property (nonatomic, strong, readonly, nullable) MPURL *logoutURL;
-@property (nonatomic, strong, readonly, nullable) MPURL *modifyURL;
-
-- (nonnull instancetype)initWithHost:(nonnull id<MPNetworkHost>)host NS_DESIGNATED_INITIALIZER;
-- (nonnull instancetype)init NS_UNAVAILABLE;
-+ (nonnull instancetype)new NS_UNAVAILABLE;
-
-- (nullable MPURL *)eventURLForUpload:(nonnull MPUpload *)mpUpload;
-- (nullable MPURL *)aliasURLForUpload:(nonnull MPUpload *)mpUpload;
+/// The network layer's members that are still Objective-C: the connector, the config, audience
+/// and upload requests, and the identity requests. The Swift class holds the host, the
+/// identity-request flag and the endpoint URLs.
+@interface MPNetworkCommunication_PRIVATE (ObjCBoundary) <MPBackendUploadNetworking>
 
 + (void)setConnectorFactory:(NSObject<MPConnectorFactoryProtocol> *_Nullable)connectorFactory;
 + (NSObject<MPConnectorFactoryProtocol> *_Nullable)connectorFactory;
