@@ -2,7 +2,7 @@ import Foundation
 
 // Keeps the MPConsumerInfo Objective-C runtime name the deleted wrapper had, so the @class forward
 // declaration and the -fetchConsumerInfoForUserId: / -saveConsumerInfo: / -updateConsumerInfo:
-// signatures in Include/MPPersistenceAdapter.h stay byte-identical, along with the name this class
+// signatures in Persistence/MPPersistenceAdapter.h stay byte-identical, along with the name this class
 // archives under. Reference MPConsumerInfoPRIVATE from Swift, MPConsumerInfo from Objective-C.
 @objc(MPConsumerInfo)
 public final class MPConsumerInfoPRIVATE: NSObject, NSSecureCoding {

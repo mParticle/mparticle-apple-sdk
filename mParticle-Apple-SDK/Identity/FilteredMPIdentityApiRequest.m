@@ -3,7 +3,6 @@
 //
 
 #import "FilteredMPIdentityApiRequest.h"
-#import "MPNotificationController.h"
 #import "MPIConstants.h"
 #import "MParticleUser.h"
 #import "MPKitConfiguration.h"

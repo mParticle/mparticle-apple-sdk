@@ -18,6 +18,7 @@
 #import "MPUserDefaultsConnector.h"
 #import "MPRokt+MParticlePrivate.h"
 #import "MPPersistenceAdapter.h"
+#import "MPNotificationController.h"
 #import "Persistence/MPPersistenceUploadSettingsCodec.h"
 
 @import mParticle_Apple_SDK_Swift;
