@@ -231,7 +231,12 @@
         
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterWillPresentNotification]) {
-                MPKitExecStatus *execStatus = [kitRegister.wrapperInstance userNotificationCenter:center willPresentNotification:notification];
+                MPKitExecStatus *execStatus = nil;
+                @try {
+                    execStatus = [kitRegister.wrapperInstance userNotificationCenter:center willPresentNotification:notification];
+                } @catch (NSException *e) {
+                    MPILogError(@"Kit handler threw an exception: %@ (kit: %@)", e, kitRegister.name);
+                }
                 
                 if (execStatus.success) {
                     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification execStatus:execStatus];
@@ -268,7 +273,12 @@
 
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterDidReceiveNotificationResponse]) {
-                MPKitExecStatus *execStatus = [kitRegister.wrapperInstance userNotificationCenter:center didReceiveNotificationResponse:response];
+                MPKitExecStatus *execStatus = nil;
+                @try {
+                    execStatus = [kitRegister.wrapperInstance userNotificationCenter:center didReceiveNotificationResponse:response];
+                } @catch (NSException *e) {
+                    MPILogError(@"Kit handler threw an exception: %@ (kit: %@)", e, kitRegister.name);
+                }
                 
                 if (execStatus.success) {
                     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotificationInteraction execStatus:execStatus];
