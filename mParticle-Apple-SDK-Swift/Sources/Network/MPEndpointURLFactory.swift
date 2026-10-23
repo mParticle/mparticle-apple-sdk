@@ -78,10 +78,8 @@ public final class MPEndpointURLFactory: NSObject {
         super.init()
     }
 
-    /// Mirrors the endpoint constants in `MPNetworkCommunication.m`. Those are
-    /// external-linkage C globals that `MPNetworkCommunication+Tests.h` and the public
-    /// header extern, so they stay defined in Objective-C and are duplicated here, the
-    /// same way `MessageKeys.swift` mirrors `MPIConstants`.
+    /// The parts every endpoint URL is built from. Of these, only `scheme` is also defined
+    /// in Objective-C, as `kMPURLScheme`, which the connector configuration reads.
     private enum Constant {
         static let scheme = "https"
         static let configHost = "config2.mparticle.com"

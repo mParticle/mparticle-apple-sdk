@@ -3,9 +3,6 @@
 @class MPURL;
 @class MPConnectorConfiguration;
 
-extern NSString * _Nonnull const kMPURLHostEventSubdomain;
-extern NSString * _Nonnull const kMPURLHostIdentitySubdomain;
-
 @interface MPNetworkCommunication_PRIVATE(Tests)
 
 - (nonnull NSString *)defaultHostWithSubdomain:(nonnull NSString *)subdomain apiKey:(nonnull NSString *)apiKey;
@@ -13,8 +10,6 @@ extern NSString * _Nonnull const kMPURLHostIdentitySubdomain;
 - (nonnull NSString *)defaultIdentityHost;
 
 - (nonnull MPURL *)configURL;
-- (nonnull MPURL *)eventURL;
-- (nonnull MPURL *)aliasURL;
 - (nonnull MPURL *)modifyURL;
 - (nonnull MPURL *)identifyURL;
 - (nonnull MPConnectorConfiguration *)connectorConfiguration;

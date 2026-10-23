@@ -10,6 +10,7 @@
 @class MPIdentityHTTPModifySuccessResponse;
 @protocol MPConnectorProtocol;
 @protocol MPConnectorFactoryProtocol;
+@protocol MPNetworkHost;
 
 
 extern NSString * _Nonnull const kMPURLScheme;
@@ -30,12 +31,14 @@ typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
 @property (nonatomic, strong, readonly, nullable) MPURL *audienceURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *configURL;
-@property (nonatomic, strong, readonly, nullable) MPURL *eventURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *identifyURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *loginURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *logoutURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *modifyURL;
-@property (nonatomic, strong, readonly, nullable) MPURL *aliasURL;
+
+- (nonnull instancetype)initWithHost:(nonnull id<MPNetworkHost>)host NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)init NS_UNAVAILABLE;
++ (nonnull instancetype)new NS_UNAVAILABLE;
 
 - (nullable MPURL *)eventURLForUpload:(nonnull MPUpload *)mpUpload;
 - (nullable MPURL *)aliasURLForUpload:(nonnull MPUpload *)mpUpload;
@@ -53,7 +56,5 @@ typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 - (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion;
 - (void)modifyDeviceID:(NSString *_Nonnull)deviceIdType value:(NSString *_Nonnull)value oldValue:(NSString *_Nonnull)oldValue;
-
-+ (void)parseConfiguration:(nonnull NSDictionary *)configuration;
 
 @end

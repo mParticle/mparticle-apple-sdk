@@ -2,7 +2,7 @@
 #import "MPPersistenceUtilities.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
-#import "MPNetworkCommunication.h"
+#import "MPUserDefaultsConnector.h"
 #import "MPIConstants.h"
 @import mParticle_Apple_SDK_Swift;
 
@@ -59,7 +59,7 @@
                                        kMPRemoteConfigUniqueIdentifierKey: newDas
                                        }};
     
-    [MPNetworkCommunication_PRIVATE parseConfiguration:response];
+    [(id<MPNetworkHost>)[[MPUserDefaultsConnector alloc] init] mergeConsumerInfoFromResponse:response];
     XCTAssertEqualObjects([MPPersistenceUtilities mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));

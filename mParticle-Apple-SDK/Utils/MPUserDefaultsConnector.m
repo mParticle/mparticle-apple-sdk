@@ -33,7 +33,9 @@
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
 + (void)executeOnMain:(void(^)(void))block;
++ (void)executeOnMainSync:(void(^)(void))block;
 - (MPLog *)getLogger;
+- (void)logKitBatch:(NSString *)batch;
 - (void)initializePersistence;
 
 @end
@@ -48,7 +50,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 - (void)setIdentity:(nullable NSString *)identityString identityType:(MPIdentity)identityType;
 @end
 
-@interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol, MPBackendHost>
+@interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol, MPBackendHost, MPNetworkHost>
 
 @end
 
@@ -161,14 +163,17 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     return [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid] ?: @0;
 }
 
-- (NSDictionary *)applicationInfoWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine {
-    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc]
+- (MPApplication_PRIVATE *)applicationWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine {
+    return [[MPApplication_PRIVATE alloc]
         initWithStateMachine:(id<MPApplicationStateMachineProtocol>)stateMachine
         userDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults
         environment:[MPStateMachine_PRIVATE environment]
         deploymentTarget:__IPHONE_OS_VERSION_MIN_REQUIRED
         buildSDK:__IPHONE_OS_VERSION_MAX_ALLOWED];
-    return [application dictionaryRepresentation];
+}
+
+- (NSDictionary *)applicationInfoWithStateMachine:(MPStateMachine_PRIVATE *)stateMachine {
+    return [[self applicationWithStateMachine:stateMachine] dictionaryRepresentation];
 }
 
 - (NSDictionary *)deviceInfoForMpid:(NSNumber *)mpid {
@@ -337,11 +342,123 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 }
 
 - (id<MPBackendUploadNetworking>)makeNetworkCommunication {
-    return (id<MPBackendUploadNetworking>)[[MPNetworkCommunication_PRIVATE alloc] init];
+    return (id<MPBackendUploadNetworking>)[[MPNetworkCommunication_PRIVATE alloc] initWithHost:self];
 }
 
 - (void)updateStoredVersionAndBuildNumbers {
     [MPApplication_PRIVATE updateStoredVersionAndBuildNumbersWithUserDefaults:(id<MPApplicationMPUserDefaultsProtocol>)MPUserDefaultsConnector.userDefaults];
+}
+
+#pragma mark MPNetworkHost
+
+- (MPEndpointRouting *)networkRoutingWithAttAuthorized:(BOOL)attAuthorized {
+    MParticle *mParticle = MParticle.sharedInstance;
+    MPNetworkOptions *networkOptions = mParticle.networkOptions;
+
+    return [[MPEndpointRouting alloc] initWithApiKey:mParticle.stateMachine.apiKey
+                                   customBaseURLHost:[MPEndpointHostResolver customBaseURLHostWithURL:networkOptions.customBaseURL]
+                                    hasCustomBaseURL:networkOptions.customBaseURL != nil
+                                          configHost:networkOptions.configHost
+                                          eventsHost:networkOptions.eventsHost
+                                  eventsTrackingHost:networkOptions.eventsTrackingHost
+                                        identityHost:networkOptions.identityHost
+                                identityTrackingHost:networkOptions.identityTrackingHost
+                                           aliasHost:networkOptions.aliasHost
+                                   aliasTrackingHost:networkOptions.aliasTrackingHost
+                         overridesConfigSubdirectory:networkOptions.overridesConfigSubdirectory
+                         overridesEventsSubdirectory:networkOptions.overridesEventsSubdirectory
+                       overridesIdentitySubdirectory:networkOptions.overridesIdentitySubdirectory
+                          overridesAliasSubdirectory:networkOptions.overridesAliasSubdirectory
+                                          eventsOnly:networkOptions.eventsOnly
+                                       attAuthorized:attAuthorized];
+}
+
+// The settings' hosts have already been resolved against customBaseURL when the settings were
+// built, so only the CDN routing flag still comes from MPNetworkOptions.
+- (MPEndpointRouting *)routingForUploadSettings:(NSObject *)settings attAuthorized:(BOOL)attAuthorized {
+    MPUploadSettings *uploadSettings = (MPUploadSettings *)settings;
+    MPNetworkOptions *networkOptions = MParticle.sharedInstance.networkOptions;
+
+    return [[MPEndpointRouting alloc] initWithApiKey:uploadSettings.apiKey
+                                   customBaseURLHost:[MPEndpointHostResolver customBaseURLHostWithURL:networkOptions.customBaseURL]
+                                    hasCustomBaseURL:networkOptions.customBaseURL != nil
+                                          configHost:nil
+                                          eventsHost:uploadSettings.eventsHost
+                                  eventsTrackingHost:uploadSettings.eventsTrackingHost
+                                        identityHost:nil
+                                identityTrackingHost:nil
+                                           aliasHost:uploadSettings.aliasHost
+                                   aliasTrackingHost:uploadSettings.aliasTrackingHost
+                         overridesConfigSubdirectory:NO
+                         overridesEventsSubdirectory:uploadSettings.overridesEventsSubdirectory
+                       overridesIdentitySubdirectory:NO
+                          overridesAliasSubdirectory:uploadSettings.overridesAliasSubdirectory
+                                          eventsOnly:uploadSettings.eventsOnly
+                                       attAuthorized:attAuthorized];
+}
+
+- (NSString *)applicationVersion {
+    return [self applicationWithStateMachine:MParticle.sharedInstance.stateMachine].version;
+}
+
+- (NSUInteger)logLevel {
+    return (NSUInteger)MParticle.sharedInstance.logLevel;
+}
+
+- (MParticleWebViewPRIVATE *)webView {
+    return MParticle.sharedInstance.webView;
+}
+
+- (NSArray<NSNumber *> *)supportedKits {
+    return MParticle.sharedInstance.kitContainer_PRIVATE.supportedKits;
+}
+
+- (NSArray<NSNumber *> *)configuredKits {
+    return MParticle.sharedInstance.kitContainer_PRIVATE.configuredKitsRegistry;
+}
+
+- (NSArray<NSData *> *)customCertificates {
+    return MParticle.sharedInstance.networkOptions.certificates ?: @[];
+}
+
+- (BOOL)pinningDisabled {
+    return MParticle.sharedInstance.networkOptions.pinningDisabled;
+}
+
+- (BOOL)pinningDisabledInDevelopment {
+    return MParticle.sharedInstance.networkOptions.pinningDisabledInDevelopment;
+}
+
+- (void)executeOnMainSync:(dispatch_block_t)block {
+    [MParticle executeOnMainSync:block];
+}
+
+- (void)deleteUpload:(MPUpload *)upload {
+    [MParticle.sharedInstance.persistenceAdapter deleteUpload:upload];
+}
+
+- (void)logKitBatch:(NSString *)uploadString {
+    [MParticle.sharedInstance logKitBatch:uploadString];
+}
+
+- (void)mergeConsumerInfoFromResponse:(NSDictionary *)configuration {
+    if (MPIsNull(configuration) || MPIsNull(configuration[kMPMessageTypeKey])) {
+        return;
+    }
+
+    MPPersistenceAdapter *persistence = [MParticle sharedInstance].persistenceAdapter;
+
+    // Consumer Information
+    MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
+    // MPConsumerInfo is Swift and cannot import the persistence adapter, so the cookies it merges
+    // the response onto are fetched here and passed in.
+    [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]
+                         existingCookies:[persistence fetchCookiesForUserId:[MPPersistenceUtilities mpId]]];
+    [persistence updateConsumerInfo:consumerInfo];
+    MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceUtilities mpId]];
+    if (persistenceInfo.cookies != nil) {
+        [MParticle sharedInstance].stateMachine.consumerInfo.cookies = persistenceInfo.cookies;
+    }
 }
 
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an
