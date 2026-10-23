@@ -3,7 +3,8 @@ import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 /// The backend's fake host, plus the network layer's reads. It records which settings and
-/// authorisation each upload URL was routed with, and each hop to the main thread.
+/// authorisation each upload URL was routed with, each hop to the main thread, and what the uploads
+/// asked of the SDK.
 private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     var appVersion: String? = "1.0"
     var level: UInt = 0
@@ -15,6 +16,10 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     var certificates: [Data] = []
     var pinningOff = false
     let configConnector = MPUserDefaultsConnectorMock()
+    var uploadSecret: String? = "upload-secret"
+    private(set) var deletedUploads: [MPUploadPRIVATE] = []
+    private(set) var kitBatches: [String] = []
+    private(set) var mergedResponses: [NSDictionary] = []
     private(set) var uploadRoutings: [(settings: NSObject, attAuthorized: Bool)] = []
     private(set) var mainHops: [String] = []
 
@@ -25,6 +30,10 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
     func routing(forUploadSettings uploadSettings: NSObject, attAuthorized: Bool) -> MPEndpointRouting {
         uploadRoutings.append((uploadSettings, attAuthorized))
         return Self.routing(apiKey: "upload-key", attAuthorized: attAuthorized)
+    }
+
+    func secret(ofUploadSettings uploadSettings: NSObject) -> String? {
+        uploadSettings === self.uploadSettings ? uploadSecret : nil
     }
 
     func applicationVersion() -> String? { appVersion }
@@ -47,9 +56,9 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
         mainHops.append("async")
     }
 
-    func mergeConsumerInfo(fromResponse _: NSDictionary) {}
-    func deleteUpload(_: MPUploadPRIVATE) {}
-    func logKitBatch(_: String) {}
+    func mergeConsumerInfo(fromResponse response: NSDictionary) { mergedResponses.append(response) }
+    func deleteUpload(_ upload: MPUploadPRIVATE) { deletedUploads.append(upload) }
+    func logKitBatch(_ uploadString: String) { kitBatches.append(uploadString) }
     func userDefaultsConnector() -> MPUserDefaultsConnectorProtocol { configConnector }
 
     private static func routing(apiKey: String, attAuthorized: Bool) -> MPEndpointRouting {
@@ -61,6 +70,14 @@ private final class MPNetworkFakeHost: MPBackendFakeHost, MPNetworkHost {
             overridesAliasSubdirectory: false, eventsOnly: false, attAuthorized: attAuthorized
         )
     }
+}
+
+/// One request a fake connector was asked to post.
+private struct MPNetworkFakePost {
+    let url: URL
+    let message: String?
+    let params: Data?
+    let secret: String?
 }
 
 final class MPNetworkCommunicationTests: XCTestCase {
@@ -75,6 +92,7 @@ final class MPNetworkCommunicationTests: XCTestCase {
     }
 
     override func tearDown() {
+        MPNetworkCommunicationPRIVATE.connectorFactory = nil
         network = nil
         host = nil
         super.tearDown()
@@ -303,16 +321,19 @@ final class MPNetworkCommunicationTests: XCTestCase {
 
     // MARK: - Config and audience requests
 
-    /// Answers every GET with one settable response, and records the URLs asked for.
+    /// Answers every request with one settable response, and records the URLs asked for and what
+    /// was posted.
     private final class FakeConnector: NSObject, MPConnectorProtocol {
         let response = MPConnectorResponse()
         private(set) var requestedURLs: [URL] = []
+        private(set) var posts: [MPNetworkFakePost] = []
 
-        func respond(_ statusCode: Int, body: Data? = nil, headers: [String: String] = [:]) {
+        func respond(_ statusCode: Int, body: Data? = nil, headers: [String: String] = [:], error: NSError? = nil) {
             response.httpResponse = HTTPURLResponse(
                 url: URL(string: "https://example.com")!, statusCode: statusCode, httpVersion: nil, headerFields: headers
             )
             response.data = body
+            response.error = error
         }
 
         func responseFromGetRequest(to url: MPURL) -> MPConnectorResponseProtocol {
@@ -321,9 +342,10 @@ final class MPNetworkCommunicationTests: XCTestCase {
         }
 
         func responseFromPostRequest(
-            to _: MPURL, message _: String?, serializedParams _: Data?, secret _: String?
+            to url: MPURL, message: String?, serializedParams: Data?, secret: String?
         ) -> MPConnectorResponseProtocol {
-            response
+            posts.append(MPNetworkFakePost(url: url.url, message: message, params: serializedParams, secret: secret))
+            return response
         }
     }
 
@@ -441,5 +463,167 @@ final class MPNetworkCommunicationTests: XCTestCase {
         XCTAssertEqual(success, false)
         XCTAssertNil(audiences)
         XCTAssertEqual((error as NSError?)?.code, 403)
+    }
+
+    // MARK: - Uploads
+
+    private var logged: [String] = []
+
+    private func captureLogs() {
+        host.log = MPLog(logLevel: .verbose)
+        host.log?.customLogger = { [unowned self] in logged.append($0) }
+    }
+
+    private func respondToEveryRequest(
+        _ statusCode: Int,
+        body: Data? = nil,
+        headers: [String: String] = [:],
+        error: NSError? = nil
+    ) -> FakeConnector {
+        let connector = FakeConnector()
+        connector.respond(statusCode, body: body, headers: headers, error: error)
+        MPNetworkCommunicationPRIVATE.connectorFactory = FakeConnectorFactory(connector)
+        return connector
+    }
+
+    private func makeUpload(type: UInt = 0, data: Data? = nil) -> MPUploadPRIVATE {
+        MPUploadPRIVATE(
+            sessionId: nil, uploadId: 1, uuid: "upload-id", uploadData: data ?? json(["di": ["aid": "ad-id"]]),
+            timestamp: 0, uploadType: type, dataPlanId: nil, dataPlanVersion: nil, uploadSettings: host.uploadSettings
+        )
+    }
+
+    private func deviceInfo(_ data: Data?) -> [String: Any]? {
+        data.flatMap { (try? JSONSerialization.jsonObject(with: $0)) as? [String: Any] }?["di"] as? [String: Any]
+    }
+
+    func testABatchIsSentGzippedWithItsOwnSecretAndTheATTStateAppliedThenDeletedAndLoggedToKits() throws {
+        let connector = respondToEveryRequest(202)
+        let upload = makeUpload()
+
+        XCTAssertFalse(network.performMessageUpload(upload))
+        let plain = try XCTUnwrap(connector.posts.first)
+        XCTAssertEqual(plain.url, network.eventURL(for: upload)?.url)
+        XCTAssertEqual(plain.secret, "upload-secret")
+        XCTAssertEqual(MPZipPRIVATE.decompressedData(from: plain.params), upload.uploadData)
+        XCTAssertEqual(plain.message, upload.serializedString())
+
+        host.machine.attAuthorizationStatus = NSNumber(value: MPATTAuthorizationStatusSwift.denied.rawValue)
+        host.machine.attAuthorizationTimestamp = 1234
+        XCTAssertFalse(network.performMessageUpload(upload))
+        let withATT = try XCTUnwrap(connector.posts.last)
+        let sent = MPZipPRIVATE.decompressedData(from: withATT.params)
+        XCTAssertEqual(deviceInfo(sent)?["atts"] as? String, "denied")
+        XCTAssertEqual(deviceInfo(sent)?["attt"] as? NSNumber, 1234)
+        XCTAssertNil(deviceInfo(sent)?["aid"])
+        XCTAssertEqual(withATT.message, sent.flatMap { String(data: $0, encoding: .utf8) })
+
+        XCTAssertEqual(connector.posts.count, 2)
+        XCTAssertTrue(host.deletedUploads.count == 2 && host.deletedUploads.allSatisfy { $0 === upload })
+        XCTAssertEqual(host.kitBatches, [plain.message, withATT.message].compactMap { $0 })
+    }
+
+    func testAHeldBackBatchIsNotSentAndOneThatCannotBeCompressedIsDeleted() {
+        let connector = respondToEveryRequest(202)
+        let empty = makeUpload(data: Data())
+        XCTAssertFalse(network.performMessageUpload(empty))
+        XCTAssertTrue(host.deletedUploads.count == 1 && host.deletedUploads[0] === empty)
+
+        host.machine.setMinUploadDate(Date(timeIntervalSinceNow: 60), uploadType: 0)
+        XCTAssertTrue(network.performMessageUpload(makeUpload()))
+        XCTAssertEqual(connector.posts.count, 0)
+        XCTAssertEqual(host.deletedUploads.count, 1)
+    }
+
+    func testOnlyAResponseHeaderBodyIsMergedAndABodyThatIsNotAnObjectWithAStringTypeIsLoggedAsAnError() {
+        let cases: [(response: (status: Int, body: Data), outcome: (merged: Bool, logged: String?))] = [
+            ((200, json(["dt": "rh", "ci": [:]])), (true, "Upload complete")),
+            ((200, json(["dt": "xx"])), (false, "Upload complete")),
+            ((200, json(["id": 1])), (false, "Upload complete")),
+            ((200, Data("{".utf8)), (false, "Upload complete")),
+            ((500, json(["dt": "rh"])), (false, nil)),
+            // Bodies that raised inside the Objective-C version's @try.
+            ((200, json([["dt": "rh"]])), (false, "Upload error: response is not a JSON object")),
+            ((200, json(["dt": 1])), (false, "Upload error: response message type is not a string")),
+            ((200, json(["dt": NSNull()])), (false, "Upload error: response message type is not a string"))
+        ]
+        captureLogs()
+        for ((status, body), (merged, expected)) in cases {
+            logged = []
+            let mergeCount = host.mergedResponses.count
+            _ = respondToEveryRequest(status, body: body)
+            _ = network.performMessageUpload(makeUpload())
+
+            let outcome = logged.filter { $0.contains("Upload complete") || $0.contains("Upload error") }
+            XCTAssertEqual(host.mergedResponses.count - mergeCount, merged ? 1 : 0, "\(status) \(body)")
+            XCTAssertEqual(outcome.count, expected == nil ? 0 : 1, "\(outcome)")
+            XCTAssertTrue(expected.map { outcome.first?.contains($0) == true } ?? true, "\(outcome)")
+        }
+    }
+
+    func testAnUnavailableServerHoldsBatchesBackForItsRetryAfter() {
+        // Lower case, as HTTP/2 sends header names: the lookup must ignore case.
+        _ = respondToEveryRequest(503, headers: ["retry-after": "120"])
+
+        XCTAssertTrue(network.performMessageUpload(makeUpload()))
+        XCTAssertEqual(host.machine.minUploadDate(forUploadType: 0).timeIntervalSinceNow, 120, accuracy: 5)
+        XCTAssertLessThan(host.machine.minUploadDate(forUploadType: 1).timeIntervalSinceNow, 0)
+        XCTAssertTrue(host.deletedUploads.isEmpty)
+    }
+
+    func testAnAliasRequestIsSentUncompressedAndDeletedUnlessItIsToBeSentAgain() throws {
+        captureLogs()
+        let alias = makeUpload(type: 1)
+        let connector = respondToEveryRequest(202)
+        XCTAssertFalse(network.performAliasUpload(alias))
+        let post = try XCTUnwrap(connector.posts.first)
+        XCTAssertEqual(post.url, network.aliasURL(for: alias)?.url)
+        XCTAssertEqual(post.params, alias.uploadData)
+        XCTAssertEqual(post.message, alias.serializedString())
+        XCTAssertEqual(post.secret, "upload-secret")
+
+        connector.respond(400)
+        XCTAssertFalse(network.performAliasUpload(alias))
+        XCTAssertEqual(host.deletedUploads.count, 2)
+
+        connector.respond(500)
+        XCTAssertTrue(network.performAliasUpload(alias))
+        XCTAssertLessThan(host.machine.minUploadDate(forUploadType: 1).timeIntervalSinceNow, 0)
+
+        connector.respond(429, headers: ["retry-after": "60"])
+        XCTAssertTrue(network.performAliasUpload(alias))
+        XCTAssertEqual(host.machine.minUploadDate(forUploadType: 1).timeIntervalSinceNow, 60, accuracy: 5)
+
+        XCTAssertTrue(network.performAliasUpload(alias), "A held-back alias request is not sent")
+        XCTAssertEqual(connector.posts.count, 4)
+
+        host.machine.setMinUploadDate(.distantPast, uploadType: 1)
+        MPTransportErrorDetector.resetTransportErrorCounter()
+        connector.respond(0, error: NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut))
+        XCTAssertTrue(network.performAliasUpload(alias))
+        XCTAssertEqual(host.machine.minUploadDate(forUploadType: 1).timeIntervalSinceNow, 5, accuracy: 2)
+        XCTAssertTrue(logged.contains("mParticle -> Throttling alias requests after transport error."))
+        XCTAssertEqual(host.deletedUploads.count, 2)
+        XCTAssertLessThan(host.machine.minUploadDate(forUploadType: 0).timeIntervalSinceNow, 0)
+    }
+
+    func testUploadsAreSentInOrderUntilOneIsToBeSentAgainAndTheCompletionRunsOnceBeforeReturning() {
+        let connector = respondToEveryRequest(202)
+        let message = makeUpload()
+        let alias = makeUpload(type: 1)
+        var completions = 0
+
+        network.upload([message, makeUpload(type: 7), alias]) { completions += 1 }
+        XCTAssertEqual(completions, 1)
+        XCTAssertEqual(
+            connector.posts.map(\.url),
+            [network.eventURL(for: message)?.url, network.aliasURL(for: alias)?.url].compactMap { $0 }
+        )
+        XCTAssertEqual(host.mainHops.first, "sync")
+
+        connector.respond(503)
+        network.upload([message, alias]) { completions += 1 }
+        XCTAssertEqual(completions, 2)
+        XCTAssertEqual(connector.posts.count, 3)
     }
 }

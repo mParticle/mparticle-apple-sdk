@@ -2,7 +2,8 @@ import Foundation
 import zlib
 
 @objc public final class MPZipPRIVATE: NSObject {
-    @objc(compressedDataFromData:) public static func compressedData(from data: Data?) -> Data? {
+    /// Dynamic, so a test's class mock also answers the calls made from Swift.
+    @objc(compressedDataFromData:) public static dynamic func compressedData(from data: Data?) -> Data? {
         guard let data = data, !data.isEmpty else {
             return nil
         }

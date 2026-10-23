@@ -10,14 +10,13 @@ protocol MPConnectorFactoryProtocol {
 
 /// The SDK's network layer. It holds the host it reads the SDK through, builds the endpoint URLs and
 /// the connectors, holds the background tasks and upload throttling the requests use, and sends the
-/// config and audience requests. The upload and identity requests are still sent by the
-/// Objective-C boundary category in MPNetworkCommunication+ObjCBoundary.m, which also adopts
-/// `MPBackendUploadNetworking` for it.
+/// config, audience and upload requests. The identity requests are still sent by the Objective-C
+/// boundary category in MPNetworkCommunication+ObjCBoundary.m.
 ///
-/// Besides the initialiser, which the connector calls, every member Objective-C can see exists for
-/// that category and its tests.
+/// Besides the initialiser, which the connector calls, and the `MPBackendUploadNetworking`
+/// requests, every member Objective-C can see exists for that category and its tests.
 @objc(MPNetworkCommunication_PRIVATE)
-public final class MPNetworkCommunicationPRIVATE: NSObject {
+public final class MPNetworkCommunicationPRIVATE: NSObject, MPBackendUploadNetworking {
     /// The default-host subdomains. A tracking subdomain is used once the app has ATT authorisation.
     private enum Subdomain {
         static let event = "nativesdks"
@@ -34,6 +33,14 @@ public final class MPNetworkCommunicationPRIVATE: NSObject {
         static let configMessageType = "ac"
         static let cacheControlHeader = "Cache-Control"
         static let ageHeader = "Age"
+        static let responseHeaderMessageType = "rh"
+        static let retryAfterHeader = "Retry-After"
+    }
+
+    /// The `MPUploadType` values.
+    private enum UploadType {
+        static let message: UInt = 0
+        static let alias: UInt = 1
     }
 
     /// Replaces `MPConnector` for every request while set.
@@ -151,13 +158,13 @@ public final class MPNetworkCommunicationPRIVATE: NSObject {
 
     /// The event URL for an upload, routed by the upload's own settings.
     @objc(eventURLForUpload:)
-    public func eventURL(for upload: MPUploadPRIVATE) -> MPURL? {
+    func eventURL(for upload: MPUploadPRIVATE) -> MPURL? {
         urlFactory.eventURL(routing: routing(for: upload), defaultEventHost: defaultEventHost)
     }
 
     /// The alias URL for an upload, routed by the upload's own settings.
     @objc(aliasURLForUpload:)
-    public func aliasURL(for upload: MPUploadPRIVATE) -> MPURL? {
+    func aliasURL(for upload: MPUploadPRIVATE) -> MPURL? {
         urlFactory.aliasURL(routing: routing(for: upload), defaultEventHost: defaultEventHost)
     }
 
@@ -281,14 +288,8 @@ public final class MPNetworkCommunicationPRIVATE: NSObject {
 
     // MARK: - Retries and caching
 
-    @objc(isRetriableTransportError:)
-    public func isRetriableTransportError(_ error: NSError?) -> Bool {
-        MPTransportErrorDetector.isRetriableTransportError(error)
-    }
-
     /// Holds back uploads of `uploadType` for `retryAfter` seconds, unless they are held back already.
-    @objc(throttleWithRetryAfter:uploadType:)
-    public func throttle(retryAfter: TimeInterval, uploadType: UInt) {
+    func throttle(retryAfter: TimeInterval, uploadType: UInt) {
         let logger = host.sdkLogger()
         let now = Date()
         guard host.stateMachine().minUploadDate(forUploadType: uploadType).compare(now) == .orderedAscending else {
@@ -296,9 +297,9 @@ public final class MPNetworkCommunicationPRIVATE: NSObject {
         }
         host.stateMachine().setMinUploadDate(now.addingTimeInterval(retryAfter), uploadType: uploadType)
         switch uploadType {
-        case 0: // MPUploadTypeMessage
+        case UploadType.message:
             logger?.debug(String(format: "Throttling uploads for %.0f seconds", retryAfter))
-        case 1: // MPUploadTypeAlias
+        case UploadType.alias:
             logger?.debug(String(format: "Throttling alias requests for %.0f seconds", retryAfter))
         default:
             break
@@ -307,7 +308,7 @@ public final class MPNetworkCommunicationPRIVATE: NSObject {
 
     /// The `max-age` of a config response's Cache-Control header, capped at a day.
     @objc(maxAgeForCache:)
-    public func maxAge(forCache cacheControl: String?) -> NSNumber? {
+    func maxAge(forCache cacheControl: String?) -> NSNumber? {
         MPConfigResponseParser.maxAge(
             fromCacheControl: cacheControl,
             maxExpirationAge: Miscellaneous.CONFIG_REQUESTS_MAX_EXPIRATION_AGE
@@ -445,5 +446,181 @@ public final class MPNetworkCommunicationPRIVATE: NSObject {
         )
         let audienceIDs = audienceResponse.audienceIDs
         completionHandler(audienceResponse.isSuccess, audienceIDs.isEmpty ? nil : audienceIDs, audienceResponse.error)
+    }
+
+    // MARK: - Uploads
+
+    /// Sends `uploads` in order, stopping at the first one that is to be sent again later.
+    /// Synchronous: `completionHandler` runs once, on the calling thread, before this returns.
+    @objc(upload:completionHandler:)
+    public func upload(_ uploads: [MPUploadPRIVATE], completionHandler: @escaping () -> Void) {
+        let taskId = beginSafeBackgroundTask(expirationHandler: nil)
+        for upload in uploads {
+            let shouldStop = autoreleasepool { () -> Bool in
+                switch upload.uploadType {
+                case UploadType.message: return performMessageUpload(upload)
+                case UploadType.alias: return performAliasUpload(upload)
+                default: return false
+                }
+            }
+            if shouldStop {
+                break
+            }
+        }
+        endSafeBackgroundTask(taskId)
+        completionHandler()
+    }
+
+    /// Sends a batch, gzipped, with the current App Tracking Transparency state applied to its
+    /// device information. Answers whether the upload loop is to stop.
+    @objc(performMessageUpload:)
+    func performMessageUpload(_ upload: MPUploadPRIVATE) -> Bool {
+        let stateMachine = host.stateMachine()
+        if stateMachine.minUploadDate(forUploadType: UploadType.message) > Date() {
+            return true
+        }
+
+        let eventURL = eventURL(for: upload)
+        var uploadString = upload.serializedString()
+        let connector = makeConnector()
+        let logger = logger
+        logger.verbose("Beginning upload for upload ID: \(upload.uuid ?? "(null)")")
+
+        let zipUploadData: Data?
+        if let authStatus = stateMachine.attAuthorizationStatus, let authTimestamp = stateMachine.attAuthorizationTimestamp {
+            let updatedData = MPUploadDeviceInfo.uploadDataApplyingATT(
+                upload.uploadData, authStatus: authStatus.intValue, authTimestamp: authTimestamp
+            )
+            uploadString = String(data: updatedData, encoding: .utf8)
+            zipUploadData = MPZipPRIVATE.compressedData(from: updatedData)
+        } else {
+            zipUploadData = MPZipPRIVATE.compressedData(from: upload.uploadData)
+        }
+
+        guard let zipUploadData, !zipUploadData.isEmpty else {
+            host.deleteUpload(upload)
+            return false
+        }
+        let start = Date().timeIntervalSince1970
+
+        let response = eventURL.map {
+            connector.responseFromPostRequest(
+                to: $0, message: uploadString, serializedParams: zipUploadData,
+                secret: host.secret(ofUploadSettings: upload.uploadSettings)
+            )
+        }
+        let httpResponse = response?.httpResponse
+        let responseCode = httpResponse?.statusCode ?? 0
+        logger.verbose("Upload response code: \(responseCode)")
+
+        let outcome = MPUploadResponseHandler.handleMessageResponse(
+            statusCode: responseCode,
+            transportError: response?.error,
+            headers: retryHeaders(of: httpResponse),
+            uploadString: uploadString,
+            upload: upload,
+            persistence: host,
+            kitBatchLogger: host
+        )
+
+        if outcome.isSuccess, let data = response?.data, !data.isEmpty {
+            let body = try? JSONSerialization.jsonObject(with: data)
+            let responseObject = body as? NSDictionary
+            let messageType = responseObject?[MessageKeys.kMPMessageTypeKey]
+            // A body that parsed but is not an object, or whose message type is not a string, used to
+            // raise inside an Objective-C @try, whose handler logged it as an upload error.
+            if body != nil, responseObject == nil || !(messageType == nil || messageType is String) {
+                let reason = responseObject == nil ? "response is not a JSON object" : "response message type is not a string"
+                logger.error("Upload error: \(reason)")
+            } else {
+                if let responseObject, messageType as? String == Constant.responseHeaderMessageType {
+                    host.mergeConsumerInfo(fromResponse: responseObject)
+                }
+                logger.verbose("Upload complete: \(uploadString ?? "(null)")\n")
+            }
+        }
+
+        logger.verbose(String(format: "Upload execution time: %.2fms", (Date().timeIntervalSince1970 - start) * 1000.0))
+
+        if outcome.shouldThrottle {
+            throttle(retryAfter: outcome.throttleRetryAfter, uploadType: UploadType.message)
+        }
+        return outcome.willRetry
+    }
+
+    /// The response's `Retry-After` header, the only one the throttle reads. Header names are
+    /// case-insensitive; a Swift dictionary bridged from `allHeaderFields` is not.
+    private func retryHeaders(of response: HTTPURLResponse?) -> NSDictionary {
+        guard let retryAfter = response?.value(forHTTPHeaderField: Constant.retryAfterHeader) else {
+            return [:]
+        }
+        return [Constant.retryAfterHeader: retryAfter]
+    }
+
+    /// Sends an alias request, uncompressed. Answers whether the upload loop is to stop.
+    @objc(performAliasUpload:)
+    func performAliasUpload(_ upload: MPUploadPRIVATE) -> Bool {
+        if host.stateMachine().minUploadDate(forUploadType: UploadType.alias) > Date() {
+            return true
+        }
+
+        let aliasURL = aliasURL(for: upload)
+        let uploadString = upload.serializedString()
+        let connector = makeConnector()
+        let logger = logger
+        logger.verbose("Beginning alias request with upload ID: \(upload.uuid ?? "(null)")")
+
+        guard !upload.uploadData.isEmpty else {
+            host.deleteUpload(upload)
+            return false
+        }
+        let start = Date().timeIntervalSince1970
+
+        logger.verbose("Alias request:\nURL: \(aliasURL.map { "\($0.url)" } ?? "(null)") \nBody:\(uploadString ?? "(null)")")
+
+        let response = aliasURL.map {
+            connector.responseFromPostRequest(
+                to: $0, message: uploadString, serializedParams: upload.uploadData,
+                secret: host.secret(ofUploadSettings: upload.uploadSettings)
+            )
+        }
+        let httpResponse = response?.httpResponse
+        let responseCode = httpResponse?.statusCode ?? 0
+        logger.verbose("Alias response code: \(responseCode)")
+
+        let plan = MPAliasResponsePlanPRIVATE.plan(
+            requestData: upload.uploadData, responseData: response?.data, statusCode: responseCode, logger: logger
+        )
+        if plan.isSuccessCode {
+            MPTransportErrorDetector.resetTransportErrorCounter()
+        }
+        if plan.isSuccessCode || plan.isInvalidCode {
+            host.deleteUpload(upload)
+        }
+
+        if let data = response?.data, let responseString = String(data: data, encoding: .utf8), !responseString.isEmpty {
+            logger.verbose("Alias response:\n\(responseString)")
+        }
+
+        logger.verbose(String(format: "Alias execution time: %.2fms", (Date().timeIntervalSince1970 - start) * 1000.0))
+
+        // 429, 503
+        if plan.shouldRetry {
+            let retryAfter = MPNetworkCommunicationHelper.calculateRetryTime(for: retryHeaders(of: httpResponse)).doubleValue
+            throttle(retryAfter: retryAfter, uploadType: upload.uploadType)
+            return true
+        }
+
+        // 5xx, 0, 999, -1, etc
+        if !plan.isSuccessCode, !plan.isInvalidCode {
+            if MPTransportErrorDetector.isRetriableTransportError(response?.error) {
+                logger.warning("Throttling alias requests after transport error.")
+                let retryAfter = MPTransportErrorDetector.calculateRetryTimeForTransportError().doubleValue
+                throttle(retryAfter: retryAfter, uploadType: UploadType.alias)
+            }
+            return true
+        }
+
+        return false
     }
 }

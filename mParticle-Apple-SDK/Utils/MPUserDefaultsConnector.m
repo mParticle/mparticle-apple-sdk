@@ -396,6 +396,10 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
                                        attAuthorized:attAuthorized];
 }
 
+- (NSString *)secretOfUploadSettings:(NSObject *)settings {
+    return [settings isKindOfClass:[MPUploadSettings class]] ? ((MPUploadSettings *)settings).secret : nil;
+}
+
 - (NSString *)applicationVersion {
     return [self applicationWithStateMachine:MParticle.sharedInstance.stateMachine].version;
 }

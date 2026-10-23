@@ -16,6 +16,8 @@ public protocol MPNetworkHost: MPBackendHost, MPUploadPersisting, MPKitBatchLogg
     /// custom base URL still comes from the current `MPNetworkOptions`.
     @objc(routingForUploadSettings:attAuthorized:)
     func routing(forUploadSettings uploadSettings: NSObject, attAuthorized: Bool) -> MPEndpointRouting
+    /// The secret an event or alias upload is signed with, from the upload's own `MPUploadSettings`.
+    @objc(secretOfUploadSettings:) func secret(ofUploadSettings uploadSettings: NSObject) -> String?
     /// The app version the config request reports.
     @objc(applicationVersion) func applicationVersion() -> String?
     /// The SDK's log level, for a logger to fall back on when the shared one is not set yet.

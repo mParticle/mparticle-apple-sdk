@@ -11,17 +11,12 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorDelayedSegments
 };
 
-typedef void(^ _Nonnull MPUploadsCompletionHandler)(void);
-
 typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 
-/// The network layer's members that are still Objective-C: the upload and identity requests. The
-/// Swift class holds the rest, including the config and audience requests, which satisfy
-/// MPBackendUploadNetworking for this category.
-@interface MPNetworkCommunication_PRIVATE (ObjCBoundary) <MPBackendUploadNetworking>
-
-- (void)upload:(nonnull NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler;
+/// The network layer's members that are still Objective-C: the identity requests. The Swift class
+/// holds the rest.
+@interface MPNetworkCommunication_PRIVATE (ObjCBoundary)
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 - (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
