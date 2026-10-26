@@ -5,7 +5,6 @@
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPPersistenceUtilities.h"
 #import "MPIConstants.h"
-#import "MPConsentSerialization.h"
 #import "MPConsentState.h"
 #import "../Kits/MPDataPlanFilter.h"
 #import "UploadSettingsUtils.h"
@@ -59,6 +58,21 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 @end
 
+@interface MPConsentState ()
+@property (nonatomic, strong) MPConsentStatePRIVATE *implementation;
+@end
+
+static MPConsentState *MPConsentStateFromString(NSString *string) {
+    MPConsentStatePRIVATE *implementation = [MPConsentSerializationPRIVATE consentStateFromString:string logger:[MParticle.sharedInstance getLogger]];
+    if (!implementation) {
+        return nil;
+    }
+
+    MPConsentState *state = [[MPConsentState alloc] init];
+    state.implementation = implementation;
+    return state;
+}
+
 @implementation MPPersistenceUtilities
 
 + (NSNumber *)mpId {
@@ -73,7 +87,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 + (MPConsentState *)consentStateForMpid:(NSNumber *)mpid {
     NSString *string = [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPConsentStateKey userId:mpid];
-    return string ? [MPConsentSerialization consentStateFromString:string] : nil;
+    return string ? MPConsentStateFromString(string) : nil;
 }
 
 + (void)setConsentState:(MPConsentState *)state forMpid:(NSNumber *)mpid {
@@ -81,7 +95,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     if (!state) {
         [userDefaults removeMPObjectForKey:kMPConsentStateKey userId:mpid];
     } else {
-        NSString *string = [MPConsentSerialization stringFromConsentState:state];
+        NSString *string = [MPConsentSerializationPRIVATE stringFromConsentState:state.implementation logger:[MParticle.sharedInstance getLogger]];
         if (!string) {
             return;
         }
@@ -92,7 +106,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 + (MPConsentState *)deviceConsentState {
     NSString *string = [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPConsentDeviceStateKey userId:@0];
-    return string ? [MPConsentSerialization consentStateFromString:string] : nil;
+    return string ? MPConsentStateFromString(string) : nil;
 }
 
 + (void)setDeviceConsentState:(MPConsentState *)state {
@@ -100,7 +114,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     if (!state) {
         [userDefaults removeMPObjectForKey:kMPConsentDeviceStateKey userId:@0];
     } else {
-        NSString *string = [MPConsentSerialization stringFromConsentState:state];
+        NSString *string = [MPConsentSerializationPRIVATE stringFromConsentState:state.implementation logger:[MParticle.sharedInstance getLogger]];
         if (!string) {
             return;
         }
@@ -197,7 +211,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 - (NSDictionary *)consentForMpid:(NSNumber *)mpid {
     MPConsentState *consent = [MPPersistenceUtilities effectiveConsentStateForMpid:mpid];
-    return consent ? [MPConsentSerialization serverDictionaryFromConsentState:consent] : nil;
+    return consent ? [MPConsentSerializationPRIVATE serverDictionaryFromConsentState:consent.implementation] : nil;
 }
 
 - (id)transformBatch:(NSDictionary *)batch {

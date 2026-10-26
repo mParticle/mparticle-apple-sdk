@@ -8,7 +8,6 @@
 #import "mParticle.h"
 #import "MPConsentState.h"
 #import "MPCCPAConsent.h"
-#import "MPConsentSerialization.h"
 #import "MPUploadSettings.h"
 
 @interface MParticle ()
@@ -21,6 +20,10 @@
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 
+@end
+
+@interface MPConsentState ()
+@property (nonatomic, strong) MPConsentStatePRIVATE *implementation;
 @end
 
 @interface MParticleUser ()
@@ -829,7 +832,7 @@
     [uploadBuilder build:^(MPUpload * _Nullable upload) {
         XCTAssertNotNil(upload);
         NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
-        NSDictionary *expectedConsent = [MPConsentSerialization serverDictionaryFromConsentState:deviceState];
+        NSDictionary *expectedConsent = [MPConsentSerializationPRIVATE serverDictionaryFromConsentState:deviceState.implementation];
         XCTAssertNotNil(uploadDictionary[kMPConsentState]);
         XCTAssertEqualObjects(uploadDictionary[kMPConsentState], expectedConsent);
         [MPPersistenceUtilities setDeviceConsentState:nil];

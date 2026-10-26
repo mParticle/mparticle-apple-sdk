@@ -1,7 +1,6 @@
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPEnums.h"
 @import mParticle_Apple_SDK_Swift;
@@ -60,7 +59,7 @@
     
     // Consent kit filter
     if (configurationDictionary[kMPConsentKitFilter]) {
-        _consentKitFilter = [MPConsentSerialization filterFromDictionary:configurationDictionary[kMPConsentKitFilter]];
+        _consentKitFilter = [MPConsentSerializationPRIVATE filterFrom:configurationDictionary[kMPConsentKitFilter]];
     }
     
     // Kit instance
