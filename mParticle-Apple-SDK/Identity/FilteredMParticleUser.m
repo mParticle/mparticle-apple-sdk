@@ -1,7 +1,6 @@
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
 #import "MParticleUser.h"
-#import "MPKitConfiguration.h"
 #import "MPDataPlanFilter.h"
 #import "MPPersistenceUtilities.h"
 #import "MPKitContainer+MParticlePrivate.h"

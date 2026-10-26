@@ -3,7 +3,6 @@
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
-#import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
 #import "MPPersistenceUtilities.h"
 #import "MPILogger.h"
@@ -49,6 +48,7 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 - (void)executeKitsInitializedBlocks;
+- (MPLog *)getLogger;
 @end
 
 @interface MPKitContainerExecutionAdapter : NSObject
@@ -698,7 +698,7 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
         if ([attributeValueFilter isKindOfClass:[NSDictionary class]] && attributeValueFilter.count > 0) {
             configDict[@"avf"] = [attributeValueFilter copy];
         }
-        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:[configDict copy]];
+        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:[configDict copy] logger:[self sdkLogger]];
         self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
         
         // Finish registering kit and call its callbacks
@@ -736,7 +736,7 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
         // cache, so one unusable entry must not take the process down with it.
         MPKitConfiguration *kitConfiguration = nil;
         @try {
-            kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary logger:[self sdkLogger]];
         } @catch (NSException *exception) {
             MPILogError(@"initializeKits - could not parse a cached kit configuration: %@", exception.reason);
         }
@@ -831,6 +831,18 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
             }
         }
     }
+}
+
+// The SDK's shared logger, which follows the app's log level and custom logger. A test that stands
+// a mock in for the SDK instance gets no logger from it, so one is built from the same two settings.
+- (MPLog *)sdkLogger {
+    MParticle *mparticle = [MParticle sharedInstance];
+    MPLog *logger = [mparticle getLogger];
+    if (!logger) {
+        logger = [[MPLog alloc] initWithLogLevel:[MPLog fromRawValue:mparticle.logLevel]];
+        logger.customLogger = mparticle.customLogger;
+    }
+    return logger;
 }
 
 - (MPKitFilterConfigurationSnapshot *)filterSnapshotForConfiguration:(MPKitConfiguration *)configuration {
@@ -1691,7 +1703,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             kitRegister = [[[MPKitContainer_PRIVATE registeredKits] filteredSetUsingPredicate:predicate] anyObject];
             kitInstance = kitRegister.wrapperInstance;
             @try {
-                kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+                kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary logger:[self sdkLogger]];
             } @catch (NSException *exception) {
                 MPILogError(@"configureKits - could not parse the configuration for kit %@: %@", integrationId, exception.reason);
                 continue;

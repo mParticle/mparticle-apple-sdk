@@ -1,10 +1,9 @@
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPILogger.h"
-#import "MPAppNotificationHandler.h"
+#import "MParticleUserNotification.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
-#import "MPKitActivity.h"
 #import "MPKitFilter.h"
 #import "MPNetworkPerformance.h"
 #import "MPIdentityApi.h"
@@ -109,6 +108,11 @@ static NSString *const kMPStateKey = @"state";
 @implementation MPDataPlanOptions
 @end
 
+static id<MPExtensionKitProtocol> MPActiveKitRegister(NSNumber *integrationId) {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
+    return [[[[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
+}
+
 #pragma mark - MParticle
 @implementation MParticle
 
@@ -169,13 +173,18 @@ MPLog* logger;
     _initialized = NO;
     _settingsProvider = (id<SettingsProviderProtocol>)[[MPSettingsProviderPRIVATE alloc] initWithBundle:NSBundle.mainBundle
                                                                                           resourceName:kMPConfigPlist];
-    _kitActivity = [[MPKitActivity alloc] init];
+    _kitActivity = [[MPKitActivity alloc] initWithIsKitActive:^BOOL(NSNumber *integrationId) {
+        return MPActiveKitRegister(integrationId) != nil;
+    } kitInstance:^id(NSNumber *integrationId) {
+        id<MPKitProtocol> wrapperInstance = MPActiveKitRegister(integrationId).wrapperInstance;
+        return [wrapperInstance respondsToSelector:@selector(providerKitInstance)] ? [wrapperInstance providerKitInstance] : nil;
+    }];
     _kitsInitializedBlocks = [NSMutableArray array];
     _collectUserAgent = YES;
     _collectSearchAdsAttribution = NO;
     _trackNotifications = YES;
     _automaticSessionTracking = YES;
-    _appNotificationHandler = (id<MPAppNotificationHandlerProtocol, OpenURLHandlerProtocol>)[[MPAppNotificationHandler alloc] init];
+    _appNotificationHandler = [[MPAppNotificationHandler alloc] initWithHost:(id<MPAppNotificationHost>)[[MPUserDefaultsConnector alloc] init]];
     _stateMachine = [[MPStateMachine_PRIVATE alloc] initWithUserDefaults:MPUserDefaultsConnector.userDefaults
                                                                connector:(id<MPUserDefaultsConnectorProtocol>)[[MPUserDefaultsConnector alloc] init]
                                                             messageQueue:executor.messageQueue

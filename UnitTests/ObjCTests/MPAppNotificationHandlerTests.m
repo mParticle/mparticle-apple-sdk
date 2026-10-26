@@ -1,5 +1,4 @@
 #import <XCTest/XCTest.h>
-#import "MPAppNotificationHandler.h"
 #import "MPPersistenceUtilities.h"
 #import "mParticle.h"
 #import "MPBaseTestCase.h"

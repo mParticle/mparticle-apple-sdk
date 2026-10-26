@@ -72,8 +72,8 @@ public final class MPKitProjectionSnapshotFactory: NSObject {
 
     /// Resolves one kit's `pr` array into projections bucketed by message type.
     ///
-    /// `messageTypeCount` is `+[MPEnum messageTypeSize]`, passed in rather than
-    /// mirrored so the two cannot drift.
+    /// `messageTypeCount` is `+[MPEnum messageTypeSize]`, which
+    /// `MPKitConfiguration.messageTypeSize` mirrors.
     @objc(projectionSetFromConfigurations:messageTypeCount:)
     public func projectionSet(
         from configurations: [Any]?,

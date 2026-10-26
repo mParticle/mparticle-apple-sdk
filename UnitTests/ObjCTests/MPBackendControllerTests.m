@@ -8,7 +8,6 @@
 #import "MParticleUserNotification.h"
 #import "mParticle.h"
 #import "MPKitContainer+MParticlePrivate.h"
-#import "MPKitConfiguration.h"
 #import "MPBaseTestCase.h"
 #import "MPUserDefaultsConnector.h"
 

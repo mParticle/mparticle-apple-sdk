@@ -5,12 +5,14 @@
 #import "../Kits/MPKitContainer+MParticlePrivate.h"
 #import "MPPersistenceUtilities.h"
 #import "MPIConstants.h"
-#import "MPConsentSerialization.h"
 #import "MPConsentState.h"
 #import "../Kits/MPDataPlanFilter.h"
 #import "UploadSettingsUtils.h"
+#import "MPForwardRecord.h"
+#import "MPKitExecStatus.h"
 #if TARGET_OS_IOS == 1
     #import <AdServices/AAAttribution.h>
+    #import <UserNotifications/UserNotifications.h>
 #endif
 
 @import mParticle_Apple_SDK_Swift;
@@ -55,9 +57,29 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 - (instancetype)initWithCode:(MPIdentityErrorResponseCode)code message:(NSString *)message error:(NSError *)error;
 @end
 
-@interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol, MPBackendHost, MPNetworkHost>
+@interface MPForwardRecord ()
+@property (nonatomic, strong, readonly) MPForwardRecordPRIVATE *implementation;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
+@end
+
+@interface MPUserDefaultsConnector()<MPUserDefaultsConnectorProtocol, MPBackendHost, MPNetworkHost, MPAppNotificationHost>
 
 @end
+
+@interface MPConsentState ()
+@property (nonatomic, strong) MPConsentStatePRIVATE *implementation;
+@end
+
+static MPConsentState *MPConsentStateFromString(NSString *string) {
+    MPConsentStatePRIVATE *implementation = [MPConsentSerializationPRIVATE consentStateFromString:string logger:[MParticle.sharedInstance getLogger]];
+    if (!implementation) {
+        return nil;
+    }
+
+    MPConsentState *state = [[MPConsentState alloc] init];
+    state.implementation = implementation;
+    return state;
+}
 
 @implementation MPPersistenceUtilities
 
@@ -73,7 +95,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 + (MPConsentState *)consentStateForMpid:(NSNumber *)mpid {
     NSString *string = [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPConsentStateKey userId:mpid];
-    return string ? [MPConsentSerialization consentStateFromString:string] : nil;
+    return string ? MPConsentStateFromString(string) : nil;
 }
 
 + (void)setConsentState:(MPConsentState *)state forMpid:(NSNumber *)mpid {
@@ -81,7 +103,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     if (!state) {
         [userDefaults removeMPObjectForKey:kMPConsentStateKey userId:mpid];
     } else {
-        NSString *string = [MPConsentSerialization stringFromConsentState:state];
+        NSString *string = [MPConsentSerializationPRIVATE stringFromConsentState:state.implementation logger:[MParticle.sharedInstance getLogger]];
         if (!string) {
             return;
         }
@@ -92,7 +114,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 + (MPConsentState *)deviceConsentState {
     NSString *string = [MPUserDefaultsConnector.userDefaults mpObjectForKey:kMPConsentDeviceStateKey userId:@0];
-    return string ? [MPConsentSerialization consentStateFromString:string] : nil;
+    return string ? MPConsentStateFromString(string) : nil;
 }
 
 + (void)setDeviceConsentState:(MPConsentState *)state {
@@ -100,7 +122,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
     if (!state) {
         [userDefaults removeMPObjectForKey:kMPConsentDeviceStateKey userId:@0];
     } else {
-        NSString *string = [MPConsentSerialization stringFromConsentState:state];
+        NSString *string = [MPConsentSerializationPRIVATE stringFromConsentState:state.implementation logger:[MParticle.sharedInstance getLogger]];
         if (!string) {
             return;
         }
@@ -197,7 +219,7 @@ static const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5.0;
 
 - (NSDictionary *)consentForMpid:(NSNumber *)mpid {
     MPConsentState *consent = [MPPersistenceUtilities effectiveConsentStateForMpid:mpid];
-    return consent ? [MPConsentSerialization serverDictionaryFromConsentState:consent] : nil;
+    return consent ? [MPConsentSerializationPRIVATE serverDictionaryFromConsentState:consent.implementation] : nil;
 }
 
 - (id)transformBatch:(NSDictionary *)batch {
@@ -521,6 +543,102 @@ static NSError *MPIdentityErrorWithResponse(MPIdentityHTTPErrorResponse *errorRe
 - (id<MPUserDefaultsConnectorProtocol>)userDefaultsConnector {
     return self;
 }
+
+#pragma mark MPAppNotificationHost
+
+- (void)setLaunchInfo:(MPLaunchInfo *)launchInfo {
+    MParticle.sharedInstance.stateMachine.launchInfo = launchInfo;
+}
+
+- (void)forwardSDKCall:(SEL)selector
+            parameters:(MPForwardQueueParameters *)parameters
+           messageType:(MPMessageTypeSwift)messageType
+              userInfo:(NSDictionary *)userInfo {
+    [MParticle.sharedInstance.kitContainer_PRIVATE forwardSDKCall:selector
+                                                            event:nil
+                                                       parameters:parameters
+                                                      messageType:(MPMessageType)messageType
+                                                         userInfo:userInfo];
+}
+
+- (BOOL)registeredKitRespondsToSelector:(SEL)selector {
+    for (id<MPExtensionKitProtocol> kitRegister in [MPKitContainer_PRIVATE registeredKits]) {
+        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+#if TARGET_OS_IOS == 1
+- (BOOL)trackNotifications {
+    return MParticle.sharedInstance.trackNotifications;
+}
+
+- (id<MPNotificationControllerProtocol>)notificationController {
+    return MParticle.sharedInstance.notificationController;
+}
+
+- (void)logNotificationReceivedWithUserInfo:(NSDictionary *)userInfo {
+    [MParticle.sharedInstance logNotificationReceivedWithUserInfo:userInfo];
+}
+
+- (void)logNotificationOpenedWithUserInfo:(NSDictionary *)userInfo andActionIdentifier:(NSString *)actionIdentifier {
+    [MParticle.sharedInstance logNotificationOpenedWithUserInfo:userInfo andActionIdentifier:actionIdentifier];
+}
+
+- (void)forwardUserNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification {
+    SEL userNotificationCenterWillPresentNotification = @selector(userNotificationCenter:willPresentNotification:);
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterWillPresentNotification]) {
+            MPKitExecStatus *execStatus = nil;
+            @try {
+                execStatus = [kitRegister.wrapperInstance userNotificationCenter:center willPresentNotification:notification];
+            } @catch (NSException *e) {
+                MPILogError(@"Kit handler threw an exception: %@ (kit: %@)", e, kitRegister.name);
+            }
+
+            if (execStatus.success) {
+                MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification execStatus:execStatus];
+
+                dispatch_async([MParticle messageQueue], ^{
+                    [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord.implementation];
+                });
+
+                MPILogDebug(@"Forwarded user notifications call to kit: %@", kitRegister.name);
+            }
+        }
+    }
+}
+
+- (void)forwardUserNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
+    SEL userNotificationCenterDidReceiveNotificationResponse = @selector(userNotificationCenter:didReceiveNotificationResponse:);
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
+
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterDidReceiveNotificationResponse]) {
+            MPKitExecStatus *execStatus = nil;
+            @try {
+                execStatus = [kitRegister.wrapperInstance userNotificationCenter:center didReceiveNotificationResponse:response];
+            } @catch (NSException *e) {
+                MPILogError(@"Kit handler threw an exception: %@ (kit: %@)", e, kitRegister.name);
+            }
+
+            if (execStatus.success) {
+                MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotificationInteraction execStatus:execStatus];
+
+                dispatch_async([MParticle messageQueue], ^{
+                    [[MParticle sharedInstance].persistenceAdapter saveForwardRecord:forwardRecord.implementation];
+                });
+
+                MPILogDebug(@"Forwarded user notifications response call to kit: %@", kitRegister.name);
+            }
+        }
+    }
+}
+#endif
 
 // Each section is applied synchronously from MPResponseConfig, whose Swift frames cannot catch an
 // Objective-C exception raised further down. Without a boundary here a parse defect in one section

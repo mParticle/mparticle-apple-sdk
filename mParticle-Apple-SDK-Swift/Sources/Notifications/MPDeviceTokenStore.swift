@@ -1,8 +1,9 @@
 import Foundation
 
-/// The result of a push device-token transition: the notification payload to post,
-/// and the token strings the device-ID modification call needs.
+/// The result of a push device-token transition: the token to persist, the notification
+/// payload to post, and the token strings the device-ID modification call needs.
 final class DeviceTokenChange {
+    let newToken: Data?
     let userInfo: [String: Any]
     let newTokenString: String?
     let oldTokenString: String?
@@ -14,6 +15,7 @@ final class DeviceTokenChange {
     }
 
     init(newToken: Data?, oldToken: Data?) {
+        self.newToken = newToken
         var userInfo: [String: Any] = [:]
 
         if let newToken = newToken {

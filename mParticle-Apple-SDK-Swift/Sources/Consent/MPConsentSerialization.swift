@@ -19,7 +19,48 @@ private enum ConsentKeys {
 }
 
 @objc public final class MPConsentSerializationPRIVATE: NSObject {
-    @objc public static func serverDictionary(fromGDPR gdpr: NSDictionary, ccpa: MPConsentRecordPRIVATE?) -> NSDictionary {
+    @objc(serverDictionaryFromConsentState:)
+    public static func serverDictionary(from state: MPConsentStatePRIVATE?) -> NSDictionary {
+        serverDictionary(fromGDPR: state?.gdprConsentRecords() ?? NSDictionary(), ccpa: state?.ccpaConsentRecord())
+    }
+
+    @objc(stringFromConsentState:logger:)
+    public static func string(from state: MPConsentStatePRIVATE?, logger: MPLog?) -> String? {
+        guard let state,
+              let dictionary = storageDictionary(fromGDPR: state.gdprConsentRecords(), ccpa: state.ccpaConsentRecord())
+        else {
+            return nil
+        }
+
+        guard let string = string(from: dictionary) else {
+            logger?.error("Failed to create string from consent dictionary=\(dictionary)")
+            return nil
+        }
+        return string
+    }
+
+    @objc(consentStateFromString:logger:)
+    public static func consentState(from string: String, logger: MPLog?) -> MPConsentStatePRIVATE? {
+        guard let dictionary = dictionary(from: string) else {
+            logger?.error("Failed to create consent state from string=\(string)")
+            return nil
+        }
+
+        guard storageContainsConsentContainers(dictionary) else {
+            return nil
+        }
+
+        let state = MPConsentStatePRIVATE()
+        for (purpose, record) in gdprRecords(fromStorage: dictionary) {
+            _ = state.addGDPRConsentRecord(record, purpose: purpose)
+        }
+        if let ccpaRecord = ccpaRecord(fromStorage: dictionary) {
+            state.setCCPAConsentRecord(ccpaRecord)
+        }
+        return state
+    }
+
+    static func serverDictionary(fromGDPR gdpr: NSDictionary, ccpa: MPConsentRecordPRIVATE?) -> NSDictionary {
         dictionary(
             fromGDPR: gdpr,
             ccpa: ccpa,
@@ -32,7 +73,7 @@ private enum ConsentKeys {
         )
     }
 
-    @objc public static func storageDictionary(fromGDPR gdpr: NSDictionary, ccpa: MPConsentRecordPRIVATE?) -> NSDictionary? {
+    static func storageDictionary(fromGDPR gdpr: NSDictionary, ccpa: MPConsentRecordPRIVATE?) -> NSDictionary? {
         let dictionary = dictionary(
             fromGDPR: gdpr,
             ccpa: ccpa,
@@ -46,7 +87,7 @@ private enum ConsentKeys {
         return dictionary.allKeys.isEmpty ? nil : dictionary
     }
 
-    @objc public static func dictionary(from string: String) -> NSDictionary? {
+    static func dictionary(from string: String) -> NSDictionary? {
         guard !string.isEmpty else {
             NSLog("mParticle -> Empty string when trying to convert string=%@", string)
             return nil
@@ -79,8 +120,7 @@ private enum ConsentKeys {
         return dictionary
     }
 
-    @objc(stringFromDictionary:)
-    public static func string(from dictionary: NSDictionary) -> String? {
+    static func string(from dictionary: NSDictionary) -> String? {
         let data: Data
         do {
             data = try JSONSerialization.data(withJSONObject: dictionary, options: [])
@@ -101,11 +141,11 @@ private enum ConsentKeys {
 
     /// Reports whether either top-level consent container is present, regardless of whether it
     /// holds any parsable records. An empty container still represents stored consent.
-    @objc public static func storageContainsConsentContainers(_ dictionary: NSDictionary) -> Bool {
+    static func storageContainsConsentContainers(_ dictionary: NSDictionary) -> Bool {
         dictionary[ConsentKeys.gdpr] != nil || dictionary[ConsentKeys.ccpa] != nil
     }
 
-    @objc public static func gdprRecords(fromStorage dictionary: NSDictionary) -> NSDictionary {
+    static func gdprRecords(fromStorage dictionary: NSDictionary) -> NSDictionary {
         let records = NSMutableDictionary()
         guard let gdprDictionary = dictionary[ConsentKeys.gdpr] as? NSDictionary else {
             return records
@@ -126,7 +166,7 @@ private enum ConsentKeys {
         return records
     }
 
-    @objc public static func ccpaRecord(fromStorage dictionary: NSDictionary) -> MPConsentRecordPRIVATE? {
+    static func ccpaRecord(fromStorage dictionary: NSDictionary) -> MPConsentRecordPRIVATE? {
         guard let ccpaDictionary = dictionary[ConsentKeys.ccpa] as? NSDictionary,
               let consentDictionary = ccpaDictionary[ConsentKeys.ccpaPurpose] as? NSDictionary
         else {
