@@ -4,7 +4,6 @@
 #import "MPAppNotificationHandler.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
-#import "MPKitActivity.h"
 #import "MPKitFilter.h"
 #import "MPNetworkPerformance.h"
 #import "MPIdentityApi.h"
@@ -109,6 +108,11 @@ static NSString *const kMPStateKey = @"state";
 @implementation MPDataPlanOptions
 @end
 
+static id<MPExtensionKitProtocol> MPActiveKitRegister(NSNumber *integrationId) {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
+    return [[[[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
+}
+
 #pragma mark - MParticle
 @implementation MParticle
 
@@ -169,7 +173,12 @@ MPLog* logger;
     _initialized = NO;
     _settingsProvider = (id<SettingsProviderProtocol>)[[MPSettingsProviderPRIVATE alloc] initWithBundle:NSBundle.mainBundle
                                                                                           resourceName:kMPConfigPlist];
-    _kitActivity = [[MPKitActivity alloc] init];
+    _kitActivity = [[MPKitActivity alloc] initWithIsKitActive:^BOOL(NSNumber *integrationId) {
+        return MPActiveKitRegister(integrationId) != nil;
+    } kitInstance:^id(NSNumber *integrationId) {
+        id<MPKitProtocol> wrapperInstance = MPActiveKitRegister(integrationId).wrapperInstance;
+        return [wrapperInstance respondsToSelector:@selector(providerKitInstance)] ? [wrapperInstance providerKitInstance] : nil;
+    }];
     _kitsInitializedBlocks = [NSMutableArray array];
     _collectUserAgent = YES;
     _collectSearchAdsAttribution = NO;
