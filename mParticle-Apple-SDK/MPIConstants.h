@@ -101,23 +101,11 @@ typedef NS_ENUM(NSInteger, MPDataType) {
     MPDataTypeLong = 5
 };
 
-typedef NS_ENUM(NSInteger, MPDatabaseTable) {
-    MPDatabaseTableAttributes = 0,
-    MPDatabaseTableBreadcrumbs,
-    MPDatabaseTableMessages,
-    MPDatabaseTableReporting,
-    MPDatabaseTableSessions,
-    MPDatabaseTableUploads,
-    MPDatabaseTableUnknown
-};
-
 // mParticle SDK Version
 extern NSString * _Nonnull const kMParticleSDKVersion;
 
 // Message Type (dt)
 extern NSString * _Nonnull const kMPMessageTypeKey;                  
-extern NSString * _Nonnull const kMPMessageTypeRequestHeader;
-extern NSString * _Nonnull const kMPMessageTypeLeaveBreadcrumbs;
 
 // Request Header Keys
 extern NSString * _Nonnull const kMPmParticleSDKVersionKey;
@@ -125,18 +113,9 @@ extern NSString * _Nonnull const kMPApplicationKey;
 
 // Device Information Keys
 extern NSString * _Nonnull const kMPDeviceCydiaJailbrokenKey;
-extern NSString * _Nonnull const kMPDeviceSupportedPushNotificationTypesKey;
-
-// Launch Keys
-extern NSString * _Nonnull const kMPLaunchSourceKey;
-extern NSString * _Nonnull const kMPLaunchURLKey;
-extern NSString * _Nonnull const kMPLaunchParametersKey;
-extern NSString * _Nonnull const kMPLaunchSessionFinalizedKey;
-extern NSString * _Nonnull const kMPLaunchNumberOfSessionInterruptionsKey;
 
 // Message Keys
 extern NSString * _Nonnull const kMPMessagesKey;
-extern NSString * _Nonnull const kMPMessageUserIdKey;
 extern NSString * _Nonnull const kMPMessageIdKey;                     
 extern NSString * _Nonnull const kMPTimestampKey;                   
 extern NSString * _Nonnull const kMPSessionIdKey;                     
@@ -145,32 +124,19 @@ extern NSString * _Nonnull const kMPEventStartTimestamp;
 extern NSString * _Nonnull const kMPEventLength;                     
 extern NSString * _Nonnull const kMPEventNameKey;
 extern NSString * _Nonnull const kMPEventTypeKey;
-extern NSString * _Nonnull const kMPEventLengthKey;
 extern NSString * _Nonnull const kMPAttributesKey;                   
-extern NSString * _Nonnull const kMPLocationKey;
 extern NSString * _Nonnull const kMPUserAttributeKey;
-extern NSString * _Nonnull const kMPUserAttributeDeletedKey;
-extern NSString * _Nonnull const kMPEventTypePageView;
 extern NSString * _Nonnull const kMPUserIdentityArrayKey;
 extern NSString * _Nonnull const kMPUserIdentityIdKey;
 extern NSString * _Nonnull const kMPUserIdentityTypeKey;
-extern NSString * _Nonnull const kMPUserIdentitySharedGroupIdentifier;
-extern NSString * _Nonnull const kMPAppStateTransitionType;
-extern NSString * _Nonnull const kMPEventTagsKey;
 extern NSString * _Nonnull const kMPLeaveBreadcrumbsKey;
 extern NSString * _Nonnull const kMPOptOutKey;
-extern NSString * _Nonnull const kMPDateUserIdentityWasFirstSet;
-extern NSString * _Nonnull const kMPIsFirstTimeUserIdentityHasBeenSet;
-extern NSString * _Nonnull const kMPRemoteNotificationCampaignHistoryKey;
-extern NSString * _Nonnull const kMPRemoteNotificationContentIdHistoryKey;
-extern NSString * _Nonnull const kMPRemoteNotificationTimestampHistoryKey;
 extern NSString * _Nonnull const kMPForwardStatsRecord;
 extern NSString * _Nonnull const kMPEventCustomFlags;
 extern NSString * _Nonnull const kMPContextKey;
 extern NSString * _Nonnull const kMPDataPlanKey;
 extern NSString * _Nonnull const kMPDataPlanIdKey;
 extern NSString * _Nonnull const kMPDataPlanVersionKey;
-
 
 // Consent
 extern NSString * _Nonnull const kMPConsentState;
@@ -191,105 +157,45 @@ extern NSString * _Nonnull const kMPConsentStateHardwareId;
 // Consent serialization
 extern NSString * _Nonnull const kMPConsentStateKey;
 extern NSString * _Nonnull const kMPConsentDeviceStateKey;
-extern NSString * _Nonnull const kMPConsentStateGDPRKey;
-extern NSString * _Nonnull const kMPConsentStateConsentedKey;
-extern NSString * _Nonnull const kMPConsentStateDocumentKey;
-extern NSString * _Nonnull const kMPConsentStateTimestampKey;
-extern NSString * _Nonnull const kMPConsentStateLocationKey;
-extern NSString * _Nonnull const kMPConsentStateHardwareIdKey;
 
 // Consent filtering
-extern NSString * _Nonnull const kMPConsentKitFilter;
-extern NSString * _Nonnull const kMPConsentKitFilterIncludeOnMatch;
-extern NSString * _Nonnull const kMPConsentKitFilterItems;
-extern NSString * _Nonnull const kMPConsentKitFilterItemConsented;
-extern NSString * _Nonnull const kMPConsentKitFilterItemHash;
-extern NSString * _Nonnull const kMPConsentRegulationFilters;
-extern NSString * _Nonnull const kMPConsentPurposeFilters;
 extern NSString * _Nonnull const kMPConsentGDPRRegulationType;
 extern NSString * _Nonnull const kMPConsentCCPARegulationType;
 extern NSString * _Nonnull const kMPConsentCCPAPurposeName;
 
 // Push Notifications
 extern NSString * _Nonnull const kMPDeviceTokenKey;
-extern NSString * _Nonnull const kMPPushMessageReceived;
-extern NSString * _Nonnull const kMPPushMessageAction;
-extern NSString * _Nonnull const kMPPushMessageSent;
-extern NSString * _Nonnull const kMPPushNotificationStateNotRunning;
 extern NSString * _Nonnull const kMPPushNotificationStateBackground;
 extern NSString * _Nonnull const kMPPushNotificationStateForeground;
-extern NSString * _Nonnull const kMPPushNotificationCategoryIdentifierKey;
 
 // Assorted Keys
-extern NSString * _Nonnull const kMPSessionLengthKey;                 
-extern NSString * _Nonnull const kMPSessionTotalLengthKey;
 extern NSString * _Nonnull const kMPOptOutStatus;
 extern NSString * _Nonnull const kMPATTTimestamp;
 extern NSString * _Nonnull const kMPCrashingSeverity;
-extern NSString * _Nonnull const kMPCrashingClass;
 extern NSString * _Nonnull const kMPCrashWasHandled;
 extern NSString * _Nonnull const kMPErrorMessage;                     
 extern NSString * _Nonnull const kMPStackTrace;                       
-extern NSString * _Nonnull const kMPCrashSignal;
-extern NSString * _Nonnull const kMPTopmostContext;
 extern NSString * _Nonnull const kMPPLCrashReport;
-extern NSString * _Nonnull const kMPCrashExceptionKey;
 extern NSString * _Nonnull const kMPNullUserAttributeString;
 extern NSString * _Nonnull const kMPSessionTimeoutKey;
 extern NSString * _Nonnull const kMPUploadIntervalKey;
-extern NSString * _Nonnull const kMPPreviousSessionLengthKey;
 extern NSString * _Nonnull const kMPLifeTimeValueKey;
-extern NSString * _Nonnull const kMPIncreasedLifeTimeValueKey;
 extern NSString * _Nonnull const kMPHTTPMethodPost;
 extern NSString * _Nonnull const kMPHTTPMethodGet;
-extern NSString * _Nonnull const kMPPreviousSessionIdKey;
 extern NSString * _Nonnull const kMPEventCounterKey;
-extern NSString * _Nonnull const kMPProfileChangeTypeKey;
-extern NSString * _Nonnull const kMPProfileChangeCurrentKey;
-extern NSString * _Nonnull const kMPProfileChangePreviousKey;
-extern NSString * _Nonnull const kMPPresentedViewControllerKey;
-extern NSString * _Nonnull const kMPMainThreadKey;
-extern NSString * _Nonnull const kMPPreviousSessionStartKey;
 extern NSString * _Nonnull const kMPAppFirstSeenInstallationKey;
-extern NSString * _Nonnull const kMPResponseURLKey;
-extern NSString * _Nonnull const kMPResponseMethodKey;
-extern NSString * _Nonnull const kMPResponsePOSTDataKey;
-extern NSString * _Nonnull const kMPHTTPHeadersKey;
-extern NSString * _Nonnull const kMPHTTPAcceptEncodingKey;
-extern NSString * _Nonnull const kMPDeviceTokenTypeDevelopment;
-extern NSString * _Nonnull const kMPDeviceTokenTypeProduction;
-extern NSString * _Nonnull const kMResponseConfigurationKey;
-extern NSString * _Nonnull const kMResponseConfigurationMigrationKey;
-extern NSString * _Nonnull const kMResponseConfigurationCompressedKey;
-extern NSString * _Nonnull const kMPAppSearchAdsAttributionKey;
 extern NSString * _Nonnull const kMPSynchedUserAttributesKey;
-extern NSString * _Nonnull const kMPSynchedUserIdentitiesKey;
-extern NSString * _Nonnull const kMPSessionUserIdsKey;
 extern NSString * _Nonnull const kMPIsEphemeralKey;
 extern NSString * _Nonnull const kMPLastIdentifiedDate;
 extern NSString * _Nonnull const kMPDeviceApplicationStampKey;
-extern NSString * _Nonnull const kMPDeviceApplicationStampStorageKey;
 extern NSString * _Nonnull const kMPConfigProvisionedTimestampKey;
 extern NSString * _Nonnull const kMPConfigMaxAgeHeaderKey;
-extern NSString * _Nonnull const kMPConfigParameters;
-extern NSString * _Nonnull const kMPUserAgentSystemVersionUserDefaultsKey;
-extern NSString * _Nonnull const kMPUserAgentValueUserDefaultsKey;
 extern NSString * _Nonnull const kMPFirstSeenUser;
 extern NSString * _Nonnull const kMPLastSeenUser;
-extern NSString * _Nonnull const kMPAppForePreviousForegroundTime;
-extern NSString * _Nonnull const kMPLastUploadSettingsUserDefaultsKey;
 
 // Remote configuration
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;
-extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeAppDefined;
-extern NSString * _Nonnull const kMPRemoteConfigFlagsKey;
-extern NSString * _Nonnull const kMPRemoteConfigAudienceAPIKey;
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeForce;
-extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeIgnore;
-extern NSString * _Nonnull const kMPRemoteConfigCrashMaxPLReportLength;
-extern NSString * _Nonnull const kMPRemoteConfigAppDefined;
-extern NSString * _Nonnull const kMPRemoteConfigForceTrue;
-extern NSString * _Nonnull const kMPRemoteConfigForceFalse;
 extern NSString * _Nonnull const kMPRemoteConfigKitsKey;
 extern NSString * _Nonnull const kMPRemoteConfigKitConfigurationKey;
 extern NSString * _Nonnull const kMPRemoteConfigKitHashesKey;
@@ -311,124 +217,35 @@ extern NSString * _Nonnull const kMPRemoteConfigCustomModuleReadKey;
 extern NSString * _Nonnull const kMPRemoteConfigCustomModuleDataTypeKey;
 extern NSString * _Nonnull const kMPRemoteConfigCustomModuleWriteKey;
 extern NSString * _Nonnull const kMPRemoteConfigCustomModuleDefaultKey;
-extern NSString * _Nonnull const kMPRemoteConfigCustomSettingsKey;
-extern NSString * _Nonnull const kMPRemoteConfigSandboxModeKey;
 extern NSString * _Nonnull const kMPRemoteConfigSessionTimeoutKey;
-extern NSString * _Nonnull const kMPRemoteConfigPushNotificationDictionaryKey;
-extern NSString * _Nonnull const kMPRemoteConfigPushNotificationModeKey;
-extern NSString * _Nonnull const kMPRemoteConfigPushNotificationTypeKey;
-extern NSString * _Nonnull const kMPRemoteConfigLocationKey;
-extern NSString * _Nonnull const kMPRemoteConfigLocationModeKey;
-extern NSString * _Nonnull const kMPRemoteConfigLocationAccuracyKey;
-extern NSString * _Nonnull const kMPRemoteConfigLocationMinimumDistanceKey;
 extern NSString * _Nonnull const kMPRemoteConfigRampKey;
 extern NSString * _Nonnull const kMPRemoteConfigTriggerKey;
-extern NSString * _Nonnull const kMPRemoteConfigTriggerEventsKey;
-extern NSString * _Nonnull const kMPRemoteConfigTriggerMessageTypesKey;
 extern NSString * _Nonnull const kMPRemoteConfigUniqueIdentifierKey;
-extern NSString * _Nonnull const kMPRemoteConfigBracketKey;
-extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
-extern NSString * _Nonnull const kMPRemoteConfigAliasMaxWindow;
-extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
-extern NSString * _Nonnull const kMPRemoteConfigExcludeAnonymousUsersKey;
 
-extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEvents;
-extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEventAttributes;
-extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedIdentities;
-extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedUserAttributes;
-
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningResults;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanning;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlock;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlockUnplannedEvents;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlockUnplannedEventAttributes;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlockUnplannedUserAttributes;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlockUnplannedIdentities;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanId;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersion;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanError;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValue;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueDoc;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueDataPoints;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueMatch;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueType;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueValidator;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueDefinition;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueSchemaEverything;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueSchemaNothing;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueAdditionalProperties;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueUserAttributes;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCustomEvent;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCustomEventType;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueEventName;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueScreenView;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueScreenName;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueProductAction;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueUnknown;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueAddToCart;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueRemoveFromCart;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCheckout;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCheckoutOption;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueClick;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueViewDetail;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValuePurchase;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueRefund;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueAddToWishlist;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueRemoveFromWishlist;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValuePromotionAction;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueProductImpressions;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCriteria;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueAction ;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionUnknown;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionView;
-extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionClick;
 
 // Notifications
-extern NSString * _Nonnull const kMPCrashReportOccurredNotification;
-extern NSString * _Nonnull const kMPConfigureExceptionHandlingNotification;
-extern NSString * _Nonnull const kMPUserNotificationDictionaryKey;
-extern NSString * _Nonnull const kMPUserNotificationActionKey;
-extern NSString * _Nonnull const kMPRemoteNotificationDeviceTokenNotification;
 extern NSString * _Nonnull const kMPRemoteNotificationDeviceTokenKey;
 
 // Config.plist keys
 extern NSString * _Nonnull const kMPConfigPlist;
-extern NSString * _Nonnull const kMPConfigApiKey;
-extern NSString * _Nonnull const kMPConfigSecret;
-extern NSString * _Nonnull const kMPConfigSharedGroupID;
 extern NSString * _Nonnull const kMPConfigCustomUserAgent;
 extern NSString * _Nonnull const kMPConfigCollectUserAgent;
 extern NSString * _Nonnull const kMPConfigTrackNotifications;
 extern NSString * _Nonnull const kMPConfigSessionTimeout;
 extern NSString * _Nonnull const kMPConfigUploadInterval;
-extern NSString * _Nonnull const kMPConfigEnableSSL;
-extern NSString * _Nonnull const kMPConfigEnableCrashReporting;
-extern NSString * _Nonnull const kMPConfigLocationTracking;
-extern NSString * _Nonnull const kMPConfigLocationAccuracy;
-extern NSString * _Nonnull const kMPConfigLocationDistanceFilter;
-
-// Data connection path/status
-extern NSString * _Nonnull const kDataConnectionOffline;
-extern NSString * _Nonnull const kDataConnectionMobile;
-extern NSString * _Nonnull const kDataConnectionWifi;
-
-// Application State Transition
-extern NSString * _Nonnull const kMPASTInitKey;
-extern NSString * _Nonnull const kMPASTExitKey;
-extern NSString * _Nonnull const kMPASTBackgroundKey;
-extern NSString * _Nonnull const kMPASTForegroundKey;
-extern NSString * _Nonnull const kMPASTIsFirstRunKey;
-extern NSString * _Nonnull const kMPASTIsUpgradeKey;
 
 // Kits
-extern NSString * _Nonnull const MPKitAttributeJailbrokenKey;
 extern NSString * _Nonnull const MPIntegrationAttributesKey;
-extern NSString * _Nonnull const MPSideloadedKitsCountUserDefaultsKey;
 
 // mParticle Javascript SDK paths
-extern NSString * _Nonnull const kMParticleWebViewSdkScheme;
 extern NSString * _Nonnull const kMParticleWebViewPathLogEvent;
-extern NSString * _Nonnull const kMParticleWebViewPathSetUserIdentity;
 extern NSString * _Nonnull const kMParticleWebViewPathSetUserTag;
 extern NSString * _Nonnull const kMParticleWebViewPathRemoveUserTag;
 extern NSString * _Nonnull const kMParticleWebViewPathSetUserAttribute;
@@ -438,7 +255,6 @@ extern NSString * _Nonnull const kMParticleWebViewPathIdentify;
 extern NSString * _Nonnull const kMParticleWebViewPathLogout;
 extern NSString * _Nonnull const kMParticleWebViewPathLogin;
 extern NSString * _Nonnull const kMParticleWebViewPathModify;
-extern NSString * _Nonnull const kMParticleWebViewPathAlias;
 
 // Message type strings
 extern NSString * _Nonnull const kMPMessageTypeStringUnknown;
@@ -463,7 +279,6 @@ extern NSString * _Nonnull const kMPMessageTypeStringUserIdentityChange;
 extern NSString * _Nonnull const kMPMessageTypeStringMedia;
 
 // Event type strings
-extern NSString * _Nonnull const kMPEventTypeStringUnknown;
 extern NSString * _Nonnull const kMPEventTypeStringNavigation;
 extern NSString * _Nonnull const kMPEventTypeStringLocation;
 extern NSString * _Nonnull const kMPEventTypeStringSearch;
@@ -472,7 +287,6 @@ extern NSString * _Nonnull const kMPEventTypeStringUserContent;
 extern NSString * _Nonnull const kMPEventTypeStringUserPreference;
 extern NSString * _Nonnull const kMPEventTypeStringSocial;
 extern NSString * _Nonnull const kMPEventTypeStringOther;
-extern NSString * _Nonnull const kMPEventTypeStringMediaDiscontinued;
 extern NSString * _Nonnull const kMPEventTypeStringProductAddToCart;
 extern NSString * _Nonnull const kMPEventTypeStringProductRemoveFromCart;
 extern NSString * _Nonnull const kMPEventTypeStringProductCheckout;
@@ -491,32 +305,15 @@ extern NSString * _Nonnull const kMPEventTypeStringMedia;
 //
 // Primitive data type constants
 //
-extern const NSTimeInterval MINIMUM_SESSION_TIMEOUT;
 extern const NSTimeInterval DEFAULT_SESSION_TIMEOUT;
-extern const NSTimeInterval TWENTY_FOUR_HOURS; // Database clean up interval
-extern const NSTimeInterval SEVEN_DAYS;
-extern const NSTimeInterval NINETY_DAYS;
 
 // Interval between uploads if not specified
 extern const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL;
 extern const NSTimeInterval DEFAULT_UPLOAD_INTERVAL;
 
-// Delay before processing uploads to allow app to get started
-extern const NSTimeInterval INITIAL_UPLOAD_TIME;
-
-// How long to block config requests after a successful response.
-extern const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE;
-extern const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE;
-
 // Attributes limits
 extern const NSInteger LIMIT_ATTR_KEY_LENGTH;
 extern const NSInteger LIMIT_ATTR_VALUE_LENGTH;
-extern const NSInteger MAX_USER_ATTR_LIST_SIZE;
-extern const NSInteger MAX_USER_ATTR_LIST_ENTRY_LENGTH;
-
-// Consent limits
-extern const NSInteger MAX_GDPR_CONSENT_PURPOSES;
-extern const NSInteger MAX_CCPA_CONSENT_PURPOSES;
 
 // Size limits
 extern const NSInteger MAX_BYTES_PER_EVENT;
@@ -541,24 +338,12 @@ extern NSString * _Nonnull const kMPScreenHeightKey;
 extern NSString * _Nonnull const kMPScreenWidthKey;
 extern NSString * _Nonnull const kMPDeviceLocaleCountryKey;
 extern NSString * _Nonnull const kMPDeviceLocaleLanguageKey;
-extern NSString * _Nonnull const kMPNetworkCountryKey;
-extern NSString * _Nonnull const kMPNetworkCarrierKey;
-extern NSString * _Nonnull const kMPMobileNetworkCodeKey;
-extern NSString * _Nonnull const kMPMobileCountryCodeKey;
 extern NSString * _Nonnull const kMPTimezoneOffsetKey;
 extern NSString * _Nonnull const kMPTimezoneDescriptionKey;
 extern NSString * _Nonnull const kMPDeviceJailbrokenKey;
 extern NSString * _Nonnull const kMPDeviceArchitectureKey;
-extern NSString * _Nonnull const kMPDeviceRadioKey;
-extern NSString * _Nonnull const kMPDeviceFloatingPointFormat;
-extern NSString * _Nonnull const kMPDeviceSignerIdentityString;
 extern NSString * _Nonnull const kMPDeviceIsTabletKey;
-extern NSString * _Nonnull const kMPDeviceIdentifierKey;
 extern NSString * _Nonnull const kMPDeviceLimitAdTrackingKey;
 extern NSString * _Nonnull const kMPDeviceIsDaylightSavingTime;
-extern NSString * _Nonnull const kMPDeviceInvalidVendorId;
 
-// MPRokt Constants
-extern NSString * _Nonnull const kMPPlacementAttributesMapping;
-extern NSString * _Nonnull const kMPHashedEmailUserIdentityType;
 #endif
