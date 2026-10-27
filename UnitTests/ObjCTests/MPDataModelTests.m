@@ -3,6 +3,7 @@
 #import "MPIConstants.h"
 #import "MPPersistenceUploadSettingsCodec.h"
 #import "MPPersistenceUtilities.h"
+#import "MPUploadSettings.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 

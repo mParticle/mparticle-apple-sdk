@@ -6,6 +6,7 @@
 #import "MPBackendController.h"
 #import "MPKitContainer+MParticlePrivate.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPPersistenceUtilities.h"
 #import "MPIConstants.h"
 #if TARGET_OS_IOS == 1
     #import <AdServices/AAAttribution.h>
