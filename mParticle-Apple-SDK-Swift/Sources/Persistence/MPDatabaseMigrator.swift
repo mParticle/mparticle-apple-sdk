@@ -71,6 +71,10 @@ public final class MPDatabaseMigratorPRIVATE: NSObject {
         let currentPath = fileSystem.resolvedDatabasePath(
             databaseName: MPPersistenceSchemaPRIVATE.databaseName(for: currentVersion)
         )
+        // A database from an earlier SDK version has no data protection. Raise it before the
+        // migration opens it, so a migration that fails does not leave its events unprotected.
+        fileSystem.protectDatabaseFiles(atPath: oldPath)
+        fileSystem.protectDatabaseFiles(atPath: currentPath)
         let current = try MPSQLiteConnection(path: currentPath, logger: logger)
         try createCurrentSchema(in: current, version: currentVersion)
         let old = try MPSQLiteConnection(path: oldPath, logger: logger)
