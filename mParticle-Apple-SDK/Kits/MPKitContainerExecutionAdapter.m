@@ -2359,21 +2359,14 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 
 - (BOOL)hasKitBatchingKits {
-    static BOOL first = YES;
-    static BOOL result = NO;
-    if (first) {
-        first = NO;
-        
-        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
-        for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-            if ([kitRegister.wrapperInstance respondsToSelector:@selector(logBatch:)]) {
-                result = YES;
-                break;
-            }
+    // Not cached: the active set changes as kits start, as consent, user or configuration changes,
+    // and across reset or a workspace switch.
+    for (id<MPExtensionKitProtocol>kitRegister in [self activeKitsRegistry]) {
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(logBatch:)]) {
+            return YES;
         }
     }
-    
-    return result;
+    return NO;
 }
 
 @end
