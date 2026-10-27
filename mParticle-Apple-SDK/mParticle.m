@@ -1002,8 +1002,9 @@ MPLog* logger;
         dispatch_block_t block = ^{
             if (batch) {
                 if ([self.kitContainer hasKitBatchingKits]) {
-                    NSData *finalData = [[NSData alloc] initWithBytes:batch.UTF8String length:batch.length];
-                    NSDictionary *kitBatch = [NSJSONSerialization JSONObjectWithData:finalData options:0 error:nil];
+                    // dataUsingEncoding: returns nil for invalid Unicode; NSJSONSerialization raises on nil data.
+                    NSData *finalData = [batch dataUsingEncoding:NSUTF8StringEncoding];
+                    NSDictionary *kitBatch = finalData ? [NSJSONSerialization JSONObjectWithData:finalData options:0 error:nil] : nil;
                     
                     // Forwarding calls to kits
                     [executor executeOnMain: ^{
