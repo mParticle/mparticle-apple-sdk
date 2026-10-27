@@ -91,6 +91,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
+@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration_PRIVATE;
 @property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
@@ -652,7 +653,7 @@ MPLog* logger;
         [self setATTStatus:(MPATTAuthorizationStatus)options.attStatus.integerValue withATTStatusTimestampMillis:options.attStatusTimestampMillis];
     }
     
-    if ([MParticle isOlderThanConfigMaxAgeSeconds]) {
+    if ([MPUserDefaults isOlderThanConfigMaxAgeSeconds]) {
         [MPUserDefaults deleteConfig];
     }
     
@@ -1998,27 +1999,6 @@ MPLog* logger;
                                                                userInfo:nil
         ];
     }];
-}
-
-+ (BOOL)isOlderThanConfigMaxAgeSeconds {
-    BOOL shouldConfigurationBeDeleted = NO;
-
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
-    NSNumber *maxAgeSeconds = [[MParticle sharedInstance] configMaxAgeSeconds];
-
-    if (configProvisioned != nil && maxAgeSeconds != nil && [maxAgeSeconds doubleValue] > 0) {
-        NSTimeInterval intervalConfigProvisioned = [configProvisioned doubleValue];
-        NSTimeInterval intervalNow = [[NSDate date] timeIntervalSince1970];
-        NSTimeInterval delta = intervalNow - intervalConfigProvisioned;
-        shouldConfigurationBeDeleted = delta > [maxAgeSeconds doubleValue];
-    }
-
-    if (shouldConfigurationBeDeleted) {
-        [userDefaults deleteConfiguration];
-    }
-
-    return shouldConfigurationBeDeleted;
 }
 
 @end

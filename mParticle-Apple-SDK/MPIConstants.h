@@ -10,6 +10,62 @@
 
 #define MPIsNull(object) ((object) == nil || (NSNull *)(object) == [NSNull null])
 #define MPIsDictionary(object) (!MPIsNull(object) && [object isKindOfClass:[NSDictionary class]])
+
+#define NSStringFromEventType( value ) \
+( \
+@{ \
+@( MPEventTypeNavigation )          : kMPEventTypeStringNavigation, \
+@( MPEventTypeLocation )            : kMPEventTypeStringLocation, \
+@( MPEventTypeSearch )              : kMPEventTypeStringSearch, \
+@( MPEventTypeTransaction )         : kMPEventTypeStringTransaction, \
+@( MPEventTypeUserContent )         : kMPEventTypeStringUserContent, \
+@( MPEventTypeUserPreference )      : kMPEventTypeStringUserPreference, \
+@( MPEventTypeSocial )              : kMPEventTypeStringSocial, \
+@( MPEventTypeOther )               : kMPEventTypeStringOther, \
+@( MPEventTypeAddToCart )           : kMPEventTypeStringProductAddToCart, \
+@( MPEventTypeRemoveFromCart )      : kMPEventTypeStringProductRemoveFromCart, \
+@( MPEventTypeCheckout )            : kMPEventTypeStringProductCheckout, \
+@( MPEventTypeCheckoutOption )      : kMPEventTypeStringProductCheckoutOption, \
+@( MPEventTypeClick )               : kMPEventTypeStringProductClick, \
+@( MPEventTypeViewDetail )          : kMPEventTypeStringProductViewDetail, \
+@( MPEventTypePurchase )            : kMPEventTypeStringProductPurchase, \
+@( MPEventTypeRefund )              : kMPEventTypeStringProductRefund, \
+@( MPEventTypePromotionView )       : kMPEventTypeStringPromotionView, \
+@( MPEventTypePromotionClick )      : kMPEventTypeStringPromotionClick, \
+@( MPEventTypeAddToWishlist )       : kMPEventTypeStringProductAddToWishlist, \
+@( MPEventTypeRemoveFromWishlist )  : kMPEventTypeStringProductRemoveFromWishlist, \
+@( MPEventTypeImpression )          : kMPEventTypeStringProductImpression, \
+@( MPEventTypeMedia )               : kMPEventTypeStringMedia, \
+} \
+[ @( value ) ] \
+)
+
+#define NSStringFromMessageType( value ) \
+( \
+@{ \
+@( MPMessageTypeUnknown )          : kMPMessageTypeStringUnknown, \
+@( MPMessageTypeSessionStart )            : kMPMessageTypeStringSessionStart, \
+@( MPMessageTypeSessionEnd )              : kMPMessageTypeStringSessionEnd, \
+@( MPMessageTypeScreenView )         : kMPMessageTypeStringScreenView, \
+@( MPMessageTypeEvent )         : kMPMessageTypeStringEvent, \
+@( MPMessageTypeCrashReport )      : kMPMessageTypeStringCrashReport, \
+@( MPMessageTypeOptOut )              : kMPMessageTypeStringOptOut, \
+@( MPMessageTypeFirstRun )               : kMPMessageTypeStringFirstRun, \
+@( MPMessageTypePreAttribution )           : kMPMessageTypeStringPreAttribution, \
+@( MPMessageTypePushRegistration )      : kMPMessageTypeStringPushRegistration, \
+@( MPMessageTypeAppStateTransition )            : kMPMessageTypeStringAppStateTransition, \
+@( MPMessageTypePushNotification )      : kMPMessageTypeStringPushNotification, \
+@( MPMessageTypeNetworkPerformance )               : kMPMessageTypeStringNetworkPerformance, \
+@( MPMessageTypeBreadcrumb )          : kMPMessageTypeStringBreadcrumb, \
+@( MPMessageTypeProfile )            : kMPMessageTypeStringProfile, \
+@( MPMessageTypePushNotificationInteraction )              : kMPMessageTypeStringPushNotificationInteraction, \
+@( MPMessageTypeCommerceEvent )       : kMPMessageTypeStringCommerceEvent, \
+@( MPMessageTypeUserAttributeChange )      : kMPMessageTypeStringUserAttributeChange, \
+@( MPMessageTypeUserIdentityChange )       : kMPMessageTypeStringUserIdentityChange, \
+@( MPMessageTypeMedia )  : kMPMessageTypeStringMedia, \
+} \
+[ @( value ) ] \
+)
 #define MPIsArray(object) (!MPIsNull(object) && [object isKindOfClass:[NSArray class]])
 #define MPIsString(object) (!MPIsNull(object) && [object isKindOfClass:[NSString class]])
 #define MPIsNumber(object) (!MPIsNull(object) && [object isKindOfClass:[NSNumber class]])

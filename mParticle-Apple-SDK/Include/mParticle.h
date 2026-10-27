@@ -35,8 +35,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class MPKitContainer;
-
 /**
  An SDK session.
  
@@ -724,15 +722,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, readonly) BOOL compressConfigurationStorage;
 
-/**
- The instance which manages all initialized kits. For internal use only
- */
-
-/**
- The Kit Configuration needed should the initialization of kits need to be deferred until identity or consent is resolve. For internal use only
- */
-@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration_PRIVATE;
-
 #pragma mark - Initialization
 
 /**
@@ -1244,11 +1233,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Internal use only. Used by our wrapper SDKs to identify themselves during initialization.
  */
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
-
-/**
- Internal use only. Used by our SDK to determine if configuration needs refreshed.
- */
-+ (BOOL)isOlderThanConfigMaxAgeSeconds;
 
 @end
 

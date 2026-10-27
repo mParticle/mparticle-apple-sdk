@@ -28,6 +28,7 @@
 @property (nonatomic, strong) MParticleOptions *options;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
+@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration_PRIVATE;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
 @property (nonatomic, strong) MPPersistenceStorePRIVATE *persistenceStore;
 @property (nonatomic, strong, nonnull) id<MPNotificationControllerProtocol> notificationController;

@@ -61,35 +61,6 @@ typedef NS_ENUM(NSUInteger, MPEventType) {
     MPEventTypeImpression = 22
 };
 
-#define NSStringFromEventType( value ) \
-( \
-@{ \
-@( MPEventTypeNavigation )          : kMPEventTypeStringNavigation, \
-@( MPEventTypeLocation )            : kMPEventTypeStringLocation, \
-@( MPEventTypeSearch )              : kMPEventTypeStringSearch, \
-@( MPEventTypeTransaction )         : kMPEventTypeStringTransaction, \
-@( MPEventTypeUserContent )         : kMPEventTypeStringUserContent, \
-@( MPEventTypeUserPreference )      : kMPEventTypeStringUserPreference, \
-@( MPEventTypeSocial )              : kMPEventTypeStringSocial, \
-@( MPEventTypeOther )               : kMPEventTypeStringOther, \
-@( MPEventTypeAddToCart )           : kMPEventTypeStringProductAddToCart, \
-@( MPEventTypeRemoveFromCart )      : kMPEventTypeStringProductRemoveFromCart, \
-@( MPEventTypeCheckout )            : kMPEventTypeStringProductCheckout, \
-@( MPEventTypeCheckoutOption )      : kMPEventTypeStringProductCheckoutOption, \
-@( MPEventTypeClick )               : kMPEventTypeStringProductClick, \
-@( MPEventTypeViewDetail )          : kMPEventTypeStringProductViewDetail, \
-@( MPEventTypePurchase )            : kMPEventTypeStringProductPurchase, \
-@( MPEventTypeRefund )              : kMPEventTypeStringProductRefund, \
-@( MPEventTypePromotionView )       : kMPEventTypeStringPromotionView, \
-@( MPEventTypePromotionClick )      : kMPEventTypeStringPromotionClick, \
-@( MPEventTypeAddToWishlist )       : kMPEventTypeStringProductAddToWishlist, \
-@( MPEventTypeRemoveFromWishlist )  : kMPEventTypeStringProductRemoveFromWishlist, \
-@( MPEventTypeImpression )          : kMPEventTypeStringProductImpression, \
-@( MPEventTypeMedia )               : kMPEventTypeStringMedia, \
-} \
-[ @( value ) ] \
-)
-
 /// Installation Types
 typedef NS_ENUM(NSInteger, MPInstallationType) {
     /** mParticle auto-detects the installation type. This is the default value */
@@ -370,33 +341,6 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     /** Message type code for a media event */
     MPMessageTypeMedia = 20
 };
-
-#define NSStringFromMessageType( value ) \
-( \
-@{ \
-@( MPMessageTypeUnknown )          : kMPMessageTypeStringUnknown, \
-@( MPMessageTypeSessionStart )            : kMPMessageTypeStringSessionStart, \
-@( MPMessageTypeSessionEnd )              : kMPMessageTypeStringSessionEnd, \
-@( MPMessageTypeScreenView )         : kMPMessageTypeStringScreenView, \
-@( MPMessageTypeEvent )         : kMPMessageTypeStringEvent, \
-@( MPMessageTypeCrashReport )      : kMPMessageTypeStringCrashReport, \
-@( MPMessageTypeOptOut )              : kMPMessageTypeStringOptOut, \
-@( MPMessageTypeFirstRun )               : kMPMessageTypeStringFirstRun, \
-@( MPMessageTypePreAttribution )           : kMPMessageTypeStringPreAttribution, \
-@( MPMessageTypePushRegistration )      : kMPMessageTypeStringPushRegistration, \
-@( MPMessageTypeAppStateTransition )            : kMPMessageTypeStringAppStateTransition, \
-@( MPMessageTypePushNotification )      : kMPMessageTypeStringPushNotification, \
-@( MPMessageTypeNetworkPerformance )               : kMPMessageTypeStringNetworkPerformance, \
-@( MPMessageTypeBreadcrumb )          : kMPMessageTypeStringBreadcrumb, \
-@( MPMessageTypeProfile )            : kMPMessageTypeStringProfile, \
-@( MPMessageTypePushNotificationInteraction )              : kMPMessageTypeStringPushNotificationInteraction, \
-@( MPMessageTypeCommerceEvent )       : kMPMessageTypeStringCommerceEvent, \
-@( MPMessageTypeUserAttributeChange )      : kMPMessageTypeStringUserAttributeChange, \
-@( MPMessageTypeUserIdentityChange )       : kMPMessageTypeStringUserIdentityChange, \
-@( MPMessageTypeMedia )  : kMPMessageTypeStringMedia, \
-} \
-[ @( value ) ] \
-)
 
 /// Upload Types
 typedef NS_ENUM(NSUInteger, MPUploadType) {

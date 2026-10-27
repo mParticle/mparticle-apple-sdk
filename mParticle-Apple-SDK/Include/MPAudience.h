@@ -20,7 +20,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-extern NSString * _Nonnull const kMPAudienceMembershipKey;
-extern NSString * _Nonnull const kMPAudienceIdKey;
-
 NS_ASSUME_NONNULL_END

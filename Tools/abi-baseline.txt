@@ -239,7 +239,6 @@ IFACE|@interface MParticleOptions : NSObject
 IFACE|@interface MParticleSession : NSObject
 IFACE|@interface MParticleUser : NSObject
 IFACE|@interface NSDictionary(MPCaseInsensitive)
-METHOD|+ (BOOL)isOlderThanConfigMaxAgeSeconds;
 METHOD|+ (BOOL)isUserIdentity:(MPIdentity)identity;
 METHOD|+ (BOOL)registerExtension:(id<MPExtensionProtocol>)extension;
 METHOD|+ (MPAliasRequest *)requestWithSourceMPID:(NSNumber *)sourceMPID destinationMPID:(NSNumber *)destinationMPID startTime:(NSDate *)startTime endTime:(NSDate *)endTime;
@@ -642,7 +641,6 @@ PROP|@property (nonatomic, strong, nullable) MPConsentState *deviceConsentState;
 PROP|@property (nonatomic, strong, nullable) MPKitAPI *kitApi;
 PROP|@property (nonatomic, strong, nullable) MPPromotionContainer *promotionContainer;
 PROP|@property (nonatomic, strong, nullable) MPTransactionAttributes *transactionAttributes;
-PROP|@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration_PRIVATE;
 PROP|@property (nonatomic, strong, nullable) NSData *pushNotificationToken;
 PROP|@property (nonatomic, strong, nullable) NSDate *endTime;
 PROP|@property (nonatomic, strong, nullable) NSDate *startTime;
