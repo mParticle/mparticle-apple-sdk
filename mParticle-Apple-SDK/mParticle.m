@@ -21,15 +21,12 @@
 
 @import mParticle_Apple_SDK_Swift;
 
-static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
 static dispatch_once_t predicate;
 
 static MPWrapperSdk _wrapperSdk = MPWrapperSdkNone;
 static NSString *_wrapperSdkVersion = nil;
 
-static NSString *const kMPEventNameLogTransaction = @"Purchase";
-static NSString *const kMPEventNameLTVIncrease = @"Increase LTV";
 static NSString *const kMParticleFirstRun = @"firstrun";
 static NSString *const kMPMethodName = @"$MethodName";
 static NSString *const kMPStateKey = @"state";
@@ -129,12 +126,6 @@ static id<MPExtensionKitProtocol> MPActiveKitRegister(NSNumber *integrationId) {
 static id<ExecutorProtocol> executor;
 MPLog* logger;
 @synthesize sceneDelegateHandler = _sceneDelegateHandler;
-
-+ (void)initialize {
-    if (self == [MParticle class]) {
-        eventTypeStrings = @[@"Reserved - Not Used", @"Navigation", @"Location", @"Search", @"Transaction", @"UserContent", @"UserPreference", @"Social", @"Other"];
-    }
-}
 
 - (MPLog*)getLogger {
     return logger;
