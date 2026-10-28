@@ -395,6 +395,8 @@ jobs:
     needs: [mirror-and-release-kits]
     runs-on: macos-latest
     if: github.event.inputs.dry_run != 'true'
+    outputs:
+      pushed: ${{ steps.trunk-push.outcome == 'success' }}
     env:
       XCODE_VERSION: "26.2"
     steps:
@@ -409,6 +411,9 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode_${SAFE_ENV_XCODE_VERSION}.app
 
       - name: Publish core podspecs
+        id: trunk-push
+        # CocoaPods trunk is going read-only; the GitHub release and SPM are already done.
+        continue-on-error: true
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
@@ -423,11 +428,20 @@ jobs:
           trunk_push_with_retries mParticle-Apple-SDK-ObjC.podspec || exit 1
           trunk_push_with_retries mParticle-Apple-SDK.podspec || exit 1
 
+      - name: Warn when the trunk push failed
+        if: steps.trunk-push.outcome == 'failure'
+        run: |
+          echo "::warning::The CocoaPods trunk push failed, so the kit pushes were skipped. The GitHub release and SPM are not affected. Check the log above for the cause, and re-run this job once it is fixed or trunk accepts pushes again."
+          {
+            echo "### CocoaPods trunk push failed"
+            echo "The GitHub release and SPM are not affected. Check the job log for the cause."
+          } >> "$GITHUB_STEP_SUMMARY"
+
   publish-kit-cocoapods:
     name: Publish ${{ matrix.kit.name }} to CocoaPods
     needs: [load-matrix, publish-core-cocoapods]
     runs-on: macos-latest
-    if: github.event.inputs.dry_run != 'true'
+    if: github.event.inputs.dry_run != 'true' && needs.publish-core-cocoapods.outputs.pushed == 'true'
     env:
       XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
     strategy:
@@ -453,13 +467,18 @@ jobs:
 
       - name: Wait for mParticle-Rokt on CocoaPods CDN (RoktSDKPlus)
         if: matrix.kit.name == 'rokt-sdk-plus-ios'
+        # If the mParticle-Rokt push was refused, the RoktSDKPlus push below fails soft too.
+        continue-on-error: true
         run: |
           VERSION=$(head -n 1 VERSION | tr -d '\r\n ')
           . Scripts/pod_push.sh
           wait_for_pod_version_on_trunk mParticle-Rokt "$VERSION"
 
       - name: Publish to CocoaPods
+        id: trunk-push
         if: matrix.kit.podspec != ''
+        # CocoaPods trunk is going read-only; the mirror release and SPM are already done.
+        continue-on-error: true
         env:
           COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
         run: |
@@ -470,3 +489,12 @@ jobs:
           PODSPEC="${{ matrix.kit.podspec }}"
 
           trunk_push_with_retries "$PODSPEC" || exit 1
+
+      - name: Warn when the trunk push failed
+        if: steps.trunk-push.outcome == 'failure'
+        run: |
+          echo "::warning::The CocoaPods trunk push failed. The mirror release and SPM are not affected. Check the log above for the cause, and re-run this job once it is fixed or trunk accepts pushes again."
+          {
+            echo "### CocoaPods trunk push failed"
+            echo "The mirror release and SPM are not affected. Check the job log for the cause."
+          } >> "$GITHUB_STEP_SUMMARY"
