@@ -20,13 +20,10 @@
 #import "MPLocation.h"
 #import <UIKit/UIKit.h>
 #import "MPSideloadedKit.h"
-#import "MPUploadSettings.h"
-#import "MPPersistenceUtilities.h"
 #import "MPRokt.h"
 #import "MPRoktSession.h"
 #import "MPCCPAConsent.h"
 #import "MPGDPRConsent.h"
-#import "MPUserDefaultsConnector.h"
 
 #if TARGET_OS_IOS == 1
     #import <WebKit/WebKit.h>

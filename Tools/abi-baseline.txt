@@ -225,7 +225,6 @@ IFACE|@interface MPKitRegister : NSObject <MPExtensionKitProtocol>
 IFACE|@interface MPLocation : NSObject
 IFACE|@interface MPModifyApiResult : MPIdentityApiResult
 IFACE|@interface MPNetworkOptions : NSObject
-IFACE|@interface MPPersistenceUtilities : NSObject
 IFACE|@interface MPProduct : NSObject <NSCopying, NSSecureCoding>
 IFACE|@interface MPProduct(Dictionary)
 IFACE|@interface MPPromotion : NSObject <NSCopying, NSSecureCoding>
@@ -235,8 +234,6 @@ IFACE|@interface MPRoktSession : NSObject
 IFACE|@interface MPSideloadedKit : NSObject
 IFACE|@interface MPTransactionAttributes : NSObject <NSCopying, NSSecureCoding>
 IFACE|@interface MPTransactionAttributes(Dictionary)
-IFACE|@interface MPUploadSettings : NSObject <NSCopying, NSSecureCoding>
-IFACE|@interface MPUserDefaultsConnector: NSObject
 IFACE|@interface MParticle : NSObject
 IFACE|@interface MParticleOptions : NSObject
 IFACE|@interface MParticleSession : NSObject
@@ -248,10 +245,7 @@ METHOD|+ (BOOL)registerExtension:(id<MPExtensionProtocol>)extension;
 METHOD|+ (MPAliasRequest *)requestWithSourceMPID:(NSNumber *)sourceMPID destinationMPID:(NSNumber *)destinationMPID startTime:(NSDate *)startTime endTime:(NSDate *)endTime;
 METHOD|+ (MPAliasRequest *)requestWithSourceUser:(MParticleUser *)sourceUser destinationUser:(MParticleUser *)destinationUser;
 METHOD|+ (MPMessageType)messageTypeFromNSString:(NSString * _Nullable)messageTypeString;
-METHOD|+ (MPUserDefaults*)userDefaults;
 METHOD|+ (NSDate *_Nullable)dateFromStringRFC3339:(NSString * _Nonnull)string;
-METHOD|+ (NSInteger)maxBytesPerBatch:(nullable NSString *)messageType;
-METHOD|+ (NSInteger)maxBytesPerEvent:(nullable NSString *)messageType;
 METHOD|+ (NSString *_Nullable)hashString:(NSString * _Nonnull)string;
 METHOD|+ (NSString *_Nullable)stringFromDateRFC3339:(NSDate *_Nonnull)date;
 METHOD|+ (NSUInteger)messageTypeSize;
@@ -260,15 +254,7 @@ METHOD|+ (instancetype)requestWithEmptyUser;
 METHOD|+ (instancetype)requestWithUser:(MParticleUser *) user;
 METHOD|+ (instancetype)sharedInstance;
 METHOD|+ (nonnull NSNumber *)kitCode;
-METHOD|+ (nonnull NSNumber *)mpId;
-METHOD|+ (nonnull instancetype)currentUploadSettingsWithStateMachine:(nonnull id<MPStateMachineProtocol>)stateMachine networkOptions:(nonnull MPNetworkOptions *)networkOptions;
-METHOD|+ (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
-METHOD|+ (nullable MPConsentState *)deviceConsentState;
-METHOD|+ (nullable MPConsentState *)effectiveConsentStateForMpid:(nullable NSNumber *)mpid;
 METHOD|+ (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
-METHOD|+ (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;
-METHOD|+ (void)setDeviceConsentState:(nullable MPConsentState *)state;
-METHOD|+ (void)setMpid:(nonnull NSNumber *)mpId;
 METHOD|- (BOOL) shouldDelayMParticleUpload;
 METHOD|- (BOOL)aliasUsers:(MPAliasRequest *)aliasRequest;
 METHOD|- (BOOL)handleURLCallback:(NSURL * _Nonnull)url NS_SWIFT_NAME(handleURLCallback(with:));
@@ -279,13 +265,11 @@ METHOD|- (BOOL)supportsConsentStateReplay;
 METHOD|- (FilteredMParticleUser *_Nonnull)getCurrentUserWithKit:(id<MPKitProtocol> _Nonnull)kit;
 METHOD|- (MPCommerceEventAction)actionWithName:(NSString *)actionName;
 METHOD|- (MPCommerceEventKind)kind;
-METHOD|- (MPIdentityApi*)identity;
 METHOD|- (MPKitExecStatus *)clearIntegrationAttributesForKit:(NSNumber *)integrationId;
 METHOD|- (MPKitExecStatus *)setIntegrationAttributes:(NSDictionary<NSString *, NSString *> *)attributes forKit:(NSNumber *)integrationId;
 METHOD|- (MPProduct *)copyMatchingHashedProperties:(NSDictionary *)hashedMap;
 METHOD|- (MPRoktSession * _Nullable)getSession;
 METHOD|- (MPRoktSession * _Nullable)getSession;
-METHOD|- (MPStateMachine_PRIVATE*)stateMachine;
 METHOD|- (NSArray<MPCommerceEventInstruction *> *)expandedInstructions;
 METHOD|- (NSArray<MPProduct *> *const)addedProducts;
 METHOD|- (NSArray<MPProduct *> *const)removedProducts;
@@ -384,8 +368,6 @@ METHOD|- (nonnull NSArray<MParticleUser *> *)getAllUsers;
 METHOD|- (nonnull NSDictionary<NSString *, id> *)transformValuesToString;
 METHOD|- (nonnull instancetype)initWithAction:(MPCommerceEventAction)action product:(nullable MPProduct *)product;
 METHOD|- (nonnull instancetype)initWithAction:(MPPromotionAction)action promotion:(nullable MPPromotion *)promotion;
-METHOD|- (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret eventsHost:(nullable NSString *)eventsHost eventsTrackingHost:(nullable NSString *)eventsTrackingHost overridesEventsSubdirectory:(BOOL)overridesEventsSubdirectory aliasHost:(nullable NSString *)aliasHost aliasTrackingHost:(nullable NSString *)aliasTrackingHost overridesAliasSubdirectory:(BOOL)overridesAliasSubdirectory eventsOnly:(BOOL)eventsOnly;
-METHOD|- (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nonnull MPNetworkOptions *)networkOptions;
 METHOD|- (nonnull instancetype)initWithId:(int64_t)forwardRecordId dataDictionary:(nonnull NSDictionary *)dataDictionary mpid:(nonnull NSNumber *)mpid;
 METHOD|- (nonnull instancetype)initWithImpressionName:(nullable NSString *)listName product:(nullable MPProduct *)product;
 METHOD|- (nonnull instancetype)initWithLatitude:(double)latitude longitude:(double)longitude altitude:(double)altitude horizontalAccuracy:(double)horizontalAccuracy verticalAccuracy:(double)verticalAccuracy course:(double)course speed:(double)speed timestamp:(nonnull NSDate *)timestamp NS_DESIGNATED_INITIALIZER;
@@ -540,13 +522,10 @@ PROP|@property (atomic, readonly) BOOL trackNotifications;
 PROP|@property (atomic, strong, nullable, readonly) MParticleSession *currentSession;
 PROP|@property (atomic, strong, nullable, readonly) NSString *customUserAgent;
 PROP|@property (nonatomic) BOOL eventsOnly;
-PROP|@property (nonatomic) BOOL eventsOnly;
 PROP|@property (nonatomic) BOOL isSuccessful;
 PROP|@property (nonatomic) BOOL nonInteractive;
 PROP|@property (nonatomic) BOOL overridesAliasSubdirectory;
-PROP|@property (nonatomic) BOOL overridesAliasSubdirectory;
 PROP|@property (nonatomic) BOOL overridesConfigSubdirectory;
-PROP|@property (nonatomic) BOOL overridesEventsSubdirectory;
 PROP|@property (nonatomic) BOOL overridesEventsSubdirectory;
 PROP|@property (nonatomic) BOOL overridesIdentitySubdirectory;
 PROP|@property (nonatomic) BOOL pinningDisabled;
@@ -573,12 +552,6 @@ PROP|@property (nonatomic, copy) NSDictionary *_Nullable (^onCreateBatch)(NSDict
 PROP|@property (nonatomic, copy) NSString *errorResponse;
 PROP|@property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 PROP|@property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
-PROP|@property (nonatomic, copy, nonnull) NSString *apiKey;
-PROP|@property (nonatomic, copy, nonnull) NSString *secret;
-PROP|@property (nonatomic, copy, nullable) NSString *aliasHost;
-PROP|@property (nonatomic, copy, nullable) NSString *aliasTrackingHost;
-PROP|@property (nonatomic, copy, nullable) NSString *eventsHost;
-PROP|@property (nonatomic, copy, nullable) NSString *eventsTrackingHost;
 PROP|@property (nonatomic, copy, nullable, readwrite) void (^customLogger)(NSString *message);
 PROP|@property (nonatomic, copy, readonly) NSString *sessionId;
 PROP|@property (nonatomic, copy, readonly) NSString *sessionToken;
@@ -776,6 +749,5 @@ PROTO|@protocol MPExtensionProtocol <NSObject>
 PROTO|@protocol MPKitProtocol <NSObject>
 PROTO|@protocol MPKitProtocol;
 PROTO|@protocol MPRoktKitDispatchTarget <NSObject>
-PROTO|@protocol MPStateMachineProtocol;
 PROTO|@protocol RoktPaymentExtension;
 PROTO|@protocol RoktPaymentExtension;

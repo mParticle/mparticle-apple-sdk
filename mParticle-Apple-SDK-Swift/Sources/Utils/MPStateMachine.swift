@@ -3,7 +3,7 @@ import Foundation
 import UIKit
 
 // Keeps the MPStateMachineProtocol Objective-C name the deleted header declared, so
-// Include/MPUploadSettings.h's `id<MPStateMachineProtocol>` parameter and mParticle.m's property
+// Utils/MPUploadSettings.h's `id<MPStateMachineProtocol>` parameter and mParticle.m's property
 // keep compiling unchanged. Reference MPStateMachineProtocolPRIVATE from Swift.
 //
 // apiKey and secret are non-optional here. The deleted Objective-C wrapper declared them nonnull

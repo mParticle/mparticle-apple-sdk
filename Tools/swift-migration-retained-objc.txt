@@ -68,7 +68,7 @@ mParticle-Apple-SDK/Kits/MPKitRegister.m
 mParticle-Apple-SDK/Kits/MPSideloadedKit.m
 
 # --- Runtime-identity pinned (classification 3) ---
-# Header may become internal, but the ObjC class, NSSecureCoding conformance,
+# The header is internal, but the ObjC class, NSSecureCoding conformance,
 # and legacy archive class-name mappings stay.
 
 mParticle-Apple-SDK/Utils/MPUploadSettings.m

@@ -15,6 +15,7 @@
 #import "Executor.h"
 #import "MPConvertJS.h"
 #import "MPUserDefaultsConnector.h"
+#import "MPPersistenceUtilities.h"
 #import "MPRokt+MParticlePrivate.h"
 #import "Persistence/MPPersistenceUploadSettingsCodec.h"
 

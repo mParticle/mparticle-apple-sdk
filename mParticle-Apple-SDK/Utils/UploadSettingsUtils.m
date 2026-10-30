@@ -1,4 +1,5 @@
 #import "UploadSettingsUtils.h"
+#import "MPUploadSettings.h"
 #import "mParticle.h"
 
 @implementation UploadSettingsUtils
