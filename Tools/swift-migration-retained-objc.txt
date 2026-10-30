@@ -82,13 +82,13 @@ mParticle-Apple-SDK/Utils/MPUserDefaultsConnector.m
 mParticle-Apple-SDK/Persistence/MPPersistenceUploadSettingsCodec.m
 mParticle-Apple-SDK/Utils/UploadSettingsUtils.m
 
-# 360 C global definitions (`NSString *const`, `const NSTimeInterval`,
+# 190 C global definitions (`NSString *const`, `const NSTimeInterval`,
 # `const NSInteger`) declared extern in the internal MPIConstants.h and referenced by
-# bare identifier from 51 Objective-C files. Swift cannot emit C globals, so these
-# symbols cannot move; the Swift module mirrors the values it needs in
-# Sources/MessageKeys.swift instead, which is the pattern every conversion so far has
-# used. Also pinned by release tooling: .github/workflows/release-draft.yml:87 rewrites
-# kMParticleSDKVersion in this exact file.
+# bare identifier from the SDK's Objective-C files and the Objective-C tests.
+# Swift cannot emit C globals, so these symbols cannot move; the Swift module mirrors
+# the values it needs in Sources/MessageKeys.swift instead, which is the pattern every
+# conversion so far has used. Also pinned by release tooling:
+# .github/workflows/release-draft.yml rewrites kMParticleSDKVersion in this exact file.
 mParticle-Apple-SDK/MPIConstants.m
 
 # The data-plan filter's entire interface is SDK types the Swift module cannot import:

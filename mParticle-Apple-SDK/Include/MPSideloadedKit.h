@@ -119,7 +119,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Adds a message type filter using message type constants.
  
- @param messageTypeConstant A message type constant string (see MPIConstants.h starting on line 393)
+ @param messageTypeConstant A message type constant string (see the message type constants in MPIConstants.h)
  */
 - (void)addMessageTypeFilterWithMessageTypeConstant:(NSString *)messageTypeConstant NS_SWIFT_NAME(addMessageTypeFilter(messageTypeConstant:));
 
