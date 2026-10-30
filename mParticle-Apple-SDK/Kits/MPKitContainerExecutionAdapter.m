@@ -28,7 +28,7 @@
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
-NSString *const kitFileExtension = @"eks";
+static NSString *const kitFileExtension = @"eks";
 
 /// Reads a numeric field out of a server-supplied configuration. NSNumber and NSString both answer
 /// integerValue and remote configuration uses either interchangeably; nothing else does, so any
@@ -2241,27 +2241,6 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
     }
 }
 
-- (void)forwardSDKCall:(SEL)selector errorMessage:(NSString *)errorMessage exception:(NSException *)exception eventInfo:(NSDictionary *)eventInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitExecStatus **execStatus))kitHandler {
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
-    
-    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
-            MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithFilter:NO];
-            
-            if (!kitFilter.shouldFilter) {
-                __block MPKitExecStatus *execStatus = nil;
-                
-                @try {
-                    MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
-                    kitHandler(kitRegister.wrapperInstance, &execStatus);
-                } @catch (NSException *e) {
-                    MPILogError(@"Kit handler threw an exception: %@", e);
-                }
-            }
-        }
-    }
-}
-
 - (void)forwardIdentitySDKCall:(SEL)selector kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitConfiguration *kitConfiguration))kitHandler {
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
@@ -2296,30 +2275,6 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
             MPILogDebug(@"Forwarded batch to kit: %@", kitRegister.name);
         }
     }
-}
-
-
-- (NSArray<NSDictionary<NSString *, id> *> *)userIdentitiesArrayForKit:(NSNumber *)integrationId {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
-    id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer_PRIVATE registeredKits] filteredSetUsingPredicate:predicate] anyObject];
-    if (!kitRegister) {
-        return nil;
-    }
-    
-    MPUserDefaults *userDefaults = MPUserDefaultsConnector.userDefaults;
-    NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-    __block NSMutableArray *forwardUserIdentities = [[NSMutableArray alloc] initWithCapacity:userIdentities.count];
-    
-    [userIdentities enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        MPUserIdentity identityType = (MPUserIdentity)[obj[kMPUserIdentityTypeKey] integerValue];
-        NSString *identityString = obj[kMPUserIdentityIdKey];
-        MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
-        
-        if (!kitFilter.shouldFilter) {
-            [forwardUserIdentities addObject:obj];
-        }
-    }];
-    return forwardUserIdentities;
 }
 
 - (nullable NSDictionary<NSString *, NSString *> *)integrationAttributesForKit:(nonnull NSNumber *)integrationId {
