@@ -1,7 +1,20 @@
+import SQLite3
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
 final class MPSQLiteTests: XCTestCase {
+    func testDefaultOpenFlagsProtectTheDatabaseUntilTheFirstUnlock() {
+        let flags = MPSQLiteConnection.defaultOpenFlags
+
+        XCTAssertEqual(
+            flags & SQLITE_OPEN_FILEPROTECTION_MASK,
+            SQLITE_OPEN_FILEPROTECTION_COMPLETEUNTILFIRSTUSERAUTHENTICATION
+        )
+        XCTAssertEqual(flags & SQLITE_OPEN_CREATE, SQLITE_OPEN_CREATE)
+        XCTAssertEqual(flags & SQLITE_OPEN_READWRITE, SQLITE_OPEN_READWRITE)
+        XCTAssertEqual(flags & SQLITE_OPEN_FULLMUTEX, SQLITE_OPEN_FULLMUTEX)
+    }
+
     func testBindsAndReadsSupportedValues() throws {
         let database = try MPSQLiteConnection(path: ":memory:")
         try database.execute(

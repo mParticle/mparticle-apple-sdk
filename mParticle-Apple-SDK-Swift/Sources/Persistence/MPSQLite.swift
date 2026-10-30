@@ -20,10 +20,14 @@ enum MPSQLiteStep: Equatable {
 }
 
 final class MPSQLiteConnection {
+    // A database file SQLite creates is encrypted at rest until the first unlock after a reboot,
+    // and stays readable from then on, so background uploads keep working while the device is
+    // locked. The class applies when the file is created; MPPersistenceFileSystemPRIVATE raises
+    // files created by earlier SDK versions without protection.
     static let defaultOpenFlags = SQLITE_OPEN_CREATE
         | SQLITE_OPEN_READWRITE
         | SQLITE_OPEN_FULLMUTEX
-        | SQLITE_OPEN_FILEPROTECTION_NONE
+        | SQLITE_OPEN_FILEPROTECTION_COMPLETEUNTILFIRSTUSERAUTHENTICATION
 
     private(set) var handle: OpaquePointer?
     private let logger: MPLog?

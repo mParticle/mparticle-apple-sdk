@@ -9,6 +9,7 @@ public final class MPPersistenceStorePRIVATE: NSObject {
     private let uploadSettingsCodec: MPUploadSettingsCoding?
     private let isOptedOut: () -> Bool
     private(set) var connection: MPSQLiteConnection?
+    private var isDatabaseSetUp = false
     @objc public let databasePath: String
 
     var isDatabaseOpen: Bool {
@@ -38,6 +39,9 @@ public final class MPPersistenceStorePRIVATE: NSObject {
         super.init()
 
         do {
+            // Raise the protection of a file from an earlier SDK version before any connection
+            // holds it open.
+            fileSystem.protectDatabaseFiles(atPath: databasePath)
             try setupDatabase()
             if openImmediately {
                 try openDatabase()
@@ -67,6 +71,16 @@ public final class MPPersistenceStorePRIVATE: NSObject {
     func openDatabase() throws -> Bool {
         if connection != nil {
             return true
+        }
+        fileSystem.protectDatabaseFiles(atPath: databasePath)
+        if !isDatabaseSetUp {
+            // A launch before the first unlock after a reboot cannot open a protected file, so
+            // the setup skipped at launch runs at the first open that can read the file.
+            do {
+                try setupDatabase()
+            } catch {
+                logger.error("Failed to set up persistence database: \(error)")
+            }
         }
         connection = try MPSQLiteConnection(path: databasePath, logger: logger)
         fileSystem.excludeDatabaseFromBackup(atPath: databasePath)
@@ -157,6 +171,11 @@ public final class MPPersistenceStorePRIVATE: NSObject {
                 throw MPSQLiteError(code: SQLITE_CORRUPT, message: "Database is corrupted", sql: nil)
             }
         } catch {
+            // Only a corrupt file is replaced. A file the device cannot read yet, such as a
+            // protected file before the first unlock, keeps its queued events.
+            guard Self.shouldRecreateDatabase(after: error) else {
+                throw error
+            }
             logger.error("Database is corrupted; recreating it.")
             database.close()
             fileSystem.removeDatabaseFileIfExists(atPath: databasePath)
@@ -173,6 +192,7 @@ public final class MPPersistenceStorePRIVATE: NSObject {
 
         let currentVersion = MPPersistenceSchemaPRIVATE.currentDatabaseVersion.int32Value
         guard userVersion != currentVersion else {
+            isDatabaseSetUp = true
             return
         }
 
@@ -187,5 +207,14 @@ public final class MPPersistenceStorePRIVATE: NSObject {
                 for: MPPersistenceSchemaPRIVATE.currentDatabaseVersion
             )
         )
+        isDatabaseSetUp = true
+    }
+
+    static func shouldRecreateDatabase(after error: Error) -> Bool {
+        guard let error = error as? MPSQLiteError else {
+            return false
+        }
+        let primaryCode = error.code & 0xFF
+        return primaryCode == SQLITE_CORRUPT || primaryCode == SQLITE_NOTADB
     }
 }

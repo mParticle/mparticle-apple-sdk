@@ -1,6 +1,34 @@
 import XCTest
 @testable import mParticle_Apple_SDK_Swift
 
+/// Records data protection changes instead of applying them, because the simulator does not
+/// enforce data protection. Every other file operation goes to the real file system.
+final class ProtectionRecordingFileManager: FileManager {
+    var storedProtection: [String: FileProtectionType] = [:]
+    var failsProtectionWrites = false
+    private(set) var protectionWrites: [String: FileProtectionType] = [:]
+
+    override func attributesOfItem(atPath path: String) throws -> [FileAttributeKey: Any] {
+        var attributes = try super.attributesOfItem(atPath: path)
+        attributes[.protectionKey] = storedProtection[path]
+        return attributes
+    }
+
+    override func setAttributes(_ attributes: [FileAttributeKey: Any], ofItemAtPath path: String) throws {
+        var remaining = attributes
+        if let protection = remaining.removeValue(forKey: .protectionKey) as? FileProtectionType {
+            if failsProtectionWrites {
+                throw CocoaError(.fileWriteNoPermission)
+            }
+            protectionWrites[path] = protection
+            storedProtection[path] = protection
+        }
+        if !remaining.isEmpty {
+            try super.setAttributes(remaining, ofItemAtPath: path)
+        }
+    }
+}
+
 final class MPPersistenceFileSystemTests: XCTestCase {
     private var root: URL!
     private var applicationSupport: URL!
@@ -162,9 +190,58 @@ final class MPPersistenceFileSystemTests: XCTestCase {
         XCTAssertTrue(messages.contains { $0.contains("Failed to create database directory") })
     }
 
-    private func makeFileSystem() -> MPPersistenceFileSystemPRIVATE {
+    func testProtectDatabaseFilesRaisesAnUnprotectedDatabaseAndItsSidecars() throws {
+        let fileManager = ProtectionRecordingFileManager()
+        let fileSystem = makeFileSystem(fileManager: fileManager)
+        let database = root.appendingPathComponent("mParticle31.db").path
+        for path in [database, database + "-wal", database + "-shm"] {
+            try Data("database".utf8).write(to: URL(fileURLWithPath: path))
+        }
+        fileManager.storedProtection[database] = FileProtectionType.none
+        fileManager.storedProtection[database + "-shm"] = FileProtectionType.none
+
+        fileSystem.protectDatabaseFiles(atPath: database)
+
+        XCTAssertEqual(fileManager.protectionWrites, [
+            database: .completeUntilFirstUserAuthentication,
+            database + "-wal": .completeUntilFirstUserAuthentication,
+            database + "-shm": .completeUntilFirstUserAuthentication
+        ])
+    }
+
+    func testProtectDatabaseFilesKeepsAClassTheHostAppSet() throws {
+        let fileManager = ProtectionRecordingFileManager()
+        let fileSystem = makeFileSystem(fileManager: fileManager)
+        let database = root.appendingPathComponent("mParticle31.db").path
+        for path in [database, database + "-wal", database + "-journal"] {
+            try Data("database".utf8).write(to: URL(fileURLWithPath: path))
+        }
+        fileManager.storedProtection[database] = .complete
+        fileManager.storedProtection[database + "-wal"] = .completeUnlessOpen
+        fileManager.storedProtection[database + "-journal"] = .completeUntilFirstUserAuthentication
+
+        fileSystem.protectDatabaseFiles(atPath: database)
+
+        XCTAssertTrue(fileManager.protectionWrites.isEmpty)
+    }
+
+    func testProtectDatabaseFilesLogsAFailedChangeAndKeepsTheFile() throws {
+        let fileManager = ProtectionRecordingFileManager()
+        fileManager.failsProtectionWrites = true
+        let fileSystem = makeFileSystem(fileManager: fileManager)
+        let database = root.appendingPathComponent("mParticle31.db")
+        try Data("database".utf8).write(to: database)
+        fileManager.storedProtection[database.path] = FileProtectionType.none
+
+        fileSystem.protectDatabaseFiles(atPath: database.path)
+
+        XCTAssertTrue(messages.contains { $0.contains("Failed to set data protection on mParticle database file") })
+        XCTAssertEqual(try Data(contentsOf: database), Data("database".utf8))
+    }
+
+    private func makeFileSystem(fileManager: FileManager = .default) -> MPPersistenceFileSystemPRIVATE {
         MPPersistenceFileSystemPRIVATE(
-            fileManager: .default,
+            fileManager: fileManager,
             logger: logger,
             applicationSupportDirectory: applicationSupport.path,
             cachesDirectory: caches.path,
