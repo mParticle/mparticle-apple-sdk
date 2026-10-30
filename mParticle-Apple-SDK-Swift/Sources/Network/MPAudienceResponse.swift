@@ -1,10 +1,6 @@
 import Foundation
 
 /// Wire keys for the audience membership endpoint.
-///
-/// These mirror the exported Objective-C constants `kMPAudienceMembershipKey` and
-/// `kMPAudienceIdKey` defined in `MPAudience.m`. Objective-C keeps those globals because Swift
-/// cannot export C constants; the values here must stay identical to them.
 enum AudienceKeys {
     static let membership = "audience_memberships"
     static let audienceID = "audience_id"

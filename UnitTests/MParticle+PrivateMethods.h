@@ -6,6 +6,7 @@
 @protocol MPUserDefaultsProtocol;
 
 @interface MParticle (Tests)
+@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration_PRIVATE;
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut;
 - (void)identifyNoDispatchCallback:(MPIdentityApiResult * _Nullable)apiResult
                              error:(NSError * _Nullable)error

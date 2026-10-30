@@ -7,10 +7,6 @@
 
 #import "MPAudience.h"
 
-// Internal keys
-NSString * const kMPAudienceMembershipKey = @"audience_memberships";
-NSString * const kMPAudienceIdKey = @"audience_id";
-
 @implementation MPAudience
 
 - (instancetype)initWithAudienceId:(NSNumber *)audienceId {
