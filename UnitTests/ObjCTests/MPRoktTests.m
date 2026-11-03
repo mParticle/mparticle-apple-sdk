@@ -1032,6 +1032,140 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     OCMVerifyAll(self.mockContainer);
 }
 
+#pragma mark - Forward routing
+
+- (void)mp_stubRunningKitContainerWithLockFree:(BOOL)lockFree {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockContainer stub] andReturnValue:OCMOCK_VALUE(YES)] kitsInitialized];
+    OCMStub([self.mockContainer activeKitsRegistryWithoutWaiting]).andReturn(lockFree ? @[] : nil);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+}
+
+- (void)testSelectPlacementsForwardsBeforeReturningWhenKitsAreRunning {
+    [self mp_stubRunningKitContainerWithLockFree:YES];
+    __block BOOL forwarded = NO;
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMStub([self.mockContainer forwardSDKCall:placementSelector
+                                         event:nil
+                                    parameters:[OCMArg any]
+                                   messageType:MPMessageTypeEvent
+                                      userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        forwarded = YES;
+    });
+
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+
+    XCTAssertTrue(forwarded, @"a placement must not wait behind the message queue once kits are running");
+}
+
+- (void)testSelectPlacementsQueuesBeforeKitsAreInitialized {
+    [self mp_stubSharedInstanceWithOriginalConfig:@[] kitsInitialized:NO];
+    OCMStub([self.mockContainer activeKitsRegistryWithoutWaiting]).andReturn(@[]);
+    __block BOOL forwarded = NO;
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMStub([self.mockContainer forwardSDKCall:placementSelector
+                                         event:nil
+                                    parameters:[OCMArg any]
+                                   messageType:MPMessageTypeEvent
+                                      userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        forwarded = YES;
+    });
+
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    XCTAssertFalse(forwarded, @"before kits are initialized the placement is buffered on the message queue");
+
+    [self drainPendingAsyncWork];
+    XCTAssertTrue(forwarded);
+}
+
+- (void)testSelectPlacementsQueuesWhileKitsLockIsBusy {
+    [self mp_stubRunningKitContainerWithLockFree:NO];
+    __block BOOL forwarded = NO;
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMStub([self.mockContainer forwardSDKCall:placementSelector
+                                         event:nil
+                                    parameters:[OCMArg any]
+                                   messageType:MPMessageTypeEvent
+                                      userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        forwarded = YES;
+    });
+
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    XCTAssertFalse(forwarded, @"a busy kits lock (for example a kit calling back in from its launch) must not be waited on");
+
+    [self drainPendingAsyncWork];
+    XCTAssertTrue(forwarded);
+}
+
+- (void)testSelectPlacementsQueuesWhileCallsQueuedBeforeInitAwaitReplay {
+    [self mp_stubRunningKitContainerWithLockFree:YES];
+    OCMStub([self.mockContainer hasUnreplayedForwards]).andReturn(YES);
+    __block BOOL forwarded = NO;
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMStub([self.mockContainer forwardSDKCall:placementSelector
+                                         event:nil
+                                    parameters:[OCMArg any]
+                                   messageType:MPMessageTypeEvent
+                                      userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        forwarded = YES;
+    });
+
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    XCTAssertFalse(forwarded, @"a placement must not overtake a session call still waiting for the kits replay");
+
+    [self drainPendingAsyncWork];
+    XCTAssertTrue(forwarded);
+}
+
+- (void)testQueuedClearSessionStillReachesKitBeforeLaterPlacement {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    __block BOOL kitsInitialized = NO;
+    OCMStub([self.mockContainer kitsInitialized]).andDo(^(NSInvocation *invocation) {
+        BOOL value = kitsInitialized;
+        [invocation setReturnValue:&value];
+    });
+    OCMStub([self.mockContainer activeKitsRegistryWithoutWaiting]).andReturn(@[]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [self.mockContainer setExpectationOrderMatters:YES];
+
+    XCTestExpectation *clearForwarded = [self expectationWithDescription:@"clearSession forwarded"];
+    XCTestExpectation *placementForwarded = [self expectationWithDescription:@"selectPlacements forwarded"];
+    OCMExpect([self.mockContainer forwardSDKCall:@selector(clearSession)
+                                           event:nil
+                                      parameters:nil
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [clearForwarded fulfill];
+    });
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMExpect([self.mockContainer forwardSDKCall:placementSelector
+                                           event:nil
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [placementForwarded fulfill];
+    });
+
+    // Hold the message queue so the queued clearSession is still pending when kits come up.
+    dispatch_semaphore_t release = dispatch_semaphore_create(0);
+    dispatch_async([MParticle messageQueue], ^{
+        dispatch_semaphore_wait(release, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kMPRoktForwardTimeout * NSEC_PER_SEC)));
+    });
+    [self.rokt clearSession];
+    kitsInitialized = YES;
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    dispatch_semaphore_signal(release);
+
+    [self waitForExpectationsWithTimeout:kMPRoktForwardTimeout handler:nil];
+    OCMVerifyAll(self.mockContainer);
+}
+
 #pragma mark - setSessionId Tests
 
 - (void)testSetSessionIdForwardsToKitContainer {

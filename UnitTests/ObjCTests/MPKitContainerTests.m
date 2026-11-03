@@ -562,6 +562,28 @@ static atomic_bool gKitsInitializedBlockReturned;
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+- (void)testUnreplayedForwardsLastUntilReplayHandsThemOn {
+    kitContainer.kitsInitialized = NO;
+    XCTAssertFalse([kitContainer hasUnreplayedForwards]);
+
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Time travel" type:MPEventTypeNavigation];
+    [kitContainer forwardSDKCall:@selector(logEvent:) event:event parameters:nil messageType:MPMessageTypeEvent userInfo:nil];
+    XCTAssertTrue([kitContainer hasUnreplayedForwards]);
+
+    kitContainer.kitsInitialized = YES;
+    XCTAssertTrue([kitContainer hasUnreplayedForwards], @"the replay has only been scheduled, not run");
+
+    // The replay runs on main and hands each item on in a further main-queue block.
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Replay handed the call on"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            XCTAssertFalse([kitContainer hasUnreplayedForwards]);
+            [expectation fulfill];
+        });
+    });
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
 - (void)testForwardQueueInvalid {
     XCTAssertNotNil(kitContainer.forwardQueue, @"Should not have been nil.");
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
