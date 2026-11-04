@@ -34,22 +34,48 @@ static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
 
 static NSInteger const kMPRoktKitCode = 181;
 
+// Main-queue turns a queued Rokt call waits for the kits replay before it is forwarded anyway, so a
+// replay count that never returns to zero delays Rokt calls rather than stopping them.
+static NSInteger const kMPRoktMaxReplayWaitTurns = 100;
+
+static NSInteger MPRoktPendingUserChanges = 0;
+
 @interface MPRokt () {
     NSInteger _queuedRoktForwards;
+    NSMutableArray<dispatch_block_t> *_forwardsAwaitingReplay;
 }
 @end
 
 @implementation MPRokt
 
++ (void)dispatchUserChange:(dispatch_block_t)change {
+    @synchronized ([MPRokt class]) {
+        MPRoktPendingUserChanges += 1;
+    }
+    dispatch_async([MParticle messageQueue], ^{
+        change();
+        @synchronized ([MPRokt class]) {
+            MPRoktPendingUserChanges -= 1;
+        }
+    });
+}
+
++ (BOOL)hasPendingUserChanges {
+    @synchronized ([MPRokt class]) {
+        return MPRoktPendingUserChanges > 0;
+    }
+}
+
 /// Forwards a Rokt call to the kit container straight away once kits are running, and otherwise
-/// through the message queue. Every Rokt call stays on the queued path while an earlier Rokt call
-/// or a call queued for kits before they initialized has not been handed on yet, so calls reach the
-/// kit in the order they were made.
+/// through the message queue. Every Rokt call stays on the queued path while an earlier Rokt call,
+/// a user attribute or identity change, or a call queued for kits before they initialized has not
+/// been handed on yet, so calls reach the kit in the order they were made.
 - (void)forwardRoktCall:(dispatch_block_t)forward {
     MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
     BOOL forwardNow;
     @synchronized (self) {
         forwardNow = _queuedRoktForwards == 0
+            && ![MPRokt hasPendingUserChanges]
             && kitContainer.kitsInitialized
             && ![kitContainer hasUnreplayedForwards]
             && [kitContainer activeKitsRegistryWithoutWaiting] != nil;
@@ -62,11 +88,65 @@ static NSInteger const kMPRoktKitCode = 181;
         return;
     }
     dispatch_async([MParticle messageQueue], ^{
+        [self forwardQueuedRoktCall:forward];
+    });
+}
+
+// Runs on the message queue. The kits replay hands each call on from its own main-queue block, so a
+// call that forwarded from here while the replay is pending would reach the kit ahead of it. Those
+// calls wait on the main queue instead, in order, until the replay is done.
+- (void)forwardQueuedRoktCall:(dispatch_block_t)forward {
+    MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
+    BOOL waitForReplay;
+    BOOL startWaiting = NO;
+    @synchronized (self) {
+        waitForReplay = _forwardsAwaitingReplay.count > 0
+            || (kitContainer.kitsInitialized && [kitContainer hasUnreplayedForwards]);
+        if (waitForReplay) {
+            if (!_forwardsAwaitingReplay) {
+                _forwardsAwaitingReplay = [NSMutableArray array];
+            }
+            [_forwardsAwaitingReplay addObject:[forward copy]];
+            startWaiting = _forwardsAwaitingReplay.count == 1;
+        }
+    }
+    if (!waitForReplay) {
         forward();
         @synchronized (self) {
-            self->_queuedRoktForwards -= 1;
+            _queuedRoktForwards -= 1;
         }
-    });
+        return;
+    }
+    if (startWaiting) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self forwardAfterReplay:kMPRoktMaxReplayWaitTurns];
+        });
+    }
+}
+
+- (void)forwardAfterReplay:(NSInteger)turnsLeft {
+    if (turnsLeft > 0 && [[MParticle sharedInstance].kitContainer_PRIVATE hasUnreplayedForwards]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self forwardAfterReplay:turnsLeft - 1];
+        });
+        return;
+    }
+    // Each call stays in the list until it has been forwarded, so a call queued meanwhile joins the
+    // list rather than forwarding ahead of it.
+    while (YES) {
+        dispatch_block_t forward;
+        @synchronized (self) {
+            forward = _forwardsAwaitingReplay.firstObject;
+        }
+        if (!forward) {
+            return;
+        }
+        forward();
+        @synchronized (self) {
+            [_forwardsAwaitingReplay removeObjectAtIndex:0];
+            _queuedRoktForwards -= 1;
+        }
+    }
 }
 
 /// Displays a Rokt ad placement with the specified identifier and user attributes.
@@ -137,8 +217,7 @@ static NSInteger const kMPRoktKitCode = 181;
     [self logRoktApiDiagnostic:@"PURCHASE_FINALIZED"];
     MPILogDebug(@"MPRokt purchaseFinalized - identifier: %@, catalogItemId: %@, success: %@",
                 identifier, catalogItemId, success ? @"YES" : @"NO");
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // Forwarding call to kits
+    [self forwardRoktCall:^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:identifier];
         [queueParameters addParameter:catalogItemId];
@@ -150,7 +229,7 @@ static NSInteger const kMPRoktKitCode = 181;
                                                             messageType:MPMessageTypeEvent
                                                                userInfo:nil
         ];
-    });
+    }];
 }
 
 /// Registers a callback to receive events from a specific Rokt placement.
@@ -162,8 +241,7 @@ static NSInteger const kMPRoktKitCode = 181;
     [self logRoktApiDiagnostic:@"ROKT_EVENTS"];
     MPILogDebug(@"MPRokt events called - identifier: %@, onEvent: %@",
                 identifier, onEvent ? @"present" : @"nil");
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // Forwarding call to kits
+    [self forwardRoktCall:^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:identifier];
         [queueParameters addParameter:onEvent];
@@ -175,7 +253,7 @@ static NSInteger const kMPRoktKitCode = 181;
                                                             messageType:MPMessageTypeEvent
                                                                userInfo:nil
         ];
-    });
+    }];
 }
 
 /// Registers a callback to receive global events from all Rokt sources.
@@ -184,8 +262,7 @@ static NSInteger const kMPRoktKitCode = 181;
 ///   - onEvent: Callback block that receives RoktEvent objects when events occur
 - (void)globalEvents:(void (^ _Nonnull)(RoktEvent * _Nonnull))onEvent {
     [self logRoktApiDiagnostic:@"ROKT_GLOBAL_EVENTS"];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // Forwarding call to kits
+    [self forwardRoktCall:^{
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:onEvent];
 
@@ -196,7 +273,7 @@ static NSInteger const kMPRoktKitCode = 181;
                                                             messageType:MPMessageTypeEvent
                                                                userInfo:nil
         ];
-    });
+    }];
 }
 
 /// Closes any currently displayed Rokt placement.
@@ -204,15 +281,14 @@ static NSInteger const kMPRoktKitCode = 181;
 - (void)close {
     [self logRoktApiDiagnostic:@"ROKT_CLOSE"];
     MPILogDebug(@"MPRokt close called");
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // Forwarding call to kits
+    [self forwardRoktCall:^{
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(close)
                                                                   event:nil
                                                              parameters:nil
                                                             messageType:MPMessageTypeEvent
                                                                userInfo:nil
         ];
-    });
+    }];
 }
 
 /// Set the session (id + token) to use for the next execute call.
