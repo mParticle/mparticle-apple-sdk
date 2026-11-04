@@ -112,9 +112,9 @@
 - (void)setIdentity:(NSString *)identityString identityType:(MPIdentity)identityType {
     
     NSDate *timestamp = [NSDate date];
-    dispatch_async([MParticle messageQueue], ^{
+    [MPRokt dispatchUserChange:^{
         [self setIdentitySync:identityString identityType:identityType timestamp:timestamp];
-    });
+    }];
 }
 
 - (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType {
@@ -179,7 +179,7 @@
 
 - (nullable NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"INCREMENT_USER_ATTRIBUTE"];
-    dispatch_async([MParticle messageQueue], ^{
+    [MPRokt dispatchUserChange:^{
         MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         if (stateMachine.optOut) {
             return;
@@ -228,7 +228,7 @@
         } else {
             MPILogDebug(@"Blocked user attribute increment from kits: %@ - %@", key, value);
         }
-    });
+    }];
     
     return @0;
 }
@@ -242,7 +242,7 @@
     
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
-    dispatch_async([MParticle messageQueue], ^{
+    [MPRokt dispatchUserChange:^{
         
         [self.backendController setUserAttribute:key
                                            value:value
@@ -276,7 +276,7 @@
                                        }
                                    }
                                }];
-    });
+    }];
 }
 
 - (void)setUserAttributeList:(nonnull NSString *)key values:(nonnull NSArray<NSString *> *)values {
@@ -288,7 +288,7 @@
 
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
-    dispatch_async([MParticle messageQueue], ^{
+    [MPRokt dispatchUserChange:^{
         [self.backendController setUserAttribute:key
                                           values:values
                                        timestamp:timestamp
@@ -329,14 +329,14 @@
                                        }
                                    }
                                }];
-    });
+    }];
 }
 
 - (void)setUserTag:(nonnull NSString *)tag {
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"SET_USER_TAG"];
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
-    dispatch_async([MParticle messageQueue], ^{
+    [MPRokt dispatchUserChange:^{
         [self.backendController setUserTag:tag
                                  timestamp:timestamp
                          completionHandler:^(NSString *key, id value, MPExecStatus execStatus) {
@@ -365,14 +365,14 @@
                 }
             }
         }];
-    });
+    }];
 }
 
 - (void)removeUserAttribute:(nonnull NSString *)key {
     [[MParticle sharedInstance].rokt logRoktApiDiagnostic:@"REMOVE_USER_ATTRIBUTE"];
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
-    dispatch_async([MParticle messageQueue], ^{
+    [MPRokt dispatchUserChange:^{
         [self.backendController removeUserAttribute:key
                                        timestamp:timestamp
                                completionHandler:^(NSString *key, id value, MPExecStatus execStatus) {
@@ -402,7 +402,7 @@
                                        }
                                    }
                            }];
-    });
+    }];
 }
 
 #pragma mark - User Segments

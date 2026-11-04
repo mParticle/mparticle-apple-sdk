@@ -80,6 +80,7 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
 @interface MPRokt (Testing)
 - (void)logRoktApiDiagnostic:(NSString *)code;
++ (void)dispatchUserChange:(dispatch_block_t)change;
 @end
 
 @interface MParticle ()
@@ -1102,7 +1103,11 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
 
 - (void)testSelectPlacementsQueuesWhileCallsQueuedBeforeInitAwaitReplay {
     [self mp_stubRunningKitContainerWithLockFree:YES];
-    OCMStub([self.mockContainer hasUnreplayedForwards]).andReturn(YES);
+    __block BOOL replayPending = YES;
+    OCMStub([self.mockContainer hasUnreplayedForwards]).andDo(^(NSInvocation *invocation) {
+        BOOL value = replayPending;
+        [invocation setReturnValue:&value];
+    });
     __block BOOL forwarded = NO;
     SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMStub([self.mockContainer forwardSDKCall:placementSelector
@@ -1117,7 +1122,87 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     XCTAssertFalse(forwarded, @"a placement must not overtake a session call still waiting for the kits replay");
 
     [self drainPendingAsyncWork];
+    XCTAssertFalse(forwarded, @"the queued placement must keep waiting until the replay has handed its calls on");
+
+    replayPending = NO;
+    [self drainPendingAsyncWork];
     XCTAssertTrue(forwarded);
+}
+
+- (void)testSelectPlacementsQueuesBehindPendingUserChange {
+    [self mp_stubRunningKitContainerWithLockFree:YES];
+    __block BOOL userChanged = NO;
+    __block BOOL changeSeenByPlacement = NO;
+    __block BOOL forwarded = NO;
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMStub([self.mockContainer forwardSDKCall:placementSelector
+                                         event:nil
+                                    parameters:[OCMArg any]
+                                   messageType:MPMessageTypeEvent
+                                      userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        changeSeenByPlacement = userChanged;
+        forwarded = YES;
+    });
+
+    // Hold the message queue, as an upload in flight would, so the user change is still pending.
+    dispatch_semaphore_t release = dispatch_semaphore_create(0);
+    dispatch_async([MParticle messageQueue], ^{
+        dispatch_semaphore_wait(release, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kMPRoktForwardTimeout * NSEC_PER_SEC)));
+    });
+    [MPRokt dispatchUserChange:^{
+        userChanged = YES;
+    }];
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    XCTAssertFalse(forwarded, @"a placement must not overtake a user attribute or identity set just before it");
+
+    dispatch_semaphore_signal(release);
+    [self drainPendingAsyncWork];
+    XCTAssertTrue(forwarded);
+    XCTAssertTrue(changeSeenByPlacement);
+}
+
+- (void)testEventsThenSelectPlacementsReachKitInOrder {
+    [self mp_stubRunningKitContainerWithLockFree:YES];
+    [self.mockContainer setExpectationOrderMatters:YES];
+    OCMExpect([self.mockContainer forwardSDKCall:@selector(events:onEvent:)
+                                           event:nil
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]);
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMExpect([self.mockContainer forwardSDKCall:placementSelector
+                                           event:nil
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]);
+
+    [self.rokt events:@"RoktLayout" onEvent:^(RoktEvent * _Nonnull event) {}];
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    [self drainPendingAsyncWork];
+
+    OCMVerifyAll(self.mockContainer);
+}
+
+- (void)testCloseThenSelectPlacementsReachKitInOrder {
+    [self mp_stubRunningKitContainerWithLockFree:YES];
+    [self.mockContainer setExpectationOrderMatters:YES];
+    OCMExpect([self.mockContainer forwardSDKCall:@selector(close)
+                                           event:nil
+                                      parameters:nil
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]);
+    SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
+    OCMExpect([self.mockContainer forwardSDKCall:placementSelector
+                                           event:nil
+                                      parameters:[OCMArg any]
+                                     messageType:MPMessageTypeEvent
+                                        userInfo:nil]);
+
+    [self.rokt close];
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    [self drainPendingAsyncWork];
+
+    OCMVerifyAll(self.mockContainer);
 }
 
 - (void)testQueuedClearSessionStillReachesKitBeforeLaterPlacement {

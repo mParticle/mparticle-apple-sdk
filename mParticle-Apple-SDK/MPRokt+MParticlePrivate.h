@@ -14,4 +14,8 @@
 /// "LOG_EVENT") to the Rokt kit — only when the kit is active, no-op otherwise.
 - (void)logRoktApiDiagnostic:(NSString * _Nonnull)code;
 
+/// Runs a change to user attributes or identities on the message queue. Rokt calls made before it
+/// finishes wait behind it on the message queue, so a placement sees the change.
++ (void)dispatchUserChange:(dispatch_block_t _Nonnull)change;
+
 @end
