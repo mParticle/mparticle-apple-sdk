@@ -30,7 +30,11 @@ let package = Package(
     dependencies: [
         mParticleAppleSDK,
         .package(url: "https://github.com/leanplum/leanplum-ios-sdk",
-                 .upToNextMajor(from: "6.0.0"))
+                 .upToNextMajor(from: "6.0.0")),
+        // Leanplum 6 declares iOS 9 but takes any CleverTap 7.x, and CleverTap 7.9.1 raised its
+        // minimum to iOS 15, which fails the Leanplum target's build. Hold CleverTap below it.
+        .package(url: "https://github.com/CleverTap/clevertap-ios-sdk",
+                 "7.1.1"..<"7.9.1")
     ],
     targets: [
         .target(
