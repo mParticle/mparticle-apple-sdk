@@ -38,8 +38,6 @@ static NSInteger const kMPRoktKitCode = 181;
 // replay count that never returns to zero delays Rokt calls rather than stopping them.
 static NSInteger const kMPRoktMaxReplayWaitTurns = 100;
 
-static NSInteger MPRoktPendingUserChanges = 0;
-
 @interface MPRokt () {
     NSInteger _queuedRoktForwards;
     NSMutableArray<dispatch_block_t> *_forwardsAwaitingReplay;
@@ -48,34 +46,16 @@ static NSInteger MPRoktPendingUserChanges = 0;
 
 @implementation MPRokt
 
-+ (void)dispatchUserChange:(dispatch_block_t)change {
-    @synchronized ([MPRokt class]) {
-        MPRoktPendingUserChanges += 1;
-    }
-    dispatch_async([MParticle messageQueue], ^{
-        change();
-        @synchronized ([MPRokt class]) {
-            MPRoktPendingUserChanges -= 1;
-        }
-    });
-}
-
-+ (BOOL)hasPendingUserChanges {
-    @synchronized ([MPRokt class]) {
-        return MPRoktPendingUserChanges > 0;
-    }
-}
-
 /// Forwards a Rokt call to the kit container straight away once kits are running, and otherwise
-/// through the message queue. Every Rokt call stays on the queued path while an earlier Rokt call,
-/// a user attribute or identity change, or a call queued for kits before they initialized has not
-/// been handed on yet, so calls reach the kit in the order they were made.
+/// through the message queue. Every Rokt call stays on the queued path while an earlier Rokt call
+/// or a call queued for kits before they initialized has not been handed on yet, so calls reach the
+/// kit in the order they were made. A pending identity or user attribute change does not hold a
+/// call back: the kit reads the current user when the call reaches it.
 - (void)forwardRoktCall:(dispatch_block_t)forward {
     MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
     BOOL forwardNow;
     @synchronized (self) {
         forwardNow = _queuedRoktForwards == 0
-            && ![MPRokt hasPendingUserChanges]
             && kitContainer.kitsInitialized
             && ![kitContainer hasUnreplayedForwards]
             && [kitContainer activeKitsRegistryWithoutWaiting] != nil;
