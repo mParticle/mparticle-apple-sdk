@@ -41,7 +41,10 @@ let package = Package(
             name: "mParticle-Leanplum",
             dependencies: [
                 .product(name: "mParticle-Apple-SDK", package: "mparticle-apple-sdk"),
-                .product(name: "Leanplum", package: "leanplum-ios-sdk")
+                .product(name: "Leanplum", package: "leanplum-ios-sdk"),
+                // Already linked through Leanplum. Naming it keeps the cap above in force for apps
+                // that consume this package, since SwiftPM ignores their dependencies' unused packages.
+                .product(name: "CleverTapSDK", package: "clevertap-ios-sdk")
             ],
             resources: [.process("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include"
