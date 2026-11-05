@@ -206,7 +206,7 @@ NSString *const ekBMSessionIDKey = @"mp_session_id";
             NSString *branchKey = [[self configurationStringForKey:ekBMAppKey] copy];
             self.branchInstance = [Branch getInstance:branchKey];
 
-            [self.branchInstance registerPluginName:@"mParticleKit" version:@"9.7.4"];
+            [self.branchInstance registerPluginName:@"mParticleKit" version:@"9.7.5"];
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
