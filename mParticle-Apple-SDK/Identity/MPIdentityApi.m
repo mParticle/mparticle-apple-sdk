@@ -77,9 +77,15 @@ static NSInteger MPIdentityRequestsInFlight = 0;
 
 @implementation MPIdentityApi
 
-+ (void)adjustRequestsInFlight:(NSInteger)delta {
++ (void)markRequestStarted {
     @synchronized ([MPIdentityApi class]) {
-        MPIdentityRequestsInFlight = MAX(0, MPIdentityRequestsInFlight + delta);
+        MPIdentityRequestsInFlight++;
+    }
+}
+
++ (void)markRequestFinished {
+    @synchronized ([MPIdentityApi class]) {
+        MPIdentityRequestsInFlight = MAX(0, MPIdentityRequestsInFlight - 1);
     }
 }
 
@@ -382,12 +388,12 @@ static NSInteger MPIdentityRequestsInFlight = 0;
 }
 
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [MPIdentityApi adjustRequestsInFlight:1];
+    [MPIdentityApi markRequestStarted];
     [self.networkCommunication identify:identifyRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
         [self onIdentityRequestComplete:identifyRequest identityRequestType:MPIdentityRequestIdentify httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
     }];
     // The network call answers on this thread before it returns, so the user has been updated by now.
-    [MPIdentityApi adjustRequestsInFlight:-1];
+    [MPIdentityApi markRequestFinished];
 }
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
@@ -399,10 +405,10 @@ static NSInteger MPIdentityRequestsInFlight = 0;
             });
         }
     };
-    [MPIdentityApi adjustRequestsInFlight:1];
+    [MPIdentityApi markRequestStarted];
     dispatch_async([MParticle messageQueue], ^{
         [self identifyNoDispatch:identifyRequest completion:wrappedCompletion];
-        [MPIdentityApi adjustRequestsInFlight:-1];
+        [MPIdentityApi markRequestFinished];
     });
 }
 
@@ -420,13 +426,13 @@ static NSInteger MPIdentityRequestsInFlight = 0;
         }
     };
     
-    [MPIdentityApi adjustRequestsInFlight:1];
+    [MPIdentityApi markRequestStarted];
     dispatch_async([MParticle messageQueue], ^{
         
         [self.networkCommunication login:loginRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
-        [MPIdentityApi adjustRequestsInFlight:-1];
+        [MPIdentityApi markRequestFinished];
         
     });
 }
@@ -445,12 +451,12 @@ static NSInteger MPIdentityRequestsInFlight = 0;
         }
     };
     
-    [MPIdentityApi adjustRequestsInFlight:1];
+    [MPIdentityApi markRequestStarted];
     dispatch_async([MParticle messageQueue], ^{
         [self.networkCommunication logout:logoutRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
-        [MPIdentityApi adjustRequestsInFlight:-1];
+        [MPIdentityApi markRequestFinished];
     });
 }
 
@@ -467,12 +473,12 @@ static NSInteger MPIdentityRequestsInFlight = 0;
             });
         }
     };
-    [MPIdentityApi adjustRequestsInFlight:1];
+    [MPIdentityApi markRequestStarted];
     dispatch_async([MParticle messageQueue], ^{
         [self.networkCommunication modify:modifyRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onModifyRequestComplete:modifyRequest httpResponse:(MPIdentityHTTPModifySuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
-        [MPIdentityApi adjustRequestsInFlight:-1];
+        [MPIdentityApi markRequestFinished];
     });
 }
 

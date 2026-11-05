@@ -1174,7 +1174,8 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
 }
 
 - (void)testSelectPlacementsLogsWhileIdentityRequestIsInFlight {
-    self.mockInstance = OCMPartialMock([MParticle sharedInstance]);
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[self.mockContainer stub] andReturnValue:OCMOCK_VALUE(YES)] kitsInitialized];
     id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
@@ -1188,9 +1189,30 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     id mockNetwork = OCMClassMock([MPNetworkCommunication_PRIVATE class]);
     id identity = OCMPartialMock([[MPIdentityApi alloc] init]);
     OCMStub([identity networkCommunication]).andReturn(mockNetwork);
+    MPILogLevel originalLevel = instance.logLevel;
+    void (^originalLogger)(NSString *) = instance.customLogger;
+    NSMutableArray<NSString *> *warnings = [NSMutableArray array];
+    instance.logLevel = MPILogLevelWarning;
+    instance.customLogger = ^(NSString *message) {
+        @synchronized (warnings) {
+            [warnings addObject:message];
+        }
+    };
     [self addTeardownBlock:^{
+        instance.logLevel = originalLevel;
+        instance.customLogger = originalLogger;
         [identity stopMocking];
     }];
+    BOOL (^loggedInFlightWarning)(void) = ^BOOL {
+        @synchronized (warnings) {
+            for (NSString *message in warnings) {
+                if ([message containsString:@"selectPlacements ran while an identity request was in flight"]) {
+                    return YES;
+                }
+            }
+            return NO;
+        }
+    };
 
     // Hold the message queue, as an upload in flight would, so the login is still waiting there.
     dispatch_semaphore_t release = dispatch_semaphore_create(0);
@@ -1199,13 +1221,17 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     });
     [identity login:[MPIdentityApiRequest requestWithEmptyUser] completion:nil];
     [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
-    XCTAssertEqualObjects(kitInstance.lastDiagnosticCode, @"SELECT_PLACEMENTS_IDENTITY_IN_FLIGHT");
+    XCTAssertTrue(loggedInFlightWarning());
+    XCTAssertEqualObjects(kitInstance.lastDiagnosticCode, @"SELECT_PLACEMENTS",
+                          @"the warning is not sent as a public API diagnostic");
 
     dispatch_semaphore_signal(release);
     [self drainPendingAsyncWork];
+    @synchronized (warnings) {
+        [warnings removeAllObjects];
+    }
     [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
-    XCTAssertEqualObjects(kitInstance.lastDiagnosticCode, @"SELECT_PLACEMENTS",
-                          @"nothing is logged once the identity request has finished");
+    XCTAssertFalse(loggedInFlightWarning(), @"nothing is logged once the identity request has finished");
 }
 
 - (void)testEventsThenSelectPlacementsReachKitInOrder {
