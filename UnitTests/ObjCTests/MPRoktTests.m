@@ -80,7 +80,6 @@ static const NSTimeInterval kMPRoktDrainTimeout = 5.0;
 
 @interface MPRokt (Testing)
 - (void)logRoktApiDiagnostic:(NSString *)code;
-+ (void)dispatchUserChange:(dispatch_block_t)change;
 @end
 
 @interface MParticle ()
@@ -1129,10 +1128,10 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     XCTAssertTrue(forwarded);
 }
 
-- (void)testSelectPlacementsQueuesBehindPendingUserChange {
+- (void)testSelectPlacementsDoesNotWaitForPendingUserChange {
     [self mp_stubRunningKitContainerWithLockFree:YES];
     __block BOOL userChanged = NO;
-    __block BOOL changeSeenByPlacement = NO;
+    __block BOOL changeSeenByPlacement = YES;
     __block BOOL forwarded = NO;
     SEL placementSelector = @selector(selectPlacementsWithIdentifier:attributes:embeddedViews:config:onEvent:filteredUser:options:);
     OCMStub([self.mockContainer forwardSDKCall:placementSelector
@@ -1143,22 +1142,30 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
         changeSeenByPlacement = userChanged;
         forwarded = YES;
     });
+    MParticleUser *user = [[MParticleUser alloc] init];
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
+    OCMStub([mockBackend setUserAttribute:@"tier"
+                                    value:@"gold"
+                                timestamp:[OCMArg any]
+                        completionHandler:[OCMArg any]]).andDo(^(NSInvocation *invocation) {
+        userChanged = YES;
+    });
+    [user setValue:mockBackend forKey:@"backendController"];
 
-    // Hold the message queue, as an upload in flight would, so the user change is still pending.
+    // Hold the message queue, as an upload or identity request in flight would, so the user
+    // change is still pending when the placement is made.
     dispatch_semaphore_t release = dispatch_semaphore_create(0);
     dispatch_async([MParticle messageQueue], ^{
         dispatch_semaphore_wait(release, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kMPRoktForwardTimeout * NSEC_PER_SEC)));
     });
-    [MPRokt dispatchUserChange:^{
-        userChanged = YES;
-    }];
+    [user setUserAttribute:@"tier" value:@"gold"];
     [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
-    XCTAssertFalse(forwarded, @"a placement must not overtake a user attribute or identity set just before it");
+    XCTAssertTrue(forwarded, @"a placement must not wait for a user attribute or identity change still in flight");
+    XCTAssertFalse(changeSeenByPlacement);
 
     dispatch_semaphore_signal(release);
     [self drainPendingAsyncWork];
-    XCTAssertTrue(forwarded);
-    XCTAssertTrue(changeSeenByPlacement);
+    XCTAssertTrue(userChanged, @"the user change still runs on the message queue");
 }
 
 - (void)testEventsThenSelectPlacementsReachKitInOrder {

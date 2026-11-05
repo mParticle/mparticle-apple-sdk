@@ -380,9 +380,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             });
         }
     };
-    [MPRokt dispatchUserChange:^{
+    dispatch_async([MParticle messageQueue], ^{
         [self identifyNoDispatch:identifyRequest completion:wrappedCompletion];
-    }];
+    });
 }
 
 - (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion {
@@ -399,13 +399,13 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
     };
     
-    [MPRokt dispatchUserChange:^{
+    dispatch_async([MParticle messageQueue], ^{
         
         [self.networkCommunication login:loginRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
         
-    }];
+    });
 }
 
 - (void)loginWithCompletion:(nullable MPIdentityApiResultCallback)completion {
@@ -422,11 +422,11 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
     };
     
-    [MPRokt dispatchUserChange:^{
+    dispatch_async([MParticle messageQueue], ^{
         [self.networkCommunication logout:logoutRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
-    }];
+    });
 }
 
 - (void)logoutWithCompletion:(nullable MPIdentityApiResultCallback)completion {
@@ -442,11 +442,11 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             });
         }
     };
-    [MPRokt dispatchUserChange:^{
+    dispatch_async([MParticle messageQueue], ^{
         [self.networkCommunication modify:modifyRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onModifyRequestComplete:modifyRequest httpResponse:(MPIdentityHTTPModifySuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
-    }];
+    });
 }
 
 - (BOOL)aliasUsers:(MPAliasRequest *)aliasRequest {
