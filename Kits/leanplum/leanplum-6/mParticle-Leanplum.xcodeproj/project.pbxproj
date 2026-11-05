@@ -144,6 +144,7 @@
 			packageReferences = (
 				6C6A0CEF7EACB6F91B803644 /* XCLocalSwiftPackageReference "../../.." */,
 				6803303EFF630D5580B97F6 /* XCRemoteSwiftPackageReference "leanplum-ios-sdk" */,
+				A1C7E2B94F3D5A6E8B0C1D2E /* XCRemoteSwiftPackageReference "clevertap-ios-sdk" */,
 			);
 			productRefGroup = 7060E453E6269D9E5B766CD7 /* Products */;
 			projectDirPath = "";
@@ -364,6 +365,15 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 6.0.0;
+			};
+		};
+		A1C7E2B94F3D5A6E8B0C1D2E /* XCRemoteSwiftPackageReference "clevertap-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CleverTap/clevertap-ios-sdk";
+			requirement = {
+				kind = versionRange;
+				maximumVersion = 7.9.1;
+				minimumVersion = 7.1.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

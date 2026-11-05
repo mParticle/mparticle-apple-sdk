@@ -15,4 +15,6 @@ Pod::Spec.new do |s|
     s.ios.resource_bundles  = { 'mParticle-Leanplum-6-Privacy' => ['Sources/mParticle-Leanplum/PrivacyInfo.xcprivacy'] }
     s.ios.dependency 'mParticle-Apple-SDK', '~> 9.0'
     s.ios.dependency 'Leanplum-iOS-SDK', '~> 6.0'
+    # Leanplum 6 targets iOS 9 but accepts any CleverTap 7.x; CleverTap 7.9.1 requires iOS 15.
+    s.ios.dependency 'CleverTap-iOS-SDK', '>= 7.1', '< 7.9.1'
 end
