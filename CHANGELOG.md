@@ -20,6 +20,84 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.7.5] - 2026-11-05
+
+### Core
+
+#### Fixed
+
+- Hand placements to the kit without waiting on the message queue ([#1200](https://github.com/mParticle/mparticle-apple-sdk/pull/1200))
+- Persist the push token a registration set, not the store's value ([#1185](https://github.com/mParticle/mparticle-apple-sdk/pull/1185))
+- Contain kit exceptions in notification-center forwarding ([#1165](https://github.com/mParticle/mparticle-apple-sdk/pull/1165))
+- Report the app binary's architecture in application info again ([#1159](https://github.com/mParticle/mparticle-apple-sdk/pull/1159))
+- Stop forwarding a refused user attribute increment to kits ([#1147](https://github.com/mParticle/mparticle-apple-sdk/pull/1147))
+
+#### Changed
+
+- Delete unreferenced Objective-C constants ([#1194](https://github.com/mParticle/mparticle-apple-sdk/pull/1194))
+- Remove dead Objective-C methods ([#1193](https://github.com/mParticle/mparticle-apple-sdk/pull/1193))
+- Move internal MParticle members and stray exports out of the public headers ([#1192](https://github.com/mParticle/mparticle-apple-sdk/pull/1192))
+- Make the connector, persistence-utilities and upload-settings headers internal ([#1189](https://github.com/mParticle/mparticle-apple-sdk/pull/1189))
+- Move the app notification handler to Swift ([#1179](https://github.com/mParticle/mparticle-apple-sdk/pull/1179))
+- Track kit activity in Swift ([#1169](https://github.com/mParticle/mparticle-apple-sdk/pull/1169))
+- Move kit configuration to Swift ([#1172](https://github.com/mParticle/mparticle-apple-sdk/pull/1172))
+- Serialize consent state in Swift only ([#1170](https://github.com/mParticle/mparticle-apple-sdk/pull/1170))
+- Tidy the network layer after its move to Swift ([#1182](https://github.com/mParticle/mparticle-apple-sdk/pull/1182))
+- Move the identity entry points to Swift ([#1181](https://github.com/mParticle/mparticle-apple-sdk/pull/1181))
+- Send identity requests from Swift ([#1180](https://github.com/mParticle/mparticle-apple-sdk/pull/1180))
+- Send uploads from Swift ([#1178](https://github.com/mParticle/mparticle-apple-sdk/pull/1178))
+- Send the config and audience requests from Swift ([#1177](https://github.com/mParticle/mparticle-apple-sdk/pull/1177))
+- Set up the network layer's connections in Swift ([#1176](https://github.com/mParticle/mparticle-apple-sdk/pull/1176))
+- Make the network layer a Swift class ([#1175](https://github.com/mParticle/mparticle-apple-sdk/pull/1175))
+- Move the device-token controller to Swift ([#1174](https://github.com/mParticle/mparticle-apple-sdk/pull/1174))
+- Move the persistence adapter to Swift ([#1173](https://github.com/mParticle/mparticle-apple-sdk/pull/1173))
+- Give the network layer a Swift view of the SDK ([#1171](https://github.com/mParticle/mparticle-apple-sdk/pull/1171))
+- Call the network layer directly from the identity API ([#1168](https://github.com/mParticle/mparticle-apple-sdk/pull/1168))
+- Make the network, device-token and persistence-adapter headers internal ([#1167](https://github.com/mParticle/mparticle-apple-sdk/pull/1167))
+- Remove unused app-notification handler members ([#1166](https://github.com/mParticle/mparticle-apple-sdk/pull/1166))
+- Move the backend controller to Swift ([#1156](https://github.com/mParticle/mparticle-apple-sdk/pull/1156))
+- Move the backend's Objective-C-typed entry points into a boundary category ([#1155](https://github.com/mParticle/mparticle-apple-sdk/pull/1155))
+- Build backend event messages in Swift ([#1154](https://github.com/mParticle/mparticle-apple-sdk/pull/1154))
+- Log push, opt-out and network-performance messages in Swift ([#1153](https://github.com/mParticle/mparticle-apple-sdk/pull/1153))
+- Run backend start-up and launch handling in Swift ([#1152](https://github.com/mParticle/mparticle-apple-sdk/pull/1152))
+- Request Search Ads attribution in Swift ([#1151](https://github.com/mParticle/mparticle-apple-sdk/pull/1151))
+- Validate attributes and session attributes in Swift ([#1150](https://github.com/mParticle/mparticle-apple-sdk/pull/1150))
+- Write backend user identities in Swift ([#1149](https://github.com/mParticle/mparticle-apple-sdk/pull/1149))
+- Build the backend's collaborator graph eagerly in Swift ([#1109](https://github.com/mParticle/mparticle-apple-sdk/pull/1109))
+- Give the backend a Swift view of the SDK instance ([#1108](https://github.com/mParticle/mparticle-apple-sdk/pull/1108))
+
+### Kits
+
+#### Branchmetrics
+
+##### Added
+
+- Send the mParticle session ID to Branch ([#1157](https://github.com/mParticle/mparticle-apple-sdk/pull/1157))
+
+#### Google-analytics-firebase-ga4
+
+##### Fixed
+
+- Use the consent state the kit is given at launch ([#1158](https://github.com/mParticle/mparticle-apple-sdk/pull/1158))
+
+#### Leanplum
+
+##### Fixed
+
+- Hold CleverTap below 7.9.1 so the kit builds again ([#1202](https://github.com/mParticle/mparticle-apple-sdk/pull/1202))
+
+#### Rokt
+
+##### Fixed
+
+- Restore example app launches on iOS 27 ([#1146](https://github.com/mParticle/mparticle-apple-sdk/pull/1146))
+
+#### Rokt-sdk-plus
+
+##### Fixed
+
+- Require RoktPaymentExtension 5.x in Rokt SDK+ ([#1162](https://github.com/mParticle/mparticle-apple-sdk/pull/1162))
+
 ## [9.7.4] - 2026-10-19
 
 ### Core
@@ -2829,7 +2907,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.4...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.5...HEAD
+[9.7.5]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.4...v9.7.5
 [9.7.4]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.3...v9.7.4
 [9.7.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.2...v9.7.3
 [9.7.2]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.1...v9.7.2
