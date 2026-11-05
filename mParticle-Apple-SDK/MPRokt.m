@@ -45,7 +45,7 @@ static NSInteger const kMPRoktKitCode = 181;
 static NSInteger const kMPRoktMaxReplayWaitTurns = 100;
 
 @interface MPRokt () {
-    NSInteger _queuedRoktForwards;
+    NSInteger _queuedRoktCallCount;
     NSMutableArray<dispatch_block_t> *_forwardsAwaitingReplay;
 }
 @end
@@ -61,12 +61,12 @@ static NSInteger const kMPRoktMaxReplayWaitTurns = 100;
     MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
     BOOL forwardNow;
     @synchronized (self) {
-        forwardNow = _queuedRoktForwards == 0
+        forwardNow = _queuedRoktCallCount == 0
             && kitContainer.kitsInitialized
             && ![kitContainer hasUnreplayedForwards]
             && [kitContainer activeKitsRegistryWithoutWaiting] != nil;
         if (!forwardNow) {
-            _queuedRoktForwards += 1;
+            _queuedRoktCallCount += 1;
         }
     }
     if (forwardNow) {
@@ -99,7 +99,7 @@ static NSInteger const kMPRoktMaxReplayWaitTurns = 100;
     if (!waitForReplay) {
         forward();
         @synchronized (self) {
-            _queuedRoktForwards -= 1;
+            _queuedRoktCallCount -= 1;
         }
         return;
     }
@@ -130,7 +130,7 @@ static NSInteger const kMPRoktMaxReplayWaitTurns = 100;
         forward();
         @synchronized (self) {
             [_forwardsAwaitingReplay removeObjectAtIndex:0];
-            _queuedRoktForwards -= 1;
+            _queuedRoktCallCount -= 1;
         }
     }
 }

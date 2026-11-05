@@ -822,7 +822,7 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
             case MPQueueItemTypeEvent: {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardSDKCall:forwardQueueItem.selector event:forwardQueueItem.event parameters:nil messageType:forwardQueueItem.messageType userInfo:nil];
-                    [self adjustUnreplayedForwardCount:-1];
+                    [self markForwardReplayed];
                 });
                 break;
             }
@@ -830,7 +830,7 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
             case MPQueueItemTypeEcommerce: {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardCommerceEventCall:forwardQueueItem.commerceEvent];
-                    [self adjustUnreplayedForwardCount:-1];
+                    [self markForwardReplayed];
                 });
                 break;
             }
@@ -838,7 +838,7 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
             case MPQueueItemTypeGeneralPurpose: {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardSDKCall:forwardQueueItem.selector event:nil parameters:forwardQueueItem.queueParameters messageType:forwardQueueItem.messageType userInfo:nil];
-                    [self adjustUnreplayedForwardCount:-1];
+                    [self markForwardReplayed];
                 });
                 break;
             }
@@ -846,9 +846,15 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
     }
 }
 
-- (void)adjustUnreplayedForwardCount:(NSInteger)delta {
+- (void)markForwardQueued {
     dispatch_semaphore_wait(forwardCountSemaphore, DISPATCH_TIME_FOREVER);
-    unreplayedForwardCount = MAX(0, unreplayedForwardCount + delta);
+    unreplayedForwardCount++;
+    dispatch_semaphore_signal(forwardCountSemaphore);
+}
+
+- (void)markForwardReplayed {
+    dispatch_semaphore_wait(forwardCountSemaphore, DISPATCH_TIME_FOREVER);
+    unreplayedForwardCount = MAX(0, unreplayedForwardCount - 1);
     dispatch_semaphore_signal(forwardCountSemaphore);
 }
 
@@ -1916,7 +1922,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         
         if (forwardQueueItem) {
             [self.forwardQueue addObject:forwardQueueItem];
-            [self adjustUnreplayedForwardCount:1];
+            [self markForwardQueued];
         }
         
         return;
@@ -2011,7 +2017,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         
         if (forwardQueueItem) {
             [self.forwardQueue addObject:forwardQueueItem];
-            [self adjustUnreplayedForwardCount:1];
+            [self markForwardQueued];
         }
         
         return;
