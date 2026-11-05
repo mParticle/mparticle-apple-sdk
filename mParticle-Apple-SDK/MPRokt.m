@@ -25,6 +25,12 @@
 
 @end
 
+@interface MPIdentityApi ()
+
++ (BOOL)hasRequestInFlight;
+
+@end
+
 static id<MPRoktKitDispatchTarget> MPRoktKitAsDispatchTarget(id kitInstance) {
     if (![kitInstance conformsToProtocol:@protocol(MPRoktKitDispatchTarget)]) {
         return nil;
@@ -169,6 +175,12 @@ static NSInteger const kMPRoktMaxReplayWaitTurns = 100;
     
     MPILogVerbose(@"MParticle.Rokt selectPlacements called with attributes: %@", attributes);
     [self forwardRoktCall:^{
+        // Like the Android SDK, a placement does not wait for an identity request, so it can go out
+        // for the user from before that request. The diagnostic counts how often that happens.
+        if ([MPIdentityApi hasRequestInFlight]) {
+            MPILogWarning(@"MParticle.Rokt selectPlacements ran while an identity request was in flight; the placement uses the current user, which may not reflect that request yet.");
+            [self logRoktApiDiagnostic:@"SELECT_PLACEMENTS_IDENTITY_IN_FLIGHT"];
+        }
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:identifier];
         [queueParameters addParameter:attributes ?: @{}];

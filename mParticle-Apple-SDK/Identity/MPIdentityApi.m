@@ -71,7 +71,23 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @end
 
+// Identify, login, logout and modify requests made but not yet answered, including the time they
+// wait on the message queue. Read from any thread, so guarded by the class.
+static NSInteger MPIdentityRequestsInFlight = 0;
+
 @implementation MPIdentityApi
+
++ (void)adjustRequestsInFlight:(NSInteger)delta {
+    @synchronized ([MPIdentityApi class]) {
+        MPIdentityRequestsInFlight = MAX(0, MPIdentityRequestsInFlight + delta);
+    }
+}
+
++ (BOOL)hasRequestInFlight {
+    @synchronized ([MPIdentityApi class]) {
+        return MPIdentityRequestsInFlight > 0;
+    }
+}
 
 @synthesize currentUser = _currentUser;
 
@@ -366,9 +382,12 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
+    [MPIdentityApi adjustRequestsInFlight:1];
     [self.networkCommunication identify:identifyRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
         [self onIdentityRequestComplete:identifyRequest identityRequestType:MPIdentityRequestIdentify httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
     }];
+    // The network call answers on this thread before it returns, so the user has been updated by now.
+    [MPIdentityApi adjustRequestsInFlight:-1];
 }
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
@@ -380,8 +399,10 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             });
         }
     };
+    [MPIdentityApi adjustRequestsInFlight:1];
     dispatch_async([MParticle messageQueue], ^{
         [self identifyNoDispatch:identifyRequest completion:wrappedCompletion];
+        [MPIdentityApi adjustRequestsInFlight:-1];
     });
 }
 
@@ -399,11 +420,13 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
     };
     
+    [MPIdentityApi adjustRequestsInFlight:1];
     dispatch_async([MParticle messageQueue], ^{
         
         [self.networkCommunication login:loginRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
+        [MPIdentityApi adjustRequestsInFlight:-1];
         
     });
 }
@@ -422,10 +445,12 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
     };
     
+    [MPIdentityApi adjustRequestsInFlight:1];
     dispatch_async([MParticle messageQueue], ^{
         [self.networkCommunication logout:logoutRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
+        [MPIdentityApi adjustRequestsInFlight:-1];
     });
 }
 
@@ -442,10 +467,12 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             });
         }
     };
+    [MPIdentityApi adjustRequestsInFlight:1];
     dispatch_async([MParticle messageQueue], ^{
         [self.networkCommunication modify:modifyRequest.identities completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onModifyRequestComplete:modifyRequest httpResponse:(MPIdentityHTTPModifySuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
+        [MPIdentityApi adjustRequestsInFlight:-1];
     });
 }
 

@@ -9,6 +9,11 @@
 #import "MPIConstants.h"
 #import "MPUserDefaultsConnector.h"
 #import "MPRoktSession.h"
+@import mParticle_Apple_SDK_Swift;
+
+@interface MPIdentityApi (MPRoktTests)
+- (MPNetworkCommunication_PRIVATE *)networkCommunication;
+@end
 
 @interface MPKitContainer_PRIVATE (MParticlePrivateTests)
 - (nullable NSDictionary *)launchConfigurationForKitCode:(nonnull NSNumber *)kitCode;
@@ -1166,6 +1171,41 @@ static const NSTimeInterval kMPRoktRejectionWindow = 1.0;
     dispatch_semaphore_signal(release);
     [self drainPendingAsyncWork];
     XCTAssertTrue(userChanged, @"the user change still runs on the message queue");
+}
+
+- (void)testSelectPlacementsLogsWhileIdentityRequestIsInFlight {
+    self.mockInstance = OCMPartialMock([MParticle sharedInstance]);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockContainer stub] andReturnValue:OCMOCK_VALUE(YES)] kitsInitialized];
+    id mockKitRegister = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    OCMStub([(id<MPExtensionKitProtocol>)mockKitRegister code]).andReturn(kTestRoktKitId);
+    MPRoktTestKitInstance *kitInstance = [[MPRoktTestKitInstance alloc] init];
+    OCMStub([mockKitRegister wrapperInstance]).andReturn(kitInstance);
+    OCMStub([self.mockContainer activeKitsRegistryWithoutWaiting]).andReturn(@[mockKitRegister]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    id mockNetwork = OCMClassMock([MPNetworkCommunication_PRIVATE class]);
+    id identity = OCMPartialMock([[MPIdentityApi alloc] init]);
+    OCMStub([identity networkCommunication]).andReturn(mockNetwork);
+    [self addTeardownBlock:^{
+        [identity stopMocking];
+    }];
+
+    // Hold the message queue, as an upload in flight would, so the login is still waiting there.
+    dispatch_semaphore_t release = dispatch_semaphore_create(0);
+    dispatch_async([MParticle messageQueue], ^{
+        dispatch_semaphore_wait(release, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(kMPRoktForwardTimeout * NSEC_PER_SEC)));
+    });
+    [identity login:[MPIdentityApiRequest requestWithEmptyUser] completion:nil];
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    XCTAssertEqualObjects(kitInstance.lastDiagnosticCode, @"SELECT_PLACEMENTS_IDENTITY_IN_FLIGHT");
+
+    dispatch_semaphore_signal(release);
+    [self drainPendingAsyncWork];
+    [self.rokt selectPlacements:@"RoktLayout" attributes:@{@"sandbox": @"true"}];
+    XCTAssertEqualObjects(kitInstance.lastDiagnosticCode, @"SELECT_PLACEMENTS",
+                          @"nothing is logged once the identity request has finished");
 }
 
 - (void)testEventsThenSelectPlacementsReachKitInOrder {
