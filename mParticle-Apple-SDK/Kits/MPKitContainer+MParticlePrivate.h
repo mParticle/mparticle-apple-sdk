@@ -28,6 +28,8 @@
 /// Like `activeKitsRegistry`, but returns nil instead of waiting while the registry is locked,
 /// including by the calling thread.
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWithoutWaiting;
+/// Whether a call queued before kits initialized has not yet been handed on by the replay.
+- (BOOL)hasUnreplayedForwards;
 - (nullable NSArray<NSNumber *> *)configuredKitsRegistry;
 - (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
 - (nullable NSArray<NSNumber *> *)supportedKits;

@@ -63,6 +63,7 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 - (void)removeKitsFromRegistryInvalidForWorkspaceSwitch;
 - (NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry;
 - (NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWithoutWaiting;
+- (BOOL)hasUnreplayedForwards;
 - (NSArray<NSNumber *> *)configuredKitsRegistry;
 - (void)configureKits:(NSArray<NSDictionary *> *)kitsConfiguration;
 - (NSArray<NSNumber *> *)supportedKits;
@@ -169,6 +170,10 @@ static NSInteger MPConfigurationIntegerValue(id value) {
 
 - (NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWithoutWaiting {
     return [self.mp_executionAdapter activeKitsRegistryWithoutWaiting];
+}
+
+- (BOOL)hasUnreplayedForwards {
+    return [self.mp_executionAdapter hasUnreplayedForwards];
 }
 
 - (NSArray<NSNumber *> *)configuredKitsRegistry {
@@ -311,6 +316,10 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
     dispatch_semaphore_t bracketsSemaphore;
     NSMutableDictionary<NSNumber *, MPBracket *> *brackets;
     NSInteger sideloadedKitCodeNextValue;
+    // Calls queued before kits initialized, counted until replayQueuedItems has handed each one on.
+    // Guarded by forwardCountSemaphore, since callers read it from any thread.
+    dispatch_semaphore_t forwardCountSemaphore;
+    NSInteger unreplayedForwardCount;
 }
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistryWhenLocked;
@@ -342,6 +351,7 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
         _initializedTime = [NSDate date];
         kitsSemaphore = dispatch_semaphore_create(1);
         bracketsSemaphore = dispatch_semaphore_create(1);
+        forwardCountSemaphore = dispatch_semaphore_create(1);
         brackets = [[NSMutableDictionary alloc] init];
         sideloadedKitCodeNextValue = sideloadedKitCodeStartValue;
         MParticle* mparticle = MParticle.sharedInstance;
@@ -812,6 +822,7 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
             case MPQueueItemTypeEvent: {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardSDKCall:forwardQueueItem.selector event:forwardQueueItem.event parameters:nil messageType:forwardQueueItem.messageType userInfo:nil];
+                    [self markForwardReplayed];
                 });
                 break;
             }
@@ -819,6 +830,7 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
             case MPQueueItemTypeEcommerce: {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardCommerceEventCall:forwardQueueItem.commerceEvent];
+                    [self markForwardReplayed];
                 });
                 break;
             }
@@ -826,11 +838,33 @@ static BOOL MPKitIsStarted(id<MPKitProtocol> kit) {
             case MPQueueItemTypeGeneralPurpose: {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardSDKCall:forwardQueueItem.selector event:nil parameters:forwardQueueItem.queueParameters messageType:forwardQueueItem.messageType userInfo:nil];
+                    [self markForwardReplayed];
                 });
                 break;
             }
         }
     }
+}
+
+- (void)markForwardQueued {
+    dispatch_semaphore_wait(forwardCountSemaphore, DISPATCH_TIME_FOREVER);
+    unreplayedForwardCount++;
+    dispatch_semaphore_signal(forwardCountSemaphore);
+}
+
+- (void)markForwardReplayed {
+    dispatch_semaphore_wait(forwardCountSemaphore, DISPATCH_TIME_FOREVER);
+    unreplayedForwardCount = MAX(0, unreplayedForwardCount - 1);
+    dispatch_semaphore_signal(forwardCountSemaphore);
+}
+
+// True from the moment a call is queued for kits until its replay has handed it on, which covers
+// the wait for replayQueuedItems to run after kitsInitialized is set.
+- (BOOL)hasUnreplayedForwards {
+    dispatch_semaphore_wait(forwardCountSemaphore, DISPATCH_TIME_FOREVER);
+    BOOL result = unreplayedForwardCount > 0;
+    dispatch_semaphore_signal(forwardCountSemaphore);
+    return result;
 }
 
 // The SDK's shared logger, which follows the app's log level and custom logger. A test that stands
@@ -1888,6 +1922,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         
         if (forwardQueueItem) {
             [self.forwardQueue addObject:forwardQueueItem];
+            [self markForwardQueued];
         }
         
         return;
@@ -1982,6 +2017,7 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
         
         if (forwardQueueItem) {
             [self.forwardQueue addObject:forwardQueueItem];
+            [self markForwardQueued];
         }
         
         return;
