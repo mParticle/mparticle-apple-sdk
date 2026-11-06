@@ -20,10 +20,10 @@ enum MPSQLiteStep: Equatable {
 }
 
 final class MPSQLiteConnection {
-    // A database file SQLite creates is encrypted at rest until the first unlock after a reboot,
-    // and stays readable from then on, so background uploads keep working while the device is
-    // locked. The class applies when the file is created; MPPersistenceFileSystemPRIVATE raises
-    // files created by earlier SDK versions without protection.
+    // SQLite creates the database file with this class: encrypted at rest until the first unlock
+    // after a reboot, readable from then on, so background uploads keep working while the device
+    // is locked. On iOS 26.5 reopening an existing file also sets its class. Other versions were
+    // not checked, so MPPersistenceFileSystemPRIVATE also raises older files directly.
     static let defaultOpenFlags = SQLITE_OPEN_CREATE
         | SQLITE_OPEN_READWRITE
         | SQLITE_OPEN_FULLMUTEX

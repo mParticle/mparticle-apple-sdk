@@ -162,9 +162,9 @@ import Foundation
     }
 
     /// Raises the database file and its SQLite sidecar files from no data protection to
-    /// `completeUntilFirstUserAuthentication`. Earlier SDK versions created the file with no
-    /// protection, and SQLite applies its open flag only when it creates a file. A class the
-    /// host app has already set on a file is kept. Before the first unlock after a reboot the
+    /// `completeUntilFirstUserAuthentication`, so a file left by an earlier SDK version is
+    /// protected without relying on how SQLite's open flag treats an existing file. A file that
+    /// already has a class other than none is not changed here. Before the first unlock after a reboot the
     /// change can fail; it is logged and tried again the next time the store opens the database,
     /// which for a connection that stays open is the next launch.
     func protectDatabaseFiles(atPath path: String) {
