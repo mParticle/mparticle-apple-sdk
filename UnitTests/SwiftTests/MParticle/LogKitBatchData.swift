@@ -11,9 +11,15 @@ enum LogKitBatchData {
     static let invalidJSON = #"{"invalid": "json""#
     static let singleEvent = #"{"events":[{"id":1}]}"#
     static let multiEvent = #"{"events":[{"id":1},{"id":2}]}"#
+    static let nonASCIIEvent = #"{"events":[{"n":"café 🎉 東京"}]}"#
     static let parsedSingleEvent: [String: Any] = [
         "events": [
             ["id": 1]
+        ]
+    ]
+    static let parsedNonASCIIEvent: [String: Any] = [
+        "events": [
+            ["n": "café 🎉 東京"]
         ]
     ]
 }

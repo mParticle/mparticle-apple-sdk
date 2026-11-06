@@ -64,6 +64,31 @@ final class MParticleKitBatchTests: MParticleTestBase {
         XCTAssertNotNil(kitContainer.forwardSDKCallKitHandlerParam)
     }
     
+    func test_logKitBatch_forwardsFullParsedBatch_whenBatchContainsNonASCII() {
+        kitContainer.kitsInitialized = true
+        kitContainer.hasKitBatchingKitsReturnValue = true
+
+        mparticle.logKitBatch(LogKitBatchData.nonASCIIEvent)
+
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallBatchParam as NSDictionary?,
+                       LogKitBatchData.parsedNonASCIIEvent as NSDictionary)
+    }
+
+    func test_logKitBatch_forwardsUnparsedBatch_whenStringIsNotValidUnicode() {
+        kitContainer.kitsInitialized = true
+        kitContainer.hasKitBatchingKitsReturnValue = true
+        // Relies on `as String` keeping the original NSString, lone surrogate included. The mock
+        // receives the forwarded nil batch as an empty dictionary.
+        let unpairedSurrogate: [unichar] = [0x7B, 0xD800, 0x7D]
+        let batch = NSString(characters: unpairedSurrogate, length: unpairedSurrogate.count)
+
+        mparticle.logKitBatch(batch as String)
+
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallBatchParam?.count, 0)
+    }
+
     func test_logKitBatch_executesKitHandler_andPersistsForwardRecords() {
         kitContainer.kitsInitialized = true
         kitContainer.hasKitBatchingKitsReturnValue = true
