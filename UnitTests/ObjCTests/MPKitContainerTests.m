@@ -168,6 +168,17 @@ completionHandler:(void (^)(NSArray<MPEvent *> *projectedEvents,
 }
 @end
 
+@interface MPBatchingTestKit : MPKitTestClass
+@end
+@implementation MPBatchingTestKit
++ (NSNumber *)kitCode {
+    return @123462;
+}
+- (NSArray<MPForwardRecord *> *)logBatch:(NSDictionary *)batch {
+    return @[];
+}
+@end
+
 @interface MPDelayedConsentReplayTestKit : MPConsentReplayTestKit
 @end
 @implementation MPDelayedConsentReplayTestKit
@@ -5004,6 +5015,22 @@ static atomic_bool gKitsInitializedBlockReturned;
 
     XCTAssertTrue(atomic_load(&gKitsInitializedBlockEntered));
     XCTAssertFalse(released, @"An onKitsInitialized: block blocked on kitsSemaphore held by configureKits:");
+}
+
+#pragma mark Kit batching
+
+- (void)testHasKitBatchingKitsFollowsActiveKits {
+    MPKitRegister *registration = [[MPKitRegister alloc] initWithName:@"BatchingTest" className:@"MPBatchingTestKit"];
+    self.consentTestRegister = registration;
+    [MPKitContainer_PRIVATE registerKit:registration];
+
+    XCTAssertFalse([kitContainer hasKitBatchingKits]);
+
+    [kitContainer configureKits:@[@{@"id": @123462, @"as": @{@"test": @YES}}]];
+    XCTAssertTrue([kitContainer hasKitBatchingKits]);
+
+    [kitContainer configureKits:@[]];
+    XCTAssertFalse([kitContainer hasKitBatchingKits]);
 }
 
 @end
