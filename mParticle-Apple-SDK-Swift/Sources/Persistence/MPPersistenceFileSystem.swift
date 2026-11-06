@@ -165,7 +165,8 @@ import Foundation
     /// `completeUntilFirstUserAuthentication`. Earlier SDK versions created the file with no
     /// protection, and SQLite applies its open flag only when it creates a file. A class the
     /// host app has already set on a file is kept. Before the first unlock after a reboot the
-    /// change can fail; it is logged and tried again the next time the database is opened.
+    /// change can fail; it is logged and tried again the next time the store opens the database,
+    /// which for a connection that stays open is the next launch.
     func protectDatabaseFiles(atPath path: String) {
         guard !path.isEmpty else { return }
         let suffixes = MPPersistenceSchemaPRIVATE.sidecarSuffixes as? [String] ?? []

@@ -716,6 +716,55 @@ final class MPPersistenceStoreTests: XCTestCase {
         XCTAssertEqual(fileManager.protectionWrites[oldPath], .completeUntilFirstUserAuthentication)
     }
 
+    func testLaterOpenDoesNotCreateTheCurrentDatabaseWhileAnEarlierOneAwaitsMigration() throws {
+        // A launch before the first unlock can neither migrate nor create a protected file. A
+        // read-only directory stands in for that state, since the simulator does not enforce it.
+        let oldPath = fileSystem.resolvedDatabasePath(databaseName: MPPersistenceSchemaPRIVATE.databaseName(for: 30))
+        let old = try MPSQLiteConnection(path: oldPath)
+        for sql in MPPersistenceSchemaPRIVATE.createTableStatements {
+            try old.execute(try XCTUnwrap(sql as? String))
+        }
+        try old.execute("DROP TABLE uploads")
+        try old.execute(
+            "CREATE TABLE uploads ("
+                + "_id INTEGER PRIMARY KEY AUTOINCREMENT, session_id INTEGER, uuid TEXT NOT NULL, "
+                + "message_data BLOB NOT NULL, timestamp REAL NOT NULL, upload_type INTEGER NOT NULL, "
+                + "data_plan_id TEXT, data_plan_version INTEGER)"
+        )
+        try old.execute(
+            "INSERT INTO messages (message_type, uuid, timestamp, message_data, upload_status, mpid) "
+                + "VALUES ('e', 'queued', \(Date().timeIntervalSince1970), X'7B7D', 1, 42)"
+        )
+        try old.execute(MPPersistenceSchemaPRIVATE.userVersionPragma(for: 30))
+        old.close()
+        let directory = fileSystem.databaseDirectoryPath()
+        try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: directory)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: directory) }
+
+        let store = MPPersistenceStorePRIVATE(fileSystem: fileSystem, logger: logger)
+        XCTAssertFalse(store.isDatabaseOpen)
+
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: directory)
+        XCTAssertThrowsError(try store.openDatabase())
+        XCTAssertFalse(FileManager.default.fileExists(atPath: store.databasePath))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: oldPath))
+
+        // The next launch migrates before it opens the store.
+        let migrator = MPDatabaseMigratorPRIVATE(
+            databaseVersions: [30, 31],
+            fileSystem: fileSystem,
+            logger: logger,
+            uploadSettingsProvider: { NSObject() },
+            uploadSettingsCodec: TestUploadSettingsCodec()
+        )
+        try migrator.migrate(from: 30)
+        let nextLaunch = MPPersistenceStorePRIVATE(fileSystem: fileSystem, logger: logger)
+        let messages = try XCTUnwrap(nextLaunch.connection).prepare("SELECT uuid FROM messages")
+        XCTAssertEqual(try messages.step(), .row)
+        XCTAssertEqual(messages.string(at: 0), "queued")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: oldPath))
+    }
+
     func testNegativeAndOverRangeOnDiskSessionCountersAreClamped() throws {
         // A tampered or corrupted row must not trap the unsigned conversion at every launch.
         let store = MPPersistenceStorePRIVATE(
