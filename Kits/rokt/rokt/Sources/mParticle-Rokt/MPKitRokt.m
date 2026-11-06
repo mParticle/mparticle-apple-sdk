@@ -57,6 +57,11 @@ static NSDictionary<NSString *, RoktEmbeddedView *> *MPRoktValidEmbeddedViews(NS
                 dispatch_async(dispatch_get_main_queue(), completion);
             });
         };
+        // Identity requests update the current user on the message queue before it runs the next
+        // block, so a block queued now runs after any request already made.
+        _implementation.afterPendingIdentityRequests = ^(dispatch_block_t completion) {
+            dispatch_async([MParticle messageQueue], completion);
+        };
         _implementation.filterUserAttributes = ^NSDictionary<NSString *, id> *(
             NSDictionary<NSString *, id> *attributes,
             FilteredMParticleUser *filteredUser
