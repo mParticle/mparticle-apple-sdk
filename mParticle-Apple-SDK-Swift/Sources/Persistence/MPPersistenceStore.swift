@@ -9,6 +9,10 @@ public final class MPPersistenceStorePRIVATE: NSObject {
     private let uploadSettingsCodec: MPUploadSettingsCoding?
     private let isOptedOut: () -> Bool
     private(set) var connection: MPSQLiteConnection?
+    private var isDatabaseSetUp = false
+    // Writes reach the store on the message queue, but some reads arrive on the caller's thread,
+    // so opening and closing the connection take this lock.
+    private let connectionLock = NSLock()
     @objc public let databasePath: String
 
     var isDatabaseOpen: Bool {
@@ -38,6 +42,9 @@ public final class MPPersistenceStorePRIVATE: NSObject {
         super.init()
 
         do {
+            // Raise the protection of a file from an earlier SDK version before any connection
+            // holds it open.
+            fileSystem.protectDatabaseFiles(atPath: databasePath)
             try setupDatabase()
             if openImmediately {
                 try openDatabase()
@@ -65,8 +72,28 @@ public final class MPPersistenceStorePRIVATE: NSObject {
 
     @discardableResult
     func openDatabase() throws -> Bool {
+        connectionLock.lock()
+        defer { connectionLock.unlock() }
         if connection != nil {
             return true
+        }
+        fileSystem.protectDatabaseFiles(atPath: databasePath)
+        if !isDatabaseSetUp {
+            // The launch migrates a database from an earlier SDK version. When that migration
+            // could not run, for example before the first unlock, creating the current database
+            // here would make the next launch's migration collide with the rows written to it, so
+            // nothing is stored until the next launch has migrated it.
+            if !FileManager.default.fileExists(atPath: databasePath),
+               fileSystem.versionNeedingMigration(from: MPPersistenceSchemaPRIVATE.databaseVersions) != nil {
+                throw MPSQLiteError(code: SQLITE_CANTOPEN, message: "An earlier database awaits migration", sql: nil)
+            }
+            // A launch before the first unlock after a reboot cannot open a protected file, so
+            // the setup skipped at launch runs at the first open that can read the file.
+            do {
+                try setupDatabase()
+            } catch {
+                logger.error("Failed to set up persistence database: \(error)")
+            }
         }
         connection = try MPSQLiteConnection(path: databasePath, logger: logger)
         fileSystem.excludeDatabaseFromBackup(atPath: databasePath)
@@ -74,6 +101,8 @@ public final class MPPersistenceStorePRIVATE: NSObject {
     }
 
     func closeDatabase() {
+        connectionLock.lock()
+        defer { connectionLock.unlock() }
         connection?.close()
         connection = nil
     }
@@ -157,6 +186,11 @@ public final class MPPersistenceStorePRIVATE: NSObject {
                 throw MPSQLiteError(code: SQLITE_CORRUPT, message: "Database is corrupted", sql: nil)
             }
         } catch {
+            // Only a corrupt file is replaced. A file the device cannot read yet, such as a
+            // protected file before the first unlock, keeps its queued events.
+            guard Self.shouldRecreateDatabase(after: error) else {
+                throw error
+            }
             logger.error("Database is corrupted; recreating it.")
             database.close()
             fileSystem.removeDatabaseFileIfExists(atPath: databasePath)
@@ -173,6 +207,7 @@ public final class MPPersistenceStorePRIVATE: NSObject {
 
         let currentVersion = MPPersistenceSchemaPRIVATE.currentDatabaseVersion.int32Value
         guard userVersion != currentVersion else {
+            isDatabaseSetUp = true
             return
         }
 
@@ -187,5 +222,14 @@ public final class MPPersistenceStorePRIVATE: NSObject {
                 for: MPPersistenceSchemaPRIVATE.currentDatabaseVersion
             )
         )
+        isDatabaseSetUp = true
+    }
+
+    static func shouldRecreateDatabase(after error: Error) -> Bool {
+        guard let error = error as? MPSQLiteError else {
+            return false
+        }
+        let primaryCode = error.code & 0xFF
+        return primaryCode == SQLITE_CORRUPT || primaryCode == SQLITE_NOTADB
     }
 }

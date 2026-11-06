@@ -161,6 +161,43 @@ import Foundation
         }
     }
 
+    /// Raises the database file and its SQLite sidecar files from no data protection to
+    /// `completeUntilFirstUserAuthentication`, so a file left by an earlier SDK version is
+    /// protected without relying on how SQLite's open flag treats an existing file. A file that
+    /// already has a class other than none is not changed here. Before the first unlock after a reboot the
+    /// change can fail; it is logged and tried again the next time the store opens the database,
+    /// which for a connection that stays open is the next launch.
+    func protectDatabaseFiles(atPath path: String) {
+        guard !path.isEmpty else { return }
+        let suffixes = MPPersistenceSchemaPRIVATE.sidecarSuffixes as? [String] ?? []
+        for filePath in [path] + suffixes.map({ path + $0 }) {
+            guard fileManager.fileExists(atPath: filePath) else { continue }
+            do {
+                let attributes = try fileManager.attributesOfItem(atPath: filePath)
+                if let current = Self.protectionType(attributes[.protectionKey]),
+                   current != FileProtectionType.none {
+                    continue
+                }
+                try fileManager.setAttributes(
+                    [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                    ofItemAtPath: filePath
+                )
+            } catch {
+                logger.error("Failed to set data protection on mParticle database file: \(error)")
+            }
+        }
+    }
+
+    private static func protectionType(_ value: Any?) -> FileProtectionType? {
+        if let value = value as? FileProtectionType {
+            return value
+        }
+        if let value = value as? String {
+            return FileProtectionType(rawValue: value)
+        }
+        return nil
+    }
+
     @discardableResult
     @objc public func removeDatabaseFileIfExists(atPath path: String) -> Bool {
         guard fileManager.fileExists(atPath: path) else { return false }
