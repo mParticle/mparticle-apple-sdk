@@ -166,8 +166,9 @@
     if (fields.position != nil) { product.position = fields.position.unsignedIntValue; }
     if (fields.quantity != nil) { product.quantity = fields.quantity; }
 
+    // Custom attributes, not key-value coding: a page key must not reach the product's own properties.
     [fields.attributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, __unused BOOL *stop) {
-        [product setValue:value forKey:key];
+        product[key] = value;
     }];
 
     return product;

@@ -354,4 +354,57 @@
     XCTAssertEqualObjects(commerceEvent.impressions[@"Impression List Test"].anyObject.price, @0);
 }
 
+- (void)testConvertProductKeepsWebAttributesAsCustomAttributes {
+    NSDictionary *json = @{
+        @"Name": @"test name",
+        @"Sku": @"sku test",
+        @"Price": @12,
+        @"Quantity": @1,
+        @"Attributes": @{
+            @"color": @"blue",
+            @"price": @"0",
+            @"position": @"first",
+            @"name": @"other name",
+            @"objectDictionary": @"other value"
+        }
+    };
+
+    MPProduct *product = nil;
+    XCTAssertNoThrow(product = [MPConvertJS_PRIVATE product:json]);
+    XCTAssertNotNil(product);
+    XCTAssertEqualObjects(product.name, @"test name");
+    XCTAssertEqualObjects(product.sku, @"sku test");
+    XCTAssertEqualObjects(product.price, @12);
+    XCTAssertEqual(product.position, 0);
+    XCTAssertEqualObjects(product[@"color"], @"blue");
+    XCTAssertEqualObjects(product[@"price"], @"0");
+    XCTAssertEqualObjects(product[@"position"], @"first");
+    XCTAssertEqualObjects(product[@"name"], @"other name");
+    XCTAssertEqualObjects(product[@"objectDictionary"], @"other value");
+    XCTAssertEqualObjects(product[kMPProductName], @"test name");
+}
+
+- (void)testConvertCommerceEventKeepsAProductWithCustomAttributes {
+    NSDictionary *json = @{
+        @"ProductAction": @{
+            @"ProductActionType": @1,
+            @"ProductList": @[
+                @{
+                    @"Name": @"test name",
+                    @"Sku": @"sku test",
+                    @"Price": @12,
+                    @"Quantity": @1,
+                    @"Attributes": @{@"color": @"blue"}
+                }
+            ]
+        }
+    };
+
+    MPCommerceEvent *commerceEvent = nil;
+    XCTAssertNoThrow(commerceEvent = [MPConvertJS_PRIVATE commerceEvent:json]);
+    XCTAssertNotNil(commerceEvent);
+    XCTAssertEqual(commerceEvent.products.count, 1);
+    XCTAssertEqualObjects(commerceEvent.products.firstObject[@"color"], @"blue");
+}
+
 @end
