@@ -164,6 +164,7 @@ MPLog* logger;
     executor = (id<ExecutorProtocol>)[[MPExecutorPRIVATE alloc] init];
     sdkInitialized = NO;
     _initialized = NO;
+    _identity = [[MPIdentityApi alloc] init];
     _settingsProvider = (id<SettingsProviderProtocol>)[[MPSettingsProviderPRIVATE alloc] initWithBundle:NSBundle.mainBundle
                                                                                           resourceName:kMPConfigPlist];
     _kitActivity = [[MPKitActivity alloc] initWithIsKitActive:^BOOL(NSNumber *integrationId) {
@@ -305,12 +306,14 @@ MPLog* logger;
 
 #pragma mark - Public accessors and methods
 - (MPIdentityApi *)identity {
-    if (_identity) {
+    @synchronized(self) {
+        if (_identity) {
+            return _identity;
+        }
+        
+        _identity = [[MPIdentityApi alloc] init];
         return _identity;
     }
-    
-    _identity = [[MPIdentityApi alloc] init];
-    return _identity;
 }
 
 - (MPRokt *)rokt {
