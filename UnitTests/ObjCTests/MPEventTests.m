@@ -135,6 +135,17 @@
     XCTAssertEqual(event.type, MPEventTypeOther, @"Invalid type should have defaulted to 'other.'");
 }
 
+- (void)testTypeZeroDefaultsToOther {
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dino Zero" type:(MPEventType)0];
+    XCTAssertEqual(event.type, MPEventTypeOther, @"Type 0 should have defaulted to 'other.'");
+    XCTAssertEqualObjects(event.typeName, @"Other");
+
+    event.type = MPEventTypeNavigation;
+    event.type = (MPEventType)0;
+    XCTAssertEqual(event.type, MPEventTypeOther, @"Type 0 should have defaulted to 'other.'");
+    XCTAssertEqualObjects(event.typeName, @"Other");
+}
+
 - (void)testDictionaryRepresentation {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceUtilities mpId]];
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;

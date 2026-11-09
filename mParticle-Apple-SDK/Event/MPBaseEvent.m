@@ -68,11 +68,8 @@
     }
 }
 
+// No equal-type early return: a new event's _type starts at 0, which still needs the range check.
 - (void)setType:(MPEventType)type {
-    if (_type == type) {
-        return;
-    }
-    
     if (type < MPEventTypeNavigation || type > MPEventTypeImpression) {
         MPILogWarning(@"An invalid event type was provided. Will default to 'MPEventTypeOther'");
         _type = MPEventTypeOther;
