@@ -523,6 +523,69 @@ struct MPRoktKitImplementationTests {
         #expect(identityClient.identifyCount == 0)
     }
 
+    @Test func identifyIsSkippedWhenAPendingLoginLeavesAMatchingUser() async {
+        let identityClient = MockIdentityClient()
+        let implementation = MPRoktKitImplementation(
+            roktClient: MockRoktSDKClient(),
+            identityClient: identityClient
+        )
+        var pendingIdentityRequests: [() -> Void] = []
+        implementation.afterPendingIdentityRequests = { pendingIdentityRequests.append($0) }
+        let customerIDKey = NSNumber(value: MPIdentity.customerId.rawValue)
+        let emailKey = NSNumber(value: MPIdentity.email.rawValue)
+        let previousUser = TestUser(identities: [
+            customerIDKey: "previous-customer",
+            emailKey: "previous@example.com"
+        ])
+        identityClient.currentUser = previousUser
+
+        let identified = await identifyDecision(
+            implementation,
+            attributes: ["email": "new@example.com"],
+            user: previousUser
+        )
+        #expect(identified)
+        #expect(identityClient.identifyCount == 0)
+
+        identityClient.currentUser = TestUser(identities: [
+            customerIDKey: "new-customer",
+            emailKey: "new@example.com"
+        ])
+        pendingIdentityRequests.removeFirst()()
+
+        #expect(identityClient.identifyCount == 0)
+    }
+
+    @Test func identifyAfterAPendingLoginIsBuiltFromTheUserThatRemains() async {
+        let identityClient = MockIdentityClient()
+        let implementation = MPRoktKitImplementation(
+            roktClient: MockRoktSDKClient(),
+            identityClient: identityClient
+        )
+        var pendingIdentityRequests: [() -> Void] = []
+        implementation.afterPendingIdentityRequests = { pendingIdentityRequests.append($0) }
+        let customerIDKey = NSNumber(value: MPIdentity.customerId.rawValue)
+        let emailKey = NSNumber(value: MPIdentity.email.rawValue)
+        let previousUser = TestUser(identities: [
+            customerIDKey: "previous-customer",
+            emailKey: "previous@example.com"
+        ])
+        identityClient.currentUser = previousUser
+
+        _ = await identifyDecision(
+            implementation,
+            attributes: ["email": "new@example.com"],
+            user: previousUser
+        )
+        identityClient.currentUser = TestUser(identities: [customerIDKey: "new-customer"])
+        pendingIdentityRequests.removeFirst()()
+
+        #expect(identityClient.identifyCount == 1)
+        let identities = identityClient.lastRequest?.identities
+        #expect(identities?[customerIDKey] as? String == "new-customer")
+        #expect(identities?[emailKey] as? String == "new@example.com")
+    }
+
     @Test func identifyFailureDoesNotAffectThePlacement() {
         let client = MockRoktSDKClient()
         let identityClient = DeferredIdentityClient()
