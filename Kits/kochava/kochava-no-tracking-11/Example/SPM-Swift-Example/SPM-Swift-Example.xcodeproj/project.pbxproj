@@ -114,7 +114,7 @@
 			mainGroup = 353020902F48C8E600A06197;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				353020B12F48C94000A06197 /* XCLocalSwiftPackageReference "../../../kochava-9" */,
+				353020B12F48C94000A06197 /* XCLocalSwiftPackageReference "../../../kochava-no-tracking-11" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3530209A2F48C8E600A06197 /* Products */;
@@ -352,9 +352,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		353020B12F48C94000A06197 /* XCLocalSwiftPackageReference "../../../kochava-9" */ = {
+		353020B12F48C94000A06197 /* XCLocalSwiftPackageReference "../../../kochava-no-tracking-11" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../../../kochava-9";
+			relativePath = "../../../kochava-no-tracking-11";
 		};
 /* End XCLocalSwiftPackageReference section */
 

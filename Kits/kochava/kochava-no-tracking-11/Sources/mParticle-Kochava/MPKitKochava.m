@@ -318,7 +318,7 @@ NSString *const kvEventTypeStringPromotionClick = @"click";
     NSDictionary *userActivityDictionary = self.launchOptions[UIApplicationLaunchOptionsUserActivityDictionaryKey];
     if (userActivityDictionary == nil)
     {
-        [KVADeeplink processWithURL:nil closure_didComplete:^(KVADeeplink * _Nonnull deeplink) {
+        [KVADeeplink processWithURL:nil eventAutoSendBool:YES closure_didComplete:^(KVADeeplink * _Nonnull deeplink) {
             NSString *destinationString = deeplink.destinationString;
             if (destinationString.length == 0) {
                 [self->_kitApi onAttributionCompleteWithResult:nil error:[self errorWithMessage:@"Received nil deeplink from Kochava"]];
@@ -477,7 +477,7 @@ NSString *const kvEventTypeStringPromotionClick = @"click";
 - (MPKitExecStatus *)continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void(^ )(NSArray * restorableObjects))restorationHandler {
     NSURL *url = userActivity.webpageURL;
     
-    [KVADeeplink processWithURL:url closure_didComplete:^(KVADeeplink * _Nonnull deeplink) {
+    [KVADeeplink processWithURL:url eventAutoSendBool:YES closure_didComplete:^(KVADeeplink * _Nonnull deeplink) {
         NSString *destinationString = deeplink.destinationString;
         if (destinationString.length == 0) {
             [self->_kitApi onAttributionCompleteWithResult:nil error:[self errorWithMessage:@"Received nil deeplink from Kochava"]];

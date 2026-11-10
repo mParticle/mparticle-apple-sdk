@@ -1,6 +1,6 @@
-# mParticle Kochava Kit No Tracking (Kochava SDK 9.x)
+# mParticle Kochava Kit No Tracking (Kochava SDK 11.x)
 
-This is the [Kochava](https://www.kochava.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against [Kochava SDK 9.x](https://github.com/Kochava/Apple-SwiftPackage-KochavaMeasurement-XCFramework), **without tracking support**. It provides the same `mParticle-Kochava` target and API as the full kit, but excludes the `KochavaTracking` package—removing the parts that Apple defines as "tracking" (e.g., IDFA). Use this package when you need Kochava integration without tracking capabilities.
+This is the [Kochava](https://www.kochava.com) integration for the [mParticle Apple SDK](https://github.com/mParticle/mparticle-apple-sdk), built against [Kochava SDK 11.x](https://github.com/Kochava/Apple-SwiftPackage-KochavaMeasurement-XCFramework), **without tracking support**. It provides the same `mParticle-Kochava` target and API as the full kit, but excludes the `KochavaTracking` package—removing the parts that Apple defines as "tracking" (e.g., IDFA). Use this package when you need Kochava integration without tracking capabilities.
 
 ## Installation
 
@@ -13,7 +13,7 @@ Swift Package Manager resolves the `mParticle` SDK automatically as a transitive
 let mParticleVersion: Version = "9.0.0"
 
 .package(
-    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-kochava-no-tracking-9",
+    url: "https://github.com/mparticle-integrations/mparticle-apple-integration-kochava-no-tracking-11",
     .upToNextMajor(from: mParticleVersion)
 ),
 ```
@@ -33,7 +33,7 @@ Included kits: { Kochava }
 | Platform | Minimum Version |
 | -------- | --------------- |
 | iOS      | 15.0            |
-| tvOS     | 15.0            |
+| tvOS     | 16.0            |
 
 ## Documentation
 

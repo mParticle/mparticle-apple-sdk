@@ -21,7 +21,7 @@ let mParticleAppleSDK: Package.Dependency = {
 
 let package = Package(
     name: "mParticle-Kochava",
-    platforms: [ .iOS(.v15), .tvOS(.v15) ],
+    platforms: [ .iOS(.v15), .tvOS(.v16) ],
     products: [
         .library(
             name: "mParticle-Kochava",
@@ -32,15 +32,15 @@ let package = Package(
         mParticleAppleSDK,
         .package(
             url: "https://github.com/Kochava/Apple-SwiftPackage-KochavaNetworking-XCFramework",
-            .upToNextMajor(from: "9.0.0")
+            .upToNextMajor(from: "11.0.0")
         ),
         .package(
             url: "https://github.com/Kochava/Apple-SwiftPackage-KochavaMeasurement-XCFramework",
-            .upToNextMajor(from: "9.0.0")
+            .upToNextMajor(from: "11.0.0")
         ),
         .package(
             url: "https://github.com/Kochava/Apple-SwiftPackage-KochavaTracking-XCFramework",
-            .upToNextMajor(from: "9.0.0")
+            .upToNextMajor(from: "11.0.0")
         )
     ],
     targets: [

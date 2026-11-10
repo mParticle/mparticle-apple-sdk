@@ -475,7 +475,7 @@
 				SKIP_INSTALL = NO;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.0;
+				TVOS_DEPLOYMENT_TARGET = 16.0;
 			};
 			name = Debug;
 		};
@@ -518,7 +518,7 @@
 				SKIP_INSTALL = NO;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 15.0;
+				TVOS_DEPLOYMENT_TARGET = 16.0;
 			};
 			name = Release;
 		};
@@ -567,7 +567,7 @@
 			repositoryURL = "https://github.com/Kochava/Apple-SwiftPackage-KochavaNetworking-XCFramework";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 9.0.0;
+				minimumVersion = 11.0.0;
 			};
 		};
 		62D6B7DC95D3689153AF040D /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaMeasurement-XCFramework" */ = {
@@ -575,7 +575,7 @@
 			repositoryURL = "https://github.com/Kochava/Apple-SwiftPackage-KochavaMeasurement-XCFramework";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 9.0.0;
+				minimumVersion = 11.0.0;
 			};
 		};
 		AEBA0859D11F51644EA663CE /* XCRemoteSwiftPackageReference "Apple-SwiftPackage-KochavaTracking-XCFramework" */ = {
@@ -583,7 +583,7 @@
 			repositoryURL = "https://github.com/Kochava/Apple-SwiftPackage-KochavaTracking-XCFramework";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 9.0.0;
+				minimumVersion = 11.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
