@@ -299,9 +299,43 @@
     ]
   },
   {
+    "name": "kochava-11",
+    "local_path": "Kits/kochava/kochava-11",
+    "dest_repo": "mparticle-apple-integration-kochava-11",
+    "schemes": [
+      {
+        "scheme": "mParticle-Kochava",
+        "module": "mParticle_Kochava",
+        "destination": "iOS"
+      },
+      {
+        "scheme": "mParticle-Kochava-tvOS",
+        "module": "mParticle_Kochava",
+        "destination": "tvOS"
+      }
+    ]
+  },
+  {
     "name": "kochava-no-tracking-9",
     "local_path": "Kits/kochava/kochava-no-tracking-9",
     "dest_repo": "mparticle-apple-integration-kochava-no-tracking-9",
+    "schemes": [
+      {
+        "scheme": "mParticle-Kochava",
+        "module": "mParticle_Kochava",
+        "destination": "iOS"
+      },
+      {
+        "scheme": "mParticle-Kochava-tvOS",
+        "module": "mParticle_Kochava",
+        "destination": "tvOS"
+      }
+    ]
+  },
+  {
+    "name": "kochava-no-tracking-11",
+    "local_path": "Kits/kochava/kochava-no-tracking-11",
+    "dest_repo": "mparticle-apple-integration-kochava-no-tracking-11",
     "schemes": [
       {
         "scheme": "mParticle-Kochava",
