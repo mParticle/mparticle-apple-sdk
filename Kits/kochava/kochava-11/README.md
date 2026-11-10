@@ -31,8 +31,8 @@ Included kits: { Kochava }
 
 | Platform | Minimum Version |
 | -------- | --------------- |
-| iOS      | 15.0            |
-| tvOS     | 16.0            |
+| iOS      | 15.5            |
+| tvOS     | 16.4            |
 
 ## Documentation
 
