@@ -109,6 +109,55 @@ static NSString *const kMPATT = @"atts";
     XCTAssertNotNil(instance.persistenceAdapter);
 }
 
+- (void)testIdentityGetterIsInitializedAndThreadSafe {
+    MParticle *instance = [MParticle sharedInstance];
+    XCTAssertNotNil([instance valueForKey:@"_identity"]);
+    XCTAssertEqual([instance valueForKey:@"_identity"], instance.identity);
+
+    dispatch_queue_t concurrentQueue =
+        dispatch_queue_create("com.mparticle.test.identity.getter", DISPATCH_QUEUE_CONCURRENT);
+    NSLock *resultsLock = [[NSLock alloc] init];
+    NSUInteger workerCount = 8;
+
+    for (NSUInteger iteration = 0; iteration < 200; iteration++) {
+        [instance setValue:nil forKey:@"identity"];
+        NSMutableArray<MPIdentityApi *> *identities = [NSMutableArray arrayWithCapacity:workerCount];
+        NSMutableArray<MParticleUser *> *users = [NSMutableArray arrayWithCapacity:workerCount];
+        dispatch_group_t group = dispatch_group_create();
+
+        for (NSUInteger worker = 0; worker < workerCount; worker++) {
+            dispatch_group_async(group, concurrentQueue, ^{
+                MPIdentityApi *identity = instance.identity;
+                MParticleUser *user = identity.currentUser;
+                [resultsLock lock];
+                if (identity) {
+                    [identities addObject:identity];
+                }
+                if (user) {
+                    [users addObject:user];
+                }
+                [resultsLock unlock];
+            });
+        }
+
+        long timedOut = dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)));
+        XCTAssertEqual(timedOut, 0);
+        XCTAssertEqual(identities.count, workerCount);
+        XCTAssertEqual(users.count, workerCount);
+
+        MPIdentityApi *firstIdentity = identities.firstObject;
+        MParticleUser *firstUser = users.firstObject;
+        XCTAssertNotNil(firstIdentity);
+        XCTAssertNotNil(firstUser);
+        for (MPIdentityApi *identity in identities) {
+            XCTAssertEqual(identity, firstIdentity);
+        }
+        for (MParticleUser *user in users) {
+            XCTAssertEqual(user, firstUser);
+        }
+    }
+}
+
 - (void)testPersistenceAdapterPreservesCookieOnlyConsumerFetch {
     NSNumber *mpid = @91919;
     [MPPersistenceUtilities setMpid:mpid];
