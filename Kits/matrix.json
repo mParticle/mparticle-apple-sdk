@@ -316,6 +316,42 @@
     ]
   },
   {
+    "name": "kochava-11",
+    "local_path": "Kits/kochava/kochava-11",
+    "dest_repo": "mparticle-apple-integration-kochava-11",
+    "mirror_force_push_main": true,
+    "schemes": [
+      {
+        "scheme": "mParticle-Kochava",
+        "module": "mParticle_Kochava",
+        "destination": "iOS"
+      },
+      {
+        "scheme": "mParticle-Kochava-tvOS",
+        "module": "mParticle_Kochava",
+        "destination": "tvOS"
+      }
+    ]
+  },
+  {
+    "name": "kochava-no-tracking-11",
+    "local_path": "Kits/kochava/kochava-no-tracking-11",
+    "dest_repo": "mparticle-apple-integration-kochava-no-tracking-11",
+    "mirror_force_push_main": true,
+    "schemes": [
+      {
+        "scheme": "mParticle-Kochava",
+        "module": "mParticle_Kochava",
+        "destination": "iOS"
+      },
+      {
+        "scheme": "mParticle-Kochava-tvOS",
+        "module": "mParticle_Kochava",
+        "destination": "tvOS"
+      }
+    ]
+  },
+  {
     "name": "leanplum-6",
     "local_path": "Kits/leanplum/leanplum-6",
     "podspec": "Kits/leanplum/leanplum-6/mParticle-Leanplum-6.podspec",
