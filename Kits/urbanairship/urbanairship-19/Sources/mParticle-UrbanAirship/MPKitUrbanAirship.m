@@ -49,6 +49,13 @@ NSString * const kMPUAMapTypeEventClassDetails = @"EventClassDetails.Id";
 NSString * const kMPUAMapTypeEventAttributeClass = @"EventAttributeClass.Id";
 NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassDetails.Id";
 
+// Every associated identifier key -setAssociatedIdentifier:identityType: writes. A logout removes
+// these and leaves any other key on the channel alone.
+static NSArray<NSString *> *MPUAKitAssociatedIdentifierKeys(void) {
+    return @[UAIdentityCustomer, UAIdentityFacebook, UAIdentityTwitter, UAIdentityGoogle,
+             UAIdentityMicrosoft, UAIdentityYahoo, UAIdentityEmail, UAIdentityFacebookCustomAudienceId];
+}
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
@@ -476,6 +483,26 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
                                          returnCode:MPKitReturnCodeUnavailable];
 }
 
+- (nonnull MPKitExecStatus *)onLogoutComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request {
+    // setUserIdentity:identityType: only ever adds to what Airship holds for this device, so take
+    // back what the previous user left: the named user the kit maps and the identifiers it sets.
+    if ([self mappedNamedUserIdentityType:NULL]) {
+        [self resetAirshipContact];
+    }
+    [self setAirshipAssociatedIdentifier:nil forKeys:MPUAKitAssociatedIdentifierKeys()];
+
+    // The core forwards a logout request's identities to setUserIdentity:identityType: before this
+    // callback, so apply the new user's identities again after the reset.
+    [user.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, NSString * _Nonnull identityString, BOOL * _Nonnull stop) {
+        if ([identityType isKindOfClass:[NSNumber class]] && [identityString isKindOfClass:[NSString class]] && identityString.length > 0) {
+            [self setUserIdentity:identityString identityType:(MPUserIdentity)identityType.unsignedIntegerValue];
+        }
+    }];
+
+    return [[MPKitExecStatus alloc] initWithSDKCode:[MPKitUrbanAirship kitCode]
+                                         returnCode:MPKitReturnCodeSuccess];
+}
+
 #pragma mark Assorted
 
 - (MPKitExecStatus *)setOptOut:(BOOL)optOut {
@@ -500,27 +527,44 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
  * @return `YES` if the named user was set, otherwise `NO`.
  */
 - (BOOL)setNamedUser:(NSString *)identityString identityType:(MPUserIdentity)identityType {
+    MPUserIdentity mappedType;
+    if (![self mappedNamedUserIdentityType:&mappedType]) {
+        return NO;
+    }
+
+    if (mappedType != identityType) {
+        return NO;
+    }
+
+    [self identifyAirshipContact:identityString];
+    return YES;
+}
+
+/**
+ * Reads the mParticle identity type the namedUserIdField setting maps onto the Airship named user.
+ * @param mappedType Set to the mapped type when the method returns `YES`. May be `NULL`.
+ * @return `YES` if the setting maps a type, `NO` if it is unset, "none" or unknown.
+ */
+- (BOOL)mappedNamedUserIdentityType:(MPUserIdentity *)mappedType {
     NSString *namedUserConfig = [self configurationStringForKey:UAConfigNamedUserId];
     if (!namedUserConfig || [namedUserConfig isEqualToString:UAConfigNamedUserIdNone]) {
         return NO;
     }
-    
-    MPUserIdentity mappedType;
+
+    MPUserIdentity type;
     if ([namedUserConfig isEqualToString:UAConfigNamedUserIdEmail]) {
-        mappedType = MPUserIdentityEmail;
+        type = MPUserIdentityEmail;
     } else if ([namedUserConfig isEqualToString:UAConfigNamedUserIdOther]) {
-        mappedType = MPUserIdentityOther;
+        type = MPUserIdentityOther;
     } else if ([namedUserConfig isEqualToString:UAConfigNamedUserIdCustomerdId]) {
-        mappedType = MPUserIdentityCustomerId;;
+        type = MPUserIdentityCustomerId;
     } else {
         return NO;
     }
-    
-    if (mappedType != identityType) {
-        return NO;
+
+    if (mappedType) {
+        *mappedType = type;
     }
-    
-    [UAirship.contact identify:identityString];
     return YES;
 }
 
@@ -569,11 +613,34 @@ NSString * const kMPUAMapTypeEventAttributeClassDetails = @"EventAttributeClassD
             return false;
     }
     
-    UAAssociatedIdentifiers *identifiers = [UAirship.analytics currentAssociatedDeviceIdentifiers];
-    [identifiers setWithIdentifier:identityString key:key];
-    [UAirship.analytics associateDeviceIdentifier:identifiers];
-    
+    [self setAirshipAssociatedIdentifier:identityString forKeys:@[key]];
+
     return YES;
+}
+
+#pragma mark Airship identity writes
+
+// Every Airship identity write goes through one of these three methods, so tests can replace
+// them without taking off the Airship SDK.
+
+- (void)identifyAirshipContact:(NSString *)namedUser {
+    [UAirship.contact identify:namedUser];
+}
+
+- (void)resetAirshipContact {
+    [UAirship.contact reset];
+}
+
+/**
+ * Sets each key to the identifier, or removes the keys when the identifier is nil, and keeps every
+ * other associated identifier on the channel.
+ */
+- (void)setAirshipAssociatedIdentifier:(NSString *)identifier forKeys:(NSArray<NSString *> *)keys {
+    UAAssociatedIdentifiers *identifiers = [UAirship.analytics currentAssociatedDeviceIdentifiers];
+    for (NSString *key in keys) {
+        [identifiers setWithIdentifier:identifier key:key];
+    }
+    [UAirship.analytics associateDeviceIdentifier:identifiers];
 }
 
 - (void)logUrbanAirshipEvent:(MPEvent *)event {
