@@ -43,8 +43,10 @@ static NSString *const TRACK_EXPERIMENTS = @"trackExperiments";
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
 
-    NSString *appKey = configuration[APP_MP_KEY];
-    if (!appKey) {
+    // An app key that is not a string, or is empty, is treated as missing. It would otherwise reach the
+    // Apptimize SDK inside start's dispatch_once, and a raise inside dispatch_once cannot be recovered.
+    if ([self appKeyFromConfiguration:configuration] == nil) {
+        NSLog(@"mParticle -> Not starting Apptimize: the configuration has no app key");
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
         return execStatus;
     }
@@ -58,9 +60,15 @@ static NSString *const TRACK_EXPERIMENTS = @"trackExperiments";
 }
 
 - (void)start {
+    // The Apptimize SDK is a process-wide singleton, so the start stays behind one dispatch_once.
+    // Every configuration read runs before it, so no configuration read inside the block can raise.
+    NSString *appKey = [self appKeyFromConfiguration:self.configuration];
+    if (appKey == nil) {
+        return;
+    }
     NSDictionary *options = [self buildApptimizeOptions];
     void(^start_block)(void) = ^{
-        [Apptimize startApptimizeWithApplicationKey:self.configuration[APP_MP_KEY] options:options];
+        [Apptimize startApptimizeWithApplicationKey:appKey options:options];
         self.started = YES;
         NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
@@ -89,34 +97,80 @@ static NSString *const TRACK_EXPERIMENTS = @"trackExperiments";
 }
 
 - (void)configureApptimizeDevicePairing:(NSMutableDictionary*)o {
-    NSString *pairing = [self configValueForKey:DEVICE_PAIRING_MP_KEY];
+    NSNumber *pairing = [self configBoolForKey:DEVICE_PAIRING_MP_KEY];
     if (pairing) {
-        NSNumber *boxedPairing = [NSNumber numberWithBool:[pairing boolValue]];
-        [o setObject:boxedPairing forKey:ApptimizeDevicePairingOption];
+        [o setObject:pairing forKey:ApptimizeDevicePairingOption];
     }
 }
 
 - (void)configureApptimizeDelayUntilTestsAreAvailable:(NSMutableDictionary*)o {
-    NSString *delay = [self configValueForKey:DELAY_UNTIL_TESTS_ARE_AVAILABLE_MP_KEY];
+    NSNumber *delay = [self configDoubleForKey:DELAY_UNTIL_TESTS_ARE_AVAILABLE_MP_KEY];
     if (delay) {
-        NSNumber *boxedDelay = [NSNumber numberWithDouble:[delay doubleValue]];
-        [o setObject:boxedDelay forKey:ApptimizeDelayUntilTestsAreAvailableOption];
+        [o setObject:delay forKey:ApptimizeDelayUntilTestsAreAvailableOption];
     }
 }
 
 - (void)configureApptimizeLogLevel:(NSMutableDictionary*)o {
-    NSString *logLevel = [self configValueForKey:LOG_LEVEL_MP_KEY];
+    NSString *logLevel = [self configStringForKey:LOG_LEVEL_MP_KEY];
     if (logLevel) {
         [o setObject:logLevel forKey:ApptimizeLogLevelOption];
     }
 }
 
-- (nullable NSString*) configValueForKey:(NSString*)key {
-    NSString *value = [self.launchOptions objectForKey:key];
-    if (value == nil) {
-        value = [self.configuration objectForKey:key];
+#pragma mark Configuration values
+
+// Server configuration is parsed JSON, so neither the dictionary nor its values are guaranteed to have
+// the type the mParticle UI collects. A wrong-typed value is logged and treated as unset, which leaves
+// the Apptimize default in place.
+- (nullable NSString *)appKeyFromConfiguration:(id)configuration {
+    id value = [configuration isKindOfClass:[NSDictionary class]] ? configuration[APP_MP_KEY] : nil;
+    if (![value isKindOfClass:[NSString class]] || [(NSString *)value length] == 0) {
+        return nil;
     }
     return value;
+}
+
+- (nullable id) configValueForKey:(NSString*)key {
+    id value = [self.launchOptions isKindOfClass:[NSDictionary class]] ? self.launchOptions[key] : nil;
+    if (value == nil) {
+        value = [self.configuration isKindOfClass:[NSDictionary class]] ? self.configuration[key] : nil;
+    }
+    return value;
+}
+
+- (nullable NSString *)configStringForKey:(NSString *)key {
+    id value = [self configValueForKey:key];
+    if (value != nil && ![value isKindOfClass:[NSString class]]) {
+        NSLog(@"Ignoring configuration value for %@: expected a string, got %@", key, [value class]);
+        return nil;
+    }
+    return value;
+}
+
+// Returns the value as a boolean NSNumber, from a string or a number, the forms other kits accept.
+- (nullable NSNumber *)configBoolForKey:(NSString *)key {
+    id value = [self configValueForKey:key];
+    if (value == nil) {
+        return nil;
+    }
+    if (!([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])) {
+        NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+        return nil;
+    }
+    return @([value boolValue]);
+}
+
+// Returns the value as a double NSNumber, from a string or a number.
+- (nullable NSNumber *)configDoubleForKey:(NSString *)key {
+    id value = [self configValueForKey:key];
+    if (value == nil) {
+        return nil;
+    }
+    if (!([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])) {
+        NSLog(@"Ignoring configuration value for %@: expected a string or number, got %@", key, [value class]);
+        return nil;
+    }
+    return @([value doubleValue]);
 }
 
 - (void) configureExperimentTracking {
