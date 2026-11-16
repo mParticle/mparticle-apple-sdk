@@ -215,6 +215,30 @@ static NSString * const kMPLeanplumEmailUserAttributeKey = @"email";
     return execStatus;
 }
 
+- (MPKitExecStatus *)onLogoutComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
+    NSString *userIdField = self.configuration[@"userIdField"];
+    if (![userIdField isEqual:@"customerId"] && ![userIdField isEqual:@"email"]) {
+        // In mpid mode the identity change observer already moves Leanplum to the new MPID.
+        return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLeanplum) returnCode:MPKitReturnCodeUnavailable];
+    }
+
+    // Leanplum keeps its user id across sessions, and the user a logout returns usually has no
+    // customer id or email, so without this the logged-out user's id would stay on the device.
+    // Fall back to the Leanplum device id, the id Leanplum gives a user who never logged in.
+    NSString *userId = [self generateUserId:self.configuration user:user];
+    if (userId.length == 0) {
+        userId = [self leanplumDeviceId];
+    }
+    if (userId.length == 0) {
+        return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLeanplum) returnCode:MPKitReturnCodeFail];
+    }
+
+    [self setLeanplumUserId:userId];
+    // Fetch variables, messages and A/B variants for the new id, not the logged-out user's.
+    [self forceLeanplumContentUpdate];
+    return [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLeanplum) returnCode:MPKitReturnCodeSuccess];
+}
+
 #pragma mark e-Commerce
 - (MPKitExecStatus *)routeCommerceEvent:(MPCommerceEvent *)commerceEvent {
     
@@ -324,6 +348,21 @@ static NSString * const kMPLeanplumEmailUserAttributeKey = @"email";
 
 - (FilteredMParticleUser *)currentUser {
     return [[self kitApi] getCurrentUserWithKit:self];
+}
+
+// The logout handler reaches Leanplum only through these three methods, so tests can replace them
+// without starting the Leanplum SDK.
+
+- (NSString *)leanplumDeviceId {
+    return [Leanplum deviceId];
+}
+
+- (void)setLeanplumUserId:(NSString *)userId {
+    [Leanplum setUserId:userId];
+}
+
+- (void)forceLeanplumContentUpdate {
+    [Leanplum forceContentUpdate];
 }
 
 @end
