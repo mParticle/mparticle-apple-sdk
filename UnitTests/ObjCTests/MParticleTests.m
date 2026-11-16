@@ -28,14 +28,14 @@ static NSString *const kMPATT = @"atts";
 - (void)initializePersistence;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
-- (BOOL)webviewBridgeAllowsHost:(NSString *)host;
+- (BOOL)webviewBridgeAllowsHost:(NSString *)host isMainFrame:(BOOL)isMainFrame allowedHosts:(nullable NSArray<NSString *> *)allowedHosts;
 #if TARGET_OS_IOS == 1
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message;
 #endif
 - (nullable NSString *)webviewAttributeKeyFromDictionary:(NSDictionary *)dictionary;
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
-@property (nonatomic, copy, nullable) NSArray<NSString *> *webviewBridgeAllowedHosts;
+@property (nonatomic, strong) NSMapTable<id, NSArray<NSString *> *> *webviewBridgeHostsByWebView;
 @end
 
 @interface MParticleUser ()
@@ -901,44 +901,106 @@ static NSString *const kMPATT = @"atts";
     [mockInstance stopMocking];
 }
 
-- (void)testWebviewBridgeInitializerKeepsTheAllowedHostsLowercased {
+- (void)testWebviewBridgeInitializerKeepsEachWebViewsHostsLowercased {
     MParticle *instance = [[MParticle alloc] init];
-    // One web view per call: a content controller refuses a second handler under the same name.
-    [instance initializeWKWebView:[[WKWebView alloc] initWithFrame:CGRectZero] bridgeName:@"abc123" allowedHosts:@[@"Example.COM", @"", (id)@42]];
-    XCTAssertEqualObjects(instance.webviewBridgeAllowedHosts, @[@"example.com"]);
-    [instance initializeWKWebView:[[WKWebView alloc] initWithFrame:CGRectZero] bridgeName:@"abc123"];
-    XCTAssertNil(instance.webviewBridgeAllowedHosts);
+    // One web view per configuration, so each has a content controller of its own.
+    WKWebView *listedWebView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    WKWebView *unlistedWebView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [instance initializeWKWebView:listedWebView bridgeName:@"abc123" allowedHosts:@[@"Example.COM", @"", (id)@42]];
+    [instance initializeWKWebView:unlistedWebView bridgeName:@"abc123"];
+    // A later call without a list leaves the earlier web view's list as it was.
+    XCTAssertEqualObjects([instance.webviewBridgeHostsByWebView objectForKey:listedWebView], @[@"example.com"]);
+    XCTAssertEqualObjects([instance.webviewBridgeHostsByWebView objectForKey:unlistedWebView], @[]);
+}
+
+- (void)testWebviewBridgeInitializerTakesASecondWebViewThatSharesAContentController {
+    MParticle *instance = [[MParticle alloc] init];
+    WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
+    WKWebView *firstWebView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
+    WKWebView *secondWebView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
+    XCTAssertTrue(firstWebView.configuration.userContentController == secondWebView.configuration.userContentController);
+    [instance initializeWKWebView:firstWebView bridgeName:@"abc123"];
+    XCTAssertNoThrow([instance initializeWKWebView:secondWebView bridgeName:@"abc123"]);
+    XCTAssertNotNil([instance.webviewBridgeHostsByWebView objectForKey:firstWebView]);
+    XCTAssertNotNil([instance.webviewBridgeHostsByWebView objectForKey:secondWebView]);
 }
 
 - (void)testWebviewBridgeDropsAMessageFromAHostOutsideTheList {
     MParticle *instance = [[MParticle alloc] init];
-    instance.webviewBridgeAllowedHosts = @[@"example.com"];
+    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [instance initializeWKWebView:webView bridgeName:@"abc123" allowedHosts:@[@"example.com"]];
     id mockInstance = OCMPartialMock(instance);
     OCMReject([mockInstance handleWebviewCommand:[OCMArg any] dictionary:[OCMArg any]]);
-    [instance userContentController:[[WKUserContentController alloc] init] didReceiveScriptMessage:[self webviewMessageFromHost:@"evil.example.net"]];
+    // A list binds the main frame too.
+    [instance userContentController:webView.configuration.userContentController didReceiveScriptMessage:[self webviewMessageFromHost:@"evil.example.net" mainFrame:YES webView:webView]];
     OCMVerifyAll(mockInstance);
     [mockInstance stopMocking];
 }
 
 - (void)testWebviewBridgeHandlesAMessageFromAListedHost {
     MParticle *instance = [[MParticle alloc] init];
-    instance.webviewBridgeAllowedHosts = @[@"example.com"];
+    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [instance initializeWKWebView:webView bridgeName:@"abc123" allowedHosts:@[@"example.com"]];
+    // Another web view bridged later without a list leaves this web view's list in place.
+    [instance initializeWKWebView:[[WKWebView alloc] initWithFrame:CGRectZero] bridgeName:@"abc123"];
     id mockInstance = OCMPartialMock(instance);
     NSDictionary *expectedDictionary = @{@"key":@"foo-key", @"value":@"foo"};
     OCMExpect([mockInstance handleWebviewCommand:kMParticleWebViewPathSetSessionAttribute dictionary:expectedDictionary]);
-    [instance userContentController:[[WKUserContentController alloc] init] didReceiveScriptMessage:[self webviewMessageFromHost:@"app.example.com"]];
+    // A list admits a frame inside the page from a listed host.
+    [instance userContentController:webView.configuration.userContentController didReceiveScriptMessage:[self webviewMessageFromHost:@"app.example.com" mainFrame:NO webView:webView]];
     OCMVerifyAll(mockInstance);
     [mockInstance stopMocking];
 }
 
-// A script message whose frame reports the given host; the body is one setSessionAttribute command.
-- (WKScriptMessage *)webviewMessageFromHost:(NSString *)host {
+- (void)testWebviewBridgeDropsAMessageFromAFrameInsideThePageWithoutAList {
+    MParticle *instance = [[MParticle alloc] init];
+    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [instance initializeWKWebView:webView bridgeName:@"abc123"];
+    id mockInstance = OCMPartialMock(instance);
+    OCMReject([mockInstance handleWebviewCommand:[OCMArg any] dictionary:[OCMArg any]]);
+    [instance userContentController:webView.configuration.userContentController didReceiveScriptMessage:[self webviewMessageFromHost:@"ads.example.net" mainFrame:NO webView:webView]];
+    OCMVerifyAll(mockInstance);
+    [mockInstance stopMocking];
+}
+
+- (void)testWebviewBridgeHandlesAMessageFromTheMainFrameWithoutAList {
+    MParticle *instance = [[MParticle alloc] init];
+    WKWebView *webView = [[WKWebView alloc] initWithFrame:CGRectZero];
+    [instance initializeWKWebView:webView bridgeName:@"abc123"];
+    id mockInstance = OCMPartialMock(instance);
+    NSDictionary *expectedDictionary = @{@"key":@"foo-key", @"value":@"foo"};
+    OCMExpect([mockInstance handleWebviewCommand:kMParticleWebViewPathSetSessionAttribute dictionary:expectedDictionary]);
+    [instance userContentController:webView.configuration.userContentController didReceiveScriptMessage:[self webviewMessageFromHost:@"shop.example.org" mainFrame:YES webView:webView]];
+    OCMVerifyAll(mockInstance);
+    [mockInstance stopMocking];
+}
+
+- (void)testWebviewBridgeDropsAMessageFromAWebViewItWasNotPassed {
+    MParticle *instance = [[MParticle alloc] init];
+    WKWebViewConfiguration *configuration = [[WKWebViewConfiguration alloc] init];
+    WKWebView *bridgedWebView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
+    [instance initializeWKWebView:bridgedWebView bridgeName:@"abc123"];
+    // A popup that WebKit builds from the bridged web view's configuration shares its content controller.
+    WKWebView *popupWebView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:configuration];
+    id mockInstance = OCMPartialMock(instance);
+    OCMReject([mockInstance handleWebviewCommand:[OCMArg any] dictionary:[OCMArg any]]);
+    [instance userContentController:configuration.userContentController didReceiveScriptMessage:[self webviewMessageFromHost:@"ads.example.net" mainFrame:YES webView:popupWebView]];
+    [instance userContentController:configuration.userContentController didReceiveScriptMessage:[self webviewMessageFromHost:@"ads.example.net" mainFrame:YES webView:nil]];
+    OCMVerifyAll(mockInstance);
+    [mockInstance stopMocking];
+}
+
+// A script message from the given web view whose frame reports the given host and whether it is the main
+// frame; the body is one setSessionAttribute command.
+- (WKScriptMessage *)webviewMessageFromHost:(NSString *)host mainFrame:(BOOL)mainFrame webView:(nullable WKWebView *)webView {
     id securityOrigin = OCMClassMock([WKSecurityOrigin class]);
     OCMStub([securityOrigin host]).andReturn(host);
     id frameInfo = OCMClassMock([WKFrameInfo class]);
     OCMStub([frameInfo securityOrigin]).andReturn(securityOrigin);
+    OCMStub([frameInfo isMainFrame]).andReturn(mainFrame);
     id message = OCMClassMock([WKScriptMessage class]);
     OCMStub([message frameInfo]).andReturn(frameInfo);
+    OCMStub([message webView]).andReturn(webView);
     NSString *body = [NSString stringWithFormat:@"{\"path\":\"%@\",\"value\":{\"key\":\"foo-key\",\"value\":\"foo\"}}", kMParticleWebViewPathSetSessionAttribute];
     OCMStub([message body]).andReturn(body);
     return message;
@@ -1047,25 +1109,35 @@ static NSString *const kMPATT = @"atts";
 }
 #endif
 
-- (void)testWebviewBridgeAllowsEveryHostWithoutAList {
+- (void)testWebviewBridgeAllowsOnlyTheMainFrameWithoutAList {
     MParticle *instance = [[MParticle alloc] init];
-    XCTAssertTrue([instance webviewBridgeAllowsHost:@"example.com"]);
-    XCTAssertTrue([instance webviewBridgeAllowsHost:@"evil.example.net"]);
-    XCTAssertTrue([instance webviewBridgeAllowsHost:nil]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"example.com" isMainFrame:YES allowedHosts:nil]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"evil.example.net" isMainFrame:YES allowedHosts:nil]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:nil isMainFrame:YES allowedHosts:nil]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"" isMainFrame:YES allowedHosts:nil]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"example.com" isMainFrame:NO allowedHosts:nil]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"evil.example.net" isMainFrame:NO allowedHosts:nil]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:nil isMainFrame:NO allowedHosts:nil]);
+    // An empty list is no list.
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"example.com" isMainFrame:YES allowedHosts:@[]]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"example.com" isMainFrame:NO allowedHosts:@[]]);
 }
 
 - (void)testWebviewBridgeAllowsOnlyListedHostsAndTheirSubdomains {
     MParticle *instance = [[MParticle alloc] init];
-    instance.webviewBridgeAllowedHosts = @[@"example.com", @"shop.example.org"];
-    XCTAssertTrue([instance webviewBridgeAllowsHost:@"example.com"]);
-    XCTAssertTrue([instance webviewBridgeAllowsHost:@"app.example.com"]);
-    XCTAssertTrue([instance webviewBridgeAllowsHost:@"App.Example.COM"]);
-    XCTAssertTrue([instance webviewBridgeAllowsHost:@"shop.example.org"]);
-    XCTAssertFalse([instance webviewBridgeAllowsHost:@"example.org"]);
-    XCTAssertFalse([instance webviewBridgeAllowsHost:@"notexample.com"]);
-    XCTAssertFalse([instance webviewBridgeAllowsHost:@"example.com.evil.net"]);
-    XCTAssertFalse([instance webviewBridgeAllowsHost:@""]);
-    XCTAssertFalse([instance webviewBridgeAllowsHost:nil]);
+    NSArray<NSString *> *allowedHosts = @[@"example.com", @"shop.example.org"];
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"example.com" isMainFrame:YES allowedHosts:allowedHosts]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"app.example.com" isMainFrame:YES allowedHosts:allowedHosts]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"App.Example.COM" isMainFrame:YES allowedHosts:allowedHosts]);
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"shop.example.org" isMainFrame:YES allowedHosts:allowedHosts]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"example.org" isMainFrame:YES allowedHosts:allowedHosts]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"notexample.com" isMainFrame:YES allowedHosts:allowedHosts]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"example.com.evil.net" isMainFrame:YES allowedHosts:allowedHosts]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"" isMainFrame:YES allowedHosts:allowedHosts]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:nil isMainFrame:YES allowedHosts:allowedHosts]);
+    // A list applies to frames inside the page as it does to the main frame.
+    XCTAssertTrue([instance webviewBridgeAllowsHost:@"app.example.com" isMainFrame:NO allowedHosts:allowedHosts]);
+    XCTAssertFalse([instance webviewBridgeAllowsHost:@"evil.example.net" isMainFrame:NO allowedHosts:allowedHosts]);
 }
 
 - (void)testATTAuthorizationStatusNotDetermined {

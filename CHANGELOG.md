@@ -20,6 +20,28 @@ For each release, **Core** (main SDK) changes are listed first, followed by **Ki
 
 ##### Added
 
+## [9.7.6] - 2026-11-16
+
+### Core
+
+#### Fixed
+
+- Limit the webview bridge to the main frame by default ([#1215](https://github.com/mParticle/mparticle-apple-sdk/pull/1215))
+- Default event type 0 to Other in setType ([#1208](https://github.com/mParticle/mparticle-apple-sdk/pull/1208))
+- Initialize and synchronize MParticle.identity to prevent a startup race ([#1209](https://github.com/mParticle/mparticle-apple-sdk/pull/1209))
+- Keep webview product attributes out of key-value coding ([#1207](https://github.com/mParticle/mparticle-apple-sdk/pull/1207))
+- Protect the event database until the first unlock ([#1196](https://github.com/mParticle/mparticle-apple-sdk/pull/1196))
+- Re-check for batching kits after kits start ([#1191](https://github.com/mParticle/mparticle-apple-sdk/pull/1191))
+- Forward kit batches that contain non-ASCII text ([#1190](https://github.com/mParticle/mparticle-apple-sdk/pull/1190))
+
+### Kits
+
+#### Kits
+
+##### Added
+
+- Add Kochava SDK 11 kits ([#1213](https://github.com/mParticle/mparticle-apple-sdk/pull/1213))
+
 ## [9.7.5] - 2026-11-05
 
 ### Core
@@ -2907,7 +2929,8 @@ This release updates MPIdentityApiRequest by removing the copyUserAttributes set
 - Added support to the new iOS 9 application:openURL:options: app delegate method
 - Fixed a bug migrating data when the database structure changes
 
-[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.5...HEAD
+[unreleased]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.6...HEAD
+[9.7.6]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.5...v9.7.6
 [9.7.5]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.4...v9.7.5
 [9.7.4]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.3...v9.7.4
 [9.7.3]: https://github.com/mParticle/mparticle-apple-sdk/compare/v9.7.2...v9.7.3

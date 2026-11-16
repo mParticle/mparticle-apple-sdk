@@ -39,8 +39,11 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1 # zizmor only needs the tree at HEAD
+      # A finding fails this job. The zizmor version is pinned so a new release of the tool
+      # cannot fail main on its own; bump it together with the fixes its new audits ask for.
       - name: Run zizmor
         uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
         with:
           advanced-security: false
           annotations: true
+          version: 1.32.0
