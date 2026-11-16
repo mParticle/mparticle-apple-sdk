@@ -213,6 +213,8 @@ public final class MPKitFilterEngine: NSObject {
         "logLTVIncrease:eventName:eventInfo:": "e",
         "leaveBreadcrumb:": "bc",
         "logError:exception:topmostContext:eventInfo:": "x",
+        "logError:eventInfo:": "x",
+        "logException:": "x",
         "logNetworkPerformanceMeasurement:": "npe",
         "profileChange:": "pro",
         "setOptOut:": "o",
