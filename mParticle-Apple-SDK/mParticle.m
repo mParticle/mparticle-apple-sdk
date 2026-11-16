@@ -93,7 +93,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
 @property (nonatomic, strong) MParticleWebViewPRIVATE *webView;
-@property (nonatomic, copy, nullable) NSArray<NSString *> *webviewBridgeAllowedHosts;
+@property (nonatomic, strong) NSMapTable<id, NSArray<NSString *> *> *webviewBridgeHostsByWebView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
@@ -1643,14 +1643,24 @@ MPLog* logger;
     return kBridgeVersion;
 }
 
+// The web views passed to initializeWKWebView, each with its own host list (empty for none). The keys are
+// weak, so the bridge never keeps a web view alive.
+- (NSMapTable<id, NSArray<NSString *> *> *)webviewBridgeHostsByWebView {
+    if (_webviewBridgeHostsByWebView == nil) {
+        _webviewBridgeHostsByWebView = [NSMapTable weakToStrongObjectsMapTable];
+    }
+    return _webviewBridgeHostsByWebView;
+}
+
 // Every frame in the web view can reach the script message handler, not only the page the app loaded,
-// so without a list a third-party frame, or a page the user navigated to, drives identity, opt-out and
-// attributes through the bridge. A list names the hosts the app trusts, each with its subdomains; no
-// list keeps the bridge open to every origin, as before.
-- (BOOL)webviewBridgeAllowsHost:(NSString *)host {
-    NSArray<NSString *> *allowedHosts = self.webviewBridgeAllowedHosts;
+// so an embedded third-party frame could drive identity, opt-out and attributes through the bridge.
+// A web view's list names the hosts the app trusts, each with its subdomains, and applies to every
+// frame, the main frame included. With no list only the main frame may use the bridge: a frame inside
+// the page is refused whatever its origin. A page the main frame is sent to, including by a frame
+// inside the page after a tap, is still the main frame, so only a list closes that.
+- (BOOL)webviewBridgeAllowsHost:(NSString *)host isMainFrame:(BOOL)isMainFrame allowedHosts:(NSArray<NSString *> *)allowedHosts {
     if (allowedHosts.count == 0) {
-        return YES;
+        return isMainFrame;
     }
     if (![host isKindOfClass:[NSString class]] || host.length == 0) {
         return NO;
@@ -1671,22 +1681,36 @@ MPLog* logger;
 
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(NSString *)bridgeName allowedHosts:(NSArray<NSString *> *)allowedHosts {
     [self.rokt logRoktApiDiagnostic:@"REGISTER_WEBVIEW"];
+    if (webView == nil) {
+        [logger error:@"Unable to initialize webview because the web view is nil"];
+        return;
+    }
+    NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
+    if (bridgeValue == nil) {
+        [logger error:@"Unable to initialize webview due to missing or invalid bridgeName"];
+        return;
+    }
     NSMutableArray<NSString *> *hosts = [NSMutableArray array];
     for (id host in allowedHosts) {
         if ([host isKindOfClass:[NSString class]] && [host length] > 0) {
             [hosts addObject:[host lowercaseString]];
         }
     }
-    self.webviewBridgeAllowedHosts = hosts.count > 0 ? hosts : nil;
-    NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
-    if (bridgeValue == nil) {
-        [logger error:@"Unable to initialize webview due to missing or invalid bridgeName"];
-        return;
-    }
+    // Each web view keeps its own list, so a later call for another web view leaves this one's rule as it is.
+    [self.webviewBridgeHostsByWebView setObject:[hosts copy] forKey:webView];
     NSString *bridgeVersion = [self bridgeVersion];
     NSString *handlerName = [NSString stringWithFormat:@"mParticle_%@_v%@", bridgeValue, bridgeVersion];
     WKUserContentController *contentController = webView.configuration.userContentController;
-    [contentController addScriptMessageHandler:self name:handlerName];
+    // Web views built from one configuration share its content controller, which takes one handler per
+    // name and raises on a second. A controller that already carries the handler is left as it is:
+    // replacing the handler while WebKit creates a popup cuts off the opener's messages.
+    @try {
+        [contentController addScriptMessageHandler:self name:handlerName];
+    } @catch (NSException *exception) {
+        if (![exception.name isEqualToString:NSInvalidArgumentException]) {
+            @throw;
+        }
+    }
 }
 
 // Updates isIOS flag in JS API to true via webview.
@@ -1696,9 +1720,21 @@ MPLog* logger;
 
 // Process web log event that is raised in iOS hybrid apps that are using WKWebView
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
-    NSString *host = message.frameInfo.securityOrigin.host;
-    if (![self webviewBridgeAllowsHost:host]) {
-        NSString *errorMessage = [NSString stringWithFormat:@"Ignoring webview bridge message from a frame outside the allowed hosts: %@", host];
+    // A web view built from a bridged web view's configuration, such as a popup a frame opens, shares its
+    // content controller and so reaches this handler. Only a web view passed to initializeWKWebView may
+    // use the bridge.
+    WKWebView *webView = message.webView;
+    NSArray<NSString *> *allowedHosts = webView != nil ? [self.webviewBridgeHostsByWebView objectForKey:webView] : nil;
+    if (allowedHosts == nil) {
+        [logger error:@"Ignoring webview bridge message from a web view that was not passed to initializeWKWebView. Pass every web view that should use the bridge, including one that shares a bridged web view's configuration."];
+        return;
+    }
+    WKFrameInfo *frameInfo = message.frameInfo;
+    NSString *host = frameInfo.securityOrigin.host;
+    if (![self webviewBridgeAllowsHost:host isMainFrame:frameInfo.isMainFrame allowedHosts:allowedHosts]) {
+        NSString *errorMessage = allowedHosts.count > 0
+            ? [NSString stringWithFormat:@"Ignoring webview bridge message from a frame outside the allowed hosts: %@. The list applies to the main frame too, so it must name the main frame's host.", host]
+            : [NSString stringWithFormat:@"Ignoring webview bridge message from a frame other than the main frame: %@. Pass allowedHosts to initializeWKWebView:bridgeName:allowedHosts: to admit frames from hosts the app trusts. The list applies to the main frame too, so it must name the main frame's host.", host];
         [logger error:errorMessage];
         return;
     }
