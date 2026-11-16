@@ -159,7 +159,7 @@ private final class TestUser: MParticleUser {
         setAttributes[key] = value
     }
 
-    override func removeUserAttribute(_ key: String) {
+    override func removeAttribute(_ key: String) {
         if !defersAttributeRemoval {
             storedAttributes.removeValue(forKey: key)
         }

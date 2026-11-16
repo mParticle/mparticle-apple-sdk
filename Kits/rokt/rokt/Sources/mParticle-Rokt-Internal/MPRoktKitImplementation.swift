@@ -585,34 +585,34 @@ public final class MPRoktKitImplementation: NSObject {
         let callerPrivacyAttributes = Self.extractedPrivacyAttributes(mapped)
         let preparationSequence = self.nextPreparationSequence()
 
+        let onIdentifyCompleted: (MParticleUser?) -> Void = { [weak self] identifiedUser in
+            guard let self,
+                  self.isCurrentPreparationSequence(preparationSequence) else {
+                return
+            }
+            self.clearOverriddenStoredPrivacyAttributes(
+                callerPrivacyAttributes: callerPrivacyAttributes,
+                filteredUser: nil,
+                targetUser: identifiedUser
+            )
+            let targetAttributes = identifiedUser?.userAttributes ?? self.identityClient.currentUser?.userAttributes ?? [:]
+            var identifyPrivacyAttributes = Self.extractedPrivacyAttributes(
+                Self.valuesAsStrings(targetAttributes)
+            )
+            for (key, value) in callerPrivacyAttributes where identifyPrivacyAttributes[key]?.lowercased() != "true" {
+                identifyPrivacyAttributes[key] = value
+            }
+            self.syncNoTargetingAttribute(
+                effectivePrivacyAttributes: identifyPrivacyAttributes,
+                filteredUser: nil,
+                targetUser: identifiedUser
+            )
+        }
+
         confirmUser(
             attributes: attributes,
             user: identityClient.currentUser,
-            onIdentifyCompleted: { [weak self] identifiedUser in
-                guard let self,
-                      self.isCurrentPreparationSequence(preparationSequence) else {
-                    return
-                }
-                self.clearOverriddenStoredPrivacyAttributes(
-                    callerPrivacyAttributes: callerPrivacyAttributes,
-                    filteredUser: nil,
-                    targetUser: identifiedUser
-                )
-                let targetAttributes = identifiedUser?.userAttributes ?? self.identityClient.currentUser?.userAttributes ?? [:]
-                var identifyPrivacyAttributes = Self.extractedPrivacyAttributes(
-                    Self.valuesAsStrings(targetAttributes)
-                )
-                for (key, value) in callerPrivacyAttributes {
-                    if identifyPrivacyAttributes[key]?.lowercased() != "true" {
-                        identifyPrivacyAttributes[key] = value
-                    }
-                }
-                self.syncNoTargetingAttribute(
-                    effectivePrivacyAttributes: identifyPrivacyAttributes,
-                    filteredUser: nil,
-                    targetUser: identifiedUser
-                )
-            }
+            onIdentifyCompleted: onIdentifyCompleted
         ) { _, identified in
             let currentFilteredUser = self.currentFilteredUser(fallback: filteredUser)
             // Identify is not awaited, so the user's identities may still hold the old values.
@@ -1116,7 +1116,7 @@ public final class MPRoktKitImplementation: NSObject {
                       existingValue.lowercased() != "true" else {
                     continue
                 }
-                resolvedUser.removeUserAttribute(existingKey)
+                resolvedUser.removeAttribute(existingKey)
             }
         } else if let kitAPI = self.kitAPI, let filteredUser {
             let storedStrings = Self.valuesAsStrings(filteredUser.userAttributes)
@@ -1166,10 +1166,8 @@ public final class MPRoktKitImplementation: NSObject {
             filteredUser: filteredUser
         )
         let callerPrivacyAttributes = Self.extractedPrivacyAttributes(mapped)
-        for (key, value) in callerPrivacyAttributes {
-            if effectivePrivacyAttributes[key]?.lowercased() != "true" {
-                effectivePrivacyAttributes[key] = value
-            }
+        for (key, value) in callerPrivacyAttributes where effectivePrivacyAttributes[key]?.lowercased() != "true" {
+            effectivePrivacyAttributes[key] = value
         }
         return effectivePrivacyAttributes
     }
@@ -1204,7 +1202,7 @@ public final class MPRoktKitImplementation: NSObject {
             if let resolvedUser {
                 for existingKey in resolvedUser.userAttributes.keys
                 where existingKey.caseInsensitiveCompare(Constants.noTargetingUserAttribute) == .orderedSame {
-                    resolvedUser.removeUserAttribute(existingKey)
+                    resolvedUser.removeAttribute(existingKey)
                 }
             } else if let kitAPI = self.kitAPI, let currentFilteredUser = filteredUser {
                 for existingKey in currentFilteredUser.userAttributes.keys
