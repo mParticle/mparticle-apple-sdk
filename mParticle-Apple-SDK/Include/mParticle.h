@@ -1190,7 +1190,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Create a bridge between the mParticle web SDK and iOS SDK.
  
- This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that this handler will persist across page loads.
+ This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that this handler will persist across page loads. Only the web view's main frame may use the bridge; to admit frames inside the page, use `initializeWKWebView:bridgeName:allowedHosts:` with a list that names the main frame's host too. Another web view built from this web view's configuration, such as a popup a frame opens, may use the bridge only once it is passed in too, with a list naming the hosts it may load: without a list, any page it loads is its main frame.
  @param webView The web view to be initialized
  */
 - (void)initializeWKWebView:(WKWebView *)webView;
@@ -1198,7 +1198,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Create a bridge between the mParticle web SDK and iOS SDK.
  
- This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that this handler will persist across page loads.
+ This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that this handler will persist across page loads. Only the web view's main frame may use the bridge; to admit frames inside the page, use `initializeWKWebView:bridgeName:allowedHosts:` with a list that names the main frame's host too. Another web view built from this web view's configuration, such as a popup a frame opens, may use the bridge only once it is passed in too, with a list naming the hosts it may load: without a list, any page it loads is its main frame.
  @param webView The web view to be initialized
  @param bridgeName The name of the webview bridge
  */
@@ -1207,10 +1207,10 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Create a bridge between the mParticle web SDK and iOS SDK, open only to frames from the given hosts.
 
- This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, as `initializeWKWebView:bridgeName:` does. Every frame in the web view can reach that handler, not only the page the app loaded, so without a list a third-party frame, or a page the user navigates to, can drive identity, opt-out and user attributes through the bridge.
+ This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, as `initializeWKWebView:bridgeName:` does. Every frame in the web view can reach that handler, not only the page the app loaded, and so can every web view built from its configuration, such as a popup a frame opens. The bridge handles messages only from web views passed to one of the `initializeWKWebView` methods, each under its own list. Without a list only the main frame may use the bridge, so a frame inside the page is refused whatever its origin, but a page the main frame is sent to, including by a frame inside the page after a tap, can still drive identity, opt-out and user attributes through the bridge. A list closes both.
  @param webView The web view to be initialized
  @param bridgeName The name of the webview bridge
- @param allowedHosts The host names whose frames may use the bridge, each with its subdomains (`example.com` admits `app.example.com`); nil or empty keeps the bridge open to every origin, as `initializeWKWebView:bridgeName:` does. The list applies to every web view this instance bridges, and the latest call's list stands.
+ @param allowedHosts The host names whose frames may use the bridge, each with its subdomains (`example.com` admits `app.example.com`), in the main frame and in every frame inside it, so the list must name the main frame's host too; once a list is set, a main frame with no host, such as a local file, is refused. Nil or empty admits the main frame alone, as `initializeWKWebView:bridgeName:` does. Each web view keeps the list it was passed with, and a later call for another web view does not change it.
  */
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName allowedHosts:(nullable NSArray<NSString *> *)allowedHosts;
 
