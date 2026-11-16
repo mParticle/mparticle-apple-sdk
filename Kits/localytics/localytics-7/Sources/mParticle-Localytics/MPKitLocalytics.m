@@ -16,6 +16,13 @@
 
 @end
 
+// The Localytics identifier name for each MPUserIdentity value, in enum order. The customer id and the
+// email go to their own Localytics setters, so -setUserIdentity:identityType: never writes those two
+// names with +setValue:forIdentifier:.
+static NSArray<NSString *> *MPLocalyticsIdentifierNames(void) {
+    return @[@"Other", @"CustomerId", @"Facebook", @"Twitter", @"Google", @"Microsoft", @"Yahoo", @"Email", @"Alias", @"FacebookCustomAudienceId", @"Other2", @"Other3", @"Other4", @"Other5", @"Other6", @"Other7", @"Other8", @"Other9", @"Other10", @"MobileNumber", @"PhoneNumber2", @"PhoneNumber3"];
+}
+
 
 @implementation MPKitLocalytics
 
@@ -281,20 +288,20 @@
 - (MPKitExecStatus *)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
     switch (identityType) {
         case MPUserIdentityCustomerId:
-            [Localytics setCustomerId:identityString];
+            [self setLocalyticsCustomerId:identityString];
             break;
             
         case MPUserIdentityEmail:
-            [Localytics setCustomerEmail:identityString];
+            [self setLocalyticsCustomerEmail:identityString];
             break;
             
         default: {
-            NSArray *identifierStrings = @[@"Other", @"CustomerId", @"Facebook", @"Twitter", @"Google", @"Microsoft", @"Yahoo", @"Email", @"Alias", @"FacebookCustomAudienceId", @"Other2", @"Other3", @"Other4", @"Other5", @"Other6", @"Other7", @"Other8", @"Other9", @"Other10", @"MobileNumber", @"PhoneNumber2", @"PhoneNumber3"];
+            NSArray<NSString *> *identifierStrings = MPLocalyticsIdentifierNames();
 
             NSUInteger type = (NSUInteger)identityType;
             if (type < identifierStrings.count) {
                 NSString *identifier = identifierStrings[type];
-                [Localytics setValue:identityString forIdentifier:identifier];
+                [self setLocalyticsValue:identityString forIdentifier:identifier];
             } else {
                 MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLocalytics) returnCode:MPKitReturnCodeFail];
                 return execStatus;
@@ -306,6 +313,51 @@
     
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLocalytics) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
+}
+
+- (nonnull MPKitExecStatus *)onLogoutComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request {
+    // setUserIdentity:identityType: only ever sets values, and the core never forwards a removed
+    // identity, so take back what the previous user left: the customer id, the email and every
+    // identifier the kit writes.
+    [self setLocalyticsCustomerId:nil];
+    [self setLocalyticsCustomerEmail:nil];
+    NSArray<NSString *> *identifierNames = MPLocalyticsIdentifierNames();
+    for (NSUInteger type = 0; type < identifierNames.count; type++) {
+        if (type == MPUserIdentityCustomerId || type == MPUserIdentityEmail) {
+            continue;
+        }
+        [self setLocalyticsValue:nil forIdentifier:identifierNames[type]];
+    }
+
+    // The core forwards a logout request's identities to setUserIdentity:identityType: before this
+    // callback, so apply the new user's identities again after the clear. Device identities share the
+    // dictionary and are skipped, as the core never forwards them to setUserIdentity:identityType:.
+    [user.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, NSString * _Nonnull identityString, BOOL * _Nonnull stop) {
+        if ([identityType isKindOfClass:[NSNumber class]] && identityType.unsignedIntegerValue <= MPUserIdentityPhoneNumber3 &&
+            [identityString isKindOfClass:[NSString class]] && identityString.length > 0) {
+            [self setUserIdentity:identityString identityType:(MPUserIdentity)identityType.unsignedIntegerValue];
+        }
+    }];
+
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLocalytics) returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
+}
+
+#pragma mark Localytics identity writes
+
+// Every Localytics identity write goes through one of these three methods, so tests can replace them
+// without starting the Localytics SDK. A nil value clears the field.
+
+- (void)setLocalyticsCustomerId:(nullable NSString *)customerId {
+    [Localytics setCustomerId:customerId];
+}
+
+- (void)setLocalyticsCustomerEmail:(nullable NSString *)email {
+    [Localytics setCustomerEmail:email];
+}
+
+- (void)setLocalyticsValue:(nullable NSString *)value forIdentifier:(nonnull NSString *)identifier {
+    [Localytics setValue:value forIdentifier:identifier];
 }
 
 - (MPKitExecStatus *)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
