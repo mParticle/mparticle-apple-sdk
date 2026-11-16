@@ -43,6 +43,26 @@ final class MPKitFilterEngineTests: XCTestCase {
             .shouldFilter)
     }
 
+    func testErrorAndExceptionSelectorsUseTheErrorMessageTypeFilter() {
+        let engine = MPKitFilterEngine(hasher: hasher)
+
+        for selectorName in ["logError:eventInfo:", "logException:"] {
+            XCTAssertEqual(engine.messageType(forSelectorName: selectorName), "x", selectorName)
+            XCTAssertTrue(engine.shouldFilterBaseEvent(selectorName: selectorName,
+                                                       configuration: configuration(filters: ["mt": ["x": 0]])),
+                          selectorName)
+            XCTAssertFalse(engine.shouldFilterBaseEvent(selectorName: selectorName,
+                                                        configuration: configuration(filters: ["mt": ["x": 1]])),
+                           selectorName)
+            XCTAssertFalse(engine.shouldFilterBaseEvent(selectorName: selectorName,
+                                                        configuration: configuration(filters: ["mt": ["e": 0]])),
+                           selectorName)
+            XCTAssertFalse(engine.shouldFilterBaseEvent(selectorName: selectorName,
+                                                        configuration: configuration(filters: [:])),
+                           selectorName)
+        }
+    }
+
     func testCommerceDecisionReturnsEntityAndAttributeActions() {
         let engine = MPKitFilterEngine(hasher: hasher)
         let eventType: UInt = 16

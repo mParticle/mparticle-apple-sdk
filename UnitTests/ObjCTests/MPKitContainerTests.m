@@ -1537,6 +1537,44 @@ static atomic_bool gKitsInitializedBlockReturned;
     [kitWrapperMock verifyWithDelay:5.0];
 }
 
+- (void)testForwardErrorAndExceptionApplyErrorMessageTypeFilter {
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    __block NSUInteger kitCalls = 0;
+    OCMStub([(id<MPKitProtocol>)kitWrapperMock logError:OCMOCK_ANY eventInfo:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        kitCalls++;
+    });
+    OCMStub([(id<MPKitProtocol>)kitWrapperMock logException:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        kitCalls++;
+    });
+
+    id mockAdapter = OCMPartialMock(kitContainer.executionAdapter);
+    OCMStub([mockAdapter kitsInitialized]).andReturn(YES);
+    OCMStub([mockAdapter activeKitsRegistry]).andReturn(@[kitRegisterMock]);
+
+    MPForwardQueueParameters *errorParameters = [[MPForwardQueueParameters alloc] initWithParameters:@[@"Error message", @{@"key": @"value"}]];
+    NSException *exception = [NSException exceptionWithName:@"TestException" reason:@"Test exception" userInfo:nil];
+    MPForwardQueueParameters *exceptionParameters = [[MPForwardQueueParameters alloc] initWithParameters:@[exception]];
+
+    // An error filter of 0 blocks both calls; 1 or no message-type filter forwards both.
+    NSArray<NSDictionary *> *hashes = @[@{@"mt": @{@"x": @0}}, @{@"mt": @{@"x": @1}}, @{}];
+    NSArray<NSNumber *> *expectedKitCalls = @[@0, @2, @2];
+    for (NSUInteger index = 0; index < hashes.count; index++) {
+        kitCalls = 0;
+        kitContainer.kitConfigurations[kitRegister.code] = [[MPKitConfiguration alloc] initWithDictionary:@{@"id": kitRegister.code, @"as": @{}, @"hs": hashes[index]}];
+
+        [kitContainer forwardSDKCall:@selector(logError:eventInfo:) event:nil parameters:errorParameters messageType:MPMessageTypeUnknown userInfo:nil];
+        [kitContainer forwardSDKCall:@selector(logException:) event:nil parameters:exceptionParameters messageType:MPMessageTypeUnknown userInfo:nil];
+        [self drainConsentReplayQueue];
+
+        XCTAssertEqual(kitCalls, expectedKitCalls[index].unsignedIntegerValue, @"hs: %@", hashes[index]);
+    }
+
+    [mockAdapter stopMocking];
+}
+
 - (void)testFilterCommerceEvent_EventType {
     NSArray *configurations = @[
                                 @{
