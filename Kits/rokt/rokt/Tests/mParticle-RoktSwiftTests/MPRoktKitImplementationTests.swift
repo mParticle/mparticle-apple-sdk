@@ -117,22 +117,54 @@ private final class DeferredIdentityClient: MPRoktIdentityClient {
         completions.append(completion)
     }
 
-    func complete(error: Error? = nil) {
+    func complete(user: MParticleUser? = nil, error: Error? = nil) {
         let pending = completions
         completions = []
-        pending.forEach { $0(nil, error) }
+        let result: MPIdentityApiResult? = user.map { resolvedUser in
+            let apiResult = MPIdentityApiResult()
+            apiResult.user = resolvedUser
+            return apiResult
+        }
+        pending.forEach { $0(result, error) }
     }
 }
 
 private final class TestUser: MParticleUser {
     let testIdentities: [NSNumber: String]
+    var storedAttributes: [String: Any]
+    var setAttributes: [String: Any] = [:]
+    var removedAttributeKeys: [String] = []
+    var defersAttributeRemoval: Bool
 
-    init(identities: [NSNumber: String]) {
+    init(
+        identities: [NSNumber: String] = [:],
+        attributes: [String: Any] = [:],
+        defersAttributeRemoval: Bool = false
+    ) {
         testIdentities = identities
+        storedAttributes = attributes
+        self.defersAttributeRemoval = defersAttributeRemoval
         super.init()
     }
 
     override var identities: [NSNumber: String] { testIdentities }
+
+    override var userAttributes: [String: Any] {
+        get { storedAttributes }
+        set { storedAttributes = newValue }
+    }
+
+    override func setUserAttribute(_ key: String, value: Any) {
+        storedAttributes[key] = value
+        setAttributes[key] = value
+    }
+
+    override func removeAttribute(_ key: String) {
+        if !defersAttributeRemoval {
+            storedAttributes.removeValue(forKey: key)
+        }
+        removedAttributeKeys.append(key)
+    }
 }
 
 private final class TestFilteredUser: FilteredMParticleUser {
@@ -154,6 +186,8 @@ private final class TestFilteredUser: FilteredMParticleUser {
 
 private final class MockKitAPI: MPKitAPI {
     let filteredUser: FilteredMParticleUser
+    var setAttributes: [String: Any] = [:]
+    var removedAttributeKeys: [String] = []
 
     init(filteredUser: FilteredMParticleUser) {
         self.filteredUser = filteredUser
@@ -164,7 +198,13 @@ private final class MockKitAPI: MPKitAPI {
         filteredUser
     }
 
-    override func setUserAttribute(_ key: String, value: Any, for filteredUser: FilteredMParticleUser) {}
+    override func setUserAttribute(_ key: String, value: Any, for filteredUser: FilteredMParticleUser) {
+        setAttributes[key] = value
+    }
+
+    override func removeUserAttribute(_ key: String, for filteredUser: FilteredMParticleUser) {
+        removedAttributeKeys.append(key)
+    }
 }
 
 struct MPRoktKitImplementationTests {
@@ -878,6 +918,542 @@ struct MPRoktKitImplementationTests {
 
         #expect(result["email"] == nil)
         #expect(result["emailsha256"] == "hash")
+    }
+
+    @Test func perCallPrivacyAttributesAreNotPersistedBypassFiltersAndSyncNoTargeting() {
+        let client = MockRoktSDKClient()
+        let identityClient = MockIdentityClient()
+        let currentUser = TestUser()
+        identityClient.currentUser = currentUser
+        let filteredUser = TestFilteredUser(attributes: ["allowed": "yes"])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in ["allowed": "yes"] }
+        var warnings: [String] = []
+        implementation.warningHandler = { warnings.append($0) }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "allowed": "yes",
+                "custom": "persisted",
+                "NoFunctional": "true",
+                "notargeting": "TRUE",
+                "DoNotShareOrSell": "true",
+                "GPCEnabled": "1"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(kitAPI.setAttributes["custom"] as? String == "persisted")
+        #expect(kitAPI.setAttributes["noFunctional"] == nil)
+        #expect(kitAPI.setAttributes["NoFunctional"] == nil)
+        #expect(kitAPI.setAttributes["noTargeting"] == nil)
+        #expect(kitAPI.setAttributes["notargeting"] == nil)
+        #expect(kitAPI.setAttributes["doNotShareOrSell"] == nil)
+        #expect(kitAPI.setAttributes["DoNotShareOrSell"] == nil)
+        #expect(kitAPI.setAttributes["gpcEnabled"] == nil)
+        #expect(kitAPI.setAttributes["GPCEnabled"] == nil)
+        #expect(kitAPI.setAttributes["$NoTargeting"] == nil)
+        #expect(currentUser.setAttributes["$NoTargeting"] as? String == "true")
+        #expect(client.selectedAttributes?["$NoTargeting"] == "true")
+        #expect(client.selectedAttributes?["noFunctional"] == "true")
+        #expect(client.selectedAttributes?["noTargeting"] == "TRUE")
+        #expect(client.selectedAttributes?["doNotShareOrSell"] == "true")
+        #expect(client.selectedAttributes?["gpcEnabled"] == "1")
+        #expect(client.selectedAttributes?["NoFunctional"] == nil)
+        #expect(client.selectedAttributes?["notargeting"] == nil)
+        #expect(client.selectedAttributes?["DoNotShareOrSell"] == nil)
+        #expect(client.selectedAttributes?["GPCEnabled"] == nil)
+        #expect(warnings == [
+            "attribute \"custom\" not forwarded to Rokt — blocked by data filter"
+        ])
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: ["noTargeting": "False"],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(kitAPI.removedAttributeKeys.isEmpty)
+        #expect(currentUser.removedAttributeKeys == ["$NoTargeting"])
+        #expect(client.selectedAttributes?["noTargeting"] == "False")
+        #expect(client.selectedAttributes?["$NoTargeting"] == nil)
+    }
+
+    @Test func profilePrivacyAttributesBypassConnectionFiltersSyncNoTargetingWithOptOutPrecedence() {
+        let client = MockRoktSDKClient()
+        let identityClient = MockIdentityClient()
+        let currentUser = TestUser(attributes: [
+            "noTargeting": true,
+            "noFunctional": "true",
+            "doNotShareOrSell": false,
+            "gpcEnabled": "true"
+        ])
+        identityClient.currentUser = currentUser
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [:],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "true")
+        #expect(client.selectedAttributes?["noFunctional"] == "true")
+        #expect(client.selectedAttributes?["doNotShareOrSell"] == "false")
+        #expect(client.selectedAttributes?["gpcEnabled"] == "true")
+        #expect(kitAPI.setAttributes["$NoTargeting"] == nil)
+        #expect(currentUser.setAttributes["$NoTargeting"] as? String == "true")
+
+        currentUser.storedAttributes = [
+            "noTargeting": false,
+            "noFunctional": true,
+            "$NoTargeting": "true"
+        ]
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [:],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "false")
+        #expect(client.selectedAttributes?["noFunctional"] == "true")
+        #expect(kitAPI.removedAttributeKeys.isEmpty)
+        #expect(currentUser.removedAttributeKeys == ["$NoTargeting"])
+
+        currentUser.storedAttributes = [
+            "noTargeting": true,
+            "noFunctional": true
+        ]
+        kitAPI.removedAttributeKeys = []
+        currentUser.removedAttributeKeys = []
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "noTargeting": "false",
+                "noFunctional": "false"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "true")
+        #expect(client.selectedAttributes?["noFunctional"] == "true")
+        #expect(kitAPI.removedAttributeKeys.isEmpty)
+        #expect(currentUser.removedAttributeKeys.isEmpty)
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+
+        currentUser.storedAttributes = [
+            "noTargeting": false,
+            "noFunctional": false
+        ]
+        currentUser.setAttributes = [:]
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "noTargeting": "true",
+                "noFunctional": "true"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "true")
+        #expect(client.selectedAttributes?["noFunctional"] == "true")
+        #expect(currentUser.setAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func storedLegacyFalsePrivacyValueIsClearedWhenCallerOptsOut() {
+        let client = MockRoktSDKClient()
+        let identityClient = MockIdentityClient()
+        let currentUser = TestUser(attributes: [
+            "Notargeting": "false",
+            "NoFunctional": "false"
+        ])
+        identityClient.currentUser = currentUser
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "noFunctional": "false"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(currentUser.storedAttributes["NoFunctional"] as? String == "false")
+        #expect(currentUser.removedAttributeKeys.isEmpty)
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "noTargeting": "true",
+                "noFunctional": "true"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "true")
+        #expect(client.selectedAttributes?["noFunctional"] == "true")
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+        #expect(currentUser.storedAttributes["Notargeting"] == nil)
+        #expect(currentUser.storedAttributes["NoFunctional"] == nil)
+
+        currentUser.removedAttributeKeys = []
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [:],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == nil)
+        #expect(currentUser.removedAttributeKeys.isEmpty)
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func legacyAfterPendingAttributeWritesResolvesQueuedProfilePrivacyOptOut() {
+        let client = MockRoktSDKClient()
+        let identityClient = MockIdentityClient()
+        let currentUser = TestUser(attributes: ["noTargeting": false])
+        identityClient.currentUser = currentUser
+        let filteredUser = TestFilteredUser(attributes: ["noTargeting": false])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = nil
+        implementation.afterPendingAttributeWrites = { callback in
+            currentUser.storedAttributes["noTargeting"] = true
+            callback()
+        }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [:],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "true")
+        #expect(currentUser.setAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func identifyReturningNewUserResyncsNoTargetingAndMixedCaseSandboxNormalizes() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        let preIdentifyUser = TestUser(
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"],
+            attributes: [:]
+        )
+        let postIdentifyUser = TestUser(
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "new@example.com"],
+            attributes: ["noTargeting": "false"]
+        )
+        identityClient.currentUser = preIdentifyUser
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "email": "new@example.com",
+                "noTargeting": "true",
+                "Sandbox": "true"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["sandbox"] == "true")
+        #expect(client.selectedAttributes?["Sandbox"] == nil)
+        #expect(preIdentifyUser.setAttributes["$NoTargeting"] as? String == "true")
+
+        identityClient.currentUser = postIdentifyUser
+        identityClient.complete(user: postIdentifyUser)
+
+        #expect(postIdentifyUser.removedAttributeKeys == ["noTargeting"])
+        #expect(postIdentifyUser.storedAttributes["noTargeting"] == nil)
+        #expect(postIdentifyUser.setAttributes["$NoTargeting"] as? String == "true")
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [:],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == nil)
+        #expect(postIdentifyUser.removedAttributeKeys == ["noTargeting"])
+        #expect(postIdentifyUser.storedAttributes["$NoTargeting"] as? String == "true")
+
+        let optedOutIdentifiedUser = TestUser(
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "optedout@example.com"],
+            attributes: [
+                "noTargeting": "true",
+                "$NoTargeting": "true"
+            ]
+        )
+        preIdentifyUser.storedAttributes = ["noTargeting": "false"]
+        identityClient.currentUser = preIdentifyUser
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "email": "optedout@example.com"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        identityClient.currentUser = optedOutIdentifiedUser
+        identityClient.complete()
+
+        #expect(optedOutIdentifiedUser.removedAttributeKeys.isEmpty)
+        #expect(optedOutIdentifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func pendingClearedPrivacyKeysSuppressDeferredProfileRemovalAcrossConsecutivePlacements() {
+        let client = MockRoktSDKClient()
+        let identityClient = MockIdentityClient()
+        let currentUser = TestUser(
+            attributes: [
+                "Notargeting": "false",
+                "NoFunctional": "false"
+            ],
+            defersAttributeRemoval: true
+        )
+        identityClient.currentUser = currentUser
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { candidate, _ in candidate }
+        var pendingWriteCallbacks: [() -> Void] = []
+        implementation.afterPendingAttributeWrites = { callback in
+            pendingWriteCallbacks.append(callback)
+        }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "noTargeting": "true",
+                "noFunctional": "true"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "true")
+        #expect(client.selectedAttributes?["noFunctional"] == "true")
+        #expect(Set(currentUser.removedAttributeKeys) == ["Notargeting", "NoFunctional"])
+        #expect(currentUser.storedAttributes["Notargeting"] as? String == "false")
+        #expect(currentUser.storedAttributes["NoFunctional"] as? String == "false")
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [:],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == nil)
+        #expect(client.selectedAttributes?["noFunctional"] == nil)
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+
+        currentUser.storedAttributes.removeValue(forKey: "Notargeting")
+        currentUser.storedAttributes.removeValue(forKey: "NoFunctional")
+        pendingWriteCallbacks.forEach { $0() }
+    }
+
+    @Test func supersededIdentifyCallbackDoesNotOverwriteNewerPlacementPrivacyState() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        let currentUser = TestUser(
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"],
+            attributes: [:]
+        )
+        identityClient.currentUser = currentUser
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "email": "new@example.com",
+                "noTargeting": "false"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "false")
+        #expect(identityClient.hasPendingIdentify)
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "noTargeting": "true"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(client.selectedAttributes?["noTargeting"] == "true")
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+
+        currentUser.removedAttributeKeys = []
+        identityClient.complete(user: currentUser)
+
+        #expect(currentUser.removedAttributeKeys.isEmpty)
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "email": "third@example.com",
+                "noTargeting": "true"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(identityClient.hasPendingIdentify)
+
+        currentUser.storedAttributes["noTargeting"] = "false"
+        currentUser.removedAttributeKeys = []
+        currentUser.setAttributes = [:]
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: [
+                "noTargeting": "false"
+            ],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+
+        #expect(currentUser.storedAttributes["$NoTargeting"] == nil)
+        #expect(currentUser.storedAttributes["noTargeting"] as? String == "false")
+
+        currentUser.removedAttributeKeys = []
+        currentUser.setAttributes = [:]
+        identityClient.complete(user: currentUser)
+
+        #expect(currentUser.removedAttributeKeys.isEmpty)
+        #expect(currentUser.setAttributes.isEmpty)
+        #expect(currentUser.storedAttributes["$NoTargeting"] == nil)
+        #expect(currentUser.storedAttributes["noTargeting"] as? String == "false")
     }
 
     private func identifyDecision(

@@ -141,6 +141,11 @@ public final class MPRoktKitImplementation: NSObject {
         static let kitCode = 181
         static let kitVersion = "9.7.6"
         static let sandbox = "sandbox"
+        static let noFunctional = "noFunctional"
+        static let noTargeting = "noTargeting"
+        static let doNotShareOrSell = "doNotShareOrSell"
+        static let gpcEnabled = "gpcEnabled"
+        static let noTargetingUserAttribute = "$NoTargeting"
         static let mapping = "placementAttributesMapping"
         static let mappingSource = "map"
         static let mappingDestination = "value"
@@ -171,12 +176,14 @@ public final class MPRoktKitImplementation: NSObject {
     private let identityClient: MPRoktIdentityClient
     private let pendingAttributesLock = NSLock()
     private var pendingMappedAttributes: [String: String] = [:]
+    private var pendingClearedPrivacyKeys: Set<String> = []
     private var pendingAttributesUserID: NSNumber?
     private var pendingAttributesGeneration: UInt = 0
     private let preparationQueueLock = NSRecursiveLock()
     private var preparationQueue: [(UInt, (UInt) -> Void)] = []
     private var preparationInProgress = false
     private var preparationGeneration: UInt = 0
+    private var preparationSequence: UInt = 0
 
     /// Entry point used by the Objective-C shell in production.
     @objc public override convenience init() {
@@ -251,6 +258,7 @@ public final class MPRoktKitImplementation: NSObject {
         Self.log("Stopping Rokt Kit for workspace switch and clearing the Rokt session")
         preparationQueueLock.lock()
         preparationGeneration &+= 1
+        preparationSequence &+= 1
         preparationQueue = []
         preparationInProgress = false
         roktClient.close()
@@ -265,6 +273,7 @@ public final class MPRoktKitImplementation: NSObject {
         configuration = nil
         pendingAttributesLock.lock()
         pendingMappedAttributes = [:]
+        pendingClearedPrivacyKeys = []
         pendingAttributesUserID = nil
         pendingAttributesLock.unlock()
     }
@@ -493,7 +502,22 @@ public final class MPRoktKitImplementation: NSObject {
     ) -> [String: String] {
         let mapped = performMapping ? mappedAttributes(attributes) : attributes
         let resolvedUser = filteredUser ?? currentFilteredUser(fallback: nil)
-        return enrichedAttributes(mapped, filteredUser: resolvedUser)
+        let effectivePrivacyAttributes = self.effectivePrivacyAttributes(
+            mapped: mapped,
+            filteredProfile: resolvedUser?.userAttributes,
+            filteredUser: resolvedUser
+        )
+        var normalized = Self.applyingPrivacyAttributes(
+            effectivePrivacyAttributes,
+            to: mapped
+        )
+        if let explicitSandbox = Self.extractedSandboxValue(mapped) ?? Self.extractedSandboxValue(attributes) {
+            normalized = normalized.filter {
+                $0.key.caseInsensitiveCompare(Constants.sandbox) != .orderedSame
+            }
+            normalized[Constants.sandbox] = explicitSandbox
+        }
+        return enrichedAttributes(normalized, filteredUser: resolvedUser)
     }
 
     @objc public static func getRoktHashedEmailUserIdentityType() -> NSNumber? {
@@ -557,15 +581,46 @@ public final class MPRoktKitImplementation: NSObject {
         filteredUser: FilteredMParticleUser,
         completion: @escaping ([String: String], Bool) -> Void
     ) {
-        confirmUser(attributes: attributes, user: identityClient.currentUser) { _, identified in
+        let mapped = self.mappedAttributes(attributes)
+        let callerPrivacyAttributes = Self.extractedPrivacyAttributes(mapped)
+        let preparationSequence = self.nextPreparationSequence()
+
+        let onIdentifyCompleted: (MParticleUser?) -> Void = { [weak self] identifiedUser in
+            guard let self,
+                  self.isCurrentPreparationSequence(preparationSequence) else {
+                return
+            }
+            self.clearOverriddenStoredPrivacyAttributes(
+                callerPrivacyAttributes: callerPrivacyAttributes,
+                filteredUser: nil,
+                targetUser: identifiedUser
+            )
+            let targetAttributes = identifiedUser?.userAttributes ?? self.identityClient.currentUser?.userAttributes ?? [:]
+            var identifyPrivacyAttributes = Self.extractedPrivacyAttributes(
+                Self.valuesAsStrings(targetAttributes)
+            )
+            for (key, value) in callerPrivacyAttributes where identifyPrivacyAttributes[key]?.lowercased() != "true" {
+                identifyPrivacyAttributes[key] = value
+            }
+            self.syncNoTargetingAttribute(
+                effectivePrivacyAttributes: identifyPrivacyAttributes,
+                filteredUser: nil,
+                targetUser: identifiedUser
+            )
+        }
+
+        confirmUser(
+            attributes: attributes,
+            user: identityClient.currentUser,
+            onIdentifyCompleted: onIdentifyCompleted
+        ) { _, identified in
             let currentFilteredUser = self.currentFilteredUser(fallback: filteredUser)
-            let mapped = self.mappedAttributes(attributes)
             // Identify is not awaited, so the user's identities may still hold the old values.
             let callerIdentities = mapped.filter {
                 ($0.key == "email" || $0.key == Constants.emailSHA256) && !$0.value.isEmpty
             }
             let persistableMapped = mapped.filter {
-                $0.key != Constants.sandbox && !$0.value.isEmpty
+                !Self.isReservedKey($0.key) && !$0.value.isEmpty
             }
 
             for (key, value) in persistableMapped {
@@ -575,13 +630,44 @@ public final class MPRoktKitImplementation: NSObject {
             }
 
             let finishPreparation: ([String: Any], FilteredMParticleUser?) -> Void = { filteredProfile, refreshedUser in
+                self.clearOverriddenStoredPrivacyAttributes(
+                    callerPrivacyAttributes: callerPrivacyAttributes,
+                    filteredUser: refreshedUser
+                )
+                let effectivePrivacyAttributes = self.effectivePrivacyAttributes(
+                    mapped: mapped,
+                    filteredProfile: filteredProfile,
+                    filteredUser: refreshedUser
+                )
+                self.syncNoTargetingAttribute(
+                    effectivePrivacyAttributes: effectivePrivacyAttributes,
+                    filteredUser: refreshedUser
+                )
+
                 for key in self.blockedAttributeKeys(mapped: persistableMapped, filteredProfile: filteredProfile) {
                     self.warning("attribute \"\(key)\" not forwarded to Rokt — blocked by data filter")
                 }
 
                 var stringProfile = Self.valuesAsStrings(filteredProfile)
-                if let explicitSandbox = attributes[Constants.sandbox] {
+                if let explicitSandbox = Self.extractedSandboxValue(mapped) ?? Self.extractedSandboxValue(attributes) {
+                    stringProfile = stringProfile.filter {
+                        $0.key.caseInsensitiveCompare(Constants.sandbox) != .orderedSame
+                    }
                     stringProfile[Constants.sandbox] = explicitSandbox
+                }
+                stringProfile = Self.applyingPrivacyAttributes(
+                    effectivePrivacyAttributes,
+                    to: stringProfile
+                )
+                switch effectivePrivacyAttributes[Constants.noTargeting]?.lowercased() {
+                case "true":
+                    stringProfile[Constants.noTargetingUserAttribute] = "true"
+                case "false":
+                    stringProfile = stringProfile.filter {
+                        $0.key.caseInsensitiveCompare(Constants.noTargetingUserAttribute) != .orderedSame
+                    }
+                default:
+                    break
                 }
                 completion(
                     self.enrichedAttributes(
@@ -593,8 +679,14 @@ public final class MPRoktKitImplementation: NSObject {
                 )
             }
             if let currentFilteredUser, let filterUserAttributes = self.filterUserAttributes {
+                let optOutCallerKeys = Set(
+                    callerPrivacyAttributes.compactMap { key, value in
+                        value.lowercased() == "true" ? key : nil
+                    }
+                )
                 let pending = self.attributesByMergingPendingWrites(
                     persistableMapped,
+                    clearedPrivacyKeys: optOutCallerKeys,
                     userID: currentFilteredUser.userId
                 )
                 if let filteredProfile = filterUserAttributes(pending.attributes, currentFilteredUser) {
@@ -622,6 +714,19 @@ public final class MPRoktKitImplementation: NSObject {
                 )
             }
         }
+    }
+
+    private func nextPreparationSequence() -> UInt {
+        preparationQueueLock.lock()
+        defer { preparationQueueLock.unlock() }
+        preparationSequence &+= 1
+        return preparationSequence
+    }
+
+    private func isCurrentPreparationSequence(_ sequence: UInt) -> Bool {
+        preparationQueueLock.lock()
+        defer { preparationQueueLock.unlock() }
+        return preparationSequence == sequence
     }
 
     private func enqueuePreparation(_ preparation: @escaping (UInt) -> Void) {
@@ -700,6 +805,7 @@ public final class MPRoktKitImplementation: NSObject {
     func confirmUser(
         attributes: [String: String],
         user: MParticleUser?,
+        onIdentifyCompleted: ((MParticleUser?) -> Void)? = nil,
         completion: @escaping (MParticleUser?, Bool) -> Void
     ) {
         let email = attributes["email"]
@@ -740,10 +846,12 @@ public final class MPRoktKitImplementation: NSObject {
            let identity = MPIdentity(rawValue: hashedIdentity.uintValue) {
             request.setIdentity(hashedEmail, identityType: identity)
         }
-        identityClient.identify(request) { _, error in
+        identityClient.identify(request) { [weak self] result, error in
             if let error {
                 Self.log("Failed to sync email from selectPlacements to user: \(error)")
+                return
             }
+            onIdentifyCompleted?(result?.user ?? self?.identityClient.currentUser)
         }
         completion(user, true)
     }
@@ -883,9 +991,26 @@ public final class MPRoktKitImplementation: NSObject {
         MPKitExecStatus(sdkCode: NSNumber(value: Constants.kitCode), returnCode: code)
     }
 
+    static func extractedSandboxValue(_ attributes: [String: String]) -> String? {
+        if let exact = attributes[Constants.sandbox], !exact.isEmpty {
+            return exact
+        }
+        for key in attributes.keys.sorted()
+        where key.caseInsensitiveCompare(Constants.sandbox) == .orderedSame {
+            if let value = attributes[key], !value.isEmpty {
+                return value
+            }
+        }
+        return nil
+    }
+
     static func confirmingSandbox(_ attributes: [String: String]) -> [String: String] {
-        var result = attributes
-        if result[Constants.sandbox] == nil {
+        var result = attributes.filter {
+            $0.key.caseInsensitiveCompare(Constants.sandbox) != .orderedSame
+        }
+        if let explicit = extractedSandboxValue(attributes) {
+            result[Constants.sandbox] = explicit
+        } else {
             result[Constants.sandbox] =
                 MParticle.sharedInstance().environment == .development ? "true" : "false"
         }
@@ -919,12 +1044,183 @@ public final class MPRoktKitImplementation: NSObject {
         return result
     }
 
+    static func canonicalPrivacyKey(_ key: String) -> String? {
+        switch key.lowercased() {
+        case "nofunctional":
+            return Constants.noFunctional
+        case "notargeting":
+            return Constants.noTargeting
+        case "donotshareorsell":
+            return Constants.doNotShareOrSell
+        case "gpcenabled":
+            return Constants.gpcEnabled
+        default:
+            return nil
+        }
+    }
+
+    static func isReservedKey(_ key: String) -> Bool {
+        key.caseInsensitiveCompare(Constants.sandbox) == .orderedSame || canonicalPrivacyKey(key) != nil
+    }
+
+    static func extractedPrivacyAttributes(_ attributes: [String: String]) -> [String: String] {
+        var result: [String: String] = [:]
+        for key in attributes.keys.sorted() {
+            guard let canonicalKey = canonicalPrivacyKey(key),
+                  let value = attributes[key],
+                  !value.isEmpty else {
+                continue
+            }
+            if let existing = result[canonicalKey] {
+                if existing.lowercased() == "true" {
+                    continue
+                }
+                if value.lowercased() == "true" || key == canonicalKey {
+                    result[canonicalKey] = value
+                }
+            } else {
+                result[canonicalKey] = value
+            }
+        }
+        return result
+    }
+
+    static func applyingPrivacyAttributes(
+        _ privacyAttributes: [String: String],
+        to attributes: [String: String]
+    ) -> [String: String] {
+        var result = attributes.filter { canonicalPrivacyKey($0.key) == nil }
+        for (key, value) in privacyAttributes {
+            result[key] = value
+        }
+        return result
+    }
+
+    private func clearOverriddenStoredPrivacyAttributes(
+        callerPrivacyAttributes: [String: String],
+        filteredUser: FilteredMParticleUser?,
+        targetUser: MParticleUser? = nil
+    ) {
+        let optOutCallerKeys = Set(
+            callerPrivacyAttributes.compactMap { key, value in
+                value.lowercased() == "true" ? key : nil
+            }
+        )
+        guard !optOutCallerKeys.isEmpty else { return }
+        let resolvedUser = targetUser ?? identityClient.currentUser
+        if let resolvedUser {
+            let storedStrings = Self.valuesAsStrings(resolvedUser.userAttributes)
+            for (existingKey, existingValue) in storedStrings {
+                guard let canonicalKey = Self.canonicalPrivacyKey(existingKey),
+                      optOutCallerKeys.contains(canonicalKey),
+                      existingValue.lowercased() != "true" else {
+                    continue
+                }
+                resolvedUser.removeAttribute(existingKey)
+            }
+        } else if let kitAPI = self.kitAPI, let filteredUser {
+            let storedStrings = Self.valuesAsStrings(filteredUser.userAttributes)
+            for (existingKey, existingValue) in storedStrings {
+                guard let canonicalKey = Self.canonicalPrivacyKey(existingKey),
+                      optOutCallerKeys.contains(canonicalKey),
+                      existingValue.lowercased() != "true" else {
+                    continue
+                }
+                kitAPI.removeUserAttribute(existingKey, for: filteredUser)
+            }
+        }
+    }
+
+    private func profilePrivacyAttributes(
+        filteredProfile: [String: Any]? = nil,
+        filteredUser: FilteredMParticleUser?
+    ) -> [String: String] {
+        let clearedKeys = currentPendingClearedPrivacyKeys(userID: filteredUser?.userId)
+        var result: [String: String] = [:]
+        let sources: [[String: Any]] = [
+            filteredProfile ?? [:],
+            filteredUser?.userAttributes ?? [:],
+            identityClient.currentUser?.userAttributes ?? [:]
+        ]
+        for source in sources {
+            let extracted = Self.extractedPrivacyAttributes(Self.valuesAsStrings(source))
+            for (key, value) in extracted {
+                if clearedKeys.contains(key) && value.lowercased() != "true" {
+                    continue
+                }
+                if result[key]?.lowercased() != "true" {
+                    result[key] = value
+                }
+            }
+        }
+        return result
+    }
+
+    private func effectivePrivacyAttributes(
+        mapped: [String: String],
+        filteredProfile: [String: Any]? = nil,
+        filteredUser: FilteredMParticleUser?
+    ) -> [String: String] {
+        var effectivePrivacyAttributes = profilePrivacyAttributes(
+            filteredProfile: filteredProfile,
+            filteredUser: filteredUser
+        )
+        let callerPrivacyAttributes = Self.extractedPrivacyAttributes(mapped)
+        for (key, value) in callerPrivacyAttributes where effectivePrivacyAttributes[key]?.lowercased() != "true" {
+            effectivePrivacyAttributes[key] = value
+        }
+        return effectivePrivacyAttributes
+    }
+
+    private func syncNoTargetingAttribute(
+        effectivePrivacyAttributes: [String: String],
+        filteredUser: FilteredMParticleUser?,
+        targetUser: MParticleUser? = nil
+    ) {
+        let resolvedUser = targetUser ?? identityClient.currentUser
+        switch effectivePrivacyAttributes[Constants.noTargeting]?.lowercased() {
+        case "true":
+            if let resolvedUser {
+                let currentVal = resolvedUser.userAttributes[Constants.noTargetingUserAttribute]
+                if (currentVal as? String) != "true" {
+                    resolvedUser.setUserAttribute(
+                        Constants.noTargetingUserAttribute,
+                        value: "true"
+                    )
+                }
+            } else if let kitAPI = self.kitAPI, let currentFilteredUser = filteredUser {
+                let currentVal = currentFilteredUser.userAttributes[Constants.noTargetingUserAttribute]
+                if (currentVal as? String) != "true" {
+                    kitAPI.setUserAttribute(
+                        Constants.noTargetingUserAttribute,
+                        value: "true",
+                        for: currentFilteredUser
+                    )
+                }
+            }
+        case "false":
+            if let resolvedUser {
+                for existingKey in resolvedUser.userAttributes.keys
+                where existingKey.caseInsensitiveCompare(Constants.noTargetingUserAttribute) == .orderedSame {
+                    resolvedUser.removeAttribute(existingKey)
+                }
+            } else if let kitAPI = self.kitAPI, let currentFilteredUser = filteredUser {
+                for existingKey in currentFilteredUser.userAttributes.keys
+                where existingKey.caseInsensitiveCompare(Constants.noTargetingUserAttribute) == .orderedSame {
+                    kitAPI.removeUserAttribute(existingKey, for: currentFilteredUser)
+                }
+            }
+        default:
+            break
+        }
+    }
+
     func blockedAttributeKeys(
         mapped: [String: String],
         filteredProfile: [String: Any]
     ) -> [String] {
         mapped.keys
-            .filter { $0 != Constants.sandbox && filteredProfile[$0] == nil }
+            .filter { !Self.isReservedKey($0) && filteredProfile[$0] == nil }
             .sorted()
     }
 
@@ -932,17 +1228,28 @@ public final class MPRoktKitImplementation: NSObject {
     /// persists them. State is scoped by MPID to prevent attributes crossing user boundaries.
     private func attributesByMergingPendingWrites(
         _ attributes: [String: String],
+        clearedPrivacyKeys: Set<String> = [],
         userID: NSNumber
     ) -> (attributes: [String: String], generation: UInt) {
         pendingAttributesLock.lock()
         defer { pendingAttributesLock.unlock() }
         if pendingAttributesUserID != userID {
             pendingMappedAttributes = [:]
+            pendingClearedPrivacyKeys = []
             pendingAttributesUserID = userID
         }
         pendingMappedAttributes.merge(attributes) { _, latest in latest }
+        pendingClearedPrivacyKeys.formUnion(clearedPrivacyKeys)
         pendingAttributesGeneration &+= 1
         return (pendingMappedAttributes, pendingAttributesGeneration)
+    }
+
+    private func currentPendingClearedPrivacyKeys(userID: NSNumber?) -> Set<String> {
+        guard let userID else { return [] }
+        pendingAttributesLock.lock()
+        defer { pendingAttributesLock.unlock() }
+        guard pendingAttributesUserID == userID else { return [] }
+        return pendingClearedPrivacyKeys
     }
 
     /// Clears only the latest pending-write generation; an older queue callback must not erase
@@ -954,6 +1261,7 @@ public final class MPRoktKitImplementation: NSObject {
             return
         }
         pendingMappedAttributes = [:]
+        pendingClearedPrivacyKeys = []
         pendingAttributesUserID = nil
     }
 
