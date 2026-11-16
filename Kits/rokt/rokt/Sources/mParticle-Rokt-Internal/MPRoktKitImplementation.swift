@@ -163,6 +163,9 @@ public final class MPRoktKitImplementation: NSObject {
     // variadic kit logging, the core message queue, and access to the connection-filtered user.
     @objc public var warningHandler: ((String) -> Void)?
     @objc public var afterPendingAttributeWrites: ((@escaping () -> Void) -> Void)?
+    /// Runs a block once identity requests already made, such as a login still in flight, have
+    /// updated the current user.
+    @objc public var afterPendingIdentityRequests: ((@escaping () -> Void) -> Void)?
     @objc public var filterUserAttributes: (([String: Any], FilteredMParticleUser) -> [String: Any]?)?
 
     private weak var owner: (any MPKitProtocol)?
@@ -696,7 +699,8 @@ public final class MPRoktKitImplementation: NSObject {
 
     /// Fires identify when a supplied email or configured hashed-email identity differs from the
     /// current user, then completes at once without waiting for the response. `identified` reports
-    /// that an update is pending.
+    /// that an update may be pending: the identities are compared again, and the request built,
+    /// once identity requests already made have updated the current user.
     func confirmUser(
         attributes: [String: String],
         user: MParticleUser?,
@@ -705,45 +709,65 @@ public final class MPRoktKitImplementation: NSObject {
         let email = attributes["email"]
         let hashedEmail = attributes[Constants.emailSHA256]
         let hashedIdentity = hashedEmailIdentityType()
-        let emailKey = NSNumber(value: MPIdentity.email.rawValue)
-        let emailMismatch = email.map { user?.identities[emailKey] != $0 } ?? false
-        let hashMismatch = hashedEmail.map { value in
-            guard let hashedIdentity else { return false }
-            return user?.identities[hashedIdentity] != value
-        } ?? false
+        let mismatch = { (user: MParticleUser?) -> (email: Bool, hash: Bool) in
+            let emailKey = NSNumber(value: MPIdentity.email.rawValue)
+            let emailMismatch = email.map { user?.identities[emailKey] != $0 } ?? false
+            let hashMismatch = hashedEmail.map { value in
+                guard let hashedIdentity else { return false }
+                return user?.identities[hashedIdentity] != value
+            } ?? false
+            return (emailMismatch, hashMismatch)
+        }
 
-        guard emailMismatch || hashMismatch else {
+        let initialMismatch = mismatch(user)
+        guard initialMismatch.email || initialMismatch.hash else {
             completion(user, false)
             return
         }
 
-        if emailMismatch {
-            warning(
-                "The existing email on the user does not match the email passed in to " +
-                    "`selectPlacements:`. Please sync the email identity to mParticle as soon " +
-                    "as you receive it. Identifying the user in the background."
-            )
-        } else if hashMismatch {
-            warning(
-                "The existing hashed email on the user does not match the hashed email passed " +
-                    "in to `selectPlacements:`. Please sync the hashed email identity to " +
-                    "mParticle as soon as you receive it. Identifying the user in the background."
-            )
+        let identify = { (user: MParticleUser?) in
+            let currentMismatch = mismatch(user)
+            if currentMismatch.email {
+                self.warning(
+                    "The existing email on the user does not match the email passed in to " +
+                        "`selectPlacements:`. Please sync the email identity to mParticle as soon " +
+                        "as you receive it. Identifying the user in the background."
+                )
+            } else if currentMismatch.hash {
+                self.warning(
+                    "The existing hashed email on the user does not match the hashed email passed " +
+                        "in to `selectPlacements:`. Please sync the hashed email identity to " +
+                        "mParticle as soon as you receive it. Identifying the user in the background."
+                )
+            } else {
+                return
+            }
+
+            let request = user.map(MPIdentityApiRequest.init(user:)) ?? MPIdentityApiRequest()
+            if let email {
+                request.setIdentity(email, identityType: MPIdentity.email)
+            }
+            if let hashedEmail,
+               let hashedIdentity,
+               let identity = MPIdentity(rawValue: hashedIdentity.uintValue) {
+                request.setIdentity(hashedEmail, identityType: identity)
+            }
+            self.identityClient.identify(request) { _, error in
+                if let error {
+                    Self.log("Failed to sync email from selectPlacements to user: \(error)")
+                }
+            }
         }
 
-        let request = user.map(MPIdentityApiRequest.init(user:)) ?? MPIdentityApiRequest()
-        if let email {
-            request.setIdentity(email, identityType: MPIdentity.email)
-        }
-        if let hashedEmail,
-           let hashedIdentity,
-           let identity = MPIdentity(rawValue: hashedIdentity.uintValue) {
-            request.setIdentity(hashedEmail, identityType: identity)
-        }
-        identityClient.identify(request) { _, error in
-            if let error {
-                Self.log("Failed to sync email from selectPlacements to user: \(error)")
+        if let afterPendingIdentityRequests {
+            // A placement does not wait for a login or other identity request still in flight, so
+            // `user` can be the user that request replaces. A request built from that user would
+            // switch back to it once the login finishes, so it is built from the user that remains.
+            afterPendingIdentityRequests {
+                identify(self.identityClient.currentUser)
             }
+        } else {
+            identify(user)
         }
         completion(user, true)
     }
