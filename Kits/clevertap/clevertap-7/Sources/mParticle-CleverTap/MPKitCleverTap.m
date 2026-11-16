@@ -219,6 +219,14 @@ static NSString *const kLibVersion = @"9.7.6";
     return [self updateUser:user request:request isLogin:YES];
 }
 
+// CleverTap has no logout call: the only way off a profile is onUserLogin: with another identity.
+// So a logout switches to the logged-out user exactly as a login does, using the identities that
+// user has for this kit: its MPID when userIdField is mpid, and any identity the logout request
+// named. With none of them the current profile stays, and the status says so.
+- (nonnull MPKitExecStatus *)onLogoutComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
+    return [self updateUser:user request:request isLogin:YES];
+}
+
 - (nonnull MPKitExecStatus *)onIdentifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
     return [self updateUser:user request:request isLogin:NO];
 }
@@ -255,12 +263,18 @@ static NSString *const kLibVersion = @"9.7.6";
     }
 
     if (isLogin) {
-        [[CleverTap sharedInstance] onUserLogin:profile];
+        [self switchCleverTapProfileTo:profile];
     } else {
         [[CleverTap sharedInstance] profilePush:profile];
     }
 
     return [self execStatus:MPKitReturnCodeSuccess];
+}
+
+// The one place the kit switches CleverTap's profile, kept apart so a test can observe the switch
+// without configuring the real CleverTap SDK.
+- (void)switchCleverTapProfileTo:(NSDictionary *)profile {
+    [[CleverTap sharedInstance] onUserLogin:profile];
 }
 
 #pragma mark e-Commerce

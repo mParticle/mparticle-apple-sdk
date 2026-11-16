@@ -68,4 +68,94 @@ final class MPKitCleverTapTests: XCTestCase {
             XCTAssertFalse(kit.started, "-start with configuration \(configuration) should not start the kit")
         }
     }
+
+    // MARK: - Logout
+
+    // CleverTap has no logout call, so the kit leaves a profile only by switching to another one.
+    // These tests read the switch through the kit's one switch method, never the real CleverTap SDK.
+
+    private let customerIdType = NSNumber(value: MPUserIdentity.customerId.rawValue)
+    private let emailType = NSNumber(value: MPUserIdentity.email.rawValue)
+
+    func testKitReceivesLogout() {
+        // The core forwards a logout only to a kit that responds to the callback.
+        XCTAssertTrue(MPKitCleverTap().responds(to: Selector(("onLogoutComplete:request:"))))
+    }
+
+    func testLogoutSwitchesToTheLoggedOutUsersMPID() {
+        let kit = SwitchRecordingKit()
+        kit.configuration = ["userIdField": "mpid"]
+
+        let status = kit.onLogoutComplete(StubUser(userId: 1234), request: StubRequest(identities: [:]))
+
+        XCTAssertEqual(status.returnCode, .success)
+        XCTAssertEqual(kit.switches.count, 1)
+        XCTAssertEqual(kit.switches.first?["Identity"] as? String, "1234")
+    }
+
+    func testLogoutSwitchesToTheIdentitiesTheLogoutRequestNamed() {
+        let kit = SwitchRecordingKit()
+        kit.configuration = [:]
+
+        let request = StubRequest(identities: [customerIdType: "guest-1", emailType: "guest@example.com"])
+        let status = kit.onLogoutComplete(StubUser(userId: 1234), request: request)
+
+        XCTAssertEqual(status.returnCode, .success)
+        XCTAssertEqual(kit.switches.count, 1)
+        XCTAssertEqual(kit.switches.first?["Identity"] as? String, "guest-1")
+        XCTAssertEqual(kit.switches.first?["Email"] as? String, "guest@example.com")
+    }
+
+    func testLogoutWithNoIdentityKeepsTheCurrentProfile() {
+        let kit = SwitchRecordingKit()
+        kit.configuration = [:]
+
+        let status = kit.onLogoutComplete(StubUser(userId: 1234), request: StubRequest(identities: [:]))
+
+        XCTAssertEqual(status.returnCode, .requirementsNotMet)
+        XCTAssertTrue(kit.switches.isEmpty)
+    }
+
+    func testLoginStillSwitchesThroughTheSameMethod() {
+        let kit = SwitchRecordingKit()
+        kit.configuration = [:]
+
+        let request = StubRequest(identities: [customerIdType: "user-1"])
+        let status = kit.onLoginComplete(StubUser(userId: 1234), request: request)
+
+        XCTAssertEqual(status.returnCode, .success)
+        XCTAssertEqual(kit.switches.first?["Identity"] as? String, "user-1")
+    }
+}
+
+// Records each profile switch in place of the real CleverTap SDK's onUserLogin:.
+private final class SwitchRecordingKit: MPKitCleverTap {
+    var switches: [NSDictionary] = []
+
+    @objc(switchCleverTapProfileTo:)
+    func recordSwitch(to profile: NSDictionary) {
+        switches.append(profile)
+    }
+}
+
+private final class StubUser: FilteredMParticleUser {
+    private let stubUserId: NSNumber
+
+    init(userId: NSNumber) {
+        stubUserId = userId
+        super.init()
+    }
+
+    override var userId: NSNumber { stubUserId }
+}
+
+private final class StubRequest: FilteredMPIdentityApiRequest {
+    private let stubIdentities: [NSNumber: String]
+
+    init(identities: [NSNumber: String]) {
+        stubIdentities = identities
+        super.init()
+    }
+
+    override var userIdentities: [NSNumber: String]? { stubIdentities }
 }
