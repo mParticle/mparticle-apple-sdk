@@ -150,6 +150,17 @@ public final class MPRoktKitImplementation: NSObject {
         static let mpid = "mpid"
     }
 
+    /// Attributes Rokt receives with a placement that the kit never writes to the user's profile on
+    /// cores with candidate merge filtering (9.6.0+), so new placement calls do not fan them out to
+    /// the account's other outputs. Any value already stored on the profile by an earlier release, a
+    /// pre-9.6.0 core, or a direct `setUserAttribute` call remains until removed or overwritten by the app.
+    /// Matched in any letter case.
+    static let roktOnlyAttributes: Set<String> = ["paypalpayerid"]
+
+    static func isRoktOnlyAttribute(_ key: String) -> Bool {
+        roktOnlyAttributes.contains(key.lowercased())
+    }
+
     // SwiftUI layout construction does not have an MPKitRokt instance, so it resolves the current
     // workspace through this weak reference. It is cleared during a workspace switch.
     private static weak var activeInstance: MPRoktKitImplementation?
@@ -565,7 +576,11 @@ public final class MPRoktKitImplementation: NSObject {
                 ($0.key == "email" || $0.key == Constants.emailSHA256) && !$0.value.isEmpty
             }
             let persistableMapped = mapped.filter {
-                $0.key != Constants.sandbox && !$0.value.isEmpty
+                $0.key != Constants.sandbox && !Self.isRoktOnlyAttribute($0.key) && !$0.value.isEmpty
+            }
+            // Filtered and sent to Rokt like the persisted attributes, but never written to the profile.
+            let roktOnlyMapped = mapped.filter {
+                Self.isRoktOnlyAttribute($0.key) && !$0.value.isEmpty
             }
 
             for (key, value) in persistableMapped {
@@ -575,7 +590,8 @@ public final class MPRoktKitImplementation: NSObject {
             }
 
             let finishPreparation: ([String: Any], FilteredMParticleUser?) -> Void = { filteredProfile, refreshedUser in
-                for key in self.blockedAttributeKeys(mapped: persistableMapped, filteredProfile: filteredProfile) {
+                let sentMapped = persistableMapped.merging(roktOnlyMapped) { _, roktOnly in roktOnly }
+                for key in self.blockedAttributeKeys(mapped: sentMapped, filteredProfile: filteredProfile) {
                     self.warning("attribute \"\(key)\" not forwarded to Rokt — blocked by data filter")
                 }
 
@@ -597,7 +613,8 @@ public final class MPRoktKitImplementation: NSObject {
                     persistableMapped,
                     userID: currentFilteredUser.userId
                 )
-                if let filteredProfile = filterUserAttributes(pending.attributes, currentFilteredUser) {
+                let toFilter = pending.attributes.merging(roktOnlyMapped) { _, roktOnly in roktOnly }
+                if let filteredProfile = filterUserAttributes(toFilter, currentFilteredUser) {
                     finishPreparation(filteredProfile, currentFilteredUser)
                     self.afterPendingAttributeWrites? {
                         self.clearPendingAttributes(
@@ -674,7 +691,9 @@ public final class MPRoktKitImplementation: NSObject {
     /// Legacy-core fallback used when synchronous candidate filtering is unavailable.
     ///
     /// The shell schedules this callback behind queued user-attribute writes, then returns to the
-    /// main queue before Rokt is invoked.
+    /// main queue before Rokt is invoked. Cores below 9.6.0 already write placement attributes in
+    /// `MPRokt.m` and filter them through `FilteredMParticleUser.userAttributes`, so this fallback
+    /// passes the filtered profile unchanged without restoring unchecked Rokt-only values.
     private func finishAfterPendingWrites(
         currentFilteredUser: FilteredMParticleUser?,
         finishPreparation: @escaping ([String: Any], FilteredMParticleUser?) -> Void

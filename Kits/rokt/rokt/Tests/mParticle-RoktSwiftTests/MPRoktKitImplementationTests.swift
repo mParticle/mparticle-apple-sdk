@@ -164,7 +164,11 @@ private final class MockKitAPI: MPKitAPI {
         filteredUser
     }
 
-    override func setUserAttribute(_ key: String, value: Any, for filteredUser: FilteredMParticleUser) {}
+    private(set) var writtenAttributes: [String: Any] = [:]
+
+    override func setUserAttribute(_ key: String, value: Any, for filteredUser: FilteredMParticleUser) {
+        writtenAttributes[key] = value
+    }
 }
 
 struct MPRoktKitImplementationTests {
@@ -442,6 +446,107 @@ struct MPRoktKitImplementationTests {
         #expect(results[0]["second"] == nil)
         #expect(results[1]["first"] == "one")
         #expect(results[1]["second"] == "two")
+    }
+
+    @Test func paypalPayerIdIsSentToRoktAndNotSavedToTheProfile() {
+        let implementation = MPRoktKitImplementation(
+            roktClient: MockRoktSDKClient(),
+            identityClient: DeferredIdentityClient()
+        )
+        let user = TestFilteredUser()
+        let kitAPI = MockKitAPI(filteredUser: user)
+        implementation.setContext(owner: MPKitRokt(), kitAPI: kitAPI)
+        implementation.filterUserAttributes = { attributes, _ in attributes }
+
+        var prepared: [String: String] = [:]
+        implementation.prepareAttributes(
+            ["firstname": "Ada", "paypalpayerid": "PAYERID123", "PayPalPayerID": "PAYERID456"],
+            filteredUser: user
+        ) { attributes, _ in
+            prepared = attributes
+        }
+
+        #expect(kitAPI.writtenAttributes.keys.sorted() == ["firstname"])
+        #expect(prepared["firstname"] == "Ada")
+        #expect(prepared["paypalpayerid"] == "PAYERID123")
+        #expect(prepared["PayPalPayerID"] == "PAYERID456")
+    }
+
+    @Test func paypalPayerIdIsSentToRoktWhenNoFilterReadsTheProfile() {
+        let implementation = MPRoktKitImplementation(
+            roktClient: MockRoktSDKClient(),
+            identityClient: DeferredIdentityClient()
+        )
+        let user = TestFilteredUser()
+        let kitAPI = MockKitAPI(filteredUser: user)
+        implementation.setContext(owner: MPKitRokt(), kitAPI: kitAPI)
+        var warnings: [String] = []
+        implementation.warningHandler = { warnings.append($0) }
+
+        var prepared: [String: String] = [:]
+        implementation.prepareAttributes(
+            ["paypalpayerid": "PAYERID123"],
+            filteredUser: user
+        ) { attributes, _ in
+            prepared = attributes
+        }
+
+        #expect(kitAPI.writtenAttributes.isEmpty)
+        #expect(prepared["paypalpayerid"] == nil)
+        #expect(warnings == ["attribute \"paypalpayerid\" not forwarded to Rokt — blocked by data filter"])
+
+        var nilFilterPrepared: [String: String] = [:]
+        implementation.filterUserAttributes = { _, _ in nil }
+        implementation.afterPendingAttributeWrites = { $0() }
+        implementation.prepareAttributes(
+            ["paypalpayerid": "PAYERID123"],
+            filteredUser: user
+        ) { attributes, _ in
+            nilFilterPrepared = attributes
+        }
+
+        #expect(kitAPI.writtenAttributes.isEmpty)
+        #expect(nilFilterPrepared["paypalpayerid"] == nil)
+        #expect(warnings.count == 2)
+
+        let prepopulatedUser = TestFilteredUser(attributes: ["paypalpayerid": "STORED_PAYER"])
+        let prepopulatedKitAPI = MockKitAPI(filteredUser: prepopulatedUser)
+        implementation.setContext(owner: MPKitRokt(), kitAPI: prepopulatedKitAPI)
+        implementation.filterUserAttributes = nil
+
+        var prepopulatedPrepared: [String: String] = [:]
+        implementation.prepareAttributes(
+            [:],
+            filteredUser: prepopulatedUser
+        ) { attributes, _ in
+            prepopulatedPrepared = attributes
+        }
+
+        #expect(prepopulatedKitAPI.writtenAttributes.isEmpty)
+        #expect(prepopulatedPrepared["paypalpayerid"] == "STORED_PAYER")
+    }
+
+    @Test func paypalPayerIdFollowsTheConnectionFilters() {
+        let implementation = MPRoktKitImplementation(
+            roktClient: MockRoktSDKClient(),
+            identityClient: DeferredIdentityClient()
+        )
+        let user = TestFilteredUser()
+        implementation.setContext(owner: MPKitRokt(), kitAPI: MockKitAPI(filteredUser: user))
+        implementation.filterUserAttributes = { attributes, _ in
+            attributes.filter { $0.key != "paypalpayerid" }
+        }
+
+        var prepared: [String: String] = [:]
+        implementation.prepareAttributes(
+            ["firstname": "Ada", "paypalpayerid": "PAYERID123"],
+            filteredUser: user
+        ) { attributes, _ in
+            prepared = attributes
+        }
+
+        #expect(prepared["firstname"] == "Ada")
+        #expect(prepared["paypalpayerid"] == nil)
     }
 
     @Test func callerEmailValuesWinOverStaleIdentities() {
