@@ -28,6 +28,7 @@ jobs:
   release-core-sdk:
     name: Build & Release Core SDK
     runs-on: macOS-latest
+    environment: release
     permissions:
       contents: write
     env:
@@ -274,6 +275,7 @@ jobs:
   mirror-and-release-kits:
     name: Mirror & Release ${{ matrix.kit.name }}
     runs-on: macOS-latest
+    environment: release
     needs:
       [load-matrix, build-kits, release-core-sdk, verify-kit-xcframework-import]
     env:
@@ -394,6 +396,7 @@ jobs:
     name: Publish Core SDK to CocoaPods
     needs: [mirror-and-release-kits]
     runs-on: macos-latest
+    environment: release
     if: github.event.inputs.dry_run != 'true'
     outputs:
       pushed: ${{ steps.trunk-push.outcome == 'success' }}
@@ -441,6 +444,7 @@ jobs:
     name: Publish ${{ matrix.kit.name }} to CocoaPods
     needs: [load-matrix, publish-core-cocoapods]
     runs-on: macos-latest
+    environment: release
     if: github.event.inputs.dry_run != 'true' && needs.publish-core-cocoapods.outputs.pushed == 'true'
     env:
       XCODE_VERSION: ${{ matrix.kit.xcode_version || '26.2' }}
