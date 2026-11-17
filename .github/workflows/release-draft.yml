@@ -25,6 +25,7 @@ jobs:
   release:
     name: Create release PR
     runs-on: macOS-latest
+    environment: release
     needs: confirm-main-branch
     steps:
       - name: Checkout main branch
