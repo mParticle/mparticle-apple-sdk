@@ -68,7 +68,6 @@
     "local_path": "Kits/apptentive/apptentive-7",
     "podspec": "Kits/apptentive/apptentive-7/mParticle-Apptentive-7.podspec",
     "dest_repo": "mparticle-apple-integration-apptentive-7",
-    "mirror_force_push_main": true,
     "schemes": [
       {
         "scheme": "mParticle-Apptentive",
@@ -319,7 +318,6 @@
     "name": "kochava-11",
     "local_path": "Kits/kochava/kochava-11",
     "dest_repo": "mparticle-apple-integration-kochava-11",
-    "mirror_force_push_main": true,
     "schemes": [
       {
         "scheme": "mParticle-Kochava",
@@ -337,7 +335,6 @@
     "name": "kochava-no-tracking-11",
     "local_path": "Kits/kochava/kochava-no-tracking-11",
     "dest_repo": "mparticle-apple-integration-kochava-no-tracking-11",
-    "mirror_force_push_main": true,
     "schemes": [
       {
         "scheme": "mParticle-Kochava",
