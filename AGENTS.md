@@ -108,10 +108,11 @@ mistake to make.
   also needs `ATTRIBUTES = (Public, )` there. Skip the second action and the header is public to
   SwiftPM and CocoaPods consumers but missing from the built framework.
 - **SwiftLint never sees test code** - `.trunk/configs/.swiftlint.yml` excludes `UnitTests`.
-- **Never hand-edit a version string.** The Release - Draft workflow rewrites `VERSION`,
-  `Framework/Info.plist`, every core and kit podspec, `MPIConstants.m` and a handful of kit sources
-  in one pass. Introducing a new place a version lives means teaching
-  `.github/workflows/release-draft.yml` about it, or it goes stale silently.
+- **Never hand-edit a version string.** The Release - Draft workflow and `Scripts/bump_version.sh`
+  each rewrite `VERSION`, `Framework/Info.plist`, every core and kit podspec, `MPIConstants.m` and
+  a handful of kit sources in one pass. Introducing a new place a version lives means teaching
+  both `.github/workflows/release-draft.yml` and `Scripts/bump_version.sh` about it, or it goes
+  stale silently.
 - **Never hand-write `CHANGELOG.md`.** Release sections are generated from conventional-commit PR
   titles at release time (same workflow, `exclude-types: chore,ci,test,build`) and inserted below
   the `## [Unreleased]` heading, which is not itself consumed - so a hand-written entry there is
