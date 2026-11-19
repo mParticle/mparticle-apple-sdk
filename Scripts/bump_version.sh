@@ -18,15 +18,15 @@ usage() {
 	exit 2
 }
 
-VERSION="${1:-}"
-BUMP="${2:-}"
+VERSION="${1-}"
+BUMP="${2-}"
 # Anything but digits and dots (a newline included) is refused before any file is touched.
-case "$VERSION" in
+case "${VERSION}" in
 "" | *[!0-9.]*) usage ;;
 *) ;;
 esac
-printf '%s' "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || usage
-case "$BUMP" in
+printf '%s' "${VERSION}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || usage
+case "${BUMP}" in
 patch | minor | major) ;;
 *) usage ;;
 esac
@@ -34,6 +34,8 @@ MAJOR="${VERSION%%.*}"
 MINOR_PATCH="${VERSION#*.}"
 MINOR="${MINOR_PATCH%%.*}"
 PATCH="${MINOR_PATCH#*.}"
+# The version as a regex (its dots escaped), for checking edits afterwards.
+VERSION_RE="$(printf '%s' "${VERSION}" | sed 's/\./\\./g')"
 
 fail() {
 	echo "$0: $*" >&2
@@ -43,24 +45,24 @@ fail() {
 # The bump type decides whether the kits' core SDK pins move, so it must agree with the version.
 [ -f VERSION ] || fail "run from the repository root (no VERSION file here)"
 CURRENT="$(tr -d '[:space:]' <VERSION)"
-printf '%s' "$CURRENT" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || fail "VERSION holds '$CURRENT', not a version like 1.2.3"
+printf '%s' "${CURRENT}" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || fail "VERSION holds '${CURRENT}', not a version like 1.2.3"
 # A release only moves forward. An exact version may skip numbers, but never repeats or lowers the current one.
 CUR_MAJOR="${CURRENT%%.*}"
 CUR_MINOR_PATCH="${CURRENT#*.}"
 CUR_MINOR="${CUR_MINOR_PATCH%%.*}"
 CUR_PATCH="${CUR_MINOR_PATCH#*.}"
-if [ "$MAJOR" -lt "$CUR_MAJOR" ] ||
-	{ [ "$MAJOR" -eq "$CUR_MAJOR" ] && [ "$MINOR" -lt "$CUR_MINOR" ]; } ||
-	{ [ "$MAJOR" -eq "$CUR_MAJOR" ] && [ "$MINOR" -eq "$CUR_MINOR" ] && [ "$PATCH" -le "$CUR_PATCH" ]; }; then
-	echo "$0: $VERSION is not newer than the current version $CURRENT" >&2
+if [ "${MAJOR}" -lt "${CUR_MAJOR}" ] ||
+	{ [ "${MAJOR}" -eq "${CUR_MAJOR}" ] && [ "${MINOR}" -lt "${CUR_MINOR}" ]; } ||
+	{ [ "${MAJOR}" -eq "${CUR_MAJOR}" ] && [ "${MINOR}" -eq "${CUR_MINOR}" ] && [ "${PATCH}" -le "${CUR_PATCH}" ]; }; then
+	echo "$0: ${VERSION} is not newer than the current version ${CURRENT}" >&2
 	exit 2
 fi
-if [ "$BUMP" = major ] && [ "$MAJOR" = "$CUR_MAJOR" ]; then
-	echo "$0: a major bump needs a new major version, but $VERSION has the same major as $CURRENT" >&2
+if [ "${BUMP}" = major ] && [ "${MAJOR}" = "${CUR_MAJOR}" ]; then
+	echo "$0: a major bump needs a new major version, but ${VERSION} has the same major as ${CURRENT}" >&2
 	exit 2
 fi
-if [ "$BUMP" != major ] && [ "$MAJOR" != "$CUR_MAJOR" ]; then
-	echo "$0: $VERSION changes the major version from $CURRENT, so the bump is major, not $BUMP" >&2
+if [ "${BUMP}" != major ] && [ "${MAJOR}" != "${CUR_MAJOR}" ]; then
+	echo "$0: ${VERSION} changes the major version from ${CURRENT}, so the bump is major, not ${BUMP}" >&2
 	exit 2
 fi
 
@@ -80,23 +82,23 @@ for kit in json.load(open("Kits/matrix.json")):
             sys.exit("Kits/matrix.json: unexpected podspec path " + repr(spec))
         print(spec)
 ')"
-PODSPECS="mParticle-Apple-SDK.podspec mParticle-Apple-SDK-ObjC.podspec mParticle-Apple-SDK-Swift.podspec $KIT_PODSPECS"
+PODSPECS="mParticle-Apple-SDK.podspec mParticle-Apple-SDK-ObjC.podspec mParticle-Apple-SDK-Swift.podspec ${KIT_PODSPECS}"
 
 ALL_KIT_PODSPECS=""
 ALL_KIT_PACKAGES=""
-if [ "$BUMP" = major ]; then
+if [ "${BUMP}" = major ]; then
 	ALL_KIT_PODSPECS="$(find Kits -type f -name '*.podspec' | sort)"
 	ALL_KIT_PACKAGES="$(find Kits -type f -name Package.swift | sort)"
 fi
 
 # Every file must exist, and every path must be plain, before the first edit.
-for file in $PODSPECS $ALL_KIT_PODSPECS $ALL_KIT_PACKAGES mParticle-Apple-SDK/MPIConstants.m Framework/Info.plist \
-	"$ROKT_KIT" "$SDK_PLUS" "$SDK_PLUS_PACKAGE" "$CLEVERTAP_KIT" "$BRANCH_KIT"; do
-	case "$file" in
-	*[!A-Za-z0-9._/-]*) fail "unexpected file name '$file'" ;;
+for file in ${PODSPECS} ${ALL_KIT_PODSPECS} ${ALL_KIT_PACKAGES} mParticle-Apple-SDK/MPIConstants.m Framework/Info.plist \
+	"${ROKT_KIT}" "${SDK_PLUS}" "${SDK_PLUS_PACKAGE}" "${CLEVERTAP_KIT}" "${BRANCH_KIT}"; do
+	case "${file}" in
+	*[!A-Za-z0-9._/-]*) fail "unexpected file name '${file}'" ;;
 	*) ;;
 	esac
-	[ -f "$file" ] || fail "$file is missing"
+	[ -f "${file}" ] || fail "${file} is missing"
 done
 
 # sed -i differs between GNU and BSD sed, so each file is rewritten through a temporary copy, removed on failure.
@@ -107,12 +109,12 @@ trap '[ -z "$tmp" ] || rm -f "$tmp"; exit 1' HUP INT TERM
 replace() {
 	file="$1"
 	shift
-	tmp="$file.bump.$$"
-	sed "$@" "$file" >"$tmp"
-	if cmp -s "$tmp" "$file"; then
-		rm -f "$tmp"
+	tmp="${file}.bump.$$"
+	sed "$@" "${file}" >"${tmp}"
+	if cmp -s "${tmp}" "${file}"; then
+		rm -f "${tmp}"
 	else
-		mv "$tmp" "$file"
+		mv "${tmp}" "${file}"
 	fi
 	tmp=""
 }
@@ -122,43 +124,43 @@ expect() {
 	grep -Fq -- "$2" "$1" || fail "$1 does not read $2 after the bump"
 }
 
-for spec in $PODSPECS; do
-	replace "$spec" \
-		-e 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"$VERSION"'"/' \
-		-e "s/\(s\.version[^=]*=[[:space:]]*\)'[^']*'/\1\"$VERSION\"/"
-	grep -Eq "s\.version[^=]*=[[:space:]]*\"$(printf '%s' "$VERSION" | sed 's/\./\\./g')\"" "$spec" ||
-		fail "$spec has no s.version reading $VERSION after the bump"
+for spec in ${PODSPECS}; do
+	replace "${spec}" \
+		-e 's/\(s\.version[^=]*=[[:space:]]*\)"[^"]*"/\1"'"${VERSION}"'"/' \
+		-e "s/\(s\.version[^=]*=[[:space:]]*\)'[^']*'/\1\"${VERSION}\"/"
+	grep -Eq "s\.version[^=]*=[[:space:]]*\"${VERSION_RE}\"" "${spec}" ||
+		fail "${spec} has no s.version reading ${VERSION} after the bump"
 done
 
-replace mParticle-Apple-SDK/MPIConstants.m -e "s/kMParticleSDKVersion = @\"[^\"]*\"/kMParticleSDKVersion = @\"$VERSION\"/"
-expect mParticle-Apple-SDK/MPIConstants.m "kMParticleSDKVersion = @\"$VERSION\""
+replace mParticle-Apple-SDK/MPIConstants.m -e "s/kMParticleSDKVersion = @\"[^\"]*\"/kMParticleSDKVersion = @\"${VERSION}\"/"
+expect mParticle-Apple-SDK/MPIConstants.m "kMParticleSDKVersion = @\"${VERSION}\""
 
-replace "$ROKT_KIT" -e "s/static let kitVersion = \"[^\"]*\"/static let kitVersion = \"$VERSION\"/"
-expect "$ROKT_KIT" "static let kitVersion = \"$VERSION\""
-replace "$SDK_PLUS" -e "s/public static let version = \"[^\"]*\"/public static let version = \"$VERSION\"/"
-expect "$SDK_PLUS" "public static let version = \"$VERSION\""
-replace "$SDK_PLUS_PACKAGE" -e "s/^let version = \"[^\"]*\"/let version = \"$VERSION\"/"
-expect "$SDK_PLUS_PACKAGE" "let version = \"$VERSION\""
-replace "$CLEVERTAP_KIT" -e "s/kLibVersion = @\"[^\"]*\"/kLibVersion = @\"$VERSION\"/"
-expect "$CLEVERTAP_KIT" "kLibVersion = @\"$VERSION\""
-replace "$BRANCH_KIT" -e "s/registerPluginName:@\"mParticleKit\" version:@\"[^\"]*\"/registerPluginName:@\"mParticleKit\" version:@\"$VERSION\"/"
-expect "$BRANCH_KIT" "registerPluginName:@\"mParticleKit\" version:@\"$VERSION\""
+replace "${ROKT_KIT}" -e "s/static let kitVersion = \"[^\"]*\"/static let kitVersion = \"${VERSION}\"/"
+expect "${ROKT_KIT}" "static let kitVersion = \"${VERSION}\""
+replace "${SDK_PLUS}" -e "s/public static let version = \"[^\"]*\"/public static let version = \"${VERSION}\"/"
+expect "${SDK_PLUS}" "public static let version = \"${VERSION}\""
+replace "${SDK_PLUS_PACKAGE}" -e "s/^let version = \"[^\"]*\"/let version = \"${VERSION}\"/"
+expect "${SDK_PLUS_PACKAGE}" "let version = \"${VERSION}\""
+replace "${CLEVERTAP_KIT}" -e "s/kLibVersion = @\"[^\"]*\"/kLibVersion = @\"${VERSION}\"/"
+expect "${CLEVERTAP_KIT}" "kLibVersion = @\"${VERSION}\""
+replace "${BRANCH_KIT}" -e "s/registerPluginName:@\"mParticleKit\" version:@\"[^\"]*\"/registerPluginName:@\"mParticleKit\" version:@\"${VERSION}\"/"
+expect "${BRANCH_KIT}" "registerPluginName:@\"mParticleKit\" version:@\"${VERSION}\""
 
 # The <string> on the line after the CFBundleShortVersionString key.
-replace Framework/Info.plist -e "/<key>CFBundleShortVersionString<\/key>/{n;s|<string>[^<]*</string>|<string>$VERSION</string>|;}"
-sed -n '/<key>CFBundleShortVersionString<\/key>/{n;p;}' Framework/Info.plist | grep -Fq "<string>$VERSION</string>" ||
-	fail "Framework/Info.plist has no CFBundleShortVersionString reading $VERSION after the bump"
+replace Framework/Info.plist -e "/<key>CFBundleShortVersionString<\/key>/{n;s|<string>[^<]*</string>|<string>${VERSION}</string>|;}"
+sed -n '/<key>CFBundleShortVersionString<\/key>/{n;p;}' Framework/Info.plist | grep -Fq "<string>${VERSION}</string>" ||
+	fail "Framework/Info.plist has no CFBundleShortVersionString reading ${VERSION} after the bump"
 
-if [ "$BUMP" = major ]; then
+if [ "${BUMP}" = major ]; then
 	# Podspec: 'mParticle-Apple-SDK' (or a subspec), '~> X.Y' becomes '~> MAJOR.0'.
-	for spec in $ALL_KIT_PODSPECS; do
-		replace "$spec" -e "s/\('mParticle-Apple-SDK[^']*'\), '~> [^']*'/\1, '~> $MAJOR.0'/"
+	for spec in ${ALL_KIT_PODSPECS}; do
+		replace "${spec}" -e "s/\('mParticle-Apple-SDK[^']*'\), '~> [^']*'/\1, '~> ${MAJOR}.0'/"
 	done
 	# Kit Package.swift: `let version` pins the core SDK (.upToNextMajor), so it moves to the new version.
-	for package in $ALL_KIT_PACKAGES; do
-		replace "$package" -e "s/^let version = \"[^\"]*\"/let version = \"$VERSION\"/"
+	for package in ${ALL_KIT_PACKAGES}; do
+		replace "${package}" -e "s/^let version = \"[^\"]*\"/let version = \"${VERSION}\"/"
 	done
 fi
 
 # VERSION last: it is the file that starts a release, so it changes only once everything else has.
-printf '%s\n' "$VERSION" >VERSION
+printf '%s\n' "${VERSION}" >VERSION
