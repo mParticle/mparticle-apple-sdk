@@ -146,17 +146,20 @@ private final class TestUser: MParticleUser {
     var setAttributes: [String: Any] = [:]
     var removedAttributeKeys: [String] = []
     var defersAttributeRemoval: Bool
+    var defersAttributeSets: Bool
 
     init(
         userID: NSNumber = 1,
         identities: [NSNumber: String] = [:],
         attributes: [String: Any] = [:],
-        defersAttributeRemoval: Bool = false
+        defersAttributeRemoval: Bool = false,
+        defersAttributeSets: Bool = false
     ) {
         testUserID = userID
         testIdentities = identities
         storedAttributes = attributes
         self.defersAttributeRemoval = defersAttributeRemoval
+        self.defersAttributeSets = defersAttributeSets
         super.init()
     }
 
@@ -169,7 +172,9 @@ private final class TestUser: MParticleUser {
     }
 
     override func setUserAttribute(_ key: String, value: Any) {
-        storedAttributes[key] = value
+        if !defersAttributeSets {
+            storedAttributes[key] = value
+        }
         setAttributes[key] = value
     }
 
@@ -222,6 +227,184 @@ private final class MockKitAPI: MPKitAPI {
 }
 
 struct MPRoktKitImplementationTests {
+    private func makeNoTargetingImplementation(
+        currentUser: TestUser,
+        filteredUser: TestFilteredUser
+    ) -> (MPRoktKitImplementation, MockRoktSDKClient, MockIdentityClient) {
+        let client = MockRoktSDKClient()
+        let identityClient = MockIdentityClient()
+        identityClient.currentUser = currentUser
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let implementation = MPRoktKitImplementation(roktClient: client, identityClient: identityClient)
+        implementation.setContext(owner: MPKitRokt(), kitAPI: kitAPI)
+        implementation.filterUserAttributes = { attributes, _ in attributes }
+        return (implementation, client, identityClient)
+    }
+
+    private func selectPlacements(
+        _ implementation: MPRoktKitImplementation,
+        attributes: [String: String],
+        filteredUser: TestFilteredUser
+    ) {
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: attributes,
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+    }
+
+    @Test func olderIdentifyDoesNotRestoreATagANewerCallCleared() {
+        let identityClient = DeferredIdentityClient()
+        identityClient.currentUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let filteredUser = TestFilteredUser(userID: 1)
+        let implementation = MPRoktKitImplementation(roktClient: MockRoktSDKClient(), identityClient: identityClient)
+        implementation.setContext(owner: MPKitRokt(), kitAPI: MockKitAPI(filteredUser: filteredUser))
+        implementation.filterUserAttributes = { attributes, _ in attributes }
+        let identifiedUser = TestUser(userID: 2, attributes: ["$NoTargeting": "true"])
+
+        selectPlacements(
+            implementation,
+            attributes: ["email": "new@example.com", "noTargeting": "true"],
+            filteredUser: filteredUser
+        )
+        identityClient.currentUser = identifiedUser
+        selectPlacements(implementation, attributes: ["shippingcountry": "US"], filteredUser: filteredUser)
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] == nil)
+        identityClient.complete(user: identifiedUser)
+
+        #expect(identifiedUser.setAttributes["$NoTargeting"] == nil)
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] == nil)
+    }
+
+    @Test func optOutAfterAQueuedRemovalStillSetsTheTag() {
+        // Core applies attribute writes later on its queue, so the removal is still pending.
+        let currentUser = TestUser(userID: 7, attributes: ["$NoTargeting": "true"], defersAttributeRemoval: true)
+        let filteredUser = TestFilteredUser(userID: 7)
+        let (implementation, _, _) = makeNoTargetingImplementation(currentUser: currentUser, filteredUser: filteredUser)
+
+        selectPlacements(implementation, attributes: ["shippingcountry": "US"], filteredUser: filteredUser)
+        #expect(currentUser.removedAttributeKeys == ["$NoTargeting"])
+        selectPlacements(implementation, attributes: ["noTargeting": "true"], filteredUser: filteredUser)
+
+        #expect(currentUser.setAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func removalAfterAQueuedSetStillRemovesTheTag() {
+        let currentUser = TestUser(userID: 7, defersAttributeSets: true)
+        let filteredUser = TestFilteredUser(userID: 7)
+        let (implementation, _, _) = makeNoTargetingImplementation(currentUser: currentUser, filteredUser: filteredUser)
+
+        selectPlacements(implementation, attributes: ["noTargeting": "true"], filteredUser: filteredUser)
+        #expect(currentUser.setAttributes["$NoTargeting"] as? String == "true")
+        selectPlacements(implementation, attributes: ["shippingcountry": "US"], filteredUser: filteredUser)
+
+        #expect(currentUser.removedAttributeKeys.contains("$NoTargeting"))
+    }
+
+    @Test func placementWithNoPrivacySourceRemovesStaleNoTargeting() {
+        let currentUser = TestUser(userID: 7, attributes: ["$NoTargeting": "true"])
+        let filteredUser = TestFilteredUser(userID: 7)
+        let (implementation, client, _) = makeNoTargetingImplementation(
+            currentUser: currentUser,
+            filteredUser: filteredUser
+        )
+
+        selectPlacements(implementation, attributes: ["shippingcountry": "US"], filteredUser: filteredUser)
+
+        #expect(currentUser.removedAttributeKeys == ["$NoTargeting"])
+        #expect(client.selectedAttributes?["$NoTargeting"] == nil)
+    }
+
+    @Test func placementKeepsNoTargetingWhileProfileNoTargetingIsTrue() {
+        let currentUser = TestUser(userID: 7, attributes: ["noTargeting": "true", "$NoTargeting": "true"])
+        let filteredUser = TestFilteredUser(userID: 7)
+        let (implementation, client, _) = makeNoTargetingImplementation(
+            currentUser: currentUser,
+            filteredUser: filteredUser
+        )
+
+        selectPlacements(implementation, attributes: ["shippingcountry": "US"], filteredUser: filteredUser)
+
+        #expect(currentUser.removedAttributeKeys.isEmpty)
+        #expect(client.selectedAttributes?["$NoTargeting"] == "true")
+    }
+
+    @Test func identityChangeSetsNoTargetingFromNewUsersProfile() {
+        let newUser = TestUser(userID: 8, attributes: ["noTargeting": "true"])
+        let (implementation, _, _) = makeNoTargetingImplementation(
+            currentUser: newUser,
+            filteredUser: TestFilteredUser(userID: 8)
+        )
+
+        implementation.syncNoTargetingAfterIdentityChange(TestFilteredUser(userID: 8))
+
+        #expect(newUser.setAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func identityChangeRemovesNoTargetingSetByHandWithoutNoTargeting() {
+        let newUser = TestUser(userID: 8, attributes: ["$NoTargeting": "true"])
+        let (implementation, _, _) = makeNoTargetingImplementation(
+            currentUser: newUser,
+            filteredUser: TestFilteredUser(userID: 8)
+        )
+
+        implementation.syncNoTargetingAfterIdentityChange(TestFilteredUser(userID: 8))
+
+        #expect(newUser.removedAttributeKeys == ["$NoTargeting"])
+    }
+
+    @Test func identityChangeKeepsPerCallOptOutFromThatUsersLastPlacement() {
+        let currentUser = TestUser(userID: 7)
+        let filteredUser = TestFilteredUser(userID: 7)
+        let (implementation, _, _) = makeNoTargetingImplementation(
+            currentUser: currentUser,
+            filteredUser: filteredUser
+        )
+        selectPlacements(implementation, attributes: ["noTargeting": "true"], filteredUser: filteredUser)
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+
+        implementation.syncNoTargetingAfterIdentityChange(filteredUser)
+
+        #expect(currentUser.removedAttributeKeys.isEmpty)
+        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func identityChangeToAnotherUserIgnoresPreviousUsersPerCallOptOut() {
+        let firstUser = TestUser(userID: 7)
+        let firstFilteredUser = TestFilteredUser(userID: 7)
+        let (implementation, _, identityClient) = makeNoTargetingImplementation(
+            currentUser: firstUser,
+            filteredUser: firstFilteredUser
+        )
+        selectPlacements(implementation, attributes: ["noTargeting": "true"], filteredUser: firstFilteredUser)
+        let secondUser = TestUser(userID: 9, attributes: ["$NoTargeting": "true"])
+        identityClient.currentUser = secondUser
+
+        implementation.syncNoTargetingAfterIdentityChange(TestFilteredUser(userID: 9))
+
+        #expect(secondUser.removedAttributeKeys == ["$NoTargeting"])
+    }
+
+    @Test func identityChangeForAUserThatIsNoLongerCurrentChangesNothing() {
+        let currentUser = TestUser(userID: 9, attributes: ["$NoTargeting": "true"])
+        let (implementation, _, _) = makeNoTargetingImplementation(
+            currentUser: currentUser,
+            filteredUser: TestFilteredUser(userID: 9)
+        )
+
+        implementation.syncNoTargetingAfterIdentityChange(TestFilteredUser(userID: 8))
+
+        #expect(currentUser.removedAttributeKeys.isEmpty)
+        #expect(currentUser.setAttributes.isEmpty)
+    }
+
     @Test func mapsConfiguredPlacementAttributes() throws {
         let implementation = MPRoktKitImplementation()
         let mapping = try JSONSerialization.data(
@@ -1280,9 +1463,10 @@ struct MPRoktKitImplementationTests {
             options: nil
         )
 
+        // No source says true any more, so the tag goes, as on web.
         #expect(client.selectedAttributes?["noTargeting"] == nil)
-        #expect(currentUser.removedAttributeKeys.isEmpty)
-        #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
+        #expect(currentUser.removedAttributeKeys == ["$NoTargeting"])
+        #expect(currentUser.storedAttributes["$NoTargeting"] == nil)
     }
 
     @Test func staleIdentifyCallbackForAUserWhoIsNoLongerCurrentWritesNothing() {
@@ -1494,9 +1678,10 @@ struct MPRoktKitImplementationTests {
             options: nil
         )
 
+        // No source says true any more, so the tag goes, as on web.
         #expect(client.selectedAttributes?["noTargeting"] == nil)
-        #expect(postIdentifyUser.removedAttributeKeys == ["noTargeting"])
-        #expect(postIdentifyUser.storedAttributes["$NoTargeting"] as? String == "true")
+        #expect(postIdentifyUser.removedAttributeKeys == ["noTargeting", "$NoTargeting"])
+        #expect(postIdentifyUser.storedAttributes["$NoTargeting"] == nil)
 
         let optedOutIdentifiedUser = TestUser(
             identities: [NSNumber(value: MPIdentity.email.rawValue): "optedout@example.com"],
@@ -1690,7 +1875,7 @@ struct MPRoktKitImplementationTests {
         #expect(currentUser.storedAttributes["noTargeting"] as? String == "false")
     }
 
-    @Test func identifySyncSurvivesANewerCallWithoutPrivacyAttributes() {
+    @Test func identifySyncLeavesNoTargetingToANewerCallWithoutPrivacyAttributes() {
         let client = MockRoktSDKClient()
         let identityClient = DeferredIdentityClient()
         let previousUser = TestUser(
@@ -1722,7 +1907,8 @@ struct MPRoktKitImplementationTests {
         selectPlacements(implementation, attributes: [:], filteredUser: filteredUser)
         identityClient.complete(user: identifiedUser)
 
-        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+        // That newer call's sync wrote `$NoTargeting` for this user, so the older identify leaves it alone.
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] == nil)
     }
 
     @Test func identifySyncSurvivesANewerPrivacyCallForThePreviousUser() {
@@ -1760,7 +1946,7 @@ struct MPRoktKitImplementationTests {
         #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
     }
 
-    @Test func identifySyncKeepsNoTargetingWhenANewerCallPassesOnlyNoFunctional() {
+    @Test func identifySyncLeavesNoTargetingToANewerCallForTheSameUser() {
         let client = MockRoktSDKClient()
         let identityClient = DeferredIdentityClient()
         identityClient.currentUser = TestUser(
@@ -1790,10 +1976,11 @@ struct MPRoktKitImplementationTests {
         selectPlacements(implementation, attributes: ["noFunctional": "true"], filteredUser: filteredUser)
         identityClient.complete(user: identifiedUser)
 
-        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+        // Every placement sync writes $NoTargeting, so the newer call for this user decides it.
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] == nil)
     }
 
-    @Test func identifySyncSkipsOnlyTheKeysANewerCallPassed() {
+    @Test func identifySyncSkipsTheKeysANewerCallPassedAndNoTargeting() {
         let client = MockRoktSDKClient()
         let identityClient = DeferredIdentityClient()
         identityClient.currentUser = TestUser(
@@ -1824,7 +2011,8 @@ struct MPRoktKitImplementationTests {
         selectPlacements(implementation, attributes: ["noFunctional": "false"], filteredUser: filteredUser)
         identityClient.complete(user: identifiedUser)
 
-        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+        // noTargeting is skipped too: the newer call's sync wrote `$NoTargeting` for this user.
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] == nil)
         #expect(identifiedUser.storedAttributes["noFunctional"] as? String == "false")
         #expect(!identifiedUser.removedAttributeKeys.contains("noFunctional"))
     }

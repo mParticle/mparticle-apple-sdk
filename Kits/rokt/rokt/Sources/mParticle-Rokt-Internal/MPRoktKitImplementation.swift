@@ -201,6 +201,12 @@ public final class MPRoktKitImplementation: NSObject {
     private var stoppedAtSequence: UInt = 0
     // The newest preparation that fired its own identify. An older identify callback is dropped.
     private var lastIdentifySequence: UInt = 0
+    // The `$NoTargeting` result of the last placement-call sync, per MPID. An identity change counts
+    // it as a source, so a per-call opt-out lasts until that user's next placement call even when
+    // the identity callback runs after the call's own identify. In memory only, like the web flag.
+    private var placementNoTargetingByUserID: [NSNumber: Bool] = [:]
+    // The `$NoTargeting` state the kit last asked core to write, per MPID, from any sync.
+    private var requestedNoTargetingTagByUserID: [NSNumber: Bool] = [:]
 
     /// Entry point used by the Objective-C shell in production.
     @objc public override convenience init() {
@@ -270,6 +276,30 @@ public final class MPRoktKitImplementation: NSObject {
         }
     }
 
+    /// Re-syncs `$NoTargeting` for the user an identity call switched to, from that user's own
+    /// sources: the profile `noTargeting` key and that user's last placement call in this process.
+    /// A callback for a user who is no longer current is ignored; the newer change syncs instead.
+    @objc public func syncNoTargetingAfterIdentityChange(_ filteredUser: FilteredMParticleUser?) {
+        guard let filteredUser,
+              let user = identityClient.currentUser,
+              user.userId == filteredUser.userId else {
+            return
+        }
+        var sources = Self.extractedPrivacyAttributes(Self.valuesAsStrings(user.userAttributes))
+        preparationQueueLock.lock()
+        let lastPlacementOptedOut = placementNoTargetingByUserID[user.userId] == true
+        preparationQueueLock.unlock()
+        if lastPlacementOptedOut {
+            sources[Constants.noTargeting] = "true"
+        }
+        syncNoTargetingAttribute(
+            effectivePrivacyAttributes: sources,
+            filteredUser: nil,
+            targetUser: user,
+            recordsPlacementResult: false
+        )
+    }
+
     /// Ends the current workspace and removes all workspace- and user-scoped state.
     @objc public func stop() {
         Self.log("Stopping Rokt Kit for workspace switch and clearing the Rokt session")
@@ -278,6 +308,8 @@ public final class MPRoktKitImplementation: NSObject {
         preparationSequence &+= 1
         stoppedAtSequence = preparationSequence
         privacySequenceByUserID = [:]
+        placementNoTargetingByUserID = [:]
+        requestedNoTargetingTagByUserID = [:]
         preparationQueue = []
         preparationInProgress = false
         roktClient.close()
@@ -603,8 +635,11 @@ public final class MPRoktKitImplementation: NSObject {
         let mapped = self.mappedAttributes(attributes)
         let callerPrivacyAttributes = Self.extractedPrivacyAttributes(mapped)
         let preparationSequence = self.nextPreparationSequence()
+        // Every sync writes `$NoTargeting`, set or removed, so a call claims noTargeting for each user it
+        // syncs even when it did not pass the key. An older identify then leaves the newer result alone.
+        let claimedPrivacyKeys = Set(callerPrivacyAttributes.keys).union([Constants.noTargeting])
         _ = claimPrivacyKeys(
-            Set(callerPrivacyAttributes.keys),
+            claimedPrivacyKeys,
             userID: identityClient.currentUser?.userId,
             sequence: preparationSequence
         )
@@ -622,7 +657,7 @@ public final class MPRoktKitImplementation: NSObject {
             // Keys a newer preparation has passed for this user are left to that preparation.
             let targetUserID = (identifiedUser ?? self.identityClient.currentUser)?.userId
             guard let claimedKeys = self.claimPrivacyKeys(
-                Set(callerPrivacyAttributes.keys),
+                claimedPrivacyKeys,
                 userID: targetUserID,
                 sequence: preparationSequence
             ) else {
@@ -684,7 +719,7 @@ public final class MPRoktKitImplementation: NSObject {
                 // The user can change between the start of this call and here. Record its keys under
                 // the user it writes to as well, so an older identify for that user leaves them alone.
                 _ = self.claimPrivacyKeys(
-                    Set(callerPrivacyAttributes.keys),
+                    claimedPrivacyKeys,
                     userID: self.identityClient.currentUser?.userId ?? refreshedUser?.userId,
                     sequence: preparationSequence
                 )
@@ -718,15 +753,12 @@ public final class MPRoktKitImplementation: NSObject {
                     effectivePrivacyAttributes,
                     to: stringProfile
                 )
-                switch effectivePrivacyAttributes[Constants.noTargeting]?.lowercased() {
-                case "true":
+                if effectivePrivacyAttributes[Constants.noTargeting]?.lowercased() == "true" {
                     stringProfile[Constants.noTargetingUserAttribute] = "true"
-                case "false":
+                } else {
                     stringProfile = stringProfile.filter {
                         $0.key.caseInsensitiveCompare(Constants.noTargetingUserAttribute) != .orderedSame
                     }
-                default:
-                    break
                 }
                 completion(
                     self.enrichedAttributes(
@@ -1265,46 +1297,52 @@ public final class MPRoktKitImplementation: NSObject {
         return effectivePrivacyAttributes
     }
 
+    /// Sets `$NoTargeting` when the effective `noTargeting` is true and removes it otherwise, as web
+    /// does, so a tag no source asks for does not stay on the profile.
     private func syncNoTargetingAttribute(
         effectivePrivacyAttributes: [String: String],
         filteredUser: FilteredMParticleUser?,
-        targetUser: MParticleUser? = nil
+        targetUser: MParticleUser? = nil,
+        recordsPlacementResult: Bool = true
     ) {
         let resolvedUser = targetUser ?? identityClient.currentUser
-        switch effectivePrivacyAttributes[Constants.noTargeting]?.lowercased() {
-        case "true":
+        let optedOut = effectivePrivacyAttributes[Constants.noTargeting]?.lowercased() == "true"
+        let userID = resolvedUser?.userId ?? filteredUser?.userId
+        // Core applies attribute writes later on its queue, so the stored profile can lag behind the
+        // kit's own last write. Decide from that write as well, so a queued opposite write never wins.
+        var lastRequested: Bool?
+        if let userID {
+            preparationQueueLock.lock()
+            lastRequested = requestedNoTargetingTagByUserID[userID]
+            requestedNoTargetingTagByUserID[userID] = optedOut
+            if recordsPlacementResult {
+                placementNoTargetingByUserID[userID] = optedOut
+            }
+            preparationQueueLock.unlock()
+        }
+        let storedAttributes = resolvedUser?.userAttributes ?? filteredUser?.userAttributes ?? [:]
+        if optedOut {
+            let storedTrue = (storedAttributes[Constants.noTargetingUserAttribute] as? String) == "true"
+            guard !storedTrue || lastRequested == false else { return }
             if let resolvedUser {
-                let currentVal = resolvedUser.userAttributes[Constants.noTargetingUserAttribute]
-                if (currentVal as? String) != "true" {
-                    resolvedUser.setUserAttribute(
-                        Constants.noTargetingUserAttribute,
-                        value: "true"
-                    )
-                }
-            } else if let kitAPI = self.kitAPI, let currentFilteredUser = filteredUser {
-                let currentVal = currentFilteredUser.userAttributes[Constants.noTargetingUserAttribute]
-                if (currentVal as? String) != "true" {
-                    kitAPI.setUserAttribute(
-                        Constants.noTargetingUserAttribute,
-                        value: "true",
-                        for: currentFilteredUser
-                    )
+                resolvedUser.setUserAttribute(Constants.noTargetingUserAttribute, value: "true")
+            } else if let kitAPI = self.kitAPI, let filteredUser {
+                kitAPI.setUserAttribute(Constants.noTargetingUserAttribute, value: "true", for: filteredUser)
+            }
+        } else {
+            var keys = storedAttributes.keys.filter {
+                $0.caseInsensitiveCompare(Constants.noTargetingUserAttribute) == .orderedSame
+            }
+            if keys.isEmpty && lastRequested == true {
+                keys = [Constants.noTargetingUserAttribute]
+            }
+            for key in keys {
+                if let resolvedUser {
+                    resolvedUser.removeAttribute(key)
+                } else if let kitAPI = self.kitAPI, let filteredUser {
+                    kitAPI.removeUserAttribute(key, for: filteredUser)
                 }
             }
-        case "false":
-            if let resolvedUser {
-                for existingKey in resolvedUser.userAttributes.keys
-                where existingKey.caseInsensitiveCompare(Constants.noTargetingUserAttribute) == .orderedSame {
-                    resolvedUser.removeAttribute(existingKey)
-                }
-            } else if let kitAPI = self.kitAPI, let currentFilteredUser = filteredUser {
-                for existingKey in currentFilteredUser.userAttributes.keys
-                where existingKey.caseInsensitiveCompare(Constants.noTargetingUserAttribute) == .orderedSame {
-                    kitAPI.removeUserAttribute(existingKey, for: currentFilteredUser)
-                }
-            }
-        default:
-            break
         }
     }
 

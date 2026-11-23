@@ -42,7 +42,11 @@
         NSStringFromSelector(@selector(getSessionId)),
         NSStringFromSelector(@selector(clearSession)),
         NSStringFromSelector(@selector(handleURLCallback:)),
-        NSStringFromSelector(@selector(logMParticleApiDiagnostic:))
+        NSStringFromSelector(@selector(logMParticleApiDiagnostic:)),
+        NSStringFromSelector(@selector(onIdentifyComplete:request:)),
+        NSStringFromSelector(@selector(onLoginComplete:request:)),
+        NSStringFromSelector(@selector(onLogoutComplete:request:)),
+        NSStringFromSelector(@selector(onModifyComplete:request:))
     ];
 
     for (NSString *selectorName in selectors) {
