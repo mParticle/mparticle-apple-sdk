@@ -229,16 +229,16 @@ private final class MockKitAPI: MPKitAPI {
 struct MPRoktKitImplementationTests {
     private func makeNoTargetingImplementation(
         currentUser: TestUser,
-        filteredUser: TestFilteredUser
-    ) -> (MPRoktKitImplementation, MockRoktSDKClient, MockIdentityClient) {
+        filteredUser: TestFilteredUser,
+        identityClient: MockIdentityClient = MockIdentityClient()
+    ) -> (MPRoktKitImplementation, MockRoktSDKClient) {
         let client = MockRoktSDKClient()
-        let identityClient = MockIdentityClient()
         identityClient.currentUser = currentUser
         let kitAPI = MockKitAPI(filteredUser: filteredUser)
         let implementation = MPRoktKitImplementation(roktClient: client, identityClient: identityClient)
         implementation.setContext(owner: MPKitRokt(), kitAPI: kitAPI)
         implementation.filterUserAttributes = { attributes, _ in attributes }
-        return (implementation, client, identityClient)
+        return (implementation, client)
     }
 
     private func selectPlacements(
@@ -287,7 +287,7 @@ struct MPRoktKitImplementationTests {
         // Core applies attribute writes later on its queue, so the removal is still pending.
         let currentUser = TestUser(userID: 7, attributes: ["$NoTargeting": "true"], defersAttributeRemoval: true)
         let filteredUser = TestFilteredUser(userID: 7)
-        let (implementation, _, _) = makeNoTargetingImplementation(currentUser: currentUser, filteredUser: filteredUser)
+        let (implementation, _) = makeNoTargetingImplementation(currentUser: currentUser, filteredUser: filteredUser)
 
         selectPlacements(implementation, attributes: ["shippingcountry": "US"], filteredUser: filteredUser)
         #expect(currentUser.removedAttributeKeys == ["$NoTargeting"])
@@ -299,7 +299,7 @@ struct MPRoktKitImplementationTests {
     @Test func removalAfterAQueuedSetStillRemovesTheTag() {
         let currentUser = TestUser(userID: 7, defersAttributeSets: true)
         let filteredUser = TestFilteredUser(userID: 7)
-        let (implementation, _, _) = makeNoTargetingImplementation(currentUser: currentUser, filteredUser: filteredUser)
+        let (implementation, _) = makeNoTargetingImplementation(currentUser: currentUser, filteredUser: filteredUser)
 
         selectPlacements(implementation, attributes: ["noTargeting": "true"], filteredUser: filteredUser)
         #expect(currentUser.setAttributes["$NoTargeting"] as? String == "true")
@@ -311,7 +311,7 @@ struct MPRoktKitImplementationTests {
     @Test func placementWithNoPrivacySourceRemovesStaleNoTargeting() {
         let currentUser = TestUser(userID: 7, attributes: ["$NoTargeting": "true"])
         let filteredUser = TestFilteredUser(userID: 7)
-        let (implementation, client, _) = makeNoTargetingImplementation(
+        let (implementation, client) = makeNoTargetingImplementation(
             currentUser: currentUser,
             filteredUser: filteredUser
         )
@@ -325,7 +325,7 @@ struct MPRoktKitImplementationTests {
     @Test func placementKeepsNoTargetingWhileProfileNoTargetingIsTrue() {
         let currentUser = TestUser(userID: 7, attributes: ["noTargeting": "true", "$NoTargeting": "true"])
         let filteredUser = TestFilteredUser(userID: 7)
-        let (implementation, client, _) = makeNoTargetingImplementation(
+        let (implementation, client) = makeNoTargetingImplementation(
             currentUser: currentUser,
             filteredUser: filteredUser
         )
@@ -338,7 +338,7 @@ struct MPRoktKitImplementationTests {
 
     @Test func identityChangeSetsNoTargetingFromNewUsersProfile() {
         let newUser = TestUser(userID: 8, attributes: ["noTargeting": "true"])
-        let (implementation, _, _) = makeNoTargetingImplementation(
+        let (implementation, _) = makeNoTargetingImplementation(
             currentUser: newUser,
             filteredUser: TestFilteredUser(userID: 8)
         )
@@ -350,7 +350,7 @@ struct MPRoktKitImplementationTests {
 
     @Test func identityChangeRemovesNoTargetingSetByHandWithoutNoTargeting() {
         let newUser = TestUser(userID: 8, attributes: ["$NoTargeting": "true"])
-        let (implementation, _, _) = makeNoTargetingImplementation(
+        let (implementation, _) = makeNoTargetingImplementation(
             currentUser: newUser,
             filteredUser: TestFilteredUser(userID: 8)
         )
@@ -363,7 +363,7 @@ struct MPRoktKitImplementationTests {
     @Test func identityChangeKeepsPerCallOptOutFromThatUsersLastPlacement() {
         let currentUser = TestUser(userID: 7)
         let filteredUser = TestFilteredUser(userID: 7)
-        let (implementation, _, _) = makeNoTargetingImplementation(
+        let (implementation, _) = makeNoTargetingImplementation(
             currentUser: currentUser,
             filteredUser: filteredUser
         )
@@ -379,9 +379,11 @@ struct MPRoktKitImplementationTests {
     @Test func identityChangeToAnotherUserIgnoresPreviousUsersPerCallOptOut() {
         let firstUser = TestUser(userID: 7)
         let firstFilteredUser = TestFilteredUser(userID: 7)
-        let (implementation, _, identityClient) = makeNoTargetingImplementation(
+        let identityClient = MockIdentityClient()
+        let (implementation, _) = makeNoTargetingImplementation(
             currentUser: firstUser,
-            filteredUser: firstFilteredUser
+            filteredUser: firstFilteredUser,
+            identityClient: identityClient
         )
         selectPlacements(implementation, attributes: ["noTargeting": "true"], filteredUser: firstFilteredUser)
         let secondUser = TestUser(userID: 9, attributes: ["$NoTargeting": "true"])
@@ -394,7 +396,7 @@ struct MPRoktKitImplementationTests {
 
     @Test func identityChangeForAUserThatIsNoLongerCurrentChangesNothing() {
         let currentUser = TestUser(userID: 9, attributes: ["$NoTargeting": "true"])
-        let (implementation, _, _) = makeNoTargetingImplementation(
+        let (implementation, _) = makeNoTargetingImplementation(
             currentUser: currentUser,
             filteredUser: TestFilteredUser(userID: 9)
         )
