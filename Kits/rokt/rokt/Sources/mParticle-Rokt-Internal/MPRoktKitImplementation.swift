@@ -689,12 +689,13 @@ public final class MPRoktKitImplementation: NSObject {
                 targetUser: identifiedUser
             )
         }
+        let willIdentify: () -> Void = { [weak self] in self?.recordIdentifyFired(preparationSequence) }
 
         confirmUser(
             attributes: attributes,
             user: identityClient.currentUser,
             onIdentifyCompleted: onIdentifyCompleted,
-            willIdentify: { [weak self] in self?.recordIdentifyFired(preparationSequence) }
+            willIdentify: willIdentify
         ) { _, identified in
             let currentFilteredUser = self.currentFilteredUser(fallback: filteredUser)
             // Identify is not awaited, so the user's identities may still hold the old values.
