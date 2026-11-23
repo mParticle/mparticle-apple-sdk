@@ -195,6 +195,12 @@ public final class MPRoktKitImplementation: NSObject {
     private var preparationInProgress = false
     private var preparationGeneration: UInt = 0
     private var preparationSequence: UInt = 0
+    // Newest preparation that passed each canonical privacy key, per MPID. At most four entries per
+    // MPID seen in this process, so it stays small and is never pruned.
+    private var privacySequenceByUserID: [NSNumber: [String: UInt]] = [:]
+    private var stoppedAtSequence: UInt = 0
+    // The newest preparation that fired its own identify. An older identify callback is dropped.
+    private var lastIdentifySequence: UInt = 0
 
     /// Entry point used by the Objective-C shell in production.
     @objc public override convenience init() {
@@ -270,6 +276,8 @@ public final class MPRoktKitImplementation: NSObject {
         preparationQueueLock.lock()
         preparationGeneration &+= 1
         preparationSequence &+= 1
+        stoppedAtSequence = preparationSequence
+        privacySequenceByUserID = [:]
         preparationQueue = []
         preparationInProgress = false
         roktClient.close()
@@ -595,22 +603,49 @@ public final class MPRoktKitImplementation: NSObject {
         let mapped = self.mappedAttributes(attributes)
         let callerPrivacyAttributes = Self.extractedPrivacyAttributes(mapped)
         let preparationSequence = self.nextPreparationSequence()
+        _ = claimPrivacyKeys(
+            Set(callerPrivacyAttributes.keys),
+            userID: identityClient.currentUser?.userId,
+            sequence: preparationSequence
+        )
 
         let onIdentifyCompleted: (MParticleUser?) -> Void = { [weak self] identifiedUser in
-            guard let self,
-                  self.isCurrentPreparationSequence(preparationSequence) else {
+            guard let self else { return }
+            // Core writes user attributes to the current user, so a callback for a user who is no
+            // longer current would write to someone else. The newer identity change owns that user.
+            if let identifiedUser, identifiedUser.userId != self.identityClient.currentUser?.userId {
                 return
             }
+            // Core applies those writes later on its queue, behind an identify a newer call already
+            // queued, so this user may not be current by then. That call syncs its own user.
+            guard !self.isIdentifySuperseded(preparationSequence) else { return }
+            // Keys a newer preparation has passed for this user are left to that preparation.
+            let targetUserID = (identifiedUser ?? self.identityClient.currentUser)?.userId
+            guard let claimedKeys = self.claimPrivacyKeys(
+                Set(callerPrivacyAttributes.keys),
+                userID: targetUserID,
+                sequence: preparationSequence
+            ) else {
+                return
+            }
+            let claimedPrivacyAttributes = callerPrivacyAttributes.filter { claimedKeys.contains($0.key) }
             self.clearOverriddenStoredPrivacyAttributes(
-                callerPrivacyAttributes: callerPrivacyAttributes,
+                callerPrivacyAttributes: claimedPrivacyAttributes,
                 filteredUser: nil,
                 targetUser: identifiedUser
             )
+            guard !self.isPrivacyKeySuperseded(
+                Constants.noTargeting,
+                userID: targetUserID,
+                sequence: preparationSequence
+            ) else {
+                return
+            }
             let targetAttributes = identifiedUser?.userAttributes ?? self.identityClient.currentUser?.userAttributes ?? [:]
             var identifyPrivacyAttributes = Self.extractedPrivacyAttributes(
                 Self.valuesAsStrings(targetAttributes)
             )
-            for (key, value) in callerPrivacyAttributes where identifyPrivacyAttributes[key]?.lowercased() != "true" {
+            for (key, value) in claimedPrivacyAttributes where identifyPrivacyAttributes[key]?.lowercased() != "true" {
                 identifyPrivacyAttributes[key] = value
             }
             self.syncNoTargetingAttribute(
@@ -623,7 +658,8 @@ public final class MPRoktKitImplementation: NSObject {
         confirmUser(
             attributes: attributes,
             user: identityClient.currentUser,
-            onIdentifyCompleted: onIdentifyCompleted
+            onIdentifyCompleted: onIdentifyCompleted,
+            willIdentify: { [weak self] in self?.recordIdentifyFired(preparationSequence) }
         ) { _, identified in
             let currentFilteredUser = self.currentFilteredUser(fallback: filteredUser)
             // Identify is not awaited, so the user's identities may still hold the old values.
@@ -645,6 +681,13 @@ public final class MPRoktKitImplementation: NSObject {
             }
 
             let finishPreparation: ([String: Any], FilteredMParticleUser?) -> Void = { filteredProfile, refreshedUser in
+                // The user can change between the start of this call and here. Record its keys under
+                // the user it writes to as well, so an older identify for that user leaves them alone.
+                _ = self.claimPrivacyKeys(
+                    Set(callerPrivacyAttributes.keys),
+                    userID: self.identityClient.currentUser?.userId ?? refreshedUser?.userId,
+                    sequence: preparationSequence
+                )
                 self.clearOverriddenStoredPrivacyAttributes(
                     callerPrivacyAttributes: callerPrivacyAttributes,
                     filteredUser: refreshedUser
@@ -740,10 +783,39 @@ public final class MPRoktKitImplementation: NSObject {
         return preparationSequence
     }
 
-    private func isCurrentPreparationSequence(_ sequence: UInt) -> Bool {
+    /// Records `sequence` for each of `keys` on `userID` and returns the keys no newer preparation
+    /// has passed for that user, or nil when the kit stopped after `sequence` began.
+    private func claimPrivacyKeys(_ keys: Set<String>, userID: NSNumber?, sequence: UInt) -> Set<String>? {
         preparationQueueLock.lock()
         defer { preparationQueueLock.unlock() }
-        return preparationSequence == sequence
+        guard sequence > stoppedAtSequence else { return nil }
+        guard let userID else { return keys }
+        var newestByKey = privacySequenceByUserID[userID] ?? [:]
+        let claimedKeys = keys.filter { (newestByKey[$0] ?? 0) <= sequence }
+        for key in claimedKeys {
+            newestByKey[key] = sequence
+        }
+        privacySequenceByUserID[userID] = newestByKey
+        return claimedKeys
+    }
+
+    private func recordIdentifyFired(_ sequence: UInt) {
+        preparationQueueLock.lock()
+        lastIdentifySequence = max(lastIdentifySequence, sequence)
+        preparationQueueLock.unlock()
+    }
+
+    private func isIdentifySuperseded(_ sequence: UInt) -> Bool {
+        preparationQueueLock.lock()
+        defer { preparationQueueLock.unlock() }
+        return lastIdentifySequence > sequence
+    }
+
+    private func isPrivacyKeySuperseded(_ key: String, userID: NSNumber?, sequence: UInt) -> Bool {
+        preparationQueueLock.lock()
+        defer { preparationQueueLock.unlock() }
+        guard let userID, let newest = privacySequenceByUserID[userID]?[key] else { return false }
+        return newest > sequence
     }
 
     private func enqueuePreparation(_ preparation: @escaping (UInt) -> Void) {
@@ -825,6 +897,7 @@ public final class MPRoktKitImplementation: NSObject {
         attributes: [String: String],
         user: MParticleUser?,
         onIdentifyCompleted: ((MParticleUser?) -> Void)? = nil,
+        willIdentify: (() -> Void)? = nil,
         completion: @escaping (MParticleUser?, Bool) -> Void
     ) {
         let email = attributes["email"]
@@ -865,6 +938,7 @@ public final class MPRoktKitImplementation: NSObject {
            let identity = MPIdentity(rawValue: hashedIdentity.uintValue) {
             request.setIdentity(hashedEmail, identityType: identity)
         }
+        willIdentify?()
         identityClient.identify(request) { [weak self] result, error in
             if let error {
                 Self.log("Failed to sync email from selectPlacements to user: \(error)")
