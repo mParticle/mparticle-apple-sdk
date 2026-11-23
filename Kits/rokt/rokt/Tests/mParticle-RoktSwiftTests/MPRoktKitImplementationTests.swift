@@ -107,6 +107,7 @@ private final class DeferredIdentityClient: MPRoktIdentityClient {
     private var completions: [(MPIdentityApiResult?, Error?) -> Void] = []
 
     var hasPendingIdentify: Bool { !completions.isEmpty }
+    var pendingIdentifyCount: Int { completions.count }
 
     func identify(
         _ request: MPIdentityApiRequest,
@@ -115,6 +116,15 @@ private final class DeferredIdentityClient: MPRoktIdentityClient {
         identifyCount += 1
         lastRequest = request
         completions.append(completion)
+    }
+
+    /// Completes only the oldest pending identify, leaving later ones queued.
+    func completeOldest(user: MParticleUser) {
+        guard !completions.isEmpty else { return }
+        let completion = completions.removeFirst()
+        let apiResult = MPIdentityApiResult()
+        apiResult.user = user
+        completion(apiResult, nil)
     }
 
     func complete(user: MParticleUser? = nil, error: Error? = nil) {
@@ -130,6 +140,7 @@ private final class DeferredIdentityClient: MPRoktIdentityClient {
 }
 
 private final class TestUser: MParticleUser {
+    let testUserID: NSNumber
     let testIdentities: [NSNumber: String]
     var storedAttributes: [String: Any]
     var setAttributes: [String: Any] = [:]
@@ -137,16 +148,19 @@ private final class TestUser: MParticleUser {
     var defersAttributeRemoval: Bool
 
     init(
+        userID: NSNumber = 1,
         identities: [NSNumber: String] = [:],
         attributes: [String: Any] = [:],
         defersAttributeRemoval: Bool = false
     ) {
+        testUserID = userID
         testIdentities = identities
         storedAttributes = attributes
         self.defersAttributeRemoval = defersAttributeRemoval
         super.init()
     }
 
+    override var userId: NSNumber { testUserID }
     override var identities: [NSNumber: String] { testIdentities }
 
     override var userAttributes: [String: Any] {
@@ -1271,6 +1285,125 @@ struct MPRoktKitImplementationTests {
         #expect(currentUser.storedAttributes["$NoTargeting"] as? String == "true")
     }
 
+    @Test func staleIdentifyCallbackForAUserWhoIsNoLongerCurrentWritesNothing() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        let firstUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        identityClient.currentUser = firstUser
+        let filteredUser = TestFilteredUser(userID: 1)
+        let implementation = MPRoktKitImplementation(roktClient: client, identityClient: identityClient)
+        implementation.setContext(owner: MPKitRokt(), kitAPI: MockKitAPI(filteredUser: filteredUser))
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: ["email": "new@example.com", "noTargeting": "true"],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+        // A later identify or login already made another user current when this callback runs.
+        let laterUser = TestUser(userID: 3, attributes: ["noTargeting": "true", "$NoTargeting": "true"])
+        identityClient.currentUser = laterUser
+        let identifiedUser = TestUser(userID: 2, attributes: ["noTargeting": "false"])
+        identityClient.complete(user: identifiedUser)
+
+        // Core writes user attributes to the current user, so a write here would land on laterUser.
+        #expect(identifiedUser.removedAttributeKeys.isEmpty)
+        #expect(identifiedUser.setAttributes.isEmpty)
+        #expect(laterUser.removedAttributeKeys.isEmpty)
+        #expect(laterUser.setAttributes.isEmpty)
+    }
+
+    @Test func identifyCallbackIsDroppedOnceANewerCallHasFiredItsOwnIdentify() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        identityClient.currentUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let filteredUser = TestFilteredUser(userID: 1)
+        let implementation = MPRoktKitImplementation(roktClient: client, identityClient: identityClient)
+        implementation.setContext(owner: MPKitRokt(), kitAPI: MockKitAPI(filteredUser: filteredUser))
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        for (email, privacy) in [("second@example.com", "true"), ("third@example.com", "false")] {
+            _ = implementation.selectPlacements(
+                identifier: "checkout",
+                attributes: ["email": email, "noTargeting": privacy],
+                embeddedViews: nil,
+                config: nil,
+                onEvent: nil,
+                filteredUser: filteredUser,
+                options: nil
+            )
+        }
+        #expect(identityClient.pendingIdentifyCount == 2)
+
+        // The first identify returns while the second is still queued. Core makes its user current
+        // first, but applies attribute writes later on the queue, after the second identify switches
+        // to another user, so the first callback must not write at all.
+        let secondUser = TestUser(userID: 2, attributes: ["noTargeting": "false"])
+        identityClient.currentUser = secondUser
+        identityClient.completeOldest(user: secondUser)
+
+        #expect(secondUser.removedAttributeKeys.isEmpty)
+        #expect(secondUser.setAttributes.isEmpty)
+    }
+
+    @Test func newerCallClaimsPrivacyKeysForTheUserItWritesTo() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        let firstUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let identifiedUser = TestUser(userID: 2)
+        identityClient.currentUser = firstUser
+        let filteredUser = TestFilteredUser(userID: 1)
+        let implementation = MPRoktKitImplementation(roktClient: client, identityClient: identityClient)
+        implementation.setContext(owner: MPKitRokt(), kitAPI: MockKitAPI(filteredUser: filteredUser))
+        implementation.filterUserAttributes = nil
+        var switchUserBeforeWriting = false
+        implementation.afterPendingAttributeWrites = { callback in
+            if switchUserBeforeWriting {
+                identityClient.currentUser = identifiedUser
+            }
+            callback()
+        }
+
+        // Call N opts out and fires an identify that has not completed yet.
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: ["email": "new@example.com", "noTargeting": "true"],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+        // Newer call M opts back in. It starts for the first user but writes after the switch.
+        switchUserBeforeWriting = true
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: ["noTargeting": "false"],
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
+        identityClient.complete(user: identifiedUser)
+
+        // N's identify is older than M for the user M wrote to, so it must not restore the opt-out.
+        #expect(identifiedUser.setAttributes["$NoTargeting"] == nil)
+    }
+
     @Test func legacyAfterPendingAttributeWritesResolvesQueuedProfilePrivacyOptOut() {
         let client = MockRoktSDKClient()
         let identityClient = MockIdentityClient()
@@ -1555,6 +1688,227 @@ struct MPRoktKitImplementationTests {
         #expect(currentUser.setAttributes.isEmpty)
         #expect(currentUser.storedAttributes["$NoTargeting"] == nil)
         #expect(currentUser.storedAttributes["noTargeting"] as? String == "false")
+    }
+
+    @Test func identifySyncSurvivesANewerCallWithoutPrivacyAttributes() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        let previousUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let identifiedUser = TestUser(
+            userID: 2,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "new@example.com"]
+        )
+        identityClient.currentUser = previousUser
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        selectPlacements(
+            implementation,
+            attributes: ["email": "new@example.com", "noTargeting": "true"],
+            filteredUser: filteredUser
+        )
+        // The SDK can report the new user before identify completes, and an app may place on it.
+        identityClient.currentUser = identifiedUser
+        selectPlacements(implementation, attributes: [:], filteredUser: filteredUser)
+        identityClient.complete(user: identifiedUser)
+
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func identifySyncSurvivesANewerPrivacyCallForThePreviousUser() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        let previousUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let identifiedUser = TestUser(
+            userID: 2,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "new@example.com"]
+        )
+        identityClient.currentUser = previousUser
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        selectPlacements(
+            implementation,
+            attributes: ["email": "new@example.com", "noTargeting": "true"],
+            filteredUser: filteredUser
+        )
+        selectPlacements(implementation, attributes: ["noTargeting": "false"], filteredUser: filteredUser)
+        // Core makes the identified user current before it runs the identify completion.
+        identityClient.currentUser = identifiedUser
+        identityClient.complete(user: identifiedUser)
+
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func identifySyncKeepsNoTargetingWhenANewerCallPassesOnlyNoFunctional() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        identityClient.currentUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+        let identifiedUser = TestUser(
+            userID: 2,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "new@example.com"]
+        )
+
+        selectPlacements(
+            implementation,
+            attributes: ["email": "new@example.com", "noTargeting": "true"],
+            filteredUser: filteredUser
+        )
+        identityClient.currentUser = identifiedUser
+        selectPlacements(implementation, attributes: ["noFunctional": "true"], filteredUser: filteredUser)
+        identityClient.complete(user: identifiedUser)
+
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func identifySyncSkipsOnlyTheKeysANewerCallPassed() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        identityClient.currentUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+        let identifiedUser = TestUser(
+            userID: 2,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "new@example.com"],
+            attributes: ["noFunctional": "false"]
+        )
+
+        selectPlacements(
+            implementation,
+            attributes: ["email": "new@example.com", "noTargeting": "true", "noFunctional": "true"],
+            filteredUser: filteredUser
+        )
+        identityClient.currentUser = identifiedUser
+        selectPlacements(implementation, attributes: ["noFunctional": "false"], filteredUser: filteredUser)
+        identityClient.complete(user: identifiedUser)
+
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+        #expect(identifiedUser.storedAttributes["noFunctional"] as? String == "false")
+        #expect(!identifiedUser.removedAttributeKeys.contains("noFunctional"))
+    }
+
+    @Test func olderIdentifyWithoutPrivacyAttributesDoesNotUndoANewerOptOut() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        let previousUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let identifiedUser = TestUser(
+            userID: 2,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "new@example.com"],
+            attributes: ["noTargeting": "false"],
+            defersAttributeRemoval: true
+        )
+        identityClient.currentUser = previousUser
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        selectPlacements(implementation, attributes: ["email": "new@example.com"], filteredUser: filteredUser)
+        identityClient.currentUser = identifiedUser
+        selectPlacements(implementation, attributes: ["noTargeting": "true"], filteredUser: filteredUser)
+
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+
+        identityClient.complete(user: identifiedUser)
+
+        #expect(!identifiedUser.removedAttributeKeys.contains("$NoTargeting"))
+        #expect(identifiedUser.storedAttributes["$NoTargeting"] as? String == "true")
+    }
+
+    @Test func stopDropsAnInFlightIdentifyPrivacySync() {
+        let client = MockRoktSDKClient()
+        let identityClient = DeferredIdentityClient()
+        identityClient.currentUser = TestUser(
+            userID: 1,
+            identities: [NSNumber(value: MPIdentity.email.rawValue): "old@example.com"]
+        )
+        let identifiedUser = TestUser(userID: 2, attributes: ["noTargeting": "false"])
+        let filteredUser = TestFilteredUser(attributes: [:])
+        let kitAPI = MockKitAPI(filteredUser: filteredUser)
+        let owner = MPKitRokt()
+        let implementation = MPRoktKitImplementation(
+            roktClient: client,
+            identityClient: identityClient
+        )
+        implementation.setContext(owner: owner, kitAPI: kitAPI)
+        implementation.filterUserAttributes = { _, _ in [:] }
+
+        selectPlacements(
+            implementation,
+            attributes: ["email": "new@example.com", "noTargeting": "true"],
+            filteredUser: filteredUser
+        )
+        implementation.stop()
+        identityClient.complete(user: identifiedUser)
+
+        #expect(identifiedUser.setAttributes.isEmpty)
+        #expect(identifiedUser.removedAttributeKeys.isEmpty)
+    }
+
+    private func selectPlacements(
+        _ implementation: MPRoktKitImplementation,
+        attributes: [String: String],
+        filteredUser: FilteredMParticleUser
+    ) {
+        _ = implementation.selectPlacements(
+            identifier: "checkout",
+            attributes: attributes,
+            embeddedViews: nil,
+            config: nil,
+            onEvent: nil,
+            filteredUser: filteredUser,
+            options: nil
+        )
     }
 
     private func identifyDecision(
