@@ -203,6 +203,30 @@ static NSDictionary<NSString *, RoktEmbeddedView *> *MPRoktValidEmbeddedViews(NS
     return [self.implementation setWrapperSdk:wrapperSdk version:wrapperSdkVersion];
 }
 
+#pragma mark - Identity
+
+// $NoTargeting belongs to an MPID, so every identity change re-syncs it for the user it switched to.
+- (MPKitExecStatus *)onIdentifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
+    return [self syncNoTargetingAfterIdentityChange:user];
+}
+
+- (MPKitExecStatus *)onLoginComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
+    return [self syncNoTargetingAfterIdentityChange:user];
+}
+
+- (MPKitExecStatus *)onLogoutComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
+    return [self syncNoTargetingAfterIdentityChange:user];
+}
+
+- (MPKitExecStatus *)onModifyComplete:(FilteredMParticleUser *)user request:(FilteredMPIdentityApiRequest *)request {
+    return [self syncNoTargetingAfterIdentityChange:user];
+}
+
+- (MPKitExecStatus *)syncNoTargetingAfterIdentityChange:(FilteredMParticleUser *)user {
+    [self.implementation syncNoTargetingAfterIdentityChange:user];
+    return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+}
+
 + (NSDictionary<NSString *, NSString *> *)prepareAttributes:(NSDictionary<NSString *, NSString *> *)attributes
                                                 filteredUser:(FilteredMParticleUser *)filteredUser
                                               performMapping:(BOOL)performMapping {
