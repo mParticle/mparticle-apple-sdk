@@ -293,3 +293,17 @@ Use the verification script to run full end-to-end integration tests:
 **Note:** The SDK is used directly from source via Swift Package Manager, ensuring tests always use your latest code changes without requiring a separate build step.
 
 **Known gap:** this Docker-based script serves WireMock's own certificate and trusts nothing on the simulator, so the app's requests fail TLS and the run passes without any. It also only warns about a mapping no request used. CI runs `run_integration_tests_ci.sh` instead, which trusts a throwaway certificate on the simulator and fails on both.
+
+### Diagnostic Report in CI
+
+Before WireMock stops, `run_integration_tests_ci.sh` writes `artifacts/integration-diagnostics.json` and prints a summary to the job log. The workflow uploads it with the other failure artifacts. The script's exit status is unchanged.
+
+The report holds:
+
+- matched, unmatched and total request counts, and the fixtures no request invoked;
+- for each request, its method, its path with keys and IDs masked, the fixture it matched, its body's field names and its message types;
+- for an unmatched request, the fixtures that expect each of its messages, and the messages and fields the closest fixture expected but did not get;
+- a timeline of WireMock readiness, app launch, the first identify, config and upload requests, and the end of the wait;
+- the runner, Xcode, Java, WireMock and simulator versions.
+
+It never holds a request body, a header, an identifier or a value. If WireMock's request journal cannot be read, the report says so and leaves the counts empty rather than reporting zero.

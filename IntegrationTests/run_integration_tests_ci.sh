@@ -29,6 +29,11 @@ WIREMOCK_TLS_DIR=""
 WIREMOCK_CA=""
 WIREMOCK_KEYSTORE=""
 
+# The diagnostic report, taken once before WireMock stops; the workflow uploads this folder on failure
+DIAGNOSTICS_DIR="${SCRIPT_DIR}/artifacts"
+DIAGNOSTICS_WRITTEN=false
+DIAGNOSTIC_MARKS=()
+
 # === Generate project with Tuist (using source-based distribution) ===
 echo "🔄 Generating project with Tuist..."
 tuist generate --no-open
@@ -250,7 +255,37 @@ show_wiremock_logs_java() {
 	echo ""
 }
 
+mark_time() {
+	# Records an epoch-milliseconds point on the diagnostic report's timeline
+	local NAME="${1}"
+	local NOW
+	NOW="$(python3 -c 'import time; print(int(time.time() * 1000))' 2>/dev/null)" || NOW=""
+	if [[ -n ${NOW} ]]; then
+		DIAGNOSTIC_MARKS+=("--mark" "${NAME}=${NOW}")
+	fi
+}
+
+write_diagnostic_report() {
+	# Reads WireMock's request journal before teardown; never changes the run's exit status
+	local STAGE="${1}"
+	if [[ ${DIAGNOSTICS_WRITTEN} == true ]]; then
+		return 0
+	fi
+	DIAGNOSTICS_WRITTEN=true
+	python3 "${SCRIPT_DIR}/diagnostic_report.py" \
+		--admin-url "http://localhost:${HTTP_PORT}" \
+		--mappings-dir "${MAPPINGS_DIR}/mappings" \
+		--out "${DIAGNOSTICS_DIR}/integration-diagnostics.json" \
+		--stage "${STAGE}" \
+		--device-name "${DEVICE_NAME}" \
+		--device-id "${DEVICE_ID}" \
+		"${DIAGNOSTIC_MARKS[@]}" ||
+		echo "⚠️  Could not write the diagnostic report"
+}
+
 verify_wiremock_results() {
+	write_diagnostic_report verify
+
 	echo ""
 	echo "🔍 Verifying WireMock results..."
 	echo ""
@@ -260,6 +295,14 @@ verify_wiremock_results() {
 
 	# Count all requests
 	local SERVED=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests)
+
+	# An unreadable journal is not a run with no requests, so say which it is
+	if ! printf '%s\n' "${SERVED}" | jq -e '.requests | type == "array"' >/dev/null 2>&1; then
+		echo "❌ WireMock's request journal could not be read, so the run cannot be verified."
+		show_wiremock_logs_java
+		stop_wiremock_java
+		exit 1
+	fi
 	local TOTAL=$(printf '%s\n' "${SERVED}" | jq '.requests | length')
 	local UNMATCHED=$(curl -s http://localhost:"${WIREMOCK_PORT}"/__admin/requests/unmatched | jq '.requests | length')
 	local MATCHED=$((TOTAL - UNMATCHED))
@@ -333,6 +376,7 @@ error_handler() {
 	local exit_code=$?
 	echo ""
 	echo "❌ Script failed with exit code: ${exit_code}"
+	write_diagnostic_report error
 	show_wiremock_logs_java
 	unescape_mapping_bodies
 	restore_sdk_version_placeholder
@@ -355,6 +399,7 @@ escape_mapping_bodies
 create_wiremock_certificate
 start_wiremock_java
 wait_for_wiremock_java
+mark_time wiremock_ready
 echo "📝 WireMock is running in verification mode"
 echo "🔗 Admin UI: http://localhost:${HTTP_PORT}/__admin"
 echo "🔗 HTTPS Endpoint: https://localhost:${HTTPS_PORT}"
@@ -363,10 +408,13 @@ start_simulator
 trust_wiremock_certificate
 install_application
 launch_application
+mark_time app_launched
 wait_for_app_completion
+mark_time app_wait_ended
 # A run cut short leaves its last recordings unused; report that cause instead
 if kill -0 "${APP_PID}" 2>/dev/null; then
 	echo "❌ The application was still running when the wait ended, so its run is incomplete."
+	write_diagnostic_report app-incomplete
 	show_wiremock_logs_java
 	stop_wiremock_java
 	exit 1
